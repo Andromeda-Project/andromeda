@@ -1,0 +1,120 @@
+/************************************
+ *
+ *  Replace these colors as needed
+ *  
+ *  #D96726 - main color
+ *  #BF5A21 - shadow color
+ *  #fff    - font color 
+ *
+ ************************************/   
+
+/*typography */
+h3 {
+  color: #D96726;
+}
+
+body #color-insert {
+  background: #D96726;
+}
+
+/* menu area */
+div#horiz-menu {
+	border-color: #BF5A21; 
+	background: #D96726; 
+}
+
+div.botbox {
+	border-color:  #BF5A21; 
+	background:  #D96726; 
+}
+
+div.botbox div.moduletable h3 {
+	color: #fff;
+	background: #BF5A21;
+}
+
+a:link,
+a:visited {
+  color: #BF5A21;
+}
+
+td a.mainlevel:hover {
+	background: #D96726;
+	color: #fff;
+}
+
+.contentheading {
+  color: #BF5A21;
+}
+
+div.componentheading {
+  color: #fff;
+  background: #D96726;
+}
+
+/* suckerfish */
+
+#nav a {
+	color: #fff;
+}
+
+#nav a.topdaddy,
+#nav li.active a.topdaddy {
+	border-right:  1px solid #BF5A21;
+}
+
+#nav ul ul a.daddy {
+	border: 0;
+}
+
+#nav li a {
+	border-right:  1px solid #BF5A21;
+}
+
+#nav li li a {
+	border: 0;
+}
+
+#nav ul li a:hover,
+#nav ul li ul li a:hover,
+#nav ul li ul li ul li a:hover,
+#nav ul li.active ul li a:hover,
+#nav ul li.active ul li ul li a:hover,
+#nav li.active li.active a,
+#nav li.active li.active a:hover {
+	background: #BF5A21;
+}
+
+#nav li li {
+	border-bottom: 1px solid #BF5A21;
+}
+
+#nav ul ul a {
+	color: #fff;
+}
+
+#nav li ul {
+
+}
+
+#nav li:hover a, #nav li.sfhover a {
+  color: #fff;
+}
+
+#nav li li:hover a, #nav li li.sfhover a {
+  color: #fff;
+}
+
+
+
+#nav li:hover ul, 
+#nav li li:hover ul, 
+#nav li li li:hover ul, 
+#nav li li li li:hover ul,
+#nav li.sfhover ul, 
+#nav li li.sfhover ul, 
+#nav li li li.sfhover ul,
+#nav li li li li.sfhover ul{
+	background: #D96726;
+	border:  1px solid #BF5A21;
+}

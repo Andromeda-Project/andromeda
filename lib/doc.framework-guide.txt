@@ -1,0 +1,891 @@
+/**
+name:Framework Guide
+parent:Documentation
+
+This section contains instructions on how to create customized web sites
+for your Andromeda database.
+
+Andromeda follows the principle that anything that is repetitive or
+routine should not be easy -- it should be free.  That is why you can
+create a complete and complex web-enabled intranet/extranet database 
+application with little or no PHP coding.
+
+However, Andromeda also follow the principle that everything should be
+customizable.  This is vital for public systems where the interface
+is vital to the success of the project.
+
+These pages tell you how to do anything you may need to do on your site.
+*/
+
+
+/**
+name:_default_
+parent:Directories
+*/
+
+/**
+name:Directories
+parent:Framework Guide
+
+Every Andromeda application has a standard set of directories, with one
+root and its collection of subdirectories.  All of
+the code for every application, including public files, script libraries,
+CSS files, and server code, is contained in this directory tree.
+
+The top level directory normally holds [[index.php]] and [[pages]], plus
+an .htaccess file. 
+
+The standard sub-directories are:
+
+
+* ''application''.  Holds all application-specific server-side code.
+During a build, the builder writes an .htaccess file to this directory
+containing only the line "Deny From All", so that the directory is not
+publicly visible.
+* ''appclib''.  Holds all application-specific client-side code.
+* ''apppub''.  Holds all application-specific client-side images and
+other publicly available files.
+* ''instpub''.  Instance-level publicly-visible files.
+* ''lib''.  Andromeda server-side library files.
+* ''clib''.  Andromeda client-side library files.
+* ''dynamic''.  A cache directory, used by the framework to store anything
+that needs rapid retrieval.  Wiped out during a build.
+* ''generated''.  Contains the data dictionary, converted into PHP include
+files which themselves hold associative array definitions.  Allows the
+data dictionary to be loaded in a pre-packaged format perfect for use by
+PHP code.  Wiped out during a build.
+* ''files''.  A catch-all directory where files can be put during development.
+Nothing in here is handled during builds, and the source control and version
+control systems ignore it, so it is a good place to put files on dev systems.
+* ''tmp''.  Used during a build to put log files and such.  Ignored by the
+version and source control systems.
+
+*/
+
+/**
+name:application directory
+
+See [[Directories]].
+*/
+/**
+name:appclib directory
+
+See [[Directories]].
+*/
+/**
+name:apppub directory
+
+See [[Directories]].
+*/
+/**
+name:instpub directory
+
+See [[Directories]].
+*/
+/**
+name:lib directory
+
+See [[Directories]].
+*/
+/**
+name:clib directory
+
+See [[Directories]].
+*/
+/**
+name:dynamic directory
+
+See [[Directories]].
+*/
+/**
+name:generated directory
+
+See [[Directories]].
+*/
+/**
+name:files directory
+
+See [[Directories]].
+*/
+/**
+name:tmp directory
+
+See [[Directories]].
+*/
+
+
+/**
+name:Application Files
+parent:Framework Guide
+
+Application files are those that you create and put into the 
+[[application directory]].  This directory is always empty for a
+new application, the framework never places anything here.
+
+It is possible, though rare, to have an Andromeda application that
+requires no application files.  This is the case usually when the
+application uses the standard interface exclusively and has no
+special imports or exports.
+*/ 
+
+
+
+/**
+name:Pages, Classes, and Tables
+parent:Framework Concepts
+
+A regular Andromeda application will display a menu entry for each 
+table that the user is allowed to see.  If there are no special visual
+requirements, there will be no program code at all, the Andromeda libraries
+will create all of the HTML "for free".  In
+the case of these tables we can talk about "the orders page" and we mean
+"the page where the user sees entries in the ORDERS table".
+In these cases we
+do not mean "a class file containing code relating to the ORDERS table"
+because that class file does not exist.
+
+Sometimes we have special programs, such as a rapid data entry screen,
+which do not correspond to a database table.  For these you must have a
+PHP class file in the [[application directory]].   
+
+
+/**
+name:_default_
+parent:Application Files
+*/ 
+
+/**
+name:applib.php
+
+This file does not exist unless you create it and put it into the
+[[application directory]].
+
+This file is invoked on every trip to the server, so anything that you 
+need on every trip should be put here, but care should be taken to avoid
+unnecessary processing in this file.
+
+This file serves two purposes.  First, the code at the top of the file
+is executed on every request to the server.  Therefore the top of the file
+is a good place to put settings and tests.  Second, the file can contain
+library functions that you wish to be globally available to any other
+file in your application.
+
+Here is an example of an applib file that makes some settings and
+has a function available:
+
+<div class="box-php">
+vgaSet('setting1','This setting always happens for every page');
+// set a page if none was requested
+if(gp('gp_page')=='') { 
+   gpSet('gp_page','p_home');
+}
+
+// This function is available to every page in the system, it
+// provides a date format that we use everywhere
+function PreferredDateFormat($unix_ts) {
+   return date('...',$unix_ts);
+}
+</div>
+*/ 
+
+/**
+name:_default_
+parent:Templates And Pages
+*/ 
+
+/**
+name:Templates And Pages
+parent:Framework Guide
+
+Nearly everything you will do on the PHP side of an Andromeda
+application boils down to making a page or establishing a template.
+
+Andromeda comes with a default template that is suitable for 
+intranet/extranet database applications.  But you can easily replace this
+with your own template.  Likewise, just as there is a default page provided
+for every table in a database, you can also modify or completely override
+the content of different pages.
+
+By default Andromeda also provides one page per table in the database,
+but you can also provide pages that are not directly associated with a 
+database table.
+
+You can also have multiple templates for a single site and multiple virtual
+sites going to one application.  These are all explained in this section.
+
+Within Andromeda, the word "page" always means a class, but it means 
+nothing more than that (in other words, there are none of the 
+implications that come with object-relational systems).  
+
+Every request to the server goes through [[index.php]], and the specific
+page that will be returned is specified by the [[GET-POST Variable]]
+'gp_page', as in "http://www.example.com/index.php?gp_page=example_page". 
+
+Any page that you create will at bare minimum look like this:
+
+<div class="box-php">
+class example_page extends x_table2 {
+   function main() {
+      // All code goes here.
+   }
+}
+</div>
+
+The Andromeda dispatcher will instantiate  "example_page" and execute
+the "main" method.  
+
+Once execution goes to "main", anything you output will be buffered.
+Once execution is complete, Andromeda works out which template to use,
+and then calls the template.  It is the responsibility of the template
+file to place the output in its main content area.
+
+During execution you can save anything you like for inclusion in the
+template.  For instance, you may wish to change the title of the page, but
+you don't know until very late in processing what the title will be.  In
+that case you can put this command in your "example_page" class:
+
+<div class="box-php">
+if(some_condition) {
+   vgaSet('Title','Normal Title');
+}
+else {
+   vgaSet('Title','You are a Winner!');
+}
+</div>
+
+Then in the template you can set the title like so:
+
+<div class="box-php">
+<title>&lt;&ques;=vgaGet('Title','Default Title')&ques;&gt;</title>
+</div>
+*/
+
+/**
+name:Replacing The Default Template
+
+Andromeda provides a default template suitable for database applications.
+
+For public sites you will certainly want to replace this completely with
+something of your own design.  There are two simple ways to do this.
+
+==Method 1: html_main.php==
+
+The default Andromeda template is provided by html_main.php, stored
+in the [[lib directory]].  You can make up a new file, name it 
+html_main.php, and put it into the [[application directory]] and it will
+override the version in the [[lib directory]].
+
+==Method 2: A New File==
+
+You can make up your own template and save it in the [[application directroy]]
+with any name you want, though by convention we normally name templates
+beginning with "html".  
+
+Now you must make a setting to activate the use of your template file,
+If your file is named 'html_replace.php', then in your [[applib.php]] file,
+make this setting (note no trailing php extension):
+
+<div class="box-php">
+vgaSet('html_main','html_replace');
+</div>
+
+==What To Include In Your Template==
+
+There are many things that should be in your template to make sure all
+Andromeda features work. These include at this time:
+
+<ul>
+<li>Link to raxlib.js
+<li>Two code blocks to output dynamic CSS and dynamic script elements
+<li>The main content
+<li>Code blocks at bottom of file to output end-of-page script
+</ul>
+
+We have elected not to attempt to detail all of these because they may
+change during the transition from beta to first release.  The best way to
+do this is to example html_main.php in the [[lib directory]] and copy the
+dynamic elements into your own file.
+*/
+
+/**
+name:Using Multiple Templates
+
+Besides simply [[Replacing the Default Template]], you may wish to use
+multiple templates on one site.  This can be done very easily.
+
+Each template should be saved in the [[application directory]].  By 
+convention 
+
+You can choose a template at any time in code by setting the 'html_main'
+global variable, using this command:
+
+<div class="box-php">
+// Notice no trailing PHP extension
+vgaSet('html_main','html_my_template');
+</div>
+
+If you wish to use different templates for different pages, you can
+make a routine in [[applib.php]] that does it:
+
+<div class="box-php">
+switch(gp('gp_page')) {
+   case 'page1': 
+   case 'page2': vgaSet('html_main','html_template1'); break;
+   case 'page3': 
+   case 'page4': vgaSet('html_main','html_template2'); break;
+   default:      vgaSet('html_main','html_default'); break;
+}
+</div>
+
+...or you can store the template names in a database table so that
+they can be altered without changing code (though this does have
+performance implications and would not be used in production on a
+ high-traffic server):
+
+<div class="box-php">
+$SPage=SQL_Format('char',gp('gp_page'));
+$template=SQL_OneValue(
+   'template'
+   ,"Select template from templates where page=$SPage"
+);
+vgaSet('html_main',$template);
+</div>
+
+These two examples assume the code is being put into [[applib.php]], but
+it really can be anywhere.  
+*/
+
+/**
+name:Virtual Sites
+
+Andromeda allows you to have two or more virtual sites pointing to the
+same application.  If your apache server has two virtual sites for
+"www.example.com" and "www.nowhere.com", you can have both of these
+go to the same Andromeda application, and you can distinguish in code
+which one is being called.
+
+This is commonly done to provide [[An Admin Interface for a Public Site]]
+or to use a complex database to drive multiple sites that are similar but
+not identical to each other.
+
+The first step in this process is to create a conventional Andromeda
+application.  We will assume your application is named "example", so that
+the [[Root Directory]] is also named "example".
+
+Next, create another document directory called "example_alternate".  In
+this directory put a single file called "index.php" that looks like this:
+
+<div class="box-php">
+// route over to the main directory
+include("../example/index.php");
+</div>
+
+Now you need to be able to distinguish at run-time which site the user
+came in on.  There are many ways to do this, but one method that is 
+guaranteed to work is to examine the directory name of the file that was
+called.  You can put the code into your [[applib.php]] file that will
+do this:
+
+<div class="box-php">
+$sf=$_SERVER['SCRIPT_FILENAME'];
+$sf=substr($sf,0,strlen($sf)-10); // assumes page was index.php
+$basesite=basename($sf);
+if($basesite=='example') {
+   echo "Came in on normal directory";
+}
+else {
+   echo "Came in on the alternate directory";
+   vgaSet('html_main','html_alternate');
+}
+</div>
+
+This method has the advantage that it works both in live situations and
+test or development systems.  On a live system like "www.example.com"
+or on your own local laptop the code will behave the same way.  No
+changes to the apache config file are needed either.
+*/
+
+/**
+name:An Admin Interface for a Public Site
+
+Sometimes you may create a public site, in which case you need to override
+the default template with the design for your site.  However, you still 
+wish to have the default template available so that you can have an
+"admin area" that provides direct manipulation of the database.  This
+can be done in many ways, but the simplest and
+conventional way is to use [[Virtual Sites]].
+
+To do this, create two sites as described in the instructions for
+[[Virtual Sites]].  Then, by convention, we make the alternate site
+the public site and the original site is the admin site.  This bit
+of code at the top of [[applib.php]] will accomplish this, with 
+the advantage that it is not hardcoded for the application name:
+
+<div class="box-php">
+$sf=$_SERVER['SCRIPT_FILENAME'];
+$sf=substr($sf,0,strlen($sf)-10); // assumes page was index.php
+$basesite=basename($sf);
+if($basesite==$GLOBALS['AG']['application']) {
+   vgaSet('admin',true); // handy flag to access later on
+}
+else {
+   vgaSet('admin',false); // handy flag to access later on
+   vgaSet('html_main','html_public');
+}
+</div>
+*/
+
+/**
+name:Modify A Table Page
+
+Every table in an Andromeda database has a "page" that can be used to
+directly access the data in the table.  We put the word "page" in quotes
+because there is not actually a file on disk for each of these pages, they
+are more like virtual pages that are handled by the file [[x_table2.php]].
+Andromeda does not  need to have a file on disk for each table because
+[[x_table2.php]] uses the data dictionary to lay out the HTML for each 
+table.
+
+If you want to modify the default behavior of a Table Page in any
+way, including providing a completely new look for it, you must begin
+by putting a file into the [[application directory]].  It will contain
+a class that has the same name as the table, which extends x_table2.  The
+file itself will have the same name as the table.  All file names and
+class names should be in lower case.
+
+<div class="box-php">
+class customers extends x_table2 {
+   function custom_construct() {
+      // put customized construct information here
+   }
+   
+   function main() {
+      // if you override this method you will completely replace
+      // standard processing.
+   }
+}
+</div>
+
+If you have [[An Admin Interface for a Public Site]], then may want to 
+provide a custom display of the ITEMS table, but still allow administrators
+to go into the ITEMS table to add, modify and delete items.
+
+The following code will accomplish this:
+
+<div class="box-php">
+class items extends x_table2 {
+   function main() {
+      if(vgaGet('admin',false)==true) {
+         // use default Andromeda table maintenance interface
+         parent::main();
+         return;
+      } 
+      else {
+         $this->main_Public();   
+      }
+   }
+}
+</div>
+*/
+
+/**
+name:Create a non-Table Page
+
+Besides modifying Table pages, you can also provide pages that are not
+directly associated with a table.
+
+First, create a file in your [[application directory]] that has the same
+name as the page.  Have it contain a class that has the same name as your
+page that extends x_table2, like so:
+
+<div class="box-php">
+class not_a_table_page extends x_table2 {
+   function main() {
+      // this is where it all happens
+   }
+}
+</div>
+
+However, users will not be able to see this by default because 
+Andromeda is meant to be secure by default.  Unless users are given
+permission to see something, it is assumed they are not allowed.
+
+To make the new page "public" so that anybody can see it, make sure
+that your [[applib.php]] file populates an array named $MPPages, and
+make an entry in that array where the key is the name of the table
+and the value is a description:
+
+<div class="box-php">
+$MPPAGES=array(
+   'not_a_table_page'=>'Page Description'
+);
+</div>
+*/
+
+/**
+name:Using The Header-Footer Method
+parent:Templates And Pages
+
+If you wish to build a site using the [[Header-Footer Method]], you
+only need to put a couple of lines into your header include file:
+
+<div class="box-php">
+$header_mode=true;
+include('index.php');
+</div>
+
+These lines will do everything that Andromeda normally does, including
+loading libraries and processing [[GET-POST Variables]].
+
+There are some things you must do yourself inside of each page if you
+intend to use this method.  For instance, if you have used the [[hidden]]
+function to register variables, you must output those variables using
+[[ehHiddenAndData]].  You must also manually code any HTML FORM that will
+enclose your forms.  
+
+There are likely to be other issues as well, but our own use of this
+method is very limited so we cannot provide more comprehensive documentation
+at this time.
+
+Generally speaking you will have to code much less if you use the
+[[Universal Dispatch Method]].  Most of this documentation assumes that
+you are using the Universal Dispatch Method.
+*/
+
+/**
+name:Processing Forms and Data
+parent:Framework Guide
+
+The Andromeda PHP framework exists solely to provide interfaces to
+database data, so there are some behaviors built in to make it easy
+to process HTML forms and to move data in and out of a database.
+
+You never need to make a connection to the database, Andromeda assumes
+that if the user has made a request, it will most certainly involve 
+the database, and so Andromeda makes a connection before handing 
+control to the page.
+
+Likewise, you never actually need to output an HTML FORM in your
+PHP pages, every page sent to the browser contains a form. 
+It always sends control back to [[index.php]] under method "POST", 
+and is even setup to allow file
+uploads.  You can see how it is created by examining the code of the
+framework routine [[ehStandardOutput]] which is in [[raxlib.php]].
+
+There are a couple of javascript routines that can be called to submit
+forms.  The simplest is "formSubmit()".  You can make any hyperlink call
+"javascript:formSubmit()" and have it submit the form.  You can also
+set the value of a form input and submit in one command, using the
+command "SetAndPost(varname,varvalue)".  This is useful for having 
+"next" and "prev" buttons on wizards that say "SetAndPost('nav','next')".
+
+You can place hidden variables on the form by calling the API function
+[[hidden]].  This function does not actually output any HTML, it registers
+the value and then the HTML is output when the template is processed.
+
+For a wizard that covers several pages, you might output a hidden variable
+that contains the current page, and another hidden variable that contains
+an empty value.  Then put two buttons on the HTML that call respectively
+"SetAndPost('nav','next')" and "SetAndPost('nav','prev')".  This makes
+for nice general purpose code all around.
+*/
+
+/**
+name:_default_
+parent:Processing Forms and Data
+*/
+
+/**
+name:Forms And The Database
+
+The Andromeda default interface provides browse lists and input forms for
+displaying data that comes from a database.  All of the code that does this
+is in [[x_table2.php]] or [[raxlib.php]], and you can use the same code
+on specialty pages to do similar effects.
+
+For instance, consider the case where you wish to display a user's 
+profile information on a form, using boxes that are appropriate to the
+size, type, and so forth of the data.  This will do the trick:
+
+<div class="box-php">
+class users extends x_table2 {
+   
+   function main() {
+      $uid=SessionGet('UID');
+      
+      $this->row=SQL_OneRow(
+         "Select * FROM users where user_id='$uid'"
+      );
+      echo $this->hBoxesFromProjection('upd','default');
+   }
+}
+</div>
+
+That routine will generate HTML captions and inputs for all of the
+columns in the database that would normally be visible.  Likewise it
+will populate them with values from "$this->row".  
+
+When the user posts the form, the changes will automatically be saved!
+
+The framework looks for inputs generated by this library routine and
+saves them if they have changed.
+*/
+
+/**
+name:Wizards and Multi-Stage Processing
+
+In many systems, the word "page" is likely to refer to a single PHP or
+even HTML file on a web server.  In Andromeda when we say "page" we
+actually mean class, specifically a class that extends [[x_table2]].
+
+In the systems written by SDS that use Andromeda, we tend to put 
+more than one "page" into a single class.  In particular this is done for
+one-off HTML forms and for wizards.  
+
+Consider the case of user registration.  We need some code that will send
+out a form for the user to fill out.  Then when they POST the form it must
+be handled.  We always develop these with both sets of code in one class.
+
+Here is an example file that shows how to do this complete cycle:
+
+<div class="box-php">
+class register extends x_table2 {
+   function main() {
+      // Pull the GET-POST variable gp_posted to see if they posted
+      $continue=true;
+      if(gp('gp_posted')==1) {
+         $continue=$this->Process();
+      }
+      
+      if(!$continue) return;
+      
+      // This will cause processing the next time around
+      hidden('gp_posted',1);
+      hidden('gp_page','register'); // must know the page to come back to!
+      
+      // Now display the HTML.  Begin with any errors
+      // thrown by the post attempt.  This will come out
+      // empty if irrelevant
+      echo hErrors();  
+      
+      //
+      <input name="txt_example" value="<=gp('txt_example')>" >
+      <a href="javascript:formSubmit()">Run Now</a>
+      //
+      
+   }
+   
+   function Process() {
+      // Processing is handled here.  If there is an error
+      // then register it and tell them to continue
+      if (something_bad) {
+         ErrorAdd("Something bad happened, please fill out form again");
+         return true;
+      }
+      else {
+         echo "Thanks! IT worked!";
+         return false;
+         // returning false says *don't continue*
+      }
+   }
+}   
+</div>
+*/
+
+/**
+name:Paypal
+parent:Framework Guide
+
+=Introduction=
+
+The Andromeda Paypal framework includes code taken directly from Paypal's toolkit for php, which can be found at http://www.paypal.com/pdn.  
+
+=Preview of Requirements=
+
+Using Paypal inside of Andromeda requires the following steps, which are explained in more detail below.
+
+<ol>
+<li>Create any database tables appropriate to your business
+<li>Write non-UI code that handles a successful transaction.  This is where the database work goes.
+<li>Provide a page that the user sees after the transaction has been handled successfully.
+<li>Make configuration settings in paypal_config.inc.php
+</ol>
+
+=Preview of how IPN Works=
+
+Assume a database that has an invoices table.  Your application writes to the database all information about the invoice, then makes this setting:
+
+<pre class="php">
+vgaSet('html_main','html_main_paypal_process');
+</pre>
+
+After that setting your code should terminate.  The framework will end processing by invoking html_main_paypall_process.php, which passes control to Paypal.
+
+Once the user hits 'PAY' on the Paypal site, Paypal will do two things simultaneously.  It will notify your non-UI code while also showing the user a screen where they can hit [CONTINUE].  There are two important things to note here:
+
+<ul>
+<li>If your Non-UI processing code fails, the customer will still be charged!
+<li>Your customer may hit [CONTINUE] and get back to your site before your non-UI code has finished, so you may have to sit there and check the status until the non-ui code has finished.
+</ul>
+
+=Making it Work=
+
+==Database Prerequisites==
+
+The Andromeda framework does not require any particular kind of database tables for your paypal system, use whatever is appropriate to your business.
+
+One recommendation is that certain timestamps be put into the main invoice table, at very least a timestamp when the transaction was initiated, when it was sent off to paypal, and when paypal sent a success or cancellation method.
+
+==Non-UI Process==
+
+Your system should have a file "applib.php" in the application directory.  If it does not already use this file, create the file for use by paypal.
+
+Create a function in the "applib.php" file called "Paypal_IPN_Success($log)".  In this routine put any code you wish to have called when a transaction is successful.  This routine is invoked invisibly, so if you want to debug what is going on, use the paramter $log to make calls to [[SysLogEntry]].  Then review the tables [[syslogs]] and [[syslogs_e]] to see the log of your process.
+
+==Visible Page==
+
+The visible page for success can be any normal Andromeda page, there is nothing special required for it.  Keep in mind only that it should not do any database processing, it is an information-only page.  It might contain a simple "thank you" or a review of the order, or anything along those lines.
+
+The page should be written as you would write any other page in Andromeda. 
+
+==Configurations==
+
+To configure Paypal, you must copy the file "paypal_config.inc.php" from the lib directory to the application directory.  Once you have done this, the copy in the application directory overrides the lib directory.  The lib directory copy will be ignored at runtime, only the application directory will be accessed.
+
+The following settings must be made:
+
+<ul>
+<li>Set  the email address of the business that receives the payment, which is $paypal['business']
+<li>Set the base URL of your own system, which is $paypal['site_url'].
+<li>Set the URL of the visible success page, which is $paypal['success_url'].  Watch out!  This is not supposed to be a complete URL, this value will be appended to the base URL $paypal['site_url'], so it might be something like '?gp_page=paypal_thanks'.
+<li>Do not make any changes to url_notify!
+</ul>
+
+==Test and Live==
+
+Inside of the application/paypal_config.inc.php are two lines that set the $paypal['url'].  One  points to the 'sandbox', which is Paypal's testing setup, and one points to their live server.  One of these should always be rem'd out, and the other should be active.  Switching one for the other is all that is required to switch between test and live mode.
+
+=Reference: Andromeda Changes to Paypal Files=
+
+The Andromeda Paypal framework is composed of paypal-provided files that have been moved and renamed to follow our conventions.  
+
+The paypal file "process.php" was moved to the lib directory and renamed "html_main_paypal_process.php".
+
+The paypal file "paypal_global_config.inc.php" is in the lib directory.
+
+The paypal file "paypal_config.inc.php" is in the lib directory.  When you use paypal, you copy this file to the application directory and make changes to the copy.  The lib copy is kept for reference.
+
+The payapl file "ipn.php" was moved to the lib directory and renamed x_paypalipn.php.  The functional code was moved into function main of class x_paypalipn.  
+
+The files ipn_success.php and ipn_error.php were discarded.  They were only placeholder files, and were replaced with methods in x_paypalipn.
+
+The paypal files used unquoted array index names throughout, those were all changed to quoted index names.
+*/
+
+/**
+name:Concepts and Methods
+parent:Framework Guide
+
+The primary goal of Andromeda is to produce very reliable complex systems
+with as little programming as possible.  This motivation guides the selection
+of concepts used by Andromeda.
+
+This section explains which popular programming methods were picked for
+Andromeda and how and why they are used.
+*/
+
+/**
+name:Universal Dispatch Method
+parent:Concepts and Methods
+
+This is the most purely dynamic way to build a web site.
+In this system, there is only one
+publicly visible file.  All requests from the browser go to this one
+file, and the parameters of the request determine what code is called
+to return HTML to the browser.
+
+Andromeda uses the Universal Dispatch Method by default (though  you
+can also use the [[Header-Footer Method]]).  By convention a value is
+always passed for 'gp_page' which corresponds to what page
+the user has requested.  Under most circumstances the value for 'gp_page'
+determines what class is instantiated and invoked.
+
+In Andromeda, the root file is [[index.php]], all requests from the
+browser always go through this file.
+
+The only responsibility of [[index.php]] is to save the values of the
+directory it is in, and then pass control to [[index_hidden.php]].  All of
+the main processing goes on in that file.  This program processes the
+[[GET-POST Variables]], then it loads [[raxlib.php]] and, if present,
+[[applib.php]].  
+*/
+
+/**
+name:Header-Footer Method
+parent:Concepts and Methods
+
+This method is a hybrid static/dynamic method.  
+
+In this method, every page gets its own PHP file, and each of these files
+is in the public directory.  The top of each file will usually call out
+to a "header" file and the bottom of each file will call out to a 
+"footer" file, hence the name of the method.  The header and footer files
+together provide uniformity and consistency, while the actual contents
+of each file contain the page-specific PHP and HTML.
+
+Andromeda does not do anything deliberately to prevent use of this
+method, and even provides a feature that makes it easier to user, but there
+is always more coding in this method than in the Universal Dispatch Method,
+so as a general rule Andromeda does not use it.
+
+For more information, see the page [[Using The Header-Footer Method]].
+
+/**
+name:Data Handling
+parent:Framework Guide
+
+Andromeda handles all data returned from the Database server in
+simple associative arrays.
+
+*/
+
+
+/**
+name:Row Array
+parent:Data Handling
+date:4/1/07
+
+A Row Array is a simple associative array, composed of simple keys
+holding simple atomic values.  It is assumed that they keys of a 
+Row Array correspond to column names in a table, and that the values
+are suitable for loading to that same table.  In this respect, a Row Array
+never contains nested arrays.
+
+This kind of array is returned by [[SQL_OneRow]].
+
+!>example:A Row Array
+!>php
+<?php
+$row=SQL_OneRow(
+   "Select table_id,column_id
+      FROM zdd.tabflat_c
+     WHERE table_id = 'users'
+     ORDER by uicolseq LIMIT 1"
+);
+hprint_r($row);
+?>
+!<
+!>output:The output would be
+table_id:column_id;users:user_id
+!<
+!>php:and we can insert rows of the same type
+<?php
+$row=array('customer'=>'JONES','company'=>'Jones Lighting');
+SQLX_Insert('customers',$row);
+?>
+!<
+!<
+*/
+
+
+

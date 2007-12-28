@@ -1,0 +1,250 @@
+/************************************
+ *
+ *  Replace these colors as needed
+ *  
+ *  #3a393e - default font
+ *  #666666 - background
+ *  #5a5a5a - background shadow
+ *  #d8dce3 - header main
+ *  #bec1c7 - header shadow
+ *  #e9eef5	- left main
+ *  #cdd1d7 - left shadow
+ *  #a4a4a4 - left color
+ *          - left links
+ *  #ebf0f7 - left hilite main
+ *  #ced3d9 - left hilite shadow
+ *  #ffffff - body main
+ *  #e0e0e0 - body shadow
+ *  #a4a4a4 - mid modules main
+ *  #909090 - mid modules shadow
+ *  #d8dce3 - right main
+ *  #bec1c7 - right shadow
+ *  #dde1e9 - right hilite main
+ *  #c2c6cd - right hilite shadow
+ *  #babfc7 - footer main
+ *  #a3a8af - footer shadow
+ *  #74777c - footer color
+ *
+ ************************************/
+
+/* font colors */
+
+body {
+  color: #3a393e;
+  background: #666666; 
+}
+
+td.left {
+  color: #3a393e;
+}
+
+div.botbox {
+  color: #dddddd;
+}
+
+td.left a:link, 
+td.left a:visited {
+
+}
+
+td.left a.mainlevel:hover {
+  color: #fff;
+}
+
+a.mainlevel { 
+	border-bottom:  1px solid #cdd1d7;
+}
+
+div.midbox a:link,
+div.midbox a:visited,
+div.botbox a:link,
+div.botbox a:visited {
+  color: #fff;
+}
+
+td.left div.moduletable h3 {
+	color: #666;
+	background: #cdd1d7;
+}
+
+td.right div.moduletable h3 {
+	color: #333;
+	background: #bec1c7;
+}
+
+td.left div.moduletable-hilite {
+	background: #ebf0f7;
+	border-color: #cdd1d7;
+}
+
+td.left div.moduletable-hilite h3 {
+	color: #666;
+	background: #ced3d9;
+}
+
+td.right div.moduletable-hilite {
+	background: #dde1e9;
+	border-color: #bec1c7;
+}
+
+td.right div.moduletable-hilite h3 {
+	color: #333;
+	background: #c2c6cd;
+}
+
+td.middle div.moduletable h3 {
+	color: #666;
+	background: #e0e0e0;
+}
+
+div.midbox div.moduletable h3 {
+	color: #fff;
+	background: #909090;
+}
+
+div.moduletable h3 {
+  background: #e0e0e0;
+	color: #fff;
+}
+
+table.outer td.sectiontableheader {
+  color: #a3a8af;
+  background: #e0e0e0;
+}
+
+div#outer-border {
+	border-color: #5a5a5a;
+}
+
+div#top-head {
+	border-color: #bec1c7;
+	background: #d8dce3;
+}
+
+div#access-bar {
+	background: #bec1c7;
+}
+
+table.outer td.left {
+	border-color:  #cdd1d7; 
+	background:  #e9eef5; 
+}
+
+table.outer td.middle {
+	border-color:  #e0e0e0; 
+	background:  #ffffff;
+}
+
+/* KFD 3/2/07 Andromeda Addition of new module */
+div#quicklinks {
+	border-color:  #bec1c7; 
+	background:  #d8dce3; 
+}
+
+table.outer td.right {
+	border-color:  #bec1c7; 
+	background:  #d8dce3; 
+}
+
+div.midbox {
+	border-color:  #909090; 
+	background:  #a4a4a4;
+	border-bottom:  6px solid #e0e0e0;
+}
+
+div#bot-footer{
+	border-color:  #a3a8af;
+	background: #babfc7;
+	color: #74777c;
+}
+
+div#bot-footer a:link,
+div#bot-footer a:visited {
+	color: #74777c;
+}
+
+span.rocket {
+	background:  url(../images/light/rocket.png) no-repeat;
+}
+
+#logo {
+	background: url(../images/light/pixel_logo.gif) no-repeat;
+}
+
+#nav li.active a,
+#nav li.active a:hover {
+	background: #cdd1d7;
+	color: #333;
+}
+
+#nav li.active li a:hover {
+	color: #fff;
+}
+
+/* medium accessibility */
+a.light .button {
+	background:  url(../images/light/access_light.png);
+}
+
+a.med .button {
+	background:  url(../images/light/access_med.png);
+}
+
+a.dark .button {
+	background:  url(../images/light/access_dark.png);
+}
+
+a.red .button {
+	background:  url(../images/light/access_red.png);
+}
+
+a.blue .button {
+	background:  url(../images/light/access_blue.png);
+}
+
+a.green .button {
+	background:  url(../images/light/access_green.png);
+}
+
+a.orange .button {
+	background:  url(../images/light/access_orange.png);
+}
+
+a.large .button {
+	background: url(../images/light/access_large.png);
+}
+
+a.small .button {
+	background: url(../images/light/access_small.png);
+}
+
+a.default .button {
+	background: url(../images/light/access_normal.png);
+}
+
+a.thin .button {
+	background: url(../images/light/access_thin.png);
+}
+
+a.wide .button {
+	background: url(../images/light/access_wide.png);
+}
+
+a.fluid .button {
+	background: url(../images/light/access_fluid.png);
+}
+
+/* typography */
+h2 {
+  color: #666;
+}
+
+blockquote {
+  background: #fcfcfc;
+  border-top: 6px solid #E0E0E0;
+  border-bottom: 6px solid #E0E0E0;
+}
+
+pre {
+  background: #E9EEF5;
+}

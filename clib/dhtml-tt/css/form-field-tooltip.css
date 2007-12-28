@@ -1,0 +1,13 @@
+#DHTMLgoodies_formTooltipDiv{
+	color:#FFF;
+   /* KFD 5/29/07, Don't want bold and don't specify arial */
+	/* font-family:arial; */
+	/* font-weight:bold; */
+	font-size:1.1em;
+	line-height:120%;
+}
+.DHTMLgoodies_formTooltip_closeMessage{
+	color:#FFF;
+	font-weight:normal;
+	font-size:0.7em;
+}

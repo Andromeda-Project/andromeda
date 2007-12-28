@@ -1,0 +1,257 @@
+/* --------------------------------------------------- *\
+   The browse TABLE and its children
+   
+   Also included: grid table
+\* --------------------------------------------------- */
+/* This is the browse table and its various sub-elements */
+ table.x4Browse
+,table.x4Grid{
+    border-collapse: collapse;
+}
+ 
+ table.x4Browse th 
+,table.x4Grid   th 
+{
+   color: #e0e0e0;
+   background-color: #606060;
+   padding: 3px;
+}
+ table.x4Browse th.highlight 
+,table.x4Grid   th.highlight
+{
+   color: yellow;
+   background-color: #505050;
+}
+ table.x4Browse th.sorted
+,table.x4Grid   th.sorted
+{
+   color: white;
+   font-weight: bolder;
+   background-color: #505050;
+}
+
+
+ table.x4Browse tr.selected
+,table.x4Grid   tr.selected
+{
+   color: black;
+   background-color: #D0D0D0;
+}
+
+ table.x4Browse tr.highlight
+,table.x4Grid   tr.highlight
+{
+   color: black;
+   background-color: yellow;
+}
+
+div.x4BrowseHelp {
+    border: 1px solid #707070;
+    color: #707070;
+    background-color: #f0f0f0;
+    padding: 5px;
+    position: absolute;
+    width: 200px;
+    right: 0px;
+    
+}
+
+/* --------------------------------------------------- *\
+   The server error display
+   
+\* --------------------------------------------------- */
+div.x4ServerError {
+    position: absolute;
+    top:300px;
+    background-color: yellow;    
+}
+
+
+/* --------------------------------------------------- *\
+   The detail TABLE and its children
+\* --------------------------------------------------- */
+/* This is the detail table and its various sub-elements */
+table.x4Detail {
+    border-collapse: collapse;
+}
+table.x4Detail td.x4StandardCaption {
+    text-align: right;
+    padding-right: 4px;
+    padding-top: 1px;
+}
+table.x4Detail td.x4StandardInput {
+    text-align: left;
+    padding: 0px 0px 1px 0px;    
+}
+
+/*  Generic settings for inputs */
+ input
+,textarea
+,select {
+    padding-left: 1px;
+    padding-top:  0px;
+    padding-right: 0px;
+    padding-bottom: 0px;
+    font-size: 12px;
+}
+
+/* Special: the image for calendars */
+img.x4dhtml_calendar {
+    margin-left: 6px;
+}
+
+/* Normal edit mode input boxes */
+ input.x4upd
+,textarea.x4upd
+,select.x4upd {
+    background-color: #E0E0E0;
+    border: 1px solid #E0E0E0;
+    color: #303030;
+}
+ input.x4updSelected
+,textarea.x4updSelected
+,select.x4updSelected {
+    background-color: white;
+    border: 1px solid #E0E0E0;
+    color: black;
+}
+
+/* Primary Key Input Boxes */
+ input.x4pk
+,textarea.x4pk
+,select.x4pk {
+    background-color: #606060;
+    border: 1px solid #606060;
+    color: yellow;
+}
+/* Other read-only boxes */
+ input.x4ro
+,textarea.x4ro
+,select.x4ro {
+    background-color: #B0B0B0;
+    border: 1px solid #B0B0B0;
+    color: #303030;
+}
+
+/* Error input boxes  */
+ input.x4err
+,textarea.x4err
+,select.x4err {
+    background-color: #DA7F71;
+    border: 1px solid red;
+    color: #303030;
+}
+ input.x4errSelected
+,textarea.x4errSelected
+,select.x4errSelected {
+    background-color: red;
+    border: 1px solid red;
+    color: white;
+}
+/* And the span that sits next to it */
+span.x4SpanError {
+    color: red;
+    padding-left: 5px;
+    font-weight: bolder;
+}
+
+
+/* Insert mode input boxes */
+ input.x4ins
+,textarea.x4ins
+,select.x4ins {
+    border: 1px solid #CCCD81;
+    background-color: #CCCD81;
+    color: #303030;
+}
+ input.x4insSelected
+,textarea.x4insSelected
+,select.x4insSelected {
+    border: 1px solid yellow;
+    background-color: yellow;
+    color: black;
+}
+
+/* =============================================================== *\
+   ===============================================================
+   BLANK
+   ===============================================================
+\* =============================================================== */
+div.x4Blank {
+    margin: 0px;
+    padding: 0px;
+    border: 0px;
+}
+/* =============================================================== *\
+   ===============================================================
+   TITLEBAR
+   ===============================================================
+\* =============================================================== */
+div.x4TitleBar {
+    margin: 3px 0px 6px 0px;
+    padding: 0px;
+    border: 0px;
+    font-weight: bolder;
+    font-size: 1.4em;
+}
+
+/* =============================================================== *\
+   ===============================================================
+   TABBAR
+   ===============================================================
+\* =============================================================== */
+/*  Top-most is relative positioning, so kids can overlap          */
+div.x4TabContainer {
+   position: relative;
+   font-size: 12px;
+}
+    
+/*  Tab bar itself is next, this div contains the spans for tabs   */
+div.x4TabBar {
+    margin-top: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 2px;
+    border-bottom: 3px solid #488dd3;
+}
+
+/* These are the tabs themselves                                   */
+div.x4TabBar span {
+    margin-right: 8px;
+    border-style: solid;
+    border-width: 3px 3px 0px 3px;
+    border-color: #3F7CB9;
+    padding: 1px 3px;
+    background-color: #488DD3;
+    color: white;
+   /*
+   background-color: #C0C0C0;
+   color: #404040;
+   */
+}
+div.x4TabBar span.selected {
+   background-color: white;
+   color: #101010;
+}
+div.x4TabBar span.mouseover {
+   background-color: yellow;
+   color: #303030;
+}
+
+/* Tab editing surfaces are invisible unless selected              */
+div.x4Tab {
+   position: absolute;
+   top: 35px;
+   left: 0px;
+   visibility: hidden;
+   width: 100%;
+}
+div.x4TabSelected {
+   position: absolute;
+   top: 35px;
+   left: 0px;
+   visibility: visible;
+   width: 100%;
+}
+
+
+

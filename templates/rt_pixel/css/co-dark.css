@@ -1,0 +1,239 @@
+/************************************
+ *
+ *  Replace these colors as needed
+ *  
+ *  #D9DFE8 - default font
+ *  #262626 - background
+ *  #222126 - background shadow
+ *  #3e444d - header main
+ *  #363c44 - header shadow
+ *  #3e444d	- left main
+ *  #363c44 - left shadow
+ *  #D9DFE8 - left color
+ *  #ffffff - left links
+ *  #5b6371 - left hilite main
+ *  #505763 - left hilite shadow
+ *  #383838 - body main
+ *  #313131 - body shadow
+ *  #484f5a - mid modules main
+ *  #3f454f - mid modules shadow
+ *  #3e444d - right main
+ *  #363c44 - right shadow
+ *  #5b6371 - right hilite main
+ *  #505763 - right hilite shadow
+ *  #30343d - footer main
+ *  #2a2e36 - footer shadow
+ *  #181a1e - footer color
+ *
+ ************************************/
+
+/* font colors */
+
+body {
+  color: #ccc;
+  background: #262626; 
+}
+
+td.left {
+
+}
+
+td.right,
+div.midbox,
+div.botbox,
+div#top-mod {
+  color: #D8DBE2;
+}
+
+td.left a:link, 
+td.left a:visited {
+  color: #fff;
+}
+
+td.left a.mainlevel:hover {
+  color: #fff;
+}
+
+a.mainlevel { 
+	border-bottom:  1px solid #363c44;
+}
+
+td.right a:link,
+td.right a:visited,
+div.midbox a:link,
+div.midbox a:visited,
+div.botbox a:link,
+div.botbox a:visited,
+div#top-mod a:link,
+div#top-mod a:visited {
+  color: #fff;
+}
+
+td.left div.moduletable h3 {
+	color: #fff;
+	background: #363c44;
+}
+
+td.left div.moduletable-hilite,
+td.right div.moduletable-hilite {
+	background: #5b6371;
+	border-color: #363c44;
+}
+
+td.left div.moduletable-hilite h3,
+td.right div.moduletable-hilite h3 {
+	color: #fff;
+	background: #505763;
+}
+
+td.right div.moduletable h3 {
+	color: #fff;
+	background: #363c44;
+}
+
+td.middle div.moduletable h3 {
+	color: #fff;
+	background: #313131;
+}
+
+div.midbox div.moduletable h3 {
+	color: #fff;
+	background: #3f454f;
+}
+
+div.moduletable h3 {
+  background: #D1D2D3;
+	color: #fff;
+}
+
+table.outer td.sectiontableheader {
+  color: #363c44;
+  background: #313131;
+}
+
+div#outer-border {
+	border-color: #212121;
+}
+
+div#top-head {
+	border-color:  #363c44;
+	background: #3e444d;
+}
+
+div#access-bar {
+	background: #363c44;
+}
+
+table.outer td.left {
+	border-color:  #363c44; 
+	background:  #3e444d; 
+}
+
+table.outer td.middle {
+	border-color:  #313131; 
+	background:  #383838;
+}
+
+/* KFD 3/2/07  Andromeda new module */
+table.outer td.right, div#quicklinks {
+	border-color:  #363c44; 
+	background:  #3e444d; 
+}
+
+div.midbox {
+	border-color:  #3f454f; 
+	background:  #484f5a;
+	border-bottom:  6px solid #313131;
+}
+
+div#bot-footer{
+	border-color:  #2a2e36;
+	background: #30343d;
+	color: #181a1e;
+}
+
+div#bot-footer a:link,
+div#bot-footer a:visited {
+	color: #181a1e;
+}
+
+span.rocket {
+	background:  url(../images/dark/rocket.png) no-repeat;
+}
+
+#logo {
+	background: url(../images/dark/pixel_logo.gif) no-repeat;
+}
+
+#nav li.active a,
+#nav li.active a:hover {
+	background: #363c44;
+}
+
+/* medium accessibility */
+a.light .button {
+	background:  url(../images/dark/access_light.png);
+}
+
+a.med .button {
+	background:  url(../images/dark/access_med.png);
+}
+
+a.dark .button {
+	background:  url(../images/dark/access_dark.png);
+}
+
+a.red .button {
+	background:  url(../images/dark/access_red.png);
+}
+
+a.blue .button {
+	background:  url(../images/dark/access_blue.png);
+}
+
+a.green .button {
+	background:  url(../images/dark/access_green.png);
+}
+
+a.orange .button {
+	background:  url(../images/dark/access_orange.png);
+}
+
+a.large .button {
+	background: url(../images/dark/access_large.png);
+}
+
+a.small .button {
+	background: url(../images/dark/access_small.png);
+}
+
+a.default .button {
+	background: url(../images/dark/access_normal.png);
+}
+
+a.thin .button {
+	background: url(../images/dark/access_thin.png);
+}
+
+a.wide .button {
+	background: url(../images/dark/access_wide.png);
+}
+
+a.fluid .button {
+	background: url(../images/dark/access_fluid.png);
+}
+
+/* typography */
+h2 {
+  color: #fff;
+}
+
+blockquote {
+  background: #363C44;
+  border-top: 6px solid #5B6371;
+  border-bottom: 6px solid #5B6371;
+}
+
+pre {
+  background: #313131;
+}

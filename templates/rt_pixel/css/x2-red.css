@@ -1,0 +1,13 @@
+/* DARK RED: 9e2f13   */
+  
+/* ------------------------------------------------- */ 
+/* x_table2 menu bar styles
+/* ------------------------------------------------- */
+.x2menubar A  { 
+   border: 2px solid #9e2f13;
+}
+
+
+td.dhead {
+   background-color: #9e2f13;
+}

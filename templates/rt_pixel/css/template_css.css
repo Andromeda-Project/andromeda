@@ -1,0 +1,550 @@
+/* custom stuff */
+
+html {
+  height: 100%;
+  margin-bottom: 1px;
+}
+
+
+body {
+	margin: 0;
+	padding: 0;
+}
+
+p {
+  margin-top: 0;
+  /* KFD 9/29/07, increased from 5 to 10 */
+  margin-bottom: 10px;
+}
+
+fieldset {
+	border: 0;
+	padding: 5px 0;
+}
+
+span.pathway {
+	display: block;
+	vertical-align: middle;
+	margin-top: 5px;
+	font-weight: normal;
+}
+
+span.pathway img {
+  padding: 0px 10px;
+  vertical-align: middle;
+}
+
+span.pathway a {
+  line-height: 150%;
+}
+
+div#pathway {
+	margin-bottom: 10px;
+	padding-left: 8px;
+}
+
+a.readon {
+  line-height: 300%;
+}
+
+/*** fonts ***/
+body {
+		line-height: 125%;
+		font-family: Tahoma, Helvetica, sans-serif;
+}
+
+/* size attributes */
+
+body.f-smaller {
+	font-size: 10px;
+}
+
+body.f-default {
+	font-size: 11px;
+}
+
+body.f-larger {
+	font-size: 13px;
+}
+
+.small,
+.modifydate,
+.createdate,
+div.mosimage_caption {
+	font-size: 90%;
+}
+
+#nav a,
+#inset a {
+	font-size: 100%;
+}
+
+div.moduletable h3,
+div.moduletable-hilite h3,
+td.side h3,
+.componentheading {
+	font-size: 93%;
+	line-height: 100%;
+}
+
+table.outer .contentheading {
+  font-size: 150%;
+  line-height: 100%;
+  font-weight: normal;
+  padding-top: 15px;
+  padding-bottom: 0px;
+}
+
+div.componentheading {
+  text-transform: uppercase;
+	font-weight: normal;
+}
+
+
+/* font family */
+h1,
+h2,
+h3,
+h4,
+h5,
+.contentheading,
+.componentheading,
+.sectiontableheader {
+	font-family: Tahoma, Helvetica, sans-serif;
+	font-weight: bold;
+}
+
+a:link,
+a:visited {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+/* component heading */
+
+.componentheading {
+	margin-top: 6px;
+	margin-bottom: 10px;
+	margin-left: -4px;
+	margin-right: -4px;
+	padding: 6px;
+}
+
+/* module settings */
+
+div.moduletable h3,
+div.moduletable-hilite h3 {
+  text-transform: uppercase;
+	font-weight: normal;
+  padding: 5px; 
+  margin: 0 -5px 5px -5px;
+}
+
+div.moduletable,
+div.moduletable-hilite {
+	margin-bottom: 5px;
+	padding: 6px 5px;
+}
+
+td.left div.moduletable-hilite,
+td.right div.moduletable-hilite {
+	margin: 0 -6px;
+	padding: 6px 12px;
+	border-width: 6px 0;
+	border-style:  solid;
+}
+
+/* default menu link styles */
+a.sublevel {
+
+}
+
+a.mainlevel:hover {
+	text-decoration: none;
+}
+
+td a.sublevel:hover {
+	text-decoration: underline;
+}
+
+/** regular joomla menu **/
+
+a.mainlevel {
+	display: block;
+	padding: 3px 0px;
+	text-indent: 4px;
+	width: 100%;
+}
+
+/* headings */
+
+h1 {
+	line-height: 100%;
+	font-size: 200%;
+   margin: 7px 0px;
+}
+
+h2 {
+   line-height: 100%;
+   font-size: 150%;
+}
+
+h3 { 
+   line-height: 100%;
+   font-size: 120%;
+}
+
+h4 {
+	 line-height: 100%;
+	 font-size: 110%;
+}
+
+.small,
+.modifydate,
+.createdate {
+	font-weight: normal;
+}
+
+.modifydate {
+	height: 20px;
+	vertical-align: bottom;
+}
+
+.createdate {
+	height: 20px;
+	vertical-align: top;
+	vertical-align: top;
+	padding-bottom: 5px;
+	padding-top: 0px;
+}
+
+/** some joomla class stuff */
+
+table.contenttoc {
+  margin: 5px;
+  padding: 5px;
+}
+
+table.contenttoc td {
+  padding: 0 5px;
+}
+
+
+td.buttonheading {
+ 	vertical-align: bottom;
+}
+
+td.buttonheading img {
+	margin-right: 5px;
+}
+
+table.outer td.sectiontableheader {
+  font-weight: bold;
+  padding: 0 4px;
+  line-height: 20px;
+}
+
+table.outer tr.sectiontableentry1 td, 
+table.outer tr.sectiontableentry2 td,
+table.outer td.sectiontableentry1, 
+table.outer td.sectiontableentry2 {
+  padding: 4px;
+}
+
+table.contentpaneopen, table.contentpane {
+  border-collapse: collapse;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+}
+
+table.contentpaneopen td p {
+  padding-right: 10px;
+}
+
+div.contentpane, div.contentpaneopen {
+  width: 100%;
+}
+
+.clr {
+	clear: both;
+}
+
+div.mosimage {
+  margin: 5px;
+}
+
+
+table.adminform textarea {
+  width: auto;
+  color: #666;
+}
+
+/** width stuff **/
+
+.w-wide div.wrapper {
+	width: 950px;
+}
+
+.w-thin div.wrapper {
+	width: 775px;
+}
+
+.w-fluid div.wrapper {
+	
+}
+
+/** template layout stuff **/
+
+body {
+	height: 100%; 
+	padding: 0;
+	margin-bottom: 1px;
+}
+
+div.wrapper {
+	margin: auto;
+	position: relative;
+}
+
+div#outer-border {
+	border-width:  0 6px 6px 6px;
+	border-style:  solid;
+}
+
+table.outer,
+table.nopad {
+	width: 100%;
+	border:  0;
+	padding:  0;
+}
+
+table.outer tr,
+table.nopad tr {
+	vertical-align:  top;
+}
+
+table.outer td,
+table.nopad td {
+	padding: 0;
+}
+
+table.nopad td {
+  width: 33%;
+  padding-right: 6px;
+}
+
+div#top-head {
+	border-width: 0 6px;
+	border-style:  solid;
+   /* ANDROMEDA CHANGE */
+	/* height: 92px; */
+   height:77px;
+}
+
+div#access-bar {
+	height: 25px;
+}
+
+span#logo {
+	position: absolute;
+	z-index: 10000;
+	/* change these values below if you want to move your logo */
+	top: 16px;
+	left: 21px;
+	/* change these values below if you change your logo image size */
+	width: 317px; 
+	height: 68px;
+}
+
+div#color-insert {
+	position:  absolute;
+	z-index: 1;
+	top:  32px;
+	left: 23px;
+	width: 28px;
+	height: 50px;	
+}
+
+div#top-mod {
+	margin: 10px 5px 10px 370px;  /* 370 here is to make room for the logo */
+	height: 47px;
+	overflow: hidden;
+   text-align: right;   /* kfd 12/19/06 ANDROMEDA CHANGE (for login stuff)*/
+   padding-right: 15px;
+}
+
+div#horiz-menu {
+	border-width: 6px 6px 0 6px;
+	border-style: solid;
+	height:  22px;
+}
+
+
+table.outer td.left {
+   /* ANDROMEDA CHANGE */
+	/* width:  22%; */
+   width: 220px;
+	border-width:  6px 6px 0 6px;
+	border-style:  solid;
+}
+
+table.outer td.middle {
+	border-width:  6px 6px 0 6px;
+	border-style:  solid;
+}
+
+table.outer td.right {
+   /* ANDROMEDA CHANGE */
+	/* width:  22%; */
+   width: 220px;
+	border-width:  6px 6px 0 6px;
+	border-style:  solid;
+}
+
+div.path-padding {
+  padding: 0 10px;
+}
+
+div.padding {
+  padding: 0px 10px 20px 10px;
+}
+
+div.smallpad {
+  padding-left: 6px;
+}
+
+div.sidepad {
+  padding: 0 6px;
+}
+
+div.midbox {
+	border-width:  6px 0 0 0;
+	padding-left: 6px;
+	border-style:  solid;
+  margin-bottom: 6px;
+}
+
+div.botbox {
+	border-width:  6px 0 0 0;
+	padding-left: 6px;
+	border-style:  solid;
+	margin-top: 15px;
+	margin-bottom: -1px;
+}
+
+div#bot-footer{
+	border-width: 6px 6px 0 6px;
+	border-style:  solid;
+	height: 38px;
+	text-align: center;
+	line-height: 38px;
+}
+
+/* KFD 3/2/07 Andromeda Addition of new module */
+div#quicklinks {
+	border-width: 6px 6px 0 6px;
+	border-style:  solid;
+   padding-left: 6px;
+	height: 22px;
+	text-align: left;
+	line-height: 22px;
+}
+
+
+div#bot-footer a:hover {
+	text-decoration: underline;
+}
+
+#bot-rocket {
+	text-align: center;
+}
+
+span.rocket {
+	margin: 10px auto;
+	display: block;
+	position: relative;
+	width: 137px;
+	height: 35px;
+}
+
+/* accessibility stuff */
+
+#access {
+	position: absolute;
+	z-index: 10000;
+	top: 4px;
+	right: 12px;
+	width: 300px;
+	height: 16px;
+	overflow: hidden;
+}
+
+#access span {
+	background-repeat: no-repeat;
+}
+
+#access a {
+	text-decoration: none;
+}
+
+#access .spacer {
+	display:  block;
+	float:  right;
+	width: 10px;
+	overflow:  hidden;
+}
+
+#access #buttons {
+	float: right;
+}
+
+#access .button {
+	display: block;
+	float: right;
+	width: 16px;
+	height: 16px;
+	margin-left: 4px;	
+	background-repeat: no-repeat;
+}
+
+/* some page content things */
+
+.hide {
+	display: none;
+}
+
+td.left ul,
+td.right ul {
+  margin: 0;
+  padding: 5px 0px 5px 12px;
+}
+
+form {
+	border: 0;
+	margin: 0;
+	padding: 0;
+}
+
+table.blog span.article_seperator {
+	display: block;
+	height: 20px;
+}
+
+blockquote {
+	margin: 10px 0;
+	line-height: 140%;
+	padding: 10px;
+}
+
+pre {
+	padding: 10px;
+}
+
+table.pollstableborder td {
+	text-align: left;
+	padding: 2px 0;
+}

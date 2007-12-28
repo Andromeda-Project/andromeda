@@ -1,0 +1,243 @@
+/* ------------------------------------------------- */
+/* X3 styles are in x2, to keep from loading a new   */
+/* file                                              */
+/* ------------------------------------------------- */
+table.x3detail {
+   
+}
+
+table.x3detail td.x3caption {
+   text-align: right;
+   padding-right: 5px;
+   vertical-align: top;
+   padding-top: 2px;
+}
+
+table.x3detail td.x3error div {
+   border: 2px solid red;
+   color: black;
+   background-color: pink;
+   padding: 1px 8px;
+}
+
+td.x3input .x3ins {
+   color: #303030;
+   background-color: #CCCD81;
+}
+td.x3input .x3insSelected {
+   color: black;
+   background-color: #EAEC73;
+}
+
+
+td.x3input .x3upd {
+   color: #303030;
+   background-color: #e0e0e0;
+   border: 1px solid #e0e0e0;
+}
+td.x3input .x3updSelected {
+   color: black;
+   background-color: white;
+}
+
+td.x3grid .x3upd {
+   color: #303030;
+   background-color: #f0f0f0;
+   border: 1px solid #f0f0f0;
+}
+td.x3grid .x3updSelected {
+   color: black;
+   background-color: white;
+   border: 1px solid #B0B0B0;
+}
+
+
+td.x3input .x3search {
+   color: #303030;
+   background-color: #8EBD8F;
+   border: 1px solid #8EBD8F;
+}
+td.x3input .x3searchSelected {
+   color: black;
+   background-color: #88DE8C;
+}
+
+td.x3input .x3err {
+   color: #303030;
+   background-color: #CC8181;
+}
+td.x3input .x3errSelected {
+   color: black;
+   background-color: #EC7473;
+}
+
+
+td.x3input .x3ro {
+   color: #303030;
+   background-color: #B0B0B0;
+}
+
+
+/* ------------------------------------------------- */
+/* AJAX IDS                                          */
+#x2content {
+   padding: 0px;
+   border: 0px;
+   margin: 0px;
+}
+
+
+.x2columnerr {
+   margin-left: 5px;
+   padding: 1px 3px;
+   border: 2px solid maroon;
+   background-color: #FFD0D0;
+   font-weight: bolder;
+}
+
+
+/* ------------------------------------------------- */
+/* x_table2 menu bar styles
+/* ------------------------------------------------- */
+.x2menubar {
+  text-align: left;
+  font-family: Verdana;
+  padding: 8px;
+  padding-bottom: 4px;
+  padding-top: 6px; /* 4px only needed for firefox, 6 for ie */
+  padding-left: 0px;
+}
+
+.x2menubar A  { 
+   padding-top: 4px; padding-bottom: 4px;
+   padding-left:8px; padding-right: 8px;
+   
+   /* this is gray, neutral for all styles */
+   background-color: #d8dce3;
+}
+.x2menubar A:hover  { background-color: white; } 
+.x2menubar A:active { background-color: white; } 
+
+.x2menubar span {
+   padding-top: 4px; padding-bottom: 4px;
+   padding-left:8px; padding-right: 8px;
+
+   background-color: #c0c0c0;
+   color: #707070;
+   border: 2px solid #5A5A5A;
+}
+/* ------------------------------------------------------
+   For user maintenance screen only
+   ------------------------------------------------------ 
+*/
+#ajax_x2t_groups {
+   text-align: left;
+}
+
+/* ------------------------------------------------------ */
+/* Any basic tabular data entry
+/* ------------------------------------------------------ */
+#x2data1 thead tr th
+{ 
+   background-color: #202020;
+   color: #E0E0E0;
+}
+
+#x2data1 th,#x2data1 td {
+   text-align: left;
+   padding: 2px 2px 2px 3px;
+}
+
+#x2data1 tbody tr.hilite td {
+   background-color: silver;  
+}
+      
+
+/* ------------------------------------------------------
+   Browse tables
+   ------------------------------------------------------ 
+*/
+table.data td.dhead,td.dhead {
+   color: #D0D0D0;
+   padding: 2px;
+   font-size: 12px;
+   font-weight: bolder;
+   text-align: left;
+}
+.dhead A:hover,.dhead A:active,.dhead A:visited,.dhead A:link {
+   text-decoration:underline; 
+   color:#f1f1b1; 
+   font-weight: bold;
+   padding-left: 2px; padding-right: 2px;
+}
+
+td.dlite { text-align: left; }
+
+/* ==================================================== *\
+ * Widget styles
+\*	==================================================== */
+input, select, textarea {
+	font-family: Arial, Helvetica, sans-serif;
+   font-size: 12px;
+   border: 1px solid #b0b0b0;
+}
+button { font-family: Arial, Helvetica, sans-serif; }
+
+input, textarea {
+	padding-left: 1px;
+	padding-right: 1px; 
+}
+
+table.outer td.inp-caption
+,table.nopad td.inp-caption  
+,td.inp-caption 
+{ 
+   text-align: right; 
+   vertical-align: middle;
+   padding-right: 5px;
+}
+
+table.outer td.inp-input
+,table.nopad td.inp-input  
+,td.inp-input {
+   text-align: left;  
+   vertical-align: middle;
+   padding-top:0px; padding-bottom:1px;
+}
+
+td.inp-input { text-align: left; }
+
+input.ro        { background-color: #e0e0e0; }
+textarea.ro     { background-color: #e0e0e0; }
+
+input.inp-ins       { background-color: yellow; }
+textarea.inp-ins    { background-color: yellow; }
+select.inp-ins      { background-color: yellow; }
+
+input.inp-search    { background-color: lightgreen; }
+textarea.inp-search { background-color: lightgreen; }
+select.inp-search   { background-color: lightgreen; }
+
+a.ro { color: gray; }
+
+/* ==================================================== *\
+ * Errors and notices
+\*	==================================================== */
+div.errorbox {
+   border: 3px solid maroon;
+   background-color: #FFD0D0;
+   padding: 10px;
+   margin-bottom: 10px;
+   margin-top: 10px;
+   color: black;
+   font-size: 1.1em;
+   font-weight: bolder;
+}
+div.x2_modecomment {
+   border: 2px solid red;
+   background-color: #FFD0D0;
+   color: black;
+   padding: 5px;
+   margin-bottom: 5px;
+   
+}

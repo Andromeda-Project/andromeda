@@ -1,0 +1,13 @@
+/*   DARK GREEN     : 71902C   */
+  
+/* ------------------------------------------------- */ 
+/* x_table2 menu bar styles
+/* ------------------------------------------------- */
+.x2menubar A  { 
+   border: 2px solid #71902C;
+}
+
+
+td.dhead {
+   background-color: #71902c;
+}

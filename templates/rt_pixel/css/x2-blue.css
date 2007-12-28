@@ -1,0 +1,12 @@
+/* DARK BLUE:  3f7cb9  */
+  
+/* ------------------------------------------------- */ 
+/* x_table2 menu bar styles
+/* ------------------------------------------------- */
+.x2menubar A  { 
+   border: 2px solid #3f7cb9;
+}
+
+td.dhead {
+   background-color: #3f7cb9;
+}

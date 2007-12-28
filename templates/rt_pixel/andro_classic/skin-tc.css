@@ -1,0 +1,91 @@
+/**
+name:skin-tc.css
+
+This is the stylesheet for the default Andromeda layout, called "tc"
+for (t)wo-(c)olumn.  
+
+*/
+
+/* --------------------------------------- *\
+   Structure and background
+\* --------------------------------------- */
+html { height: 100%; margin: 0px; }
+body {
+   height: 95%;
+   background-color: #d7d7d7;
+   padding: 10px;
+   margin: 0px;
+}
+.tc-maintab {
+   height: 100%; width: 100%;
+   border-collapse: collapse;
+}
+
+
+#tc-left {
+   width: 150px;
+   vertical-align: top;
+}
+#tc-left A        { text-decoration: none; color: blue;   }
+#tc-left A:active { text-decoration: underline; color: purple;   }
+#tc-left A:hover  { text-decoration: underline; color: purple;   }
+#tc-right {
+   padding-left: 18px;
+   padding-right: 18px;
+   padding-top: 8px;
+   padding-bottom: 8px;
+   vertical-align: top;
+   /*border-top: 1px solid navy;
+   border-right: 1px solid navy;
+   border-bottom: 1px solid navy;
+   */
+   border: 1px solid navy;
+   background-color: #F7F7F7;
+}
+/* --------------------------------------- *\
+   Default Fonts
+\* --------------------------------------- */
+body { font: 11px Arial; }
+td   { font: 11px Arial; }
+
+/* --------------------------------------- *\
+   Menu Stuff
+\* --------------------------------------- */
+.modulename {
+   /* border-right : 1px solid navy; */
+   font-weight: bolder;
+   font-size: 1.1em;
+   height: 30px;
+   padding-top: 10px;
+}
+.menufiller  {
+   /* border-right: 1px solid navy; */
+   vertical-align: top;
+   padding: 6px;
+}
+.menuentry {
+   /* border-right : 1px solid navy; */
+   padding: 3px;
+   height: 20px;
+}
+.menuselected {
+   padding: 3px;
+   /*
+   border-top:    1px solid navy;
+   border-left:   1px solid navy;
+   border-bottom: 1px solid navy;
+   border-right : 1px solid #F7F7F7;
+   */
+   background-color: #F7F7F7;
+   height: 20px;
+}
+
+/* --------------------------------------- *\
+   Notices
+\* --------------------------------------- */
+div.devnotice {
+   border: 2px dotted green;
+   background-color: #E0E0FF;
+   color: #0000A0;  
+}
+

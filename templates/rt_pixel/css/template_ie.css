@@ -1,0 +1,20 @@
+/** IE6 is a hunk of crap!!! don't ask me why this is needed **/
+
+div#horiz-menu {
+
+}
+
+div#nav {
+  position: absolute;
+  top: 98px;
+  left: 12px;
+}
+
+#nav ul ul a.daddy {
+	width: 166px;
+}
+
+#access a {
+	cursor: hand;
+}
+

@@ -1,0 +1,1373 @@
+// =========================================================
+// (C) Copyright 2005 by Kenneth Downs
+// Distributed by Secure Data Software; Inc.
+//
+// This file is part of Andromeda
+//
+// ---------------------------------------------------------
+// AndroDBB.add
+// ---------------------------------------------------------
+// This is an Andromeda Specification.  This is a 
+// self-describing file.
+//
+// Note that syntax coloring is a little weird in this 
+// file; because this file defines the entities that are
+// used for syntax coloring; so sometimes a keyword is also
+// a property and also a value.
+//
+// Note that errors in this file will show up as early failures
+// in the build.  There is no nice way to debug this file
+// automatically; so changes have to be carefully tested.
+//
+// You can only use the primitive types like char, date, and
+// stuff here, you cannot use money, rdate, or even cbool.
+//
+// Only columns can be part of the primary key here, do not
+// make a foreign_key part of the primary key.  If you must,
+// then define the columns and use a "nocolumns" fk.
+// ---------------------------------------------------------
+// Revision History:
+//
+// 25-Sep-2007  Added history table definitions
+// 30-Oct-2006  Added "table_id" to perm_cols
+//              Added uisort to tables
+// 28-Oct-2006  Added "nomenu" to various group/module tables
+// 26-Oct-2006  Added "permrow" to perm_cols and other places
+// 23-Oct-2006  Added "md5_eff" column to groups, hash of effective name
+// 21-Oct-2006  Added "permrole" to group definition, put in metas
+//                 so table and module perms definable in group def
+// 12-Oct-2006  Added "range_from" and "range_to" to tabcol, tabflat
+// 21-Nov-2005  Added "Allow_orphan" flag to foreign keys
+//  9-Sep-2005  Pseudo-column allowed values and dependencies
+// 30-Aug-2005  Began to add report formatting stuff
+// 18-Aug-2005  Considerable cleanup.  Removed all column
+//              constraints.  Moved type constraints back
+//              to code, implemented table constraints from chains
+//  7-Aug-2005  type x-mime as blob and funcoper subdyear
+//  3-Aug-2005  Added tabfky.uidisplay, allowing other displays
+//                 besides the default "drilldown".
+//  2-Aug-2005  Removed column renaming added 19-Jul-2005
+//              Added new table tabfkycol, allows explicit 
+//                 assignment of properties to individual columns
+//                 in a foreign key.
+// 20-Jul-2005  Added skey_quiet, to suppress notifications
+//                 because PHP cannot sort through them.
+// 19-Jul-2005  Added cascade system, many changes
+//              Allowed description prefix in tabfky
+//              Changed tabcol, column_id: assingment now allows
+//                  column names to be change
+//              Added description to tabcol, allow overrides
+// 18-Jul-2005  Added "delete_cascade" column to tabfky
+//              Added chain_c*cons to columns, tabcol, tabflat
+// 13-Jul-2005  Added type "money"
+// 16-Jun-2005  Column property "colres" for column resolution
+//              added, to be used by time columns to determine
+//              increments.  It would be user-changeable by
+//              whatever admin system options system we create.
+// 19-Apr-2005  Meta-data added; format changed to allow
+//                 much simpler parsing and much easier
+//                 walking through of resultant arrays
+// 11-Apr-2005  First version
+// =========================================================
+//
+// The item "meta" is used to determine the table
+// and unique column that correspond to each keyword.
+// This information can actually be derived from the
+// other information in the file; but as this is a bootstrap
+// file we prefer repeated explicit data over cleverly
+// unique and obtuse data.
+//
+// There is no entry for "content"; the builder should
+// not try to load "content" or "meta" to dd tables.
+//
+meta {
+	keyword column            { table: columns;      keycol: column_id; }
+	
+	keyword menu              { table: uimenu;       keycol: menu_page; }
+	keyword menu_group        { table: uimenugroups; keycol: group_id;  }
+	keyword table             { table: tables;       keycol: table_id;  }
+	keyword module            { table: modules;      keycol: module;    }
+	keyword module_group      { table: permxmodules; keycol: group_id;  }
+
+	keyword group             { table: groups;       keycol: group_id;  }
+	keyword group_identity    { table: groupuids;    keycol: column_id; }
+   keyword group_table       { table: permxtables;  keycol: table_id;  }
+   keyword group_module      { table: permxmodules; keycol: module;  }
+	
+	keyword table_column             { table: tabcol;        keycol: column_id; keystub: column_id_src;     }
+	keyword table_column_group       { table: perm_cols;     keycol: group_id; }
+	keyword table_chain              { table: tabchains;     keycol: chain; }
+	keyword table_chain_test         { table: tabchaintests; keycol: X;     }
+	keyword table_column_chain       { table: colchains;     keycol: chain; }
+	keyword table_column_chain_test  { table: colchaintests; keycol: X; }
+	keyword table_projection         { table: tabproj;       keycol: projection;    }
+	keyword table_projection_column  { table: tabprojcols;   keycol: column_id;     }
+	keyword table_foreign_key        { table: tabfky;        keycol: table_id_par_comp; keystub: table_id_par;  }
+	keyword table_foreign_key_column { table: tabfkycol;     keycol: column_id;     }
+	keyword table_foreign_key_group  { table: tabfkygroups;  keycol: group_id;      }
+	keyword table_foreign_key_automation  { table: tabfkyauto; keycol: automation_id; }
+	keyword table_foreign_key_automation_column  { table: tabfkyautocols; keycol: column_id; }
+	keyword table_child_table        { table: tabfky;        keycol: table_id_par_comp; keystub: table_id_par;  }
+	keyword table_child_table_automation  { table: tabfkyauto; keycol: automation_id; }
+	keyword table_child_table_automation_column  { table: tabfkyautocols; keycol: column_id; }
+	keyword table_group          { table: permxtables; keycol: group_id;  }
+	keyword table_index          { table: tabidx;      keycol: idx_name;  }
+	keyword table_index_column   { table: tabidxcol;   keycol: column_id; }
+	keyword table_cascade        { table: tabcas;      keycol: cascade;   }
+	keyword table_cascade_column { table: tabcascols;  keycol: column_id; }
+	keyword table_upsave         { table: tabcas;      keycol: cascade;   }
+	keyword table_upsave_column  { table: tabcascols;  keycol: column_id; }
+	keyword table_cascade_match  { table: tabcascolsm; keycol: column_id; }
+	keyword table_history        { table: histories;   keycol: history;   }
+	keyword table_history_column { table: histcols;    keycol: column_id; }
+	
+	keyword format       { table: repformats; keycol: repformat; }
+	keyword format_field { table: repfields;  keycol: repfield;  }
+}
+
+module datadict   { 
+	description: Data Dictionary;
+	uisort: 999;
+   nomenu: Y;
+	
+	group $LOGIN { permupd: N; permdel: N; permins: N; permsel: Y; }
+}
+
+
+//  The builder will add this column to all data dictionary
+//  tables.
+//
+column zddsource  {  type_id: char;  colprec: 1;  colscale: 0; description: Build Source;  }
+
+//  This column is used mainly to sequence columns.  Every row in the DD has
+//  a unique sequential number.  We assume columns are defined in the order
+//  they should appear, so this can be used to sequence columns.
+//
+column uicolseq { description: Column Sequence;  type_id: char; colprec: 27; }
+
+// This column is used in a lot of places
+//
+column description {  type_id: vchar; colprec: 40;  colscale: 0; description: Description;  }
+     
+// This column is added by the builder to EVERY TABLE in the
+// database.  It is a general-purpose surrogate key.  It should
+// NEVER be used as a unique or primary key, and it should
+// NEVER be referenced as a foreign key.  
+//
+// Within this file, this column is added explicitly to every
+// table so that the bootstrap code does not have to support
+// the "alltables" feature or any future extension of it.
+//
+column skey { 
+	description: Surrogate key; 
+	type_id: int; 
+	automation_id: SEQUENCE; 
+	uino: Y; 
+	alltables: Y; 
+}
+column skey_quiet { 
+	description: Surrogate key notice suppress; 
+	type_id: char; colprec: 1; 
+	automation_id: DEFAULT; auto_formula: N; 
+	uino: Y; 
+	alltables: Y; 
+}
+column _agg { 
+	description: Aggregate Recalc Flag; 
+	type_id: char; colprec: 1; 
+	automation_id: DEFAULT; auto_formula: N; 
+	uino: Y; 
+	alltables: Y; 
+}
+
+// ---------------------------------------------------------
+// ---------------------------------------------------------
+// PRE-POPULATED TABLES
+//
+// These are leaf tables that are used to validate entries
+// placed into the SPEC tables. 
+//
+// ---------------------------------------------------------
+// ---------------------------------------------------------
+
+// ---------------------------------------------------------
+// Comparison Operators 
+//
+column compoper { type_id: char; colprec: 10; description: Comparison Operators; }
+
+table compopers {
+	module: datadict;
+	description: Comparison Operators;
+	table_seq: 200;
+	
+	column compoper { primary_key: Y; uisearch: Y; }
+	column description { uisearch: Y; }
+	column { skey; skey_quiet; _agg; }
+}
+
+content compopers {
+	columns { compoper; description; }
+	values  {     ;Inherit From Column or Type }
+	values  { NONE;No Constraint }
+	values  { EMPTY;Value is Empty }
+	values  { !EMPTY;Value is Not Empty }
+	values  { BETWEEN;Value is Between two others }
+	values  { !BETWEEN;Value is Not Between two others }
+	values  { NULL;Value is Null }
+	values  { !NULL;Value is Not Null }
+	values  { IN;Comma List of single-quoted values }
+	values  { !IN;Comma List of single-quoted values }
+	values  { >=;Greater or equal to a value }
+	values  { > ;Greater than a value }
+	values  { <=;Less than or equal to a value }
+	values  { < ;Less than another value }
+	values  { = ;Equal to another value }
+	values  { <>;Not Equal to another value }
+}
+
+// ---------------------------------------------------------
+// Functional Operators (Return a value) 
+//
+column funcoper { type_id: char; colprec: 12; description: Functional Operator; }
+
+table funcopers {
+	module: datadict;
+	description: Functional Operators;
+	table_seq: 300;
+	
+	column funcoper { primary_key: Y; uisearch: Y; }
+	column description { uisearch: Y; }
+	column { skey; skey_quiet; _agg }
+}
+
+content funcopers {
+	columns { funcoper; description; }
+	values  {  ;No Operation; }
+	values  { +;Add }
+	values  { -;Subtract }
+	values  { *;Multiply }
+	values  { /;Divide }
+	values  { CON;String concatenate; }
+	values  { CONU;String concatenate w/underscores; }
+	values  { subdyear; Date Subtract ret/Years;  }
+   values  { EXTRACTYEAR;  Year Part of Date; }
+   values  { EXTRACTMONTH; Month Part of Date;       }   
+   values  { EXTRACTDAY;   Day Part of Date;       }   
+   values  { REPLACE;  String Replace 1st w/2nd; }
+   values  { LPAD;     Pad out on left;         }
+   values  { RPAD;     Pad out on right;         }
+   values  { SUBS;     Substring;                }
+   values  { UPPER;    Upper Case;               }
+   values  { LOWER;    Lower Case;               }
+   values  { BITAND;   Bitwise AND;              }
+   values  { BITOR;    Bitwise OR;               }
+   values  { BITXOR;   Bitwise XOR;              }
+   values  { BITNOT;   Bitwise NOT;              }
+}
+
+// ---------------------------------------------------------
+// Pseudo-columns, they are actually functions 
+//
+column pcolumn { 
+	description: Pseudocolumn; 
+	type_id: vchar; colprec: 30;
+}
+table pcolumns {
+	module: datadict;
+	description: Pseudocolumns;
+	table_seq: 350;
+	
+	column pcolumn { primary_key: Y; uisearch: Y; }
+	column description { uisearch: Y; }
+	column { skey; skey_quiet; _agg; }
+}
+
+content pcolumns {
+	columns { pcolumn; description; }
+	values  { %NOW; Current date or datetime; }
+}
+
+table pcoldeps {
+	module: datadict;
+	description: Pseudocolumn Dependencies;
+	table_seq: 350;
+	
+	column { table_id; column_id; primary_key: Y; } 
+	foreign_key { pcolumns; primary_key: Y; }
+	column { skey; skey_quiet; _agg; }
+}
+
+
+// ---------------------------------------------------------
+// Cascade Operations (initially only INSERT and UPDATE) 
+//
+column cascade_action { type_id: char; colprec: 6; description: Cascade Action; }
+
+table cascadeactions {
+	module: datadict;
+	description: Cascade Actions;
+	table_seq: 400;
+	
+	column cascade_action { primary_key: Y; uisearch: Y; }
+	column description { uisearch: Y; }
+	column { skey; skey_quiet; _agg; }
+}
+
+content cascadeactions {
+	columns { cascade_action; description; }
+	values  { INSERT;Insert new Row }
+	values  { UPDATE;Update based on FK/PK }
+}
+
+
+
+// ---------------------------------------------------------
+// Column Types express a lot of the power of the system;
+// we implement a lot of features by defining types and
+// their expansions.
+//
+//
+column type_id    { type_id: vchar; colprec: 6;  colscale: 0;  description: Type ID; }
+
+table types {
+	module: datadict;
+	description: Column Type Definitions;
+	table_seq: 500;
+		
+	column type_id { primary_key: Y; uisearch: Y; }
+	column description  { uisearch: Y; }
+	column { skey; skey_quiet; _agg; }
+}
+
+content types {
+	columns { type_id;description; }
+	// Fundamental or common types
+	values { char  ; Character; }
+	values { vchar ; Character Varying; }
+	values { numb  ; Decimal Number; }
+	values { money ; Money; }
+	values { dtime ; Datetime; }
+	values { int   ; Integer; }
+	values { text  ; Unlimited Length Text; }
+	values { date  ; Date (no time); }
+	values { time  ; Time (no date); }
+	// Special types; fundamentals with extra behavior
+	values { cbool ; Character Boolean; }
+	values { gender; Gender; }
+	values { url   ; URL or Website; }
+	values { obj   ; Object such as sound file; }
+    // Special types; these have formatting rules
+    values { ph12  ; US 12 digit Phone; }
+    values { ssn;     US Social Security; }
+	// multimedia mime type -- reintroduced 9/7/07 at request
+    //   of commercial licensed customer
+    values { mime-h; HTML Fragments;     }
+	// multimedia mime types  -- not really being used
+	values { mime-x; MIME b64 encoded;   }
+	values { mime-b; MIME raw binary;    }
+	values { mime-f; MIME on filesystem; }
+}
+
+//-----------------------------
+
+column suffix     { type_id: vchar; colprec: 20; colscale: 0; description: Column Suffix; }
+column prefix     { type_id: vchar; colprec: 20; colscale: 0; description: Column Prefix; }
+column auto_suffix { type_id: vchar; colprec: 20; colscale: 0; description: Column Suffix; }
+column auto_prefix { type_id: vchar; colprec: 20; colscale: 0; description: Column Prefix; }
+column range_suffix { type_id: vchar; colprec: 20; colscale: 0; description: Column Suffix; }
+column range_prefix { type_id: vchar; colprec: 20; colscale: 0; description: Column Prefix; }
+column formula    { type_id: vchar; colprec: 40; colscale: 0; description: DDL formula; }
+column formshort  { type_id: vchar; colprec: 40; colscale: 0; description: DDL type;  }
+column srvtype    { type_id: vchar; colprec: 5;  colscale: 0; description: Server Type;  }
+column uiwithnext { type_id: char;  colprec: 1;  colscale: 0; description: UI Keep With Next; }
+column dispsize   { type_id: char;  colprec: 10; colscale: 0; description: Explicit UI Display Width; }
+table type_exps {
+	module: datadict;
+	description: Column Type Expansions;
+	table_seq: 600;
+
+	foreign_key types { uisearch: Y; primary_key: Y; }	
+	column { srvtype; primary_key: Y;}
+	column { formula;formshort;uiwithnext;dispsize }
+	column { skey; skey_quiet; _agg; }
+}
+
+content type_exps {
+	columns { type_id;srvtype;formula;formshort;uiwithnext;dispsize }
+		// Fundamental or common types
+	values { char  ; PGSQL;char(<colprec>)              ;char    ;N;<colprec>; }
+	values { vchar ; PGSQL;varchar(<colprec>)           ;varchar ;N;<colprec>; }
+	values { numb  ; PGSQL;numeric(<colprec>,<colscale>);numb    ;N;<colprec>; }
+	values { money ; PGSQL;numeric(14,2)                ;numb    ;N;14       ; }
+	values { dtime ; PGSQL;timestamp;timestamp;N;23; }
+	values { int   ; PGSQL;int      ;int      ;N;8 ; }
+	values { text  ; PGSQL;text     ;text     ;N;0 ; }
+	values { date  ; PGSQL;date     ;date     ;N;11; }
+		// Special types; fundamentals with extra behavior
+	values { time  ; PGSQL;int      ;int      ;N;11 ; }
+	values { cbool ; PGSQL;char(1)  ;char     ;N;1 ; }  // Boolean as character Y/N
+	values { gender; PGSQL;char(1)  ;char     ;N;1 ; }  // Sex; hardcoded to accept M/F
+	values { url   ; PGSQL;char(50) ;char     ;N;40; }  // UI should incorporate hyperlink
+	values { obj   ; PGSQL;char(50) ;char     ;N;40; }  // Webserver should stream/return file
+    // Special types that are just characters with formatting
+    values { ph12   ;PGSQL;char(12) ;char     ;N;12; }
+    values { ssn    ;PGSQL;char(11) ;char     ;N;11; }
+    // KFD 9/7/07, when this was reintroduced we made it a text field
+    //    instead of bytea, it is *so* much easier
+    values { mime-h; PGSQL;text     ;text     ;N;99; }
+	// KFD 9/7/07, these were all experimental back in '04 and '05 and
+    //     are not being used.  
+	values { mime-x; PGSQL;text     ;text     ;N;99; }
+	values { mime-b; PGSQL;bytea    ;bytea    ;N;99; }
+	values { mime-f; PGSQL;varchar(250);varchar;N;99; }
+}
+
+// ---------------------------------------------------------
+// Foreign Key display methods 
+//
+table uidisplays {
+	module: datadict;
+	description: FK Display Methods;
+	table_seq: 650;
+  
+	column uidisplay   { primary_key: Y; uisearch: Y; }
+	column description { uisearch: Y; }
+	column { skey; skey_quiet; _agg; }
+}
+
+content uidisplays {
+	columns { uidisplay; description; }
+	values  { drilldown; Provide link to child table (default); }
+	values  { browse;    Show all current rows; }
+	values  { xref;      Table is entirely foreign keys; }
+   values  { onscreen;  Improved version of Browse; }
+}
+
+// ---------------------------------------------------------
+// Automations are also defined and populated here
+//
+column automation_id   {  description: Automation Code; type_id: vchar; colprec: 10;   colscale: 0;  }
+
+table automations {
+	module: datadict;
+	description: Column Automations;
+	table_seq: 700;
+
+	column automation_id  { primary_key: Y; uisearch: Y; }
+	column description {        uisearch: Y; }
+	column { skey; skey_quiet; _agg; }
+}
+
+content automations {
+	columns { automation_id;description }
+	values {            ; None/Blank }
+	values { NONE       ; None }
+	values { BLANK      ; Default to blank value }
+	values { DEFAULT    ; Literal default }
+	values { TS_INS     ; Insert Timestamp}
+	values { TS_UPD     ; Update Timestamp }
+	values { UID_INS    ; Insert User }
+	values { UID_UPD    ; Update User }
+	values { SEQUENCE   ; Auto-sequencing }
+	values { SEQDEFAULT ; Sequence - Overridable }
+	values { FETCH      ; Pull from parent table   }
+	values { FETCHDEF   ; Pull from parent, overwritable  }
+	values { DISTRIBUTE ; Push from parent table   }
+	values { EXTEND     ; Calculate directly       }
+	values { SUM        ; Sum from child table   }
+	values { MIN        ; Min from child table   }
+	values { MAX        ; Max from child table   }
+	values { COUNT      ; Count from child table }
+   values { LATEST     ; Latest child insert or update }
+	values { XML_RPC    ; Provided by Remote System}
+   values { SYNCH      ; Synchronize Parent/Child; }
+   values { QUEUEPOS   ; Enforces unique Queue Position; }
+}
+
+// ---------------------------------------------------------
+// ---------------------------------------------------------
+// SPEC TABLES
+//
+// These are the tables that are directly populated out
+// of a spec file.  For instance a line "column name { ... } "
+// becomes an entry in table "columns"; and so forth.
+// There is nothing hardcoded in these tables; and no 
+// automations.  The spec is read and it goes unaltered
+// into these tables.
+// 
+// ---------------------------------------------------------
+// ---------------------------------------------------------
+
+// This column can be used in any table that requires
+// an explicit sorting that is separate from key values;
+// like countries (put USA & Canada together) or weekdays
+// (we want SUN;MON;TUE...; not alpha); or timezones; stuff
+// like that
+// 
+column uisort { Description: Sort Ranking; type_id: int;   colprec: 0;  colscale: 0;  }
+
+// *********************************************************
+// Every table must be entered into a module
+// Keyword: "module" makes entries for this table
+//
+column module {  type_id: vchar;  colprec: 15;  colscale: 0;  }
+table modules {
+	module: datadict;
+	description: Modules;
+	table_seq: 800;
+
+	column module { primary_key: Y; uisearch: Y; }
+	column description { uisearch: Y; }
+	column { uisort; nomenu; }
+   column srcfile { automation_id: BLANK; }
+
+	column { skey; skey_quiet; _agg; }
+   
+   index uisort { idx_unique: Y; column { uisort; } }
+}
+
+// *********************************************************
+// Table of tables. 
+
+//column risimple      {  type_id: char;  colprec: 1;  description: Assume Simple RI; }
+column nomenu        {  type_id: char;  colprec: 1;  description: Keep off menu; }
+//column menuins       {  type_id: char;  colprec: 1;  description: Rapid-Entry Insert; }
+column rules         {  type_id: char;  colprec: 1;  colscale: 0; description: *DO NOT USE*; }
+column capspk        {  type_id: char;  colprec: 1;  colscale: 0; description: Force PK to caps; }
+column table_seq     {  type_id: int;   colprec: 0;  colscale: 0; description: Table Sequence; }
+column table_id      {  type_id: vchar; colprec: 50; colscale: 0; description: Table ID; }
+column table_id_par  {  type_id: vchar; colprec: 50; colscale: 0; description: Table ID (Parent); }
+column table_id_row  {  type_id: vchar; colprec: 50; colscale: 0; description: Table ID (Row); }
+column table_id_par_comp
+                     {  type_id: vchar; colprec: 50; colscale: 0; description: FK Composite Identifier; }
+column column_prefix {  type_id: vchar; colprec: 50;   colscale: 0;  description: Column Prefix; }
+column fkdisplay     {  type_id: vchar; colprec: 10; description: FK Display;}
+column linknew       {  type_id:  char; colprec: 1;  description: New Link;   }
+column linksearch    {  type_id:  char; colprec: 1;  description: Search Link;}
+column permcol       {  type_id:  char; colprec: 1;  description: Has Column Security; }
+table tables {
+	module:  datadict;
+	description: Table of Tables;
+	table_seq: 900;
+	
+	column table_id      { primary_key: Y; uisearch: Y; }
+   // Removed KFD 5/24/07, not being used
+	//column column_prefix { primary_key: N; uisearch: Y; }
+	column description  { uisearch: Y; }
+
+   // Removed KFD 5/24/07, not being used
+	//column { ins;risimple;table_seq;menuins }
+   column { capspk; table_seq; nomenu; }
+   // KFD 5/24/07, this can also be removed, but you have to remove some
+   //   references in AndroBuild.php
+   column { rules; }
+   column { permspec; permrow; permcol; }
+   column { uisort; }
+   column { fkdisplay; }
+   column { linknew; linksearch; }
+   column srcfile { automation_id: BLANK; }
+
+	
+	foreign_key { modules; }
+	column { skey; skey_quiet; _agg; }
+}
+
+// *********************************************************
+// Table of columns.  Named instances of a type; with caption
+// and other default properties.
+//
+column srcfile           {  type_id: vchar; colprec: 30; description: Source File; }
+column column_id         {  type_id: vchar; colprec: 50;  colscale: 0; description: Column ID (Derived); }
+column column_id_arg     {  type_id: vchar; colprec: 50;  colscale: 0; description: Column ID (Chains); }
+column column_id_src     {  type_id: vchar; colprec: 50;  colscale: 0; description: Column ID (Explicit); }
+column column_id_flag    {  type_id: vchar; colprec: 50;  colscale: 0; description: Cascade Fire Flag; }
+column column_id_ts      {  type_id: vchar; colprec: 50;  colscale: 0; description: Cascade Fire TS; }
+column auto_column_id    {  type_id: vchar; colprec: 50;  colscale: 0; description: Column ID (Auto); }
+column auto_table_id     {  type_id: vchar; colprec: 50;  colscale: 0; description: Table ID (Auto); }
+column auto_formula      {  type_id: vchar; colprec: 200; colscale: 0; description: Automation Formula;}
+column range_from        {  type_id: vchar; colprec: 50;  colscale: 0; description: Range From; }
+column range_to          {  type_id: vchar; colprec: 50;  colscale: 0; description: Range To; }
+column ins               {  type_id: char;  colprec: 1;   colscale: 0; description: *DO NOT USE*; }
+column uino              {  type_id: char;  colprec: 1;   colscale: 0; description: Keep off UI; }
+column uiro              {  type_id: char;  colprec: 1;   colscale: 0; description: Read-Only on UI; }
+column prefix_table_name {  type_id: char;  colprec: 1;   colscale: 0; description: *DO NOT USE*;}
+column colprec           {  type_id: numb;  colprec:10;   colscale: 0; description: Column Precision; }
+column colscale          {  type_id: numb;  colprec:10;   colscale: 0; description: Column Scale; }
+column colres            {  type_id: numb;  colprec: 4;   colscale: 0; description: Column Resolution; }
+column required          {  type_id: char;  colprec: 1;   colscale: 0; description: Disallow empties; }
+column alltables         {  type_id: char;  colprec: 1;   colscale: 0; description: Place into all tables; }
+column uiinline          {  type_id: char;  colprec: 1;   description: Display x-mime inline; }
+column value_min         {  type_id: vchar; colprec: 50;  colscale: 0; description: Minimum Value; }    
+column value_max         {  type_id: vchar; colprec: 50;  colscale: 0; description: Maximum Value; }    
+column uirows            {  type_id: int  ;                            description: TextArea Rows; }    
+column uicols            {  type_id: int  ;                            description: TextArea Cols; }    
+
+table columns {
+	module: datadict;
+	description: Column Definitions;
+	table_seq: 1000;
+	
+	
+	column column_id   { primary_key: Y; uisearch: Y; }
+	column description { uisearch: Y; }
+
+	// all automation stuff
+	foreign_key { automations; }
+	column { prefix: auto_;  table_id; column_id; }
+	column { auto_formula; }
+   column srcfile { automation_id: BLANK; }
+
+	foreign_key { types; }
+	column  { colprec;colscale;colres; }
+	
+	column  { ins;uiro;uino;required;dispsize;uiwithnext;prefix_table_name; }
+   column  { uiinline; }
+   column { value_min; value_max; }
+   column { uirows;uicols;        }
+	column { alltables; }
+	column { skey; skey_quiet; _agg; }
+}
+
+// *********************************************************
+// This is the table/column xref; where a named column 
+// is put into a table
+//
+// The keyword "column" inside of "table { ... }" goes here
+// The keyword "columns" inside of "table { .... }" goes here
+//
+column primary_key  {  type_id: char;   colprec:  1;  colscale: 0; description: Primary Key; }
+column uisearch     {  type_id: char;  colprec: 1;  colscale: 0; description: Display in Search Results; }
+column uicolseq     {  type_id: char;  colprec: 30; colscale: 0; description: Column Sequence; }
+table tabcol {
+	module: datadict;
+	description: Column Placements;
+	table_seq: 1100;
+
+	foreign_key columns { uisearch: Y; suffix: _src; }
+	foreign_key tables  {  primary_key: Y; uisearch: Y; }
+	column { column_id; suffix; prefix; primary_key: Y; }
+   column { auto_suffix; auto_prefix; }
+
+	column primary_key { uisearch: Y; }
+	column { colres; }
+	column { ins; uiro; uino; uicolseq; }
+	column { uiwithnext; uisearch; description; }
+   column { range_from; range_to; }
+   column { value_min; value_max; }
+   column { uirows;    uicols;    }
+
+	foreign_key automations { allow_empty: Y; }
+	column { prefix: auto_;  table_id; column_id; }
+	column { auto_formula; }
+	
+   column { uiinline; }
+	column { required; }
+	column { uicolseq; }
+	column { skey; skey_quiet; _agg; }
+}
+
+// *********************************************************
+// Foreign keys are defined by naming a table and a parent
+// table.  Columns are placed into child table with same
+// name; caption; type; etc.  They cannot be renamed; but they
+// can have a suffix; allowing multiple fk's twixt 2 tables
+//
+// keyword foreign_key inside table {...} goes here
+//
+column auto_insert  { type_id: char; colprec: 1;  description: Auto-Insert Flag;   }
+column nocolumns    { type_id: char; colprec: 1;  description: No Columns Flag;    }
+column allow_empty  { type_id: char; colprec: 1;  description: Empty FK Flag;      }
+column allow_orphans { type_id: char; colprec: 1;  description: Allow Orphans;      }
+column delete_cascade    { type_id: char; colprec: 1;  description: Parent Delete Cascades; }
+column prevent_fk_change { type_id: char; colprec: 1;  description: Prevent FK Changes; }
+column uidisplay      { type_id: char; colprec: 10; description: UI Display Method;  }
+column uifiltercolumn { type_id: char; colprec: 35; description: UI Filter Column;  }
+
+table tabfky {
+	module: datadict;
+	description: Foreign Key Placements;
+	table_seq: 1200;
+
+	foreign_key { tables; primary_key: Y; uisearch: Y;	}
+	foreign_key { tables; suffix: _par; primary_key: Y; uisearch: Y; }
+
+	column suffix { primary_key: Y; }
+	column prefix { primary_key: Y; }
+	column { table_id_par_comp; } 
+	column { primary_key; uicolseq; uisearch; description; }
+
+	column { auto_insert; copysamecols; }
+	column { uicolseq; nocolumns; allow_empty; allow_orphans; }
+   column { delete_cascade; prevent_fk_change; }
+	column { uidisplay; uifiltercolumn;}
+	column { skey; skey_quiet; _agg; }
+}
+
+table tabfkycol {
+	module: datadict;
+	description: Column Placements;
+	table_seq: 1250;
+
+	column { table_id; table_id_par; suffix; prefix; }
+	foreign_key { tabfky;   primary_key: Y; uisearch: Y; nocolumns: Y; }
+	column column_id { primary_key: Y; uisearch: Y; }
+
+	column { colres; }
+	column { auto_formula; ins; uiro; uino; }
+	column { uiwithnext; uisearch; description; }
+
+	foreign_key { automations;  allow_empty: Y; }
+	column { required; }
+	column { skey; skey_quiet; _agg; }
+}
+
+table tabfkyauto {
+	module: datadict;
+	description: Column Automations;
+	table_seq: 1252;
+
+	column { table_id; table_id_par; suffix; prefix; primary_key: Y; }
+	foreign_key { tabfky; uisearch: Y; nocolumns: Y; }
+   column { automation_id; primary_key: Y; }
+	column { skey; skey_quiet; _agg; }
+}
+table tabfkyautocols {
+	module: datadict;
+	description: Column Automations;
+	table_seq: 1253;
+
+ 	column { table_id; table_id_par; suffix; prefix; automation_id; 
+      primary_key: Y;
+   }
+	foreign_key { tabfkyauto; uisearch: Y; nocolumns: Y; }
+   column { column_id; primary_key: Y; }
+
+   column { column_id_arg; uicolseq }
+	column { skey; skey_quiet; _agg; }
+}
+
+
+table tabfkygroups {
+	module: datadict;
+	description: Group Permissions; 
+	table_seq: 1254;
+
+	column { table_id; table_id_par; suffix; prefix; group_id; primary_key:Y;}
+   column { permsel; permupd; }
+   
+   	column { skey; skey_quiet; _agg; }
+}
+
+// *********************************************************
+// Indexes and unique constraints are both put into this
+// table.  The name column cannot be assigned by the user;
+// it is used only by the builder; duplicate indexes are
+// detected by definition; not by name.
+//
+// keywords "unique" and "index" inside of "table {...}"
+column idx_name        {  type_id: char;  colprec: 50;   colscale: 0;  description: Index Name;  }
+column idx_unique      {  type_id: char;  colprec: 1;    colscale: 0;  description: Unique Flag; }
+
+table tabidx {
+	module: datadict;
+	description: Indexes and Unique Constraints;
+	table_seq: 1400;
+		
+	column idx_name   { primary_key: Y; uisearch: Y; }
+	column table_id   { primary_key: Y; uisearch: Y; }
+	column idx_unique { uisearch: Y; }
+	column { skey; skey_quiet; _agg; }
+}
+	
+table tabidxcol {
+	module: datadict;
+	description: Index Columns;
+	table_seq: 1401;
+
+	column { idx_name; table_id; idx_unique; primary_key: Y; }
+	column column_id  { primary_key: Y; uisearch: Y; }
+	column { uicolseq; }
+	column { skey; skey_quiet; _agg; }
+}
+
+// *********************************************************
+// CASCADES.  Section created July 19, 2005
+// Cascades specify actions that should occur after a
+// successful update or delete.  They occur in the order
+// in which they are specified.
+//
+column onlychanged { type_id: char; colprec: 1; description: Only if changed;}
+column cascade { type_id: vchar; colprec: 30; description: Cascade Name; }
+column afterins { type_id: char; colprec: 1; description: Fire after Insert; }
+column testins  { type_id: vchar;colprec:50; description: Test after Insert; }
+column afterupd { type_id: char; colprec: 1; description: Fire after Update; }
+column testupd  { type_id: vchar;colprec:50; description: Test after Update; }
+column afterdel { type_id: char; colprec: 1; description: Fire after Delete; }
+column testdel  { type_id: vchar;colprec:50; description: Test after Delete; }
+column copysamecols { type_id: char; colprec: 1; description: Copy Columns With Same Name; }
+column copystripsuffix { 
+   type_id: char; colprec: 35; 
+   description: Strip Suffix then Copy Same Columns; 
+}
+column copystripprefix { 
+   type_id: char; colprec: 35; 
+   description: Strip Prefix then Copy Same Columns; 
+}
+column flag_reset { type_id: char; colprec: 1; description: Reset Flag after firing; }
+table tabcas {
+	module: datadict;
+	description: Cascade Actions;
+	table_seq: 1500;
+	
+	column cascade { primary_key: Y; uisearch: Y; }
+	
+	column { testins; testupd; testdel; }
+	
+	// In this BOOTSTRAP file we cannot make foreign_key columns into
+	// primary key columns, because the algorithm to build the DD is
+	// simplified and will miss them when building, so we define the
+	// column then define the foreign key
+	column table_id { primary_key: Y; uisearch: Y; }
+	foreign_key { tables; nocolumns: Y; }
+   
+	foreign_key { tables; uisearch: Y; suffix: _dest; }
+	foreign_key { cascadeactions; }
+	column { afterins; afterupd; afterdel; }
+   column { copysamecols; copystripprefix; copystripsuffix; onlychanged; }
+   column { suffix; prefix; }
+	column { uicolseq; }
+   column { column_id_flag; flag_reset; column_id_ts; }
+	column { skey; skey_quiet; _agg; }
+}
+
+column retcol   { description: Return Column; type_id: vchar; colprec: 35; }
+column retval   { description: Return Value ; type_id: vchar; colprec: 75; }
+table tabcascols {
+	module: datadict;
+	description: Cascade Columns;
+	table_seq: 1600;
+	
+	column { cascade; table_id; primary_key: Y; }
+	foreign_key {  tabcas; uisearch: Y; nocolumns: Y; }
+	column column_id { primary_key: Y; uisearch: Y; }
+	column { retcol; retval }
+	column { skey; skey_quiet; _agg; }
+}
+
+table tabcascolsm {
+	module: datadict;
+	description: Cascade Column Matches;
+	table_seq: 1610;
+
+	column { cascade; table_id; primary_key: Y; }
+	foreign_key {  tabcas; uisearch: Y; nocolumns: Y; }
+	column column_id { primary_key: Y; uisearch: Y; }
+	column { retcol; retval; }
+	column { skey; skey_quiet; _agg; }
+}
+
+// *********************************************************
+// A "history" defines a target table that gets an INSERT
+// every time there is an INSERT, UPDATE or DELETE to the
+// source table.  The history target table must exist and
+// have all columns defined.
+//
+column history { type_id: vchar; colprec: 30; description: Cascade Name; }
+table histories {
+    module: datadict;
+    description: Histories;
+    table_seq: 1620;
+    
+    column history { primary_key: Y; uisearch: Y; }
+    
+    // In this BOOTSTRAP file we cannot make foreign_key columns into
+    // primary key columns, because the algorithm to build the DD is
+    // simplified and will miss them when building, so we define the
+    // column then define the foreign key
+    column table_id { primary_key: Y; uisearch: Y; }
+    foreign_key { tables; nocolumns: Y; }
+    
+    foreign_key { tables; uisearch: Y; suffix: _dest; }
+    column { copysamecols; copystripprefix; copystripsuffix; onlychanged; }
+    column { suffix; prefix; }
+    column { uicolseq; }
+    column { skey; skey_quiet; _agg; }
+}
+
+column retnew   { description: Return New; type_id: vchar; colprec: 35; }
+column retold   { description: Return Old; type_id: vchar; colprec: 35; }
+column retdiff  { description: Return Diff; type_id: vchar; colprec: 35; }
+table histcols   {
+	module: datadict;
+	description: Cascade Columns;
+	table_seq: 1600;
+	
+	column { history; table_id; primary_key: Y; }
+	foreign_key { histories; uisearch: Y; nocolumns: Y; }
+	column column_id { primary_key: Y; uisearch: Y; }
+	column { retcol; retval; retnew; retold; retdiff; }
+	column { skey; skey_quiet; _agg; }
+}
+
+
+
+// *********************************************************
+// A projection is just a named list of columns.  It is
+// used primarily at the moment to name columns used by the
+// UI to make drop-down lists
+//
+// keyword "projection" inside of "table {...}" goes into this table
+//
+column projection        {  type_id: char;   colprec: 50;  colscale: 0;  description: Projection ID; }
+column projuiupd { description: UI Quick Update Flag; type_id: char; colprec: 1; }
+//
+//  These next two have not been implemented yet.
+//
+//column projuiins { description: UI Quick Insert Flag; type_id: cbool; }
+//column projuidel { description: UI Quick Delete Flag; type_id: cbool; }
+
+
+table tabproj {
+	module: datadict;
+	description: Table Projections;
+	table_seq: 1700;
+		
+	column projection { primary_key: Y; uisearch: Y; }
+	column table_id   { primary_key: Y; uisearch: Y; }
+	column { description; }
+	column { projuiupd; }
+	column { skey; skey_quiet; _agg; }
+}
+
+table tabprojcols {
+	module: datadict;
+	description: Table Projections;
+	table_seq: 1800;
+
+	foreign_key {  tabproj; primary_key: Y; uisearch: Y; }
+	column column_id  { primary_key: Y; uisearch: Y; }
+	column { uicolseq; skey; skey_quiet; _agg; }
+}
+
+
+
+// *********************************************************
+// Groups are the foundation of security.  All security
+// is defined in terms of what groups are allowed to do
+//
+// keyword "group" creates entry in this table
+//
+column group_id {  type_id: vchar;  colprec: 50; colscale: 0; description: Security Group;  }
+column md5_eff  {  type_id: char;   colprec: 32; description: Effective Group Hash;}
+column grouplist{  type_id: text; description: Column List; }
+column solo { type_id: char;   colprec: 1; description: Solo Group; }
+table groups {
+	module: datadict;
+	description: Group Definitions;
+	risimple: Y;
+	table_seq:1900;
+		
+	column group_id    { primary_key: Y; uisearch: Y; }
+	column description { uisearch: Y; }
+	column { permsel; permins; permupd; permdel; permrole; }
+   column srcfile { automation_id: BLANK; }
+   column { solo; } 
+   column { md5_eff; grouplist; }
+	
+   column { skey; skey_quiet; _agg; }
+}
+
+// *********************************************************
+// Permissions are basically a cross-reference of 
+// groups to tables.  Unfortunately we made the "object"
+// column also work as a module; so it has to be evaluated
+// at build as being either an object or a table
+//
+// TODO: create separate tables for separate kinds of permissions
+//
+// Keyword "group" *inside* of a "table {...}" goes into this table
+// Keyword "group" *inside* of a "module {...}" goes into this table
+//
+column permsel   { type_id: char; colprec: 1; description: Select;  }
+column permins   { type_id: char; colprec: 1; description: Insert;  }
+column permupd   { type_id: char; colprec: 1; description: Update;  }
+column permdel   { type_id: char; colprec: 1; description: Delete;  }
+column permrow   { type_id: char; colprec: 1; description: Row/UID Security; }
+column permrole  { type_id: char; colprec: 1; description: Create Users;  }
+column permspec  { type_id: char; colprec: 1; description: Special Perms; }
+//column uimenu   { type_id: char; colprec: 1; description: Force Menu; }
+table permxtables {
+	module: datadict;
+	description: Group Permissions;
+	table_seq:2000;
+	
+   column { 
+      permins; permupd; permdel; permsel; nomenu; 
+      uisearch: Y;
+   }
+
+	foreign_key {  groups;  primary_key: Y; uicolseq: 1; uisearch: Y; }
+	foreign_key {  tables;  primary_key: Y; uisearch: Y; uicolseq: 2; }
+	column { skey; skey_quiet; _agg; }
+}
+
+table permxmodules {
+	module: datadict;
+	description: Module Permissions;
+	table_seq:2100;
+	
+	column permins { primary_key: N; uicolseq: 4; uisearch: Y; }
+	column permupd { primary_key: N;	uicolseq: 5; uisearch: Y; }
+	column permdel { primary_key: N;	uicolseq: 6; uisearch: Y; }
+	column permsel { primary_key: N;	uicolseq: 3; uisearch: Y; }
+   column nomenu { uisearch: Y; }
+
+	foreign_key {  groups;  primary_key: Y; uicolseq: 1; uisearch: Y; }
+	foreign_key {  modules;  primary_key: Y; uisearch: Y; uicolseq: 2; }
+	column { skey; skey_quiet; _agg; }
+}
+
+
+// *********************************************************
+// Group-UID matches.  This weird table specifies that 
+// certain column names will contain UID values from the
+// db server itself. Right now the implementation is in
+// the PHP layer; not the DB; and it does this:
+// ->       IF the user is in the group;
+// -> AND;  IF the table in question contains then column;
+// -> THEN: the user is limited to rows where <column>=<UID>
+// 
+//table groupuids {
+//	module: datadict;
+//	description: Group To UID Matches;
+//	table_seq:2200;
+//	
+//	foreign_key {  groups;  primary_key: Y; uicolseq: 4; uisearch: Y; }
+//	foreign_key {  columns; primary_key: Y; uicolseq: 5; uisearch: Y; }
+//	column { skey; skey_quiet; _agg; }
+//}
+
+// *********************************************************
+// Purely UI stuff.  Make entries in the menu to go directly
+// to ad-hoc handlers.
+//
+// keyword uimenu makes entries into this table
+//
+column menu_page         {  type_id: vchar;  colprec: 50;  colscale: 0; description: Menu Page; }
+column menu_parms  { type_id: vchar; colprec: 50; description: HTML Parameters; }
+table uimenu {
+	module: datadict;
+	description: Application Menu Items;
+	table_seq:2400;
+	
+	column menu_page { primary_key: Y; uisearch: Y; }
+	column description { uisearch: Y; }
+   column menu_parms  { uisearch: Y; }
+   column { uisort; }
+
+	foreign_key {  modules; uisearch: Y; }
+	column { skey; skey_quiet; _agg; }
+}
+
+
+table uimenugroups {
+	module: datadict;
+	description: Menu-Group Permissions;
+	table_seq: 2410;
+
+	foreign_key uimenu  { primary_key: Y; uisearch: Y; }
+	foreign_key groups  { primary_key: Y; uisearch: Y; }
+	column { permsel; permins; permdel; permupd; nomenu; }
+	column { skey; skey_quiet; _agg; }
+}
+
+// ---------------------------------------------------------
+// ---------------------------------------------------------
+// Post-Flat Entry Tables
+//
+// These are tables that are populated by the spec, but
+// which require the flat table to be runout before these
+// can be validated.  
+// ---------------------------------------------------------
+// ---------------------------------------------------------
+
+// The first series of chains are tied to tables
+//
+column chain { description: Chain Name; type_id: vchar; colprec: 35; }
+column literal_arg  { description: Literal Value;  type_id: vchar; colprec: 75; }
+column argtype      { description: Argument Type;  type_id: char; colprec: 10; }
+
+table tabchains {
+	module: datadict;
+	description: Table Chains;
+	table_seq: 2410;
+	
+	foreign_key tables { primary_key: Y; uisearch: Y; }
+	column chain { primary_key: Y; uisearch: Y; }
+	column { column_id; } // will always be empty, keeps code simpler
+	column { skey; skey_quiet; _agg; }
+}
+
+table tabchaintests {
+	module: datadict; 
+	description: Table Chain Tests;
+	table_seq: 2420;
+	
+	column { table_id; chain; primary_key: Y; }
+	column uicolseq { primary_key: Y; uisearch: Y; }
+	column { column_id; } // will always be empty, keeps code simpler
+	foreign_key { compopers;  }
+	foreign_key { funcopers; }
+	column { skey; skey_quiet; _agg; }	
+}
+
+table tabchainargs {
+	description: Table Chain arguments;
+	module: datadict;
+	table_seq: 2430;
+	
+	// Primary key is made of foreign key to
+	// tables and then argtype and sequence
+	column { table_id; chain; uicolseq; primary_key: Y; }
+	column { argtype; sequence; primary_key: Y; uisearch: Y; }
+	column { column_id; } // will always be empty, keeps code simpler
+	
+	// Arguments can be columns or literal values
+	//
+	column column_id_arg { description: Return Column; uisearch: Y; }
+	column { literal_arg; uisearch: Y; }
+	
+	column { skey; skey_quiet; _agg; }
+}	
+
+
+//  The second series of chains tables is tied to 
+//  columns inside of tables.
+//
+table colchains {
+	module: datadict;
+	description: Column Chains;
+	table_seq: 2450;
+	
+	column { table_id; column_id; primary_key: Y; uisearch: Y; }
+	foreign_key tabflat { nocolumns: Y; }
+	column chain { primary_key: Y; uisearch: Y; }
+	column { skey; skey_quiet; _agg; }
+}
+
+table colchaintests {
+	module: datadict; 
+	description: Column Chain Tests;
+	table_seq: 2455;
+	
+	column { table_id; column_id; chain; primary_key: Y; }
+	column uicolseq { primary_key: Y; uisearch: Y; }
+	foreign_key {  compopers;  }
+	foreign_key {  funcopers; }
+	column { skey; skey_quiet; _agg; }	
+}
+
+table colchainargs {
+	description: Table Chain arguments;
+	module: datadict;
+	table_seq: 2456;
+	
+	// Primary key is made of foreign key to
+	// tables and then argtype and sequence
+	column { table_id; chain; column_id; uicolseq; primary_key: Y; }
+	column { argtype; sequence; primary_key: Y; uisearch: Y; }
+	
+	// Arguments can be columns or literal values
+	//
+	column column_id_arg { description: Return Column; uisearch: Y; }
+	column { literal_arg; uisearch: Y; }
+	
+	column { skey; skey_quiet; _agg; }
+}	
+
+table colchainargsv {
+	description: Validation table for Chain arguments;
+	module: datadict;
+	table_seq: 2457;
+	
+	foreign_key tabflat { primary_key: Y; }
+	column { uicolseq; primary_key: Y; }
+	column { skey; skey_quiet; _agg; }
+}
+
+// ---------------------------------------------------------
+// ---------------------------------------------------------
+// BUILD TABLES
+//
+// These are the tables that are populated solely by the
+// build process and used only by it.  To all other purposes
+// these are read-only tables.  They may be used to examine
+// what happened in a build.
+//
+// These are all derived information; everything here
+// comes from somewhere else.
+//
+// NOTE ON Column "Table_seq".  The builder is hardcoded to
+// expect values 5000 and above to be system-generated tables,
+// so everything below here should be 5000 and above.
+// ---------------------------------------------------------
+// ---------------------------------------------------------
+
+// *********************************************************
+// The flat table.  This is a run-out of a table definitions;
+// made as a union of tables->columns->col_types with
+// tables->f-keys->tabflat.  Notice it is recursive; must
+// be executed in a certain sequence.
+//
+// All columns are placed directly into this table; it has
+// no foreign keys
+//
+column column_comp   {  type_id: vchar; colprec: 50; colscale: 0; description: Composite Stub; }
+column table_id_src  {  type_id: vchar; colprec: 50; colscale: 0; description: Source Table; }
+column column_id_src {  type_id: vchar; colprec: 50; colscale: 0; description: Source Column; }
+column table_id_org  {  type_id: vchar; colprec: 50; colscale: 0; description: Original Table; }
+column column_id_org {  type_id: vchar; colprec: 50; colscale: 0; description: Original Column; }
+column table_id_fko  {  type_id: vchar; colprec: 50; colscale: 0; description: FK Source Table; }
+column column_id_fko {  type_id: vchar; colprec: 50; colscale: 0; description: FK Source Column; }
+
+table tabflat {
+	module: datadict;
+	description: Complete Column Specifications;
+	table_seq:5000; // don't change, see note above
+		
+	column { table_id; column_id;	primary_key: Y; uisearch: Y;  }
+	column { description; }
+
+	column primary_key { uisearch: Y; }
+	column { column_id_src;table_id_src;column_id_src; }
+	column { suffix; prefix; auto_suffix; auto_prefix; table_id_par_comp; }
+	column { table_id_fko; column_id_fko; }
+
+
+	// Automations, defined as a foreign key	
+	foreign_key { automations; }
+	foreign_key tabflat { prefix: auto_; allow_empty: Y; }
+	column { auto_formula; }
+   column { range_from; range_to; }
+   column { value_min; value_max; }
+   column { uirows;    uicols;    }
+
+
+	column { uisearch; uicolseq; uiwithnext       }
+	column { ins;uiro;uino;dispsize;uiinline; }	
+	column { type_id;colprec;colscale; colres; formula;formshort }
+	column { uicolseq; }
+	column { required; }
+	column { prevent_fk_change; }
+	column { skey; skey_quiet; _agg; }
+}
+
+// *********************************************************
+// Resolved and flattened security definitions; completely
+// populated for all table/group combinations.
+column permcols { description: Column Perms Flag; type_id: char; colprec: 1; }
+column istable { 
+	description: Is Table (or menu); 
+	type_id: char; colprec:1; 
+}
+table perm_tabs {
+	module: datadict;
+	description: Resolved table permissions;
+	table_seq:5100;
+		
+	column permins { primary_key: N;	uisearch: Y; }
+	column permupd { primary_key: N;	uisearch: Y; }
+	column permdel { primary_key: N; uisearch: Y; }
+	column permsel { primary_key: N;	uisearch: Y; }
+   column nomenu { uisearch: Y; }
+
+	column { permspec;istable; }
+
+	// Because these tables are machine-controlled, we don't
+	// do a foreign key because then we can't add in menu
+	// items.  We can "get away" with this because the table is
+	// machine-controlled, but it is bad form.  This table should
+	// be split off from a new table "menu_tabs" to avoid tricks
+	// like this.
+	//
+	//foreign_key {  modules; primary_key: Y; uisearch: Y; }
+	//foreign_key {  tables;  primary_key: Y; uisearch: Y; }
+	//foreign_key {  groups;  primary_key: Y; uisearch: Y; }
+	column { module; table_id; group_id; 
+		primary_key: Y; uisearch: Y; }
+	column { skey; skey_quiet; _agg; }
+}
+
+
+table perm_cols {
+	module: datadict;
+	description: Defined Column Permissions;
+	table_seq:5150;
+
+   // Create the primary key   
+	column { 
+      module; table_id; group_id; column_id; 
+		primary_key: Y;
+      uisearch: Y; 
+   }
+
+   // The four permissions
+	column permupd { uisearch: Y; }
+	column permsel { uisearch: Y; }
+   column permrow { uisearch: Y; }
+   column table_id_row { uisearch: Y; }
+
+	column { skey; skey_quiet; _agg; }
+}
+
+table perm_colsx {
+	module: datadict;
+	description: Resolved column permissions;
+	table_seq:5160;
+
+   // Create the primary key   
+	column { 
+      table_id; group_id; column_id; 
+		primary_key: Y;
+      uisearch: Y; 
+   }
+
+   // The two permissions
+	column permupd { uisearch: Y; }
+	column permsel { uisearch: Y; }
+
+	column { skey; skey_quiet; _agg; }
+}
+
+
+
+// *********************************************************
+// We have so far flattened tables and flattened security;
+// this now gives us flattened everything else; which items
+// we lump together named as by their nature "ns_objects";
+// which is to say;(N)on-(S)torage Objects; everything that
+// is not a table
+//
+
+column object_id  { type_id: vchar; colprec: 90;               description: NSO Name;  }
+column sequence   { type_id: int;                              description: Sequence; }
+column definition { type_id: text;  colprec: 0;   colscale: 0; description: Definition; }
+column sql_create { type_id: text;  colprec: 0;   colscale: 0; description: SQL Create Command; }
+column sql_drop   { type_id: text;  colprec: 0;   colscale: 0; description: SQL Drop Command;  }
+column def_short  { type_id: vchar; colprec: 200; colscale: 0; description: Semi-Unique Definition; }
+
+table ns_objects {
+	module: datadict;
+	description: Non-Storage Objects;
+	table_seq:5200;
+
+	column object_id { primary_key: Y; uisearch: Y; }
+	column sequence  {                 uisearch: Y; }
+	column def_short {                 uisearch: Y; }
+
+	column { definition;sql_create;sql_drop; }
+	column { skey; skey_quiet; _agg; }
+}
+
+
+

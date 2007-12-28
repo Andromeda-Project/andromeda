@@ -1,0 +1,21 @@
+/* Generic relative-position div element.       */
+/* You need this as outer container so you can  */
+/* relatively position the inner guys           */
+div.andro_rel {
+   position: relative;
+   width: 100%;
+}
+
+div.andro_right {
+   position: absolute;
+   top: 0px; 
+   right: 0px;
+   text-align: right;
+}
+
+div.andro_space2 {   height: 2px;  }
+div.andro_space3 {   height: 3px;  }
+div.andro_space4 {   height: 4px;  }
+div.andro_space5 {   height: 5px;  }
+
+

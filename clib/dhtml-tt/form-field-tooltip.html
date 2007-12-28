@@ -1,0 +1,58 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+	<title>Form field tooltip</title>
+	<style type="text/css">
+	body{
+		background-color:#EEE;
+		font-family: Trebuchet MS, Lucida Sans Unicode, Arial, sans-serif;
+	}
+	fieldset{
+		width:720px;
+	}
+	</style>
+	<link rel="stylesheet" href="css/form-field-tooltip.css" media="screen" type="text/css">
+	<script type="text/javascript" src="js/rounded-corners.js"></script>
+	<script type="text/javascript" src="js/form-field-tooltip.js"></script>
+	
+</head>
+<body>
+<div id="mainContainer">
+	<fieldset>
+		<legend>Description</legend>
+		<div>This is a demo of the form field tooltip script. The tooltip is being displayed when you move focus to one of the inputs on the page.</div>
+	</fieldset>
+	<fieldset>
+		<legend>Form field tooltip example</legend>
+		
+		<table>
+			<tr>
+				<td><label for="firstname">First name:</label></td>
+				<td><input type="text" id="firstname" name="firstname" tooltipText="Type in your firstname in this box"></td>
+			</tr>
+			<tr>
+				<td><label for="lastname">Last name:</label></td>
+				<td><input type="text" id="lastname" name="lastname" tooltipText="Type in your last name in this box"></td>
+			</tr>
+			<tr valign="top">
+				<td><label for="address">Address:</label></td>
+				<td><textarea id="address" name="address" tooltipText="This is the box for the address"></textarea></td>
+			</tr>
+			<tr valign="top">
+				<td>Nationality</td>
+				<td><select style="width:300px"><option>It covers this select box in IE</option></select></td>
+			</tr>
+		</table>		
+	</fieldset>
+
+</div>
+
+<script type="text/javascript">
+var tooltipObj = new DHTMLgoodies_formTooltip();
+tooltipObj.setTooltipPosition('right');
+tooltipObj.setPageBgColor('#EEEEEE');
+tooltipObj.setTooltipCornerSize(15);
+tooltipObj.initFormFieldTooltip();
+</script>
+</body>
+</html>

@@ -1,0 +1,813 @@
+<!doctype html public "-//W3C//DTD HTML 4.0 Frameset//EN""http://www.w3.org/TR/REC-html40/frameset.dtd">
+<html>
+<head>
+<title>
+ Overview
+</title>
+<link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+<script>
+function asd() {
+	
+		parent.document.title="form-field-tooltip.js Overview";
+	
+}
+</script>
+</head>
+<body bgcolor="white" onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<table border="0" width="100%" cellpadding="1" cellspacing="0">
+<tr>
+<td colspan=2 bgcolor="#EEEEFF" class="NavBarCell1">
+<a name="navbar_top_firstrow"><!-- --></a>
+<table border="0" cellpadding="0" cellspacing="3">
+  <tr align="center" valign="top">
+  
+  
+  <td bgcolor="#EEEEFF" class="NavBarCell1">    <a href="overview-summary.html"><font class="NavBarFont1"><b>Overview</b></font></a>&nbsp;</td>
+  <td bgcolor="#FFFFFF" class="NavBarCell1Rev">	&nbsp;<font class="NavBarFont1Rev"><b>File</b></font>&nbsp;</td>
+  
+
+  <td bgcolor="#FFFFFF" class="NavBarCell1"> 	<font class="NavBarFont1">Class</font>&nbsp;</td>
+  <td bgcolor="#EEEEFF" class="NavBarCell1">    <a href="overview-tree.html"><font class="NavBarFont1"><b>Tree</b></font></a>&nbsp;</td>
+  <td bgcolor="#EEEEFF" class="NavBarCell1">    <a href="index-all.html"--><font class="NavBarFont1"><b>Index</b></font></a>&nbsp;</td>
+  <td bgcolor="#EEEEFF" class="NavBarCell1">    <a href="help-doc.html"><font class="NavBarFont1"><b>Help</b></font></a>&nbsp;</td>
+  </tr>
+</table>
+</td>
+<td bgcolor="#EEEEFF" align="right" valign="top">
+<em>
+<b></b></em>
+</td>
+</tr>
+
+<tr>
+<td bgcolor="white" class="NavBarCell2"><font size="-2">
+&nbsp;PREV&nbsp;
+&nbsp;NEXT</font></td>
+<td bgcolor="white" class="NavBarCell2"><font size="-2">
+  <a href="index.html" target="_top"><b>FRAMES</b></a>  &nbsp;
+&nbsp;<a href="overview-summary.html" target="_top"><b>NO FRAMES</b></a>
+&nbsp;&nbsp;
+<script>
+  <!--
+  if(window==top) {
+    document.writeln('<A HREF="allclasses-noframe.html" TARGET=""><B>All Classes</B></A>');
+  }
+  //-->
+</script>
+<noscript>
+<a href="allclasses-noframe.html" target=""><b>All Classes</b></a>
+</noscript>
+</font></td>
+</tr>
+</table>
+<!-- =========== END OF NAVBAR =========== -->
+
+<hr>
+<center>
+	
+	   <h2>form-field-tooltip.js</h2>
+	
+</center>
+
+	
+
+
+<h4>Summary</h4>
+<p>
+	
+		No overview generated for 'form-field-tooltip.js'<BR/><BR/>
+	
+</p>
+
+<hr>
+
+
+    <table border="1" cellpadding="3" cellspacing="0" width="100%">
+    <tr bgcolor="#CCCCFF" class="TableHeadingColor">
+    <td colspan=2><font size="+2">
+    
+        <b>Class Summary</b>
+    
+    </font></td>
+    </tr>
+    
+    <tr bgcolor="white" class="TableRowColor">
+    <td width="15%"><b><a href="DHTMLgoodies_formTooltip.html">DHTMLgoodies_formTooltip</a></b></td>
+    <td>&nbsp;</td>
+    </tr>
+    
+    </table>
+    <hr/> 
+
+
+<!-- ========== METHOD SUMMARY =========== -->
+
+<!-- ========== END METHOD SUMMARY =========== -->
+
+
+        <pre class="sourceview"><span class="comment">/************************************************************************************************************
+
+	Form field tooltip
+	(C) www.dhtmlgoodies.com, September 2006
+
+	This is a script from www.dhtmlgoodies.com. You will find this and a lot of other scripts at our website.	
+	
+	Terms of use:
+	Look at the terms of use at http://www.dhtmlgoodies.com/index.html?page=termsOfUse
+	
+	Thank you!
+	
+	www.dhtmlgoodies.com
+	Alf Magne Kalleland
+
+************************************************************************************************************/</span>
+
+var DHTMLgoodies_globalTooltipObj;
+
+
+<span class="comment">/** 
+Constructor 
+**/</span>
+<span class="reserved">function</span> DHTMLgoodies_formTooltip()
+{
+	var tooltipDiv;
+	var tooltipText;
+	var tooltipContentDiv;				<span class="comment">// Reference to inner div with tooltip content</span>
+	var imagePath;						<span class="comment">// Relative path to images</span>
+	var arrowImageFile;					<span class="comment">// Name of arrow image</span>
+	var arrowImageFileRight;			<span class="comment">// Name of arrow image</span>
+	var arrowRightWidth;
+	var arrowTopHeight;
+	var tooltipWidth;					<span class="comment">// Width of tooltip</span>
+	var roundedCornerObj;				<span class="comment">// Reference to object of class DHTMLgoodies_roundedCorners</span>
+	var tooltipBgColor;
+	var closeMessage;					<span class="comment">// Close message</span>
+	var activeInput;					<span class="comment">// Reference to currently active input</span>
+	var tooltipPosition;				<span class="comment">// Tooltip position, possible values: "below" or "right"</span>
+	var tooltipCornerSize;				<span class="comment">// Size of rounded corners</span>
+	var displayArrow;					<span class="comment">// Display arrow above or at the left of the tooltip?</span>
+	var cookieName;						<span class="comment">// Name of cookie</span>
+	var disableTooltipPossibility;		<span class="comment">// Possibility of disabling tooltip</span>
+	var disableTooltipByCookie;			<span class="comment">// If tooltip has been disabled, save the settings in cookie, i.e. for other pages with the same cookie name.</span>
+	var disableTooltipMessage;
+	var tooltipDisabled;
+	var isMSIE;
+	var tooltipIframeObj;
+	var pageBgColor;					<span class="comment">// Color of background - used in ie when applying iframe which covers select boxes</span>
+	
+	<span class="reserved">this</span>.tooltipDiv = false,
+	<span class="reserved">this</span>.tooltipText = false;
+	<span class="reserved">this</span>.imagePath = <span class="literal">'images/'</span>;
+	<span class="reserved">this</span>.arrowImageFile = <span class="literal">'green-arrow.gif'</span>;
+	<span class="reserved">this</span>.arrowImageFileRight = <span class="literal">'green-arrow-right.gif'</span>;
+	<span class="reserved">this</span>.tooltipWidth = 200;
+	<span class="reserved">this</span>.tooltipBgColor = <span class="literal">'#317082'</span>;
+	<span class="reserved">this</span>.closeMessage = <span class="literal">'Close'</span>;
+	<span class="reserved">this</span>.disableTooltipMessage = <span class="literal">'Don\'</span>t show <span class="reserved">this</span> message again<span class="literal">';
+	this.activeInput = false;
+	this.tooltipPosition = '</span>right<span class="literal">';
+	this.arrowRightWidth = 16;			// Default width of arrow when the tooltip is on the right side of the inputs.
+	this.arrowTopHeight = 13;			// Default height of arrow at the top of tooltip
+	this.tooltipCornerSize = 10;
+	this.displayArrow = true;
+	this.cookieName = '</span>DHTMLgoodies_tooltipVisibility<span class="literal">';
+	this.disableTooltipByCookie = false;
+	this.tooltipDisabled = false;
+	this.disableTooltipPossibility = true;
+	this.tooltipIframeObj = false;
+	this.pageBgColor = '</span>#FFF<span class="literal">';
+	
+	DHTMLgoodies_globalTooltipObj = this;
+	
+	if(navigator.userAgent.indexOf('</span>MSIE<span class="literal">')&gt;=0)this.isMSIE = true; else this.isMSIE = false;
+}
+
+
+DHTMLgoodies_formTooltip.prototype = {
+	// {{{ initFormFieldTooltip()
+    /**
+     *
+	 *
+     *  Initializes the tooltip script. Most set methods needs to be executed before you call this method.
+     * 
+     * @public
+     */		
+	initFormFieldTooltip : function()
+	{
+		var formElements = new Array();
+		var inputs = document.getElementsByTagName('</span>INPUT<span class="literal">');
+		for(var no=0;no&lt;inputs.length;no++){
+			var attr = inputs[no].getAttribute('</span>tooltipText<span class="literal">');
+			if(!attr)attr = inputs[no].tooltipText;
+			if(attr)formElements[formElements.length] = inputs[no];
+		}
+			
+		var inputs = document.getElementsByTagName('</span>TEXTAREA<span class="literal">');
+		for(var no=0;no&lt;inputs.length;no++){
+			var attr = inputs[no].getAttribute('</span>tooltipText<span class="literal">');
+			if(!attr)attr = inputs[no].tooltipText;
+			if(attr)formElements[formElements.length] = inputs[no];
+		}
+		var inputs = document.getElementsByTagName('</span>SELECT<span class="literal">');
+		for(var no=0;no&lt;inputs.length;no++){
+			var attr = inputs[no].getAttribute('</span>tooltipText<span class="literal">');
+			if(!attr)attr = inputs[no].tooltipText;
+			if(attr)formElements[formElements.length] = inputs[no];
+		}
+			
+		window.refToFormTooltip = this;
+		
+		for(var no=0;no&lt;formElements.length;no++){
+			formElements[no].onfocus = this.__displayTooltip;
+		}
+	}
+	
+	// }}}
+	,		
+	// {{{ setTooltipPosition()
+    /**
+     *
+	 *
+     *  Specify position of tooltip(below or right)
+     *	@param String newPosition (Possible values: "below" or "right") 
+     * 
+     * @public
+     */	
+	setTooltipPosition : function(newPosition)
+	{
+		this.tooltipPosition = newPosition;
+	}
+	// }}}
+	,		
+	// {{{ setCloseMessage()
+    /**
+     *
+	 *
+     *  Specify "Close" message
+     *	@param String closeMessage
+     * 
+     * @public
+     */
+	setCloseMessage : function(closeMessage)
+	{
+		this.closeMessage = closeMessage;
+	}
+	// }}}
+	,	
+	// {{{ setDisableTooltipMessage()
+    /**
+     *
+	 *
+     *  Specify disable tooltip message at the bottom of the tooltip
+     *	@param String disableTooltipMessage
+     * 
+     * @public
+     */
+	setDisableTooltipMessage : function(disableTooltipMessage)
+	{
+		this.disableTooltipMessage = disableTooltipMessage;
+	}
+	// }}}
+	,		
+	// {{{ setTooltipDisablePossibility()
+    /**
+     *
+	 *
+     *  Specify whether you want the disable link to appear or not.
+     *	@param Boolean disableTooltipPossibility
+     * 
+     * @public
+     */
+	setTooltipDisablePossibility : function(disableTooltipPossibility)
+	{
+		this.disableTooltipPossibility = disableTooltipPossibility;
+	}
+	// }}}
+	,		
+	// {{{ setCookieName()
+    /**
+     *
+	 *
+     *  Specify name of cookie. Useful if you'</span>re using <span class="reserved">this</span> script on several pages. 
+     *	@param String newCookieName
+     * 
+     * @public
+     */
+	setCookieName : <span class="reserved">function</span>(newCookieName)
+	{
+		<span class="reserved">this</span>.cookieName = newCookieName;
+	}
+	<span class="comment">// }}}</span>
+	,		
+	<span class="comment">// {{{ setTooltipWidth()</span>
+    <span class="comment">/**
+     *
+	 *
+     *  Specify width of tooltip
+     *	<span class="attrib">@param</span> Int newWidth
+     * 
+     * <span class="attrib">@public</span>
+     */</span>	
+	setTooltipWidth : <span class="reserved">function</span>(newWidth)
+	{
+		<span class="reserved">this</span>.tooltipWidth = newWidth;
+	}
+	
+	<span class="comment">// }}}</span>
+	,		
+	<span class="comment">// {{{ setArrowVisibility()</span>
+    <span class="comment">/**
+     *
+	 *
+     *  Display arrow at the top or at the left of the tooltip?
+     *	<span class="attrib">@param</span> Boolean displayArrow
+     * 
+     * <span class="attrib">@public</span>
+     */</span>	
+	
+	setArrowVisibility : <span class="reserved">function</span>(displayArrow)
+	{
+		<span class="reserved">this</span>.displayArrow = displayArrow;
+	}
+	
+	<span class="comment">// }}}</span>
+	,		
+	<span class="comment">// {{{ setTooltipBgColor()</span>
+    <span class="comment">/**
+     *
+	 *
+     *  Send true to this method if you want to be able to save tooltip visibility in cookie. If it's set to true,
+     *	It means that when someone returns to the page, the tooltips won't show.
+     * 
+     *	<span class="attrib">@param</span> Boolean disableTooltipByCookie
+     * 
+     * <span class="attrib">@public</span>
+     */</span>	
+	setDisableTooltipByCookie : <span class="reserved">function</span>(disableTooltipByCookie)
+	{
+		<span class="reserved">this</span>.disableTooltipByCookie = disableTooltipByCookie;
+	}	
+	<span class="comment">// }}}</span>
+	,		
+	<span class="comment">// {{{ setTooltipBgColor()</span>
+    <span class="comment">/**
+     *
+	 *
+     *  This method specifies background color of tooltip
+     *	<span class="attrib">@param</span> String newBgColor
+     * 
+     * <span class="attrib">@public</span>
+     */</span>	
+	setTooltipBgColor : <span class="reserved">function</span>(newBgColor)
+	{
+		<span class="reserved">this</span>.tooltipBgColor = newBgColor;
+	}
+	
+	<span class="comment">// }}}</span>
+	,		
+	<span class="comment">// {{{ setTooltipCornerSize()</span>
+    <span class="comment">/**
+     *
+	 *
+     *  Size of rounded corners around tooltip
+     *	<span class="attrib">@param</span> Int newSize (0 = no rounded corners)
+     * 
+     * <span class="attrib">@public</span>
+     */</span>	
+	setTooltipCornerSize : <span class="reserved">function</span>(tooltipCornerSize)
+	{
+		<span class="reserved">this</span>.tooltipCornerSize = tooltipCornerSize;
+	}
+	
+	<span class="comment">// }}}</span>
+	,
+	<span class="comment">// {{{ setTopArrowHeight()</span>
+    <span class="comment">/**
+     *
+	 *
+     *  Size height of arrow at the top of tooltip
+     *	<span class="attrib">@param</span> Int arrowTopHeight
+     * 
+     * <span class="attrib">@public</span>
+     */</span>	
+	setTopArrowHeight : <span class="reserved">function</span>(arrowTopHeight)
+	{
+		<span class="reserved">this</span>.arrowTopHeight = arrowTopHeight;
+	}
+	
+	<span class="comment">// }}}</span>
+	,	
+	<span class="comment">// {{{ setRightArrowWidth()</span>
+    <span class="comment">/**
+     *
+	 *
+     *  Size width of arrow when the tooltip is on the right side of inputs
+     *	<span class="attrib">@param</span> Int arrowTopHeight
+     * 
+     * <span class="attrib">@public</span>
+     */</span>	
+	setRightArrowWidth : <span class="reserved">function</span>(arrowRightWidth)
+	{
+		<span class="reserved">this</span>.arrowRightWidth = arrowRightWidth;
+	}
+	
+	<span class="comment">// }}}</span>
+	,	
+	<span class="comment">// {{{ setPageBgColor()</span>
+    <span class="comment">/**
+     *
+	 *
+     *  Specify background color of page.
+     *	<span class="attrib">@param</span> String pageBgColor
+     * 
+     * <span class="attrib">@public</span>
+     */</span>	
+	setPageBgColor : <span class="reserved">function</span>(pageBgColor)
+	{
+		<span class="reserved">this</span>.pageBgColor = pageBgColor;
+	}
+	
+	<span class="comment">// }}}</span>
+	,		
+	<span class="comment">// {{{ __hideTooltip()</span>
+    <span class="comment">/**
+     *
+	 *
+     *  This method displays the tooltip
+     *
+     * 
+     * <span class="attrib">@private</span>
+     */</span>		
+	__displayTooltip : <span class="reserved">function</span>()
+	{
+		<span class="reserved">if</span>(DHTMLgoodies_globalTooltipObj.disableTooltipByCookie){
+			var cookieValue = DHTMLgoodies_globalTooltipObj.getCookie(DHTMLgoodies_globalTooltipObj.cookieName) + <span class="literal">''</span>;	
+			<span class="reserved">if</span>(cookieValue==<span class="literal">'1'</span>)DHTMLgoodies_globalTooltipObj.tooltipDisabled = true;
+		}	
+		
+		<span class="reserved">if</span>(DHTMLgoodies_globalTooltipObj.tooltipDisabled)<span class="reserved">return</span>;	<span class="comment">// Tooltip disabled</span>
+		var tooltipText = <span class="reserved">this</span>.getAttribute(<span class="literal">'tooltipText'</span>);
+		DHTMLgoodies_globalTooltipObj.activeInput = <span class="reserved">this</span>;
+		
+		<span class="reserved">if</span>(!tooltipText)tooltipText = <span class="reserved">this</span>.tooltipText;
+		DHTMLgoodies_globalTooltipObj.tooltipText = tooltipText;
+
+		
+		<span class="reserved">if</span>(!DHTMLgoodies_globalTooltipObj.tooltipDiv)DHTMLgoodies_globalTooltipObj.__createTooltip();
+		
+		DHTMLgoodies_globalTooltipObj.__positionTooltip(<span class="reserved">this</span>);
+		
+	
+		DHTMLgoodies_globalTooltipObj.tooltipContentDiv.innerHTML = tooltipText;
+		DHTMLgoodies_globalTooltipObj.tooltipDiv.style.display=<span class="literal">'block'</span>;
+		
+		<span class="reserved">if</span>(DHTMLgoodies_globalTooltipObj.isMSIE){
+			<span class="reserved">if</span>(DHTMLgoodies_globalTooltipObj.tooltipPosition == <span class="literal">'below'</span>){
+				DHTMLgoodies_globalTooltipObj.tooltipIframeObj.style.height = (DHTMLgoodies_globalTooltipObj.tooltipDiv.clientHeight - DHTMLgoodies_globalTooltipObj.arrowTopHeight);
+			}<span class="reserved">else</span>{
+				DHTMLgoodies_globalTooltipObj.tooltipIframeObj.style.height = (DHTMLgoodies_globalTooltipObj.tooltipDiv.clientHeight);
+			}
+		}
+		
+	}
+	<span class="comment">// }}}</span>
+	,		
+	<span class="comment">// {{{ __hideTooltip()</span>
+    <span class="comment">/**
+     *
+	 *
+     *  This function hides the tooltip
+     *
+     * 
+     * <span class="attrib">@private</span>
+     */</span>		
+	__hideTooltip : <span class="reserved">function</span>()
+	{
+		DHTMLgoodies_globalTooltipObj.tooltipDiv.style.display=<span class="literal">'none'</span>;
+		
+	}
+	<span class="comment">// }}}</span>
+	,		
+	<span class="comment">// {{{ __hideTooltipFromLink()</span>
+    <span class="comment">/**
+     *
+	 *
+     *  This function hides the tooltip
+     *
+     * 
+     * <span class="attrib">@private</span>
+     */</span>	
+	__hideTooltipFromLink : <span class="reserved">function</span>()
+	{
+		
+		<span class="reserved">this</span>.activeInput.focus();
+		window.refToThis = <span class="reserved">this</span>;
+		setTimeout(<span class="literal">'window.refToThis.__hideTooltip()'</span>,10);
+	}
+	<span class="comment">// }}}</span>
+	,		
+	<span class="comment">// {{{ disableTooltip()</span>
+    <span class="comment">/**
+     *
+	 *
+     *  Hide tooltip and disable it
+     *
+     * 
+     * <span class="attrib">@public</span>
+     */</span>	
+	disableTooltip : <span class="reserved">function</span>()
+	{
+		<span class="reserved">this</span>.__hideTooltipFromLink();
+		<span class="reserved">if</span>(<span class="reserved">this</span>.disableTooltipByCookie)<span class="reserved">this</span>.setCookie(<span class="reserved">this</span>.cookieName,<span class="literal">'1'</span>,500);	
+		<span class="reserved">this</span>.tooltipDisabled = true;	
+	}	
+	<span class="comment">// }}}</span>
+	,		
+	<span class="comment">// {{{ __positionTooltip()</span>
+    <span class="comment">/**
+     *
+	 *
+     *  This function creates the tooltip elements
+     *
+     * 
+     * <span class="attrib">@private</span>
+     */</span>	
+	__createTooltip : <span class="reserved">function</span>()
+	{
+		<span class="reserved">this</span>.tooltipDiv = document.createElement(<span class="literal">'DIV'</span>);
+		<span class="reserved">this</span>.tooltipDiv.style.position = <span class="literal">'absolute'</span>;
+		
+		<span class="reserved">if</span>(<span class="reserved">this</span>.displayArrow){
+			var topDiv = document.createElement(<span class="literal">'DIV'</span>);
+			
+			<span class="reserved">if</span>(<span class="reserved">this</span>.tooltipPosition==<span class="literal">'below'</span>){
+				
+				topDiv.style.marginLeft = <span class="literal">'20px'</span>;
+				var arrowDiv = document.createElement(<span class="literal">'IMG'</span>);
+				arrowDiv.src = <span class="reserved">this</span>.imagePath + <span class="reserved">this</span>.arrowImageFile + <span class="literal">'?rand='</span>+ Math.random();
+				arrowDiv.style.display=<span class="literal">'block'</span>;
+				topDiv.appendChild(arrowDiv);
+					
+			}<span class="reserved">else</span>{
+				topDiv.style.marginTop = <span class="literal">'5px'</span>;
+				var arrowDiv = document.createElement(<span class="literal">'IMG'</span>);
+				arrowDiv.src = <span class="reserved">this</span>.imagePath + <span class="reserved">this</span>.arrowImageFileRight + <span class="literal">'?rand='</span>+ Math.random();	
+				arrowDiv.style.display=<span class="literal">'block'</span>;
+				topDiv.appendChild(arrowDiv);					
+				topDiv.style.position = <span class="literal">'absolute'</span>;			
+			}
+			
+			<span class="reserved">this</span>.tooltipDiv.appendChild(topDiv);	
+		}
+		
+		var outerDiv = document.createElement(<span class="literal">'DIV'</span>);
+		outerDiv.style.position = <span class="literal">'relative'</span>;
+		outerDiv.style.zIndex = 1000;
+		<span class="reserved">if</span>(<span class="reserved">this</span>.tooltipPosition!=<span class="literal">'below'</span> &amp;&amp; <span class="reserved">this</span>.displayArrow){			
+			outerDiv.style.left = <span class="reserved">this</span>.arrowRightWidth + <span class="literal">'px'</span>;
+		}
+				
+		outerDiv.id = <span class="literal">'DHTMLgoodies_formTooltipDiv'</span>;
+		outerDiv.className = <span class="literal">'DHTMLgoodies_formTooltipDiv'</span>;
+		outerDiv.style.backgroundColor = <span class="reserved">this</span>.tooltipBgColor;
+		<span class="reserved">this</span>.tooltipDiv.appendChild(outerDiv);
+
+		<span class="reserved">if</span>(<span class="reserved">this</span>.isMSIE){
+			<span class="reserved">this</span>.tooltipIframeObj = document.createElement(<span class="literal">'&lt;IFRAME name="tooltipIframeObj" width="'</span> + <span class="reserved">this</span>.tooltipWidth + <span class="literal">'" frameborder="no" src="about:blank"&gt;&lt;/IFRAME&gt;'</span>);
+			<span class="reserved">this</span>.tooltipIframeObj.style.position = <span class="literal">'absolute'</span>;
+			<span class="reserved">this</span>.tooltipIframeObj.style.top = <span class="literal">'0px'</span>;
+			<span class="reserved">this</span>.tooltipIframeObj.style.left = <span class="literal">'0px'</span>;
+			<span class="reserved">this</span>.tooltipIframeObj.style.width = (<span class="reserved">this</span>.tooltipWidth) + <span class="literal">'px'</span>;
+			<span class="reserved">this</span>.tooltipIframeObj.style.zIndex = 100;
+			<span class="reserved">this</span>.tooltipIframeObj.background = <span class="reserved">this</span>.pageBgColor;
+			<span class="reserved">this</span>.tooltipIframeObj.style.backgroundColor= <span class="reserved">this</span>.pageBgColor;
+			<span class="reserved">this</span>.tooltipDiv.appendChild(<span class="reserved">this</span>.tooltipIframeObj);	
+			<span class="reserved">if</span>(<span class="reserved">this</span>.tooltipPosition!=<span class="literal">'below'</span> &amp;&amp; <span class="reserved">this</span>.displayArrow){
+				<span class="reserved">this</span>.tooltipIframeObj.style.left = (<span class="reserved">this</span>.arrowRightWidth) +  <span class="literal">'px'</span>;	
+			}<span class="reserved">else</span>{
+				<span class="reserved">this</span>.tooltipIframeObj.style.top = <span class="reserved">this</span>.arrowTopHeight + <span class="literal">'px'</span>;	
+			}
+
+			setTimeout(<span class="literal">"self.frames['tooltipIframeObj'].document.documentElement.style.backgroundColor='"</span> + <span class="reserved">this</span>.pageBgColor + <span class="literal">"'"</span>,500);
+
+		}
+		
+		<span class="reserved">this</span>.tooltipContentDiv = document.createElement(<span class="literal">'DIV'</span>);	
+		<span class="reserved">this</span>.tooltipContentDiv.style.position = <span class="literal">'relative'</span>;	
+		<span class="reserved">this</span>.tooltipContentDiv.id = <span class="literal">'DHTMLgoodies_formTooltipContent'</span>;
+		outerDiv.appendChild(<span class="reserved">this</span>.tooltipContentDiv);			
+		
+		var closeDiv = document.createElement(<span class="literal">'DIV'</span>);
+		closeDiv.style.textAlign = <span class="literal">'center'</span>;
+	
+		closeDiv.innerHTML = <span class="literal">'&lt;A class="DHTMLgoodies_formTooltip_closeMessage" href="#" onclick="DHTMLgoodies_globalTooltipObj.__hideTooltipFromLink();return false"&gt;'</span> + <span class="reserved">this</span>.closeMessage + <span class="literal">'&lt;/A&gt;'</span>;
+		
+		<span class="reserved">if</span>(<span class="reserved">this</span>.disableTooltipPossibility){
+			var tmpHTML = closeDiv.innerHTML;
+			tmpHTML = tmpHTML + <span class="literal">' | &lt;A class="DHTMLgoodies_formTooltip_closeMessage" href="#" onclick="DHTMLgoodies_globalTooltipObj.disableTooltip();return false"&gt;'</span> + <span class="reserved">this</span>.disableTooltipMessage + <span class="literal">'&lt;/A&gt;'</span>;
+			closeDiv.innerHTML = tmpHTML;
+		} 
+		
+		outerDiv.appendChild(closeDiv);
+		
+		document.body.appendChild(<span class="reserved">this</span>.tooltipDiv);
+		
+		
+				
+		<span class="reserved">if</span>(<span class="reserved">this</span>.tooltipCornerSize&gt;0){
+			<span class="reserved">this</span>.roundedCornerObj = new DHTMLgoodies_roundedCorners();
+			<span class="reserved">this</span>.roundedCornerObj.addTarget(<span class="literal">'DHTMLgoodies_formTooltipDiv'</span>,<span class="reserved">this</span>.tooltipCornerSize,<span class="reserved">this</span>.tooltipBgColor,5);
+		}
+		
+
+		<span class="reserved">this</span>.tooltipContentDiv = document.getElementById(<span class="literal">'DHTMLgoodies_formTooltipContent'</span>);
+	}
+	<span class="comment">// }}}</span>
+	,		
+	<span class="comment">// {{{ __positionTooltip()</span>
+    <span class="comment">/**
+     *
+	 *
+     *  This function positions the tooltip
+     *
+     * <span class="attrib">@param</span> Obj inputObj = Reference to text input
+     * 
+     * <span class="attrib">@private</span>
+     */</span>	
+	__positionTooltip : <span class="reserved">function</span>(inputObj)
+	{	
+		var offset = 0;
+		<span class="reserved">if</span>(!<span class="reserved">this</span>.displayArrow)offset = 3;	
+		<span class="reserved">if</span>(<span class="reserved">this</span>.tooltipPosition==<span class="literal">'below'</span>){
+			<span class="reserved">this</span>.tooltipDiv.style.left = <span class="reserved">this</span>.getLeftPos(inputObj)+  <span class="literal">'px'</span>;
+			<span class="reserved">this</span>.tooltipDiv.style.top = (<span class="reserved">this</span>.getTopPos(inputObj) + inputObj.offsetHeight + offset) + <span class="literal">'px'</span>;
+		}<span class="reserved">else</span>{
+		
+			<span class="reserved">this</span>.tooltipDiv.style.left = (<span class="reserved">this</span>.getLeftPos(inputObj) + inputObj.offsetWidth + offset)+  <span class="literal">'px'</span>;
+			<span class="reserved">this</span>.tooltipDiv.style.top = <span class="reserved">this</span>.getTopPos(inputObj) + <span class="literal">'px'</span>;			
+		}
+		<span class="reserved">this</span>.tooltipDiv.style.width=<span class="reserved">this</span>.tooltipWidth + <span class="literal">'px'</span>;
+		
+	}
+	,
+	<span class="comment">// {{{ getTopPos()</span>
+    <span class="comment">/**
+     * This method will return the top coordinate(pixel) of an object
+     *
+     * <span class="attrib">@param</span> Object inputObj = Reference to HTML element
+     * <span class="attrib">@public</span>
+     */</span>	
+	getTopPos : <span class="reserved">function</span>(inputObj)
+	{		
+	  var returnValue = inputObj.offsetTop;
+	  <span class="reserved">while</span>((inputObj = inputObj.offsetParent) != null){
+	  	<span class="reserved">if</span>(inputObj.tagName!=<span class="literal">'HTML'</span>){
+	  		returnValue += inputObj.offsetTop;
+	  		<span class="reserved">if</span>(document.all)returnValue+=inputObj.clientTop;
+	  	}
+	  } 
+	  <span class="reserved">return</span> returnValue;
+	}
+	<span class="comment">// }}}</span>
+	
+	,
+	<span class="comment">// {{{ getLeftPos()</span>
+    <span class="comment">/**
+     * This method will return the left coordinate(pixel) of an object
+     *
+     * <span class="attrib">@param</span> Object inputObj = Reference to HTML element
+     * <span class="attrib">@public</span>
+     */</span>	
+	getLeftPos : <span class="reserved">function</span>(inputObj)
+	{	  
+	  var returnValue = inputObj.offsetLeft;
+	  <span class="reserved">while</span>((inputObj = inputObj.offsetParent) != null){
+	  	<span class="reserved">if</span>(inputObj.tagName!=<span class="literal">'HTML'</span>){
+	  		returnValue += inputObj.offsetLeft;
+	  		<span class="reserved">if</span>(document.all)returnValue+=inputObj.clientLeft;
+	  	}
+	  }
+	  <span class="reserved">return</span> returnValue;
+	}
+	
+	,
+	
+	<span class="comment">// {{{ getCookie()</span>
+    <span class="comment">/**
+     *
+     * 	These cookie functions are downloaded from 
+	 * 	http://www.mach5.com/support/analyzer/manual/html/General/CookiesJavaScript.htm
+	 *
+     *  This function returns the value of a cookie
+     *
+     * <span class="attrib">@param</span> String name = Name of cookie
+     * <span class="attrib">@param</span> Object inputObj = Reference to HTML element
+     * <span class="attrib">@public</span>
+     */</span>	
+	getCookie : <span class="reserved">function</span>(name) { 
+	   var start = document.cookie.indexOf(name+<span class="literal">"="</span>); 
+	   var len = start+name.length+1; 
+	   <span class="reserved">if</span> ((!start) &amp;&amp; (name != document.cookie.substring(0,name.length))) <span class="reserved">return</span> null; 
+	   <span class="reserved">if</span> (start == -1) <span class="reserved">return</span> null; 
+	   var end = document.cookie.indexOf(<span class="literal">";"</span>,len); 
+	   <span class="reserved">if</span> (end == -1) end = document.cookie.length; 
+	   <span class="reserved">return</span> unescape(document.cookie.substring(len,end)); 
+	} 	
+	<span class="comment">// }}}</span>
+	,	
+	
+	<span class="comment">// {{{ setCookie()</span>
+    <span class="comment">/**
+     *
+     * 	These cookie functions are downloaded from 
+	 * 	http://www.mach5.com/support/analyzer/manual/html/General/CookiesJavaScript.htm
+	 *
+     *  This function creates a cookie. (This method has been slighhtly modified)
+     *
+     * <span class="attrib">@param</span> String name = Name of cookie
+     * <span class="attrib">@param</span> String value = Value of cookie
+     * <span class="attrib">@param</span> Int expires = Timestamp - days
+     * <span class="attrib">@param</span> String path = Path for cookie (Usually left empty)
+     * <span class="attrib">@param</span> String domain = Cookie domain
+     * <span class="attrib">@param</span> Boolean secure = Secure cookie(SSL)
+     * 
+     * <span class="attrib">@public</span>
+     */</span>	
+	setCookie : <span class="reserved">function</span>(name,value,expires,path,domain,secure) { 
+		expires = expires * 60*60*24*1000;
+		var today = new Date();
+		var expires_date = new Date( today.getTime() + (expires) );
+	    var cookieString = name + <span class="literal">"="</span> +escape(value) + 
+	       ( (expires) ? <span class="literal">";expires="</span> + expires_date.toGMTString() : <span class="literal">""</span>) + 
+	       ( (path) ? <span class="literal">";path="</span> + path : <span class="literal">""</span>) + 
+	       ( (domain) ? <span class="literal">";domain="</span> + domain : <span class="literal">""</span>) + 
+	       ( (secure) ? <span class="literal">";secure"</span> : <span class="literal">""</span>); 
+	    document.cookie = cookieString; 
+	}
+	<span class="comment">// }}}</span>
+		
+		
+}</pre>
+	<hr>
+
+
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<table border="0" width="100%" cellpadding="1" cellspacing="0">
+<tr>
+<td colspan=2 bgcolor="#EEEEFF" class="NavBarCell1">
+<a name="navbar_top_firstrow"><!-- --></a>
+<table border="0" cellpadding="0" cellspacing="3">
+  <tr align="center" valign="top">
+  
+  
+  <td bgcolor="#EEEEFF" class="NavBarCell1">    <a href="overview-summary.html"><font class="NavBarFont1"><b>Overview</b></font></a>&nbsp;</td>
+  <td bgcolor="#FFFFFF" class="NavBarCell1Rev">	&nbsp;<font class="NavBarFont1Rev"><b>File</b></font>&nbsp;</td>
+  
+
+  <td bgcolor="#FFFFFF" class="NavBarCell1"> <font class="NavBarFont1">Class</font>&nbsp;</td>
+  <td bgcolor="#EEEEFF" class="NavBarCell1">    <a href="overview-tree.html"><font class="NavBarFont1"><b>Tree</b></font></a>&nbsp;</td>
+  <td bgcolor="#EEEEFF" class="NavBarCell1">    <a href="index-all.html"--><font class="NavBarFont1"><b>Index</b></font></a>&nbsp;</td>
+  <td bgcolor="#EEEEFF" class="NavBarCell1">    <a href="help-doc.html"><font class="NavBarFont1"><b>Help</b></font></a>&nbsp;</td>
+  </tr>
+</table>
+</td>
+<td bgcolor="#EEEEFF" align="right" valign="top"><em>
+<b></b></em>
+</td>
+</tr>
+
+<tr>
+<td bgcolor="white" class="NavBarCell2"><font size="-2">
+&nbsp;PREV&nbsp;
+&nbsp;NEXT</font></td>
+<td bgcolor="white" class="NavBarCell2"><font size="-2">
+  <a href="index.html" target="_top"><b>FRAMES</b></a>  &nbsp;
+&nbsp;<a href="overview-summary.html" target="_top"><b>NO FRAMES</b></a>
+&nbsp;&nbsp;
+<script>
+  <!--
+  if(window==top) {
+    document.writeln('<A HREF="allclasses-noframe.html" TARGET=""><B>All Classes</B></A>');
+  }
+  //-->
+</script>
+<noscript>
+<a href="allclasses-noframe.html" target=""><b>All Classes</b></a>
+</noscript>
+</font></td>
+</tr>
+</table>
+<!-- =========== END OF NAVBAR =========== -->
+
+<hr>
+<font size="-1">
+
+</font>
+<div class="jsdoc_ctime">Documentation generated by <a href="http://jsdoc.sourceforge.net/" target="_parent">JSDoc</a> on Sun Sep 24 14:39:43 2006</div>
+</body>
+</html>

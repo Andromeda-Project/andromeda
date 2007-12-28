@@ -1,0 +1,21 @@
+DirectoryIndex index.php
+
+# LEGACY ENTRY - DO NOT REMOVE!
+# This is required for the prototype project, which
+# is still live
+<FilesMatch "^mediadl$">
+ ForceType application/x-httpd-php
+</FilesMatch>
+
+#  This is the general-purpose framework method 
+#
+<FilesMatch "^rpath$">
+ ForceType application/x-httpd-php
+</FilesMatch>
+
+#  This one is for no-parameter page calls, ?gp_page=
+<FilesMatch "^pages$">
+ ForceType application/x-httpd-php
+</FilesMatch>
+
+

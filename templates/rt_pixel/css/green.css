@@ -1,0 +1,115 @@
+/************************************
+ *
+ *  Replace these colors as needed
+ *  
+ *  #81A432 - main color
+ *  #71902C - shadow color
+ *  #fff    - font color 
+ *
+ ************************************/   
+
+body #color-insert {
+  background: #81A432;
+}
+
+/* menu area */
+div#horiz-menu {
+	border-color: #71902C; 
+	background: #81A432; 
+}
+
+div.botbox {
+	border-color:  #71902C; 
+	background:  #81A432; 
+}
+
+div.botbox div.moduletable h3 {
+	color: #fff;
+	background: #71902C;
+}
+
+a:link,
+a:visited {
+  color: #71902C;
+}
+
+td a.mainlevel:hover {
+	background: #81A432;
+	color: #fff;
+}
+
+.contentheading {
+  color: #71902C;
+}
+
+div.componentheading {
+  color: #fff;
+  background: #81A432;
+}
+
+/* suckerfish */
+
+#nav a {
+	color: #fff;
+}
+
+#nav a.topdaddy,
+#nav li.active a.topdaddy {
+	border-right:  1px solid #71902C;
+}
+
+#nav ul ul a.daddy {
+	border: 0;
+}
+
+#nav li a {
+	border-right:  1px solid #71902C;
+}
+
+#nav li li a {
+	border: 0;
+}
+
+#nav ul li a:hover,
+#nav ul li ul li a:hover,
+#nav ul li ul li ul li a:hover,
+#nav ul li.active ul li a:hover,
+#nav ul li.active ul li ul li a:hover,
+#nav li.active li.active a,
+#nav li.active li.active a:hover {
+	background: #71902C;
+}
+
+#nav li li {
+	border-bottom: 1px solid #71902C;
+}
+
+#nav ul ul a {
+	color: #fff;
+}
+
+#nav li ul {
+
+}
+
+#nav li:hover a, #nav li.sfhover a {
+  color: #fff;
+}
+
+#nav li li:hover a, #nav li li.sfhover a {
+  color: #fff;
+}
+
+
+
+#nav li:hover ul, 
+#nav li li:hover ul, 
+#nav li li li:hover ul, 
+#nav li li li li:hover ul,
+#nav li.sfhover ul, 
+#nav li li.sfhover ul, 
+#nav li li li.sfhover ul,
+#nav li li li li.sfhover ul{
+	background: #81A432;
+	border:  1px solid #71902C;
+}

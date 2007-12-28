@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<mosinstall version="1.0" type="template">
+    <name>rt_pixel</name>
+    <version>1.0.1</version>
+    <creationDate>09/15/06</creationDate>
+    <author>rhuk</author>
+    <authorEmail>support@rockettheme.com</authorEmail>
+    <authorUrl>http://www.rockettheme.com</authorUrl>
+    <copyright>Copyright 2005-2006 - RocketTheme.com</copyright>
+    <license></license>
+    <description>
+<![CDATA[
+<h1>RocketTheme PixelPerfect</h1>
+
+<img src="../templates/rt_pixel/template_thumbnail.png" align="left" hspace="10" />PixelPerfect is the September 2006 template for the RocketTheme Joomla! Template Club.  It is not free or public.  This is template is for members of the RocketTheme Joomla Template Club only.  For installation help check out the 'PixelPerfect' Overview Page on the <a href="http://www.rockettheme.com/blogcategory/Template_Club/">RocketTheme Template Club</a> home page.
+
+<h3>Changelog</h3>
+
+<b>1.1</b><br />
+<ul>
+<li>Added a clr to fix an error in safari 1.3</li>
+</ul>
+
+<b>1.0</b><br />
+<ul>
+<li>Initial Release</li>
+</ul>
+
+]]>    	
+    </description>
+    <files>
+      <filename>buildxml.php</filename>
+      <filename>css/blue.css</filename>
+      <filename>css/co-dark.css</filename>
+      <filename>css/co-light.css</filename>
+      <filename>css/co-med.css</filename>
+      <filename>css/editor_content.css</filename>
+      <filename>css/green.css</filename>
+      <filename>css/index.html</filename>
+      <filename>css/orange.css</filename>
+      <filename>css/red.css</filename>
+      <filename>css/suckerfish.css</filename>
+      <filename>css/template_css.css</filename>
+      <filename>css/template_ie.css</filename>
+      <filename>images/arrow.png</filename>
+      <filename>images/dark/access_blue.png</filename>
+      <filename>images/dark/access_dark.png</filename>
+      <filename>images/dark/access_fluid.png</filename>
+      <filename>images/dark/access_green.png</filename>
+      <filename>images/dark/access_large.png</filename>
+      <filename>images/dark/access_light.png</filename>
+      <filename>images/dark/access_med.png</filename>
+      <filename>images/dark/access_normal.png</filename>
+      <filename>images/dark/access_orange.png</filename>
+      <filename>images/dark/access_red.png</filename>
+      <filename>images/dark/access_small.png</filename>
+      <filename>images/dark/access_thin.png</filename>
+      <filename>images/dark/access_wide.png</filename>
+      <filename>images/dark/pixel_logo.png</filename>
+      <filename>images/dark/rocket.png</filename>
+      <filename>images/emailButton.png</filename>
+      <filename>images/indent1.png</filename>
+      <filename>images/indent2.png</filename>
+      <filename>images/indent3.png</filename>
+      <filename>images/indent4.png</filename>
+      <filename>images/index.html</filename>
+      <filename>images/light/access_blue.png</filename>
+      <filename>images/light/access_dark.png</filename>
+      <filename>images/light/access_fluid.png</filename>
+      <filename>images/light/access_green.png</filename>
+      <filename>images/light/access_large.png</filename>
+      <filename>images/light/access_light.png</filename>
+      <filename>images/light/access_med.png</filename>
+      <filename>images/light/access_normal.png</filename>
+      <filename>images/light/access_orange.png</filename>
+      <filename>images/light/access_red.png</filename>
+      <filename>images/light/access_small.png</filename>
+      <filename>images/light/access_thin.png</filename>
+      <filename>images/light/access_wide.png</filename>
+      <filename>images/light/pixel_logo.png</filename>
+      <filename>images/light/rocket.png</filename>
+      <filename>images/medium/access_blue.png</filename>
+      <filename>images/medium/access_dark.png</filename>
+      <filename>images/medium/access_fluid.png</filename>
+      <filename>images/medium/access_green.png</filename>
+      <filename>images/medium/access_large.png</filename>
+      <filename>images/medium/access_light.png</filename>
+      <filename>images/medium/access_med.png</filename>
+      <filename>images/medium/access_normal.png</filename>
+      <filename>images/medium/access_orange.png</filename>
+      <filename>images/medium/access_red.png</filename>
+      <filename>images/medium/access_small.png</filename>
+      <filename>images/medium/access_thin.png</filename>
+      <filename>images/medium/access_wide.png</filename>
+      <filename>images/medium/pixel_logo.png</filename>
+      <filename>images/medium/rocket.png</filename>
+      <filename>images/pdf_button.png</filename>
+      <filename>images/printButton.png</filename>
+      <filename>index.php</filename>
+      <filename>js/ie.js</filename>
+      <filename>js/index.html</filename>
+      <filename>rt_styleloader.php</filename>
+      <filename>rt_styleswitcher.php</filename>
+      <filename>rt_suckerfish.php</filename>
+      <filename>template_thumbnail.png</filename>
+      <filename>templateDetails.xml</filename>
+</files>
+    <params/>
+</mosinstall>

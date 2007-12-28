@@ -1,0 +1,247 @@
+/************************************
+ *
+ *  Replace these colors as needed
+ *  
+ *  #3A393E - default font
+ *  #27262b - background
+ *  #222126 - background shadow
+ *  #505763 - header main
+ *  #464c57 - header shadow
+ *  #929aa9	- left main
+ *  #808794 - left shadow
+ *  #3A393E - left color
+ *  #1E2126 - left links
+ *  #a1aaba - left hilite main
+ *  #8d95a3 - left hilite shadow
+ *  #eeeff0 - body main
+ *  #d1d2d3 - body shadow
+ *  #3a393e - mid modules main
+ *  #333236 - mid modules shadow
+ *  #737d8e - right main
+ *  #656e7d - right shadow
+ *  #8591a5 - right hilite main
+ *  #757f91 - right hilite shadow
+ *  #505763 - footer main
+ *  #464c57 - footer shadow
+ *  #383d46 - footer color
+ *
+ ************************************/
+
+/* font colors */
+
+body {
+  color: #3A393E;
+  background: #27262b; 
+}
+
+td.left {
+  color: #3A393E;
+}
+
+td.right,
+div.midbox,
+div.botbox,
+div#top-mod {
+  color: #D8DBE2;
+}
+
+td.left a:link, 
+td.left a:visited {
+  color: #1E2126;
+}
+
+td.left a.mainlevel:hover {
+  color: #fff;
+}
+
+a.mainlevel { 
+	border-bottom:  1px solid #808794;
+}
+
+td.right a:link,
+td.right a:visited,
+div.midbox a:link,
+div.midbox a:visited,
+div.botbox a:link,
+div.botbox a:visited,
+div#top-mod a:link,
+div#top-mod a:visited {
+  color: #fff;
+}
+
+td.left div.moduletable h3 {
+	color: #fff;
+	background: #808794;
+}
+
+td.right div.moduletable h3 {
+	color: #fff;
+	background: #656e7d;
+}
+
+td.left div.moduletable-hilite {
+	background: #a1aaba;
+	border-color: #808794;
+}
+
+td.left div.moduletable-hilite h3 {
+	color: #fff;
+	background: #8d95a3;
+}
+
+td.right div.moduletable-hilite {
+	background: #8591a5;
+	border-color: #656e7d;
+}
+
+td.right div.moduletable-hilite h3 {
+	color: #fff;
+	background: #757f91;
+}
+
+td.middle div.moduletable h3 {
+	color: #656e7d;
+	background: #d1d2d3;
+}
+
+div.midbox div.moduletable h3 {
+	color: #fff;
+	background: #333236;
+}
+
+div.moduletable h3 {
+  background: #D1D2D3;
+	color: #fff;
+}
+
+table.outer td.sectiontableheader {
+  color: #656e7d;
+  background: #d1d2d3;
+}
+
+div#outer-border {
+	border-color: #222126;
+}
+
+div#top-head {
+	border-color:  #464c57;
+	background: #505763;
+}
+
+div#access-bar {
+	background: #464c57;
+}
+
+table.outer td.left {
+	border-color:  #808794; 
+	background:  #929aa9; 
+}
+
+table.outer td.middle {
+	border-color:  #d1d2d3; 
+	background:  #eeeff0;
+}
+
+/* KFD 3/2/07 Andromeda Addition of new module */
+table.outer td.right, div#quicklinks {
+	border-color:  #656e7d; 
+	background:  #737d8e; 
+}
+
+div.midbox {
+	border-color:  #333236; 
+	background:  #3a393e;
+	border-bottom:  6px solid #d1d2d3;
+}
+
+div#bot-footer{
+	border-color:  #464c57;
+	background: #505763;
+	color: #383d46;
+}
+
+div#bot-footer a:link,
+div#bot-footer a:visited {
+	color: #383d46;
+}
+
+span.rocket {
+	background:  url(../images/medium/rocket.png) no-repeat;
+}
+
+#logo {
+	background: url(../images/medium/pixel_logo.gif) no-repeat;
+}
+
+#nav li.active a,
+#nav li.active a:hover {
+	background: #808794;
+}
+
+/* medium accessibility */
+a.light .button {
+	background:  url(../images/medium/access_light.png);
+}
+
+a.med .button {
+	background:  url(../images/medium/access_med.png);
+}
+
+a.dark .button {
+	background:  url(../images/medium/access_dark.png);
+}
+
+a.red .button {
+	background:  url(../images/medium/access_red.png);
+}
+
+a.blue .button {
+	background:  url(../images/medium/access_blue.png);
+}
+
+a.green .button {
+	background:  url(../images/medium/access_green.png);
+}
+
+a.orange .button {
+	background:  url(../images/medium/access_orange.png);
+}
+
+a.large .button {
+	background: url(../images/medium/access_large.png);
+}
+
+a.small .button {
+	background: url(../images/medium/access_small.png);
+}
+
+a.default .button {
+	background: url(../images/medium/access_normal.png);
+}
+
+a.thin .button {
+	background: url(../images/medium/access_thin.png);
+}
+
+a.wide .button {
+	background: url(../images/medium/access_wide.png);
+}
+
+a.fluid .button {
+	background: url(../images/medium/access_fluid.png);
+}
+
+/* typography */
+h2 {
+  color: #808794;
+}
+
+blockquote {
+  background: #fff;
+  border-top: 6px solid #D1D2D3;
+  border-bottom: 6px solid #D1D2D3;
+}
+
+pre {
+  background: #fff;
+}

@@ -1,0 +1,3430 @@
+// =========================================================
+// (C) Copyright 2005 by Kenneth Downs
+// 
+// This file is part of Andromeda
+//
+// Andromeda is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+//
+// Andromeda is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Andromeda; if not, write to the Free Software
+// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// ---------------------------------------------------------
+// This is an Andromeda Specification.
+//
+// This is a specification that is included in all projects;
+// to give some information that is universally helpful.
+// ---------------------------------------------------------
+// Revision History
+//
+// 14-Apr-2005  First version in ADD format
+// =========================================================
+//module operations { description: Operations; uisort: 100; }
+//module utilities  { description: Utilities;  uisort: 600; }
+module reference  { 
+   description: Base Reference; 
+   uisort: 800;
+   nomenu: Y;
+   
+   group $LOGIN { permsel: Y; permupd: N; permdel: N; permins: N; nomenu:Y; }
+}
+module system     { 
+   description: System;
+   uisort: 950; 
+   nomenu: Y; 
+}
+
+module xmlrpc  { 
+   description: XML RPC Definitions; 
+   uisort: 951;
+   nomenu: Y;
+}
+
+// --------------------------------------------------------------------
+// Group that can do user maintenance
+// --------------------------------------------------------------------
+// This is the super-power group.  Anybody in here has total control
+// of the system.
+group usermaint {
+   permrole: Y;   // Can create/delete users
+   description: User Administrator;
+
+   // have full permissions on all user tables
+   module usermaint { 
+      permsel: Y; 
+      permins: Y; 
+      permupd: Y; 
+      permdel: Y;
+      nomenu:  N;
+   }
+}
+
+// =========================================================
+// Universal menu entries
+// =========================================================
+//menu x_raxnmgr { description: Node Manager Functions; module: system; }
+
+//  This page is universal to all programs
+//
+//menu x_specification { module: system; description: System Specification; }
+menu x_email { module: system; description: Send Test Email; }
+
+// =========================================================
+// Universal Group entries
+// =========================================================
+// A user must be in this group in order to login at all
+group $LOGIN { 
+   description: BASIC LOGIN PRIVILEGE;
+   permsel: N; permins: N; permupd: N; permdel: N; 
+}
+
+// This is the root group, the superusers.  They are given complete
+// access to every task on the system
+//group root   { description: Application Login Group; 
+//   permsel: Y; permupd: Y; permdel: Y; permins: Y;
+//}
+
+
+
+// This group is for people who sign up at the site.  Note the
+// i*dentity security on "user_id".  Any table that has that column
+// they will only be able to see their own information.
+//group member { 
+//   description: Public Group; 
+//   i*dentity { user_id; }
+//}
+
+// =========================================================
+
+column user_id { description: User ID; type_id: vchar; colprec: 40; }
+
+
+//  These column definitions can be used in any table
+//
+column  _id     { description: ID                ; type_id: char  ; colprec: 10; colscale: 0; }
+column _num     { description: NUM               ; type_id: int   ; colprec:  0; colscale: 0; }
+column _date    { description: DATE              ; type_id: dtime ; colprec:  0; colscale: 0; }
+column date     { description: Date              ; type_id: date; }
+column time     { description: Time              ; type_id: time; }
+column _flag_ok { description: GP Approval Flag  ; type_id: cbool ; colprec:  0; colscale: 0; automation_id:DEFAULT; auto_formula: N; }
+column disabled { description: Disabled Flag     ; type_id: cbool ; colprec:  1; colscale: 0; automation_id: DEFAULT; auto_formula: N; }
+column active   { description: Active            ; type_id: cbool ; colprec:  1; colscale: 0; automation_id: DEFAULT; auto_formula: ; }
+column phone    { description: Phone             ; type_id: ph12; }
+column phonex   { description: Phone             ; type_id: char ; colprec: 15; colscale:  0; }
+column notes    { description: Notes             ; type_id: text;  }
+column flag     { description: Flag              ; type_id: cbool; }
+column ts       { description: Timestamp         ; type_id: dtime; }
+column desclong { description: Long Description;   type_id: vchar; colprec: 200; }
+column queuepos { description: Queue Position    ; type_id: int;  automation_id: QUEUEPOS;}
+column ssn      { description: SSN; type_id: ssn; }
+
+
+// This flag is used by the UI to suppress rows out of
+// drop-downs.  
+column flag_noselect 
+                { description: Inactive          ; type_id: cbool; }
+
+
+// This can be used as the primary key for tables
+// that are generic lists where PK is not terribly important,
+// like user-entered lists of contacts on a job
+column recnum   { description: Generic Record Number;
+   type_id: int; automation_id: SEQUENCE;
+}
+
+column md5 { 
+   description: Hash Code;
+	type_id: char; colprec: 32;
+	uino: Y;
+}
+
+// A short description and a long description
+//
+column caption { description: Caption; type_id: vchar; colprec: 20;  }
+column title   { description: Title;   type_id: vchar; colprec: 100; }
+column explain { description: Explanation; type_id: text; }
+
+// These are useful instances of some basic types or
+// automation codes
+//
+column ts_ins   { description: Created           ; type_id: dtime ; colprec:  0; colscale: 0; automation_id: TS_INS; uiwithnext: Y; }
+column ts_upd   { description: Last Changed      ; type_id: dtime ; colprec:  0; colscale: 0; automation_id: TS_UPD; uiwithnext: Y; }
+column uid_ins  { description: By                ; type_id: vchar  ; colprec: 40; colscale: 0; automation_id: UID_INS; }
+column uid_upd  { description: By                ; type_id: vchar  ; colprec: 40; colscale: 0; automation_id: UID_UPD; }
+column gender   { description: Gender            ; type_id: gender; }
+column rulecode { description: Rule Code         ; type_id: cbool;  }
+column notes    { description: Notes             ; type_id: text; }
+
+//  These column definitions are for names and addresses
+//
+column email { description: Email Address; type_id: vchar; colprec: 50; }
+column name  { description: Full Name;     type_id: vchar; colprec: 40; }
+column name_ { description: Name Part;     type_id: vchar; colprec: 25; }
+column mi    { description: Middle Initial;type_id: char;  colprec: 1;  }
+column nam1st{ description: First Name   ; type_id: vchar; colprec: 20; }
+column namlst{ description: Last Name    ; type_id: vchar; colprec: 20; }
+column first_name{ description: First Name   ; type_id: vchar; colprec: 25; }
+column last_name { description: Last Name    ; type_id: vchar; colprec: 25; }
+column add   { description: Address      ; type_id: vchar; colprec: 40; }
+column add1  { description: Address 1    ; type_id: vchar; colprec: 40; }
+column add2  { description: Address 2    ; type_id: vchar; colprec: 40; }
+column city  { description: City         ; type_id: vchar; colprec: 22; uiwithnext: Y; }
+column state { description: State/Province  ; type_id: char;  colprec: 5;  }
+column zip9  { description: Zip+4        ; type_id: char; colprec: 10; }
+column _dob  { description: Date of Birth; type_id: date; prefix_table_name: Y; }
+column dob   { description: Date of Birth; type_id: date; }
+column dod   { description: Date of Death; type_id: date; }
+
+//  These column definitions are computer related
+//
+column hostip { description: Host IP Num; type_id: char; colprec: 15; }
+column uid    { description: User ID; type_id: char; colprec: 10; }
+column url    { description: URL    ; type_id: vchar; colprec: 100; }
+
+// Columns for money stuff
+column qty    { description: Qty;      type_id: int;   }
+column cnt    { description: Count;    type_id: int;   }
+column price  { description: Price;    type_id: money; }
+column amt    { description: Amount;   type_id: money; }
+column pct    { 
+    description: Percent;
+    type_id: numb;
+    colprec: 5;
+    colscale: 2;
+    value_min: 0;
+    value_max: 100;
+}
+
+// Columns for dates
+column year   { description: year; type_id: numb; colprec: 5; }
+
+
+// ========================================================================
+// AREA: Users and Groups
+// Moved from andro.add 10/5/06.  Eliminated "nodegroups" table because
+// all databases have a "groups" table anyway.
+// ========================================================================
+//group andro_own { description: Database Superuser; }
+module usermaint { 
+   uisort: 500; 
+   description:Users;
+   nomenu: Y;
+}
+
+//  TABLE: Node groups.  Lists groups from all applications; not just
+//         this particular application.
+//
+//column nodegroup { description: Group ID; type_id: char; colprec: 10; }
+//table nodegroups {
+//	description: Node Groups;
+//	module: operations;
+//	risimple: Y;
+	
+//	column nodegroup { primary_key: Y; uisearch: Y; }
+//	column description { uisearch: Y; }
+
+	// This is a build table, no changes please!
+//}
+	
+//  TABLE: Users
+//
+// The column user_id is in andro_universal 
+column member_password { 
+	description: N/A; 
+	type_id: vchar; 
+	colprec: 20; 
+}
+column user_name { description: Full Name; type_id: char; colprec: 40; }
+column user_disabled { 
+	description: Account Disabled; type_id: cbool;
+	automation_id: DEFAULT;
+	auto_formula: N;
+}
+column user_pwkey    { description: PW Key; type_id: char; colprec: 32; }
+column user_pwexp    { description: PW Exp; type_id: dtime; }
+
+table users { 
+	description: Application Users;
+	risimple: Y;
+	module: usermaint;
+	
+	column user_id { primary_key: Y; uisearch: Y; }
+	column user_name { uisearch: Y; }
+   column { email; }
+   column user_disabled { uino: Y; }
+   column { user_pwkey; user_pwexp; hostip; uino: Y; }
+   
+   column { member_password; automation_id: BLANK; description: Simple Password; }
+   column md5 { prefix: member_; description: Encrypted Password; uino: Y; }
+
+   // Effective group stuff
+   column flag { suffix: _newgroup; 
+      automation_id: DEFAULT; auto_formula: N;
+      uino: Y;
+   }
+   column group_id { 
+      suffix: _eff;
+      description: Effective Group;
+      uino: Y;
+      automation_id: BLANK;
+   }
+   
+	//group andro_own  { permins: Y; permsel: Y; }
+   
+   group $LOGIN { permsel: Y; }
+	
+	projection email     { column { user_name; }}
+	projection emailaddr { column { email; }}
+   
+   index email { idx_unique: Y; column { email; }}
+}
+
+//  TABLE: Cross-reference users to node groups
+//
+table usersxgroups {
+	description: User - Group Assignments;
+	module: usermaint;
+	nomenu: Y;
+	
+	foreign_key { table_id_par: users; primary_key: Y; uisearch: Y; 
+		uidisplay: mover; 
+	}
+	foreign_key { table_id_par: groups; primary_key: Y; uisearch: Y; 
+		uidisplay: mover;
+	}
+   
+   group $LOGIN { permsel: Y; }
+}
+
+// TABLE: Password change requests and request verification attempts
+table users_pwrequests {
+   description: Password Change Requests;
+   nomenu: Y;
+   module: usermaint;
+   
+   group $LOGIN { permins: Y; permupd:N;permsel:N;permdel:N; }
+   
+   column recnum  { suffix: _pwr; primary_key: Y; }
+   column user_id { uisearch: Y; description: User ID;   }
+   column md5     { uisearch: Y; description: Hash Code; }
+   column { ts_ins; uid_ins; }
+}
+
+table users_pwverifies {
+   description: Password Change Requests;
+   nomenu: Y;
+   module: usermaint;
+   
+   group $LOGIN { permins: Y; permupd:N;permsel:N;permdel:N; }
+   
+   column recnum  { suffix: _pwv; primary_key: Y; }
+   column user_id {               uisearch: Y; description: User ID;   }
+   column md5     {               uisearch: Y; description: Hash Code; }
+   column { member_password; automation_id: BLANK; description: New Password; }
+   column { ts_ins; uid_ins; }
+}
+
+
+
+// =================================================================
+// Adminstration table. Emails sent
+// =================================================================
+column adm_email     { description: Email No; type_id: int; }
+column email_to      { description: TO;       type_id: char; colprec: 80; }
+column email_subject { description: SUBJECT;  type_id: char; colprec: 80; }
+column email_message { description: MESSAGE;  type_id: text; }
+table adm_emails {
+	description: Emails Sent by System;
+	column_prefix: adm_email;
+	module: system;
+	
+	column adm_email { primary_key: Y; automation_id: SEQUENCE; }
+	column email_to { uisearch: Y; }
+	column email_subject { uisearch: Y; }
+	column { email_message; }	
+
+	column { ts_ins;uid_ins }
+	
+	// Anybody can insert into this table, but nobody can
+	// update or delete
+	group $LOGIN { permins: Y; }
+}	
+
+
+// =================================================================
+// System Variables
+// User-defined system variables control how things behave
+// =================================================================
+column variable       { description: Variable Name; type_id: char; colprec: 20; }
+column variable_value { description: Value; type_id: text; }
+
+table variables {
+	description: System Variables;
+	module: system;	
+
+	column variable { primary_key: Y; uisearch: Y; }
+	column description { uisearch: Y; }
+	column variable_value { uisearch: Y; }
+
+	group $LOGIN { permsel: Y; }
+}
+
+content variables {
+   columns { variable; description; variable_value; }
+   values  { SMTP_SERVER; Outgoing email server; localhost; }
+}
+
+// =================================================================
+// System administration log events.  Pure client
+// =================================================================
+//  These are some columns that are computer related
+//
+//column sys_log { description: Log Number; type_id: int; }
+//column sys_log_type { description: Log Entry Type; type_id: int; }
+//column sys_log_text { description: Log Entry Text; type_id: vchar; colprec: 150; }
+//table sys_logs {/
+//	description: Events Log;
+//	module: system;
+//	
+//	column sys_log { primary_key: Y; uisearch: Y; automation_id: SEQUENCE; }
+	
+//	column session { uisearch: Y; }
+//	column hostip  { uisearch: Y; }
+//   column uid     { uisearch: Y; }	
+//   column ts_ins { uisearch: Y; }
+//}
+
+// =================================================================
+// Errors and Events, master and various details
+// =================================================================
+column syslog         { description: Log Number;        type_id: int; }
+column syslog_type    { description: Log Entry Type;    type_id: char; colprec: 10; }
+column syslog_subtype { description: Log Entry Subtype; type_id: char; colprec: 10; }
+column syslog_name    { description: Log Entry Name;    type_id: char; colprec: 25; }
+column syslog_text    { description: Log Entry Text;    type_id: text; }
+table syslogs {
+	description: Processing Logs;
+	module: system;
+	
+	column syslog { primary_key: Y; uisearch: Y; automation_id: SEQUENCE; }
+   column syslog_type { uisearch: Y; }
+   column syslog_subtype { uisearch: Y; }
+   column syslog_name    { uisearch: Y; }
+   column { syslog_text; }
+   column { ts_ins; uid_ins; }
+   
+   group $LOGIN { permins: Y; permsel: Y; }
+   
+   index syslog_subtype { column { syslog_subtype; }}
+   index syslog_name    { column { syslog_name;    }}
+}
+
+column syslog_enum     { description: Ref Number; type_id: int; automation_id: SEQUENCE; }
+//column syslog_etype    { description: Error Type;       type_id: char;  colprec: 10;}
+//column syslog_etrxtype { description: Transaction Type; type_id: vchar; colprec: 25;}
+column syslog_etext    { description: Error Message;    type_id: text; }
+table syslogs_e {
+   description: Processing Log Details;
+   module: system;
+   
+   column syslog_enum     { primary_key: Y; uisearch: Y; }
+   foreign_key syslogs    { uisearch: Y; delete_cascade: Y; }
+   //column syslog_etype    { uisearch: Y; }
+   //column syslog_etrxtype { uisearch: Y; }
+   column { syslog_etext; }
+   column { ts_ins; uid_ins; }
+   
+   group $LOGIN { permins: Y; permsel: Y; }
+   //index etrxtype { column { syslog_etrxtype; }}
+}
+
+// =================================================================
+// Errors and Events, master and various details
+// =================================================================
+column elog     { 
+   description:   Log Number; 
+   type_id:       int;
+   automation_id: SEQUENCE;
+}
+column elogcode {
+   description:   Event Code;
+   type_id:       char;
+   colprec:       4;
+}
+column elogipv4 {   
+   description:   IPV4 IP Number;
+   type_id:       char;
+   colprec:       15;
+}
+column elogdesc {   
+   description:   Event Description;
+   type_id:       char;
+   colprec:       40;
+}
+column elogarg1 {   
+   description:   Arg 1;
+   type_id:       vchar;
+   colprec:       25;
+}
+column elogarg2 {   
+   description:   Arg 2;
+   type_id:       vchar;
+   colprec:       25;
+}
+column elogarg3 {   
+   description:   Arg 3;
+   type_id:       vchar;
+   colprec:       25;
+}
+
+
+table elogs {
+	description: Event Log;
+   module: system;
+   group $LOGIN { permins: Y; }
+   
+   column elogcode  {                 uisearch: Y; }
+   column flag      { suffix: _fw;  description: Framework; }
+   column elog      { primary_key: Y; }
+   column ts_ins    {                 uisearch: Y; }
+   column elogdesc  {                 uisearch: Y; }
+   column { elogipv4; }
+   column { elogarg1; elogarg2; elogarg3; uisearch: Y; }
+}
+
+table elogs_emails {
+   description: Email Alert Recipients;
+   module: system;
+   
+   column email { primary_key: Y; uisearch: Y; }
+}
+
+table elogs_codes {
+   description: Email Alert Codes;
+   module: system;
+   
+   column elogcode { primary_key: Y; uisearch: Y; }
+   column description { uisearch: Y; }
+   column flag {
+      uisearch: Y; 
+      description: Send Email For This Event;
+      suffix: _send;
+      automation_id: DEFAULT;
+      auto_formula: Y;
+   }
+}
+
+content elogs_codes {
+   columns { elogcode; description; flag_send; }
+   values { 1002; Logged in as postgres or group;  Y; }
+   values { 1010; Regular Login OK;                N; }
+   values { 1011; Attempt login as postgres;       Y; }
+   values { 1012; Attempt login as group role;     Y; }
+   values { 1013; Username and password no good;   Y; }
+   values { 1014; Attempt page access w/o login;   N; }
+   values { 1020; PW Reset Request - PHP;          Y; }
+   values { 1021; PW Reset Request - DB;           Y; }
+   values { 1025; PW Verify Request - PHP;         Y; }
+   values { 1026; PW Verify Request - DB;          Y; }
+}
+
+
+// =========================================================== 
+// PAYPAL LOG.  This is a general log of all paypal
+// activity, maintained by the framework, not by 
+// the database.
+// =========================================================== 
+// -----------------------------------------------------------
+column txn_type      {description: Transaction Type; type_id: vchar; colprec: 20; }
+column txn_id        {description: Transaction ID; type_id: vchar; colprec: 20; }
+column invoice       {description: Invoice; type_id: vchar; colprec: 20; }
+column payment_date  {description: Transaction Date; type_id: dtime; }
+column payment_status{description: Pmt Status; type_id: vchar; colprec: 20; }
+column payment_gross {description: Pmt Gross; type_id: money; }
+column mc_currency   {description: MC Currency; type_id: vchar; colprec: 20; }
+column mc_gross      {description: MC Gross;    type_id: money; }
+column pending_reason{description: Pending Reason; type_id: vchar; colprec: 20; }
+column item_name     {description: Item Name; type_id: vchar; colprec: 40; }
+column item_number   {description: Item Number; type_id:vchar; colprec: 20; }
+column business      {description: Prim Email; type_id: vchar; colprec: 50; }
+column payment_type  {description: Payment Type; type_id: vchar; colprec: 20; }
+column verify_sign   {description: Verify; type_id: vchar; colprec: 56; }
+column payer_status  {description: Payer Status; type_id: vchar; colprec: 10; }
+column test_ipn      {description: Test Flag; type_id: vchar; colprec: 1; }
+column tax           {description: Tax;      type_id: money; }
+column shipping      {description: Shipping; type_id: money; }
+column quantity      {description: Quantity; type_id: int; }
+column payer_email   {description: Payer Email;   type_id: char; colprec: 50; }
+column receiver_email{description: Receiver Email;type_id: char; colprec: 50; }
+column payer_id      {description: Payer ID;      type_id: char; colprec: 15; }
+column receiver_id   {description: Receiver ID;   type_id: char; colprec: 15; }
+column notify_version{description: Notify version;type_id: char; colprec: 5; }
+
+table pptransactions {
+   module: system;
+   description: Paypal Trx Log;
+
+   column recnum { suffix: _pp; primary_key: Y; uisearch: Y; }
+   column { txn_type; txn_id; invoice;  payment_date; }
+   column { business; payer_email; receiver_email; payer_id; receiver_id; }
+   column { last_name; first_name; }
+   column { payment_status; payment_gross; mc_currency; mc_gross; }
+   column { pending_reason; payment_type;    }
+   column { item_name; item_number; }
+   column { verify_sign; payer_status; test_ipn; tax; quantity; shipping; } 
+   column { notify_version; }
+   column { ts_ins; uid_ins; }
+   
+   group $LOGIN { permins: Y; permsel: Y; }
+}
+
+// =================================================================
+// PHP Session Management.
+// This is APPLICATION FEATURE; not database definition
+//
+// NOTE THAT THE FRAMEWORK STOPPED USING THIS IN LATE 2005, BECAUSE
+// SECURE DATA SOFTWARE HAD NO PER-USER LICENSEES AND IT WAS
+// GETTING IN THE WAY.  THESE TABLES ARE INERT AND DUE FOR REMOVAL
+//
+// =================================================================
+//
+//  The sessions table is a pure client-side table 
+//  used and controlled by the client to maintain
+//  sessions.
+//
+//column session     { description: Session; type_id: char; colprec: 32; }
+//column sess_beg    { description: Session Begin; type_id: dtime; }
+//column sess_end    { description: Session End; type_id: dtime; }
+//column sess_upd    { description: Last Activity; type_id: dtime; }
+//column sess_status { description: Session Status; type_id: char; colprec: 1; }
+//table adm_sessions {
+//	description: Complete Session History;
+//	module: system; 
+	
+//	column session { primary_key: Y; uisearch: Y; }
+//	column sess_beg { uisearch: Y; }
+//	column { sess_end; sess_upd }
+//	column sess_status { uisearch: Y; }
+	
+//	column { hostip; uid }
+//}
+
+// =================================================================
+// =================================================================
+// USER-DEFINED REPORTS
+// -----------------------------------------------------------------
+// There are three basic tables: the report, its tables, and
+// their columns.  JOINs are worked out automatically by the
+// report-writer code.  This table is in its own module
+//
+// =================================================================
+// =================================================================
+module reports750 { 
+   description: Reports; 
+   uisort: 750;
+   nomenu: Y;
+}
+
+column report     { description: Report Code; type_id:vchar; colprec: 20; }
+column repfilters { description: Filters; type_id: text; }
+table reports {
+   module: reports750;
+   description: Report Writer;
+   uisort: 900;
+   
+   column report { primary_key: Y; uisearch: Y; }
+   column description { uisearch: Y; }
+   column repfilters { uino: Y; }
+   column flag {
+      suffix: _land;
+      description: Landscape Mode;
+   }
+   column { ts_ins; uid_ins; ts_upd; uid_upd; }
+   
+}
+
+// -- NOTE.  Table_id is a column, not a foreign key.  This is because
+//    we do not yet trust our list of tables.  We also have not worked
+//    out how to handle somebody dropping from the dd a table used
+//    in reports.  A dropped table will not have a client-side ddtable_
+//    file, which should mess up the report writer good.
+table reporttables {
+   module: reports750;
+   description: Report Tables;
+   nomenu: Y;
+   
+   foreign_key reports { primary_key: Y; uisearch: Y; }
+   column table_id     { primary_key: Y; uisearch: Y; }
+   column { ts_ins; uid_ins; ts_upd; uid_upd; }
+   
+}
+
+// -- NOTE.  Again there neither table_id nor column_id is a foreign
+//    key.  Client-side code must enter something that makes sense.
+column compval { description: Comparison Value; type_id:vchar; colprec:100;}
+table reportcolumns {
+   module: reports750;
+   description: Report Columns;
+   nomenu: Y;
+   
+   foreign_key reports { primary_key: Y; uisearch: Y; }
+   column table_id     { primary_key: Y; uisearch: Y; }
+   column column_id    { primary_key: Y; uisearch: Y; }
+   column uicolseq { description: Display Order; 
+      automation_id: BLANK;
+   } 
+   // A column appears in the sort order if checked.  The sequence
+   // of columns in the sort clause goes by display order.
+   column flag { suffix: _sort; description: Sort Flag; }
+   //column uisort   { description: Sort Sequence; automation_id: BLANK; }
+   //column flag { suffix: _summ; description: Summarize On; }
+   //foreign_key { summacts;
+   //   column summact { automation_id: BLANK; }
+   //} 
+   column { description; } 
+   //column { compoper; compval; automation_id: BLANK; }
+   column { type_id; colprec; colscale; dispsize; }
+   
+   column { ts_ins; uid_ins; ts_upd; uid_upd; }
+   
+   index uicolseq { column { uicolseq; } }
+}
+
+column reportlevel { type_id: int; description: Report Level; }
+table reportlevels {
+   module: reports750;
+   description: Report Levels;
+   nomenu: Y;
+
+   foreign_key reports { primary_key: Y; uisearch: Y; }
+   column reportlevel  { primary_key: Y; }
+   
+   // The user interface always puts levels here. 
+   column flag { suffix: _skipdetail; description: Skip Detail; uino: Y; }
+   column flag { suffix: _count;      description: Count Rows;  uino: Y; }
+   column { repfilters; }
+}
+
+
+table reportcollevels {
+   module: reports750;
+   description: Report Columns by Level;
+   nomenu: Y;
+   
+   foreign_key reportcolumns  { primary_key: Y; uisearch: Y; }
+   foreign_key reportlevels   { auto_insert: Y; uisearch: Y; nocolumns: Y; }
+   column reportlevel { primary_key: Y; }
+   foreign_key { summacts; }
+   
+   column { ts_ins; uid_ins; ts_upd; uid_upd; }
+   
+   //index uicolseq { column { uicolseq; } }
+}
+
+
+
+column summact { description: Summary As; type_id:char; colprec: 5; }
+table summacts {
+   module: reports750;
+   description: Summary Actions;
+   nomenu: Y;
+   
+   column summact { primary_key: Y; uisearch: Y; }
+}
+
+content summacts {
+   columns { summact; }
+   values  { BREAK;   }
+   values  { -NA-;    }
+   values  { SUM;     }
+   values  { COUNT;   }
+   values  { MIN;     }
+   values  { MAX;     }
+   values  { AVG;     }
+}
+
+
+// =================================================================
+// =================================================================
+// COMMON APPLICATION TABLES AND DATA
+// -----------------------------------------------------------------
+// Tables and content that are generally useful and so are 
+// part of the universal include file
+// =================================================================
+// =================================================================
+//  Timezones table
+//  TODO. range constraints on hours and mins?  Or perhaps no; since
+//        the data itself comprises the constraint on user data?
+//
+column timezone       { description: Time Zone; type_id: char; colprec: 7; }
+column timezone_hours { description: Offset Hours; type_id: int; }
+column timezone_mins  { description: Offset Minutes; type_id: int; }
+//column timezone_off   { description: Computed Offset; type_id: int; }
+
+table timezones { 
+	description: Time Zones;
+	module: reference;
+	risimple: Y;
+	column_prefix: reference;
+	
+   column timezone { primary_key: Y; uisearch: Y; }	
+	column description { uisearch: Y; }
+	column uisort      { uisearch: Y; description: User Sort;}
+
+	column timezone_hours { uisearch: Y; }
+   column timezone_mins  { uisearch: Y; }
+   //column timezone_off   { uisearch: Y; automation_id: EXTEND; auto_formula: (@timezone_hours * 60) + @timezone_mins; } 	
+
+	projection dropdown { column { description; } }
+	group $LOGIN { permsel: Y; }
+}
+
+
+content timezones {
+	columns { timezone; timezone_hours; timezone_mins; description; uisort }
+	update  { NFT;-03;30 ;Canada - Newfoundland Standard Time;3 }
+	update  { AST;-04;00 ;Canada - Atlantic Standard Time;4 }
+	update  { EST;-05;00 ;US - Eastern Standard Time     ;5 }
+	update  { CST;-06;00 ;US - Central Standard Time     ;6 }
+   update  { MST;-07;00 ;US - Mountain Standard Time    ;30 }
+	update  { PST;-08;00 ;US - Pacific Standard Time     ;60 }
+	update  { AKST;-09;00;US - Alaska Standard Time      ;80 }
+	update  { HST;-10;00 ;US - Hawaii Standard Time      ;130 }
+	update  { CAT;-10;00 ;US - Central Alaska Time       ;140 }
+	update  { NT ;-11;00 ;US - Nome Time                 ;150 }
+	update  { NZT ;12;00 ;New Zealand Time              ;155 }
+	update  { AEST;10;00 ;Australia - Eastern Standard Time;200 }
+	update  { LIGT;10;00 ;Australia - Melbourne            ;203 }
+	update  { CAST;09;30 ;Australia - Central Standard Time;205 }
+   update  { SAST;09;30 ;Australia - South Standard Time  ;210 }
+	update  { AWST;08;00 ;Australia - Western Standard Time;211 }
+	update  { GMT;00;00  ;UK - Greenwich Mean Time;220 }
+	values  { GST;10;00  ;Guam Standard Time - Russia zone 9;250 }
+	update  { IDLW;-12;00;International Date Line - West;260 }
+   update  { IDLE;12;00 ;International Date Line - East;270 }
+	values { JST;09;00;Japan Standard Time/ Russia zone 8;320 }
+	values { KST;09;00;Korea Standard Time;330 }
+	values { MHT;09;00;Kwajalein Time;340 }
+	values { MT;08;30;Moluccas Time;360 }
+	values { CCT;08;00;China Coastal Time;380 }
+	values { JT;07;30;Java Time;410 }
+	values { ALMST;07;00;Almaty Summer Time;440 }
+	values { CXT;07;00;Christmas (Island) Time;460 }
+	values { MMT;06;30;Myanmar Time;470 }
+	values { ALMT;06;00;Almaty Time;480 }
+	values { MAWT;06;00;Mawson (Antarctica) Time;490 }
+	values { IOT;05;00;Indian Chagos Time;500 }
+	values { MVT;05;00;Maldives Island Time;510 }
+	values { TFT;05;00;Kerguelen Time;520 }
+	values { AFT;04;30;Afghanistan Time;530 }
+	values { EAST;04;00;Antananarivo Summer Time;540 }
+	values { MUT;04;00;Mauritius Island Time;550 }
+	values { RET;04;00;Reunion Island Time;560 }
+	values { SCT;04;00;Mahe Island Time;570 }
+	values { IRT/IT;03;30;Iran Time;580 }
+	values { EAT;03;00;Antananarivo/Comoro Time;590 }
+	values { BT;03;00;Baghdad Time;600 }
+	values { EETDST;03;00;Eastern Europe Daylight-Saving Time;610 }
+	values { HMT;03;00;Hellas Mediterranean Time (?);620 }
+	values { BDST;02;00;British Double Standard Time;630 }
+	values { CEST;02;00;Central European Summer Time;640 }
+	values { CETDST;02;00;Central European Daylight-Saving Time;650 }
+	values { EET;02;00;Eastern European Time/ Russia zone 1;660 }
+	values { FWT;02;00;French Winter Time;670 }
+	values { IST;02;00;Israel Standard Time;680 }
+	values { MEST;02;00;Middle European Summer Time;690 }
+	values { METDST;02;00;Middle Europe Daylight-Saving Time;700 }
+	values { SST;02;00;Swedish Summer Time;710 }
+	values { BST;01;00;British Summer Time;720 }
+	values { CET;01;00;Central European Time;730 }
+	values { DNT;01;00;Dansk Normal Tid;740 }
+	values { FST;01;00;French Summer Time;750 }
+	values { MET;01;00;Middle European Time;760 }
+	values { MEWT;01;00;Middle European Winter Time;770 }
+	values { MEZ;01;00;Mitteleuropische Zeit;780 }
+	values { NOR;01;00;Norway Standard Time;800 }
+	values { SET;01;00;Seychelles Time;810 }
+	values { SWT;01;00;Swedish Winter Time;820 }
+	values { WETDST;01;00;Western European Daylight-Saving Time;830 }
+	values { UT;0;0;Universal Time;850 }
+	values { UTC;00;00;Universal Coordinated Time;860 }
+	values { Z;00;00;Same as UTC;870 }
+	values { ZULU;0;00;Same as UTC;880 }
+	values { WET;00;00;Western European Time;890 }
+	values { WAT;-01;0;West Africa Time;900 }
+	values { FNST;-01;00;Fernando de Noronha Summer Time;910 }
+	values { FNT;-02;00;Fernando de Noronha Time;920 }
+	values { BRST;-02;00;Brasilia Summer Time;930 }
+	values { ADT;-03;00;Atlantic Daylight-Saving Time;950 }
+	values { BRT;-03;00;Brasilia Time;970 }
+}
+
+
+//  Days of the week table; useful for scheduling stuff
+//
+column weekday { 
+	description: weekday; 
+	type_id: char; 
+	colprec: 5; }
+column weekday_desc { 
+	description: Complete Name; 
+	type_id: char; 
+	colprec: 9; }
+table weekdays { 
+	description: Week Days;
+	module: reference;
+	risimple: Y;
+	
+	column weekday     { primary_key: Y; uisearch: Y; }
+	column description {                 uisearch: Y; }
+	column { uisort; uisearch: Y; } 
+	
+	projection dropdown { column { weekday; description; }}
+	
+	group $LOGIN { permsel: Y; }
+}
+
+content weekdays { 
+	columns { weekday; description; uisort }
+   update { SUN;Sunday;1 }
+	update { MON;Monday;2 }
+	update { TUE;Tuesday;3 }
+	update { WED;Wednesday;4 }
+	update { THU;Thursday;5 }
+	update { FRI;Friday;6 }
+	update { SAT;Saturday;7 }
+}
+
+
+table countries {
+   description: Countries;
+   module: reference;
+   
+   column country { primary_key: Y; uisearch: Y; }
+   column name    {                 uisearch: Y; }
+   column { notes; }
+
+	group $LOGIN { permsel: Y; }
+   
+   projection dropdown { column { name; }}
+}
+
+content countries {
+   columns { country; name; }
+   values { AF;  Afghanistan; }
+   values { AL;  Albania; }
+   values { DZ;  Algeria; }
+   values { AS;  American Samoa; }
+   values { AD;  Andorra; }
+   values { AO;  Angola; }
+   values { AI;  Anguilla; }
+   values { AQ;  Antarctica; }
+   values { AG;  Antigua and Barbuda; }
+   values { AR;  Argentina; }
+   values { AM;  Armenia; }
+   values { AW;  Aruba; }
+   values { AU;  Australia; }
+   values { AT;  Austria; }
+   values { AZ;  Azerbaijan; }
+   values { BS;  Bahamas; }
+   values { BH;  Bahrain; }
+   values { BD;  Bangladesh; }
+   values { BB;  Barbados; }
+   values { BY;  Belarus; }
+   values { BE;  Belgium; }
+   values { BZ;  Belize; }
+   values { BJ;  Benin; }
+   values { BM;  Bermuda; }
+   values { BT;  Bhutan; }
+   values { BO;  Bolivia; }
+   values { BA;  Bosnia; }
+   values { BW;  Botswana; }
+   values { BR;  Brazil; }
+   values { IO;  British Indian Ocean; }
+   values { BN;  Brunei Darussalam; }
+   values { BG;  Bulgaria; }
+   values { BF;  Burkina Faso; }
+   values { BI;  Burundi; }
+   values { KH;  Cambodia; }
+   values { CM;  Cameroon; }
+   values { CA;  Canada; }
+   values { CV;  Cape Verde; }
+   values { KY;  Cayman Islands; }
+   values { CF;  Central Africa; }
+   values { TD;  Chad; }
+   values { CL;  Chile; }
+   values { CN;  China; }
+   values { CX;  Christmas Island; }
+   values { CC;  Cocos Islands; }
+   values { CO;  Colombia; }
+   values { KM;  Comoros; }
+   values { CG;  Congo; }
+   values { CD;  Congo, Republic of; }
+   values { CK;  Cook Islands; }
+   values { CR;  Costa Rica; }
+   values { CI;  Cote d'Ivoire; }
+   values { HR;  Croatia; }
+   values { CU;  Cuba; }
+   values { CY;  Cyprus; }
+   values { CZ;  Czech Republic; }
+   values { DK;  Denmark; }
+   values { DJ;  Djibouti; }
+   values { DM;  Dominica; }
+   values { DO;  Dominican Republic; }
+   values { EC;  Ecuador; }
+   values { EG;  Egypt; }
+   values { SV;  El Salvador; }
+   values { GQ;  Equatorial Guinea; }
+   values { ER;  Eritrea; }
+   values { EE;  Estonia; }
+   values { ET;  Ethiopia; }
+   values { FK;  Falkland Islands; }
+   values { FO;  Faroe Islands; }
+   values { FJ;  Fiji; }
+   values { FI;  Finland; }
+   values { FR;  France; }
+   values { GF;  French Guiana; }
+   values { PF;  French Polynesia; }
+   values { GA;  Gabon; }
+   values { GM;  Gambia; }
+   values { GE;  Georgia; }
+   values { DE;  Germany; }
+   values { GH;  Ghana; }
+   values { GI;  Gibraltar; }
+   values { GR;  Greece; }
+   values { GL;  Greenland; }
+   values { GD;  Grenada; }
+   values { GP;  Guadeloupe; }
+   values { GU;  Guam; }
+   values { GT;  Guatemala; }
+   values { GN;  Guinea; }
+   values { GW;  Guinea-Bissau; }
+   values { GY;  Guyana; }
+   values { HT;  Haiti; }
+   values { HM;  Heard Island; }
+   values { VA;  Vatican City; }
+   values { HN;  Honduras; }
+   values { HK;  Hong Kong; }
+   values { HU;  Hungary; }
+   values { IS;  Iceland; }
+   values { IN;  India; }
+   values { ID;  Indonesia; }
+   values { IR;  Iran; }
+   values { IQ;  Iraq; }
+   values { IE;  Ireland; }
+   values { IL;  Israel; }
+   values { IT;  Italy; }
+   values { JM;  Jamaica; }
+   values { JP;  Japan; }
+   values { JO;  Jordan; }
+   values { KZ;  Kazakhstan; }
+   values { KE;  Kenya; }
+   values { KI;  Kiribati; }
+   values { KP;  Korea (North); }
+   values { KR;  Korea (South); }
+   values { KW;  Kuwait; }
+   values { KG;  Kyrgyzstan; }
+   values { LA;  Lao; }
+   values { LV;  Latvia; }
+   values { LB;  Lebanon; }
+   values { LS;  Lesotho; }
+   values { LR;  Liberia; }
+   values { LY;  Libya; }
+   values { LI;  Liechtenstein; }
+   values { LT;  Lithuania; }
+   values { LU;  Luxembourg; }
+   values { MO;  Macao; }
+   values { MK;  Macedonia; }
+   values { MG;  Madagascar; }
+   values { MW;  Malawi; }
+   values { MY;  Malaysia; }
+   values { MV;  Maldives; }
+   values { ML;  Mali; }
+   values { MT;  Malta; }
+   values { MH;  Marshall Islands; }
+   values { MQ;  Martinique; }
+   values { MR;  Mauritania; }
+   values { MU;  Mauritius; }
+   values { YT;  Mayotte; }
+   values { MX;  Mexico; }
+   values { FM;  Micronesia; }
+   values { MD;  Moldova; }
+   values { MC;  Monaco; }
+   values { MN;  Mongolia; }
+   values { MS;  Montserrat; }
+   values { MA;  Morocco; }
+   values { MZ;  Mozambique; }
+   values { MM;  Myanmar; }
+   values { NA;  Namibia; }
+   values { NR;  Nauru; }
+   values { NP;  Nepal; }
+   values { NL;  Netherlands; }
+   values { AN;  Netherlands Antilles; }
+   values { NC;  New Caledonia; }
+   values { NZ;  New Zealand; }
+   values { NI;  Nicaragua; }
+   values { NE;  Niger; }
+   values { NG;  Nigeria; }
+   values { NU;  Niue; }
+   values { NF;  Norfolk Island; }
+   values { MP;  Northern Mariana Is; }
+   values { NO;  Norway; }
+   values { OM;  Oman; }
+   values { PK;  Pakistan; }
+   values { PW;  Palau; }
+   values { PA;  Panama; }
+   values { PG;  Papua New Guinea; }
+   values { PY;  Paraguay; }
+   values { PE;  Peru; }
+   values { PH;  Philippines; }
+   values { PN;  Pitcairn; }
+   values { PL;  Poland; }
+   values { PT;  Portugal; }
+   values { PR;  Puerto Rico; }
+   values { QA;  Qatar; }
+   values { RE;  Reunion; }
+   values { RO;  Romania; }
+   values { RU;  Russian Federation; }
+   values { RW;  Rwanda; }
+   values { SH;  Saint Helena; }
+   values { KN;  Saint Kitts; }
+   values { LC;  Saint Lucia; }
+   values { PM;  Saint Pierre; }
+   values { VC;  Saint Vincent; }
+   values { WS;  Samoa; }
+   values { SM;  San Marino; }
+   values { ST;  Sao Tome; }
+   values { SA;  Saudi Arabia; }
+   values { SN;  Senegal; }
+   values { CS;  Serbia; }
+   values { SC;  Seychelles; }
+   values { SL;  Sierra Leone; }
+   values { SG;  Singapore; }
+   values { SK;  Slovakia; }
+   values { SI;  Slovenia; }
+   values { SB;  Solomon Islands; }
+   values { SO;  Somalia; }
+   values { ZA;  South Africa; }
+   values { GS;  South Georgia; }
+   values { ES;  Spain; }
+   values { LK;  Sri Lanka; }
+   values { SD;  Sudan; }
+   values { SR;  Suriname; }
+   values { SJ;  Svalbard and Jan Mayen; }
+   values { SZ;  Swaziland; }
+   values { SE;  Sweden; }
+   values { CH;  Switzerland; }
+   values { SY;  Syria; }
+   values { TW;  Taiwan; }
+   values { TJ;  Tajikistan; }
+   values { TZ;  Tanzania; }
+   values { TH;  Thailand; }
+   values { TL;  Timor-Leste; }
+   values { TG;  Togo; }
+   values { TK;  Tokelau; }
+   values { TO;  Tonga; }
+   values { TT;  Trinidad and Tobago; }
+   values { TN;  Tunisia; }
+   values { TR;  Turkey; }
+   values { TM;  Turkmenistan; }
+   values { TC;  Turks and Caicos Isl; }
+   values { TV;  Tuvalu; }
+   values { UG;  Uganda; }
+   values { UA;  Ukraine; }
+   values { AE;  United Arab Emirates; }
+   values { GB;  United Kingdom; }
+   values { US;  United States; }
+   values { UM;  USA Minor Islands; }
+   values { UY;  Uruguay; }
+   values { UZ;  Uzbekistan; }
+   values { VU;  Vanuatu; }
+   values { VE;  Venezuela; }
+   values { VN;  Viet Nam; }
+   values { VG;  Virgin Islands (UK); }
+   values { VI;  Virgin Islands (USA); }
+   values { WF;  Wallis and Futuna; }
+   values { EH;  Western Sahara; }
+   values { YE;  Yemen; }
+   values { ZM;  Zambia; }
+   values { ZW;  Zimbabwe; }
+   values { ZZ;  Unknown - Not US; }
+}
+
+//  Table of states and provinces
+//
+//
+column state_name { description: State Name;     type_id: char; colprec: 30; }
+column country    { description: Country;        type_id: char; colprec: 20; }
+table states { 
+	description: States and Provinces;
+	risimple: Y;
+	module: reference;
+	
+	column state { primary_key: Y; uisearch: Y; }
+	column state_name { uisearch: Y; }
+   foreign_key countries { uisearch: Y; }
+	
+	group $LOGIN { permsel: Y; }
+   
+   projection dropdown { column { country; state_name; }}
+}
+
+content states { 
+	columns { state_name; state; country; }
+	insert { Alberta;             AB; CA; }
+	insert { British Columbia;    BC; CA; } 
+	insert { Manitoba;            MB; CA; }
+   insert { New Brunswick;       NB; CA; }
+	insert { Newfndland/Labrador; NL; CA; }
+	insert { Nova Scotia;         NS; CA; }
+	insert { N.W. Territories;    NT; CA; }
+	insert { Nunavut;             NU; CA; }
+	insert { Ontario;             ON; CA; }
+	insert { Prince Edward Isle;  PE; CA; }
+	insert { Quebec;              QC; CA; }
+	insert { Saskatchewan;        SK; CA; }
+	insert { Yukon Territory;     YT; CA; }
+	
+   insert { Alabama;AL;US }
+	insert { Alaska;AK ;US }
+	insert { Arizona;AZ;US } 
+	insert { Arkansas;AR;US }
+	insert { California;CA;US }
+	insert { Colorado;CO;US }
+	insert { Connecticut;CT;US }
+	insert { Delaware;DE;US }
+	insert { Dist. of Columbia;DC;US }
+	insert { Florida;FL;US }
+	insert { Georgia;GA;US }
+	insert { Guam;GU;US }
+	insert { Hawaii;HI;US }
+	insert { Idaho;ID;US }
+	insert { Illinois;IL;US }
+	insert { Indiana;IN;US }
+	insert { Iowa;IA;US }
+	insert { Kansas;KS;US }
+	insert { Kentucky;KY;US }
+	insert { Louisiana;LA;US }
+	insert { Maine;ME;US }
+	insert { Maryland;MD;US }
+	insert { Massachusetts;MA;US }
+	insert { Michigan;MI;US }
+	insert { Minnesota;MN;US }
+	insert { Mississippi;MS;US }
+	insert { Missouri;MO;US }
+	insert { Montana;MT;US }
+	insert { Nebraska;NE;US }
+	insert { Nevada;NV;US }
+	insert { New Hampshire;NH;US }
+	insert { New Jersey;NJ;US }
+	insert { New Mexico;NM;US }
+	insert { New York;NY;US }
+	insert { North Carolina;NC;US }
+	insert { North Dakota;ND;US }
+	insert { Ohio;OH;US }
+	insert { Oklahoma;OK;US }
+	insert { Oregon;OR;US }
+	insert { Pennsylvania;PA;US }
+	insert { Puerto Rico;PR;US }
+	insert { Rhode Island;RI;US }
+	insert { South Carolina;SC;US }
+	insert { South Dakota;SD;US }
+	insert { Tennessee;TN;US }
+	insert { Texas;TX;US }
+	insert { Utah;UT;US }
+	insert { Vermont;VT;US }
+	insert { Virginia;VA;US }
+	insert { Virgin Islands;VI;US }
+	insert { Washington;WA;US }
+	insert { West Virginia;WV;US }
+	insert { Wisconsin;WI;US }
+	insert { Wyoming;WY;US }
+   
+   // United Kingdom
+	insert { United Kingdom;ENGL;GB; }
+   
+   // New Zealand
+  	insert { New Zealand; NZ; NZ; }
+
+   // Australia
+   insert { Australian Capital Territory; ACT; AU; }
+   insert { New South Wales   ; NSW; AU; }
+   insert { Northern Territory; NT ; AU; }
+   insert { Queensland        ; QLD; AU; }
+   insert { South Australia   ; SA ; AU; }
+   insert { Tasmania          ; TAS; AU; }
+   insert { Victoria          ; VIC; AU; }
+   insert { Western Australia ; WA ; AU; }
+}
+
+
+column airport      { description: Airport; type_id: char; colprec: 3; }
+column airport_desc { description: Airport Name; type_id: vchar; colprec:100;}
+table airports {
+   module: reference;
+   description: Airports;
+   
+   column airport      { uisearch: Y; primary_key: Y; }
+   column airport_desc { uisearch: Y; }
+}
+
+content airports {
+   columns { airport; airport_desc; }
+   insert { ABE; Allentown-Bethlehem-Easton International, PA, USA; }
+   insert { ABL; Ambler, AK, USA; }
+   insert { ABM; Bamaga, Queensland, Australia; }
+   insert { ABQ; Albuquerque, NM, USA - Albuquerque International Airport; }
+   insert { ABR; Aberdeen, SD, USA - Aberdeen Regional Airport; }
+   insert { ABS; Abu Simbel, Egypt - Abu Simbel; }
+   insert { ABX; Albury, New South Wales, Australia - Albury; }
+   insert { ABY; Albany, GA, USA - Dougherty County; }
+   insert { ABZ; Aberdeen, Scotland, United Kingdom - Dyce; }
+   insert { ACA; Acapulco, Guerrero, Mexico - Alvarez International; }
+   insert { ACC; Accra, Ghana - Kotoka; }
+   insert { ACE; Lanzarote, Canary Islands, Spain - Lanzarote; }
+   insert { ACI; Alderney, Channel Islands, United Kingdom - The Blaye; }
+   insert { ACK; Nantucket, MA, USA; }
+   insert { ACT; Waco, TX, USA - Madison Cooper; }
+   insert { ACV; Arcata, CA, USA - Arcata/Eureka Airport; }
+   insert { ACY; Atlantic City NJ, USA - Atlantic City International; }
+   insert { ADA; Adana, Turkey - Adana; }
+   insert { ADB; Izmir, Turkey - Adnam Menderes; }
+   insert { ADD; Addis Ababa, Ethiopia - Bole; }
+   insert { ADJ; Amman, Jordan - Civil; }
+   insert { ADL; Adelaide, South Australia, Australia - Adelaide; }
+   insert { ADQ; Kodiak, AK, USA; }
+   insert { ADZ; San Andres Island, Colombia; }
+   insert { AEP; Buenos Aires, Buenos Aires, Argentina - Jorge Newberry; }
+   insert { AES; Aalesund, Norway - Vigra; }
+   insert { AET; Allakaket, AK, USA; }
+   insert { AEX; Alexandria, LA, USA - Alexandria Intl Airport; }
+   insert { AEY; Akureyri, Iceland - Akureyri; }
+   insert { AGA; Agadir, Morocco - Inezgane; }
+   insert { AGB; Augsburg, Germany - Muehlhausen; }
+   insert { AGC; Pittsburgh/Allegheny County, PA, USA; }
+   insert { AGF; Agen, France - La Garenne; }
+   insert { AGH; Helsingborg, Sweden - Angelholm/Helsingborg; }
+   insert { AGP; Malaga, Spain - Malaga; }
+   insert { AGR; Agra, India - Kheria; }
+   insert { AGS; Augusta, GA, USA - Bush Field; }
+   insert { AGU; Aguascalientes, Aguascalientes, Mexico; }
+   insert { AHN; Athens, GA, USA; }
+   insert { AHO; Alghero, Sardinia, Italy - Fertilia; }
+   insert { AIA; Alliance, NE, USA; }
+   insert { AIN; Wainwright, AK, USA; }
+   insert { AIY; Atlantic City International, NJ, USA; }
+   insert { AJN; Anjouan,Comoros; }
+   insert { AJA; Ajaccio, Corsica, France - Campo Dell Oro; }
+   insert { AJU; Aracaju, Sergipe, Brazil; }
+   insert { AKJ; Asahikawa, Japan - Asahikawa; }
+   insert { AKL; Auckland, New Zealand - Auckland International Airport; }
+   insert { ALA; Almaty, Kazakhstan - Almaty; }
+   insert { ALB; Albany, NY, USA - Albany County Airport; }
+   insert { ALC; Alicante, Spain - Alicante; }
+   insert { ALE; Alpine, TX, USA - Alpine Texas; }
+   insert { ALF; Alta, Norway - Elvebakken; }
+   insert { ALG; Algiers, Algeria - Houari Boumedienne; }
+   insert { ALM; Alamogordo, NM, USA; }
+   insert { ALO; Waterloo, IA, USA - Waterloo Municipal Airport; }
+   insert { ALP; Aleppo, Syria - Nejrab; }
+   insert { ALS; Alamosa, CO, USA - Bergman Field; }
+   insert { ALW; Walla Walla, WA, USA; }
+   insert { ALY; Alexandria, Egypt - Alexandria; }
+   insert { AMA; Amarillo, TX, USA - Amarillo International Airport; }
+   insert { AMD; Ahmedabad, India - Ahmedabad; }
+   insert { AMI; Mataram, Indonesia - Selaparang; }
+   insert { AMM; Amman, Jordan - Queen Alia International; }
+   insert { AMQ; Ambon, Indonesia - Pattimura; }
+   insert { AMS; Amsterdam, Netherlands - Schiphol; }
+   insert { ANB; Anniston, AL, USA - Municipal; }
+   insert { ANC; Anchorage, AK, USA - Anchorage International; }
+   insert { ANF; Antofagasta, Chile - Cerro Moreno; }
+   insert { ANG; Angouleme, France - Gel-Air; }
+   insert { ANI; Aniak, AK, USA; }
+   insert { ANR; Antwerp, Belgium - Deurne; }
+   insert { ANU; Saint Johns / Antigua, Antigua And Barbuda - Vc Bird International; }
+   insert { ANV; Anvik, AK, USA; }
+   insert { AOI; Ancona, Italy - Falconara; }
+   insert { AOJ; Aomori, Japan; }
+   insert { AOK; Karpathos, Greece - Karpathos; }
+   insert { AOO; Altoona / Martinsburg, PA, USA - Blair County; }
+   insert { AOR; Alor Setar, Malaysia - Sultan Abdul Halim; }
+   insert { APF; Naples, FL, USA; }
+   insert { APL; NampulaMozambique; }
+   insert { APN; Alpena, MI, USA - Alpena Regional Airport; }
+   insert { APW; Apia, Samoa - Faleolo; }
+   insert { AQJ; Aqaba, Jordan - Aqaba; }
+   insert { AQP; Arequipa, Peru - Rodriguez Ballon; }
+   insert { ARH; Arkhangelsk, Russia - Arkhangelsk; }
+   insert { ARI; Arica, Chile - Chacalluta; }
+   insert { ARM; Armidale, New South Wales, Australia - Armidale; }
+   insert { ARN; Stockholm, Sweden - Arlanda International; }
+   insert { ART; Watertown, NY, USA - Watertown; }
+   insert { ASD; Andros Town, Bahamas; }
+   insert { ASE; Aspen, CO, USA - Pitkin County Airport Sardy Field; }
+   insert { ASM; Asmara, Eritrea - Asmara Intl/Yohannes Iv; }
+   insert { ASP; Alice Springs, Northern Territory, Australia - Alice Springs; }
+   insert { ASU; Asuncion, Paraguay - Silvio Pettirossi; }
+   insert { ASW; Aswan, Egypt - Daraw; }
+   insert { ATC; Arthurs Town, Bahamas; }
+   insert { ATH; Athens, Greece - Venizelos; }
+   insert { ATL; Atlanta, GA, USA - Hartsfield International; }
+   insert { ATW; Appleton, WI, USA - Outagamie County Airport; }
+   insert { ATY; Watertown, SD, USA; }
+   insert { AUA; Aruba, Aruba - Reina Beatrix; }
+   insert { AUC; Arauca, Colombia; }
+   insert { AUG; Augusta, ME, USA - Maine State; }
+   insert { AUH; Abu Dhabi, United Arab Emirates - Abu Dhabi International; }
+   insert { AUS; Austin, TX, USA - Robert Mueller Municipal Airport; }
+   insert { AVL; Asheville / Hendersonville, NC, USA - Asheville Regional Airport; }
+   insert { AVN; Avignon, France - Caumont; }
+   insert { AVP; Wilkes Barre/Scranton, PA, USA - Wilkes-Barre/Scranton Intl; }
+   insert { AXA; Anguilla, Anguilla; }
+   insert { AXD; Alexandroupolis, Greece - Alexandroupolis; }
+   insert { AYQ; Ayers Rock, Northern Territory, Australia - Connellan; }
+   insert { AYT; Antalya, Turkey - Antalya; }
+   insert { AZO; Kalamazoo, MI, USA - Kalamazoo/Battle Creek Intl; }
+   insert { BAH; Bahrain, Bahrain - Bahrain International Bahrain; }
+   insert { BAK; Baku, Azerbaijan - Baku; }
+   insert { BAL; Batman, Turkey - Nearest Air Service Through Diyarbakir; }
+   insert { BAQ; Barranquilla, Colombia - E Cortissoz; }
+   insert { BAX; Barnaul, Russia - Barnaul Airport; }
+   insert { BBI; Bhubaneswar, India - Bhubaneswar; }
+   insert { BBK; Kasane, Botswana - Kasane; }
+   insert { BBU; Bucharest, Romania - Baneasa; }
+   insert { BCD; Bacolod, Philippines - Bacolod; }
+   insert { BCN; Barcelona, Spain - Barcelona; }
+   insert { BDA; Bermuda/Hamilton, Bermuda - Kindley Airfield/Civil Air Terminal; }
+   insert { BDJ; Banjarmasin, Indonesia - Syamsudin Noor; }
+   insert { BDL; Hartford, CT, USA - Bradley International Airport; }
+   insert { BDO; Bandung, Indonesia - Husein Sastranegara; }
+   insert { BDQ; Vadodara, India - Vadodara; }
+   insert { BDR; Bridgeport, CT, USA - Sikorsky Memorial; }
+   insert { BED; Bedford, MA, USA - Bedford; }
+   insert { BEG; Belgrade, Yugoslavia - Belgrade-Beograd; }
+   insert { BEH; Benton Harbor, MI, USA - Ross Field; }
+   insert { BEI; Beica, Ethiopia - Beica; }
+   insert { BEL; Belem, Para, Brazil - Val De Cans; }
+   insert { BEO; Newcastle, New South Wales, Australia - Belmont; }
+   insert { BER; Berlin, Germany - Schoenefeld; }
+   insert { BES; Brest, France - Guipavas; }
+   insert { BET; Bethel, AK, USA - Bethel; }
+   insert { BEW; Beira, Mozambique - Beira; }
+   insert { BEY; Beirut, Lebanon - International; }
+   insert { BFD; Bradford, PA, USA - Bradford Regional; }
+   insert { BFF; Scottsbluff, NE, USA - William B Heiling Field; }
+   insert { BFI; Seattle Kings County International/Boeing Field, WA, USA; }
+   insert { BFL; Bakersfield, CA, USA - Meadows Field; }
+   insert { BFN; Bloemfontein, South Africa - Jbm Hertzog; }
+   insert { BFS; Belfast, Northern Ireland, United Kingdom - Belfast International; }
+   insert { BGA; Bucaramanga, Colombia - Palo Negro; }
+   insert { BGF; Bangui, Central African Republic - Bangui; }
+   insert { BGI; Bridgetown, Barbados - Grantley Adams International; }
+   insert { BGK; Big Creek, Belize - Big Creek; }
+   insert { BGM; Binghamton/Endicott/Johnson City, NY, USA - Edwin Alink Field; }
+   insert { BGO; Bergen, Norway - Flesland; }
+   insert { BGR; Bangor, ME, USA - Bangor International Airport; }
+   insert { BGY; Milan, Italy - Orio Al Serio; }
+   insert { BHB; Bar Harbor, ME, USA; }
+   insert { BHD; Belfast, Northern Ireland, United Kingdom - Belfast Harbor; }
+   insert { BHI; Bahia Blanca, Buenos Aires, Argentina - Commandante; }
+   insert { BHK; Bukhara, Uzbekistan; }
+   insert { BHM; Birmingham, AL, USA - Seibels/Bryan Airport; }
+   insert { BHQ; Broken Hill, New South Wales, Australia - Broken Hill; }
+   insert { BHS; Bathurst, New South Wales, Australia - Raglan; }
+   insert { BHX; Birmingham, England, United Kingdom - International; }
+   insert { BIA; Bastia, Corsica, France - Poretta; }
+   insert { BIK; Biak, Indonesia - Mokmer; }
+   insert { BIL; Billings, MT, USA - Billings Logan Intnl Airport; }
+   insert { BIM; Bimini, Bahamas - Bimini Island International; }
+   insert { BIO; Bilbao, Spain - Sondica; }
+   insert { BIQ; Biarritz, France - Parme; }
+   insert { BIS; Bismarck, ND, USA - Bismarck Mannan Municipal; }
+   insert { BJI; Bemidji, MN, USA - Bemidji Municipal Airport; }
+   insert { BJL; Banjul, Gambia - Yundum International; }
+   insert { BJX; Leon/Guanajuato, Guanajuato, Mexico - Del Bajio; }
+   insert { BKI; Kota Kinabalu, Sabah, Malaysia - Kota Kinabalu; }
+   insert { BKK; Bangkok, Thailand - Bangkok International Airport; }
+   insert { BKL; Cleveland Lakefront, OH, USA; }
+   insert { BKO; Bamako, Mali - Senou; }
+   insert { BKW; Beckley, WV, USA; }
+   insert { BKX; Brookings, SD, USA - Brookings Municipal Airport; }
+   insert { BLA; Barcelona, Venezuela - Gral Jose Antonio Anzoategui; }
+   insert { BLF; Bluefield, WV, USA; }
+   insert { BLI; Bellingham, WA, USA - Bellingham International; }
+   insert { BLK; Blackpool, England, United Kingdom - Blackpool; }
+   insert { BLL; Billund, Denmark - Billund; }
+   insert { BLQ; Bologna, Italy - Guglielmo Marconi; }
+   insert { BLR; Bangalore, India - Hindustan; }
+   insert { BLZ; Blantyre, Malawi - Chileka; }
+   insert { BMA; Stockholm, Sweden - Bromma Arpt; }
+   insert { BMG; Bloomington, IN, USA - Monroe County Airport; }
+   insert { BMI; Bloomington, IL, USA - Normal; }
+   insert { BNA; Nashville, TN, USA - Nashville Metropolitan Airport; }
+   insert { BNE; Brisbane, Queensland, Australia - Brisbane International Airport; }
+   insert { BNJ; Bonn, Germany - Train Main Railroad Station; }
+   insert { BNN; Bronnoysund, Norway - Bronnoy; }
+   insert { BNS; Barinas, Venezuela - Barinas; }
+   insert { BOD; Bordeaux, France - Merignac; }
+   insert { BOG; Bogota, Colombia - Eldorado; }
+   insert { BOI; Boise, ID, USA - Boise Municipal Arpt (Gowen Field); }
+   insert { BOM; Bombay, India - Bombay; }
+   insert { BON; Bonaire, Netherlands Antilles - Flamingo Field; }
+   insert { BOO; Bodo, Norway - Bodo; }
+   insert { BOS; Boston, MA, USA - Logan International Airport; }
+   insert { BPS; Porto Seguro, Bahia, Brazil - Porto Seguro; }
+   insert { BPT; Beaumont, TX, USA - Jefferson County; }
+   insert { BQK; Brunswick, GA, USA - Glynco Jetport; }
+   insert { BQN; Aguadilla, PR, USA; }
+   insert { BRC; San Carlos De Bariloche, Rio Negro, Argentina - International; }
+   insert { BRD; Brainerd, MN, USA; }
+   insert { BRE; Bremen, Germany - Bremen; }
+   insert { BRI; Bari, Italy; }
+   insert { BRL; Burlington, IA, USA - Burlington Municipal Airport; }
+   insert { BRM; Barquisimeto, Venezuela - Barquisimeto; }
+   insert { BRN; Berne, Switzerland - Belp; }
+   insert { BRO; Brownsville, TX, USA - South Padre Island Intl; }
+   insert { BRQ; Brno, Czech Republic - Turany; }
+   insert { BRR; Barra / Hebrides Islands, Scotland, United Kingdom - North Bay; }
+   insert { BRS; Bristol, England, United Kingdom - Bristol; }
+   insert { BRT; Bathurst Island, Northern Territory, Australia; }
+   insert { BRU; Brussels, Belgium - National; }
+   insert { BRW; Barrow, AK, USA - Barrow; }
+   insert { BSB; Brasilia, Distrito Federal, Brazil - International; }
+   insert { BSK; Biskra, Algeria - Biskra; }
+   insert { BSL; Basel, Switzerland - Basel; }
+   insert { BTM; Butte, MT, USA; }
+   insert { BTR; Baton Rouge, LA, USA; }
+   insert { BTS; Bratislava, Slovakia - Ivanka; }
+   insert { BTU; Bintulu, Sarawak, Malaysia - Bintulu; }
+   insert { BTV; Burlington, VT, USA - Burlington International Airport; }
+   insert { BUD; Budapest, Hungary - Ferihegy; }
+   insert { BUF; Buffalo, NY, USA - Greater Buffalo Intl Airport; }
+   insert { BUQ; Bulawayo, Zimbabwe - Bulawayo; }
+   insert { BUR; Burbank, CA, USA - Burbank Glendale Pasadena Airport; }
+   insert { BUZ; Bushehr, Iran - Bushehr; }
+   insert { BVB; Boa Vista, Roraima, Brazil; }
+   insert { BVE; Brive-La-Gaillarde, France - Laroche; }
+   insert { BVI; Birdsville, Queensland, Australia - Birdsville; }
+   insert { BWA; Bhairawa, Nepal - Bhairawa; }
+   insert { BWI; Baltimore, MD, USA - Baltimore-Washington International; }
+   insert { BWN; Bandar Seri Begawan, Brunei Darussalam - Brunei International; }
+   insert { BXN; Bodrum, Turkey - Imsik Airport; }
+   insert { BXU; Butuan, Philippines - Butuan; }
+   insert { BYU; Bayreuth, Germany - Bindlacher Berg; }
+   insert { BZE; Belize City, Belize - Belize International; }
+   insert { BZG; Bydgoszcz, Poland; }
+   insert { BZN; Bozeman, MT, USA - Gallatin Field; }
+   insert { BZR; Beziers, France - Beziers-Vias; }
+   insert { CAE; Columbia, SC, USA - Columbia Sc Airport Metropolitan; }
+   insert { CAG; Cagliari, Sardinia, Italy - Elmas; }
+   insert { CAI; Cairo, Egypt - International; }
+   insert { CAJ; Canaima, Venezuela; }
+   insert { CAK; Akron/Canton, OH, USA - Akron-Canton Regional Airport; }
+   insert { CAN; Guangzhou, China - Baiyun; }
+   insert { CAS; Casablanca, Morocco - Anfa; }
+   insert { CAY; Cayenne, French Guiana - Rochambeau; }
+   insert { CBB; Cochabamba, Bolivia - San Jose De La Banda; }
+   insert { CBE; Cumberland, MD, USA - Municipal; }
+   insert { CBG; Cambridge, England, United Kingdom - Cambridge; }
+   insert { CBL; Ciudad Bolivar, Venezuela; }
+   insert { CBR; Canberra, Australian Capital Territory, Australia - Canberra; }
+   insert { CCF; Carcassonne, France - Salvaza Airport; }
+   insert { CCJ; Calicut, India; }
+   insert { CCP; Concepcion, Chile - Carriel Sur; }
+   insert { CCS; Caracas, Venezuela - Simon Bolivar International; }
+   insert { CCU; Calcutta, India - Calcutta; }
+   insert { CDC; Cedar City, UT, USA; }
+   insert { CDG; Paris, France - Charles De Gaulle; }
+   insert { CDH; Camden, AR, USA; }
+   insert { CDR; Chadron, NE, USA; }
+   insert { CDV; Cordova, AK, USA; }
+   insert { CEB; Cebu, Philippines - International; }
+   insert { CEC; Crescent City, CA, USA - Crescent City Municipal Airport; }
+   insert { CEI; Chiang Rai, Thailand - Chiang Rai; }
+   insert { CEN; Ciudad Obregon, Sonora, Mexico; }
+   insert { CER; Cherbourg, France - Maupertus; }
+   insert { CEZ; Cortez, CO, USA - Montezuma; }
+   insert { CFE; Clermont-Ferrand, France - Aulnat; }
+   insert { CFR; Caen, France - Carpiquet; }
+   insert { CFU; Kerkyra, Greece - Kerkyra; }
+   insert { CGA; Craig, AK, USA; }
+   insert { CGB; Cuiaba, Mato Grosso, Brazil; }
+   insert { CGH; Sao Paulo, Sao Paulo, Brazil - Congonhas; }
+   insert { CGI; Cape Girardeau, MO, USA - Municipal Airport; }
+   insert { CGK; Jakarta, Indonesia - Soekarno Hatta International; }
+   insert { CGN; Cologne/Bonn, Germany - Koeln/Bonn; }
+   insert { CGO; Zhengzhou, China; }
+   insert { CGP; Chittagong, Bangladesh - Patenga; }
+   insert { CGQ; Changchun, China; }
+   insert { CGR; Campo Grande, Mato Grosso Do Sul, Brazil; }
+   insert { CGX; Chicago, IL, USA - Merrill C. Meigs Field; }
+   insert { CHA; Chattanooga, TN, USA - Cha Lovell Field; }
+   insert { CHI; Chicago, IL, USA - Chicago FSS; }
+   insert { CHC; Christchurch, New Zealand - International; }
+   insert { CHO; Charlottesville, VA, USA - Charlottesville/Albemarle; }
+   insert { CHQ; Chania, Crete Island, Greece - Souda; }
+   insert { CHS; Charleston, SC, USA - Charleston International Airport; }
+   insert { CIA; Rome, Italy - Ciampino; }
+   insert { CIC; Chico, CA, USA - Chico Municipal Air Terminal; }
+   insert { CID; Cedar Rapids, IA, USA - Municipal; }
+   insert { CIF; Chifeng, China; }
+   insert { CIH; Changzhi, China; }
+   insert { CIU; Sault Ste Marie, MI, USA - Chippewa County Intl Airport; }
+   insert { CIX; Chiclayo, Peru - Cornel Ruiz; }
+   insert { CJB; Coimbatore, India - Peelamedu; }
+   insert { CJS; Ciudad Juarez, Chihuahua, Mexico - International Abraham Gonzalez; }
+   insert { CJU; Cheju, South Korea - Cheju; }
+   insert { CKB; Clarksburg, WV, USA - Clarksburg-Benedum Airport; }
+   insert { CKG; Chongquing, China; }
+   insert { CKS; Carajas, Para, Brazil - International / Brasilia Brazil; }
+   insert { CKY; Conakry, Guinea - Conakry; }
+   insert { CLD; Carlsbad, CA, USA - Carlsbad/Palomar Airport; }
+   insert { CLE; Cleveland, OH, USA - Hopkins International Airport; }
+   insert { CLJ; Cluj, Romania - Cluj; }
+   insert { CLL; College Station, TX, USA; }
+   insert { CLM; Port Angeles, WA, USA - Wm Fairchild Intl Airport; }
+   insert { CLO; Cali, Colombia - Alfonso Bonilla Aragon; }
+   insert { CLQ; Colima, Colima, Mexico; }
+   insert { CLT; Charlotte, NC, USA - Charlotte/Douglas Intl Airport; }
+   insert { CLY; Calvi, Corsica, France - Ste Catherine; }
+   insert { CMB; Colombo, Sri Lanka - Katunayake International; }
+   insert { CME; Ciudad Del Carmen, Campeche, Mexico; }
+   insert { CMF; Chambery, France - Chambery Aix-Les-Bains; }
+   insert { CMG; Corumba, Mato Grosso Do Sul, Brazil - Corumba; }
+   insert { CMH; Columbus, OH, USA - Port Columbus Intl Airport; }
+   insert { CMI; Champaign, IL, USA - Univ Of Illinois-Willard Airport; }
+   insert { CMN; Casablanca, Morocco - Mohamed V; }
+   insert { CMX; Hancock, MI, USA - Houghton County / Memorial; }
+   insert { CND; Constanta, Romania - Kogalniceanu; }
+   insert { CNF; Belo Horizonte /Belo Horizon, Minas Gerais, Brazil - Aeropuerto Internacional Tancredo Neves; }
+   insert { CNM; Carlsbad, NM, USA; }
+   insert { CNS; Cairns, Queensland, Australia - Cairns; }
+   insert { CNX; Chiang Mai, Thailand - International; }
+   insert { CNY; Moab, UT, USA; }
+   insert { COK; Cochin, India - Naval Air Station; }
+   insert { COO; Cotonou, Benin - Cotonou; }
+   insert { COR; Cordoba, Cordoba, Argentina - Pajas Blancas; }
+   insert { COS; Colorado Springs, CO, USA - Colorado Springs Municipal; }
+   insert { COU; Columbia, MO, USA - Columbia Regional; }
+   insert { CPC; San Martin De Los Andes, Neuquen, Argentina; }
+   insert { CPH; Copenhagen, Denmark - Copenhagen; }
+   insert { CPQ; Campinas, Sao Paulo, Brazil - Campinas International; }
+   insert { CPR; Casper, WY, USA - Natrona County Intl Airport; }
+   insert { CPT; Cape Town, South Africa - D F Malan; }
+   insert { CRD; Comodoro Rivadavia, Chubut, Argentina - Comodora Rivadavia; }
+   insert { CRG; Jacksonville, Florida, USA - Craig Municipal Airport; }
+   insert { CRI; Crooked Island, Bahamas; }
+   insert { CRP; Corpus Christi, TX, USA - Corpus Christi International Airport; }
+   insert { CRU; Carriacou Island, Grenada; }
+   insert { CRW; Charleston, WV, USA - Yeager Airport; }
+   insert { CSG; Columbus, GA, USA - Columbus Metropolitan / Fort Benning; }
+   insert { CSX; Changsha, China; }
+   insert { CTA; Catania, Sicily, Italy - Fontanarossa; }
+   insert { CTG; Cartagena, Colombia - Rafael Nunez; }
+   insert { CTL; Charleville, Queensland, Australia - Charleville; }
+   insert { CTS; Sapporo, Japan - Chitose; }
+   insert { CTU; Chengdu, China; }
+   insert { CUC; Cucuta, Colombia - Camilo Daza; }
+   insert { CUE; Cuenca, Ecuador - Mariscal La Mar; }
+   insert { CUL; Culiacan, Sinaloa, Mexico; }
+   insert { CUM; Cumana, Venezuela; }
+   insert { CUN; Cancun, Mexico; }
+   insert { CUP; Carupano, Venezuela - Carupano; }
+   insert { CUR; Willemstad / Curacao Island, Netherlands Antilles - Areopuerto Hato; }
+   insert { CUU; Chihuahua, Chihuahua, Mexico - Genvillalobos; }
+   insert { CUZ; Cuzco, Peru - Tte Velazco Astete; }
+   insert { CVG; Cincinnati, OH, USA - Greater Cincinnati Intl Airport; }
+   insert { CVN; Clovis, NM, USA; }
+   insert { CWA; Wausau, WI, USA - Central Wisconsin Airport; }
+   insert { CWB; Curitiba, Parana, Brazil - Afonso Pena; }
+   insert { CWL; Cardiff, Wales, United Kingdom - Cardiff-Wales; }
+   insert { CWT; Cowra, New South Wales, Australia - Cowra; }
+   insert { CXH; Vancouver, British Columbia, Canada - Vancouver Harbour Airport; }
+   insert { CXI; Christmas Island, Australia - Cassidy Airport; }
+   insert { CYB; Cayman Brac Island, Cayman Islands; }
+   insert { CYR; Colonia, Uruguay; }
+   insert { CYS; Cheyenne, WY, USA - Cheyenne Municipal Airport; }
+   insert { CZM; Cozumel, Quintana Roo, Mexico - Aeropuerto Intl De Cozumel; }
+   insert { CZX; Changzhu, China; }
+   insert { DAB; Daytona Beach, FL, USA - Daytona Beach International Airport; }
+   insert { DAC; Dhaka, Bangladesh - Zia International Airport; }
+   insert { DAD; Da Nang, Vietnam - Da Nang; }
+   insert { DAL; Dallas, TX, USA - Love Field; }
+   insert { DAM; Damascus, Syria - Damascus Intl; }
+   insert { DAN; Danville, VA, USA; }
+   insert { DAR; Dar Es Salaam, Tanzania - International; }
+   insert { DAY; Dayton, OH, USA - James M Cox Dayton International; }
+   insert { DBO; Dubbo, New South Wales, Australia - Dubbo; }
+   insert { DBQ; Dubuque, IA, USA - Dubuque Municipal Airport; }
+   insert { DBV; Dubrovnik, Croatia - Hrvatska; }
+   insert { DCA; Washington, DC, USA - Ronald Reagan National Airport; }
+   insert { DCF; Dominica, Dominica - Cane Field; }
+   insert { DDC; Dodge City, KS, USA - Dodge City Municipal; }
+   insert { DEC; Decatur, IL, USA - Decatur Municiple Airport; }
+   insert { DEL; Delhi, India - Delhi International Airport; }
+   insert { DEM; Dembidollo, Ethiopia - Dembidollo; }
+   insert { DEN; Denver, CO, USA - Denver International; }
+   insert { DET; Detroit City, MI, USA; }
+   insert { DFW; Dallas/Ft Worth, TX, USA - Dallas Ft Worth International; }
+   insert { DGA; Dangriga, Belize - Dangriga; }
+   insert { DGO; Durango, Durango, Mexico - Gen Guadalupe Victoria; }
+   insert { DHA; Dhahran, Saudi Arabia - Dhahran Intl; }
+   insert { DHN; Dothan, AL, USA - Municipal; }
+   insert { DIB; Dibrugarh, India - Chabua; }
+   insert { DIJ; Dijon, France - Longvic; }
+   insert { DIL; Dili, Indonesia - Comoro; }
+   insert { DIY; Diyarbakir, Turkey - Diyarbakia; }
+   insert { DKR; Dakar, Senegal - Yoff; }
+   insert { DLA; Douala, Cameroon - Douala; }
+   insert { DLC; Dalian, China; }
+   insert { DLH; Duluth, MN, USA - Duluth International Airport; }
+   insert { DLM; Dalaman, Turkey - Dalaman; }
+   insert { DME; Moscow, Russia - Domodedovo; }
+   insert { DND; Dundee, Scotland, United Kingdom - Dundee; }
+   insert { DNM; Denham, Western Australia, Australia; }
+   insert { DNV; Danville, IL, USA - Vermilion County Airport; }
+   insert { DOH; Doha, Qatar - Doha; }
+   insert { DOK; Donetsk, Ukraine - Donetsk; }
+   insert { DOL; Deauville, France - Saint Gatien; }
+   insert { DOM; Dominica, Dominica - Melville Hal-Dom; }
+   insert { DPA; Chicago, IL, USA - Dupage County; }
+   insert { DPL; Dipolog, Philippines - Dipolog; }
+   insert { DPO; Devonport, Tasmania, Australia - Devonport; }
+   insert { DPS; Denpasar Bali, Indonesia - Ngurah Rai; }
+   insert { DRO; Durango, CO, USA - Durango La Plata County Airport; }
+   insert { DRS; Dresden, Germany - Dresden; }
+   insert { DRT; Del Rio, TX, USA; }
+   insert { DRW; Darwin, Northern Territory, Australia; }
+   insert { DSA; Doncaster, Sheffield, UK - Robin Hood Airport; }
+   insert { DSI; Destin, FL, USA; }
+   insert { DSM; Des Moines, IA, USA; }
+   insert { DTM; Dortmund, Germany - Wickede; }
+   insert { DTW; Detroit, MI, USA - Detroit Metropolitan Airport; }
+   insert { DUB; Dublin, Ireland - Dublin; }
+   insert { DUD; Dunedin, New Zealand - Momona; }
+   insert { DUJ; Du Bois, PA, USA - Jefferson County; }
+   insert { DUQ; Duncan / Quam, British Columbia, Canada - Quamichan Lake; }
+   insert { DUR; Durban, South Africa - Louis Botha; }
+   insert { DUS; Dusseldorf, Germany - Dusseldorf; }
+   insert { DUT; Dutch Harbor, AK, USA - Dutch Harbor; }
+   insert { DVO; Davao, Philippines - Mati; }
+   insert { DXB; Dubai, United Arab Emirates - Dubai International Airport; }
+   insert { EAR; Kearney, NE, USA - Kearney Municipal Airport; }
+   insert { EAS; San Sebastian, Spain - Fuenterrabia; }
+   insert { EAT; Wenatchee, WA, USA - Pangborn Memorial Field; }
+   insert { EAU; Eau Claire, WI, USA - Eau Claire Municipal; }
+   insert { EBA; Elba Island, Italy - Marina Di Campo; }
+   insert { EBB; Entebbe/Kampala, Uganda - Entebbe; }
+   insert { EBJ; Esbjerg, Denmark - Esbjerg; }
+   insert { EDI; Edinburgh, Scotland, United Kingdom - Turnhouse; }
+   insert { EDR; Edward River, Queensland, Australia - Edward River; }
+   insert { EEN; Keene / Brattleboro, NH, USA - Dillant Hopkins; }
+   insert { EFD; Houston, TX, USA - Ellington Field; }
+   insert { EGE; Vail/Eagle, CO, USA - Eagle County Regional; }
+   insert { EIN; Eindhoven, Netherlands - Welschap; }
+   insert { EIS; Tortola/Beef Island, Virgin Islands (British) - Beef Island; }
+   insert { EJA; Barrancabermeja, Colombia - Variguies; }
+   insert { EKO; Elko, NV, USA - J C Harris Field; }
+   insert { ELD; El Dorado, AR, USA; }
+   insert { ELH; North Eleuthera, Bahamas; }
+   insert { ELM; Elmira / Corning, NY, USA - Elmira Corning Regional Arpt; }
+   insert { ELP; El Paso, TX, USA - El Paso International Airport; }
+   insert { ELS; East London, South Africa - Ben Shoeman; }
+   insert { ELY; Ely, NV, USA - Yelland Field; }
+   insert { EMA; East Midlands, England, United Kingdom - East Midlands; }
+   insert { EMD; Emerald, Queensland, Australia - Emerald; }
+   insert { ENA; Kenai, AK, USA - Kenai Municipal Airport; }
+   insert { ENS; Enschede, Netherlands - Twente; }
+   insert { EOH; Medellin, Colombia - Enrique Olaya Herrera; }
+   insert { EPR; Esperance, Western Australia, Australia - Esperance; }
+   insert { ERF; Erfurt, Germany - Erfurt; }
+   insert { ERI; Erie, PA, USA - Erie International; }
+   insert { ERS; Windhoek, Namibia - Eros; }
+   insert { ERZ; Erzurum, Turkey - Erzurum; }
+   insert { ESB; Ankara, Turkey - Esenboga; }
+   insert { ESC; Escanaba, MI, USA - Delta County Airport; }
+   insert { ESD; Eastsound, WA, USA - Eastsound/Orcas Island Airport; }
+   insert { ESR; El Salvador, Chile; }
+   insert { ETH; Elat, Israel - Elat; }
+   insert { ETZ; Metz/Nancy, France - Frescaty; }
+   insert { EUG; Eugene, OR, USA - Eugene Airport; }
+   insert { EUN; Laayoune, Morocco - Laayoune-Hassan I Morocco; }
+   insert { EVE; Evenes, Norway - Evenes; }
+   insert { EVN; Yerevan, Armenia; }
+   insert { EVV; Evansville, IN, USA - Evansville Regional Airport; }
+   insert { EWB; New Bedford/Fall River, MA, USA - New Bedford Municipal; }
+   insert { EWN; New Bern, NC, USA - Simmons-Nott Airport; }
+   insert { EWR; Newark, NJ, USA - Newark International Airport; }
+   insert { EXT; Exeter, England, United Kingdom - Exeter; }
+   insert { EYW; Key West, FL, USA; }
+   insert { EZE; Buenos Aires, Buenos Aires, Argentina - Eze - Ezeiza International Airport; }
+   insert { FAE; Faroe Islands, Faroe Islands - Faeroe Islands; }
+   insert { FAI; Fairbanks, AK, USA - Fairbanks International Airport; }
+   insert { FAO; Faro, Portugal - Faro; }
+   insert { FAR; Fargo, ND, USA - Hector Airport; }
+   insert { FAT; Fresno, CA, USA - Fresno Air Terminal; }
+   insert { FAY; Fayetteville, NC, USA - Fayetteville Municipal; }
+   insert { FCA; Kalispell, MT, USA - Glacier Park International; }
+   insert { FCO; Rome, Italy - Leonardo Da Vinci/Fiumicino; }
+   insert { FDE; Forde, Norway - Forde; }
+   insert { FDF; Fort De France, Martinique - Fort De France; }
+   insert { FDH; Friedrichshafen, Germany - Friedrichshafen - Lowenthal; }
+   insert { FEZ; Fez, Morocco - Fez; }
+   insert { FFM; Fergus Falls, MN, USA - Fergus Falls Municipal Airport; }
+   insert { FHU; Fort Huachuca/Sierra Vista, AZ, USA; }
+   insert { FIH; Kinshasa, Zaire - Kinshasa; }
+   insert { FKL; Franklin, PA, USA - Chess Lamberton; }
+   insert { FLG; Flagstaff, AZ, USA - Flagstaff; }
+   insert { FLL; Ft Lauderdale, FL, USA - Ft Lauderdale/Hollywood Intl Apt; }
+   insert { FLN; Florianopolis, Santa Catarina, Brazil - Florianopolis; }
+   insert { FLO; Florence, SC, USA - Gilbert Field; }
+   insert { FLR; Florence, Italy; }
+   insert { FMA; Formosa, Formosa, Argentina - Formosa; }
+   insert { FMN; Farmington, NM, USA - Four Corners Regional Airport; }
+   insert { FMO; Muenster, Germany - Muenster; }
+   insert { FNC; Funchal, Madeira Islands, Portugal - Funchal; }
+   insert { FNL; Fort Collins/Loveland, CO, USA - Fort Collins / Loveland Airport; }
+   insert { FNT; Flint, MI, USA - Bishop Int'l Airport; }
+   insert { FOD; Fort Dodge, IA, USA - Fort Dodge Regional Airport; }
+   insert { FOE; Topeka, KS, USA - Forbes Field; }
+   insert { FOR; Fortaleza, Ceara, Brazil - Fortaleza; }
+   insert { FPO; Freeport, Bahamas - Freeport Intl Airport; }
+   insert { FRA; Frankfurt, Germany - Frankfurt International; }
+   insert { FRD; Friday Harbor, WA, USA - Friday Harbor Airport; }
+   insert { FRM; Fairmont, MN, USA - Fairmont Municipal; }
+   insert { FRO; Floro, Norway - Floro; }
+   insert { FRS; Flores, Guatemala - Flores; }
+   insert { FRU; Bishkek, Kyrgyzstan - Bishkek Airport; }
+   insert { FSD; Sioux Falls, SD, USA - Joe Foss Field; }
+   insert { FSM; Fort Smith, AR, USA - Fort Smith Municipal; }
+   insert { FSP; St Pierre, St. Pierre And Miquelon; }
+   insert { FUE; Fuerteventura / Puerto Del Rosario, Canary Islands/Fuerteventura Island, Spain - Fuerteventura; }
+   insert { FUK; Fukuoka, Japan - Itazuke; }
+   insert { FUN; Funafuti, Funafuti Atol, Tuvalu - International; }
+   insert { FWA; Fort Wayne, IN, USA - Baer Field; }
+   insert { FYV; Fayetteville, AR, USA - Municipal; }
+   insert { GAJ; Yamagata, Japan - Junmachi; }
+   insert { GAL; Galena, AK, USA; }
+   insert { GAU; Gauhati, India - Borjhar; }
+   insert { GBE; Gaborone, Botswana - Gaborone; }
+   insert { GBG; Galesburg, IL, USA - Galesburg Municiple Airport; }
+   insert { GCC; Gillette, WY, USA - Campbell County Airport; }
+   insert { GCI; Guernsey, Channel Islands, United Kingdom - Guernsey; }
+   insert { GCK; Garden City, KS, USA - Garden City Municipal Airport; }
+   insert { GCM; Grand Cayman Island, Cayman Islands - Owen Roberts Intl Airport; }
+   insert { GCN; Grand Canyon, AZ, USA; }
+   insert { GCY; Greenville, TN, USA - Municipal; }
+   insert { GDC; Greenville, SC, USA - Donaldson Center; }
+   insert { GDL; Guadalajara, Jalisco, Mexico - Miguel Hidalgo Intl; }
+   insert { GDN; Gdansk, Poland - Rebiechowo; }
+   insert { GDT; Grand Turk Is, Turks And Caicos Islands; }
+   insert { GDV; Glendive, MT, USA; }
+   insert { GDX; Magadan, Russia - Magadan; }
+   insert { GEG; Spokane, WA, USA - International/Geiger Field; }
+   insert { GEO; Georgetown, Guyana - Timehri; }
+   insert { GET; Geraldton, Western Australia, Australia - Geraldton; }
+   insert { GFK; Grand Forks, ND, USA - Grand Forks International Airport; }
+   insert { GGG; Longview/Gladewater/Kilgore, TX, USA - Gregg County; }
+   insert { GGT; George Town, Bahamas - Exuma International; }
+   insert { GGW; Glasgow, MT, USA; }
+   insert { GHB; Governors Harbour, Bahamas; }
+   insert { GIB; Gibraltar, Gibraltar - Gibraltar; }
+   insert { GIG; Rio De Janeiro, Rio De Janeiro, Brazil - International Airport; }
+   insert { GJT; Grand Junction, CO, USA - Walker Field; }
+   insert { GKA; Goroka, Papua New Guinea - Goroka; }
+   insert { GLA; Glasgow, Scotland, United Kingdom - Glasgow Scotland; }
+   insert { GLD; Goodland, KS, USA - Renner Field; }
+   insert { GLF; Golfito, Costa Rica - Golfito; }
+   insert { GLH; Greenville, MS, USA - Greenville; }
+   insert { GLS; Galveston, TX, USA - Scholes Field; }
+   insert { GLV; Golovin, AK, USA; }
+   insert { GMU; Greenville, SC, USA - Downtown; }
+   insert { GNB; Grenoble, France - St Geoirs; }
+   insert { GND; St Georges/Grenada, Grenada - Pt Saline; }
+   insert { GNV; Gainesville, FL, USA - Jr Alison Municipal; }
+   insert { GOA; Genoa, Italy - Christoforo Colombo; }
+   insert { GOH; Nuuk, Greenland; }
+   insert { GOI; Goa, India - Dabolim; }
+   insert { GOJ; Nizhniy Novgorod, Russia - Nizhniy; }
+   insert { GON; Groton / New London, CT, USA - Groton-New London; }
+   insert { GOT; Gothenburg, Sweden - Landvetter; }
+   insert { GOV; Gove, Northern Territory, Australia - Nhulunbuy; }
+   insert { GPS; Galapagos Islands, Ecuador - Baltra; }
+   insert { GPT; Gulfport, MS, USA - Gulfport/Biloxi; }
+   insert { GRB; Green Bay, WI, USA - Austin/Straybel Field; }
+   insert { GRE; Greenville, IL, USA - Municipal; }
+   insert { GRI; Grand Island, NE, USA - Central Nebraska Regional Airport; }
+   insert { GRJ; George, South Africa - George; }
+   insert { GRO; Gerona, Spain - Costa Brava; }
+   insert { GRQ; Groningen, Netherlands - Eelde; }
+   insert { GRR; Grand Rapids, MI, USA - Kent County International Airport; }
+   insert { GRU; Sao Paulo, Sao Paulo, Brazil - Guarulhos; }
+   insert { GRU; Sao Paulo, Sao Paulo, Brazil - Guarulhos International; }
+   insert { GRX; Granada, Spain - Granada; }
+   insert { GRZ; Graz, Austria - Thalerhof; }
+   insert { GSO; Greensboro / High Point, NC, USA - Piedmont Triad Intl Airport; }
+   insert { GSP; Greenville, SC, USA - Greenville-Spartanburg Metro; }
+   insert { GTF; Great Falls, MT, USA - Great Falls International; }
+   insert { GTO; Gorontalo, Indonesia - Tolotio; }
+   insert { GTR; Columbus, MS, USA - Golden; }
+   insert { GUA; Guatemala City, Guatemala - La Aurora Intl Airport; }
+   insert { GUB; Guerrero Negro, Baja California Sur, Mexico - Guerrero Negro Airport; }
+   insert { GUC; Gunnison, CO, USA - Gunnison County Airport; }
+   insert { GUM; Guam, Guam - Ab Wonpat Intl Airport; }
+   insert { GUP; Gallup, NM, USA - Gallup Municipal; }
+   insert { GUR; Alotau, Papua New Guinea - Gurney; }
+   insert { GVA; Geneva, Switzerland - Geneva; }
+   insert { GVT; Greenville, TX, USA - Majors Field; }
+   insert { GWD; Gwadar, Pakistan; }
+   insert { GWT; Westerland, Germany - Westerland; }
+   insert { GWY; Galway, Ireland - Carnmore; }
+   insert { GXQ; Coyhaique, Chile - Teniente Vidal; }
+   insert { GYE; Guayaquil, Ecuador - Simon Bolivar; }
+   insert { GYM; Guaymas, Sonora, Mexico; }
+   insert { GYY; Gary, IN, USA - Gary Regional; }
+   insert { HAD; Halmstad, Sweden - Halmstad; }
+   insert { HAG; The Hague, Netherlands; }
+   insert { HAH; Moroni (Hahaya), Comoros; }
+   insert { HAJ; Hanover, Germany - Langenhagen; }
+   insert { HAK; Haikou, China - Haikou; }
+   insert { HAM; Hamburg, Germany - Fuhlsbuttel; }
+   insert { HAN; Hanoi, Vietnam - Noibai Airport; }
+   insert { HAU; Haugesund, Norway - Karmoy; }
+   insert { HAV; Havana, Cuba - Jose Marti; }
+   insert { HBA; Hobart, Tasmania, Australia - Hobart; }
+   insert { HDB; Heidelberg, Germany; }
+   insert { HDN; Hayden, CO, USA - Yampa Valley Regional Airport; }
+   insert { HDY; Hat Yai, Thailand; }
+   insert { HEA; Herat, Afghanistan - Herat; }
+   insert { HEL; Helsinki, Finland - Helsinki; }
+   insert { HER; Heraklion, Crete Island, Greece - Heraklion; }
+   insert { HET; Hohhot, China; }
+   insert { HFT; Hammerfest, Norway; }
+   insert { HGH; Hangzhou, China; }
+   insert { HGN; Mae Hong Son, Thailand - Mae Hong Son; }
+   insert { HGR; Hagerstown, MD, USA - Washington County Regional Airport; }
+   insert { HHH; Hilton Head, SC, USA - Municipal; }
+   insert { HHN; Frankfurt, Germany - Hahn; }
+   insert { HIB; Hibbing / Chisholm, MN, USA - Hibbing-Chisholm; }
+   insert { HIJ; Hiroshima, Japan - Hiroshima; }
+   insert { HIR; Honiara/Guadalcanal, Solomon Islands - Henderson International; }
+   insert { HIS; Hayman Island, Queensland, Australia - Hayman Island Airport; }
+   insert { HKD; Hakodate, Japan - Hakodate; }
+   insert { HKG; Hong Kong, Hong Kong; }
+   insert { HKK; Hokitika, New Zealand - Hokitika; }
+   insert { HKN; Hoskins, Papua New Guinea - Hoskins; }
+   insert { HKT; Phuket, Thailand - Phuket; }
+   insert { HKY; Hickory, NC, USA; }
+   insert { HLN; Helena, MT, USA; }
+   insert { HLP; Jakarta, Indonesia - Halim Perdana Kusama; }
+   insert { HLZ; Hamilton, New Zealand - Hamilton; }
+   insert { HMA; Malmo, Sweden - Malmo Harbour; }
+   insert { HMO; Hermosillo, Sonora, Mexico - General Ignacio Pesqueira Garcia; }
+   insert { HNA; Morioka, Japan - Hanamaki; }
+   insert { HNH; Hoonah, AK, USA; }
+   insert { HNL; Honolulu, HI, USA - Honolulu International; }
+   insert { HNS; Haines, AK, USA; }
+   insert { HOB; Hobbs, NM, USA - Lea County; }
+   insert { HOM; Homer, AK, USA - Homer Airport; }
+   insert { HON; Huron, SD, USA - Huron Regional Airport; }
+   insert { HOT; Hot Springs, AR, USA - Memorial Field; }
+   insert { HOU; Houston, TX, USA - Houston Hobby Airport; }
+   insert { HOU; Houston, TX, USA - Houston Hobby Airport; }
+   insert { HPB; Hooper Bay, AK, USA; }
+   insert { HPN; Westchester County, NY, USA - Westchester County Airport; }
+   insert { HPV; Kauai Island, HI, USA - Princeville; }
+   insert { HRB; Harbin, China; }
+   insert { HRE; Harare, Zimbabwe - Harare; }
+   insert { HRG; Hurghada, Egypt; }
+   insert { HRK; Kharkov, Ukraine - Kharkov; }
+   insert { HRL; Harlingen, TX, USA; }
+   insert { HRO; Harrison, AR, USA - Boone County; }
+   insert { HSI; Hastings, NE, USA; }
+   insert { HSV; Huntsville/Decatur, AL, USA - Huntsville-Madison County Jetplex; }
+   insert { HTI; Hamilton Island, Queensland, Australia; }
+   insert { HTS; Huntington / Ashland, WV, USA - Tri-State; }
+   insert { HUF; Terre Haute, IN, USA - Hulman Field; }
+   insert { HUI; Hue, Vietnam; }
+   insert { HUM; Houma, LA, USA - Terrebonne; }
+   insert { HUN; Hualien, Taiwan - Hualien; }
+   insert { HUX; Huatulco, Oaxaca, Mexico; }
+   insert { HUY; Humberside, England, United Kingdom - Humberside; }
+   insert { HVB; Hervey Bay, Queensland, Australia; }
+   insert { HVN; New Haven, CT, USA - Tweed New Haven; }
+   insert { HVR; Havre, MT, USA - City County; }
+   insert { HWN; Hwange National Park, Zimbabwe - Hwange National Park; }
+   insert { HYA; Hyannis, MA, USA - Barnstable County; }
+   insert { HYD; Hyderabad, India - Begumpet; }
+   insert { HYG; Hydaburg, AK, USA; }
+   insert { HYS; Hays, KS, USA - Hays Municipal Airport; }
+   insert { IAD; Washington, DC, USA - Dulles; }
+   insert { IAD; Washington, DC, USA - Washington-Dulles International; }
+   insert { IAH; Houston, TX, USA; }
+   insert { IAH; Houston, TX, USA - Houston Intercontinental; }
+   insert { IAS; Iasi, Romania - Iasi; }
+   insert { IBZ; Ibiza, Spain - Ibiza; }
+   insert { ICN; Incheon [Seoul], South Korea - Incheon International Airport; }
+   insert { ICT; Wichita, KS, USA - Mid-Continent Airport; }
+   insert { IDA; Idaho Falls, ID, USA; }
+   insert { IEV; Kiev, Ukraine - Zhulhany; }
+   insert { IFP; Bullhead City, AZ, USA - Bullhead; }
+   insert { IGA; Inagua, Bahamas; }
+   insert { IGM; Kingman, AZ, USA - Mohave County; }
+   insert { IGR; Iguazu, Misiones, Argentina - Iguazu International; }
+   insert { IGU; Iguassu Falls, Parana, Brazil; }
+   insert { IJK; Izhevsk, Russia; }
+   insert { IKT; Irkutsk, Russia - Irkutsk; }
+   insert { ILE; Killeen, TX, USA; }
+   insert { ILF; Ilford, Manitoba, Canada; }
+   insert { ILG; Wilmington/New Castle County, DE, USA; }
+   insert { ILI; Iliamna, AK, USA; }
+   insert { ILM; Wilmington, NC, USA - New Hanover County Airport; }
+   insert { ILO; Iloilo, Philippines - Mandurriao; }
+   insert { ILQ; Ilo, Moquegua, Peru - Ilo Airport; }
+   insert { ILY; Islay, Scotland, United Kingdom - Glenegedale; }
+   insert { IMF; Imphal, India - Municipal; }
+   insert { IMP; Imperatriz, Maranhao, Brazil; }
+   insert { IMT; Iron Mountain, MI, USA - Ford Airport; }
+   insert { IND; Indianapolis, IN, USA - Indianapolis International Airport; }
+   insert { INL; International Falls, MN, USA - Falls International; }
+   insert { INN; Innsbruck, Austria - Kranebitten; }
+   insert { INT; Winston-Salem, NC, USA - Smith Reynolds; }
+   insert { INU; Nauru, Nauru; }
+   insert { INV; Inverness, Scotland, United Kingdom - Inverness; }
+   insert { IOA; Ioannina, Greece - Ioannina; }
+   insert { IOM; Isle Of Man, Isle Of Man, United Kingdom - Ronaldsway; }
+   insert { IOS; Ilheus, Bahia, Brazil - Eduardo Gomes; }
+   insert { IPC; Easter Island, Chile - Mataveri; }
+   insert { IPH; Ipoh, Malaysia - Ipoh; }
+   insert { IPI; Ipiales, Colombia - San Luis; }
+   insert { IPT; Williamsport, PA, USA - Williamsport Lycoming Municipal; }
+   insert { IQQ; Iquique, Chile - Chucumata; }
+   insert { IQT; Iquitos, Peru - Cf Secada; }
+   insert { ISB; Islamabad, Pakistan - International; }
+   insert { ISC; Isles Of Scilly, Isles Of Scilly, United Kingdom - Tresco; }
+   insert { ISN; Williston, ND, USA - Sloulin Field International; }
+   insert { ISO; Kinston, NC, USA; }
+   insert { ISP; Islip, NY, USA - Long Island-Macarthur Airport; }
+   insert { IST; Istanbul, Turkey - Ataturk; }
+   insert { ITH; Ithaca, NY, USA - Tompkins County; }
+   insert { ITM; Osaka, Japan - Itami International Was Osaka; }
+   insert { ITO; Hilo, HI, USA - Hilo Hawaii-International Usa; }
+   insert { IWD; Ironwood, MI, USA - Gogebic County Airport; }
+   insert { IXB; Bagdogra, India - Bagdogra; }
+   insert { IXE; Mangalore, India - Bajpe; }
+   insert { IXJ; Jammu, India - Satwari; }
+   insert { IXM; Madurai, India - Madurai; }
+   insert { IXU; Aurangabad, India - Chikkalthana; }
+   insert { IXZ; Port Blair, India - Port Blair; }
+   insert { IYK; Inyokern, CA, USA - Inyokern Airport; }
+   insert { IZO; Izumo, Japan; }
+   insert { JAC; Jackson Hole, WY, USA - Jackson Hole Airport; }
+   insert { JAI; Jaipur, India - Sanganeer; }
+   insert { JAN; Jackson, MS, USA - Allen C Thompson Field; }
+   insert { JAT; Jabat, Marshall Islands - Jabat Intl; }
+   insert { JAV; Ilulissat, Greenland; }
+   insert { JAX; Jacksonville, FL, USA - Jacksonville International Airport; }
+   insert { JBR; Jonesboro, AR, USA - Municipal; }
+   insert { JCA; Cannes, France - Mandelieu; }
+   insert { JDH; Jodhpur, India; }
+   insert { JDP; Paris, France - Issy Les Moulineaux; }
+   insert { JED; Jeddah, Saudi Arabia - Jeddah International; }
+   insert { JER; Jersey, Channel Islands, United Kingdom - States; }
+   insert { JFK; New York, NY, USA - John F Kennedy Intl Airport; }
+   insert { JGA; Jamnagar, India; }
+   insert { JHB; Johor Bahru, Malaysia - Sultan Ismail International; }
+   insert { JHE; Helsingborg, Sweden - Heliport; }
+   insert { JHM; Kapalua, HI, USA - Kapalua; }
+   insert { JHW; Jamestown, NY, USA - Chautauqua County Airport; }
+   insert { JIB; Djibouti, Djibouti - Ambouli; }
+   insert { JKG; Jonkoping, Sweden - Axamo; }
+   insert { JLN; Joplin, MO, USA - Municipal Airport; }
+   insert { JMC; Sausalito, CA, USA - Marin County; }
+   insert { JMK; Mikonos, Greece - Mikonos; }
+   insert { JMM; Malmo, Sweden - Malmo Harbour Heliport; }
+   insert { JMO; Jomsom, Nepal; }
+   insert { JMS; Jamestown, ND, USA - Jamestown Municipal Airport; }
+   insert { JNB; Johannesburg, South Africa - Jan Smuts; }
+   insert { JNS; Narssaq, Greenland; }
+   insert { JNU; Juneau, AK, USA - Juneau; }
+   insert { JNX; Naxos, Cyclades Islands, Greece - Naxos Airport; }
+   insert { JOG; Yogyakarta, Indonesia; }
+   insert { JOI; Joinville, Santa Catarina, Brazil - Federal; }
+   insert { JON; Johnston Island, US, Outlying Islands; }
+   insert { JRA; New York City, NY, USA; }
+   insert { JRO; Kilimanjaro, Tanzania - Kilimanjaro; }
+   insert { JSI; Skiathos, Greece - Skiathos; }
+   insert { JST; Johnstown, PA, USA - Johnstown Cambria; }
+   insert { JTR; Santorini/Thira Is, Greece - Santorini; }
+   insert { JUJ; Jujuy, Provincia Jujuy, Argentina - El Cadillal; }
+   insert { JUL; Juliaca, Peru - Juliaca; }
+   insert { KAB; Kariba, Zimbabwe - Kariba; }
+   insert { KAE; Kake, AK, USA; }
+   insert { KAL; Kaltag, AK, USA; }
+   insert { KAN; Kano, Nigeria - Aminu Kano International; }
+   insert { KAT; Kaitaia, New Zealand - Kaitaia; }
+   insert { KBL; Kabul, Afghanistan - Khwaja Rawash; }
+   insert { KBP; Kiev, Ukraine - Borispol; }
+   insert { KBR; Kota Bharu, Malaysia - Sultan Ismail Petra; }
+   insert { KCG; Chignik, AK, USA - Fisheries; }
+   insert { KCH; Kuching, Sarawak, Malaysia - Kuching; }
+   insert { KCL; Chignik, AK, USA - Lagoon; }
+   insert { KDH; Kandahar, Afghanistan - Kandahar; }
+   insert { KEF; Reykjavik, Iceland - Keflavik; }
+   insert { KEH; Kenmore Air Harbor, WA, USA; }
+   insert { KEJ; Kemerovo, Russia - Kemerovo; }
+   insert { KEL; Kiel, Germany - Holtenau; }
+   insert { KEM; Kemi/Tornio, Finland - Kemi; }
+   insert { KEP; Nepalganj, Nepal - Nepalganj; }
+   insert { KER; Kerman, Iran - Kerman; }
+   insert { KGC; Kingscote, South Australia, Australia; }
+   insert { KGD; Kaliningrad, Russia - Kaliningrad Airport; }
+   insert { KHH; Kaohsiung, Taiwan; }
+   insert { KHI; Karachi, Pakistan - Karachi; }
+   insert { KHV; Khabarovsk, Russia - Novy; }
+   insert { KIN; Kingston, Jamaica; }
+   insert { KIR; Kerry County, Ireland - Kerry County; }
+   insert { KIV; Kishinev, Moldova - Kishinev; }
+   insert { KIX; Osaka, Japan - Kansai International; }
+   insert { KJA; Krasnojarsk, Russia; }
+   insert { KKN; Kirkenes, Norway - Hoeyburtmoen; }
+   insert { KLO; Kalibo, Philippines - Kalibo; }
+   insert { KLR; Kalmar, Sweden - Kalmar; }
+   insert { KLU; Klagenfurt, Austria - Klagenfurt; }
+   insert { KLW; Klawock, AK, USA; }
+   insert { KMG; Kunming, China - Kunming; }
+   insert { KMI; Miyazaki, Japan - Miyazaki; }
+   insert { KMJ; Kumamoto, Japan - Kumamoto; }
+   insert { KNS; King Island, Tasmania, Australia - King Island; }
+   insert { KOA; Kona, HI, USA - Keahole; }
+   insert { KOI; Kirkwall / Orkney Island, Scotland, United Kingdom - Kirkwall; }
+   insert { KOJ; Kagoshima, Japan - Kagoshima; }
+   insert { KOK; Kokkola/Pietarsaari, Finland - Kruunupyy; }
+   insert { KPN; Kipnuk, AK, USA; }
+   insert { KPO; Pohang, South Korea - Na; }
+   insert { KRF; Kramfors, Sweden - Kramfors; }
+   insert { KRK; Krakow, Poland - Balice; }
+   insert { KRN; Kiruna, Sweden - Kiruna; }
+   insert { KRP; Karup, Denmark - Karup; }
+   insert { KRR; Krasnodar, Russia - Krasnodar; }
+   insert { KRS; Kristiansand, Norway - Kjevik; }
+   insert { KRT; Khartoum, Sudan - Civil; }
+   insert { KSA; Kosrae, Caroline Islands, Micronesia; }
+   insert { KSC; Kosice, Slovakia - Barca; }
+   insert { KSH; Kermanshah, Iran - Bakhtaran Iran; }
+   insert { KSJ; Kasos Island, Greece - Kasos Island; }
+   insert { KSU; Kristiansund, Norway - Kvernberget; }
+   insert { KTM; Kathmandu, Nepal - Tribhuvan; }
+   insert { KTN; Ketchikan, AK, USA - Ketchikan International; }
+   insert { KTR; Katherine, Northern Territory, Australia - Tindal; }
+   insert { KTW; Katowice, Poland - Pyrzowice; }
+   insert { KUA; Kuantan, Malaysia - Padang Geroda; }
+   insert { KUF; Samara, Russia - Samara; }
+   insert { KUL; Kuala Lumpur, Malaysia - KLIA Kuala Lumpur International; }
+   insert { KUN; Kaunas, Lithuania - Kaunas; }
+   insert { KUO; Kuopio, Finland - Kuopio; }
+   insert { KUS; Kulusuk, Greenland - Metropolitan Area; }
+   insert { KUV; Kunsan, South Korea; }
+   insert { KVA; Kavala, Greece - Kavala; }
+   insert { KWA; Kwajalein, Marshall Islands; }
+   insert { KWI; Kuwait, Kuwait - International; }
+   insert { KWL; Guilin, China; }
+   insert { KZN; Kazan, Russia - Kazan; }
+   insert { LAD; Luanda, Angola - Fevereiro; }
+   insert { LAF; Lafayette, IN, USA - Purdue University Airport; }
+   insert { LAN; Lansing, MI, USA - Capital City Airport; }
+   insert { LAP; La Paz, Baja California Sur, Mexico - Aeropuerto General Marquez De Leon; }
+   insert { LAR; Laramie, WY, USA - General Brees Field; }
+   insert { LAS; Las Vegas, NV, USA - Mccarran International Airport; }
+   insert { LAW; Lawton, OK, USA - Municipal; }
+   insert { LAX; Los Angeles, CA, USA - Los Angeles Intl Airport; }
+   insert { LAX; Los Angeles, CA, USA - Los Angeles Intl Airport; }
+   insert { LBA; Leeds/Bradford, England, United Kingdom; }
+   insert { LBB; Lubbock, TX, USA - Lubbock International Airport; }
+   insert { LBE; Latrobe, PA, USA - Westmoreland County; }
+   insert { LBF; North Platte, NE, USA - Lee Bird Field; }
+   insert { LBL; Liberal, KS, USA - Glenn L Martin Terminal; }
+   insert { LBU; Labuan, Sabah, Malaysia; }
+   insert { LBV; Libreville, Gabon - Libreville; }
+   insert { LCA; Larnaca, Cyprus - Intl; }
+   insert { LCE; La Ceiba, Honduras - International; }
+   insert { LCG; La Coruna, Spain - La Coruna; }
+   insert { LCH; Lake Charles, LA, USA - Municipal; }
+   insert { LCY; London, England, United Kingdom - London City; }
+   insert { LDB; Londrina, Parana, Brazil - Londrina; }
+   insert { LDE; Lourdes/Tarbes, France - Tarbes International; }
+   insert { LDU; Lahad Datu, Sabah, Malaysia - Lahad Datu; }
+   insert { LEA; Learmonth, Western Australia, Australia; }
+   insert { LEB; Lebanon/Hanover/White River, NH, USA - Lebanon Regional; }
+   insert { LED; St Petersburg, Russia - Pulkovo; }
+   insert { LEH; Le Havre, France - Le Havre; }
+   insert { LEI; Almeria, Spain - Almeria; }
+   insert { LEJ; Leipzig, Germany - Leipzig; }
+   insert { LET; Leticia, Colombia - Gen Av Cob0; }
+   insert { LEX; Lexington, KY, USA - Blue Grass Field; }
+   insert { LFT; Lafayette / New Iberia, LA, USA - Municipal; }
+   insert { LFW; Lome, Togo - Lome; }
+   insert { LGA; New York, NY, USA - Laguardia; }
+   insert { LGB; Long Beach, CA, USA - Long Beach Municipal Airport; }
+   insert { LGG; Liege, Belgium - Bierset; }
+   insert { LGI; Deadmans Cay / Long Island, Bahamas - Deadmans Cay; }
+   insert { LGK; Langkawi, Malaysia; }
+   insert { LGP; Legaspi, Philippines - Legaspi; }
+   insert { LGW; London, England, United Kingdom - Gatwick; }
+   insert { LHE; Lahore, Pakistan - Lahore; }
+   insert { LHR; London, England, United Kingdom - Heathrow; }
+   insert { LHW; Lanzhou, China - Metropolitan Area; }
+   insert { LIG; Limoges, France - Bellegarde; }
+   insert { LIH; Kauai Island, HI, USA - Lihue Municipal Airport; }
+   insert { LIM; Lima, Peru - Intl Jorge Chavez; }
+   insert { LIN; Milan, Italy - Linate; }
+   insert { LIR; Liberia, Costa Rica - Liberia; }
+   insert { LIS; Lisbon, Portugal - Lisboa; }
+   insert { LIT; Little Rock, AR, USA - Little Rock Regional Airport; }
+   insert { LJU; Ljubljana, Slovenia - Brnik; }
+   insert { LKE; Seattle, WA, USA - Lake Union Sea Plane Base; }
+   insert { LKL; Lakselv, Norway - Banak; }
+   insert { LKN; Leknes, Norway - Leknes; }
+   insert { LKO; Lucknow, India; }
+   insert { LLA; Lulea, Sweden - Kallax; }
+   insert { LLW; Lilongwe, Malawi - Kamuzu Intl; }
+   insert { LLY; Mount Holly, NJ, USA - Mt Holly; }
+   insert { LMM; Los Mochis, Sinaloa, Mexico; }
+   insert { LMN; Limbang, Sarawak, Malaysia - Limbang; }
+   insert { LMT; Klamath Falls, OR, USA - Kingsley Field Airport; }
+   insert { LNK; Lincoln, NE, USA - Municipal Airport; }
+   insert { LNS; Lancaster, PA, USA - Lancaster; }
+   insert { LNV; Londolovit, Papua New Guinea - Londolovit; }
+   insert { LNY; Lanai City, HI, USA - Lanai; }
+   insert { LNZ; Linz, Austria - Linz; }
+   insert { LOS; Lagos, Nigeria - Murtala Muhammed; }
+   insert { LOV; Monclova, Coahuila, Mexico - Monclova Airport; }
+   insert { LPA; Gran Canaria, Canary Islands, Spain - Aeropuerto De Gran Canaria; }
+   insert { LPB; La Paz, Bolivia - El Alto; }
+   insert { LPI; Linkoping, Sweden - Saab; }
+   insert { LPL; Liverpool, England, United Kingdom - Liverpool; }
+   insert { LRD; Laredo, TX, USA - International; }
+   insert { LRH; La Rochelle, France - Laleu; }
+   insert { LRM; Casa De Campo, Dominican Republic; }
+   insert { LRS; Leros, Greece - Leros; }
+   insert { LRT; Lorient, France - Lann-Bihoue; }
+   insert { LRU; Las Cruces, NM, USA; }
+   insert { LSC; La Serena, Chile - La Florida; }
+   insert { LSE; La Crosse, WI, USA - La Crosse Municipal; }
+   insert { LSI; Shetland Islands /Shetland Isd, Scotland, United Kingdom - Shetland Islands; }
+   insert { LSP; Las Piedras, Venezuela - Josefa Camejo; }
+   insert { LSQ; Los Angeles, Chile - Maria Dolores; }
+   insert { LSS; Terre-De-Haut, Guadeloupe; }
+   insert { LST; Launceston, Tasmania, Australia - Launceston; }
+   insert { LSY; Lismore, New South Wales, Australia - Lismore; }
+   insert { LTN; London, England, United Kingdom - Luton International; }
+   insert { LTO; Loreto, Baja California Sur, Mexico; }
+   insert { LUA; Lukla, Nepal - Lukla; }
+   insert { LUD; Luderitz, Namibia - Luderitz; }
+   insert { LUG; Lugano, Switzerland - Agno; }
+   insert { LUN; Lusaka, Zambia - Lusaka; }
+   insert { LUX; Luxembourg, Luxembourg - Findel; }
+   insert { LVI; Livingstone, Zambia - Livingstone; }
+   insert { LWB; Greenbrier, WV, USA - Greenbrier Valley Airport; }
+   insert { LWK; Shetland Islands /Shetland Isd, Scotland, United Kingdom - Tingwall; }
+   insert { LWO; Lvov, Ukraine - Snilow; }
+   insert { LWS; Lewiston, ID, USA - Lewiston-Nez Perce Airport; }
+   insert { LWT; Lewistown, MT, USA - Municipal; }
+   insert { LWY; Lawas, Sarawak, Malaysia - Lawas; }
+   insert { LXR; Luxor, Egypt - Luxor; }
+   insert { LYH; Lynchburg, VA, USA - Municipal Airport; }
+   insert { LYP; Faisalabad, Pakistan - Lyallpur; }
+   insert { LYR; Longyearbyen, Norway - Svalbard; }
+   insert { LYS; Lyon, France - Satolas; }
+   insert { LZC; Lazaro Cardenas, Michoacan, Mexico - Na; }
+   insert { MAA; Madras, India - Meenambarkkam; }
+   insert { MAD; Madrid, Spain - Barajas; }
+   insert { MAF; Midland/Odessa, TX, USA - Midland Intl Airport; }
+   insert { MAG; Madang, Papua New Guinea - Madang; }
+   insert { MAH; Menorca, Spain - Aerop De Menorca; }
+   insert { MAJ; Majuro, Marshall Islands - International; }
+   insert { MAM; Matamoros, Tamaulipas, Mexico - Servando Canales; }
+   insert { MAN; Manchester, England, United Kingdom - International; }
+   insert { MAO; Manaus, Amazonas, Brazil - Eduardo Gomes; }
+   insert { MAR; Maracaibo, Venezuela - La Chinita; }
+   insert { MAY; Mangrove Cay, Bahamas; }
+   insert { MAZ; Mayaguez, PR, USA - El Maui; }
+   insert { MBA; Mombasa, Kenya - Moi International; }
+   insert { MBJ; Montego Bay, Jamaica - Sangster; }
+   insert { MBL; Manistee, MI, USA - Manistee Blacker Airport; }
+   insert { MBS; Midland / Bay City / Saginaw, MI, USA - Tri-City Airport; }
+   insert { MCG; Mc Grath, AK, USA - Mc Grath; }
+   insert { MCI; Kansas City, MO, USA - Kansas City International Airport; }
+   insert { MCK; Mc Cook, NE, USA - Municipal; }
+   insert { MCM; Monte Carlo, Monaco - Hel De Monte Carlo; }
+   insert { MCN; Macon, GA, USA - Lewis B Wilson; }
+   insert { MCO; Orlando, FL, USA - Orlando International Airport; }
+   insert { MCP; Macapa, Amapa, Brazil; }
+   insert { MCT; Muscat, Oman - Seeb; }
+   insert { MCW; Mason City, IA, USA - Mason City Municipal Airport; }
+   insert { MCY; Sunshine Coast, Queensland, Australia - Maroochydore; }
+   insert { MDC; Manado, Indonesia - Samratulang; }
+   insert { MDE; Medellin, Colombia - Jose Maria Cordova/Metropolitan Area; }
+   insert { MDH; Carbondale, IL, USA - Southern Illinois Airport; }
+   insert { MDQ; Mar Del Plata, Buenos Aires, Argentina; }
+   insert { MDT; Harrisburg, PA, USA - Harrisburg International Airport; }
+   insert { MDW; Chicago, IL, USA - Midway; }
+   insert { MDZ; Mendoza, Mendoza, Argentina - El Plumerillo; }
+   insert { MED; Medinah, Saudi Arabia - Madinah-Prince Mohammad Bin Abdulaziz; }
+   insert { MEI; Meridian, MS, USA - Key Field; }
+   insert { MEL; Melbourne, Victoria, Australia - Tullamarine; }
+   insert { MEM; Memphis, TN, USA - Memphis International Airport; }
+   insert { MES; Medan, Indonesia - Polonia; }
+   insert { MEX; Mexico City, Distrito Federal, Mexico - Juarez Intl Airport; }
+   insert { MEY; Meghauli, Nepal - Meghauli; }
+   insert { MFE; Mc Allen/Mission, TX, USA; }
+   insert { MFM; Macau, Macau SAR, China; }
+   insert { MFN; Milford Sound, New Zealand; }
+   insert { MFR; Medford, OR, USA - Medford-Jackson County Airport; }
+   insert { MGA; Managua, Nicaragua; }
+   insert { MGM; Montgomery, AL, USA - Dannelly Field; }
+   insert { MGQ; Mogadishu, Somalia; }
+   insert { MGW; Morgantown, WV, USA - Morgantown Municipal Airport; }
+   insert { MHH; Marsh Harbour, Bahamas; }
+   insert { MHK; Manhattan, KS, USA - Manhattan Municipal; }
+   insert { MHQ; Mariehamn, Aland Island, Finland; }
+   insert { MHT; Manchester, NH, USA - Manchester; }
+   insert { MIA; Miami, FL, USA - Miami International Airport; }
+   insert { MID; Merida, Yucatan, Mexico - Merida Internationl; }
+   insert { MIE; Muncie, IN, USA - Delaware County Airport; }
+   insert { MIR; Monastir, Tunisia - Skanes; }
+   insert { MJT; Mytilene, Greece - Mytilene; }
+   insert { MJV; Murcia, Spain - San Javier; }
+   insert { MKC; Kansas City, MO, USA - Downtown; }
+   insert { MKE; Milwaukee, WI, USA - General Mitchell Field; }
+   insert { MKG; Muskegon, MI, USA - Muskegon County Intl Airport; }
+   insert { MKK; Hoolehua, HI, USA - Municipal; }
+   insert { MKL; Jackson, TN, USA - Mc Kellar Field; }
+   insert { MKM; Mukah, Sarawak, Malaysia; }
+   insert { MKW; Manokwari, Indonesia - Rendani; }
+   insert { MKY; Mackay, Queensland, Australia - Mackay; }
+   insert { MLA; Malta, Malta - Luqa; }
+   insert { MLB; Melbourne, FL, USA - Melbourne Regional Airport; }
+   insert { MLE; Male, Maldives - Male International; }
+   insert { MLG; Malang, Indonesia; }
+   insert { MLH; Mulhouse, France - Mulhouse; }
+   insert { MLI; Moline, IL, USA - Quad City Airport; }
+   insert { MLM; Morelia, Michoacan, Mexico - Municipal; }
+   insert { MLO; Milos, Greece - Milos; }
+   insert { MLS; Miles City, MT, USA - Miles City; }
+   insert { MLU; Monroe, LA, USA; }
+   insert { MMB; Memanbetsu, Japan; }
+   insert { MME; Teesside, England, United Kingdom - Tees-Side; }
+   insert { MMH; Mammoth Lakes, CA, USA - Mammoth Lakes Airport; }
+   insert { MMK; Murmansk, Russia - Murmansk; }
+   insert { MMU; Morristown, NJ, USA - Morristown; }
+   insert { MMX; Malmo, Sweden - Sturup; }
+   insert { MNI; Montserrat, Montserrat - Blackburne; }
+   insert { MNL; Manila, Philippines - Ninoy Aquino International; }
+   insert { MNM; Menominee, MI, USA - Twin County Airport; }
+   insert { MOB; Mobile, AL, USA - Mobile Municipal; }
+   insert { MOD; Modesto, CA, USA - Harry Sham Feild; }
+   insert { MOH; Chicago, IL, USA - Chicago NAS; }
+   insert { MOL; Molde, Norway - Aro; }
+   insert { MOT; Minot, ND, USA - Minot International Airport; }
+   insert { MOW; Moscow, Russia; }
+   insert { MPA; Mpacha, Namibia; }
+   insert { MPB; Miami, FL, USA - Miami Public Seaplane Base; }
+   insert { MPL; Montpellier, France - Frejorgues; }
+   insert { MPM; Maputo, Mozambique - Maputo International; }
+   insert { MQL; Mildura, Victoria, Australia - Mildura; }
+   insert { MQN; Mo I Rana, Norway - Rossvoll; }
+   insert { MQT; Marquette, MI, USA - Marquette County Airport; }
+   insert { MRD; Merida, Venezuela - Alberto Carnevalli; }
+   insert { MRK; Marco Island, FL, USA; }
+   insert { MRS; Marseille, France - Marseille-Provence; }
+   insert { MRU; Mauritius, Mauritius - Plaisance; }
+   insert { MRY; Monterey / Carmel, CA, USA - Monterey Peninsula Airport; }
+   insert { MSJ; Misawa, Japan; }
+   insert { MSL; Muscle Shoals / Florence / Sheffield, AL, USA - Muscle Shoals; }
+   insert { MSN; Madison, WI, USA - Dane County Regional Airport; }
+   insert { MSO; Missoula, MT, USA - Missoula International; }
+   insert { MSP; Minneapolis, MN, USA - Minneapolis/St Paul Intl Airport; }
+   insert { MSQ; Minsk, Belarus - Minsk; }
+   insert { MSS; Massena, NY, USA; }
+   insert { MST; Maastricht, Netherlands - Zuid-Limburg; }
+   insert { MSU; Maseru, Lesotho - Maseru; }
+   insert { MSY; New Orleans, LA, USA - Moisant International Airport; }
+   insert { MTH; Marathon, FL, USA; }
+   insert { MTJ; Montrose, CO, USA - Montrose County Airport; }
+   insert { MTY; Monterrey, Nuevo Leon, Mexico - Escobedo; }
+   insert { MUB; Maun, Botswana; }
+   insert { MUC; Munich, Germany - Franz Josef Strauss; }
+   insert { MUN; Maturin, Venezuela; }
+   insert { MVD; Montevideo, Uruguay - Carrasco; }
+   insert { MVN; Mount Vernon, IL, USA - Mount Vernon Outland Airport; }
+   insert { MVY; Marthas Vineyard, MA, USA; }
+   insert { MWA; Marion, IL, USA; }
+   insert { MXL; Mexicali, Baja California, Mexico - Rodolfo Sanchez Taboada; }
+   insert { MXP; Milan, Italy - Malpensa; }
+   insert { MYA; Moruya, New South Wales, Australia - Moruya; }
+   insert { MYJ; Matsuyama, Japan - Matsuyama; }
+   insert { MYR; Myrtle Beach, SC, USA; }
+   insert { MYY; Miri, Sarawak, Malaysia - Miri; }
+   insert { MZL; Manizales, Colombia - Santaguida; }
+   insert { MZT; Mazatlan, Sinaloa, Mexico - Buelna; }
+   insert { MZV; Mulu, Malaysia - Mulu Airport; }
+   insert { NAG; Nagpur, India - Sonegaon; }
+   insert { NAH; Naha, Indonesia; }
+   insert { NAK; Nakhon Ratchasima, Thailand - Nakhon Ratchasima; }
+   insert { NAN; Nadi, Fiji - International; }
+   insert { NAP; Naples, Italy - Capodichino; }
+   insert { NAS; Nassau, Bahamas - Nassau International Airport; }
+   insert { NAT; Natal, Rio Grande Do Norte, Brazil - Agusto Severo; }
+   insert { NAY; Beijing, China; }
+   insert { NBO; Nairobi, Kenya - Jomo Kenyatta Internatonal; }
+   insert { NCA; North Caicos, Turks And Caicos Islands; }
+   insert { NCE; Nice, France - Cote D'azur; }
+   insert { NCL; Newcastle, England, United Kingdom - International; }
+   insert { NCY; Annecy, France - Annecy-Meythe; }
+   insert { NDJ; N Djamena, Chad - N'djamena; }
+   insert { NEC; Necochea, Buenos Aires, Argentina - Necochea; }
+   insert { NEV; Nevis, Leeward Islands, Saint Kitts And Nevis; }
+   insert { NGO; Nagoya, Japan - Komaki; }
+   insert { NGS; Nagasaki, Japan - Nagasaki; }
+   insert { NJC; Nizhnevartovsk, Russia - Nizhnevartovsk; }
+   insert { NKC; Nouakchott, Mauritania - Nouakchott; }
+   insert { NKG; Nanjing, China; }
+   insert { NLA; Ndola, Zambia - Ndola; }
+   insert { NLD; Nuevo Laredo, Tamaulipas, Mexico; }
+   insert { NLP; Nelspruit, South Africa; }
+   insert { NNG; Nanning, China; }
+   insert { NOC; Connaught, Ireland - Rep Of Ireland; }
+   insert { NOU; Noumea, New Caledonia - Tontouta; }
+   insert { NPL; New Plymouth, New Zealand - New Plymouth; }
+   insert { NQY; Newquay, England, United Kingdom - Newquay Civil; }
+   insert { NRT; Tokyo, Japan - Narita; }
+   insert { NRT; Tokyo, Japan; }
+   insert { NSB; Bimini, Bahamas - North Seaplane Base; }
+   insert { NSI; Yaounde, Cameroon - Nsimalen; }
+   insert { NSN; Nelson, New Zealand - Nelson; }
+   insert { NTE; Nantes, France - Nantes-Chateau Bougon; }
+   insert { NTL; Newcastle, New South Wales, Australia - Williamtown; }
+   insert { NUE; Nuremberg, Germany - Nuremberg; }
+   insert { NVT; Navegantes, Santa Catarina, Brazil; }
+   insert { NWA; Moheli, Comoros; }
+   insert { NWI; Norwich, England, United Kingdom - Norwich; }
+   insert { OAG; Orange, New South Wales, Australia - Springhill; }
+   insert { OAJ; Jacksonville, NC, USA; }
+   insert { OAK; Oakland, CA, USA - Metropolitan Oakland Intl Apt; }
+   insert { OAX; Oaxaca, Oaxaca, Mexico - Xoxocotlan; }
+   insert { OBO; Obihiro, Japan - Obihiro; }
+   insert { ODE; Odense, Denmark - Odense; }
+   insert { ODS; Odessa, Ukraine - Central; }
+   insert { ODW; Oak Harbor, WA, USA; }
+   insert { OFK; Norfolk, NE, USA - Karl Stefan Memorial Airport; }
+   insert { OGG; Kahului, HI, USA - Kahului Airport; }
+   insert { OGS; Ogdensburg, NY, USA; }
+   insert { OHD; Ohrid, Macedonia - Ohrid; }
+   insert { OIT; Oita, Japan - Oita; }
+   insert { OKA; Okinawa, Ryukyu Islands, Japan - Naha Field; }
+   insert { OKC; Oklahoma City, OK, USA - Will Rogers World Airport; }
+   insert { OKJ; Okayama, Japan - Okayama; }
+   insert { OLB; Olbia, Italy - Costa Smeralda; }
+   insert { OLF; Wolf Point, MT, USA; }
+   insert { OLM; Olympia, WA, USA; }
+   insert { OMA; Omaha, NE, USA - Eppley Airfield; }
+   insert { OME; Nome, AK, USA; }
+   insert { OMR; Oradea, Romania - Oradea; }
+   insert { ONG; Mornington, Queensland, Australia - Mornington Is; }
+   insert { ONT; Ontario, CA, USA - Ontario International; }
+   insert { OOK; Toksook Bay, AK, USA; }
+   insert { OOL; Gold Coast, Queensland, Australia - Coolangatta; }
+   insert { OOM; Cooma, New South Wales, Australia; }
+   insert { OPF; Miami, FL, USA - Opa Locka; }
+   insert { OPO; Porto, Portugal - Porto; }
+   insert { ORB; Orebro, Sweden - Orebro; }
+   insert { ORD; Chicago, IL, USA - O'hare International Airport; }
+   insert { ORF; Norfolk, VA, USA - Norfolk International Airport; }
+   insert { ORH; Worcester, MA, USA - Worcester /James D O'brien Field; }
+   insert { ORK; Cork, Ireland - Cork; }
+   insert { ORL; Orlando, FL, USA - Herndon; }
+   insert { ORN; Oran, Algeria - Es Senia; }
+   insert { ORY; Paris, France - Orly; }
+   insert { OSA; Osaka, Japan - Osaka International; }
+   insert { OSD; Ostersund, Sweden - Froesoe; }
+   insert { OSH; Oshkosh, WI, USA - Wittman Field; }
+   insert { OSL; Oslo, Norway; }
+   insert { OTH; North Bend, OR, USA; }
+   insert { OTM; Ottumwa, IA, USA - Ottumwa Industrial Airport; }
+   insert { OTP; Bucharest, Romania - Otopeni; }
+   insert { OTZ; Kotzebue, AK, USA; }
+   insert { OUA; Ouagadougou, Burkina Faso - Ouagadougou; }
+   insert { OUL; Oulu, Finland - Oulu; }
+   insert { OVB; Novosibirsk, Russia - Tolmachevo; }
+   insert { OVD; Asturias, Spain - Asturias; }
+   insert { OWB; Owensboro, KY, USA; }
+   insert { OWD; Norwood, MA, USA - Memorial Code Owd; }
+   insert { OXB; Bissau, Guinea-Bissau - Osvaldo Vieira; }
+   insert { OXR; Oxnard / Ventura, CA, USA - Oxnard Airport; }
+   insert { OZZ; Ouarzazate, Morocco - Ouarzazate; }
+   insert { PAD; Paderborn, Germany - Paderborn; }
+   insert { PAH; Paducah, KY, USA; }
+   insert { PAP; Port Au Prince, Haiti - Mais Gate; }
+   insert { PAR; Paris, France; }
+   insert { PAS; Paros, Greece - Paros Community; }
+   insert { PAT; Patna, India - Patna; }
+   insert { PAZ; Poza Rica, Veracruz, Mexico; }
+   insert { PBC; Puebla, Puebla, Mexico; }
+   insert { PBI; West Palm Beach, FL, USA - Palm Beach International Airport; }
+   insert { PBM; Paramaribo, Suriname - Zanderij Intl; }
+   insert { PBO; Paraburdoo, Western Australia, Australia - Paraburdoo; }
+   insert { PCL; Pucallpa, Peru - Captain Rolden; }
+   insert { PCT; Princeton, NJ, USA - Princeton Municipal; }
+   insert { PDG; Padang, Indonesia - Tabing; }
+   insert { PDL; Ponta Delgada, Azores Islands, Portugal - Nordela; }
+   insert { PDT; Pendleton, OR, USA; }
+   insert { PDX; Portland, OR, USA - Portland International Airport; }
+   insert { PEE; Perm, Russia - Perm; }
+   insert { PEG; Perugia, Italy - Na; }
+   insert { PEI; Pereira, Colombia - Matecana; }
+   insert { PEK; Beijing, China - Peking Capital Airport; }
+   insert { PEN; Penang, Malaysia - Penang International; }
+   insert { PER; Perth, Western Australia, Australia - Perth; }
+   insert { PES; Petrozavodsk, Russia - Petrozavodsk Airport; }
+   insert { PEW; Peshawar, Pakistan - Peshawar; }
+   insert { PFN; Panama City, FL, USA; }
+   insert { PFO; Paphos, Cyprus - International; }
+   insert { PGA; Page, AZ, USA; }
+   insert { PGF; Perpignan, France - Llabanere; }
+   insert { PGV; Greenville, NC, USA - Pitt-Greenville; }
+   insert { PGX; Perigueux, France; }
+   insert { PHE; Port Hedland, Western Australia, Australia - Port Hedlan; }
+   insert { PHF; Newport News/Williamsburg/Hampton, VA, USA - Patrick Henry Intl; }
+   insert { PHL; Philadelphia, PA, USA - Philadelphia International Airport; }
+   insert { PHO; Point Hope, AK, USA - Point Hope; }
+   insert { PHS; Phitsanulok, Thailand; }
+   insert { PHX; Phoenix, AZ, USA - Sky Harbor International Airport; }
+   insert { PIA; Peoria, IL, USA - Greater Peoria Airport; }
+   insert { PIB; Laurel, MS, USA - Laurel Hattiesburg/Camp Shelby; }
+   insert { PID; Nassau, Bahamas - Paradise Island; }
+   insert { PIE; St Petersburg/Clearwater, FL, USA - St Petersburg/Clearwater Intl; }
+   insert { PIH; Pocatello, ID, USA; }
+   insert { PIK; Glasgow, Scotland, United Kingdom - Prestwick; }
+   insert { PIR; Pierre, SD, USA - Pierre Municipal Airport; }
+   insert { PIT; Pittsburgh, PA, USA - Greater Pit Intnl Airport; }
+   insert { PIW; Pikwitonei, Manitoba, Canada; }
+   insert { PJG; Panjgur, Pakistan; }
+   insert { PKB; Parkersburg / Marietta, WV, USA - Wood County; }
+   insert { PKC; Petropavlovsk-Kamchatsky, Russia - Petropavlovsk-Kamchatsky; }
+   insert { PKE; Parkes, New South Wales, Australia - Parkes; }
+   insert { PKR; Pokhara, Nepal - Pokhara; }
+   insert { PKU; Pekanbaru, Indonesia - Simpang Tiga; }
+   insert { PLB; Plattsburgh, NY, USA; }
+   insert { PLH; Plymouth, England, United Kingdom - Plymouth Airport; }
+   insert { PLM; Palembang, Indonesia - Sultan Mahmud Badaruddin Ii; }
+   insert { PLN; Pellston, MI, USA - Pellston Regional Airport; }
+   insert { PLO; Port Lincoln, South Australia, Australia - Port Lincoln; }
+   insert { PLQ; Palanga, Lithuania - Palanga; }
+   insert { PLS; Providenciales, Turks And Caicos Islands; }
+   insert { PLU; Belo Horizonte /Belo Horizon, Minas Gerais, Brazil - Confins/Pampulha; }
+   insert { PLW; Palu, Indonesia - Mutiara; }
+   insert { PLZ; Port Elizabeth, South Africa - Hf Verwoerd; }
+   insert { PMC; Puerto Montt, Chile - Tepual; }
+   insert { PMD; Palmdale, CA, USA - Air Force 42; }
+   insert { PMI; Palma Mallorca, Mallorca Island, Spain - Palma Mallorca; }
+   insert { PMO; Palermo, Sicily, Italy - Punta Raisi; }
+   insert { PMR; Palmerston North, New Zealand - Palmerstown North; }
+   insert { PMV; Porlamar, Venezuela - Gral Santiago Marino; }
+   insert { PNA; Pamplona, Spain - Pamplona - Noain; }
+   insert { PNC; Ponca City, OK, USA; }
+   insert { PNH; Phnom Penh, Cambodia - Pochentong; }
+   insert { PNI; Pohnpei, Caroline Islands, Micronesia - Pohnpei International; }
+   insert { PNK; Pontianak, Indonesia - Supadio; }
+   insert { PNL; Pantelleria, Italy - Pantelleria; }
+   insert { PNQ; Poona, India - Lohegaon Poona; }
+   insert { PNR; Pointe Noire, Congo - Pointe Noire; }
+   insert { PNS; Pensacola, FL, USA; }
+   insert { POA; Porto Alegre, Rio Grande Do Sul, Brazil - Salgado Filho; }
+   insert { POG; Port Gentil, Gabon - Port Gentil; }
+   insert { POM; Port Moresby, Papua New Guinea - Jackson; }
+   insert { POP; Puerto Plata, Dominican Republic - La Union; }
+   insert { POR; Pori, Finland - Pori; }
+   insert { POS; Port Of Spain, Trinidad, Trinidad And Tobago - Piarco International Airport; }
+   insert { POU; Poughkeepsie, NY, USA - Dutchess County; }
+   insert { POZ; Poznan, Poland - Lawica; }
+   insert { PPG; Pago Pago, American Samoa - International; }
+   insert { PPS; Puerto Princesa, Philippines - Puerto Princesa; }
+   insert { PPT; Papeete, French Polynesia - Intl Tahiti-Faaa; }
+   insert { PQI; Presque Isle, ME, USA; }
+   insert { PQQ; Port Macquarie, New South Wales, Australia - Port Macquarie; }
+   insert { PRC; Prescott, AZ, USA; }
+   insert { PRG; Prague, Czech Republic - Ruzyne; }
+   insert { PRI; Praslin Island, Seychelles; }
+   insert { PSA; Pisa, Italy - G Galilei; }
+   insert { PSE; Ponce, PR, USA - Mercedita; }
+   insert { PSG; Petersburg, AK, USA - Municipal; }
+   insert { PSM; Portsmouth, NH, USA - Pease Intl Tradeport; }
+   insert { PSO; Pasto, Colombia - Cano; }
+   insert { PSP; Palm Springs, CA, USA - Palm Springs Municipal; }
+   insert { PSR; Pescara, Italy - Liberi; }
+   insert { PSZ; Puerto Suarez, Bolivia; }
+   insert { PTF; Malololailai, Fiji - Malololailai; }
+   insert { PTG; Pietersburg, South Africa; }
+   insert { PTP; Pointe A Pitre, Guadeloupe - Le Raizet; }
+   insert { PTY; Panama City, Panama - Tocumen International Airport; }
+   insert { PUB; Pueblo, CO, USA - Pueblo Memorial Airport; }
+   insert { PUJ; Punta Cana, Dominican Republic; }
+   insert { PUQ; Punta Arenas, Chile - Presidente Ibanez; }
+   insert { PUS; Pusan, South Korea - Kimhae; }
+   insert { PUW; Pullman, WA, USA - Pullman; }
+   insert { PUY; Pula, Croatia (Hrvatska) - Pula; }
+   insert { PUZ; Puerto Cabezas, Nicaragua - Puerto Cabezas; }
+   insert { PVC; Provincetown, MA, USA - Provincetown Municipal Airport; }
+   insert { PVD; Providence, RI, USA - Tf Green State Airport; }
+   insert { PVG; Shanghai, China - Pudong Shanghai Airport; }
+   insert { PVR; Puerto Vallarta, Jalisco, Mexico - Gustavo Diaz Ordaz; }
+   insert { PVU; Provo, UT, USA - Provo; }
+   insert { PWK; Chicago, IL, USA - Pal-Waukee Airport; }
+   insert { PWM; Portland, ME, USA - Portland International Jetport; }
+   insert { PWT; Bremerton, WA, USA - Municipal; }
+   insert { PXM; Puerto Escondido, Oaxaca, Mexico; }
+   insert { PXO; Porto Santo, Madeira Islands, Portugal - Porto Santo; }
+   insert { PZE; Penzance, England, United Kingdom - Penzance; }
+   insert { PZO; Puerto Ordaz, Venezuela - Puerto Ordaz; }
+   insert { QBF; Vail/Eagle, CO, USA; }
+   insert { QDU; Duesseldorf, Germany - Main Train Station; }
+   insert { QKB; Breckenridge, CO, USA; }
+   insert { QKL; Cologne, Germany - Train Main Railroad Station; }
+   insert { QRO; Queretaro, Queretaro, Mexico; }
+   insert { QSY; Sydney, New South Wales, Australia; }
+   insert { RAB; Rabaul, Papua New Guinea - Lakunai; }
+   insert { RAJ; Rajkot, India - Rajkot; }
+   insert { RAK; Marrakech, Morocco - Menara; }
+   insert { RAP; Rapid City, SD, USA - Rapid City Regional Airport; }
+   insert { RAR; Rarotonga, Cook Islands - Rarotonga; }
+   insert { RBA; Rabat, Morocco - Sale; }
+   insert { RCB; Richards Bay, South Africa - Richards Bay; }
+   insert { RCE; Roche Harbor, WA, USA - Roche Harbor; }
+   insert { RDD; Redding, CA, USA - Redding Municipal Airport; }
+   insert { RDG; Reading, PA, USA - Municipal / Spaatz Field; }
+   insert { RDM; Bend, OR, USA - Roberts Field, Redmond, OR; }
+   insert { RDU; Raleigh/Durham, NC, USA - Raleigh Durham International Arpt; }
+   insert { REC; Recife, Pernambuco, Brazil - Guararapes International; }
+   insert { REG; Reggio Calabria, Italy - Tito Menniti; }
+   insert { REK; Reykjavik, Iceland - Metropolitan Area; }
+   insert { REL; Trelew, Chubut, Argentina; }
+   insert { RES; Resistencia, Chaco, Argentina; }
+   insert { REU; Reus, Spain - Reus; }
+   insert { REX; Reynosa, Tamaulipas, Mexico - General Lucio Blanco Airport; }
+   insert { RFD; Rockford, IL, USA - Greater Rockford; }
+   insert { RGA; Rio Grande, Tierra Del Fuego, Argentina; }
+   insert { RGL; Rio Gallegos, Santa Cruz, Argentina - Rio Gallegos-Internacional; }
+   insert { RGN; Yangon, Myanmar - Mingaladon; }
+   insert { RHI; Rhinelander, WI, USA - Rhinelander Oneida County Airport; }
+   insert { RHO; Rhodes, Greece - Paradisi; }
+   insert { RIC; Richmond, VA, USA - Richmond International Airport; }
+   insert { RIO; Rio De Janeiro, Rio De Janeiro, Brazil; }
+   insert { RIW; Riverton, WY, USA - Riverton Regional Airport; }
+   insert { RIX; Riga, Latvia - Riga; }
+   insert { RKD; Rockland, ME, USA - Rockland; }
+   insert { RKS; Rock Springs, WY, USA - Rock Springs Sweetwater Cty Arpt; }
+   insert { RKV; Reykjavik, Iceland - Reykjavik Domestic Airport; }
+   insert { RMA; Roma, Queensland, Australia - Roma; }
+   insert { RNB; Ronneby, Sweden - Kallinge; }
+   insert { RNN; Bornholm, Denmark - Arnager; }
+   insert { RNO; Reno, NV, USA - Reno-Cannon International Apt; }
+   insert { RNS; Rennes, France - St Jacques; }
+   insert { ROA; Roanoke, VA, USA - Roanoke Regional Airport; }
+   insert { ROC; Rochester, NY, USA - Monroe County Airport; }
+   insert { ROM; Rome, Italy - Leonardo Da Vinci / Fiumicino; }
+   insert { ROP; Rota, Northern Mariana Islands - Rota; }
+   insert { ROR; Koror, Palau - Airai; }
+   insert { ROS; Rosario, Santa Fe, Argentina - Fisherton; }
+   insert { ROV; Rostov, Russia - Rostov; }
+   insert { ROW; Roswell, NM, USA - Industrial Air Center; }
+   insert { RPR; Raipur, India; }
+   insert { RRG; Rodrigues Island, Mauritius - Rodrigues; }
+   insert { RSA; Santa Rosa, La Pampa, Argentina; }
+   insert { RSD; Rock Sound, Bahamas; }
+   insert { RST; Rochester, MN, USA - Rochester Municipal; }
+   insert { RSU; Yosu, South Korea - Yosu Airport; }
+   insert { RSW; Fort Myers, FL, USA - Regional Southwest Airport; }
+   insert { RTB; Roatan, Honduras - Roatan; }
+   insert { RTM; Rotterdam, Netherlands - Rotterdam; }
+   insert { RUH; Riyadh, Saudi Arabia - King Khaled Intl; }
+   insert { RUI; Ruidoso, NM, USA; }
+   insert { RUN; St-Denis De La Reunion, Reunion - Gillot; }
+   insert { RUT; Rutland, VT, USA; }
+   insert { RWI; Rocky Mount, NC, USA - Wilson; }
+   insert { SAB; Saba Island, Netherlands Antilles; }
+   insert { SAF; Santa Fe, NM, USA - Santa Fe Municipal Airport; }
+   insert { SAH; Sanaa, Yemen - International; }
+   insert { SAL; San Salvador, El Salvador - El Salvadore Intl Airport; }
+   insert { SAN; San Diego, CA, USA - Lindbergh International Airport; }
+   insert { SAP; San Pedro Sula, Honduras - La Mesa; }
+   insert { SAT; San Antonio, TX, USA - San Antonio International; }
+   insert { SAV; Savannah, GA, USA - Travis Field; }
+   insert { SBA; Santa Barbara, CA, USA - Santa Barbara Airport; }
+   insert { SBH; St Barthelemy, Guadeloupe; }
+   insert { SBN; South Bend, IN, USA - Michiana Regional Airport; }
+   insert { SBP; San Luis Obispo, CA, USA - San Luis Obispo County Airport; }
+   insert { SBW; Sibu, Sarawak, Malaysia - Sibu; }
+   insert { SBY; Salisbury, MD, USA - Salisbury-Wicomico County Arpt; }
+   insert { SCE; State College, PA, USA - University Park Arpt; }
+   insert { SCL; Santiago, Chile - Aeropuerto Comodoro Arturo Merino Benitez; }
+   insert { SCN; Saarbruecken, Germany - Ensheim; }
+   insert { SCQ; Santiago De Compostela, Spain - Santiago; }
+   insert { SCU; Santiago, Cuba - Santiago-Antonio Maceo Cuba; }
+   insert { SDF; Louisville, KY, USA - Standiford Field; }
+   insert { SDJ; Sendai, Japan - Sendai; }
+   insert { SDK; Sandakan, Sabah, Malaysia; }
+   insert { SDL; Sundsvall, Sweden - Sundsvall; }
+   insert { SDN; Sandane, Norway; }
+   insert { SDQ; Santo Domingo, Dominican Republic - Las Americas; }
+   insert { SDR; Santander, Spain - Santander; }
+   insert { SDU; Rio De Janeiro, Rio De Janeiro, Brazil - Santos Dumont; }
+   insert { SDX; Sedona, AZ, USA; }
+   insert { SDY; Sidney, MT, USA; }
+   insert { SEA; Seattle, WA, USA - Seattle Tacoma Intl Airport; }
+   insert { SEL; Seoul, South Korea - Kimpo International; }
+   insert { SEZ; Mahe Island, Seychelles - Mahe Island Seychelles Intl; }
+   insert { SFA; Sfax, Tunisia - Sfax Airport; }
+   insert { SFB; Orlando, FL, USA - Sanford Central Florida Regional Airport; }
+   insert { SFG; St Martin, Netherlands Antilles - Esperance; }
+   insert { SFJ; Kangerlussuaq, Greenland - Sondre Stromfjord; }
+   insert { SFN; Santa Fe, Santa Fe, Argentina; }
+   insert { SFO; San Francisco, CA, USA - San Francisco Intl Airport; }
+   insert { SFT; Skelleftea, Sweden - Skelleftea; }
+   insert { SGC; Surgut, Russia; }
+   insert { SGD; Sonderborg, Denmark - Sonderborg; }
+   insert { SGF; Springfield, MO, USA - Springfield Regional Airport; }
+   insert { SGN; Ho Chi Minh City, Vietnam - Tan Son Nhut; }
+   insert { SGO; St George, Queensland, Australia - St George; }
+   insert { SGU; Saint George, UT, USA - St George; }
+   insert { SGY; Skagway, AK, USA; }
+   insert { SHA; Shanghai, China - Shanghai Intl /Hongqiao/; }
+   insert { SHC; Indaselassie, Ethiopia; }
+   insert { SHD; Staunton, VA, USA - Shenandoah Valley Regional; }
+   insert { SHE; Shenyang, China - Shenyang; }
+   insert { SHJ; Sharjah, United Arab Emirates - Sharjah; }
+   insert { SHO; Sokcho, South Korea; }
+   insert { SHR; Sheridan, WY, USA - Sheridan County Airport; }
+   insert { SHV; Shreveport, LA, USA - Regional Airport; }
+   insert { SID; Sal, Cape Verde - Amilcar Cabral International; }
+   insert { SIN; Singapore, Singapore - Changi International Airport; }
+   insert { SIP; Simferopol, Ukraine - Simferopol; }
+   insert { SIT; Sitka, AK, USA - Sitka; }
+   insert { SJC; San Jose, CA, USA - San Jose International Airport; }
+   insert { SJD; San Jose Del Cabo, Baja California Sur, Mexico - Los Cabos Intl Airport; }
+   insert { SJI; San Jose, Philippines - Mcguire Field; }
+   insert { SJJ; Sarajevo, Bosnia And Herzegowina - Butmir; }
+   insert { SJK; Sao Jose Dos Campos, Sao Paulo, Brazil - Sao Jose Dos Campos Airport; }
+   insert { SJO; San Jose, Costa Rica - Juan Santamaria International; }
+   insert { SJT; San Angelo, TX, USA; }
+   insert { SJU; San Juan, PR, USA - Luis Munoz Marin International; }
+   insert { SJW; Shijiazhuang, China - Shijiazhuang; }
+   insert { SKB; St Kitts, Saint Kitts And Nevis - Golden Rock; }
+   insert { SKD; Samarkand, Uzbekistan; }
+   insert { SKG; Thessaloniki, Greece - Thessaloniki; }
+   insert { SKP; Skopje, Macedonia - Skopje; }
+   insert { SKS; Vojens Lufthavn, Denmark - Jojens; }
+   insert { SLA; Salta, Salta, Argentina - International; }
+   insert { SLC; Salt Lake City, UT, USA - Salt Lake City International Arpt; }
+   insert { SLK; Saranac Lake, NY, USA - Adirondack; }
+   insert { SLN; Salina, KS, USA - Salina Municipal; }
+   insert { SLP; San Luis Potosi, San Luis Potosi, Mexico; }
+   insert { SLU; St Lucia, Saint Lucia - Vigie Field; }
+   insert { SLW; Saltillo, Coahuila, Mexico - Saltillo; }
+   insert { SLZ; Sao Luiz, Maranhao, Brazil - Tirirical; }
+   insert { SMF; Sacramento, CA, USA - Sacramento Metropolitan; }
+   insert { SML; Stella Maris, Bahamas; }
+   insert { SMM; Semporna, Sabah, Malaysia - Semporna; }
+   insert { SMS; St Marie, Madagascar; }
+   insert { SMX; Santa Maria, CA, USA - Santa Maria Public Airport; }
+   insert { SNA; Santa Ana, CA, USA - John Wayne Airport; }
+   insert { SNB; Snake Bay, Northern Territory, Australia; }
+   insert { SNN; Shannon, Ireland - Shannon; }
+   insert { SNO; Sakon Nakhon, Thailand; }
+   insert { SOF; Sofia, Bulgaria - Sofia Intl; }
+   insert { SOG; Sogndal, Norway - Haukasen; }
+   insert { SOM; San Tome, Venezuela; }
+   insert { SOP; Southern Pines, NC, USA - Pinehurst; }
+   insert { SOU; Southampton, England, United Kingdom - Eastleigh; }
+   insert { SOW; Show Low, AZ, USA; }
+   insert { SPB; St Thomas Island, VI, USA - Seaplane Base; }
+   insert { SPC; Santa Cruz La Palma, Canary Islands, Spain - La Palma; }
+   insert { SPD; Saidpur, Bangladesh; }
+   insert { SPI; Springfield, IL, USA - Capital Airport; }
+   insert { SPN; Saipan, Northern Mariana Islands - Saipan Intl Northrn Mariana Isles; }
+   insert { SPR; San Pedro, Belize - San Pedro; }
+   insert { SPS; Wichita Falls, TX, USA - Wichita Falls Municipal; }
+   insert { SPU; Split, Croatia (Hrvatska) - Split; }
+   insert { SPW; Spencer, IA, USA - Spencer Municipal Airport; }
+   insert { SRE; Sucre, Bolivia - Sucre; }
+   insert { SRQ; Sarasota/Bradenton, FL, USA - Sarasota-Bradenton; }
+   insert { SSA; Salvador, Bahia, Brazil - Dois De Julho; }
+   insert { SSB; St Croix Island, VI, USA - Sea Plane Base; }
+   insert { SSG; Malabo, Equatorial Guinea - Santa Isabel; }
+   insert { SSH; Sharm El Sheikh, Egypt - Ophira; }
+   insert { SSJ; Sandnessjoen, Norway - Stokka; }
+   insert { SSQ; La Sarre, Quebec, Canada; }
+   insert { STC; Saint Cloud, MN, USA - Saint Cloud; }
+   insert { STD; Santo Domingo, Venezuela - Mayor Humberto Vivas Guerrero; }
+   insert { STI; Santiago, Dominican Republic - Municipal; }
+   insert { STL; St Louis, MO, USA - Lambert-St Louis Internatl; }
+   insert { STM; Santarem, Para, Brazil; }
+   insert { STN; London, England, United Kingdom - Stansted; }
+   insert { STP; St Paul, MN, USA - Downtown Airport; }
+   insert { STR; Stuttgart, Germany - Echterdingen; }
+   insert { STS; Santa Rosa, CA, USA - Sonoma County Airport; }
+   insert { STT; St Thomas Island, VI, USA - Cyril E King Arpt; }
+   insert { STX; St Croix Island, VI, USA; }
+   insert { SUB; Surabaya, Indonesia - Juanda Airport; }
+   insert { SUE; Sturgeon Bay, WI, USA; }
+   insert { SUN; Sun Valley/Hailey, ID, USA; }
+   insert { SUV; Suva, Fiji - Nausori; }
+   insert { SUX; Sioux City International, IA, USA; }
+   insert { SVD; St Vincent, St. Vincent And The Grenadines; }
+   insert { SVG; Stavanger, Norway - Sola; }
+   insert { SVL; Savonlinna, Finland - Savonlinna; }
+   insert { SVO; Moscow, Russia - Sheremetyevo; }
+   insert { SVQ; Sevilla, Spain; }
+   insert { SVU; Savusavu, Fiji - Savusavu; }
+   insert { SVX; Ekaterinburg, Russia; }
+   insert { SVZ; San Antonio, Venezuela; }
+   insert { SWA; Shantou, China; }
+   insert { SWF; Newburgh/Poughkeepsie, NY, USA - Stewart; }
+   insert { SWP; Swakopmund, Namibia; }
+   insert { SWQ; Sumbawa Island, Indonesia - Brang Bidji; }
+   insert { SXB; Strasbourg, France - Entzheim; }
+   insert { SXF; Berlin, Germany - Schoenefeld; }
+   insert { SXL; Sligo, Ireland - Collooney; }
+   insert { SXM; St Maarten, Netherlands Antilles - Juliana; }
+   insert { SXR; Srinagar, India; }
+   insert { SYD; Sydney, New South Wales, Australia - Sydney /Kingsford-Smith/ Airport; }
+   insert { SYO; Shonai, Japan - Shonai; }
+   insert { SYR; Syracuse, NY, USA - Hancock International; }
+   insert { SYX; Sanya, China; }
+   insert { SYY; Stornoway, Scotland, United Kingdom - Stornoway; }
+   insert { SYZ; Shiraz, Iran - Shiraz; }
+   insert { SZB; Kuala Lumpur - Subang, Malaysia; }
+   insert { SZG; Salzburg, Austria - Salzburg; }
+   insert { SZX; Shenzhen, China - Shenzhen; }
+   insert { SZZ; Szczecin, Poland - Goleniow; }
+   insert { TAB; Tobago, Tobago, Trinidad And Tobago - Crown Point; }
+   insert { TAC; Tacloban, Philippines - Dz Romualdez; }
+   insert { TAE; Taegu, South Korea; }
+   insert { TAG; Tagbilaran, Philippines - Tagbilaran; }
+   insert { TAI; Taiz, Yemen - Al-Janad; }
+   insert { TAM; Tampico, Tamaulipas, Mexico; }
+   insert { TAP; Tapachula, Chiapas, Mexico - Tapachula International; }
+   insert { TAS; Tashkent, Uzbekistan - Tashkent; }
+   insert { TAT; Tatry/Poprad, Slovakia - Tatry/Poprad; }
+   insert { TBN; Ft Leonard Wood, MO, USA - Forney Field; }
+   insert { TBP; Tumbes, Peru - Tumbes; }
+   insert { TBS; Tbilisi, Georgia - Novo Alexeyevka; }
+   insert { TBT; Tabatinga, Amazonas, Brazil; }
+   insert { TBU; Nuku Alofa/Tongatapu, Tonga - International; }
+   insert { TCI; Tenerife, Canary Islands, Spain - Tenerife Norte Los Rodeos; }
+   insert { TCL; Tuscaloosa, AL, USA - Van De Graff; }
+   insert { TDD; Trinidad, Bolivia; }
+   insert { TED; Thisted, Denmark; }
+   insert { TER; Terceira Island, Azores Islands, Portugal - Lajes; }
+   insert { TEX; Telluride, CO, USA - Telluride Municipal Airport; }
+   insert { TEZ; Tezpur, India - Salonbari; }
+   insert { TFN; Tenerife, Canary Islands, Spain - Tenerife Norte Los Rodeos; }
+   insert { TFS; Tenerife, Canary Islands, Spain - Reina Sofia; }
+   insert { TGD; Podgorica, Yugoslavia - Golubovci; }
+   insert { TGG; Kuala Terengganu, Malaysia - Sultan Mahmood; }
+   insert { TGM; Tirgu Mures, Romania - Tirgu Mures; }
+   insert { TGU; Tegucigalpa, Honduras - Toncontin; }
+   insert { TGZ; Tuxtla Gutierrez, Chiapas, Mexico - Llano San Juan; }
+   insert { THE; Teresina, Piaui, Brazil - Teresina; }
+   insert { THF; Berlin, Germany - Tempelhof; }
+   insert { THR; Tehran, Iran - Mehrabad; }
+   insert { THU; Pituffik, Greenland - Thule Airport; }
+   insert { TIA; Tirana, Albania - Rinas; }
+   insert { TIJ; Tijuana, Baja California, Mexico - General Abelardo L Rodriguez; }
+   insert { TIQ; Tinian, Northern Mariana Islands - Tinian; }
+   insert { TIS; Thursday Island, Queensland, Australia - Horn Island; }
+   insert { TIV; Tivat, Yugoslavia - Tivat; }
+   insert { TIZ; Tari, Papua New Guinea; }
+   insert { TJA; Tarija, Bolivia; }
+   insert { TJM; Tyumen, Russia - Tyumen; }
+   insert { TKK; Truk, Caroline Islands, Micronesia - Truk; }
+   insert { TKQ; Kigoma, Tanzania; }
+   insert { TKS; Tokushima, Japan - Tokushima; }
+   insert { TKU; Turku, Finland - Turku; }
+   insert { TLH; Tallahassee, FL, USA; }
+   insert { TLL; Tallinn, Estonia - Ulemiste; }
+   insert { TLS; Toulouse, France - Blagnac; }
+   insert { TLV; Tel Aviv Yafo, Israel - Ben-Gurion International; }
+   insert { TMP; Tampere, Finland - Tampere-Pirkkala; }
+   insert { TMW; Tamworth, New South Wales, Australia - Tamworth; }
+   insert { TNG; Tangier, Morocco - Boukhalef Souahel; }
+   insert { TNR; Antananarivo, Madagascar - Ivato; }
+   insert { TOL; Toledo, OH, USA - Toledo Express Airport; }
+   insert { TOS; Tromso, Norway - Tromso/Langes; }
+   insert { TOY; Toyama, Japan - Toyama; }
+   insert { TPA; Tampa, FL, USA - Tampa International; }
+   insert { TPE; Taipei, Taiwan - Chiang Kai Shek Airport; }
+   insert { TPL; Temple, TX, USA; }
+   insert { TPP; Tarapoto, Peru - Tarapoto; }
+   insert { TPQ; Tepic, Nayarit, Mexico; }
+   insert { TPS; Trapani, Sicily, Italy - Birgi; }
+   insert { TRC; Torreon, Coahuila, Mexico; }
+   insert { TRD; Trondheim, Norway - Trondheim-Vaernes; }
+   insert { TRE; Tiree, Scotland, United Kingdom - Tiree Island; }
+   insert { TRF; Sandefjord, Norway - Torf; }
+   insert { TRG; Tauranga, New Zealand - Tauranga; }
+   insert { TRI; Bristol/Johnson City/Kingsport, TN, USA - Municipal Tri-City Airport; }
+   insert { TRK; Tarakan, Indonesia - Tarakan; }
+   insert { TRN; Turin, Italy - Caselle; }
+   insert { TRS; Trieste, Italy - Ronchi Dei Legionari; }
+   insert { TRU; Trujillo, Peru - Trujillo; }
+   insert { TRV; Trivandrum, India - Trivandrum; }
+   insert { TRZ; Tiruchirapally, India - Civil; }
+   insert { TSA; Taipei, Taiwan - Sung Shan; }
+   insert { TSF; Treviso, Italy - Treviso; }
+   insert { TSR; Timisoara, Romania - Timisoara; }
+   insert { TSS; New York, NY, USA - East 34Th Street Heliport; }
+   insert { TSV; Townsville, Queensland, Australia - Townsville; }
+   insert { TTE; Ternate, Indonesia - Babullah; }
+   insert { TTJ; Tottori, Japan - Tottori; }
+   insert { TTN; Trenton, NJ, USA - Mercer County; }
+   insert { TUC; Tucuman, Tucuman, Argentina - Benjamin Matienzo; }
+   insert { TUF; Tours, France - St Symphorien; }
+   insert { TUL; Tulsa, OK, USA - Tulsa International; }
+   insert { TUN; Tunis, Tunisia - Carthage; }
+   insert { TUO; Taupo, New Zealand - Taupo; }
+   insert { TUP; Tupelo, MS, USA - Cd Lemons Municipal; }
+   insert { TUS; Tucson, AZ, USA - Tucson International Airport; }
+   insert { TVC; Traverse City, MI, USA - Cherry Capital Airport; }
+   insert { TVF; Thief River Falls, MN, USA - Thief River Falls Municipal; }
+   insert { TVL; South Lake Tahoe, CA, USA - Lake Tahoe; }
+   insert { TWB; Toowoomba, Queensland, Australia - Toowoomba; }
+   insert { TWF; Twin Falls, ID, USA; }
+   insert { TXK; Texarkana, AR, USA - Municipal; }
+   insert { TXL; Berlin, Germany - Tegel; }
+   insert { TXN; Tunxi, China; }
+   insert { TYN; Taiyuan, China; }
+   insert { TYR; Tyler, TX, USA - Pounds Field; }
+   insert { TYS; Knoxville, TN, USA - Mcghee Tyson; }
+   insert { TZA; Belize City, Belize - Belize Municipal; }
+   insert { TZN; South Andros, Bahamas - Congo Town; }
+   insert { TZX; Trabzon, Turkey - Trabzon; }
+   insert { UAK; Narsarsuaq, Greenland - Narssarssuaq; }
+   insert { UAQ; San Juan, San Juan, Argentina; }
+   insert { UBJ; Ube, Japan; }
+   insert { UCA; Utica, NY, USA - Oneida County; }
+   insert { UDR; Udaipur, India; }
+   insert { UEL; Quelimane, Mozambique; }
+   insert { UET; Quetta, Pakistan; }
+   insert { UGC; Urgench, Uzbekistan; }
+   insert { UIB; Quibdo, Colombia; }
+   insert { UIN; Quincy, IL, USA - Baldwin Field; }
+   insert { UIO; Quito, Ecuador - Mariscal; }
+   insert { UIP; Quimper, France - Pluguffan; }
+   insert { ULN; Ulan Bator, Mongolia - Ulan Bator; }
+   insert { ULY; Ulyanovsk, Russia - Ulyanoysk; }
+   insert { UME; Umea, Sweden - Umea; }
+   insert { UMR; Woomera, South Australia, Australia - Woomera; }
+   insert { UNT; Unst Shetland Islands, Scotland, United Kingdom; }
+   insert { UPG; Ujung Pandang, Indonesia - Hasanudin; }
+   insert { UPN; Uruapan, Michoacan, Mexico; }
+   insert { URC; Urumqi, China; }
+   insert { URO; Rouen, France - Rouen /Boos Airport; }
+   insert { URT; Surat Thani, Thailand; }
+   insert { USH; Ushuaia, Tierra Del Fuego, Argentina; }
+   insert { USM; Koh Samui, Thailand; }
+   insert { USN; Ulsan, South Korea; }
+   insert { UTH; Udon Thani, Thailand - Udon; }
+   insert { UTN; Upington, South Africa - Municipal; }
+   insert { UUD; Ulan-Ude, Russia; }
+   insert { UVF; St Lucia, Saint Lucia - Hewanorra; }
+   insert { VAA; Vaasa, Finland - Vaasa; }
+   insert { VAR; Varna, Bulgaria - Varna; }
+   insert { VAS; Sivas, Turkey - Sivas; }
+   insert { VBY; Visby, Sweden - Visby; }
+   insert { VCE; Venice, Italy - Marco Polo; }
+   insert { VCT; Victoria, TX, USA; }
+   insert { VDA; Ovda, Israel; }
+   insert { VDS; Vadso, Norway - Vadso; }
+   insert { VDZ; Valdez, AK, USA; }
+   insert { VER; Veracruz, Veracruz, Mexico - Las Bajadas / General Heriberto Jara; }
+   insert { VEY; Vestmannaeyjar, Iceland - Vestmannaeyjar; }
+   insert { VFA; Victoria Falls, Zimbabwe; }
+   insert { VGO; Vigo, Spain; }
+   insert { VGT; Las Vegas, NV, USA - North Air Terminal; }
+   insert { VIE; Vienna, Austria - Schwechat; }
+   insert { VIJ; Virgin Gorda, Virgin Islands (British); }
+   insert { VIS; Visalia, CA, USA - Visalia Municipal Airport; }
+   insert { VIT; Vitoria, Spain - Vitoria; }
+   insert { VIX; Vitoria, Espirito Santo, Brazil - Eureco Sales; }
+   insert { VKO; Moscow, Russia - Vnukovo; }
+   insert { VLC; Valencia, Spain - Valencia; }
+   insert { VLD; Valdosta, GA, USA - Valdosta Regional; }
+   insert { VLG; Villa Gesell, Buenos Aires, Argentina - Villa Gesell; }
+   insert { VLI; Port Vila, Vanuatu - Bauerfield; }
+   insert { VLL; Valladolid, Spain - Valladolid; }
+   insert { VLN; Valencia, Venezuela - Valencia; }
+   insert { VNO; Vilnius, Lithuania - Vilnius Airport; }
+   insert { VNS; Varanasi, India - Babatpur; }
+   insert { VOG; Volgograd, Russia - Volgograd; }
+   insert { VPS; Valparaiso, FL, USA - Fort Walton Beach; }
+   insert { VRA; Varadero, Cuba - Juan Gualberto Gomez; }
+   insert { VRB; Vero Beach, FL, USA - Vero Beach Municipal; }
+   insert { VRK; Varkaus, Finland - Varkaus; }
+   insert { VRN; Verona, Italy - Verona; }
+   insert { VSA; Villahermosa, Tabasco, Mexico - Carlos R Perez; }
+   insert { VSG; Lugansk, Ukraine; }
+   insert { VST; Vasteras, Sweden - Hasslo; }
+   insert { VTE; Vientiane, Laos - Wattay; }
+   insert { VTZ; Vishakhapatnam, India - Vishakhapatnam; }
+   insert { VUP; Valledupar, Colombia; }
+   insert { VVI; Santa Cruz, Bolivia - Viru Viru International; }
+   insert { VVO; Vladivostok, Russia - Vladivostok Airport; }
+   insert { VXO; Vaxjo, Sweden - Vaxjo; }
+   insert { WAT; Waterford, Ireland; }
+   insert { WAW; Warsaw, Poland - Okecie; }
+   insert { WBU; Boulder, CO, USA; }
+   insert { WDG; Enid, OK, USA - Woodring Municipal; }
+   insert { WDH; Windhoek, Namibia - Jg Strijdom; }
+   insert { WGA; Wagga-Wagga, New South Wales, Australia - Forest Hill; }
+   insert { WGE; Walgett, New South Wales, Australia - Walgett; }
+   insert { WIC; Wick, Scotland, United Kingdom - Wick; }
+   insert { WIL; Nairobi, Kenya - Wilson Arpt; }
+   insert { WIN; Winton, Queensland, Australia - Winton; }
+   insert { WLG; Wellington, New Zealand - International; }
+   insert { WMH; Mountain Home, AR, USA; }
+   insert { WNA; Napakiak, AK, USA - Napakiak; }
+   insert { WRI; Wrightstown NJ [McGuire Air Force Base] USA; }
+   insert { WRL; Worland, WY, USA - Worland; }
+   insert { WRO; Wroclaw, Poland - Strachowice ; }
+   insert { XAW; Capreol, Ontario, Canada - Capreol / Via Rail Service; }
+   insert { XAZ; Cambellton, New Brunswick, Canada - Campbellton; }
+   insert { XBR; Brockville, Ontario, Canada; }
+   insert { XCI; Chambord, Quebec, Canada - Chambord / Via Rail Service; }
+   insert { XCM; Chatham, Ontario, Canada; }
+   insert { XDL; Chandler, Quebec, Canada - Chandler / Via Rail Service; }
+   insert { XDM; Drummondville, Quebec, Canada; }
+   insert { XDU; Hervey, Quebec, Canada - Hervey / Via Rail Service; }
+   insert { XEE; Lac Edouard, Quebec, Canada - Lac Edouard / Via Rail Service; }
+   insert { XEH; Ladysmith, British Columbia, Canada - Ladysmith / Via Rail Service; }
+   insert { XEJ; Langford, British Columbia, Canada - Langford / Via Rail Service; }
+   insert { XEK; Melville, Saskatchewan, Canada - Melville / Via Rail Service; }
+   insert { XEL; New Carlisle, Quebec, Canada - New Carlisle / Via Rail Service; }
+   insert { XEM; New Richmond, Quebec, Canada - New Richmond / Via Rail Service; }
+   insert { XEY; Newcastle, New Brunswick, Canada - Newcastle / Via Rail Service; }
+   insert { XFD; Stratford, Ontario, Canada; }
+   insert { XFE; Parent, Quebec, Canada - Parent / Via Rail Service; }
+   insert { XFG; Perce, Quebec, Canada - Perce / Via Rail Service; }
+   insert { XFL; Shawinigan, Quebec, Canada - Shawinigan / Via Rail Service; }
+   insert { XFM; Shawnigan, British Columbia, Canada - Shawnigan / Via Rail Service; }
+   insert { XFO; Taschereau, Quebec, Canada - Taschereau / Via Rail Service; }
+   insert { XFQ; Weymont, Quebec, Canada - Weymont / Via Rail Service; }
+   insert { XFS; Alexandria, Ontario, Canada - Alexandria / Via Rail Service; }
+   insert { XFV; Brantford, Ontario, Canada - Brantford / Via Rail Service; }
+   insert { XGJ; Cobourg, Ontario, Canada - Cobourg / Via Rail Service; }
+   insert { XGK; Coteau, Quebec, Canada - Coteau / Via Rail Service; }
+   insert { XGY; Grimsby, Ontario, Canada - Grimsby / Via Rail Service; }
+   insert { XHM; Georgetown, Ontario, Canada - Georgetown / Via Rail Service; }
+   insert { XHS; Chemainus, British Columbia, Canada - Chemainus / Via Rail Service; }
+   insert { XIA; Guelph, Ontario, Canada - Guelph / Via Rail Service; }
+   insert { XIB; Ingersoll, Ontario, Canada - Ingersoll / Via Rail Service; }
+   insert { XID; Maxville, Ontario, Canada - Maxville / Via Rail Service; }
+   insert { XIM; Saint-Hyacinthe, Quebec, Canada - Saint Hyacinthe / Via Rail Service; }
+   insert { XIO; St Marys, Ontario, Canada - St Marys / Via Rail Service; }
+   insert { XIP; Woodstock, Ontario, Canada - Woodstock / Via Rail Service; }
+   insert { XIY; Xi An, China - Xianyang; }
+   insert { XJL; Joliette, Quebec, Canada - Joliette / Via Rail Service; }
+   insert { XJQ; Jonquiere, Quebec, Canada - Jonquiere / Via Rail Service; }
+   insert { XLV; Niagara Falls, Ontario, Canada; }
+   insert { XLZ; Truro, Nova Scotia, Canada; }
+   insert { XMN; Xiamen, China - Xiamen International; }
+   insert { XNA; Fayetteville, AR, USA - Northwest Arkansas Regional; }
+   insert { XOK; Oakville, Ontario, Canada - Oakville / Via Rail Service; }
+   insert { XPB; Parksville, British Columbia, Canada - Parksville / Via Rail Service; }
+   insert { XPN; Brampton, Ontario, Canada - Brampton / Via Rail Service; }
+   insert { XPX; Pointe-Aux-Trembles, Quebec, Canada - Pointe Aux Trembles / Via Rail Service; }
+   insert { XQP; Quepos, Costa Rica; }
+   insert { XQU; Qualicum, British Columbia, Canada; }
+   insert { XRP; Riviere-A-Pierre, Quebec, Canada - Riviere A Pierre / Via Rail Service; }
+   insert { XRY; Jerez De La Frontera, Spain - La Parra; }
+   insert { XSC; South Caicos, Turks And Caicos Islands; }
+   insert { XTY; Strathroy, Ontario, Canada - Strathroy / Via Rail Service; }
+   insert { XVV; Belleville, Ontario, Canada - Belleville / Via Rail Service; }
+   insert { XWY; Wyoming, Ontario, Canada - Wyoming / Via Rail Service; }
+   insert { XZB; Casselman, Ontario, Canada - Casselman / Via Rail Service; }
+   insert { XZC; Glencoe, Ontario, Canada - Glencoe / Via Rail Service; }
+   insert { YAM; Sault Ste Marie, Ontario, Canada - Sault Ste Marie Arpt; }
+   insert { YAP; Yap, Caroline Islands, Micronesia; }
+   insert { YAZ; Tofino, British Columbia, Canada - Tofino Airport; }
+   insert { YBA; Banff, Alberta, Canada; }
+   insert { YBC; Baie Comeau, Quebec, Canada; }
+   insert { YBL; Campbell River /Campbell Rvr, British Columbia, Canada - Metropolitan Area; }
+   insert { YBR; Brandon, Manitoba, Canada; }
+   insert { YBX; Blanc Sablon, Quebec, Canada - Blanc Sablon Airport; }
+   insert { YCA; Courtenay, British Columbia, Canada; }
+   insert { YCC; Cornwall, Ontario, Canada - Regional; }
+   insert { YCD; Nanaimo, British Columbia, Canada - Cassidy Airport; }
+   insert { YCG; Castlegar, British Columbia, Canada; }
+   insert { YCM; St Catharines, Ontario, Canada; }
+   insert { YCO; Coppermine, Northwest Territories, Canada; }
+   insert { YDF; Deer Lake, Newfoundland, Canada - Deer Lake; }
+   insert { YDN; Dauphin, Manitoba, Canada; }
+   insert { YDQ; Dawson Creek, British Columbia, Canada; }
+   insert { YEC; Yechon, South Korea - Yechon; }
+   insert { YEG; Edmonton, Alberta, Canada - Edmonton International; }
+   insert { YEL; Elliot Lake, Ontario, Canada; }
+   insert { YEV; Inuvik, Northwest Territories, Canada - Inuvik International Arpt; }
+   insert { YEY; Amos, Quebec, Canada; }
+   insert { YFB; Iqaluit, Northwest Territories, Canada; }
+   insert { YFC; Fredericton, New Brunswick, Canada - Fredericton Municipal Apt; }
+   insert { YFS; Fort Simpson, Northwest Territories, Canada - Fort Simpson Airport; }
+   insert { YGB; Gillies Bay, British Columbia, Canada; }
+   insert { YGK; Kingston, Ontario, Canada - Kingston Airport; }
+   insert { YGP; Gaspe, Quebec, Canada; }
+   insert { YGR; Iles De La Madeleine, Quebec, Canada - House Harbour Airport; }
+   insert { YGT; Igloolik, Northwest Territories, Canada; }
+   insert { YGW; Kuujjuarapik, Quebec, Canada - Kuujjuarapik; }
+   insert { YGX; Gillam, Manitoba, Canada; }
+   insert { YHB; Hudson Bay, Saskatchewan, Canada; }
+   insert { YHD; Dryden, Ontario, Canada - Dryden Airport; }
+   insert { YHI; Holman Island, Northwest Territories, Canada; }
+   insert { YHM; Hamilton, Ontario, Canada - Hamilton Civic Airport; }
+   insert { YHN; Hornepayne, Ontario, Canada; }
+   insert { YHY; Hay River, Northwest Territories, Canada; }
+   insert { YHZ; Halifax, Nova Scotia, Canada - Halifax International; }
+   insert { YIB; Atikokan, Ontario, Canada; }
+   insert { YIP; Detroit, MI, USA - Willow Run Airport, Ypsilanti; }
+   insert { YJA; Jasper, Alberta, Canada; }
+   insert { YJT; Stephenville, Newfoundland, Canada - Stephenville; }
+   insert { YKA; Kamloops, British Columbia, Canada - Fulton Field; }
+   insert { YKF; Kitchener, Ontario, Canada - Kitchener; }
+   insert { YKL; Schefferville, Quebec, Canada - Schefferville; }
+   insert { YKM; Yakima, WA, USA - Yakima Air Terminal; }
+   insert { YKQ; Waskaganish, Quebec, Canada - Waskaganish; }
+   insert { YKS; Yakutsk, Russia; }
+   insert { YLD; Chapleau, Ontario, Canada; }
+   insert { YLQ; La Tuque, Quebec, Canada - La Tuque; }
+   insert { YLW; Kelowna, British Columbia, Canada - Ellison Field Airport; }
+   insert { YMM; Fort Mcmurray, Alberta, Canada - Fort Mcmurray Municipal; }
+   insert { YMO; Moosonee, Ontario, Canada - Moosonee; }
+   insert { YMT; Chibougamau, Quebec, Canada - Chibougamau; }
+   insert { YMX; Montreal - Mirabel, Quebec, Canada; }
+   insert { YND; Gatineau, Quebec, Canada - Gatineau; }
+   insert { YNG; Youngstown, OH, USA - Youngstown Municipal Airport; }
+   insert { YOJ; High Level, Alberta, Canada - Footner Lake Muncpl; }
+   insert { YOO; Oshawa, Ontario, Canada; }
+   insert { YOP; Rainbow Lake, Alberta, Canada - Rainbow Lake; }
+   insert { YOW; Ottawa, Ontario, Canada - Ottawa International; }
+   insert { YPE; Peace River, Alberta, Canada - Peace River; }
+   insert { YPF; Esquimalt, British Columbia, Canada; }
+   insert { YPR; Prince Rupert /Princ Rupert, British Columbia, Canada - Digby Island; }
+   insert { YPW; Powell River, British Columbia, Canada; }
+   insert { YPZ; Burns Lake, British Columbia, Canada; }
+   insert { YQB; Quebec, Quebec, Canada - Sainte Foy Airport; }
+   insert { YQC; Quaqtaq, Quebec, Canada; }
+   insert { YQD; The Pas, Manitoba, Canada - The Pas; }
+   insert { YQG; Windsor, Ontario, Canada - Windsor International; }
+   insert { YQH; Watson Lake, Yukon Territory, Canada - Watson Lake Airport; }
+   insert { YQI; Yarmouth, Nova Scotia, Canada; }
+   insert { YQK; Kenora, Ontario, Canada; }
+   insert { YQL; Lethbridge, Alberta, Canada - Lethbridge Airport; }
+   insert { YQM; Moncton, New Brunswick, Canada - Lakeburn Municipal Airpt; }
+   insert { YQQ; Comox, British Columbia, Canada - Comox Civil Air Terminal; }
+   insert { YQR; Regina, Saskatchewan, Canada - Regina International; }
+   insert { YQT; Thunder Bay, Ontario, Canada; }
+   insert { YQU; Grande Prairie, Alberta, Canada - Grande Prairie Airport; }
+   insert { YQX; Gander, Newfoundland, Canada - Gander Intl Airport; }
+   insert { YQY; Sydney, Nova Scotia, Canada - Sydney Municipal; }
+   insert { YQZ; Quesnel, British Columbia, Canada; }
+   insert { YRB; Resolute, Northwest Territories, Canada - Resolute Bay; }
+   insert { YRL; Red Lake, Ontario, Canada; }
+   insert { YSB; Sudbury, Ontario, Canada; }
+   insert { YSF; Stony Rapids, Saskatchewan, Canada - Stony Rapids; }
+   insert { YSH; Smith Falls, Ontario, Canada; }
+   insert { YSJ; Saint John, New Brunswick, Canada - Turnbull Field; }
+   insert { YSL; St Leonard, New Brunswick, Canada - St Leonard Apt; }
+   insert { YSM; Fort Smith, Northwest Territories, Canada; }
+   insert { YSN; Salmon Arm, British Columbia, Canada; }
+   insert { YSP; Marathon, Ontario, Canada; }
+   insert { YTA; Pembroke, Ontario, Canada - Pem And Area Apt; }
+   insert { YTD; Thicket Portage, Manitoba, Canada; }
+   insert { YTH; Thompson, Manitoba, Canada - Thompson; }
+   insert { YTS; Timmins, Ontario, Canada - Timmins Municipal Airport; }
+   insert { YTZ; Toronto, Ontario, Canada; }
+   insert { YUL; Montreal - Dorval, Quebec, Canada; }
+   insert { YUM; Yuma, AZ, USA - Yuma International Airport; }
+   insert { YVA; Moroni (Hahaya/Iconi)Comoros; }
+   insert { YVB; Bonaventure, Quebec, Canada; }
+   insert { YVC; La Ronge, Saskatchewan, Canada - La Ronge; }
+   insert { YVP; Kuujjuaq, Quebec, Canada - Fort Chimo Airport; }
+   insert { YVR; Vancouver, British Columbia, Canada - Vancouver International; }
+   insert { YVZ; Deer Lake, Ontario, Canada; }
+   insert { YWG; Winnipeg, Manitoba, Canada - Winnipeg International; }
+   insert { YWH; Victoria, British Columbia, Canada - Victoria Inner Harbour; }
+   insert { YWK; Wabush, Newfoundland, Canada - Wabush Municipal; }
+   insert { YWL; Williams Lake, British Columbia, Canada; }
+   insert { YWR; White River, Ontario, Canada - White River; }
+   insert { YXC; Cranbrook, British Columbia, Canada - Cranbrook Airport; }
+   insert { YXD; Edmonton, Alberta, Canada - Edmonton Municipal; }
+   insert { YXE; Saskatoon, Saskatchewan, Canada - Saskatoon; }
+   insert { YXH; Medicine Hat, Alberta, Canada - Medicine Hat Airport; }
+   insert { YXJ; Fort St John, British Columbia, Canada - Fort St John; }
+   insert { YXL; Sioux Lookout, Ontario, Canada; }
+   insert { YXS; Prince George, British Columbia, Canada - Prince George B C; }
+   insert { YXT; Terrace, British Columbia, Canada - Terrace; }
+   insert { YXU; London, Ontario, Canada - London Municipal; }
+   insert { YXY; Whitehorse, Yukon Territory, Canada - Whitehorse Airport; }
+   insert { YXZ; Wawa, Ontario, Canada; }
+   insert { YYB; North Bay, Ontario, Canada - Jack Garland Airport; }
+   insert { YYC; Calgary, Alberta, Canada - Calgary Intl Airport; }
+   insert { YYD; Smithers, British Columbia, Canada - Smithers International; }
+   insert { YYF; Penticton, British Columbia, Canada; }
+   insert { YYG; Charlottetown, Prince Edward Island/, Canada - Charlottetown; }
+   insert { YYJ; Victoria, British Columbia, Canada - Victoria Airport; }
+   insert { YYQ; Churchill, Manitoba, Canada - Churchill Airport; }
+   insert { YYR; Goose Bay, Newfoundland, Canada - Goose Bay Municipal Airpt; }
+   insert { YYT; St Johns, Newfoundland, Canada - St John's International; }
+   insert { YYU; Kapuskasing, Ontario, Canada; }
+   insert { YYY; Mont Joli, Quebec, Canada; }
+   insert { YYZ; Toronto, Ontario, Canada - Pearson International Airport; }
+   insert { YZF; Yellowknife, Northwest Territories, Canada; }
+   insert { YZT; Port Hardy, British Columbia, Canada - Port Hardy Airport; }
+   insert { YZV; Sept-Iles, Quebec, Canada; }
+   insert { ZAG; Zagreb, Croatia (Hrvatska) - Zagreb; }
+   insert { ZAH; Zahedan, Iran - Zahedan; }
+   insert { ZAL; Valdivia, Chile - Pichoy; }
+   insert { ZAM; Zamboanga, Philippines - Zamboanga Airport; }
+   insert { ZAZ; Zaragoza, Spain - Zaragoza; }
+   insert { ZBV; Vail/Eagle, CO, USA; }
+   insert { ZCL; Zacatecas, Zacatecas, Mexico; }
+   insert { ZCO; Temuco, Chile - Manquehue; }
+   insert { ZDJ; Berne, Switzerland - Berne-Rr Station; }
+   insert { ZGI; Gods River, Manitoba, Canada; }
+   insert { ZHA; Zhanjiang, China; }
+   insert { ZHO; Houston, British Columbia, Canada; }
+   insert { ZIH; Ixtapa/Zihuatanejo, Guerrero, Mexico - International; }
+   insert { ZLO; Manzanillo, Colima, Mexico - Aeropuerto International; }
+   insert { ZNA; Nanaimo, British Columbia, Canada; }
+   insert { ZNE; Newman, Western Australia, Australia - Newman; }
+   insert { ZNZ; Zanzibar, Tanzania - Kisauni; }
+   insert { ZQN; Queenstown, New Zealand - Frankton; }
+   insert { ZQW; Zweibruecken, Germany; }
+   insert { ZRF; Rockford, IL, USA; }
+   insert { ZRH; Zurich, Switzerland - Zurich; }
+   insert { ZSA; San Salvador, Bahamas; }
+   insert { ZTH; Zakinthos, Greece - Zakinthos; }
+}
+
+// =================================================================
+// XML Remote Procedure Call Definitions
+// When XML calls are implemented on the DB server; we should
+// probably move these into the core DD definition; since they
+// will be wrapped up in trigger definitions.
+//
+// There are three tables in this system; being hosts; calls;
+// and parameters.
+// =================================================================
+
+// Table Hosts and related columns.  All calls are made to a host
+//
+column hostcode  { description: Host Code; type_id: char; colprec: 10; }
+column hosturl   { description: URL;       type_id: char; colprec: 30; }
+column hostport  { description: TCP Port;  type_id: char; colprec: 5;  }
+column hostpath  { description: XML Path Stem; type_id: char; colprec: 30; }
+column hostuid   { description: User ID;   type_id: char; colprec: 12; }
+column hostpwd   { description: Password;  type_id: char; colprec: 12; }
+table xmlrpchosts {
+	description: XML RPC Hosts;
+	module: xmlrpc;
+	
+	column hostcode { primary_key: Y; uisearch: Y; }
+	column hosturl  { uisearch: Y; }
+	column hostport { uisearch: Y; automation_id: DEFAULT; auto_formula: 80; }
+	column { hostpath;hostuid;hostpwd }
+}	
+
+//  Calls.  A call is a function.
+//
+column callcode { description: Call code;        type_id: char; colprec: 20; }
+column callpath { description: XML Path Suffix;  type_id: char; colprec: 30; }
+column callmsg  { description: XML Message Name; type_id: char; colprec: 30; }
+table xmlrpccalls {
+	description: XML RPC Function Calls;
+	module: xmlrpc;
+	
+	foreign_key { xmlrpchosts; uisearch: Y; }
+
+	column callcode { primary_key: Y; uisearch: Y; }
+	column { callpath; }
+	column callmsg  { uisearch: Y; }
+}
+
+//  Parameters.  
+//
+column parm_seq  { description: Parameter Sequence; type_id: int; }
+table xmlrpcparms {
+	description: XML RPC Function Parameters;
+	module: xmlrpc;
+
+	foreign_key { xmlrpccalls; uisearch: Y; primary_key: Y; }
+	column parm_seq { primary_key: Y; uisearch: Y; }
+	column description { uisearch: Y; }
+	
+	foreign_key { xmlrpcpdtypes; uisearch: Y; }
+	foreign_key { xmlrpcptypes;  uisearch: Y; }
+}
+
+//  Parameter Data types; including populated values
+//
+column parmdtype { description: Parameter Data Type; type_id: char; colprec: 10; }
+table xmlrpcpdtypes {
+	description: XML RPC Parm Data Types;
+	module: xmlrpc;
+	
+	column parmdtype { primary_key: Y; uisearch: Y; }
+	column description { uisearch: Y; }
+}
+
+content xmlrpcpdtypes {
+	columns { parmdtype; description }
+	values  { int; integer }
+	values  { double; Double-Precision }
+}
+
+
+// Parameter type; inbound and output
+//
+column parmtype { description: Input or Return; type_id: char; colprec: 3; }
+table xmlrpcptypes {
+	description: XML RPC Parm Type;
+	module: xmlrpc;
+
+	column parmtype { primary_key: Y; uisearch: Y; }
+	column description { uisearch: Y; }	
+}
+
+content xmlrpcptypes {
+	columns { parmtype; description }
+	values { ret;Return Value }
+	values { inp;Input to RPC Call }
+}
+
+
+// =================================================================
+// Documentation System
+//
+// This is a general purpose hierarchy of documents.  It was 
+// developed first in the adocs app.  The tables are intended to be
+// the cornerstone of all self-documenting features.
+//
+// 12/12/06 -Modified for cascade_delete, make everybody's life
+//           easier, since all docs in this system are 
+//           generated out of code.
+// 
+// 4/28/06 - Added to andro_universal.add to be used for generating
+//           one page to describe each table.  Descriptions of code
+//           and other stuff to follow.
+// =================================================================
+
+// This was from adocs, we are not ready for this yet
+// menu add_media   { description: Add Image; module: operations; uisort: 0; }
+column filepath { description: File Path;     type_id: vchar; colprec: 100; }
+column filecnts { description: File Contents; type_id: mime-x;              }
+column filename { description: File Name;     type_id: vchar; colprec: 60;  }
+// column itemptr   { description: File;      type_id: mime-f; }
+
+// This stuff gets its own module
+module docs { 
+   description: Documentation; 
+   uisort: 900;
+   nomenu: Y;
+}
+
+// Library program to generate pages out of database and code
+menu x_docview { description: View Docs; module: docs; uisort: 100; }
+menu x_docgen  { description: Gen Docs;  module: docs; uisort: 200; }
+
+column pagename { description: Page Name; type_id: vchar;  colprec: 60; }
+column pagetext { description: Page Text; type_id: text; }
+
+// -- Images to embed in files
+//table media {
+//   module: operations;
+//   description: Images;
+//   
+//   column filename { primary_key: Y; uisearch: Y; }
+//   column description { uisearch: Y; }
+//   column { itemptr; }
+//
+//   group $LOGIN { permsel: Y; }   
+//   group doccommit { permupd: Y; permins: Y; }
+//}
+
+// -- Pages themselves
+table docpages {
+   module: docs;
+   description: Pages;
+   nomenu: Y;
+   
+   column pagename    { uisearch: Y; primary_key: Y; }
+   foreign_key docpages { 
+      suffix: _par; 
+      allow_empty: Y; 
+      uisearch:Y;
+      delete_cascade: Y;
+      column pagename_par { description: Parent Page; } 
+   }
+   column sequence { description: Sequence; uisearch: Y; }
+   
+   column { pagetext; }
+
+   //foreign_key docpageshier { auto_insert: Y; nocolumns: Y; }
+   //column pagehier { uino: Y; 
+   //   chain calc { 
+   //      test { compare: @pagename_par NULL; return: 1; }
+   //      test { compare: @pagename_par EMPTY; return: 1; }
+   //      test { return: 0; }
+   //   }
+  // }
+   column filename { automation_id: BLANK; }
+  
+   column { ts_ins; uid_ins; ts_upd; uid_upd; }
+
+   group $LOGIN { permsel: Y; }   
+   //group doccommit { permupd: Y; permins: Y; }
+}
+
+// =========================================================
+// Import map tables.  Everybody is allowed full access, 
+// though eventually we want row-level security based on
+// your connection to a table
+// =========================================================
+column importmap { type_id: char; colprec: 10; description: Map Name; }
+table importmaps {
+   module: system;
+   description: Import Maps;
+   nomenu: Y;
+   group $LOGIN { permsel:Y;permins:Y;permupd:Y;permdel:Y; }
+   
+   column importmap { primary_key: Y; uisearch: Y; }
+   column table_id  { primary_key: Y; uisearch: Y; }
+   column name { suffix: _prefix; }
+}
+table importmapcolumns {
+   module: system;
+   description: Import Map Columns;
+   nomenu: Y;
+   group $LOGIN { permsel:Y;permins:Y;permupd:Y;permdel:Y; }
+   
+   foreign_key importmaps { primary_key: Y; }
+   column column_id { description: Target Column; primary_key: Y; }
+   column column_id { suffix: _src; description: Source; }
+}
