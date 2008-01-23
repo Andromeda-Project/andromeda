@@ -51,9 +51,15 @@ function mosShowListMenu($menutype) {
             $x=new joomla_fake;
             $x->type='url';
             $x->id=$page;
-            $x->link="?x_module=$menuid&gp_page=".urlencode($page);
-            if(ArraySafe($pageinfo,'menu_parms')<>'') {
-               $x->link.='&'.urlencode($pageinfo['menu_parms']);  
+            if(vgfGet('x4')===true) {
+                $pd = $pageinfo['description'];
+                $x->link="javascript:x4Page('$page','$pd')";
+            }
+            else {
+                $x->link="?x_module=$menuid&gp_page=".urlencode($page);
+                if(ArraySafe($pageinfo,'menu_parms')<>'') {
+                   $x->link.='&'.urlencode($pageinfo['menu_parms']);  
+                }
             }
             $x->browserNav='';
             $x->name=$pageinfo['description'];

@@ -11,9 +11,10 @@ if (vgfGet("HTML_focus")<>"") {
    <script type="text/javascript">
 <!--//--><![CDATA[//><!--
 theFocus=function() {
+   if ( ob('<?=vgfGet("HTML_focus")?>') != null ) {
    ob('<?=vgfGet("HTML_focus")?>').focus();
+   }
 }
-
 
 
 if (window.attachEvent) window.attachEvent("onload", theFocus);
@@ -25,6 +26,7 @@ else {
 
 //--><!]]>
    </script>
+   <?php if(vgfGet('suppress_goodies_tooltip')!==true) { ?>
    <script type="text/javascript">
    var tooltipObj = new DHTMLgoodies_formTooltip();
    tooltipObj.setTooltipPosition('right');
@@ -32,6 +34,7 @@ else {
    tooltipObj.setTooltipCornerSize(15);
    tooltipObj.initFormFieldTooltip();
    </script>
+   <?php } ?>
    <script type="text/javascript">
    /* output of ElementOut('scriptend') */
    <?=ElementOUt('scriptend',false)?>

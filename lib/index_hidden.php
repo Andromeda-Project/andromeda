@@ -409,14 +409,49 @@ function index_hidden_dropdown() {
    $table_id_fk=gp('gp_dropdown');
    
    // Strip a leading slash from the value
-   $gpletters=gp('gp_letters');
+   $gpletters=trim(gp('gp_letters'));
    
-   // Pull the rows from handy library routine.  
-   $rows=rowsForSelect($table_id_fk,$gpletters);
-      
+   // Pull the rows from handy library routine.
+   if(gp('gpv')=='2') {
+       $rows=RowsForSelect($table_id_fk,$gpletters,array(),'',true);   
+   }
+   else {
+       $rows=rowsForSelect($table_id_fk,$gpletters);
+   }
+
+   // KFD 11/4/07.  If "version 2", then turn into a table
+   if(gp('gpv')=='2') {
+       ob_start();
+       echo "androSelect|";
+       echo "<table>";
+       foreach($rows as $idx=>$row) {
+           $prev = $idx==0                ? '' : $rows[$idx-1]['skey'];
+           $next = $idx==(count($rows)-1) ? '' : $rows[$idx+1]['skey'];
+           $s = $row['skey'];
+           $tds='';
+           $x=-1;
+           foreach($row as $colname=>$colvalue) {
+               $x++;
+               if($colname=='skey') continue;
+               if($x==1) $value = $colvalue;
+               $tds.="<td>$colvalue";
+           }
+           echo "<tr id='as$s' 
+                     x_prev='$prev' x_next='$next' x_skey='$s'
+                     x_value='$value'
+                onmouseover='androSelect_mo(this,$s)'
+                onclick=\"androSelect_click('$value')\";                
+                >"
+                .$tds;
+       }
+       echo ob_get_clean();
+       return;                                               
+   }
+   
+   
    // Echo out the return
    foreach($rows as $row) {
-      echo $row['_value']."###".$row['_display']."|";
+      echo $row['_value']."###".$row['_display']."<br>";
    }
    if(Errors()) {
       $he=hErrors();
@@ -645,128 +680,27 @@ function index_hidden_ajaxsql() {
    }
 }
 
-
-// ------------------------------------------------------------------
-// >> Feeds, Public
-// ------------------------------------------------------------------
-/*
-function index_hidden_feed() {
-   $feed_id  = strtolower(trim(gp('gp_feed')));
-   $xmlresult= array();
-   $atts     = array('result'=>'fail');
-
-   // Attempt to process, generate result   
-   if(!isValidName($feed_id)) {
-      $atts['message']='Feed ID is malformed.';
-   }
-   else {
-      $feed_php = "xmlpublic_$feed_id.php";
-      if(!file_exists_incpath($feed_php)) {
-         $atts['message']='Feed -'.$feed_id.'- does not exist';
-      }
-      else {
-         $xmlresult=index_hidden_feed_call($feed_php);
-         if (!is_array($xmlresult)) {
-            $atts['message']='Feed returned malformed result.';
-         }
-         else {
-            $atts['result']='success';
-         }
-      }   
-   }
-   
-   ehXMLDoc($feed_id,$atts,$xmlresult);
-}
-
-// This function keeps the feed code in a separate scope
-function index_hidden_feed_call($feed_php) {
-   $xmlresult=array();
-   include($feed_php);
-   if(!isset($xmlresult)) {
-      return '';
-   }
-   else {
-      return $xmlresult;
-   }
-}
-*/
-// ------------------------------------------------------------------
-// >>
-// >> Direct Table Access
-// >>
-// ------------------------------------------------------------------
-/*
-function index_hidden_table() {
-   $gp_table =gp('gp_table');
-   $gp_sql   =strtoupper(gp('gp_sql'));
-   $row      =RowFromGPInputs();
-
-   // Default outcome is fail.  
-   $xmlresult=array();
-   $atts=array('result'=>'fail');
-   if    ($gp_table=='') $atts['message']='Missing parameter: gp_table';
-   elseif($gp_sql==''  ) $atts['message']='Missing parameter: gp_sql';
-   elseif(SessionGet('UID')=='') $atts['message']='Missing parameter: gp_uid';
-   elseif(SessionGet('PWD')=='') $atts['message']='Missing parameter: gp_pwd';
-   else {
-      $table=DD_TableRef($gp_table);
-      switch ($gp_sql) {
-         case 'X':
-            $rows = unserialize(base64_decode(gp('gp_rows')));
-            // XDB
-            //SQLX_InsertMixed($rows);
-            if("Errors") {
-               $atts['message']=implode(';',$GLOBALS['AG']['trx_errors']);
-            }
-            else {
-               $atts['result']='success';
-            }
-         
-         case 'I': 
-            // XDB
-            //$skey = SQLX_Insert($table,$row);
-            if ($skey==0) {
-               $atts['message']=implode(';',$GLOBALS['AG']['trx_errors']);
-            }
-            else {
-               $sq="SELECT * FROM $gp_table where skey=$skey";
-               $rw=SQL_OneRow($sq);
-               ArrayStripNumericIndexes($rw);
-               $xmlresult[$gp_table][]=array('attributes'=>$rw);
-               $atts['result']='success';
-            }
-            break;
-         default: {
-            $atts['message']='Currently supported values of gp_sql: I, X';
-         }
-      }
-   }
-   
-   // Now convert the 
-   ehXMLDoc("xmlreturn",$atts,$xmlresult);
-} 
-*/
 // ------------------------------------------------------------------
 // >> HTML, object pulls
 // ------------------------------------------------------------------
 function index_hidden_page_mime() {
-   $x_mime  = CleanGet('x_mime');
-	$x_table = CleanGet("gp_page");
-	//$x_column= CleanGet("x_column");
-	$x_skey  = CleanGet("x_skey");
-   //$sql ="Select skey,$x_column FROM $x_table WHERE skey = $x_skey"; 
-	//$row = SQL_OneRow($sql);
-
-   $filename= "$x_table-$x_mime-$x_skey.$x_mime";
-   $filepath=scAddSlash($GLOBALS['AG']['dirs']['root']).'files/'.$filename;
+    $x_mime  = CleanGet('x_mime');
+    $x_table = CleanGet("gp_page");
+    //$x_column= CleanGet("x_column");
+    $x_skey  = CleanGet("x_skey");
+    //$sql ="Select skey,$x_column FROM $x_table WHERE skey = $x_skey"; 
+    //$row = SQL_OneRow($sql);
+    
+    $filename= "$x_table-$x_mime-$x_skey.$x_mime";
+    $filepath=scAddSlash($GLOBALS['AG']['dirs']['root']).'files/'.$filename;
       
-   //header('Content-type: audio/mpeg');
-   // Kind of nifty, gives suggested filename to save
-   header(
+    //header('Content-type: audio/mpeg');
+    // Kind of nifty, gives suggested filename to save
+    header(
       'Content-disposition: attachment '
       .'; filename="'.$filename.'"'
-   );
-   echo file_get_contents($filepath);
+    );
+    echo file_get_contents($filepath);
 }
 
 // ------------------------------------------------------------------
@@ -825,24 +759,32 @@ function index_hidden_page() {
    //
    $gp_page = gp('gp_page');
    if ($gp_page=='') {
-      if(function_exists('appNoPage')) {
-         $gp_page=appNoPage();
-      }
-      else {
-         if(!LoggedIn()) {
-            $gp_page = FILE_EXISTS_INCPATH('x_home.php') ? 'x_home' : 'x_login';
-         }
-         else {
-            // KFD 3/2/07, pull vga stuff to figure defaults
-            if(vgaGet('nopage')<>'') {
-               $gp_page = vgaGet('nopage');
-            }
-            else {
-               $gp_page = 'x_welcome';
-            }
-            //$gp_page = $AGOBJ->WelcomePageName();
-         }
-      }
+       if(vgfGet('LoginAttemptOK')===true && vgfGet('x4')===true) {
+           $gp_page='x4init';
+           gpSet('gp_page','x4init');
+           SessionSet('TEMPLATE','x4');
+       }
+       else {
+               
+          if(function_exists('appNoPage')) {
+             $gp_page=appNoPage();
+          }
+          else {
+             if(!LoggedIn()) {
+                $gp_page = FILE_EXISTS_INCPATH('x_home.php') ? 'x_home' : 'x_login';
+             }
+             else {
+                // KFD 3/2/07, pull vga stuff to figure defaults
+                if(vgaGet('nopage')<>'') {
+                   $gp_page = vgaGet('nopage');
+                }
+                else {
+                   $gp_page = 'x_welcome';
+                }
+                //$gp_page = $AGOBJ->WelcomePageName();
+             }
+          }
+       }
    }
    // If they are trying to access a restricted page and are not 
    // logged in, cache their request and redirect to login page
@@ -958,14 +900,25 @@ function index_hidden_page() {
    // Load user preferences just before display
    UserPrefsLoad();
    
-   $obj_page = DispatchObject($gp_page);
-   if ($obj_page->flag_buffer) { ob_start(); }
-   $obj_page->main();
-   if ($obj_page->flag_buffer) {
-      vgfSet("HTML",ob_get_contents());
-      ob_end_clean();
-   }	
-   vgfSet("PageSubtitle",$obj_page->PageSubtitle);
+   $dir=$GLOBALS['AG']['dirs']['root'].'application/';
+   if(file_exists($dir.$gp_page.".page.yaml")){
+       include 'androPage.php';
+       $obj_page = new androPage();
+       ob_start();
+       $obj_page->main($gp_page);
+       vgfSet("HTML",ob_get_clean());
+       vgfSet("PageSubtitle",$obj_page->PageSubtitle);
+   }
+   else {
+       $obj_page = DispatchObject($gp_page);
+       if ($obj_page->flag_buffer) { ob_start(); }
+       $obj_page->main();
+       if ($obj_page->flag_buffer && vgfGet('HTML')=='') {
+          vgfSet("HTML",ob_get_contents());
+          ob_end_clean();
+       }	
+       vgfSet("PageSubtitle",$obj_page->PageSubtitle);
+   }
      
    // Save context onto the page.  Note that it is not really
    // protected by these methods, just compressed and obscured.
@@ -2002,20 +1955,32 @@ function DD_ColInsertsOK(&$colinfo,$mode='html') {
    }
 	$aid = strtolower(trim($colinfo["automation_id"]));
 	return in_array($aid,
-      array('seqdefault','fetchdef','default','blank','none','','synch')
+      array('seqdefault','fetchdef','default'
+          ,'blank','none','','synch'
+          ,'queuepos','dominant'
+      )
    );
 }
 
 function DD_ColUpdatesOK(&$colinfo) {
-   if($colinfo['primary_key']=='Y') return false;
-   if(DrillDownLevel()>0) {
-      $dd=DrillDownTop();
-      if(isset($dd['parent'][$colinfo['column_id']])) return false;
-   }
-	$aid = strtolower(trim($colinfo["automation_id"]));
-   if($aid=='') return true;
-   $automations=array('seqdefault','fetchdef','default','blank','none','','synch');
-   return in_array($aid,$automations);
+    // KFD 10/22/07, allow changes to primary key
+    if($colinfo['primary_key']=='Y') {
+        if(ArraySafe($colinfo,'pk_change','N')=='Y')
+            return true;
+        else 
+            return false;
+    }
+    if(DrillDownLevel()>0) {
+        $dd=DrillDownTop();
+        if(isset($dd['parent'][$colinfo['column_id']])) return false;
+    }
+    $aid = strtolower(trim($colinfo["automation_id"]));
+    if($aid=='') return true;
+    $automations=array('seqdefault','fetchdef','default'
+        ,'blank','none','','synch'
+        ,'queuepos','dominant'
+    );
+    return in_array($aid,$automations);
 }
 
 function DDColumnWritable(&$colinfo,$gpmode,$value) {
@@ -2086,4 +2051,50 @@ returning a [[Standard Default Value]] if the key does not exist.
 function ArraySafe(&$arr,$key,$value="") {
 	if(isset($arr[$key])) return $arr[$key]; else return $value; 
 }
+
+// ------------------------------------------------------------------
+// PHP functions that mimic Javascript DOM functions
+// ------------------------------------------------------------------
+/**
+name:createElement
+parm:type
+
+Allows you to safely retrieve the value of an array by index value,
+returning a [[Standard Default Value]] if the key does not exist.
+*/
+function createElement($type) {
+	 return new androHElement($type);
+}
+
+class androHElement {
+    function androHElement($type) {
+        $this->type = $type;
+        $this->children = array();
+        $this->atts = array();
+        $this->innerHTML = '';
+    }
+    
+    function appendChild($object) {
+        $this->children[] = $object;
+    }
+    
+    function render($indent=0) {
+        $hIndent = str_pad('',$indent*3);
+        
+        $retval="\n$hIndent<".$this->type;
+        foreach($this->atts as $name=>$value) {
+            $retval.=" $name = \"$value\"";
+        }
+        $retval.=">";
+        foreach($this->children as $onechild) {
+            $retval.=$onechild->render($indent+1);
+        }
+        $retval.=$this->innerHTML;
+        $retval.="\n$hIndent</".$this->type.">";
+        return $retval;
+    }
+}
+
+
+
 ?>

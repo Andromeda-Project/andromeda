@@ -91,8 +91,8 @@ meta {
 
 	keyword group             { table: groups;       keycol: group_id;  }
 	keyword group_identity    { table: groupuids;    keycol: column_id; }
-   keyword group_table       { table: permxtables;  keycol: table_id;  }
-   keyword group_module      { table: permxmodules; keycol: module;  }
+    keyword group_table       { table: permxtables;  keycol: table_id;  }
+    keyword group_module      { table: permxmodules; keycol: module;  }
 	
 	keyword table_column             { table: tabcol;        keycol: column_id; keystub: column_id_src;     }
 	keyword table_column_group       { table: perm_cols;     keycol: group_id; }
@@ -143,7 +143,7 @@ column zddsource  {  type_id: char;  colprec: 1;  colscale: 0; description: Buil
 //  a unique sequential number.  We assume columns are defined in the order
 //  they should appear, so this can be used to sequence columns.
 //
-column uicolseq { description: Column Sequence;  type_id: char; colprec: 27; }
+column uicolseq { description: Column Sequence;  type_id: vchar; colprec: 99; }
 
 // This column is used in a lot of places
 //
@@ -478,10 +478,11 @@ content automations {
 	values { MIN        ; Min from child table   }
 	values { MAX        ; Max from child table   }
 	values { COUNT      ; Count from child table }
-   values { LATEST     ; Latest child insert or update }
+    values { LATEST     ; Latest child insert or update }
 	values { XML_RPC    ; Provided by Remote System}
-   values { SYNCH      ; Synchronize Parent/Child; }
-   values { QUEUEPOS   ; Enforces unique Queue Position; }
+    values { SYNCH      ; Synchronize Parent/Child; }
+    values { QUEUEPOS   ; Enforces unique Queue Position; }
+    values { DOMINANT   ; Only one row can have value Y; }
 }
 
 // ---------------------------------------------------------
@@ -531,6 +532,7 @@ table modules {
 
 //column risimple      {  type_id: char;  colprec: 1;  description: Assume Simple RI; }
 column nomenu        {  type_id: char;  colprec: 1;  description: Keep off menu; }
+column returnall     {  type_id: char;  colprec: 1;  description: Return All; }
 //column menuins       {  type_id: char;  colprec: 1;  description: Rapid-Entry Insert; }
 column rules         {  type_id: char;  colprec: 1;  colscale: 0; description: *DO NOT USE*; }
 column capspk        {  type_id: char;  colprec: 1;  colscale: 0; description: Force PK to caps; }
@@ -545,12 +547,14 @@ column fkdisplay     {  type_id: vchar; colprec: 10; description: FK Display;}
 column linknew       {  type_id:  char; colprec: 1;  description: New Link;   }
 column linksearch    {  type_id:  char; colprec: 1;  description: Search Link;}
 column permcol       {  type_id:  char; colprec: 1;  description: Has Column Security; }
+column singular      {  type_id: vchar; colprec: 50; description: Singular Name; }
 table tables {
 	module:  datadict;
 	description: Table of Tables;
 	table_seq: 900;
 	
 	column table_id      { primary_key: Y; uisearch: Y; }
+    column  { singular; returnall; }   
    // Removed KFD 5/24/07, not being used
 	//column column_prefix { primary_key: N; uisearch: Y; }
 	column description  { uisearch: Y; }
@@ -601,31 +605,32 @@ column value_min         {  type_id: vchar; colprec: 50;  colscale: 0; descripti
 column value_max         {  type_id: vchar; colprec: 50;  colscale: 0; description: Maximum Value; }    
 column uirows            {  type_id: int  ;                            description: TextArea Rows; }    
 column uicols            {  type_id: int  ;                            description: TextArea Cols; }    
+column tooltip           {  type_id: vchar; colprec: 200; description: UI Tooltip; }
 
 table columns {
-	module: datadict;
-	description: Column Definitions;
-	table_seq: 1000;
-	
-	
-	column column_id   { primary_key: Y; uisearch: Y; }
-	column description { uisearch: Y; }
-
-	// all automation stuff
-	foreign_key { automations; }
-	column { prefix: auto_;  table_id; column_id; }
-	column { auto_formula; }
-   column srcfile { automation_id: BLANK; }
-
-	foreign_key { types; }
-	column  { colprec;colscale;colres; }
-	
-	column  { ins;uiro;uino;required;dispsize;uiwithnext;prefix_table_name; }
-   column  { uiinline; }
-   column { value_min; value_max; }
-   column { uirows;uicols;        }
-	column { alltables; }
-	column { skey; skey_quiet; _agg; }
+    module: datadict;
+    description: Column Definitions;
+    table_seq: 1000;
+    
+    
+    column column_id   { primary_key: Y; uisearch: Y; }
+    column description { uisearch: Y; }
+    
+    // all automation stuff
+    foreign_key { automations; }
+    column { prefix: auto_;  table_id; column_id; }
+    column { auto_formula; }
+    column srcfile { automation_id: BLANK; }
+    
+    foreign_key { types; }
+    column  { colprec;colscale;colres; }
+    
+    column  { ins;uiro;uino;required;dispsize;uiwithnext;prefix_table_name; }
+    column  { uiinline; }
+    column { value_min; value_max; }
+    column { uirows;uicols; tooltip; }
+    column { alltables; }
+    column { skey; skey_quiet; _agg; }
 }
 
 // *********************************************************
@@ -636,34 +641,37 @@ table columns {
 // The keyword "columns" inside of "table { .... }" goes here
 //
 column primary_key  {  type_id: char;   colprec:  1;  colscale: 0; description: Primary Key; }
+column pk_change    {  type_id: char;   colprec:  1;  colscale: 0; description: Allow PK Change; }
 column uisearch     {  type_id: char;  colprec: 1;  colscale: 0; description: Display in Search Results; }
 column uicolseq     {  type_id: char;  colprec: 30; colscale: 0; description: Column Sequence; }
 table tabcol {
-	module: datadict;
-	description: Column Placements;
-	table_seq: 1100;
-
-	foreign_key columns { uisearch: Y; suffix: _src; }
-	foreign_key tables  {  primary_key: Y; uisearch: Y; }
-	column { column_id; suffix; prefix; primary_key: Y; }
-   column { auto_suffix; auto_prefix; }
-
-	column primary_key { uisearch: Y; }
-	column { colres; }
-	column { ins; uiro; uino; uicolseq; }
-	column { uiwithnext; uisearch; description; }
-   column { range_from; range_to; }
-   column { value_min; value_max; }
-   column { uirows;    uicols;    }
-
-	foreign_key automations { allow_empty: Y; }
-	column { prefix: auto_;  table_id; column_id; }
-	column { auto_formula; }
-	
-   column { uiinline; }
-	column { required; }
-	column { uicolseq; }
-	column { skey; skey_quiet; _agg; }
+    module: datadict;
+    description: Column Placements;
+    table_seq: 1100;
+    
+    foreign_key columns { uisearch: Y; suffix: _src; }
+    foreign_key tables  {  primary_key: Y; uisearch: Y; }
+    column { column_id; suffix; prefix; primary_key: Y; }
+    column { auto_suffix; auto_prefix; }
+    
+    column primary_key { uisearch: Y; }
+    column pk_change { uisearch: Y; }
+    column { colres; }
+    column { ins; uiro; uino; uicolseq; }
+    column { uiwithnext; uisearch; description; }
+    column { range_from; range_to; }
+    column { value_min; value_max; }
+    column { uirows;    uicols;    }
+    
+    foreign_key automations { allow_empty: Y; }
+    column { prefix: auto_;  table_id; column_id; }
+    column { auto_formula; }
+    
+    column { uiinline; }
+    column { required; }
+    column { uicolseq; }
+    column { tooltip;  }
+    column { skey; skey_quiet; _agg; }
 }
 
 // *********************************************************
@@ -694,7 +702,7 @@ table tabfky {
 	column suffix { primary_key: Y; }
 	column prefix { primary_key: Y; }
 	column { table_id_par_comp; } 
-	column { primary_key; uicolseq; uisearch; description; }
+	column { primary_key; pk_change; uicolseq; uisearch; description; }
 
 	column { auto_insert; copysamecols; }
 	column { uicolseq; nocolumns; allow_empty; allow_orphans; }
@@ -957,24 +965,25 @@ table tabprojcols {
 //
 // keyword "group" creates entry in this table
 //
-column group_id {  type_id: vchar;  colprec: 50; colscale: 0; description: Security Group;  }
-column md5_eff  {  type_id: char;   colprec: 32; description: Effective Group Hash;}
-column grouplist{  type_id: text; description: Column List; }
-column solo { type_id: char;   colprec: 1; description: Solo Group; }
+column group_id  {  type_id: vchar; colprec: 50; colscale: 0; description: Security Group;  }
+column md5_eff   {  type_id: char;  colprec: 32; description: Effective Group Hash;}
+column grouplist {  type_id: text;  description: Column List; }
+column solo      {  type_id: char;  colprec: 1; description: Solo Group; }
+column freejoin  {  type_id: char;  colprec: 1; description: No Admin required to join;}
 table groups {
-	module: datadict;
-	description: Group Definitions;
-	risimple: Y;
-	table_seq:1900;
-		
-	column group_id    { primary_key: Y; uisearch: Y; }
-	column description { uisearch: Y; }
-	column { permsel; permins; permupd; permdel; permrole; }
-   column srcfile { automation_id: BLANK; }
-   column { solo; } 
-   column { md5_eff; grouplist; }
-	
-   column { skey; skey_quiet; _agg; }
+    module: datadict;
+    description: Group Definitions;
+    risimple: Y;
+    table_seq:1900;
+        
+    column group_id    { primary_key: Y; uisearch: Y; }
+    column description { uisearch: Y; }
+    column { permsel; permins; permupd; permdel; permrole; }
+    column srcfile { automation_id: BLANK; }
+    column { solo; } 
+    column { md5_eff; grouplist; freejoin; }
+    
+    column { skey; skey_quiet; _agg; }
 }
 
 // *********************************************************
@@ -1239,27 +1248,27 @@ table tabflat {
 	column { description; }
 
 	column primary_key { uisearch: Y; }
+    column pk_change { uisearch: Y; }
 	column { column_id_src;table_id_src;column_id_src; }
 	column { suffix; prefix; auto_suffix; auto_prefix; table_id_par_comp; }
 	column { table_id_fko; column_id_fko; }
 
 
-	// Automations, defined as a foreign key	
-	foreign_key { automations; }
-	foreign_key tabflat { prefix: auto_; allow_empty: Y; }
-	column { auto_formula; }
-   column { range_from; range_to; }
-   column { value_min; value_max; }
-   column { uirows;    uicols;    }
-
-
-	column { uisearch; uicolseq; uiwithnext       }
-	column { ins;uiro;uino;dispsize;uiinline; }	
-	column { type_id;colprec;colscale; colres; formula;formshort }
-	column { uicolseq; }
-	column { required; }
-	column { prevent_fk_change; }
-	column { skey; skey_quiet; _agg; }
+    // Automations, defined as a foreign key	
+    foreign_key { automations; }
+    foreign_key tabflat { prefix: auto_; allow_empty: Y; }
+    column { auto_formula; }
+    column { range_from; range_to; }
+    column { value_min; value_max; }
+    column { uirows;    uicols;    }
+    
+    column { uisearch; uicolseq; uiwithnext       }
+    column { ins;uiro;uino;dispsize;uiinline; }	
+    column { type_id;colprec;colscale; colres; formula;formshort }
+    column { uicolseq; tooltip }
+    column { required; }
+    column { prevent_fk_change; }
+    column { skey; skey_quiet; _agg; }
 }
 
 // *********************************************************

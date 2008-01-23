@@ -151,12 +151,12 @@ be more convenient to use [[SQL_AllRows]].
 */
 function SQL_fetch_array($results,$rownum=null,$type=null) {
 	if (!is_null($type)) {
-		return @pg_fetch_array($results,$rownum,$type);	
+		return @pg_fetch_assoc($results,$rownum,$type);	
 	}
 	if (!is_null($rownum)) {
-		return pg_fetch_array($results,$rownum);	
+		return pg_fetch_assoc($results,$rownum);	
 	}
-	return pg_fetch_array($results); 
+	return pg_fetch_assoc($results); 
 }
 
 
@@ -870,43 +870,42 @@ columns, and ignores any column in the [[Row Array]] that is not
 in the table.
 
 */
-function SQLX_Update(&$table,$colvals,$errrow=array()) {
-   if(!is_array($table)) $table=DD_TableRef($table);
-	$table_id= $table["table_id"];
-   $view_id = DDTable_IDResolve($table_id);
- 	$tabflat = &$table["flat"];
-
-	$sql = "";
-	$st_skey = isset($colvals["skey"]) ? $colvals["skey"] : CleanGet("gp_skey");
-	foreach($tabflat as $colname=>$colinfo) {
-		if (isset($colvals[$colname])) {
-			if (DD_ColUpdatesOK($colinfo)) {
-				$sql.=ListDelim($sql).
-					$colname." = ".SQL_FORMAT($colinfo["type_id"],$colvals[$colname]);
-			}
-		}
-	}
-   if ($sql <> '') {
-       
-      $sql = "UPDATE ".$view_id." SET ".$sql." WHERE skey = ".$st_skey;
-       
-      // ERRORROW CHANGE 5/30/07, big change, SQLX_* routines now save
-      //  the row for the table if there was an error
-      $errflag=false;
-      SQL($sql,$errflag);
-      if($errflag) {
-         vgfSet('ErrorRow_'.$table_id,$errrow);
-      }
-
-      // Possibly cache the row
-      if(!Errors()) {
-         $cache_pkey0=vgfget('cache_pkey');
-         $cache_pkey=array_flip($cache_pkey0);
-         if(isset($cache_pkey[$table_id])) {
-            CacheRowPutBySkey($table,$st_skey);
-         }
-      }
-   }
+function SQLX_Update($table,$colvals,$errrow=array()) {
+    if(!is_array($table)) $table=DD_TableRef($table);
+    $table_id= $table["table_id"];
+    $view_id = DDTable_IDResolve($table_id);
+    $tabflat = &$table["flat"];
+    
+    $sql = "";
+    $st_skey = isset($colvals["skey"]) ? $colvals["skey"] : CleanGet("gp_skey");
+    foreach($tabflat as $colname=>$colinfo) {
+        if (isset($colvals[$colname])) {
+            if (DD_ColUpdatesOK($colinfo)) {
+                $sql.=ListDelim($sql).
+                    $colname." = ".SQL_FORMAT($colinfo["type_id"],$colvals[$colname]);
+            }
+        }
+    }
+    if ($sql <> '') {
+        $sql = "UPDATE ".$view_id." SET ".$sql." WHERE skey = ".$st_skey;
+        
+        // ERRORROW CHANGE 5/30/07, big change, SQLX_* routines now save
+        //  the row for the table if there was an error
+        $errflag=false;
+        SQL($sql,$errflag);
+        if($errflag) {
+            vgfSet('ErrorRow_'.$table_id,$errrow);
+        }
+        
+        // Possibly cache the row
+        if(!Errors()) {
+            $cache_pkey0=vgfget('cache_pkey');
+            $cache_pkey=array_flip($cache_pkey0);
+            if(isset($cache_pkey[$table_id])) {
+                CacheRowPutBySkey($table,$st_skey);
+            }
+        }
+    }
 }
 
 /* DEPRECATED */
@@ -998,11 +997,11 @@ updated.
 The first parameter must be a data dictionary table definition, which
 you can get with [[DD_TableRef]].
 */
-function SQLX_UpdateOrInsert(&$table,$colvals) {
+function SQLX_UpdateOrInsert($table,$colvals) {
    return scDBUpdateOrInsert($table,$colvals);
 }
 
-function  scDBUpdateOrInsert(&$table,$colvals) {
+function  scDBUpdateOrInsert($table,$colvals) {
    $table_id= $table["table_id"];
    $tabflat = &$table["flat"];
    
@@ -1189,7 +1188,7 @@ value in the session on the server.
 This was created 1/15/07 to work with Ajax-dynamic-list from 
 dhtmlgoodies.com.
 */
-function RowsForSelect($table_id,$firstletters='',$matches=array(),$distinct='') {
+function RowsForSelect($table_id,$firstletters='',$matches=array(),$distinct='',$allcols=false) {
    $table=DD_TableRef($table_id);
 
    // Determine which columns to pull and get them
@@ -1257,6 +1256,13 @@ function RowsForSelect($table_id,$firstletters='',$matches=array(),$distinct='')
       $aWhere[] = $matchcol.' = '.SQLFC($matchval); 
    }
    
+   // See if there is a hardcoded filter in the program class
+   $obj = raxTableObject($table_id);
+   if(method_exists($obj,'aSelect_where')) {
+       $aWhere[] = $obj->aSelect_where();
+       sysLog(LOG_NOTICE,$obj->aSelect_Where());
+   }
+   
    
    // If "firstletters" have been passed, we will filter each 
    // select column on it
@@ -1266,7 +1272,7 @@ function RowsForSelect($table_id,$firstletters='',$matches=array(),$distinct='')
    $SLimit='';
    $xWhere=array();
    if($firstletters<>'') {
-      $SLimit="Limit 20 ";
+      $SLimit="Limit 30 ";
       if(strpos($firstletters,',')===false) {
          // original code, search all columns
          $implode=' OR ';
@@ -1305,10 +1311,18 @@ function RowsForSelect($table_id,$firstletters='',$matches=array(),$distinct='')
    // Execute and return
    $sDistinct = $distinct<>'' ? ' DISTINCT ' : '';
    $SOB=$aproj[0];
-   $sq="SELECT $sDistinct $pk as _value,$collist as _display 
-          FROM $view_id 
-       $SWhere 
-         ORDER BY $SOB $SLimit ";
+   if($allcols) {
+       $sq="SELECT skey,$proj 
+              FROM $view_id 
+           $SWhere 
+             ORDER BY 3 $SLimit";
+   }
+   else {
+       $sq="SELECT $sDistinct $pk as _value,$collist as _display 
+              FROM $view_id 
+           $SWhere 
+             ORDER BY $SOB $SLimit ";
+   }
    /*
    openlog(false,LOG_NDELAY,LOG_USER);
    syslog(LOG_INFO,$table['projections']['dropdown']);

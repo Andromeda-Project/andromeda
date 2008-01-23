@@ -74,7 +74,7 @@ group usermaint {
 //  This page is universal to all programs
 //
 //menu x_specification { module: system; description: System Specification; }
-menu x_email { module: system; description: Send Test Email; }
+//menu x_email { module: system; description: Send Test Email; }
 
 // =========================================================
 // Universal Group entries
@@ -123,6 +123,7 @@ column flag     { description: Flag              ; type_id: cbool; }
 column ts       { description: Timestamp         ; type_id: dtime; }
 column desclong { description: Long Description;   type_id: vchar; colprec: 200; }
 column queuepos { description: Queue Position    ; type_id: int;  automation_id: QUEUEPOS;}
+column dominant { description: Dominant;         ; type_id: char; colprec:1;  automation_id: DOMINANT;}
 column ssn      { description: SSN; type_id: ssn; }
 
 
@@ -343,6 +344,7 @@ column email_message { description: MESSAGE;  type_id: text; }
 table adm_emails {
 	description: Emails Sent by System;
 	column_prefix: adm_email;
+    uisort: 100;
 	module: system;
 	
 	column adm_email { primary_key: Y; automation_id: SEQUENCE; }
@@ -367,6 +369,7 @@ column variable_value { description: Value; type_id: text; }
 
 table variables {
 	description: System Variables;
+    uisort: 900;
 	module: system;	
 
 	column variable { primary_key: Y; uisearch: Y; }
@@ -411,6 +414,7 @@ column syslog_name    { description: Log Entry Name;    type_id: char; colprec: 
 column syslog_text    { description: Log Entry Text;    type_id: text; }
 table syslogs {
 	description: Processing Logs;
+    uisort: 500;
 	module: system;
 	
 	column syslog { primary_key: Y; uisearch: Y; automation_id: SEQUENCE; }
@@ -432,6 +436,7 @@ column syslog_enum     { description: Ref Number; type_id: int; automation_id: S
 column syslog_etext    { description: Error Message;    type_id: text; }
 table syslogs_e {
    description: Processing Log Details;
+   uisort: 501;
    module: system;
    
    column syslog_enum     { primary_key: Y; uisearch: Y; }
@@ -471,23 +476,24 @@ column elogdesc {
 column elogarg1 {   
    description:   Arg 1;
    type_id:       vchar;
-   colprec:       25;
+   colprec:       40;
 }
 column elogarg2 {   
    description:   Arg 2;
    type_id:       vchar;
-   colprec:       25;
+   colprec:       40;
 }
 column elogarg3 {   
    description:   Arg 3;
    type_id:       vchar;
-   colprec:       25;
+   colprec:       40;
 }
 
 
 table elogs {
 	description: Event Log;
    module: system;
+   uisort: 102;
    group $LOGIN { permins: Y; }
    
    column elogcode  {                 uisearch: Y; }
@@ -501,6 +507,7 @@ table elogs {
 
 table elogs_emails {
    description: Email Alert Recipients;
+   uisort: 120;
    module: system;
    
    column email { primary_key: Y; uisearch: Y; }
@@ -508,6 +515,7 @@ table elogs_emails {
 
 table elogs_codes {
    description: Email Alert Codes;
+   uisort: 110;
    module: system;
    
    column elogcode { primary_key: Y; uisearch: Y; }
@@ -569,6 +577,7 @@ column notify_version{description: Notify version;type_id: char; colprec: 5; }
 
 table pptransactions {
    module: system;
+   uisort: 300;
    description: Paypal Trx Log;
 
    column recnum { suffix: _pp; primary_key: Y; uisearch: Y; }

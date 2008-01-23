@@ -7,10 +7,16 @@ $contraststyle = "co-" . $default_contrast;
 $cookie_prefix = "pp-";
 
 //load font style
-if (isset($_SESSION[$cookie_prefix. 'fontstyle'])) {
-	$fontstyle = $_SESSION[$cookie_prefix. 'fontstyle'];
-} elseif (isset($_COOKIE[$cookie_prefix. 'fontstyle'])) {
-	$fontstyle = $_COOKIE[$cookie_prefix. 'fontstyle'];
+// KFD 10/19/07, part of x4 readability
+if(vgfGet('x4')===true && LoggedIn()) {
+    $fontstyle='x4-large';
+}
+else {
+    if (isset($_SESSION[$cookie_prefix. 'fontstyle'])) {
+        $fontstyle = $_SESSION[$cookie_prefix. 'fontstyle'];
+    } elseif (isset($_COOKIE[$cookie_prefix. 'fontstyle'])) {
+        $fontstyle = $_COOKIE[$cookie_prefix. 'fontstyle'];
+    }
 }
 
 //load width style

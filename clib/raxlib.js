@@ -19,6 +19,15 @@
    or visit http://www.gnu.org/licenses/gpl.html
 \* ================================================================== */
 // ------------------------------------------------------
+// Top level execution: determine if IE
+// ------------------------------------------------------
+var androIE = false;
+if(    navigator.userAgent.indexOf('MSIE') >=0 
+    && navigator.userAgent.indexOf('Opera')<0) {
+    androIE = true;
+}
+
+// ------------------------------------------------------
 // Some variable conventions
 //   obj    :  an object reference returned by ob() as passed as 'this'
 //   objname:  name of an object
@@ -30,6 +39,9 @@
 // Handy verbosity-reducing routines
 // ------------------------------------------------------
 // Get an object reference
+function byId(id) {
+   return document.getElementById(id);
+}
 function ob(oname) {
   if (document.getElementById)
 	  return document.getElementById(oname);
@@ -84,6 +96,39 @@ function objAttValue(obj,attname) {
       }           
    }
 }
+// Compatibility
+// Cross-browser implementation of element.addEventListener()
+function addEventListener(element, type, expression,uc) {
+    if(uc==null) { uc=false; }
+    if (element.addEventListener) { // Standard
+        element.addEventListener(type, expression, uc);
+        return true;
+    } else if (element.attachEvent) { // IE
+        element.attachEvent('on' + type, expression);
+        return true;
+    } else return false;
+}
+// function contributed by Don Organ 10/29/07
+function removeEventListener(el, eType, fn) {
+    if (el.removeEventListener) {
+        el.removeEventListener(eType, fn, false);
+    }
+    else if ( el.detachEvent ) {
+        el.detachEvent( 'on' + eType, fn );
+    } 
+    else {
+        return false;     
+    }
+}
+// Compatibility
+function eventTarget(e) {
+    if(window.event) 
+        return window.event.target;
+    else 
+        return e.currentTarget;
+}
+
+
 // ------------------------------------------------------
 // Universal keystroke handling for HTML body element
 // ------------------------------------------------------
@@ -110,6 +155,16 @@ function bodyKeyPress(e) {
          return false;
       }
    }
+   
+   /* Forward compatible to x4.js.  If that is not loaded,
+      this array will not exist.  If it does exist, the code
+      assumes the complete x4.js is loaded.
+    */
+   if(typeof(x4letters)!='undefined') {
+       var objId='object_for_'+x4letters[e.charCode-97];
+       if(byId(objId)) byId(objId).onclick();
+   }
+   
    return true;
    
    // END key         is 35
@@ -586,6 +641,9 @@ function formSubmitajxBUFFER(str) {
                postString+=encodeURIComponent(e.value);
             }
          }
+         else {
+            postString+="&"+e.name+"="+encodeURIComponent(e.value);
+         }
       }
    }
    andrax(postString);
@@ -690,9 +748,14 @@ function field_changed(page,field,value) {
    andrax(getString);
 }
 
-function andrax(getString) {
+function andrax(getString,handler) {
     http.open('get', 'index.php'+getString);
-    http.onreadystatechange = handleResponse;
+    if(handler==null) {
+        http.onreadystatechange = handleResponse;
+    }
+    else {
+        http.onreadystatechange = handler;
+    }
     http.send(null);
 }
 
@@ -789,3 +852,188 @@ function  handleResponseOne(one_element,controls) {
    }
    return controls;
 }
+
+// ----------------------------------------------------------------
+// ANDROMEDA AJAX-IFIED DROPDOWN LIST
+// Honorable mention to www.dhtmlgoodies.com, whose code I
+//    examined while creating this code.  
+// ----------------------------------------------------------------
+// begin with the public object that 
+// tracks all of the info for the androSelect:
+var aSelect = new Object();
+aSelect.divWidth = 400;
+aSelect.divHeight= 300;
+aSelect.div      = false;
+aSelect.iframe   = false;
+aSelect.row      = false;
+
+// Main routine called when a keystroke is hit on 
+// the control that "hosts" the androSelect
+function androSelect_onKeyUp(obj,strParms,e) {
+    var kc = e.keyCode;
+
+    // If TAB or ENTER, clear the box
+    if(kc == 9 || kc == 13) { return true; }
+    
+    // If downarrow or uparrow....
+    if(kc == 38 || kc == 40) {
+        if(!androSelect_visible()) return;
+        if(aSelect.div.firstChild.rows.length==0) return;
+
+        if(!aSelect.row) { 
+            var row = aSelect.div.firstChild.rows[0];
+            var skey= objAttValue(row,'x_skey');
+            androSelect_mo(row,skey);
+            return;
+        }
+        
+        var row = byId('as'+aSelect.row);
+        if(kc==38) {
+            var prev = objAttValue(row,'x_prev');
+            if(prev!='') {
+                var row = byId('as'+prev);
+                androSelect_mo(row,prev);
+            }
+        }
+        if(kc==40) {
+            var next = objAttValue(row,'x_next');
+            if(next!='') {
+                var row = byId('as'+next);
+                androSelect_mo(row,next);
+            }
+        }
+        
+        // No matter what, never proceed if it was up/down arrow
+        return;
+    }
+    
+    // This is used to track the last value we searched for
+    if(typeof(obj.androSelect == 'undefined')) {
+        obj.androSelect = '';
+    }
+    // Now test to see if the value has changed.  If not, return 
+    if(obj.androSelect == obj.value) {
+        return;
+    }
+    // From this point forward we are going to do a search,
+    // because the user has changed the value of the input
+    
+    // If no DIV, set one up.
+    if(!aSelect.div) {
+        aSelect.div = document.createElement('DIV');
+        aSelect.div.style.display  = 'none';
+        aSelect.div.style.width    = aSelect.divWidth + "px";
+        aSelect.div.style.height   = aSelect.divHeight+ "px";
+        aSelect.div.className = 'androSelect';
+        aSelect.div.id = 'androSelect';
+        document.body.appendChild(aSelect.div);
+        var x = document.createElement('TABLE');
+        aSelect.div.appendChild(x);
+			
+    }
+    // If it is invisible, position it and then make it visible
+    if(aSelect.div.style.display=='none') {
+        var postop = obj.offsetTop;
+        var poslft = obj.offsetLeft;
+        var objpar = obj;
+        while((objpar = objpar.offsetParent) != null) {
+            postop += objpar.offsetTop;
+            poslft += objpar.offsetLeft;
+        }
+        aSelect.div.style.top  = (postop + obj.offsetHeight) + "px";
+        aSelect.div.style.left = poslft + "px";
+        aSelect.div.style.display = 'block';
+        
+        // As part of making visible, create an onclick
+        // that will trap the event target and lose focus
+        // if not the input object or the
+        addEventListener(document   ,'click',androSelect_documentClick);
+    }
+    
+    // Tell it the current control it is working for
+    aSelect.control = obj;
+    aSelect.row = false;
+
+    // Make up the URL and send the command
+    var url = '?'+strParms+'&gpv=2&gp_letters='+obj.value.replace(" ","+");         
+    andrax(url,androSelect_handler);
+}
+
+function androSelect_handler() {
+    // do default action
+    handleResponse();
+    
+    if(aSelect.div.firstChild) {
+        var table = aSelect.div.firstChild;
+        if(table.rows.length > 0) { 
+            table.rows[0].onmouseover();
+        }
+    }    
+}
+
+function androSelect_onKeyDown(e) {
+    var kc = e.keyCode;
+
+    // If TAB or ENTER, clear the box
+    if(kc == 9 || kc == 13) { 
+        if(!androSelect_visible()) return true;
+        
+        removeEventListener(document   ,'click',androSelect_documentClick);
+        
+        if(aSelect.div.firstChild.rows.length==0) {
+            androSelect_hide();
+           return true;
+        }
+        
+        if(aSelect.row) {
+            var row = byId('as'+aSelect.row);
+            var pk  = objAttValue(row,'x_value');
+            aSelect.control.value = pk;
+        }
+        androSelect_hide();
+        return true;
+    }
+}
+
+
+// Make the div go away.  Actually choosing a value
+// is done elsewhere
+function androSelect_hide() {
+    aSelect.div.innerHTML = ''
+    aSelect.div.style.display = 'none';
+    //removeEventListener(document        ,'click',androSelect_onClick);
+}
+
+function androSelect_visible() {
+    if(aSelect.div == false) return false;
+    if(aSelect.div.style.display=='none') return false;
+    
+    return true;
+}
+
+// Main purpose is to see if user clicked anywhere except
+// on current control or the div.  If they did, hide it
+// w/o making a choice.
+function androSelect_documentClick(e) {
+    //console.log("in the onclick");
+    androSelect_hide();
+    return false;
+}
+
+// User is rolling over a row
+function androSelect_mo(tr,skey) {
+    if(byId('as'+aSelect.row)) {
+        byId('as'+aSelect.row).className = '';
+    }
+    aSelect.row = skey;
+    tr.className = 'hilite';
+}
+// User clicked on a row
+function androSelect_click(value,suppress_focus) {
+    aSelect.control.value = value;
+    androSelect_hide();
+    if(suppress_focus==null) {
+        aSelect.control.focus();
+    }
+}
+

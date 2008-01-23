@@ -10,7 +10,7 @@
 }
  
  table.x4Browse th 
-,table.x4Grid   th 
+,table.x4Grid   tr th 
 {
    color: #e0e0e0;
    background-color: #606060;

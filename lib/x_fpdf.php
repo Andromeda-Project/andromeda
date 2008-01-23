@@ -11,6 +11,12 @@ class x_fpdf extends fpdf {
    // -----------------------------------------------------
    // FPDF Overrides
    // -----------------------------------------------------
+   // Must override output to make sure there is no Pragma
+   // header, as it prevents downloads in IE 6 in HTTPS
+   function Output($file,$blah='I') {
+       header('Pragma:',true);
+       parent::Output($file,$blah);
+   }
    function x_fpdf($ori='p') {
       $this->FPDF($ori,'mm','letter');
    }
@@ -35,11 +41,13 @@ class x_fpdf extends fpdf {
    // -----------------------------------------------------
    // Startup
    // -----------------------------------------------------
-   function StandardSetup($ori='p') {
+   function StandardSetup($ori='p',$fontname='Courier',$fontsize=12) {
       $this->SetMargins(10,10);
       $this->SetTextColor(0,0,0);
-      $this->SetFont('Courier');
-      $this->SetFontSize(12);
+      $this->SetFont($fontname);
+      $this->SetFontSize($fontsize);
+      $this->fontname=$fontname;
+      $this->fontsize=$fontsize;
       $this->SetAutoPageBreak(true,20); // sets 1 in bottom margin
       $this->AddPage($ori);
       $this->repType='none';
@@ -66,13 +74,27 @@ class x_fpdf extends fpdf {
       $this->SetFont($this->fontname,'B',$this->fontsize);
       // Set the first one in bold, add a colon
       $this->OneCell($caption.": ",'char');
-      $this->SetFont($this->fontname,'U',$this->fontsize);
+      $this->SetFont($this->fontname,'',$this->fontsize);
       $this->OneCell($value,$type_id,$ds,$cs);
       $this->SetFont($this->fontname,'',$this->fontsize);
       $this->OneCell('  ','char');
    }
+    function OnePair2($caption,$value,$ds1=null,$ds2=null) {
+        $this->SetFont($this->fontname,'B',$this->fontsize);
+        $ds1-=2;
+        $caption = trim(substr($caption,0,$ds1-1));
+        $caption.=': ';
+        $caption = str_pad($caption,$ds1);
+        $this->OneCell($caption,'char',$ds1);
+        $this->SetFont($this->fontname,'',$this->fontsize);
+        $value = str_pad(substr($value,0,$ds2),$ds2,' ');
+        $this->OneCell($value,'char',$ds2);
+        $this->SetFont($this->fontname,'',$this->fontsize);
+        $this->OneCell(' ','char');
+    }
    
-   function OneCell($text,$type_id='char',$dispsize=0,$colscale=0) {
+   // BEAUTY.  Step 4, allow right align w/o converting to number
+   function OneCell($text,$type_id='char',$dispsize=0,$colscale=0,$caption=false) {
       if($dispsize==0) $dispsize=strlen($text);
       $align="L";
       switch($type_id) {
@@ -81,15 +103,23 @@ class x_fpdf extends fpdf {
             $output = str_pad(substr($text,0,$dispsize),$dispsize).' ';
             break;
          case 'date':
-            if(!$text) $output = '           ';
-            else $output = date('m/d/Y',dEnsureTS($text)).' ';
+            if(!$text) $output = '';
+            else {
+                if($caption) $output = $text; 
+                else $output = date('m/d/Y',dEnsureTS($text)).' ';
+            }
             break;
          case 'numb':
             if($this->zeronumber && $text==0) {
                $output = '';
             }
             else {
-               $output=number_format((float)$text,$colscale);
+                if($caption) {
+                    $output = $text;
+                }
+                else {
+                    $output=number_format((float)$text,$colscale);
+                }
             }
             $output = ' '.str_pad($output,$dispsize,' ',STR_PAD_LEFT);
             $align="R";
@@ -101,8 +131,23 @@ class x_fpdf extends fpdf {
          default:
             $output = $text;
       }
-      $width=$this->GetStringWidth($output);
-      $this->Cell($width,0,$output,0,0,$align);
+      // BEAUTY STEP 3, DROP X_PDF'S ROUTINE, DO OUR OWN.
+      // The width calculation was worked out using Courier (fixed width) 
+      // to put out cells 10 chars long.  The value used gave perfect
+      // alignment
+      //$width=$this->GetStringWidth($output);
+      if(strtoupper($this->fontname)=='COURIER') {
+          $width=$this->GetStringWidth($output);
+      }
+      else {
+          $width=$dispsize*$this->fontsize*.23;
+      }
+      //if($align<>'L') {
+          $this->Cell($width,0,$output,0,0,$align);
+      //}
+      //else {
+      //    $this->Cell($width,0,$output);
+      //}
       //$this->CurrentLine.=$output.' ';
    }
    function OutputLine() {
@@ -141,7 +186,12 @@ class x_fpdf extends fpdf {
       $this->Type1Headers=$titles;
       $this->SetMargins(10,10);
       $this->SetTextColor(0,0,0);
-      $this->SetFont('Courier');
+      // BEAUTY.  Step 1, font
+      //$this->SetFont('Courier');
+      $this->SetFont('Arial');
+      $this->fontname='Arial';
+      $this->fontsize=$fontsize;
+      // BEAUTY.  Step 1, end of changes      
       $this->SetFontSize($fontsize);
       $this->SetAutoPageBreak(true,20); // sets 1 in bottom margin
       $this->AddPage($t1Orient);
@@ -149,13 +199,23 @@ class x_fpdf extends fpdf {
 
    function Type1Header() {
       $this->ClearLine();
-      $this->OneCell($this->t1Title,'char');
-      $this->OutputLine();
+      
+      // BEAUTY.  Step 2, Make title center, bold, and large
+      $this->setFont($this->fontname,'B',$this->fontsize*1.2);
+      $this->Cell(0,0,$this->t1Title,0,0,'C'); // DOC: 0 width=all
+      $this->Ln($this->lineheight*1.5);      
+      //$this->OneCell($this->t1Title,'char');
+      //$this->OutputLine();
+      $this->setFont($this->fontname,'',$this->fontsize);
+      // BEAUTY.  Step 2, end of changes
+      
       if(isset($this->oRep)) {
          if(method_exists($this->oRep,'Type1_header_extra')) {
-            $this->ClearLine();
+            $this->Ln($this->lineheight);      
+            //$this->ClearLine();
             $this->oRep->Type1_header_extra();
-            $this->OutputLine();
+            //$this->OutputLine();
+            $this->setFont($this->fontname,'',$this->fontsize);
          }
       }
       $this->DateAndPage(2);
@@ -176,10 +236,10 @@ class x_fpdf extends fpdf {
          $size=$this->Type1ColSize($info);
          
          // Figure out the padding
-         $pad=$info['type_id']=='numb' ? STR_PAD_LEFT : STR_PAD_RIGHT;
-         $caption=str_pad($info['caption'],$size,' ',$pad);
+         //$pad=$info['type_id']=='numb' ? STR_PAD_LEFT : STR_PAD_RIGHT;
+         //$caption=str_pad($info['caption'],$size,' ',$pad);
 
-         $this->OneCell($caption,'char',$size);  
+         $this->OneCell($info['caption'],$info['type_id'],$size,0,true);  
       }
       $this->OutputLine();
       $this->Type1Dashes("=");
@@ -206,12 +266,12 @@ class x_fpdf extends fpdf {
    
    function Type1Row($row) {
       $this->ClearLine();
+      $posx=0;  // the position across
       foreach($this->t1ColInfo as $colname=>$colinfo) {
          $value=ArraySafe($row,$colname);
          $type_id=$colinfo['type_id'];
          $size=$this->Type1ColSize($colinfo);
          $colscale=ArraySafe($colinfo,'colscale',0);
-         //echo "Calling $value  $type_id  $size  $colscale<br/>";
          $this->OneCell($value,$type_id,$size,$colscale);
       }
       $this->OutputLine();
@@ -231,6 +291,6 @@ class x_fpdf extends fpdf {
    function Type1Percent($top,$bottom) {
       if($bottom==0) return 0;
       else return (($top*100)/$bottom);
-   }
+   }   
 }
 ?>

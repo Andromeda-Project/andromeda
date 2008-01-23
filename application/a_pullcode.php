@@ -135,6 +135,7 @@ class a_pullcode extends x_table2 {
       $filedest=$GLOBALS['AG']['dirs']['root'];
       $remove_path=basename($filespec,".tgz");
       $tar->extractModify($filedest,$remove_path);
+      x_EchoFlush("Done");
       echo ob_get_clean();
    }
    

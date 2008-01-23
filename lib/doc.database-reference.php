@@ -150,6 +150,11 @@ a foreign key be placed in the child table referring to the parent.
 * UID_INS.  User_id of insert.  Column should be vchar 20.
 * TS_UPD.  Timestampe of update.  Column must be of type dtime.
 * UID_UP.  User_id of update.  Column should be vchar 20.
+* QUEUPOS.  Used to maintain ordered lists, see details
+at [[Automations]].
+* DOMINANT.  If a user enters 'Y' in this column, all other rows
+are set to 'N'.  See details as [[Automations]].
+
 
 #auto_formula.
 ''auto_formula''.  See also [[Automations]].  Reqired by some values
@@ -207,6 +212,51 @@ into all tables in the database.  Obviously should be used with caution!
 The framework defines three columns that have this flag set, being
 [[skey]], [[_agg]], and [[skey_quiet]].
 
+*/
+
+/**
+name:dominant
+
+This is a value for the automation_id of a [[column]] 
+or [[table.column]].
+
+This automation allows you to define a flag and then make sure
+that the flag is only set to 'Y' for one row.  For instance,
+if you have a list of vendors that are approved for an item, 
+one of them may be the first choice while the others are
+alternates.  In that case, you would want that vendor marked
+as "dominant" to mark it out from the others.
+
+The way to do this is to set the automation_id to 'DOMINANT'.
+When the end-user marks
+a row as 'Y', Andromeda will go look for the current
+row that has 'Y' and set it to 'N'.  This way only one row at
+any given time can be dominant.
+
+Setting the auto_formula is important.  If you do not specify
+a value for auto_formula, then only one row in the entire table
+can have the flag set.  Usually people want to set this flag
+within a group, such as the above example, where there is one
+dominant vendor for a given item.  When this is the case your
+table will have a [[foreign_key]] to the items table, and
+so you name "items" as the value of auto_formula, as in
+this example:
+
+!>example
+!>noformat
+table itemsxvendors:
+    foreign_key items:
+        primary_key: "Y"
+    foreign_key vendors:
+        primary_key: "Y"
+    column dominant:
+        auto_formula: items
+!<
+!<
+
+...which means that, ''for a given item'', only one vendor
+can be flagged a dominant.
+        
 */
 
 /* --------------------------------------------------- *\
@@ -753,6 +803,7 @@ table table_id:
       # When placing a column in a table, there are no required properties
       uisearch: Y/N
       primary_key: Y/N
+      pk_change: Y/N
       range_from: column_id
       range_to: column_id
       suffix: string
@@ -786,6 +837,13 @@ table table_id:
 #primary_key
 ''primary_key''.  A Y/N flag that adds the column to the table's primary
 key definition.
+
+#pk_change
+''pk_change''.  A Y/N flag that allows a primary key to be changed.
+Defaults to no.  This flag must be set for each column in the primary
+key.  When a primary key value is updated in the database it will
+cascade to all child tables.  
+
 
 ''range_from'' and ''range_to'' modify the primary key.  These are
 discussed below under 'Range Primary Keys'.
@@ -1851,6 +1909,11 @@ and [[table.group]].
 name:primary_key
 
 A property of a [[table.column]] and [[table.foreign_key]].
+*/
+/**
+name:pk_change
+
+A property of a [[table.column]].  Does not apply to [[table.foreign_key]].
 */
 /**
 name:range_from

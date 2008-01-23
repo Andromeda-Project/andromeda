@@ -203,8 +203,8 @@ table applications {
    }
    foreign_key nodes {
       allow_empty: Y; 
-      column node { description: Authoritative Node; }
    }
+   column node { description: Authoritative Node; }
    column { xdirs; }
    column { template; }
 

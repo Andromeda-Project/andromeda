@@ -67,6 +67,12 @@ body.f-larger {
 	font-size: 13px;
 }
 
+/* KFD 10/19/07, x4 large */
+body.x4-large {
+	font-size: 14px;
+}
+
+
 .small,
 .modifydate,
 .createdate,

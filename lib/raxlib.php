@@ -2403,6 +2403,7 @@ function ehModuleCommands() {
    </script>
    <div style="text-align: right">
    <span style="float: left">
+   <?php if(vgfGet('x4')!==true) { ?>
    <a      id="object_for_f4"
          href="#"
       onclick="javascript:history.back()">
@@ -2415,6 +2416,16 @@ function ehModuleCommands() {
           onclick="this.focus()"
           onkeyup="DoCommand(event)"
       tabindex="0">
+   <?php } else { ?>
+   <a       id='object_for_f4'
+          href='javascript:void(0)'
+       onclick="x4GreenScreenTop();"
+       >F4: Menu</a>&nbsp;&nbsp;
+   <a       id='object_for_f6'
+          href='javascript:void(0)'
+       onclick="window.open('?gp_page=x4init')"
+       >F6: New Window</a>
+   <?php } ?>
    
    <span style="color: red"><?="&nbsp;&nbsp;".vgfGet('command_error')?></span>
    <?php
@@ -2430,6 +2441,9 @@ function ehModuleCommands() {
    <span style="padding-right: 10px">
    <?=vgfGet('html_buttonbar')?>&nbsp;&nbsp;&nbsp;&nbsp;
    <?=vgfGet('html_navbar')?>
+   <?php if(vgfGet('x4')===true) { ?>
+       <?=ehLoginHorizontal()?>
+   <?php } ?>
    </span>
    </div>
    <?php
@@ -2735,7 +2749,7 @@ function httpHeadersForDownload($filespec,$attachment=false) {
    // These two are required to download files on unpatched IE 6
    // systems through SSL
    header('Cache-Control: maxage=3600'); //Adjust maxage appropriately
-   header('Pragma: public');
+   header('Pragma:',true);  // required to prevent caching
 
    // These are the normal ones   
    header(
@@ -5281,42 +5295,43 @@ function processPost_Textboxes($row) {
 // entirely upon the context
 // - - - - - - - - - - - - - - - - -  -
 function rowsFromUserSearch(&$table,$lcols=null,$matches=array()) {
-   $table_id=$table['table_id'];
-   $view_id =DDTable_IDResolve($table_id);
-   // If search has not been performed, do it now
-   $skeys = ConGet('table',$table_id,'skeys','');
-   if(!is_array($skeys)) {
-      $skeys = rowsFromUserSearch_Execute($table,$matches);
-   }
+    $table_id=$table['table_id'];
+    $view_id =DDTable_IDResolve($table_id);
+    // If search has not been performed, do it now
+    $skeys = ConGet('table',$table_id,'skeys','');
+    if(!is_array($skeys)) {
+        $skeys = rowsFromUserSearch_Execute($table,$matches);
+    }
    
-   // Now go in and retrieve the rows for the skey values
-   // that we want
-   $gp_spage = ConGet('table',$table_id,'spage',1);
-   $gp_rpp   = ConGet('table',$table_id,'rppage',25);
-   $colob = ConGet('table',$table_id,'orderby');
-   $gp_ob 
-      ="Order By ".$colob
-      .' '.ConGet('table',$table_id,'orderasc');
+    // Now go in and retrieve the rows for the skey values
+    // that we want
+    $gp_spage = ConGet('table',$table_id,'spage',1);
+    $gp_rpp   = ConGet('table',$table_id,'rppage',25);
+    $colob = ConGet('table',$table_id,'orderby');
+    //$gp_ob 
+    //    ="Order By ".$colob
+    //    .' '.ConGet('table',$table_id,'orderasc');
 
-   // This is weird trick that some columns may have a natural 2nd
-   // column that should sort
-   $table_opts=vgaGet('table_opts',array());
-   if(isset($table_opts[$table_id]['sortnext'][$colob])) {
-      $colob2=$table_opts[$table_id]['sortnext'][$colob];
-      $gp_ob.=', '.$colob2.' '.ConGet('table',$table_id,'orderasc');
-   }
+    // This is weird trick that some columns may have a natural 2nd
+    // column that should sort
+    //$table_opts=vgaGet('table_opts',array());
+    //if(isset($table_opts[$table_id]['sortnext'][$colob])) {
+    //    $colob2=$table_opts[$table_id]['sortnext'][$colob];
+    //    $gp_ob.=', '.$colob2.' '.ConGet('table',$table_id,'orderasc');
+    //}
       
-   $skeysl =array_slice($skeys,($gp_spage-1)*$gp_rpp,$gp_rpp);
-   $skeysl =implode(',',$skeysl);
-   if($skeysl=='') return array();  // Early return
+    $skeysl =array_slice($skeys,($gp_spage-1)*$gp_rpp,$gp_rpp);
+    $skeysl =implode(',',$skeysl);
+    if($skeysl=='') return array();  // Early return
+    
+    if(is_null($lcols)) $cols=$table['projections']['_uisearch'];
+    $colslist='skey,'.$lcols;
    
-   if(is_null($lcols)) $cols=$table['projections']['_uisearch'];
-   $colslist='skey,'.$lcols;
-   
-   $sq="SELECT $colslist FROM $view_id "
-      ." WHERE skey in ($skeysl) "
-      ." $gp_ob";
-   return SQL_AllRows($sq);
+    $sob = ConGet('table',$table_id,'complex_orderby');
+    $sq="SELECT $colslist FROM $view_id "
+        ." WHERE skey in ($skeysl) ORDER BY $sob";
+        //." $gp_ob";
+    return SQL_AllRows($sq);
 }
 
 // This routine retrieves the skey values only
@@ -5343,13 +5358,13 @@ function rowsFromUserSearch_Execute(&$table,$matches=array()) {
 }
 
 function rowsFromFilters(&$table,$filters,$cols,$matches=array()) {
-   $tabflat=$table['flat'];
-   $table_id=$table['table_id'];
-   $view_id =DDTable_IDResolve($table_id);
-   //echo SessionGet("GROUP_ID_EFF");
-   // Set user-requested filters
-   $sw = array();
-   foreach ($tabflat as $colname=>$colinfo) {
+    $tabflat  =$table['flat'];
+    $table_id = $table['table_id'];
+    $view_id  = DDTable_IDResolve($table_id);
+    //echo SessionGet("GROUP_ID_EFF");
+    // Set user-requested filters
+    $sw = array();
+    foreach ($tabflat as $colname=>$colinfo) {
       if (isset($matches[$colname])) {
          $tcv = trim($matches[$colname]);
          if ($tcv != "") {
@@ -5369,46 +5384,61 @@ function rowsFromFilters(&$table,$filters,$cols,$matches=array()) {
             $sw[]='('.rff_OneCol($colinfo['type_id'],$colname,$tcv).')';
          }
       }
-   }
-   $sql_where= implode(' AND ',$sw);
+    }
+    $sql_where= implode(' AND ',$sw);
 
    
-   // Set identity-security filters
-   // NOPE, Rem'd out 10/26/06 when moved server-side
-   //$sql_where2 = S*QLX_Filters($tabflat);
-   //if ($sql_where2!="") {
-   //   $sql_where.=ListDelim($sql_where," AND ").$sql_where2;
-   //}
-   if ($sql_where!="") { $sql_where= " WHERE ".$sql_where; }
-   
-   // Now that the FILTER is taken care of, let's take 
-   // care of the order by.
-   $ob    = ConGet("table",$table_id,"orderby");
-   if ($ob=="") {
-      $ob = $table["pks"];
-      $ob = explode(",",$ob);
-      $ob = $ob[0];
-      ConSet("table",$table_id,"orderby",$ob);
-   }
-   
-   // and the order by ascending/descending
-   $obasc = ConGet("table",$table_id,"orderasc");
-   if ($obasc=="") {
-      $obasc = "ASC";
-      ConSet("table",$table_id,"orderasc",$obasc);
-   }
-   $SQLOB = $obasc;
-   
-   // Retrieve the limit as a vgaget, defaulting to 300
-   $SQL_Limit=vgaGet("SQL_Limit",300);
+    // Set identity-security filters
+    // NOPE, Rem'd out 10/26/06 when moved server-side
+    //$sql_where2 = S*QLX_Filters($tabflat);
+    //if ($sql_where2!="") {
+    //   $sql_where.=ListDelim($sql_where," AND ").$sql_where2;
+    //}
+    if ($sql_where!="") { $sql_where= " WHERE ".$sql_where; }
+
+    // KFD 10/24/07.  ASC/DESC used to be after the clause below,
+    //                but we need to get it first because we have
+    //                to assign it to each column 
+    $obasc = ConGet("table",$table_id,"orderasc");
+    if ($obasc=="") {
+        $obasc = "ASC";
+        ConSet("table",$table_id,"orderasc",$obasc);
+    }
+    $SQLOB = $obasc;
+    
+    // KFD: 10/24/07.  Order by all columns, not just the
+    //       the selected one.  But order by the selected one
+    //       first.
+    $ob  = ConGet("table",$table_id,"orderby");
+    $lob = explode(',',$table['projections']['_uisearch']);
+    if($ob=='') {
+        foreach($lob as $onecol) {
+            $aid = $table['flat'][$onecol]['automation_id'];
+            if(in_array($aid,array('SEQUENCE','SEQDEFAULT'))) continue;
+            $ob = $onecol;
+            ConSet('table',$table_id,'orderby',$ob);
+        }
+    }
+    $sob = $ob.' '.$obasc;
+    foreach($lob as $onecol) {
+        $aid = $table['flat'][$onecol]['automation_id'];
+        if(in_array($aid,array('SEQUENCE','SEQDEFAULT'))) continue;
+        if($onecol <> $ob) {
+            $sob.="\n, ".$onecol.' '.$obasc;
+        }
+    }
+    ConSet('table',$table_id,'complex_orderby',$sob);
+    
+    // Retrieve the limit as a vgaget, defaulting to 300
+    $SQL_Limit=vgaGet("SQL_Limit",300);
       
-   // Execute the sql, pull down the skey values
-   $skeys=array();
-   $sq="SELECT ".$cols." FROM ".$view_id.$sql_where
-      ." ORDER BY ".$ob.' '.$SQLOB." LIMIT ".$SQL_Limit;
-   $rows =SQL_ALLRows($sq);
-   $retval=($rows===false) ? array() : $rows;
-   return $retval;
+    // Execute the sql, pull down the skey values
+    $skeys=array();
+    $sq="SELECT ".$cols." FROM ".$view_id.$sql_where
+      ." ORDER BY ".$sob." LIMIT ".$SQL_Limit;
+    $rows =SQL_ALLRows($sq);
+    $retval=($rows===false) ? array() : $rows;
+    return $retval;
 }
 
 // KFD 5/17/07, support lists, ranges, and greater/lesser
@@ -5951,7 +5981,12 @@ function ahInputsComprehensive(
                if ($col['writeable']) {
                   //$col['input']='select';
                   $col['parms']['onkeyup']
-                     ="ajax_showOptions(this,'$fkparms',event)";
+                     ="androSelect_onKeyUp(this,'$fkparms',event)";
+                  $col['parms']['onkeydown']
+                     ="androSelect_onKeyDown(event)";
+                  //$col['parms']['onkeyup']
+                  //  ="ajax_showOptions(this,'$fkparms',event)";
+                  
                }
                // The dynamic list assigns value of key here:
                hidden($col['parms']['name'],$col['parms']['value']);
@@ -7550,14 +7585,14 @@ function hDetailFromAHCols($ahcols,$name,$tabindex,$display='') {
       
       switch($display) {
       case '':
-         echo "\n<tr><td class=\"x3caption\" >".$ahcol['description'];
-         echo "\n<td class=\"x3input\">$html $hrgt";
-         echo "\n<td class=\"x3error\" id=\"$cnmer\">$cname--ERROR--";
-         echo "\n<td>".$ahcol['tooltip'];
-         break;
-      case 'tds':
-         echo "\n<td class=\"x3input\">$html";
-      }
+        echo "\n<tr><td class=\"x3caption\" >".$ahcol['description'] ."</td>";
+        echo "\n<td class=\"x3input\">$html $hrgt</td>";
+        echo "\n<td class=\"x3error\" id=\"$cnmer\">$cname--ERROR--</td>";
+        echo "\n<td class=\"x3tooltip\">".$ahcol['tooltip'] ."</td></tr>";
+        break;
+     case 'tds':
+        echo "\n<td class=\"x3input\">$html</td>";
+     }      
    }
    if ($display=='') echo "</table>";
    return ob_get_clean();
@@ -7659,6 +7694,7 @@ function ahColFromACol(&$acol) {
       ,'nameprefix'=>'--NAME-PREFIX--'
       ,'id'=>'--ID--'
       ,'tabindex'=>'--TABINDEX--'
+      ,'tooltip'=>ArraySafe($acol,'tooltip','')
       ,'value'=>'--NAME----VALUE--'
       ,'x_value_original'=>($acol['mode']=='ins' ? '' : '--NAME----VALUE--')
       ,'x_class_suffix'=>''
@@ -7679,6 +7715,16 @@ function ahColFromACol(&$acol) {
 
    // A size correction
    $acol['size'] = min($acol['size'],24);
+   
+   // KFD 10/22/07.  For PROMAT application originally
+   if(ArraySafe($acol,'pk_change')=='Y') {
+     $acol['html_right']
+        .="&nbsp;&nbsp;"
+        ."<a href=\"javascript:void(0)\""
+        .'onclick="ob(\'--NAME--\').readOnly=false;ob(\'--NAME--\').focus()">'
+        .'change</a>';
+   }
+   
    
    // ------------------------------------
    // Big deal #1, decisions based on type
@@ -7799,14 +7845,18 @@ function ahColFromACol(&$acol) {
             $fkparms='gp_dropdown='.$table_id_fko;
             if ($acol['writable']) {
                //$col['input']='select';
-               $acol['snippets']['onkeyup'][]
-                  ="ajax_showOptions(this,'$fkparms',event)";
-               //$acol['snippets']['onchange'][]
-               //="if(ajax_list_activeItem && this.value!=''){this.value=ajax_list_activeItem.id;ajax_options_hide();}";
+               if(vgfGet('adlversion',2)==1) {
+                   $acol['snippets']['onkeyup'][]
+                      ="ajax_showOptions(this,'$fkparms',event)";               }
+               else {
+                   $acol['snippets']['onkeyup'][]
+                      ="androSelect_onKeyUp(this,'$fkparms',event)";
+                   $acol['snippets']['onkeydown'][]
+                      ="androSelect_onKeyDown(event)";
+               }                  
             }
             $acol['hparms']['autocomplete']='off';
-            
-           }            
+         }            
       }
    }
    
@@ -7818,23 +7868,6 @@ function ahColFromACol(&$acol) {
    //             for regular events are unconditional, the Js
    //             library routine decides what to do
    $acol['snippets']['onkeyup'][]='inputOnKeyUp(event,this)';
-   //$acol['snippets']['onclick'][]='inputClick(this)';
-   /*
-   if($acol['writable'] && $acol['mode']=='upd') {
-      switch($acol['html_element']) {
-      case 'input':
-      case 'textarea':
-         $event='onkeyup';
-         break;
-      case 'select':
-         $acol['snippets']['onkeyup'][]='changeCheck(this)';
-         // no break, do the 'onchange' also
-      default:
-         $event='onchange';
-      }
-      $acol['snippets'][$event][]='changeCheck(this)';
-   }
-   */
    
    // ------------------------------------
    // Big deal Epsilon, focus/unfocus
@@ -7873,15 +7906,6 @@ function ahColFromACol(&$acol) {
             .",'".$fetch['controls']."'"
             .",'".$fetch['columns']."'"
             .",this)";
-         /*
-         $acol['snippets']['onblur'][]
-            ="ajaxFetchSS("
-            ."'".$fetch['table_id_par']."'"
-            .",'--NAME-PREFIX--'"
-            .",'".$fetch['commapklist']."'"
-            .",'".$fetch['commafklist']."'"
-            .")";
-         */
       }
    }
    
@@ -7921,7 +7945,6 @@ function ahColFromACol(&$acol) {
       .$hcode
       .'>'.$acol['html_inner']
       .'</'.$acol['html_element'].'>';
-
 }
 
 
@@ -8067,6 +8090,7 @@ function aColInfoFromDDColumns(&$table,&$retval) {
          ,'colscale'=>    $colinfo['colscale']
          ,'description' =>$colinfo['description']
          ,'tooltip' => arraySafe($colinfo,'tooltip')
+         ,'pk_change'=>   ArraySafe($colinfo,'pk_change','N')
       );
       $c['ins']['sequence']=0;
       $c['upd']['sequence']=0;
@@ -8096,7 +8120,9 @@ function aColInfoFromDDColumns(&$table,&$retval) {
       }
       else {
          $autos=array(
-            'seqdefault','fetchdef','default','blank','none','synch',''
+            'seqdefault','fetchdef','default'
+            ,'blank','none','synch',''
+            ,'queuepos','dominant'
          );
          $auto=strtolower(trim($colinfo['automation_id']));
          //echo "the auto for $colname is -".$auto."-<br/>";
@@ -8262,6 +8288,7 @@ function acolBlank($type_id,$colprec=0,$colscale=0) {
       ,'automation_id'=>'NONE'
       ,'auto_formula'=>''
       ,'primary_key'=>'N'
+      ,'pk_change'=>'N'
       ,'dispsize'=>$colprec
       ,'table_id_fko'=>''
       ,'fkdisplay'=>''

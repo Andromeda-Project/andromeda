@@ -452,7 +452,7 @@ class x_table2 {
       $buts[]=$this->hButton($b_clear ,"\Clear"    ,"clear" ,'clear');
       $buts[]=$this->hButton($b_reset ,"\Reset"    ,"reset" ,'reset');
       $buts[]=$this->hButton($b_delete,"Delete"   ,"delete",'delete');
-      //$buts[]=$this->hButton($b_new,"Import"   ,'import','');
+      $buts[]=$this->hButton($b_new,"Import"   ,'import','');
       
       // Two different bits of HTML based on which path
       if($this->button_images) {
@@ -520,31 +520,38 @@ class x_table2 {
       switch($action) {
          case 'import':
             $hlink="?gp_page=x_import&gp_table_id=".$this->table_id;
+            $onclick="javascript:window.location='$hlink'";
             break;
          case 'save':
             $hlink="javascript:SetAndPost('gp_action','save')";
+            $onclick=$hlink;
             break;
          case 'saveupd':
             $hlink="javascript:SetAction('gp_skey','".$this->row['skey']."'"
                .",'gp_action','save')";
+            $onclick=$hlink;
             break;
          case 'reset':
             //$hlink="javascript:ob('Form1').reset()";
             $hlink="javascript:fieldsReset()";
+            $onclick=$hlink;
             break;
          case 'clear':
             $hlink="javascript:clearBoxes()";
+            $onclick=$hlink;
             break;
          case 'delete':
             //$skey=gp('gp_skey');
             //$name = 'gp_delskey_'.$this->table_id;
             //$hlink="SetAndPost('".$name."',".$skey.')';
             $hlink="javascript:SetAndPost('gp_action','del')";
+            $onclick=$hlink;
             //regHidden($name,'');
             break;
          default:
             //$qstring = "gp_mode=".urlencode($action);
             $hlink="javascript:SetAndPost('gp_mode','$action')";
+            $onclick=$hlink;
       }
       
       // If a text-button, we will now just make a link.  But if its
@@ -564,7 +571,7 @@ class x_table2 {
             ."  onmouseout=\"this.src='images/$img.png'\" "
             ."  alt='$caption' border=0>";
       }
-      return "$ho<a $akey $name href=\"$hlink\" onclick=\"$hlink\">$caption</a>$hc";
+      return "$ho<a $akey $name href=\"$hlink\" onclick=\"$onclick\">$caption</a>$hc";
    }
 
 
@@ -750,7 +757,12 @@ class x_table2 {
       //            a new row, give them a button to say they want to do
       //            a new one anyway
       if(gp('gp_action')=='dupecheck') {
-         $href="?gp_page=".$this->table_id."&gp_mode=ins&gp_nodupecheck=1";
+          $href="?gp_page=".$this->table_id."&gp_mode=ins&gp_nodupecheck=1";
+          $agp = aFromGp('x2t_');
+          foreach($agp as $colname=>$colvalue) {
+              $href.='&pre_'.$colname.'='.urlEncode($colvalue);
+          }
+              
          ?>
          <script>
          function keypress_f9() {

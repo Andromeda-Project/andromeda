@@ -12,143 +12,124 @@
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-
+                           
    You should have received a copy of the GNU General Public License
    along with Andromeda; if not, write to the Free Software
    Foundation, Inc., 51 Franklin St, Fifth Floor,
    Boston, MA  02110-1301  USA 
    or visit http://www.gnu.org/licenses/gpl.html
 \* ================================================================== */
-/* ==================================================================
-   AndroDBB, the Andromeda Database Builder
-	------------------------------------------------------------------
-	This program is entirely self-contained, even though it can be called
-	interactively.  It must remain self-contained so that no change to the
-	run-time libraries can possible affect this program in any way.
-	
-	Note that the routine "LogEntry" does look for the function "x_EchoFlush",
-	which will exist in runtime.  LogEntry calls this routine if it can find it,
-	otherwise it just skips it.
-
-	This file creates and uses an object, $o, and all routines are attached to
-   that.  A really great thing would be to get rid of all of these GLOBALS
-   and use $this-> for all of those variables.	
-	
-	--> Parse FETCH/DIST/S
-	
-	Keywords in comments:
-	EXAMINE:    means I think something is wrong but there are no bugs
-	            or trouble spots that we know of.
-   TROUBLE:    means I know something is wrong and things would be
-               better if the code were refactored.
-   EXPERIMENT: Some significant change was made
-	
-   ==========================================================================
-   Revision History (as of 2/14/07)
-   
-   Sep 25 2007  Created HISTORY, like upsaves but they make history
-   Feb 15 2007  Created FETCHDEF automation, Fetch by default
-   Feb 14 2007  Write out AndroDBB.add in assoc array form to dd_AndroDBB.php
-   Feb 13 2007  Corrected mistake in trigger generation for COUNT	
-   ==========================================================================
+/*  ==================================================================
+    AndroDBB, the Andromeda Database Builder
+    ------------------------------------------------------------------
+    This program is entirely self-contained, even though it can be called
+    interactively.  It must remain self-contained so that no change to the
+    run-time libraries can possible affect this program in any way.
+    
+    Note that the routine "LogEntry" does look for the function "x_EchoFlush",
+    which will exist in runtime.  LogEntry calls this routine if it can 
+    find it, otherwise it just skips it.
+    ==========================================================================
 */
+
+// -------------------------------------------------------------------
+// Make some settings and then go right into it
+// -------------------------------------------------------------------
 ini_set("max_execution_time",0);  // allows to run in a web page.
 ini_set("allow_url_open",false);
-//ini_set("error_reporting",E_ALL ^ E_NOTICE);
 ini_set("error_reporting",E_ALL);
 ini_set("display_errors",true);
 ini_set("log_errors",true);
 
-// -------------------------------------------------------------------
-// Operational variables used during build
-// -------------------------------------------------------------------
-
-$GLOBALS["dbconn1"] = "";
-$GLOBALS["dbconn2"] = "";		
-$GLOBALS["sqlCommandError"] = ""; 
-
-$GLOBALS["defcolwidth"] = 50;
-$GLOBALS["ddarr"]   = array();  // The data dictionary will be loaded from AndroDBB.add
-$GLOBALS["ddflat"]  = array();  // The data dictionary will be loaded from AndroDBB.add
-$GLOBALS["utabs"]   = array();  // Server-side tables loaded locally for easier processing
-$GLOBALS["chains"]  = array();  // Server-side chains pulled locally
-$GLOBALS["ufks"]    = array();  // user foreign key info
-$GLOBALS["content"] = array();  // Any content to load to non-DD tables
-$GLOBALS["uicolseq"]= 0;      // used to sequence all dd entries, mostly used for columns
-
 $o = new x_builder();
 $o->main();
-
 // ===================================================================
 // ===================================================================
-// MAIN
+// CLASS CODE BELOW
 // ===================================================================
 // ===================================================================
 class x_builder {
-function main() {	
-   $ts=time();
-   $this->ts=$ts;
-	// First come the most basic reality checks, that the
-	// database exists and the filesystem is writable
-	//
-	$retval = true;
-	$retval = $retval && $this->LogStart();
-	$retval = $retval && $this->DB_Connect();
-	$retval = $retval && $this->FS_Prepare();
+    function x_builder() {    
+        // used to sequence all dd entries, mostly used for columns    
+        $this->uicolseq= 0;
+        
+        // Database connections
+        $this->dbconn1 = '';
+        $this->dbconn2 = '';
+        $this->sqlCommandError = '';
+        
+        // Default width of columns created manullay
+        $this->defColWidth = 50;
 
-	// If we passed most basic, we prepare the database
-	// by loading stored procedures and making the zdd
-	// schema to use during build.
-	//
-	$retval = $retval && $this->DB_Prepare();
-	$retval = $retval && $this->SP_Load();
-	$retval = $retval && $this->DDRMake();
-	
-	// Load and run out the new specification
-	//
-	$retval = $retval && $this->SpecLoad();
-   // not necessary because we load straight to _c
-	//$retval = $retval && $this->SpecResolve();	// Resolve _h against _s & _n
-	$retval = $retval && $this->SpecFlattenValid();
-	$retval = $retval && $this->SpecFlatten();
-	$retval = $retval && $this->SpecFlattenRowCol();
-	$retval = $retval && $this->SpecLocal();  // now only lists
+        // The data dictionary will be loaded from AndroDBB.add
+        $this->ddarr = array();
+        $this->ddflat = array();
+        $this->utabs = array();
+        $this->ufks = array();
+        $this->content = array();  // content loaded from specs
+    }
+    
+    function main() {	
+        $ts=time();
+        $this->ts=$ts;
+        // First come the most basic reality checks, that the
+        // database exists and the filesystem is writable
+        //
+        $retval = true;
+        $retval = $retval && $this->LogStart();
+        $retval = $retval && $this->DB_Connect();
+        $retval = $retval && $this->FS_Prepare();
+        
+        // If we passed most basic, we prepare the database
+        // by loading stored procedures and making the zdd
+        // schema to use during build.
+        //
+        $retval = $retval && $this->DB_Prepare();
+        $retval = $retval && $this->SP_Load();
+        $retval = $retval && $this->DDRMake();
+        
+        // Load and run out the new specification
+        //
+        $retval = $retval && $this->SpecLoad();
+        $retval = $retval && $this->SpecFlattenValid();
+        $retval = $retval && $this->SpecFlatten();
+        $retval = $retval && $this->SpecFlattenRowCol();
 
-	// Now we know everything, we can validate the new
-	// spec.  This does not validate changes.
-	$retval = $retval && $this->SpecValidate();
+        // Now we know everything, we can validate the new
+        // spec.  This does not validate changes.
+        $retval = $retval && $this->SpecValidate();
 
-	// Generate all of the DDL, this finishes with new spec
-	$retval = $retval && $this->SpecDDL();   
+        $retval = $retval && $this->SpecLocal();  // now only lists
 
-	// Now pull current state and look at differences
-	//
-	$retval = $retval && $this->RealityGet();	// What is current state of db?
-	$retval = $retval && $this->Differences();	// diff _r (reality) vs. _c (complete)
-	//$retval = $retval && $this->DiffValidate();	// maybe someday
-
-	// Assuming we did not fail validation, do it!
-	$retval = $retval && $this->Analyze();
-	$retval = $retval && $this->PlanMake(); 
-	$retval = $retval && $this->PlanExecute();
-	$retval = $retval && $this->ContentLoad();
-	$retval = $retval && $this->ContentDD();
-	$retval = $retval && $this->SecurityNodeManager();
-	
-	// This is code generation
-	//
-	$retval = $retval && $this->CodeGenerate_Info();
-	$retval = $retval && $this->CodeGenerate_Tables();
-	$retval = $retval && $this->CodeGenerate_Modules();
-   // KFD 8/2/07, from a customer in '04 that went bankrupt, 
-   //             absolutely not using this
-	//$retval = $retval && $this->CodeGenerate_XMLRPC();
-
-	$this->DB_Close();
-	$this->LogClose($retval,$ts);
-   $GLOBALS['retval']=$retval;
-	return;
-}
+        
+        // Generate all of the DDL, this finishes with new spec
+        $retval = $retval && $this->SpecDDL();   
+        
+        // Now pull current state and look at differences
+        //
+        $retval = $retval && $this->RealityGet();	// What is current state of db?
+        $retval = $retval && $this->Differences();	// diff _r (reality) vs. _c (complete)
+        //$retval = $retval && $this->DiffValidate();	// maybe someday
+        
+        // Assuming we did not fail validation, do it!
+        $retval = $retval && $this->Analyze();
+        $retval = $retval && $this->PlanMake(); 
+        $retval = $retval && $this->PlanExecute();
+        $retval = $retval && $this->ContentLoad();
+        $retval = $retval && $this->ContentDD();
+        $retval = $retval && $this->SecurityNodeManager();
+        
+        // This is code generation
+        //
+        $retval = $retval && $this->CodeGenerate_Info();
+        $retval = $retval && $this->CodeGenerate_Tables();
+        $retval = $retval && $this->CodeGenerate_Modules();
+        
+        $this->DB_Close();
+        $this->LogClose($retval,$ts);
+        $GLOBALS['retval']=$retval;
+        return;
+    }
 // ===================================================================
 // ===================================================================
 // MAIN (END)
@@ -224,23 +205,27 @@ function DB_Connect()
 		" user=".$parm["UID"].
 		" password=".$pw;
 	$this->LogEntry(preg_replace('/password=.*/','password=***',$cnx));
-	$GLOBALS["dbconn1"] = pg_connect($cnx,PGSQL_CONNECT_FORCE_NEW);
-	$GLOBALS["dbconn2"] = pg_connect($cnx,PGSQL_CONNECT_FORCE_NEW);
+	$this->dbconn1 = pg_connect($cnx,PGSQL_CONNECT_FORCE_NEW);
+	$this->dbconn2 = pg_connect($cnx,PGSQL_CONNECT_FORCE_NEW);
 
 	$retval=true;
-	if ($GLOBALS["dbconn1"]) $this->LogEntry("Connection 1 is up OK"); else $retval = false;
-	if ($GLOBALS["dbconn2"]) $this->LogEntry("Connection 2 is up OK"); else $retval = false;
+	if ($this->dbconn1) $this->LogEntry("Connection 1 is up OK"); else $retval = false;
+	if ($this->dbconn2) $this->LogEntry("Connection 2 is up OK"); else $retval = false;
 		
 	return $retval;
 }
 
 
-function DB_Close()
-{
-	global $dbconn1,$dbconn2;
-	$this->LogStage("Closing database connections (if open)");
-	if ($dbconn1) { pg_close($dbconn1);$this->LogEntry("Closing connection #1"); }
-	if ($dbconn2) { pg_close($dbconn2);$this->LogEntry("Closing connection #2"); }
+function DB_Close() {
+    $this->LogStage("Closing database connections (if open)");
+    if ($this->dbconn1) {
+        pg_close($this->dbconn1);
+        $this->LogEntry("Closing connection #1"); 
+    }
+    if ($this->dbconn2) { 
+        pg_close($this->dbconn2);
+        $this->LogEntry("Closing connection #2"); 
+    }
 }
 // ==========================================================
 // Perform vendor-specific commands required before a
@@ -276,17 +261,22 @@ function DB_Prepare()
    // then restrict access to the email sending routine
    $this->SQL('create language plperlu',true);
    $sq='
-create or replace function pwmail(char,char,char,char) returns integer as 
+create or replace function pwmail(char,char,char,char,char) 
+                  returns integer as 
 $$
-  my ($sendTo, $Subject, $Message,$host)=($_[0], $_[1], $_[2],$_[3]);
+  my ($sendTo, $Subject, $Message,$host,$from)
+    =($_[0], $_[1], $_[2],$_[3],$_[4]);
   use Net::SMTP;
   my $smtp=Net::SMTP->new($host);
-
+  
   $smtp->mail(\'\');
   $smtp->recipient($sendTo);
   $smtp->data();
   $smtp->datasend("To: $sendTo\n");
   $smtp->datasend("Subject: $Subject\n");
+  if($from ne \'\') {
+      $smtp->datasend("From: ".$from."\n");
+  }
   $smtp->datasend("Content-Type: text/plain;\n\n");
   $smtp->datasend($Message);
   $smtp->dataend();
@@ -297,7 +287,7 @@ language plperlu
 ;';
    $this->SQL($sq);
    $sq="revoke execute
-            on function pwmail(char,char,char,char)
+            on function pwmail(char,char,char,char,char)
           from group public";
    $this->SQL($sq);
    
@@ -426,15 +416,14 @@ LANGUAGE 'plpgsql' VOLATILE;
 // working tables
 // ==========================================================
 function DDRMake() {
-	$defColWidth=$GLOBALS["defcolwidth"];
+	$defColWidth=$this->defColWidth;
 	global $parm;
 
 	// Load and convert the DD arrays
 	$this->LogStage("Bootstrapping the data dictionary tables");
-	global $ddarr;
    $specboot = $parm["DIR_PUB"]."lib/".$parm["SPEC_BOOT"].".add";
       
-	$this->DBB_LoadAddFile($specboot,$ddarr);
+	$this->DBB_LoadAddFile($specboot,$this->ddarr);
    
    // public service detour.  Write out a generated file of the ddarr 
    // array, which is later used by documentation generation stuff
@@ -445,23 +434,13 @@ function DDRMake() {
 // File generated: ".date("l dS of F Y h:i:s A")."
 // ================================================================ 
 \$ddmeta = array(
-".$this->zzArrayAsCode($ddarr,1)."
+".$this->zzArrayAsCode($this->ddarr,1)."
 \t);
 ?>";
    $this->zzFileWriteGenerated($fileOut,"dd_AndroDBB.php");
    
-   // 12/6/05, slows system down by constantly dropping and repopulating
-   // these tables
-	//$this->LogEntry("Dropping all data dictionary tables in public schema");
-	//foreach ($ddarr["data"]["table"] as $key=>$table) {
-	//	$this->SQL("DROP TABLE $key CASCADE",true);
-	//}
 	
 	$retval = true;
-	//$this->LogStage("Creating new empty build tables");
-	//$this->DDRMake_Make("_s");
-	//$this->DDRMake_Make("_n");
-	//$this->DDRMake_Make("_h");
 	$this->DDRMake_Make("_c");
 	$this->DDRMake_Make("_r");
 	//$this->DDRMake_Make("_t");	// for pulling test results later
@@ -534,8 +513,7 @@ function DDRMake() {
 function DDRMake_Make($sSuffix)
 {
 	$this->LogEntry("Creating Build Tables, series ". $sSuffix);
-	global $ddarr;
-	$dd = &$ddarr["data"];
+	$dd = &$this->ddarr["data"];
 	$SQLCommon = ")";
 	if ($sSuffix=="_c") { $SQLCommon = ",skey_hn int,skey_s int)"; }
 	if ($sSuffix=="_s") { $SQLCommon = ",skey_s int)"; }
@@ -549,7 +527,7 @@ function DDRMake_Make($sSuffix)
 		$cols = "";
 		if (isset($table["column"])) {
 			foreach ($table["column"] as $c=>$column) {
-				$t = $ddarr["data"]["column"][$c]["type_id"];
+				$t = $this->ddarr["data"]["column"][$c]["type_id"];
 				$flat[$c] = array("primary_key"=>"N", "type_id"=>"");
 				foreach ($column as $prop=>$val) { $flat[$c][$prop]=$val; }
 				$flat[$c]["type_id"] = $t;
@@ -557,7 +535,7 @@ function DDRMake_Make($sSuffix)
                .=$this->AddComma($cols)   
                .$c." ".
                $this->DDRMake_Make_Type($t
-                  ,$this->zzArray($ddarr["data"]["column"][$c],"colprec")
+                  ,$this->zzArray($this->ddarr["data"]["column"][$c],"colprec")
                );
 			}
 		}
@@ -569,29 +547,29 @@ function DDRMake_Make($sSuffix)
 				//$this->LogEntry("table $tabname to $tp");
 				//if (isset($fkey["suffix"])) { $fks=$fkey["suffix"]; }
 				if ($this->zzArray($fkey,"nocolumns")=="Y") { continue; }
-				foreach ($ddarr["data"]["table"][$tp]["column"] as $c=>$column) {
+				foreach ($this->ddarr["data"]["table"][$tp]["column"] as $c=>$column) {
 					if ($this->zzArray($column,"primary_key")=="Y") {
-						$t = $ddarr["data"]["column"][$c]["type_id"];
+						$t = $this->ddarr["data"]["column"][$c]["type_id"];
 						$flat[$fkp.$c.$fks] = array("primary_key"=>$this->zzArray($fkey,"primary_key"), "type_id"=>$t);
 						
-						$cols.=$this->AddComma($cols).$fkp.$c.$fks." ".$this->DDRMake_Make_Type($t,$this->zzArray($ddarr["data"]["column"][$c],"colprec"));
+						$cols.=$this->AddComma($cols).$fkp.$c.$fks." ".$this->DDRMake_Make_Type($t,$this->zzArray($this->ddarr["data"]["column"][$c],"colprec"));
 					}
 				}
 				
 			}
 		}
 		
-		$GLOBALS["ddflat"][$tabname] = $flat;
+		$this->ddflat[$tabname] = $flat;
 		
 		$SQL = "CREATE TABLE zdd.".$tabname.$sSuffix." (".$cols.$SQLCommon;
 		$this->SQL($SQL);
 
-		// Generate pk list and put this stuff into the simulated mini $utabs global
+		// Generate pk list and put this stuff into the simulated mini $this->utabs global
 		$pklist = "";
 		foreach ($flat as $colname=>$colprops) {
 			if ($colprops["primary_key"]=="Y") { $pklist.=$this->AddComma($pklist).$colname; }
 		}
-		$GLOBALS["utabs"][$tabname] = array("flat"=>$flat,"pk"=>$pklist);
+		$this->utabs[$tabname] = array("flat"=>$flat,"pk"=>$pklist);
 	}
 }
 
@@ -776,103 +754,99 @@ function RealityGet_NSO_Sequences()
 // REGION: SPECLOAD
 // ==========================================================
 function SpecLoad() {
-	$retval = true;
-	global $parm;
-   global $srcfile;
-	
-	// Load the data dictionary to itself
-   $sfx="_c";
-	$this->LogStage("Processing bootstrap DD specification into series $sfx");
-	$this->LogEntry("Loading spec to series $sfx");
-   $srcfile='AndroDBB';
-	$retval = $retval && $this->SpecLoad_ArrayToTables(
-      $GLOBALS["ddarr"]["data"]
-      ,$sfx
-   );
-	$this->LogEntry("Populating reference tables in series $sfx");
-	$this->DBB_LoadContent(true,$GLOBALS["ddarr"]["content"],"zdd.",$sfx);
-	
-	// Load any library specification
-   $sfx="_c";
-   //if(isset($parm['D*IR_LINK_LIB'])) {
-   //   $spec_lib= $parm["DIR_LINK_LIB"]."/lib/".$parm["SPEC_LIB"].".add";
-   //}
-   //else {
-      $spec_lib= $parm["DIR_PUB"]."lib/".$parm["SPEC_LIB"].".add";
-   //}
-	$this->LogStage("Processing library spec to series $sfx: ");
-	$ta = array();
-	$this->DBB_LoadAddFile($spec_lib,$ta);
-	$this->LogEntry("Loading spec to series $sfx");
-   $srcfile='andro_universal';
-	$retval = $retval && $this->SpecLoad_ArrayToTables(
-      $ta["data"]
-      ,$sfx
-   );
-	$this->LogEntry("Setting aside content for loading after build");
-   $GLOBALS["content"] = array_merge($GLOBALS["content"],$ta["content"]);
-
-	// Load all other specification files
-	$this->LogStage("Loading new specification into build tables series $sfx");
-	$ta = array();
-	if ($parm["SPEC_LIST"]<>"") {
-		$speclist = explode(",",$parm["SPEC_LIST"]);
-		foreach ($speclist as $spec) {
-         $srcfile=$spec;
-         // KFD 4/16/07, Added support for YAML specs
-         if(substr($spec,-5)<>'.yaml') { 
-            $spec = $parm["DIR_PUB"]."application/".$spec.".add";
-         }
-         else {
-            $spec = $parm["DIR_PUB"]."application/".$spec;
-            $this->LogEntry("Looking or spec in YAML format: ");
-            $this->LogEntry("   ".$spec);
-         }
-         //}
-         if (!file_exists($spec)) {
-            $this->LogEntry(" >>>> Missing Specification File");
-            $this->LogEntry(" >>>> File Not Found: $spec");
-            $this->LogEntry(" >>>> ");
-            $this->LogEntry(" >>>> If this is the first time building this app");
-            $this->LogEntry(" >>>> then this is not a problem, because the ");
-            $this->LogEntry(" >>>> directories are just now being built.  But  ");
-            $this->LogEntry(" >>>> if you have created a spec file and are expecting");
-            $this->LogEntry(" >>>> it to be built, then it must be misnamed or");
-            $this->LogEntry(" >>>> or in the wrong directory.");
-         }
-         else {
+    $retval = true;
+    global $parm;
+    global $srcfile;
+    
+    // Load the data dictionary to itself
+    $sfx="_c";
+    $this->LogStage("Processing bootstrap DD specification into series $sfx");
+    $this->LogEntry("Loading spec to series $sfx");
+    $srcfile='AndroDBB';
+    $retval = $retval && $this->SpecLoad_ArrayToTables(
+        $this->ddarr["data"]
+        ,$sfx
+    );
+    $this->LogEntry("Populating reference tables in series $sfx");
+    $this->DBB_LoadContent(true,$this->ddarr['content'],"zdd.",$sfx);
+    
+    // Load any library specification
+    $sfx="_c";
+    $spec_lib= $parm["DIR_PUB"]."lib/".$parm["SPEC_LIB"].".add";
+    $this->LogStage("Processing library spec to series $sfx: ");
+    $ta = array();
+    $this->DBB_LoadAddFile($spec_lib,$ta);
+    $this->LogEntry("Loading spec to series $sfx");
+    $srcfile='andro_universal';
+    $retval = $retval && $this->SpecLoad_ArrayToTables(
+        $ta["data"]
+        ,$sfx
+    );
+    $this->LogEntry("Setting aside content for loading after build");
+    $this->content = array_merge($this->content,$ta['content']);
+    
+    // Load all other specification files
+    $this->LogStage("Loading new specification into build tables series $sfx");
+    $ta = array();
+    if ($parm["SPEC_LIST"]<>"") {
+        $speclist = explode(",",$parm["SPEC_LIST"]);
+        foreach ($speclist as $spec) {
+            $srcfile=$spec;
             // KFD 4/16/07, Added support for YAML specs
             if(substr($spec,-5)<>'.yaml') { 
-               $this->DBB_LoadAddFile($spec,$ta);
+                $spec = $parm["DIR_PUB"]."application/".$spec.".add";
             }
             else {
-               $retval = $this->DBB_LoadYAMLFile($spec,$ta);
+                $spec = $parm["DIR_PUB"]."application/".$spec;
+                $this->LogEntry("Looking for spec in YAML format: ");
+                $this->LogEntry("   ".$spec);
             }
-            if($retval) {
-               $this->LogEntry("Loading spec to series $sfx");
-               $retval=$retval && $this->SpecLoad_ArrayToTables(
-                  $ta["data"]
-                  ,$sfx
-               );
-               $this->LogEntry("Setting aside content for loading after build");
-               //$GLOBALS["content"] = array_merge($GLOBALS["content"],$ta["content"]);
-               foreach($ta['content'] as $table_id=>$values) {
-                  $GLOBALS['content'][$table_id]=array_merge(
-                     ArraySafe($GLOBALS['content'],$table_id,array())
-                     ,$values
-                  );
-               }
+            if (!file_exists($spec)) {
+                $this->LogEntry(" >>>> Missing Specification File");
+                $this->LogEntry(" >>>> File Not Found: $spec");
+                $this->LogEntry(" >>>> ");
+                $this->LogEntry(" >>>> If this is the first time building this app");
+                $this->LogEntry(" >>>> then this is not a problem, because the ");
+                $this->LogEntry(" >>>> directories are just now being built.  But  ");
+                $this->LogEntry(" >>>> if you have created a spec file and are expecting");
+                $this->LogEntry(" >>>> it to be built, then it must be misnamed or");
+                $this->LogEntry(" >>>> or in the wrong directory.");
             }
-         }
-		}
-	}
-	return $retval;
+            else {
+                // KFD 4/16/07, Added support for YAML specs
+                if(substr($spec,-5)<>'.yaml') { 
+                    $this->DBB_LoadAddFile($spec,$ta);
+                }
+                else {
+                    $retval = $this->DBB_LoadYAMLFile($spec,$ta);
+                }
+                if($retval) {
+                    $this->LogEntry("Loading spec to series $sfx");
+                    $retval=$retval && $this->SpecLoad_ArrayToTables(
+                        $ta["data"]
+                        ,$sfx
+                        );
+                    $this->LogEntry("Setting aside content for loading after build");
+                    foreach($ta['content'] as $table_id=>$values) {
+                        if(!isset($GLOBALS['content'])) {
+                            $GLOBALS['content']=array();
+                        }
+                        $GLOBALS['content'][$table_id]=array_merge(
+                            $this->zzArraySafe($GLOBALS['content'],$table_id,array())
+                            ,$values
+                            );
+                    }
+                }
+            }
+        }
+    }
+    return $retval;
 }
 
 //   A walk in the park.  Or perhaps a walk of the tree.
 //
 function SpecLoad_ArrayToTables($arr,$cLoadSuffix,$parent_row=array(),$parent_prefix="") {
-	global $ddarr;
+	
    global $srcfile;
    global $parm;
 	$retval = true;
@@ -883,12 +857,12 @@ function SpecLoad_ArrayToTables($arr,$cLoadSuffix,$parent_row=array(),$parent_pr
 
 		// Now use $keyword to get table name we will insert into
       //$this->LogEntry("$parent_prefix - $keyword");
-		$table     = $ddarr["meta"]["keyword"][$parent_prefix.$keyword]["table"];
-		$pkcolname = $ddarr["meta"]["keyword"][$parent_prefix.$keyword]["keycol"];
-		$keystub   = $this->zzArray($ddarr["meta"]["keyword"][$parent_prefix.$keyword],"keystub");
+		$table     = $this->ddarr["meta"]["keyword"][$parent_prefix.$keyword]["table"];
+		$pkcolname = $this->ddarr["meta"]["keyword"][$parent_prefix.$keyword]["keycol"];
+		$keystub   = $this->zzArray($this->ddarr["meta"]["keyword"][$parent_prefix.$keyword],"keystub");
 		//echo "TABLE is $table, pk and keystub are $pkcolname and $keystub <br>";
 
-		$dd = &$GLOBALS["ddarr"]["data"]["table"][$table];
+		$dd = &$this->ddarr["data"]["table"][$table];
 		if ($table=="") {
 			$this->LogEntry("ERROR: Could not find table to match keyword ".$parent_prefix.$keyword);
 			$retval = false;
@@ -937,8 +911,8 @@ function SpecLoad_ArrayToTables($arr,$cLoadSuffix,$parent_row=array(),$parent_pr
 			// array, then recurse child objects.
 			$pr = $parent_row;
 			foreach ($row as $colname=>$colvalue) {
-				if (isset($GLOBALS["ddflat"][$table][$colname])) {
-					if ($this->zzArray($GLOBALS["ddflat"][$table][$colname],"primary_key")=="Y") {
+				if (isset($this->ddflat[$table][$colname])) {
+					if ($this->zzArray($this->ddflat[$table][$colname],"primary_key")=="Y") {
 						$pr[$colname] = $colvalue;
 					}
 				}
@@ -993,84 +967,58 @@ function SpecLoad_ArrayToTables_HC_cargs(&$row,$element,$rowcol,$cLoadSuffix,$pf
 			else 
 				$newrow["literal_arg"] = $value; 
 			$newrow["sequence"]=$index;
-         // added 3/8/06 under mysterious circumstances, absolutely
-         // never needed this.  W/o it we got dupes on uicolseq during
-         // spec validation, but cannot find out why never got dupes before
-         // Then removed 3/10/06 because it causes chains to disappear
-         // because uicolseq doesn't match
-         //$newrow['uicolseq']=++$GLOBALS['uicolseq'];
 			$this->DBB_Insert("zdd.",$pfx."chainargs",$cLoadSuffix,$newrow);
 		}
 	}
 }
 
 // ==========================================================
-// REGION: Specification Resolution
-// ==========================================================
-function SpecResolve()
-{
-	$this->LogStage("Resolving Database Specification");
-	$this->LogEntry("Each primary table will receive a UNION VIEW of _h and _n ");
-	$this->LogEntry("      with name prefix zdd_hn_");
-	$this->LogEntry("Each table will resolve _s against _hn in a VIEW " );
-	$this->LogEntry("      with name prefix zddrxv_shn_");
-	$this->LogEntry("Each table's final resolution will go into the *_c series of tables.");
-
-	//  This operation is considerably simplified by the fact that
-	//  the _h and _n specs will never overlap.  That allows us to
-	//  union them together and overlay the result with _s.  If we
-	//  had to overlay three together it would actually be rather
-	//  nasty.
-	//
-	foreach ($GLOBALS["utabs"] as $OneTab=>$table) { 
-		if ($this->zzArray($table,"table_seq")<5000) {
-			$list1=$list2=$list3=$keys1="";
-			//$this->LogEntry("Resolving ".$OneTab);
-			
-			foreach ($table["flat"] as $col=>$colprops) {
-				$list1 .= $this->AddComma($list1) . $col;
-				$list3 .= $this->AddComma($list3) . $col;
-				$list2 .= $this->AddComma($list2) . "COALESCE(hn.$col,s.$col) as \"$col\"";
-				if ($colprops["primary_key"]=="Y") {
-					$keys1.=$this->AddList($keys1," AND ")."hn.$col = s.$col";
-				}
-			}
-	
-			//' Create the union of h and n
-			$this->SQL( 
-				"CREATE OR REPLACE VIEW zdd.resolve_hn_$OneTab as ".
-				"Select skey as skey_hn,". $list1 . " From zdd.$OneTab"."_n ".
-				"UNION ALL ".
-				"Select skey as skey_hn,". $list1 . " From zdd.". $OneTab ."_h");
-	
-			//' Overlay h and n against s
-			$this->SQL( 
-				"CREATE OR REPLACE VIEW zdd.resolve_hns_". $OneTab . " as ".
-				"Select s.skey as skey_s,hn.skey_hn,". $list2 .
-				"  FROM zdd.". $OneTab . "_s s ".
-				"  FULL JOIN zdd.resolve_hn_". $OneTab . " hn ".
-				"    ON ". $keys1);
-	
-			//' Materialize the result
-			$this->SQL("Insert into zdd.". $OneTab . "_c ".
-				"(". $list3 . ",skey_s,skey_hn) ".
-				" SELECT ". $list3 . ",skey_s,skey_hn FROM zdd.resolve_hns_". $OneTab);
-		}
-	}
-	return true;
-}
-
-// ==========================================================
 // REGION: Specification Pre-Validation
-// All validation occurs after the spec has been 
-// flattened.  However, some errors may cause the flatten
-// operation itself to fail, so we check for those here.
 // ==========================================================
 function SpecFlattenValid() {
 	// the only known hazard at present is a table that
 	// has an fk to itself, and that fk is part of its pk.
 	// That would be an infinite regression, can't do that.
 	//
+    $this->LogStage("Validation prior to flattening");
+    $errors = 0;
+    $errors += $this->SpecFlattenValidDD();
+    $errors += $this->SpecFlattenValidUser();
+    return ($errors==0);
+}
+ 
+function SpecFlattenValidDD() {
+    $this->LogEntry("Validating core entries in AndroDBB");
+    
+    $errors = 0;
+    $errors+=$this->SFVDD_One('compopers'     ,'compoper');
+    $errors+=$this->SFVDD_One('funcopers'     ,'funcoper');
+    $errors+=$this->SFVDD_One('cascadeactions','cascade_action');
+    $errors+=$this->SFVDD_One('types'         ,'type_id');
+    $errors+=$this->SFVDD_One('type_exps'     ,'type_id,srvtype');
+    $errors+=$this->SFVDD_One('uidisplays'    ,'uidisplay');
+}
+function SFVDD_One($table_id,$collist) {
+    $errors = 0;
+    $sq="SELECT count(*) as _cnt,$collist
+           FROM zdd.{$table_id}_c
+          GROUP BY $collist
+         HAVING count(*) > 1";
+	$results=$this->SQLRead($sq);
+	while ($row = pg_fetch_array($results)) {
+        $this->LogEntry("");
+		$this->LogEntry("ERROR >> Core table (defined in AndroDBB) $table_id");
+		$this->LogEntry("ERROR >>    has duplicates on columns $collist");
+		$this->LogEntry("");
+		$errors++;
+    }
+    return $errors;    
+}
+
+
+function SpecFlattenValidUser() {
+    // Circular dependencies
+    $this->LogEntry("Checking for Circular Dependencies");
 	$errors = 0;
 	$sql = 
 		"SELECT table_id FROM zdd.tabfky_c ".
@@ -1078,14 +1026,253 @@ function SpecFlattenValid() {
 		"   AND primary_key = 'Y'";
 	$results=$this->SQLRead($sql);
 	while ($row = pg_fetch_array($results)) {
-		$this->LogEntry("** VALIDATION FAILURE: Table ".$row["table_id"]." has foreign key ");
-		$this->LogEntry("****                     to itself with 'primary_key: Y', this is a ");
-		$this->LogEntry("****                     circular reference of a primary key.");
+        $this->LogEntry("");
+		$this->LogEntry("ERROR >> Table ".$row["table_id"]." has foreign key ");
+		$this->LogEntry("ERROR >>      to itself with 'primary_key: Y', this is a ");
+		$this->LogEntry("ERROR >>      circular reference and will not work.");
 		$this->LogEntry("");
 		$errors++;
 	}
-	return ($errors==0);
+    
+    // Check for duplicate definitions
+    $this->LogEntry("Checking for Duplicate Definitions");
+    $errors+=$this->SFVUser_one('modules' ,'module','Module');
+    $errors+=$this->SFVUser_one('tables'  ,'table_id','Table');
+    $errors+=$this->SFVUser_one('uimenu'  ,'menu_page','Menu');
+    $errors+=$this->SFVUser_one('columns' ,'column_id','Column');
+    $errors+=$this->SFVUser_one('tabcol'  
+        ,'table_id,column_id_src,prefix,suffix','Column Placement');
+    $errors+=$this->SFVUser_one('groups'  ,'group_id' ,'Group');
+    $errors+=$this->SFVUser_one('tabfky'  
+        ,'table_id,table_id_par,prefix,suffix','Foreign Key Definition');
+
+    
+    // RI failures
+    $this->LogEntry("Checking for Invalid References");
+	$sql = 
+		"SELECT table_id,module FROM zdd.tables_c 
+		 WHERE NOT EXISTS (
+            SELECT module FROM zdd.modules_c WHERE module=zdd.tables_c.module
+         )";
+	$results=$this->SQLRead($sql);
+	while ($row = pg_fetch_array($results)) {
+        $this->LogEntry("");
+		$this->LogEntry("ERROR >> Table ".$row["table_id"]." refers to ");
+		$this->LogEntry("ERROR >>      undefined module: ".$row['module']);
+		$errors++;
+	}
+	$sql = 
+		"SELECT menu_page FROM zdd.uimenu_c 
+		 WHERE NOT EXISTS (
+            SELECT module FROM zdd.modules_c WHERE module=zdd.uimenu_c.module
+         )";
+	$results=$this->SQLRead($sql);
+	while ($row = pg_fetch_array($results)) {
+        $this->LogEntry("");
+		$this->LogEntry("ERROR >> Table ".$row["table_id"]." refers to ");
+		$this->LogEntry("ERROR >>      undefined module: ".$row['module']);
+		$errors++;
+	}
+    // permxmodules - > modules
+	$sql = 
+		"SELECT group_id,module FROM zdd.permxmodules_c
+		 WHERE NOT EXISTS (
+            SELECT module FROM zdd.modules_c WHERE module=zdd.permxmodules_c.module
+         )";
+	$results=$this->SQLRead($sql);
+	while ($row = pg_fetch_array($results)) {
+        $this->LogEntry("");
+		$this->LogEntry("ERROR >> Group ".$row["group_id"]." refers to ");
+		$this->LogEntry("ERROR >>      undefined module: ".$row['module']);
+		$errors++;
+	}
+    // permxmodules - > groups
+	$sql = 
+		"SELECT group_id,module FROM zdd.permxmodules_c
+		 WHERE NOT EXISTS (
+            SELECT group_id
+              FROM zdd.groups_c WHERE group_id=zdd.permxmodules_c.group_id
+         )";
+	$results=$this->SQLRead($sql);
+	while ($row = pg_fetch_array($results)) {
+        $this->LogEntry("");
+		$this->LogEntry("ERROR >> Module ".$row["module"]." refers to ");
+		$this->LogEntry("ERROR >>      undefined group: ".$row['group_id']);
+		$errors++;
+	}
+    
+    // columns -> automations
+	$sql = 
+		"SELECT column_id,automation_id FROM zdd.columns_c
+          WHERE coalesce(automation_id,'') <> ''
+		    AND NOT EXISTS (
+            SELECT automation_id
+              FROM zdd.automations_c
+             WHERE automation_id=zdd.columns_c.automation_id
+         )";
+	$results=$this->SQLRead($sql);
+	while ($row = pg_fetch_array($results)) {
+        $this->LogEntry("");
+		$this->LogEntry("ERROR >> Column ".$row["column_id"]." refers to ");
+		$this->LogEntry("ERROR >>      undefined automation: ".$row['automation_id']);
+		$errors++;
+	}
+    // columns -> types
+	$sql = 
+		"SELECT column_id,type_id FROM zdd.columns_c
+		  WHERE NOT EXISTS (
+            SELECT type_id
+              FROM zdd.types_c
+             WHERE type_id=zdd.columns_c.type_id
+         )";
+	$results=$this->SQLRead($sql);
+	while ($row = pg_fetch_array($results)) {
+        $this->LogEntry("");
+		$this->LogEntry("ERROR >> Column ".$row["column_id"]." refers to ");
+		$this->LogEntry("ERROR >>      undefined type: ".$row['type_id']);
+		$errors++;
+	}
+    // tabcol -> automations
+	$sql = 
+		"SELECT table_id,column_id,automation_id FROM zdd.tabcol_c
+          WHERE coalesce(automation_id,'') <> ''
+		    AND NOT EXISTS (
+            SELECT automation_id
+              FROM zdd.automations_c
+             WHERE automation_id=zdd.tabcol_c.automation_id
+         )";
+	$results=$this->SQLRead($sql);
+	while ($row = pg_fetch_array($results)) {
+        $this->LogEntry("");
+		$this->LogEntry("ERROR >> Column ".trim($row['table_id'])
+            .'.'.trim($row["column_id"])." refers to "
+        );
+		$this->LogEntry("ERROR >>      undefined automation: ".$row['automation_id']);
+		$errors++;
+	}
+    // Make sure all column definitions are real  
+    $sq='Select table_id,column_id_src
+           FROM zdd.tabcol_c 
+          WHERE NOT EXISTS (select * from zdd.columns_c
+                              WHERE column_id = zdd.tabcol_c.column_id_src)';
+	$results=$this->SQLRead($sq);
+	while ($row = pg_fetch_array($results)) {
+        $errors++;
+        $this->LogEntry("");
+		$this->LogEntry("ERROR >> Table ".$row["table_id"]." names");
+		$this->LogEntry("ERROR >>    undefined column ".$row['column_id_src']);
+    }
+    
+    // Make sure all foreign key definitions name real tables.  
+    $sq='Select table_id,table_id_par 
+           FROM zdd.tabfky_c 
+          WHERE NOT EXISTS (select * from zdd.tables_c
+                              WHERE table_id = zdd.tabfky_c.table_id_par)';
+	$results=$this->SQLRead($sq);
+	while ($row = pg_fetch_array($results)) {
+        $errors++;
+        $this->LogEntry("");
+		$this->LogEntry("ERROR >> Table ".$row["table_id"]." has foreign key ");
+		$this->LogEntry("ERROR >>    to undefined table ".$row['table_id_par']);
+    }
+    // Make sure all foreign key definitions name real tables.  
+    $sq='Select table_id,table_id_par 
+           FROM zdd.tabfky_c 
+          WHERE NOT EXISTS (select * from zdd.tables_c
+                              WHERE table_id = zdd.tabfky_c.table_id)';
+	$results=$this->SQLRead($sq);
+	while ($row = pg_fetch_array($results)) {
+        $errors++;
+        $this->LogEntry("");
+		$this->LogEntry("ERROR >> Table ".$row["table_id_par"]." names");
+		$this->LogEntry("ERROR >>    undefined child table ".$row['table_id']);
+    }
+          
+
+    // Make sure all chain funcopers and compopers are real  
+    $sq="Select table_id,column_id,funcoper
+           FROM zdd.colchaintests_c 
+          WHERE coalesce(funcoper,'') <> ''
+            AND NOT EXISTS (
+              select * from zdd.funcopers_c
+               WHERE funcoper = zdd.colchaintests_c.funcoper
+            )";
+	$results=$this->SQLRead($sq);
+	while ($row = pg_fetch_array($results)) {
+        $errors++;
+        $this->LogEntry("");
+		$this->LogEntry("ERROR >> Column ".trim($row['table_id'])
+            .'.'.trim($row["column_id"])." has chain that refers to "
+        );
+		$this->LogEntry("ERROR >>      undefined operator: ".$row['funcoper']);
+    }
+    // Make sure all chain funcopers and compopers are real  
+    $sq="Select table_id,column_id,compoper
+           FROM zdd.colchaintests_c 
+          WHERE coalesce(compoper,'') <> ''
+            AND NOT EXISTS (
+              select * from zdd.compopers_c
+               WHERE compoper = zdd.colchaintests_c.compoper
+            )";
+	$results=$this->SQLRead($sq);
+	while ($row = pg_fetch_array($results)) {
+        $errors++;
+        $this->LogEntry("");
+		$this->LogEntry("ERROR >> Column ".trim($row['table_id'])
+            .'.'.trim($row["column_id"])." has chain that refers to "
+        );
+		$this->LogEntry("ERROR >>      undefined comparison: ".$row['compoper']);
+    }
+
+   
+	$this->LogEntry("Checking for table-name = module-name");
+	$results = $this->SQLRead(
+		"select table_id 
+         FROM zdd.tables_c  t
+         JOIN zdd.modules_c m ON t.table_id = m.module"
+    );
+    $x=0;
+    while($row=pg_fetch_array($results)) {
+        $t = $row['table_id'];
+        $this->LogEntry("ERROR:  Module $t has same name as table $t "); 
+        $errors++;
+        $x++;
+    }
+    if($x > 0 ) {
+        $this->LogEntry(" --> PROBLEM WITH MODULE OR TABLE NAME");
+        $this->LogEntry(" --> Modules and tables may not have the ");
+        $this->LogEntry(" --> same name.  This is actually because");
+        $this->LogEntry(" --> our default user interface will     ");
+        $this->LogEntry(" --> end up in an infinite loop when it  ");
+        $this->LogEntry(" --> tries to build a menu.             ");
+        $this->LogEntry(" -->            ");
+        $this->LogEntry(" --> Change either the module or table ");
+        $this->LogEntry(" --> names that are listed above.      ");
+    }
+    
+    
+    return $errors;    
 }
+
+function SFVUser_One($table_id,$collist,$name) {
+    $errors = 0;
+    $sq="SELECT count(*) as _cnt,$collist
+           FROM zdd.{$table_id}_c
+          GROUP BY $collist
+         HAVING count(*) > 1";
+	$results=$this->SQLRead($sq);
+	while ($row = pg_fetch_array($results)) {
+        $this->LogEntry("");
+        $this->LogEntry("ERROR >> Duplicate $name definition: ");
+        $acols = explode(",",$collist);
+        foreach($acols as $colname) {
+            $this->LogEntry("ERROR >>    $colname => ".$row[$colname]);
+        }
+        $errors++;
+    }
+    return $errors;    
+}
+
 
 // ==========================================================
 // REGION: Spec Flatten.  Runs out table definitions,
@@ -1094,17 +1281,53 @@ function SpecFlattenValid() {
 function SpecFlatten() {
 	$this->LogStage("Flattening Definitions");
 	$retval = true;
-	$retval = $retval && $this->SpecFlatten_Columns1();
-	$retval = $retval && $this->SpecFlatten_Columns2();
-	$retval = $retval && $this->SpecFlatten_Tables();
+	$retval = $retval && $this->SpecFlatten_ColumnsAll();
+	$retval = $retval && $this->SpecFlatten_ColumnsPre();
+	$retval = $retval && $this->SpecFlatten_Runout();
+	//$retval = $retval && $this->SpecFlatten_Tables();
 	$retval = $retval && $this->SpecFlatten_HARDCODE();
 	$retval = $retval && $this->SpecFlatten_ColumnDeps();
-	$retval = $retval && $this->SpecFlatten_PseudoColumnDeps();
 	$retval = $retval && $this->SpecFlatten_Security();
 	return $retval;
 }
 
-// KEYWORD: TROUBLE
+function SpecFlatten_ColumnsAll() {
+	$this->LogEntry("Adding 'alltables' columns to all tables");
+	// Distribute into tables those columns that have the
+	// "alltables" flag set that are not already in the table.
+	//
+	
+	$this->SQL("
+		insert into zdd.tabcol_c (
+            table_id,column_id,column_id_src,prefix,suffix
+           ,primary_key,uisearch,uino,uicolseq)
+		select t.table_id,c.column_id,c.column_id,'',''
+               ,'N','N',c.uino,'99999'
+		  from zdd.tables_c t, zdd.columns_c c
+		 where c.alltables = 'Y'
+		   and not exists 
+		      (select table_id,column_id 
+			      from zdd.tabcol_c
+			     WHERE table_id = t.table_id 
+				    AND column_id = c.column_id)");
+
+                
+	$this->LogEntry("Indexing every table on skey");
+	$this->SQL("INSERT INTO zdd.tabidx_c (idx_name,idx_unique,table_id) ".
+		"SELECT RTRIM(t.table_id) || '_skey_idx','N',t.table_id FROM zdd.tables_c t ".
+		"WHERE NOT EXISTS (SELECT * FROM zdd.tabidx_c WHERE idx_name = RTRIM(t.table_id) || '_skey')");
+	$this->SQL("INSERT INTO zdd.tabidxcol_c (idx_name,idx_unique,table_id,column_id) ".
+		"SELECT RTRIM(t.table_id) || '_skey_idx','N',t.table_id,'skey' FROM zdd.tables_c t ".
+		"WHERE NOT EXISTS (SELECT * FROM zdd.tabidx_c WHERE idx_name = RTRIM(t.table_id) || '_skey')");
+	return true;
+}
+
+
+// KFD 11/27/07.  Resolved.  We split the flattening process into
+//    two steps.  Step 1 is *placement*, where we work out which
+//    columns are in which tables.  Step 2 is properties, where
+//    we pull properties from either the parent table or tabcol
+//    In the process, this routine was actually left alone.
 // KFD 6/1/07.  It was discovered that this routine is probably
 //    the source of a lot of confusion.  The problem is that it
 //    subverts the actions of DBB_Runout because it does not take
@@ -1113,8 +1336,8 @@ function SpecFlatten() {
 //    knowing that the problem was coming from here.  The solution
 //    is most likely to move the actions of this codei nto DBB_Runout
 //    and have the actions properly sequenced.
-function SpecFlatten_Columns1() {
-	$this->LogEntry("Converting automations defined in foreign keys");
+function SpecFlatten_ColumnsPre() {
+	$this->LogEntry("Adding automated columns defined in foreign keys");
    
    // Generating this shorthand makes things easier                
    $sql 
@@ -1143,6 +1366,7 @@ where not exists
  GROUP BY table_id_par,column_id
       ";
     //h*print_r($sql);
+    
    $this->SQL($sql);
    $sql = "
 update zdd.tabcol_c set 
@@ -1192,42 +1416,197 @@ update zdd.tabcol_c set
    
    return true;
 }   
-   
-   
 
 
-function SpecFlatten_Columns2() {
-	$this->LogEntry("Adding 'alltables' columns to all tables");
-	// Distribute into tables those columns that have the
-	// "alltables" flag set that are not already in the table.
-	//
-	
-	$this->SQL("
-		insert into zdd.tabcol_c (table_id,column_id,column_id_src,uino)
-		select t.table_id,c.column_id,c.column_id,c.uino
-		  from zdd.tables_c t, zdd.columns_c c
-		 where c.alltables = 'Y'
-		   and not exists 
-		      (select table_id,column_id 
-			      from zdd.tabcol_c
-			     WHERE table_id = t.table_id 
-				    AND column_id = c.column_id)");
+function SpecFlatten_Runout() {
+	$this->LogEntry("TABLES: Executing server-side table sequencer: Table_Sequencer");
+	$this->SQL("select zdd.table_sequencer();");
+	$results = $this->SQLRead("select table_id FROM zdd.tables_c WHERE table_seq<0");
+	$errors = pg_fetch_all($results);
+	if (false!==$errors) { 
+		$this->LogEntry("There were ".count($errors)." tables that could not be sequenced:");
+		foreach ($errors as $error) {
+			$t = $error["table_id"];
+			$this->LogEntry("Cannot sequence $t, which depends upon: ");
+			$results = $this->SQLRead("Select table_id_par FROM zdd.table_deps WHERE table_id_chd='$t'");
+			while ($row=pg_fetch_array($results)) { $this->LogEntry("   ".$row["table_id_par"]); }
+		}
+		return false;
+	}
 
-                
-	$this->LogEntry("Indexing every table on skey");
-	$this->SQL("INSERT INTO zdd.tabidx_c (idx_name,idx_unique,table_id) ".
-		"SELECT RTRIM(t.table_id) || '_skey_idx','N',t.table_id FROM zdd.tables_c t ".
-		"WHERE NOT EXISTS (SELECT * FROM zdd.tabidx_c WHERE idx_name = RTRIM(t.table_id) || '_skey')");
-	$this->SQL("INSERT INTO zdd.tabidxcol_c (idx_name,idx_unique,table_id,column_id) ".
-		"SELECT RTRIM(t.table_id) || '_skey_idx','N',t.table_id,'skey' FROM zdd.tables_c t ".
-		"WHERE NOT EXISTS (SELECT * FROM zdd.tabidx_c WHERE idx_name = RTRIM(t.table_id) || '_skey')");
-	return true;
+	$this->LogEntry("Flattening table definitions");
+	$r1 = $this->SQLRead("Select * FROM zdd.tables_c ORDER BY table_seq");
+    $rows = pg_fetch_all($r1);
+    foreach($rows as $row) {
+        $table_id = $row['table_id'];
+        $this->utabs[$table_id] = $row;
+		$this->utabs[$table_id]["indexes"] = array();
+        
+        //$this->LogEntry($table_id);
+        
+        // Insert columns first.  Must do columns first so we
+        // can have tables that have fk's to themselves
+        $sq="INSERT INTO zdd.tabflat_c (
+                 table_id,column_id_src,column_id,suffix,prefix
+                ,primary_key,uisearch
+                ,colprec,colscale,colres,type_id
+                ,table_id_fko
+                ,uicolseq
+                ,formula,formshort,dispsize
+             )
+             SELECT 
+                  '$table_id',tc.column_id_src
+                 ,tc.column_id
+                 ,tc.suffix,tc.prefix,tc.primary_key,tc.uisearch
+                 ,c.colprec,c.colscale,c.colres,c.type_id
+                 ,'' as table_id_fko
+                 ,trim(uicolseq)
+                 ,t.formula,t.formshort,t.dispsize
+             FROM zdd.tabcol_c tc
+             JOIN zdd.columns_c   c ON tc.column_id_src = c.column_id
+             JOIN zdd.type_exps_c t ON c.type_id        = t.type_id
+            WHERE tc.table_id = '$table_id'"; 
+        $this->SQL($sq);
+
+        $sq="INSERT INTO zdd.tabflat_c (
+                 table_id,column_id_src,column_id,suffix,prefix
+                ,description
+                ,primary_key,uisearch
+                ,colprec,colscale,colres,type_id
+                ,table_id_fko
+                ,uicolseq
+                ,formula,formshort,dispsize
+             )
+             SELECT 
+                  '$table_id',x1.column_id
+                 ,rtrim(x1.prefix) || rtrim(x1.column_id) || rtrim(x1.suffix)
+                 ,x1.suffix,x1.prefix
+                 ,c.description
+                 ,x1.primary_key,x1.uisearch
+                 ,c.colprec,c.colscale,c.colres,c.type_id
+                 ,x1.table_id_fko
+                 ,trim(uicolseq)
+                 ,t.formula,t.formshort,t.dispsize
+             FROM (
+                 SELECT column_id,column_id_src,suffix,prefix
+                       ,MAX(COALESCE(primary_key ,'N')) as primary_key
+                       ,MAX(COALESCE(uisearch    ,'N')) as uisearch
+                       ,MAX(COALESCE(table_id_fko,'' )) as table_id_fko
+                       ,MAX(uicolseq)                   as uicolseq
+                   FROM (
+                     SELECT f.column_id,f.column_id_src
+                           ,fk.suffix,fk.prefix
+                           ,fk.primary_key,fk.uisearch
+                           ,fk.table_id_par as table_id_fko
+                           ,TRIM(fk.uicolseq) || '.' || TRIM(f.uicolseq) as uicolseq
+                       FROM zdd.tabfky_c  fk
+                       JOIN zdd.tabflat_c f   ON fk.table_id_par = f.table_id
+                      WHERE fk.table_id = '$table_id'
+                        AND f.primary_key = 'Y'
+                        ) x2
+                 GROUP BY column_id,column_id_src,suffix,prefix
+                 ) x1
+             JOIN zdd.columns_c   c ON x1.column_id_src = c.column_id
+             JOIN zdd.type_exps_c t ON c.type_id        = t.type_id
+            WHERE NOT EXISTS (
+                SELECT * from zdd.tabflat_c 
+                 WHERE table_id = '$table_id'
+                   AND column_id = rtrim(x1.prefix) 
+                       || rtrim(x1.column_id)
+                       || rtrim(x1.suffix)
+                )";
+        $this->SQL($sq);
+        
+        // Second action updates mutable properties with values
+        // picked from columns table, overridden by values from
+        // tabcol table.
+        //
+        $sq="UPDATE zdd.tabflat_c 
+                SET range_to      = res.range_to
+                   ,pk_change     = res.pk_change
+                   ,range_from    = res.range_from
+                   ,description   = res.description
+                   ,tooltip       = res.tooltip
+                   ,value_min     = res.value_min
+                   ,value_max     = res.value_max
+                   ,uirows        = res.uirows
+                   ,uicols        = res.uicols
+                   ,uiwithnext    = res.uiwithnext
+                   ,uino          = res.uino
+                   ,uiro          = res.uiro
+                   ,automation_id = res.automation_id
+                   ,auto_formula  = res.auto_formula
+                   ,required      = res.required
+                   ,uiinline      = res.uiinline
+               FROM (
+                   SELECT tc.column_id 
+                         ,tc.pk_change
+                         ,tc.range_to
+                         ,tc.range_from
+                         ,COALESCE(tc.value_min,c.value_min) as value_min
+                         ,COALESCE(tc.value_max,c.value_max) as value_max
+                         ,".$this->col3res('description')."
+                         ,".$this->col3res('tooltip')."
+                         ,".$this->col3num('uirows')."
+                         ,".$this->col3num('uicols')."
+                         ,".$this->col3res('uiwithnext')."
+                         ,".$this->col3res('uino')."
+                         ,".$this->col3res('uiro')."
+                         ,".$this->col3res('automation_id')."
+                         ,".$this->col3res('auto_formula')."
+                         ,".$this->col3res('required')."
+                         ,".$this->col3res('uiinline')."
+                     FROM zdd.tabcol_c  tc
+                     JOIN zdd.columns_c c  ON tc.column_id_src = c.column_id
+                    WHERE tc.table_id = '$table_id'
+               ) res 
+             WHERE zdd.tabflat_c.table_id  = '$table_id'
+               AND zdd.tabflat_c.column_id = res.column_id";
+        $this->SQL($sq);
+        
+        // Action 3: Columns created with suffix/prefix need to be
+        // put back into tabcol so they are valid if referenced
+        // in other tables, automations, etc.
+        $SQL = 
+            "insert into zdd.columns_c ( 
+              column_id, description 
+              ,automation_id, auto_table_id, auto_column_id, auto_formula
+              ,ins,uiro,uino,required,dispsize,uiwithnext,prefix_table_name
+              ,value_min,value_max
+              ,type_id,colprec,colscale,colres
+              ,uiinline,alltables )
+           select
+              f.column_id, f.description 
+              ,c.automation_id, c.auto_table_id, c.auto_column_id, c.auto_formula
+              ,c.ins,c.uiro,c.uino,c.required,c.dispsize,c.uiwithnext,c.prefix_table_name
+              ,c.value_min,c.value_max
+              ,c.type_id,c.colprec,c.colscale,c.colres
+              ,c.uiinline,'N' 
+             from zdd.tabflat_c f
+             JOIN zdd.columns_c c ON f.column_id_src = c.column_id
+            where f.table_id = '$table_id'
+              and f.column_id NOT IN (
+                  SELECT column_id FROM zdd.columns_c
+                  )";
+        $this->SQL($SQL);
+    }
+    return true;
+}
+
+function col3res($colname) {
+    return "CASE WHEN COALESCE(tc.$colname,'') <> '' 
+                 THEN tc.$colname
+                 ELSE c.$colname END AS $colname";
+}
+function col3num($colname) {
+    return "CASE WHEN COALESCE(tc.$colname,0) <> 0 
+                 THEN tc.$colname
+                 ELSE c.$colname END AS $colname";
 }
 
 
 function SpecFlatten_Tables()
 {
-	global $utabs;
 	
 	$this->LogEntry("TABLES: Executing server-side table sequencer: Table_Sequencer");
 	$this->SQL("select zdd.table_sequencer();");
@@ -1252,8 +1631,8 @@ function SpecFlatten_Tables()
 	while ($row = pg_fetch_array($r1,$i,PGSQL_ASSOC)) {
 		$tab = $row["table_id"];
 		$this->DBB_RunOut($tab,"_c");
-		$utabs[$row["table_id"]] = $row;
-		$utabs[$row["table_id"]]["indexes"] = array();
+		$this->utabs[$row["table_id"]] = $row;
+		$this->utabs[$row["table_id"]]["indexes"] = array();
 		$i++;
 		if ($i == $ilimit) { break; }
 	}
@@ -1276,7 +1655,8 @@ function SpecFlatten_HARDCODE() {
 update zdd.tabflat_c
   SET auto_table_id = SUBSTR(auto_formula,1,POSITION('.' in auto_formula)-1),
       auto_column_id = SUBSTR(auto_formula,POSITION('.' in auto_formula)+1)
- where automation_id IN ('FETCH','FETCHDEF','DISTRIBUTE','SUM','COUNT','SYNCH')");
+ where automation_id IN ('FETCH','FETCHDEF','DISTRIBUTE','SUM','COUNT','MIN','MAX','SYNCH')
+   AND POSITION('.' IN auto_formula)<>0;");
 
  	$this->LogEntry("HARDCODE: Adding chain arguments to validation table");
 	$this->SQL("
@@ -1311,12 +1691,18 @@ function SpecFlatten_ColumnDeps() {
    //              way off.
    // TROUBLE.  This is unresolved.  You cannot have a column constraint
    //           expressed in terms of its own value.  Very Bad.
-	$sql =
-		"INSERT INTO zdd.column_deps ".
-		" (table_id,column_id,table_dep,column_dep,automation_id) ".
-		"SELECT DISTINCT table_id,column_id,table_id,column_id_arg,'EXTEND' ".
-		"  FROM zdd.colchainargs_c  ".
-		" WHERE zdd.colchainargs_c.column_id_arg <> ''";
+   // KFD 12/21/07 How about filtering out dependencies based on
+   //              constraints?  That makes much more sense.
+   //           EXPERIMENTAL  EXPERIMENTAL tried w/project PROMOT
+	$sql = "
+		INSERT INTO zdd.column_deps 
+		 (table_id,column_id,table_dep,column_dep,automation_id) 
+		SELECT DISTINCT table_id,column_id
+                       ,table_id,column_id_arg,'EXTEND' 
+		  FROM zdd.colchainargs_c 
+		 WHERE zdd.colchainargs_c.column_id_arg <> ''
+           AND zdd.colchainargs_c.chain <> 'cons'
+         ";
 	$this->SQL($sql);		
 
 	// This says that the foreign key depends upon each
@@ -1425,22 +1811,6 @@ $this->SQL(
    
   	return $retval;
 }
-
-function SpecFlatten_PseudoColumnDeps() {
-   return true;
-   /*  Turned off because there is no parent table holding these
-  $this->LogEntry("PSEUDO-COLUMN DEPENDENCIES: From Defaults");
-  $this->SQL("
-INSERT INTO zdd.pcoldeps_c (table_id,column_id,pcolumn)
- SELECT table_id,column_id,auto_formula
-   FROM zdd.tabflat_c
-  WHERE automation_id = 'DEFAULT'
-    AND SUBSTRING(auto_formula from 1 for 1) = '%'"
-	 );
-	 return true;
-    */
-}
-
 
 function SpecFlatten_Security() {
    
@@ -1560,22 +1930,7 @@ select fkg.table_id
  WHERE flt.primary_key = 'Y'"; 
    $this->SQL($sq);
       
-      
-   //$this->LogEntry("SECURITY/TABLES: Flagging tables w/special permissions");
-   /*
-	$this->SQL("
-update zdd.tables_c set permspec='Y'
-  FROM zdd.perm_cols_c x
- WHERE zdd.tables_c.table_id = x.table_id"
-   );
-	$this->SQL("
-update zdd.perm_tabs_c set permspec='Y'
-  FROM zdd.perm_cols_c x
- WHERE zdd.perm_tabs_c.table_id = x.table_id"
-   );
-   */
-   
-	return true;
+      	return true;
 }
 
 function specFlattenRowCol() {
@@ -1632,7 +1987,7 @@ function specFlattenRowCol() {
              ) x
         WHERE zdd.tables_c.table_id = x.table_id"
    );
-   $this->LogEntry("Flagging tables with cp;i,m security");
+   $this->LogEntry("Flagging tables with column security"); 
    $this->SQL("
 update zdd.tables_c set permcol = 'Y'
   FROM (select table_id 
@@ -1651,78 +2006,6 @@ select t.table_id,g.group_id_eff,cast('     ' as char(5)) as view_id
    $this->SQL("create index tvc1 on zdd.table_views_c (table_id)");
    $this->SQL("create index tvc2 on zdd.table_views_c (group_id_eff)");
    $this->SQL("create index tvc3 on zdd.table_views_c (table_id,group_id_eff)");
-   
-    
-
-   // Fetch list of effective groups, define derived upd/del
-   // priveleges for all
-   // THIS IS OLD CODE FROM WHEN WE WERE GENERATING ALL POSSIBLE
-   // GROUP-TABLE COMBINATIONS AND MAKING LOTS OF GROUPS AND VIEWS
-   //
-   /*
-   $res=$this->SQLREad("Select group_id,grouplist FROM zdd.groups_c WHERE grouplist<>''");
-   $groups=pg_fetch_all($res);
-   foreach($groups as $group) {
-      $grp=$group['group_id'];
-      $grouplist="('".str_replace('+',"','",$group['grouplist'])."')";
-      //$this->LogEntry(" ->Resolving table level permissions: ");
-      //$this->LogEntry(" - Group $grp effectively $grouplist");
-      //$this->LogEntry(" --> Resolving table level permissions...");
-      
-      $sql="
-INSERT INTO zdd.perm_tabs_c 
-   ( permins,permupd,permdel,permsel,nomenu
-    ,permspec,istable,module,table_id,group_id)                  
-select CASE WHEN xpi=1 THEN 'Y' ELSE 'N' END as permins
-      ,CASE WHEN xpu=1 THEN 'Y' ELSE 'N' END as permupd
-      ,CASE WHEN xpd=1 THEN 'Y' ELSE 'N' END as permdel
-      ,CASE WHEN xps=1 THEN 'Y' ELSE 'N' END as permsel
-      ,CASE WHEN xnm=1 THEN 'Y' ELSE 'N' END as nomenu
-      ,'N' as permspec
-      ,'V' as istable
-      ,module,table_id,'$grp' as group_id
-  FROM (SELECT MAX(CASE WHEN permins='Y'  THEN 1 ELSE 0 END) as xpi
-              ,MAX(CASE WHEN permupd='Y'  THEN 1 ELSE 0 END) as xpu
-              ,MAX(CASE WHEN permdel='Y'  THEN 1 ELSE 0 END) as xpd
-              ,MAX(CASE WHEN permsel='Y'  THEN 1 ELSE 0 END) as xps
-              ,MAX(CASE WHEN nomenu='Y' THEN 1 ELSE 0 END) as xnm
-	           ,module,table_id
-         FROM zdd.perm_tabs_c
-        WHERE group_id in $grouplist
-          AND permspec='Y'
-        GROUP BY module,table_id
-       ) x ";
-      //$this->LogEntry($sql);
-      $this->SQL($sql);
-      
-      //$this->LogEntry(" --> Resolving column level permissions...");
-      $sql="
-insert into zdd.perm_colsx_c 
-   (group_id,table_id,column_id,permsel,permupd)
-select '$grp'
-       ,t.table_id
-       ,c.column_id
-       ,MAX(CASE WHEN COALESCE(pc.permsel,'X') NOT IN (' ','X') 
-             THEN (CASE WHEN pc.permsel='Y' THEN 1 ELSE 0 END)
-             ELSE (CASE WHEN pt.permsel='Y' THEN 1 ELSE 0 END) END) as permsel
-       ,MAX(CASE WHEN COALESCE(pc.permupd,'X') NOT IN (' ','X') 
-             THEN (CASE WHEN pc.permupd='Y' THEN 1 ELSE 0 END)
-             ELSE (CASE WHEN pt.permupd='Y' THEN 1 ELSE 0 END) END) as permupd
-  FROM zdd.tables_c    t
-  JOIN zdd.tabflat_c   c  ON t.table_id = c.table_id
-  JOIN zdd.perm_tabs_c pt ON t.table_id = pt.table_id
-  LEFT
-  JOIN zdd.perm_cols_c pc ON pc.table_id = c.table_id
-                         AND pc.column_id= c.column_id
-                         AND pc.group_id = pt.group_id
- WHERE t.permspec='Y'
-   AND pt.group_id IN $grouplist
- group by t.table_id,c.column_id
- order by t.table_id,c.column_id";
-   //$this->LogEntry($sql);
-      $this->SQL($sql);
-   }
-   */
    
    return true;      
 
@@ -1786,32 +2069,32 @@ function SpecLocal()
 	// languages.  The first customer will be the next routine,
 	// which builds index definitions containing comma-separated
 	// lists of values in the SQL DDL.
-   $retval=true;
-	$this->LogStage("Pulling complete data dictionary to local memory");
-	
-	$this->LogEntry("Retrieving Flattened Definitions");$this->SpecHandle_Lists_Flat();
-	
-   $this->LogEntry("Making primary key lists");
-   $retval = $retval && $this->SpecHandle_Lists_PK();
-	
-   $this->LogEntry("Making required column lists");$this->SpecHandle_Lists_Req();
-	
-   $this->LogEntry("Making foreign key lists");
-   $retval = $retval && $this->SpecHandle_Lists_FK();
-	$this->LogEntry("Retrieving Index Definitions");$this->SpecHandle_Lists_Indexes();
-	$this->LogEntry("Retrieving list of projections");$this->SpecHandle_Lists_Projections();
-	return $retval;
+    $retval=true;
+    $this->LogStage("Pulling complete data dictionary to local memory");
+    
+    $this->LogEntry("Retrieving Flattened Definitions");$this->SpecHandle_Lists_Flat();
+    
+    $this->LogEntry("Making primary key lists");
+    $retval = $retval && $this->SpecHandle_Lists_PK();
+    
+    $this->LogEntry("Making required column lists");$this->SpecHandle_Lists_Req();
+    
+    $this->LogEntry("Making foreign key lists");
+    $retval = $retval && $this->SpecHandle_Lists_FK();
+    $this->LogEntry("Retrieving Index Definitions");$this->SpecHandle_Lists_Indexes();
+    $this->LogEntry("Retrieving list of projections");$this->SpecHandle_Lists_Projections();
+    $this->LogEntry("Retrieving lists of child tables");$this->SpecHandle_Lists_ChildTables();
+    return $retval;
 }
 
 
 // TODO:  The routines below that pull PK and FK would
 //        go faster if they  pulled their info from here.
 function SpecHandle_Lists_Flat() {
-	global $utabs;
 
-	$tables = array_keys($utabs);
+	$tables = array_keys($this->utabs);
 	foreach ($tables as $table) {
-		$utabs[$table]["flat"]=array();
+		$this->utabs[$table]["flat"]=array();
 		
 		// This is the flat stuff
       $sql="Select * From zdd.tabflat_c where table_id = '$table'";
@@ -1821,7 +2104,7 @@ function SpecHandle_Lists_Flat() {
 		$i=0;
 		if ($ilimit>0) {
 			while ($row = pg_fetch_array($results,$i,PGSQL_ASSOC)) {
-				$utabs[$table]["flat"][$row["column_id"]]=$row;
+				$this->utabs[$table]["flat"][$row["column_id"]]=$row;
 				$i++;
 				if ($i==$ilimit) { break; }
 			}
@@ -1831,8 +2114,7 @@ function SpecHandle_Lists_Flat() {
 
 function SpecHandle_Lists_PK()
 {	
-	global $utabs;
-	foreach ($utabs as $utab) {
+	foreach ($this->utabs as $utab) {
 		$results=$this->SQLRead(			
 			"select column_id from zdd.tabflat_c ".
 			" where table_id = '". $utab["table_id"] . "'".
@@ -1840,15 +2122,14 @@ function SpecHandle_Lists_PK()
 		$pkarr = $this->SQL_fetch_all_1col($results);
 		$pklist = implode(",",$pkarr);
 		
-		$utabs[$utab["table_id"]]["pk"] = $pklist; 
+		$this->utabs[$utab["table_id"]]["pk"] = $pklist; 
 	}
    return true;
 }
 
 function SpecHandle_Lists_Req()
 {	
-	global $utabs;
-	foreach ($utabs as $utab) {
+	foreach ($this->utabs as $utab) {
 		$results=$this->SQLRead(			
 			"select column_id from zdd.tabflat_c ".
 			" where table_id = '". $utab["table_id"] . "'".
@@ -1856,41 +2137,41 @@ function SpecHandle_Lists_Req()
 		$reqarr = $this->SQL_fetch_all_1col($results);
 		$reqlist = implode(",",$reqarr);
 		
-		$utabs[$utab["table_id"]]["required"] = $reqlist; 
+		$this->utabs[$utab["table_id"]]["required"] = $reqlist; 
 	}
 }
 
 function SpecHandle_Lists_FK()
 {
-	global $ufks,$utabs;
-   $retval=true;
-	$rc=0;
-	$results = $this->SQLRead("Select * FROM zdd.tabfky_c");
 	
-	while ($row = pg_fetch_array($results)) {
-		$suffix = trim($row["suffix"]);
-      $prefix = trim($row["prefix"]);
-		// Get details on pk/fk
-		$fk = $pk = $both = $match = "";
-      $cols_list = $utabs[$row["table_id_par"]]["pk"];
-      if($cols_list=='') {
-         $this->LogEntry("ERROR:");
-         $this->LogEntry("ERROR: no primary key on  ".$row['table_id_par']);
-         $retval=false;
-         continue;
-      }
-		$cols = explode(",",$cols_list);
+    $retval=true;
+    $rc=0;
+    $results = $this->SQLRead("Select * FROM zdd.tabfky_c");
+    
+    while ($row = pg_fetch_array($results)) {
+        $suffix = trim($row["suffix"]);
+        $prefix = trim($row["prefix"]);
+        // Get details on pk/fk
+        $fk = $pk = $both = $match = "";
+        $cols_list = $this->utabs[trim($row["table_id_par"])]["pk"];
+        if($cols_list=='') {
+             $this->LogEntry("ERROR:");
+             $this->LogEntry("ERROR: no primary key on  ".$row['table_id_par']);
+             $retval=false;
+             continue;
+        }
+        $cols = explode(",",$cols_list);
 		foreach ($cols as $col) {
          // "Range_from" columns are skipped
          //echo "<pre>";
-         //print_r($utabs[$row['table_id_par']]);
+         //print_r($this->utabs[$row['table_id_par']]);
          //echo "</pre>";
-         if($utabs[$row['table_id_par']]['flat'][$col]['range_from']<>'') {
-            $this->LogEntry(
-               " -> FK ".$row['table_id']
-               ." to ".$row['table_id_par']
-               ." skipping RANGE-FROM ".$col
-            );
+         if($this->utabs[$row['table_id_par']]['flat'][$col]['range_from']<>'') {
+            //$this->LogEntry(
+            //   " -> FK ".$row['table_id']
+            //   ." to ".$row['table_id_par']
+            //   ." skipping RANGE-FROM ".$col
+            //);
             continue;
          }
 			if ($fk!="")    $fk.=",";
@@ -1900,17 +2181,17 @@ function SpecHandle_Lists_FK()
 			$pk.=$col; 
 			$fk.=$prefix.$col.$suffix; 
 			$both.=$prefix.$col.$suffix.":".$col;
-         if($utabs[$row['table_id_par']]['flat'][$col]['range_to']<>'') {
+         if($this->utabs[$row['table_id_par']]['flat'][$col]['range_to']<>'') {
              // KFD 10/10/07, range keys with different types
              list($rzero,$rinfi,$rcast)=$this->getRange(
-                 $utabs[$row['table_id_par']]['flat'][$col]['formshort']
+                 $this->utabs[$row['table_id_par']]['flat'][$col]['formshort']
              );
             $match
                .= "COALESCE(chd.".$prefix.$col.$suffix.",$rzero::$rcast) BETWEEN "
                ."COALESCE(par.".$col.",$rzero::$rcast) AND COALESCE(par."
-               .$utabs[$row['table_id_par']]['flat'][$col]['range_to']
+               .$this->utabs[$row['table_id_par']]['flat'][$col]['range_to']
                .",$rinfi::$rcast)";
-            $this->LogEntry($match);
+            //$this->LogEntry($match);
          }
          else {
             $match .= "chd.".$prefix.$col.$suffix." = par.".$col;
@@ -1922,7 +2203,7 @@ function SpecHandle_Lists_FK()
 			trim($row["table_id_par"])."_".
 			$suffix;
 
-		$ufks[$combo] = array(
+		$this->ufks[$combo] = array(
 			"combo"=>$combo,
 			"table_id_chd"=>trim($row["table_id"]),
 			"table_id_par"=>trim($row["table_id_par"]),
@@ -1934,7 +2215,7 @@ function SpecHandle_Lists_FK()
 			"allow_orphans"=>$row["allow_orphans"],
 			"delete_cascade"=>$row["delete_cascade"],
 			"prevent_fk_change"=>$row["prevent_fk_change"],
-         "uidisplay"=>$row['uidisplay'],
+             "uidisplay"=>$row['uidisplay'],
 			"cols_chd"=>$fk,
 			"cols_par"=>$pk,
 			"cols_both"=>$both,
@@ -1946,7 +2227,6 @@ function SpecHandle_Lists_FK()
 
 
 function SpecHandle_Lists_Indexes() {
-	global $utabs;
 
 	$respre=$this->SQLRead("
 select idx_name,table_id,idx_unique
@@ -1969,20 +2249,19 @@ Select column_id
 				$cols.=$this->AddComma($cols).$col["column_id"];
 			}
 			
-			$utabs[$table_id]["indexes"][$idx_name] = array("unique"=>$index["idx_unique"],"cols"=>$cols);
+			$this->utabs[$table_id]["indexes"][$idx_name] = array("unique"=>$index["idx_unique"],"cols"=>$cols);
 		}
 	}
 }
 
 function SpecHandle_Lists_Projections() {
-	global $utabs;
 
 	$respre = $this->SQLRead("Select table_id,projection FROM zdd.tabprojcols_c GROUP BY table_id,projection");
 	$restables = pg_fetch_all($respre);
 	foreach ($restables as $restable) {
 		$table_id = trim($restable["table_id"]);
 		$projection=trim($restable["projection"]);
-		if (!isset($utabs[$table_id]["projections"])) { $utabs[$table_id]["projections"] = array(); }
+		if (!isset($this->utabs[$table_id]["projections"])) { $this->utabs[$table_id]["projections"] = array(); }
 		
 		$cols = "";
 		$results = $this->SQLRead(
@@ -1995,9 +2274,23 @@ function SpecHandle_Lists_Projections() {
 		while ($row = pg_fetch_array($results)) {
 			$cols.=$this->AddComma($cols).$row[0];
 		}
-		$utabs[$table_id]["projections"][$projection] = $cols;
+		$this->utabs[$table_id]["projections"][$projection] = $cols;
 		//$this->LogEntry("   $table_id projects $projection as $cols");
 	}
+}
+
+function SpecHandle_Lists_ChildTables() {
+	global $ukids;
+
+	$qres = $this->SQLRead(
+        "Select table_id,suffix,prefix,table_id_fko
+           FROM zdd.tabflat_c WHERE table_id_fko <> ''
+          GROUP BY table_id,suffix,prefix,table_id_fko"
+    );
+    while($row=pg_fetch_array($qres)) {
+        $tfko = trim($row['table_id_fko']);
+        $ukids[$tfko][] = $row;
+    }
 }
 
 /* -----------------------------------------------------------------*\
@@ -2015,6 +2308,9 @@ function SpecDDL()
 	$this->LogStage("Generating DDL for non-storage objects");
 	$this->SpecDDL_Indexes();
 	$this->SpecDDL_Sequences();
+
+	//$this->LogStage("Generating Security Stored Procedures");
+	//$retval = $retval && $this->SpecDDL_SPs();
 	
 	$this->LogStage("Generating DDL for triggers");
 	$retval = $retval && $this->SpecDDL_Triggers();
@@ -2024,7 +2320,8 @@ function SpecDDL()
 function SpecDDL_Indexes()
 {
 	$this->SpecDDL_Indexes_Normal();
-   $this->SpecDDL_Indexes_queuepos();
+    $this->SpecDDL_Indexes_queuepos();
+    $this->SpecDDL_Indexes_dominant();
 	$this->SpecDDL_Indexes_keys();
 }
 
@@ -2052,10 +2349,47 @@ function SpecDDL_Indexes_queuepos() {
    }
 }
 
+function SpecDDL_Indexes_dominant() {
+	$this->LogEntry("Generating index definitions for DOMINANT columns");
+	$results = $this->SQLREAD(
+		"Select table_id,column_id,auto_formula FROM zdd.tabflat_c".
+		" WHERE automation_id = 'DOMINANT'"
+   );
+   $qps = pg_fetch_all($results);
+   if(is_array($qps)) {
+      foreach($qps as $qp) {
+         $t = $qp['table_id'];
+         $c = $qp['column_id'];
+         $c0= $c;
+         $af= $qp['auto_formula'];
+         // If a table is mentioned, index on that
+         if($af<>'') {
+             $res = $this->SQLREAD(
+                 "Select column_id FROM zdd.tabflat_c
+                   WHERE table_id = '$af'
+                     AND primary_key = 'Y'
+                   ORDER BY uicolseq"
+             );
+             while($row=pg_fetch_array($res)) {
+                 $c.=','.trim($row['column_id']);
+             }
+         }
+         $idx_name = $t.'_DM_'.$c0;
+         $sql = "CREATE INDEX $idx_name ON $t ($c)";
+         $def_short = "idx:".strtolower("$t:$c");
+         $this->SQL(
+            "Insert into zdd.ns_objects_c ".
+            "(object_id,definition,def_short,sql_create,sql_drop)".
+            " values ".
+            "('$idx_name','$def_short','$def_short','$sql','')"
+         );
+      }
+   }
+}
+
 function SpecDDL_Indexes_Normal() {
 	$this->LogEntry("Generating normal (non-key) index definitions");
-	global $utabs,$ufks;
-	foreach ($utabs as $utab) {
+	foreach ($this->utabs as $utab) {
 		
 		foreach ($utab["indexes"] as $idx_name=>$index) {
          $idx_name=$utab['table_id'].'_'.$idx_name;
@@ -2074,11 +2408,10 @@ function SpecDDL_Indexes_Normal() {
 
 
 function SpecDDL_Indexes_keys() {
-	global $utabs,$ufks;
 	$this->LogEntry("Generating primary/foreign key index definitions");
 	// Use our associative arrays to create indexes on 
 	// primary and foreign keys
-	foreach ($utabs as $utab) {
+	foreach ($this->utabs as $utab) {
 		if(true) {
 			//$this->LogEntry("PK for table ".$utab["table_id"]." on (".$utab["pk"].")");
 			$index = $utab["table_id"]."_PK";
@@ -2108,7 +2441,7 @@ function SpecDDL_Indexes_keys() {
 		}
 	}
 	
-	foreach ($ufks as $ufk) {
+	foreach ($this->ufks as $ufk) {
 		$index = $ufk["table_id_chd"]."_".$ufk["table_id_par"].$ufk["suffix"];
 		$sql = "CREATE INDEX ".$index .
 			" ON ".$ufk["table_id_chd"]." (".$ufk["cols_chd"].")";
@@ -2143,7 +2476,7 @@ function SpecDDL_Sequences()
    FROM zdd.tabflat_c
   WHERE automation_id IN ('SEQUENCE','SEQDEFAULT')");	
 }
-	
+
 /* -----------------------------------------------------------------*\
  * -----------------------------------------------------------------* 
  * Triggers, the big cahuna
@@ -2152,31 +2485,31 @@ function SpecDDL_Sequences()
 function SpecDDL_Triggers() {
 	$retval=true;
 	global $parm;
-   // KFD 10/5/06, Moved users et al into apps, call unconditionally now,
-   //              not just for node manager.  Call a different routine
-   //              now for Andromeda Node Manager
-	//if ($parm["APP"]=="andro") { $this->SpecDDL_Triggers_Andro(); }
-   $this->SpecDDL_Triggers_Security();
-	if ($parm["APP"]=="andro") { $this->SpecDDL_Triggers_SecurityAndro(); }
+    // KFD 10/5/06, Moved users et al into apps, call unconditionally now,
+    //              not just for node manager.  Call a different routine
+    //              now for Andromeda Node Manager
+    //if ($parm["APP"]=="andro") { $this->SpecDDL_Triggers_Andro(); }
+    $this->SpecDDL_Triggers_Security();
+    if ($parm["APP"]=="andro") { $this->SpecDDL_Triggers_SecurityAndro(); }
+    
+    // Fragments that do not require sequencing
+    $this->SpecDDL_Triggers_Defaults();
+    $retval = $retval && $this->SpecDDL_Triggers_PK();
+    $this->SpecDDL_Triggers_Req();
+    $retval = $retval && $this->SpecDDL_Triggers_FK();
+    $retval = $retval && $this->SpecDDL_Triggers_Automated();
+    $this->SpecDDL_Triggers_ColConsTypes();
+    $this->SpecDDL_Triggers_ColConsMinMax();
+    $this->SpecDDL_Triggers_Chains();
+    $this->SpecDDL_Triggers_Cascades();
+    $this->SpecDDL_Triggers_Histories();
 
-	// Fragments that do not require sequencing
-	$this->SpecDDL_Triggers_Defaults();
-	$retval = $retval && $this->SpecDDL_Triggers_PK();
-   $this->SpecDDL_Triggers_Req();
-   $retval = $retval && $this->SpecDDL_Triggers_FK();
-   $retval = $retval && $this->SpecDDL_Triggers_Automated();
-   $this->SpecDDL_Triggers_ColConsTypes();
-   $this->SpecDDL_Triggers_ColConsMinMax();
-   $this->SpecDDL_Triggers_Chains();
-   $this->SpecDDL_Triggers_Cascades();
-   $this->SpecDDL_Triggers_Histories();
-
-   // List of triggers with fragment count > 0
-   $triggers=array();
-   $sq="SELECT DISTINCT table_id,action,before_after,statement "
+    // List of triggers with fragment count > 0
+    $triggers=array();
+    $sq="SELECT DISTINCT table_id,action,before_after,statement "
       ." FROM zdd.triggers ";
-   $results = $this->SQLRead($sq);
-   while ($row = pg_fetch_array($results)) {
+    $results = $this->SQLRead($sq);
+    while ($row = pg_fetch_array($results)) {
       $f =trim($row["table_id"])
          ."_".substr($row["action"],0,3)
          ."_".substr($row["before_after"],0,3)
@@ -2189,7 +2522,7 @@ function SpecDDL_Triggers() {
          "trigger_id"=>$f,
          "fname"=>$f."_f",
          "tname"=>$f."_t");
-   }
+    }
       
    // You might expect a trap to ensure trigCount > 0, but we know
    // that the DD tables themselves have keys, so we boldly assume
@@ -2210,14 +2543,17 @@ function SpecDDL_Triggers_Security() {
 	//           synchronized going forward.
    global $parm;
    $app=$parm['APP'];
-	
+   
+   $this->SpecDDL_Triggers_Security_New();
+   
    $this->LogEntry("Putting Special triggers onto security tables");
 
-	// Add a user to system when added to our tables
+	// Adding a user to user tables will create database user.
    if($parm['FLAG_PWMD5']=='Y') {
       $this->LogEntry("Putting MD5 password triggers onto user tables");
       $sql = "
        -- 1000 Add user to system, goes in as nologin, no password
+       new.member_password=####;
        SELECT INTO AnyInt COUNT(*) FROM pg_shadow WHERE usename = CAST(new.user_id as name);
        IF AnyInt = 0 THEN
            EXECUTE ##CREATE USER ## || new.user_id || ## NOLOGIN ##;
@@ -2353,7 +2689,10 @@ function SpecDDL_Triggers_Security() {
 	$this->SpecDDL_TriggerFragment("usersxgroups","UPDATE","AFTER","1010",$sqlins);
 	$this->SpecDDL_TriggerFragment("usersxgroups","DELETE","AFTER","1000",$sqldel);
    
-   // Now add a trigger fragment to the table
+   // If a user inserts into this table, a trigger will
+   // handle sending out the email.  This allows us to 
+   // both: a) track requests
+   //       b) process request w/o allowing read of pw table
    $sq='
     -- 8000 Send out email with link in it
     SELECT INTO AnyInt Count(*)
@@ -2361,18 +2700,33 @@ function SpecDDL_Triggers_Security() {
     IF AnyInt > 0 THEN 
        SELECT INTO AnyChar email
               FROM users WHERE user_id = new.user_id;
+       SELECT INTO AnyChar4 member_password
+              FROM users WHERE user_id = new.user_id;
        SELECT INTO AnyChar2 variable_value
               FROM variables
              WHERE variable = ##PW_EMAILCONTENT##;
        SELECT INTO AnyChar3 variable_value
               FROM variables
              WHERE variable = ##SMTP_SERVER##;
+             
+       -- Replace a user_id if it is present in email
+       AnyChar2 = regexp_replace(AnyChar2,##%%USER_ID%%##,new.user_id);
+
+       -- Replace a password if it is present in email
+       AnyChar2 = regexp_replace(AnyChar2,##%%USER_PWD%%##,AnyChar4);
+
+       -- Reuse anychar4 as the email from
+       SELECT INTO AnyChar4 variable_value
+              FROM variables
+             WHERE variable = ##EMAIL_FROM##;
+       IF AnyChar4 IS NULL THEN AnyChar4 = ####; END IF;
        
        new.md5 := md5(now());
        PERFORM pwmail(AnyChar
           ,##Password Reset Request##
           ,AnyChar2 || new.md5
-          ,AnyChar3);
+          ,AnyChar3
+          ,AnyChar4);
        EXECUTE ## ALTER ROLE ## || new.user_id || ## NOLOGIN ##;
     END IF;';
    $this->SpecDDL_TriggerFragment(
@@ -2387,7 +2741,7 @@ function SpecDDL_Triggers_Security() {
           WHERE user_id = new.user_id
             AND md5     = new.md5
             AND age(now(),ts_ins) < ##20  min##;         
-    IF AnyInt = 0 THEN
+    IF AnyInt = 0 THEN                                
         ErrorCount = ErrorCount + 1; 
         ErrorList  = ErrorList || ##user_id,9005,Invalid Link;##;
     ELSE 
@@ -2433,6 +2787,86 @@ function SpecDDL_Triggers_Security() {
    
 }
 
+function SpecDDL_Triggers_Security_New() {
+    // Work out name of special group, $um, that
+    // is the user maintenance group
+    global $parm;
+    $app= strtolower($parm['APP']);
+
+    // This flag will be set if there is at least one freejoin group    
+    $freejoins=array();
+
+    $qresult = $this->SQLREAD(
+        "Select group_id,freejoin From zdd.groups_c"
+    );
+    $groups  = pg_fetch_all($qresult);
+    foreach($groups as $group) {
+        $g= strtolower($group['group_id']);
+        // Generate commands to delete any stored procedures
+        // that grant access to this group
+        $this->PlanMakeEntry("6002", 
+            "DELETE FROM pg_proc WHERE LOWER(proname)=#add_me_to_$g#"
+        );
+        
+        // If not a freejoin, we are now done.
+        if($group['freejoin']<>'Y') {
+            continue;
+        }
+        else {
+            $freejoins[$g] = $g;
+            $this->FreeJoinGroup($g);
+        }
+    }
+    
+    if(count($freejoins)>0 && !isset($freejoins[$app])) {
+        $this->FreeJoinGroup($app);
+    }
+    
+    // If the adduser routine exists, delete it unconditionally,
+    // so the security settings always start out clean
+    $sq="delete from pg_proc where LOWER(proname)=#adduser#";
+    $this->PlanMakeEntry("6002",$sq);
+    
+    // Now, if there is at least one freejoin group, then anybody
+    // can also create users
+    if (count($freejoins)>0) {
+        $sq="
+CREATE OR REPLACE FUNCTION addUser(
+        p_user_id varchar,p_name varchar,
+        p_email varchar,p_pwd varchar) returns void as
+\$BODY\$
+BEGIN
+	INSERT INTO users (user_id,user_name,email,member_password) 
+        VALUES (p_user_id,p_name,p_email,p_pwd);
+
+	RETURN;
+END;
+\$BODY\$
+LANGUAGE plpgsql SECURITY DEFINER";
+        $this->PlanMakeEntry("6002",$sq);
+        $this->PlanMakeEntry("6002",
+            "GRANT EXECUTE ON FUNCTION addUser(varchar,varchar,varchar,varchar)
+                TO PUBLIC"
+        );
+    }
+}
+
+function FreeJoinGroup($g) {
+    $sq="
+CREATE OR REPLACE FUNCTION add_me_to_$g(p_user_id varchar) returns void as
+\$BODY\$
+BEGIN
+	INSERT INTO usersxgroups (user_id,group_id)
+	VALUES (p_user_id,#$g#);
+
+	RETURN;
+END;
+\$BODY\$ LANGUAGE plpgsql SECURITY DEFINER";      
+    $this->PlanMakeEntry("6002",$sq);
+    $this->PlanMakeEntry("6002",
+        "GRANT EXECUTE ON FUNCTION add_me_to_$g() TO PUBLIC"
+    );    
+}
 
 function SpecDDL_Triggers_SecurityAndro() {
 	// SEE-ALSO: SecurityNodeManager, that routine synchronizes our user/group list
@@ -2689,8 +3123,7 @@ function SpecDDL_Triggers_Defaults() {
 	
 function SpecDDL_Triggers_Req() {
 	$this->LogEntry("Building required column clauses");
-	global $utabs;
-	foreach ($utabs as $table_id=>$utab) {
+	foreach ($this->utabs as $table_id=>$utab) {
 		foreach ($utab["flat"] as $colname=>$colinfo) {
 			if ($colinfo["required"]=="Y") {
 				// We are doing two checks.  We should be able to do them
@@ -2729,9 +3162,8 @@ function SpecDDL_Triggers_Req() {
 
 function SpecDDL_Triggers_PK() {
 	$this->LogEntry("Building primary key clauses");
-	global $utabs;
    $retval=true;
-	foreach ($utabs as $utab) {
+	foreach ($this->utabs as $utab) {
 		$retval
          = $retval 
          && $this->SpecDDL_Triggers_PK_DoOne(
@@ -2752,7 +3184,7 @@ function SpecDDL_Triggers_PK() {
 
 // Big changes 10/13/06, allow range pk's
 function SpecDDL_Triggers_PK_DoOne($table_id,$cols,$pk,$rulestable) {
-	global $utabs;
+    global $ukids;
 	$comp_arr= array();
 	$mtchList = "";
 	$errmsg  = "";
@@ -2764,9 +3196,10 @@ function SpecDDL_Triggers_PK_DoOne($table_id,$cols,$pk,$rulestable) {
     // calculated primary keys get validated at 7000, not 3000
     $flag_calculated=false;
 	
+    // REM'D OUT 10/22/07
     // DEPRECATED.  Rules tables were experimental back in like 2005 or
     //              something, and were never used.
-	if ($utabs[$table_id]["rules"]=="Y") { return true; }
+	//if ($this->utabs[$table_id]["rules"]=="Y") { return true; }
    
     $retval=true;
 	
@@ -2781,15 +3214,16 @@ function SpecDDL_Triggers_PK_DoOne($table_id,$cols,$pk,$rulestable) {
       
         // Get range_from/range_to, they force an overlap validation,
         //  and also have general effects throughout this code
-        $range_from=$utabs[$table_id]["flat"][$key]["range_from"];
-        $range_to  =$utabs[$table_id]["flat"][$key]["range_to"];
+        $range_from=$this->utabs[$table_id]["flat"][$key]["range_from"];
+        $range_to  =$this->utabs[$table_id]["flat"][$key]["range_to"];
         //$this->LogEntry("$key, range_from: $range_from, range_to: $range_to");
       
+        // REM'D OUT 10/22/07
         // If this column is calculated, flip the the flag
-        if ($utabs[$table_id]['flat'][$key]['automation_id']=='EXTEND') {
-            $this->LogEntry(" -> Calculated primary key: $table_id.$key");
-            $flag_calculated=true;
-        }
+        //if ($this->utabs[$table_id]['flat'][$key]['automation_id']=='EXTEND') {
+        //    $this->LogEntry(" -> Calculated primary key: $table_id.$key");
+        //    $flag_calculated=true;
+        //}
 
         // KFD 12/16/06.  Ranges are allowed to be null, they are not
         // in the null list, but they are in the change list
@@ -2797,7 +3231,7 @@ function SpecDDL_Triggers_PK_DoOne($table_id,$cols,$pk,$rulestable) {
             $nullList .= $this->AddList($nullList," OR ") . " new.$key IS NULL ";
         }
         $chngList .= $this->AddList($chngList," OR \n       ") . "new.$key <> old.$key ";
-        if ($utabs[$table_id]["capspk"]=="Y") {
+        if ($this->utabs[$table_id]["capspk"]=="Y") {
             $makeuppers.="        new.$key=UPPER(new.$key);\n";
         }
 		
@@ -2814,9 +3248,9 @@ function SpecDDL_Triggers_PK_DoOne($table_id,$cols,$pk,$rulestable) {
             // Cannot use postgres "overlaps", allows equal boundary points
             // Do not allow nested intervals
             // KFD 10/10/07, support character and integers
-            $formshort = $utabs[$table_id]["flat"][$key]["formshort"];
+            $formshort = $this->utabs[$table_id]["flat"][$key]["formshort"];
             list($rzero,$rinfi,$rcast) 
-                =$this->getRange($utabs[$table_id]["flat"][$key]["formshort"]);
+                =$this->getRange($this->utabs[$table_id]["flat"][$key]["formshort"]);
             $mtchList .= $this->AddList($mtchList," AND \n")
             .    "(    (          COALESCE(new.$key ,$rzero::$rcast) \n"
             .$sp."        between COALESCE($key     ,$rzero::$rcast) \n"
@@ -2830,40 +3264,25 @@ function SpecDDL_Triggers_PK_DoOne($table_id,$cols,$pk,$rulestable) {
         }
 	}
 	
-   // BIG CHANGE, KFD, 4/11/07, went to column-by-column reporting
-   // of errors.
-   $errmsg='';
-   foreach($keys as $key) {
-      $errmsg.="$key,1002,Duplicate Value;";
-   }
-   /*
-	$errmsg = "##*,1002,Already a row in table ".strtoupper(trim($table_id))." where ";
-	for ($i=count($keys)-1; $i>=0; $i--) {
-		if ($i==count($keys)-1) {
-			if (count($keys)>1)
-				$errmsg.=": ";
-		}
-		else {
-			$errmsg.=", ";
-		}
-		$errmsg.=strtoupper($keys[$i])." = ## || COALESCE(new.".strtoupper($keys[$i])."::varchar,####) ||##";
-	}
-	$errmsg.=";##";
-   */  
-   // End of big change to pk duplicate message
+    // BIG CHANGE, KFD, 4/11/07, went to column-by-column reporting
+    // of errors.
+    $aerrmsg=array();
+    foreach($keys as $key) {
+        $aerrmsg[]="##$key,1002,Duplicate Value: ## || cast(new.$key as varchar) || ##;##";
+    }
+    $errmsg = implode(" || ",$aerrmsg);
+    
 
-   // KFD 4/11/07, column-based error messages   
-   // Separate no-empty message for each column of pk
-   $s1="    -- 3000 PK/UNIQUE Insert Validation\n";
-   foreach($keys as $key) {
+    // KFD 4/11/07, column-based error messages   
+    // Separate no-empty message for each column of pk
+    $s1="    -- 3000 PK/UNIQUE Insert Validation\n";
+    foreach($keys as $key) {
       $s1.="\n".
-			"    IF new.$key is NULL THEN\n".
-			"        ErrorCount = ErrorCount + 1;\n". 
-			"        ErrorList = ErrorList || ##$key,1001,May not be empty;##;\n".
-			"    END IF;\n";
-   }
-   
-	//}
+            "    IF new.$key is NULL THEN\n".
+            "        ErrorCount = ErrorCount + 1;\n". 
+            "        ErrorList = ErrorList || ##$key,1001,May not be empty;##;\n".
+            "    END IF;\n";
+    }
 	
 	// Primary key values may not be null, but right now we
 	// are skipping the unique check for null values of other unique constraints
@@ -2892,106 +3311,124 @@ function SpecDDL_Triggers_PK_DoOne($table_id,$cols,$pk,$rulestable) {
 		"            WHERE ". $mtchList . ";\n".
 		"        IF AnyInt> 0 THEN\n".
 		"            ErrorCount = ErrorCount + 1;\n".
-		"            ErrorList = ErrorList || ##".$errmsg."##;\n".
+		"            ErrorList = ErrorList || ".$errmsg.";\n".
 		"        END IF;\n".
 		"    END IF;\n".
 		"    -- 3000 END\n";
-   // EXPERIMENT PK SEQUENCE 6/11/07 KFD.  I think that putting
-   //   pk checking early in trigger was very basic mistake.  It
-   //   simply does not need to be that way, and introduces problems
-   //   calculated values.  PKs (and I'm sure FKs) really should go
-   //   at end, and the code would have been much simpler!
-   //$seq = $flag_calculated ? '7000' : '3000' ;
-   $seq='8000';
+    $seq='8000';
 	$this->SpecDDL_TriggerFragment($table_id,"INSERT","BEFORE",$seq,$s1);
 
-	//	"            ErrorList = ErrorList || ##Uniqueness violation;##;\n"
-
-	
-	// The prohibition against changes applies only to pk, and only if not a rules table
-   $s1="    -- 3000 PK/UNIQUE Change prohibition\n";
-   foreach($keys as $key) {
-		$s1 = "\n".
-			"    -- 3100 PK Change Validation\n".
-			"    IF new.$key <> old.$key THEN\n". 
-			"        ErrorCount = ErrorCount + 1;\n". 
-			"        ErrorList = ErrorList || ##$key,1003,Cannot change value;##;\n".
-			"    END IF;\n".
-			"    -- 3100 END\n";
-   }
-   $this->SpecDDL_TriggerFragment($table_id,"UPDATE","BEFORE","3100",$s1);
-   return $retval;
+    // KFD 10/22/07, for PROMAT Project, cascade PK changes
+    // The prohibition against changes applies only to pk,
+    // and only if not a rules table
+    $s1="    -- 3000 PK/UNIQUE Change prohibition\n";
+    foreach($keys as $key) {
+        if($this->utabs[$table_id]["flat"][$key]['pk_change']=='Y') {
+            if(isset($ukids[$table_id])) {
+                foreach($ukids[$table_id] as $ukid) {
+                    $tkid = trim($ukid['table_id']);
+                    $sfx = trim($ukid['suffix']);
+                    $pfx = trim($ukid['prefix']);
+                    $s1="\n"
+                        ."    -- 3100 PK Change Cascade\n"
+                        ."    IF new.$key <> old.$key THEN\n"
+                        ."        UPDATE $tkid SET $pfx$key$sfx = new.$key\n"
+                        ."         WHERE $pfx$key$sfx = old.$key;\n" 
+                        ."    END IF;\n"
+                        ."    -- 3100 END\n";
+                    $this->SpecDDL_TriggerFragment(
+                         $table_id,"UPDATE","AFTER","3100",$s1
+                    );
+                }
+            }
+        }
+        else {
+            $s1 = "\n"
+                ."    -- 3100 PK Change Validation\n"
+                ."    IF new.$key <> old.$key THEN\n"
+                ."        ErrorCount = ErrorCount + 1;\n" 
+                ."        ErrorList = ErrorList || "
+                ."##$key,1003,Cannot change value;##;\n"
+                ."    END IF;\n"
+                ."    -- 3100 END\n";
+             $this->SpecDDL_TriggerFragment(
+                 $table_id,"UPDATE","BEFORE","3100",$s1
+             );
+        }
+    }
+    return $retval;
 }
 
 function SpecDDL_Triggers_FK() {
-   $this->LogEntry("Building Foreign Key clauses");
-	global $ufks,$utabs;
-	
-   $retval = true;
-	foreach($ufks as $ufk) {
-		//$this->LogEntry("Attempting fk for ".$ufk["table_id_chd"]." to ".$ufk["table_id_par"]);
-		$ptab = $ufk["table_id_par"];
-		$retval
-         =$retval
-         && $this->SpecDDL_Triggers_FK_PT(
+    $this->LogEntry("Building Foreign Key clauses");
+    
+    $retval = true;
+    foreach($this->ufks as $ufk) {
+        //$this->LogEntry("Attempting fk for ".$ufk["table_id_chd"]." to ".$ufk["table_id_par"]);
+        $ptab = $ufk["table_id_par"];
+        $retval=$retval && $this->SpecDDL_Triggers_FK_PT(
             $ufk
             ,$ptab
             ,explode(",",$ufk["cols_chd"])
             ,explode(",",$ufk["cols_par"])
          );
-	}
-   return $retval;
+    }
+    return $retval;
 }
 
 function SpecDDL_Triggers_FK_PT($ufk,$ptab,$chdlist,$parlist) {
-	global $utabs;
-   $retval=true;
-	// Build the various strings
-	$nullList = $emptyList  = $mtchList   = $prntList = "";
-	$delList  = $insParList = $insChdList = $chgList  = $chdCols = "";
-	$x = 0;
-	$insArr = array();
-   $tid_par=$ufk['table_id_par'];
-   $tid_chd=$ufk['table_id_chd'];
-	foreach ($chdlist as $chd) {
-      $colpar=$parlist[$x];
-		$nullList   .= $this->AddList($nullList," OR ")."new.". $chd . " IS NULL";
-      if ($utabs[$tid_par]['flat'][$colpar]['range_to']=='') {
-         $mtchList   .= $this->AddList($mtchList," AND ")."par.". $colpar . " = new.". $chd ;
-         $prntList   .= $this->AddList($prntList," AND ")."old.". $colpar . " = chd.". $chd ;
-      }
-      else {
-         // KFD 12/16/06, allowed nulls in parent primary key when ranged,
-         //   but we hardcode to assume they are dates
-         //
-         // KFD 10/10/07, allow ranges for integers and stuff
-         $formshort = $utabs[$tid_par]['flat'][$colpar]["formshort"];
-         list($rzero,$rinfi,$rcast)=$this->getRange($formshort); 
-         $range_to =$utabs[$tid_par]['flat'][$parlist[$x]]['range_to'];
-         $mtchList   .= $this->AddList($mtchList," AND ")
-            ."new.". $chd . " BETWEEN COALESCE(par.".$colpar.",$rzero::$rcast) "
-            ." AND COALESCE(par.".$range_to.",$rinfi::$rcast)";
-         $prntList   .= $this->AddList($prntList," AND ")
-            ."chd.". $chd . " BETWEEN COALESCE(old.".$colpar.",$rzero::$rcast) "
-            ." and COALESCE(old.".$range_to.",$rinfi::$rcast)";
-      }
-		$delList    .= $this->AddList($delList," AND ").$chd ." = old.".$parlist[$x];
-		$insArr[$parlist[$x]] = "new.".$chd;
-		$chgList    .= $this->AddList($chgList," OR ")."new.". $chd ." <> old." . $chd;
-      // DISABLED BY KFD 4/17/07, will work on this later.  Don't know
-      // why we're getting an error on framework tables
-      //if(!isset($utabs[$ufk["table_id_chd"]]["flat"][$chd]["description"])) {
-      //   $this->LogENTry("ERROR");
-      //   $this->LogEntry("ERROR -> trying to access column $chd ");
-      //   $this->LogEntry("ERROR -> building fk from $tid_chd to $tid_par");
-      //   $retval=false;
-      //}
-      //else {
-         $chdCols    .= $this->AddComma($chdCols).$utabs[$ufk["table_id_chd"]]["flat"][$chd]["description"];
-      //}
-		$x++;
-	}
-   if(!$retval) return false;
+    $retval=true;
+    // Build the various strings
+    $nullList = $emptyList  = $mtchList   = $prntList = "";
+    $delList  = $insParList = $insChdList = $chgList  = $chdCols = "";
+    $x = 0;
+    $insArr = array();
+    $tid_par=$ufk['table_id_par'];
+    $tid_chd=$ufk['table_id_chd'];
+    foreach ($chdlist as $chd) {
+        $colpar=$parlist[$x];
+        $nullList   .= $this->AddList($nullList," OR ")."new.". $chd . " IS NULL";
+        if ($this->utabs[$tid_par]['flat'][$colpar]['range_to']=='') {
+            $mtchList   .= $this->AddList($mtchList," AND ")."par.". $colpar . " = new.". $chd ;
+            $prntList   .= $this->AddList($prntList," AND ")."old.". $colpar . " = chd.". $chd ;
+            }
+        else {
+             // KFD 12/16/06, allowed nulls in parent primary key when ranged,
+             //   but we hardcode to assume they are dates
+             //
+             // KFD 10/10/07, allow ranges for integers and stuff
+             $formshort = $this->utabs[$tid_par]['flat'][$colpar]["formshort"];
+             list($rzero,$rinfi,$rcast)=$this->getRange($formshort); 
+             $range_to =$this->utabs[$tid_par]['flat'][$parlist[$x]]['range_to'];
+             $mtchList   .= $this->AddList($mtchList," AND ")
+                ."new.". $chd . " BETWEEN COALESCE(par.".$colpar.",$rzero::$rcast) "
+                ." AND COALESCE(par.".$range_to.",$rinfi::$rcast)";
+             $prntList   .= $this->AddList($prntList," AND ")
+                ."chd.". $chd . " BETWEEN COALESCE(old.".$colpar.",$rzero::$rcast) "
+                ." and COALESCE(old.".$range_to.",$rinfi::$rcast)";
+        }
+        $delList    .= $this->AddList($delList," AND ").$chd ." = old.".$parlist[$x];
+        $insArr[$parlist[$x]] = "new.".$chd;
+        $chgList    .= $this->AddList($chgList," OR ")."new.". $chd ." <> old." . $chd;
+        if(!isset($this->utabs[$ufk["table_id_chd"]]["flat"][$chd])) {
+            hprint_r($this->utabs[$ufk['table_id_chd']]);
+            x_EchoFlush("ERROR:");
+            x_EchoFlush("ERROR: Problem building a foreign key from "
+                 .$ufk["table_id_chd"]
+                 .' to '.$ufk["table_id_par"]
+            );
+            x_EchoFlush("ERROR: column $chd not defined in child table.");
+            x_EchoFlush("ERROR: If you used a 'nocolumns' flag, be sure to ");
+            x_EchoFlush("ERROR:    manually define the columns in the child table.");
+            x_EchoFlush("ERROR:");
+            $retval = false;
+        } 
+        else {
+            $chdCols    .= $this->AddComma($chdCols).$this->utabs[$ufk["table_id_chd"]]["flat"][$chd]["description"];
+            $x++;
+        }
+    }
+    if(!$retval) return false;
 	
 
 	// Some primary keys do not allow changes
@@ -3006,15 +3443,6 @@ function SpecDDL_Triggers_FK_PT($ufk,$ptab,$chdlist,$parlist) {
             ."        ErrorList = ErrorList || ##$chd,1004,Value May Not Change;##;\n"
             ."    END IF;\n";
       }
-      /*
-		$s1 = "\n".
-			"    -- 6000 FK Prevent Child Change \n".
-			"    IF ($chgList) THEN\n". 
-			"        ErrorCount = ErrorCount + 1;\n". 
-			"        ErrorList = ErrorList || ##*,1004,Table ". $ufk["table_id_chd"] . 
-						" cannot change values of columns: $chdCols##;\n".
-			"    END IF;\n";
-      */
 		$this->SpecDDL_TriggerFragment($ufk["table_id_chd"],"UPDATE","BEFORE","6000",$s1);
 	}
 
@@ -3026,7 +3454,7 @@ function SpecDDL_Triggers_FK_PT($ufk,$ptab,$chdlist,$parlist) {
 	//
 	if ($ufk["allow_empty"] == "Y") {
 		$chd = $chdlist[0];
-		$chd_type = $utabs[$ufk["table_id_chd"]]["flat"][$chd]["formshort"];
+		$chd_type = $this->utabs[$ufk["table_id_chd"]]["flat"][$chd]["formshort"];
         //$this->logEntry("Doing $chd_type for $chd"); 
 		$chd_blank= ($chd_type=='int' || $chd_type=='numb') ? "0" : '####';
 		//$emptyList  .= $this->AddList($emptyList," || ")."COALESCE(new.".$chd.",####)";
@@ -3061,11 +3489,11 @@ function SpecDDL_Triggers_FK_PT($ufk,$ptab,$chdlist,$parlist) {
 		// Now build any columns caught by "copysamecols", but don't
 		// overwrite
 		if ($ufk["copysamecols"]=="Y") {
-			foreach ($utabs[$ufk["table_id_chd"]]["flat"] as $colname=>$colinfo) {
+			foreach ($this->utabs[$ufk["table_id_chd"]]["flat"] as $colname=>$colinfo) {
 				// HARDCODE SKEY HARDCODED SKEY
 				if ($colname=="skey") continue;
 				if ($colname=="skey_quiet") continue; 
-				if (isset($utabs[$ptab]["flat"][$colname])) {
+				if (isset($this->utabs[$ptab]["flat"][$colname])) {
 					$insArr[$colname] = "new.".$colname;
 				}
 			}
@@ -3148,69 +3576,75 @@ function SpecDDL_Triggers_FK_PT($ufk,$ptab,$chdlist,$parlist) {
 
 
 function SpecDDL_Triggers_Automated() {
-   $retval = true;
-	$this->SpecDDL_Triggers_Automated_FetchDistribute();
-	$retval = $retval && $this->SpecDDL_Triggers_Automated_Aggregate();
-   $retval = $retval && $this->specddl_triggers_automated_queuepos();
-   return $retval;	
+    $retval = true;
+    $this->SpecDDL_Triggers_Automated_FetchDistribute();
+    $retval = $retval && $this->SpecDDL_Triggers_Automated_Aggregate();
+    $retval = $retval && $this->specddl_triggers_automated_queuepos();
+    $retval = $retval && $this->specddl_triggers_automated_dominant();
+    return $retval;	
 }
 
 function SpecDDL_Triggers_Automated_FetchDistribute() {
-   global $utabs;
-	// Both FETCH and DISTRIBUTE pull to child on insert/update
-	// but a DISTRIBUTE also pushes to child on change in parent
-	//
-	// Summary of what is going on:
-	// 
-	// Action                   FETCH  DISTRIBUTE  Result
-	// ======================== =================  =========================
-	// INS chd, val provided    FETCH  DISTRIBUTE  error
-	// INS chd, no val provided FETCH  DISTRIBUTE  FETCH
-	// UPD chd, key changed     FETCH  DISTRIBUTE  FETCH
-	// UPD chd, val changed     FETCH              error
-	// UPD chd, val changed            DISTRIBUTE  if matches, OK, else error
-   // UPD par, val changed            DISTRIBUTE  row after, push to child
+    // Both FETCH and DISTRIBUTE pull to child on insert/update
+    // but a DISTRIBUTE also pushes to child on change in parent
+    //
+    // Summary of what is going on:
+    // 
+    // Action                   FETCH  DISTRIBUTE  Result
+    // ======================== =================  =========================
+    // INS chd, val provided    FETCH  DISTRIBUTE  error
+    // INS chd, no val provided FETCH  DISTRIBUTE  FETCH
+    // UPD chd, key changed     FETCH  DISTRIBUTE  FETCH
+    // UPD chd, val changed     FETCH              error
+    // UPD chd, val changed            DISTRIBUTE  if matches, OK, else error
+    // UPD par, val changed            DISTRIBUTE  row after, push to child
 	
 	$this->LogEntry("Building calculated FETCH and DISTRIBUTE clauses");
-	global $ufks;
-	$results = $this->SQLRead(
+		$results = $this->SQLRead(
 		"SELECT tf.table_id,tf.column_id
              ,tf.auto_prefix,tf.auto_suffix
              ,tf.automation_id,tf.formshort,tf.auto_formula 
 		   FROM zdd.tabflat_c tf 
 		  WHERE tf.automation_id IN ('FETCH','FETCHDEF','DISTRIBUTE','SYNCH') 
 		  ORDER BY tf.table_id,tf.column_id");
-   $ddall = array();
-   $dddst = array();
+    $ddall = array();
+    $dddst = array();
 	while ($row=pg_fetch_array($results)) {
-		$autoid = trim(strtoupper($row["automation_id"]));
-		list($tp,$cp)= explode(".",strtolower($row['auto_formula']));
-      $details = array(
-         'table_id'=>$row["table_id"]
-         ,'column_id'=>$row['column_id']
-         ,'automation_id'=>$autoid
-         ,'table_id_par'=>$tp
-         ,'column_id_par'=>$cp
-         ,'auto_prefix'=>$row['auto_prefix']
-         ,'auto_suffix'=>$row['auto_suffix']
-      );
-      $tpi = $row['table_id'].'_'.$tp.'_'.$row['auto_suffix'];
+        $autoid = trim(strtoupper($row["automation_id"]));
+        if(strpos($row['auto_formula'],'.')===false) {
+            x_EchoFlush("ERROR:");
+            x_EchoFlush("ERROR: Bad formula: ".$row['auto_formula']);
+            x_EchoFlush("ERROR: Table: ".$row['table_id'].', column: '.$row['column_id']);
+            x_EchoFlush("ERROR:");
+            return false;
+        }
+        list($tp,$cp)= explode(".",strtolower($row['auto_formula']));
+        $details = array(
+             'table_id'=>$row["table_id"]
+             ,'column_id'=>$row['column_id']
+             ,'automation_id'=>$autoid
+             ,'table_id_par'=>$tp
+             ,'column_id_par'=>$cp
+             ,'auto_prefix'=>$row['auto_prefix']
+             ,'auto_suffix'=>$row['auto_suffix']
+        );
+        $tpi = $row['table_id'].'_'.$tp.'_'.$row['auto_suffix'];
+        
+        // This creates definitions grouped by foreign key definitions
+        if(!isset($ddall[$row['table_id']][$tpi])) {
+            $ddall[$row['table_id']][$tpi]=array();
+        }
+        $ddall[$row['table_id']][$tpi][]=$details;
       
-      // This creates definitions grouped by foreign key definitions
-      if(!isset($ddall[$row['table_id']][$tpi])) {
-         $ddall[$row['table_id']][$tpi]=array();
-      }
-      $ddall[$row['table_id']][$tpi][]=$details;
-      
-      //  Also group the definitions of parent->child for DISTRIBUTEs
-      //  and also for synchs
-      if($autoid=='DISTRIBUTE' || $autoid == 'SYNCH') {
-         if(!isset($dddst[$tpi][$row['table_id']])) {
-            $dddst[$tpi][$row['table_id']]=array();
-         }
-         $dddst[$tpi][$row['table_id']][]=$details;
-      }
-   }
+        //  Also group the definitions of parent->child for DISTRIBUTEs
+        //  and also for synchs
+        if($autoid=='DISTRIBUTE' || $autoid == 'SYNCH') {
+            if(!isset($dddst[$tpi][$row['table_id']])) {
+                $dddst[$tpi][$row['table_id']]=array();
+            }
+            $dddst[$tpi][$row['table_id']][]=$details;
+        }
+    }
    
    
    
@@ -3227,7 +3661,7 @@ function SpecDDL_Triggers_Automated_FetchDistribute() {
       // KFD 5/21/07.  Save this consolidated FETCH/DIST information
       //  to be written out to the generated dd files.  This way the
       //  web client can make use of it.
-      $utabs[$table_id]['FETCHDIST']=$ddall[$table_id];
+      $this->utabs[$table_id]['FETCHDIST']=$ddall[$table_id];
 
       foreach($ddall2 as $foreign_key=>$details) {
          $d=$details[0];
@@ -3241,15 +3675,15 @@ function SpecDDL_Triggers_Automated_FetchDistribute() {
          // KFD 2/16/07, big change to allow suffix/prefix
          //$keyname = $table_id."_".$table_id_par."_";
          $keyname = $foreign_key;
-         $keys = $ufks[$keyname]["cols_both"];
+         $keys = $this->ufks[$keyname]["cols_both"];
          // KFD 10/12/06, part of general changes to range foreign keys
          //$match = str_replace(","," AND new.",$keys);
          //$match = "new.".str_replace(":"," = par.",$match);
-         $match=str_replace("chd.","new.",$ufks[$keyname]['cols_match']);
+         $match=str_replace("chd.","new.",$this->ufks[$keyname]['cols_match']);
          
          
          // KFD 6/22/07, don't do a fetch if the foreign key is null
-         $keyskids=$ufks[$keyname]['cols_chd'];
+         $keyskids=$this->ufks[$keyname]['cols_chd'];
          $akeyskids=explode(',',$keyskids);
          $nullchecks = array();
          foreach($akeyskids as $akeykid) {
@@ -3257,10 +3691,10 @@ function SpecDDL_Triggers_Automated_FetchDistribute() {
          }
          
          // Generate a key change expression for child table
-         $keychga = explode(",",$ufks[$keyname]["cols_chd"]);
+         $keychga = explode(",",$this->ufks[$keyname]["cols_chd"]);
          $keychgb = array();
          foreach($keychga as $keycol) {
-            $type_id=$utabs[$table_id]['flat'][$keycol]['formshort'];
+            $type_id=$this->utabs[$table_id]['flat'][$keycol]['formshort'];
             if($type_id=='int' || $type_id=='numb') {
                $blank='0';
             }
@@ -3362,20 +3796,20 @@ function SpecDDL_Triggers_Automated_FetchDistribute() {
    foreach($dddst as $foreign_key=>$dddst2) {
       foreach($dddst2 as $table_id=>$details) {
          $table_id_par = $details[0]['table_id_par'];
-         echo "Doing $foreign_key on table par $table_id_par";
+         //echo "Doing $foreign_key on table par $table_id_par";
 
          // Generate the keys match between the two tables
          // KFD 3/1/07, fix this
          $keyname=$foreign_key;
-         $keys = $ufks[$keyname]["cols_both"];
+         $keys = $this->ufks[$keyname]["cols_both"];
          // KFD 10/12/06, part of range foreign keys actually
          // KFD Fixed 6/18/07, this was wrong, making the wrong match
          //   not picked up cuz we don't use DISTRIBUTE much
-         $match=str_replace("chd.",$table_id.".",$ufks[$keyname]['cols_match']);
+         $match=str_replace("chd.",$table_id.".",$this->ufks[$keyname]['cols_match']);
          $match=str_replace('par.','new.',$match);
 
          // For "SYNCH" automations, build the reverse match
-         $matchr=str_replace("chd.","new.",$ufks[$keyname]['cols_match']);
+         $matchr=str_replace("chd.","new.",$this->ufks[$keyname]['cols_match']);
          $matchr=str_replace("par.",$table_id_par.".",$matchr);
          
 
@@ -3388,13 +3822,14 @@ function SpecDDL_Triggers_Automated_FetchDistribute() {
             $colpar=$detail['column_id_par'];
             $col=$detail['column_id'];
             // KFD 3/12/07, different code for dates
-            $type_id=$utabs[$table_id_par]['flat'][$colpar]['type_id'];
+            $type_id=$this->utabs[$table_id_par]['flat'][$colpar]['type_id'];
+            $blank = $this->SQLFormatBlank($type_id,true,true);
             
             // Original code, just for distributes
             if($type_id =='date' OR $type_id =='dtime') {
                $cs_chg[] = " COALESCE(new.$colpar,##1900-01-01##) <> COALESCE(old.$colpar,##1900-01-01##) ";
             } else {
-               $cs_chg[] = " new.$colpar <> old.$colpar ";
+               $cs_chg[] = " COALESCE(new.$colpar,$blank) <> COALESCE(old.$colpar,$blank) ";
             }
             if($detail['automation_id'] =='DISTRIBUTE') {
                $cs_set[] = $col. "= new.$colpar ";
@@ -3448,7 +3883,7 @@ function SpecDDL_Triggers_Automated_FetchDistribute() {
 }
 
 function SpecDDL_Triggers_Automated_Aggregate()  {
-	global $ufks,$utabs;
+	
    $retval=true;
 	$this->LogEntry("Building calculated AGGREGATE clauses");
    
@@ -3473,9 +3908,9 @@ function SpecDDL_Triggers_Automated_Aggregate()  {
 		$twovals = explode(".", str_replace("@","",$expr));
 		$table_chd = strtolower($twovals[0]);
 		$column_chd = strtolower($twovals[1]);
-		$table_info_chd = &$GLOBALS["utabs"][$table_chd]["flat"];
+		$table_info_chd = &$this->utabs[$table_chd]["flat"];
 
-      if(!isset($ufks[$table_chd."_".$table_par."_"])) {
+      if(!isset($this->ufks[$table_chd."_".$table_par."_"])) {
          $this->LogEntry("ERROR");
          $this->LogEntry("ERROR -> building aggregate clause, ");
          $this->LogEntry("ERROR -> from $table_chd up to $table_par ");
@@ -3486,13 +3921,13 @@ function SpecDDL_Triggers_Automated_Aggregate()  {
 
       // notice the matchup doesn't distinguish really between
       // parent and child, it assumes there is only one FK
-      $mx    = $ufks[$table_chd."_".$table_par."_"]["cols_match"];
-		$match = $ufks[$table_chd."_".$table_par."_"]["cols_match"];
+      $mx    = $this->ufks[$table_chd."_".$table_par."_"]["cols_match"];
+		$match = $this->ufks[$table_chd."_".$table_par."_"]["cols_match"];
 		$match     = str_replace("par.","new.",$mx);
 		//$match = str_replace(","," AND ",$match);
       $match_old = str_replace("new.",'old.',$match);
 
-      $match_latest = $ufks[$table_chd."_".$table_par."_"]["cols_match"];
+      $match_latest = $this->ufks[$table_chd."_".$table_par."_"]["cols_match"];
       $match_latest = str_replace("chd.","new.",$match_latest);
       $match_latest = str_replace(","," AND "  ,$match_latest);
       $match_latest = str_replace("par.",""    ,$match_latest);
@@ -3513,7 +3948,7 @@ function SpecDDL_Triggers_Automated_Aggregate()  {
       // for optimization, we left this alone.  W/lots of writes this
       // would be a performance killer.
       if (in_array($row['automation_id'],array('LATEST','SUM','COUNT'))) {
-         $table_info_chd = &$GLOBALS["utabs"][$table_chd]["flat"];
+         $table_info_chd = &$this->utabs[$table_chd]["flat"];
          $type_id_chd = $table_info_chd[$column_chd]['type_id'];
          $blank = $this->SQLFormatBlank($type_id_chd,true,true);
          
@@ -3579,49 +4014,52 @@ function SpecDDL_Triggers_Automated_Aggregate()  {
       // Note 5/5/06,  W/lots of writes this
       // would be a performance killer.
       if ($row['automation_id'] == 'MIN' || $row['automation_id'] == 'MAX') {
-         $table_info_chd = &$GLOBALS["utabs"][$table_chd]["flat"];
+         $table_info_chd = &$this->utabs[$table_chd]["flat"];
          $type_id_chd = $table_info_chd[$column_chd]['type_id'];
          $blank = $this->SQLFormatBlank($type_id_chd,true,true);
          $mmm     = str_replace('chd.','',$match);
-         $mmm_old = str_replace('chd.','',$match);
+         $mmm_old = str_replace('chd.','',$match_old);
+         $mmmw    = str_replace('chd.','new.',$mx);
+         $mmmw    = str_replace('par.',$table_par.'.',$mmmw);
+         $mmmw_o  = str_replace('new.','old.',$mmmw);
          $s1 = "
     -- 6000 MIN/MAX Push
     IF new.$column_chd IS NOT NULL THEN
         UPDATE $table_par SET $column_par
-          = (SELECT ".$row['automation_id']."($column_chd)
+          = (SELECT COALESCE(".$row['automation_id']."($column_chd),$blank)
                FROM $table_chd WHERE $mmm 
-            );
-         -- WHERE $match ;
+            )
+         WHERE $mmmw ;
     END IF;\n";
          $this->SpecDDL_TriggerFragment($table_chd,"INSERT","AFTER","6000",$s1);
          $s1 = "
     -- 6000 MIN/MAX Push
     IF new.$column_chd <> old.$column_chd THEN
         UPDATE $table_par SET $column_par
-          = (SELECT ".$row['automation_id']."($column_chd)
+          = (SELECT COALESCE(".$row['automation_id']."($column_chd),$blank)
                FROM $table_chd WHERE $mmm 
-            );
-         -- WHERE $match ;
+            )
+         WHERE $mmmw ;
     END IF;\n";
          $this->SpecDDL_TriggerFragment($table_chd,"UPDATE","AFTER","6000",$s1);
          $s1 = "
     -- 6000 MIN/MAX Push
     IF new.$column_chd <> old.$column_chd THEN
         UPDATE $table_par SET $column_par
-          = (SELECT ".$row['automation_id']."($column_chd)
+          = (SELECT COALESCE(".$row['automation_id']."($column_chd),$blank)
                FROM $table_chd WHERE $mmm_old 
-            );
-         -- WHERE $match_old;
+            )
+         WHERE $mmmw_o ;
     END IF;\n";
          $this->SpecDDL_TriggerFragment($table_chd,"UPDATE","AFTER","6000",$s1);
          $s1 = "
     -- 6000 MIN/MAX Push
     IF old.$column_chd IS NOT NULL THEN
         UPDATE $table_par SET $column_par
-          = (SELECT ".$row['automation_id']."($column_chd)
+          = (SELECT COALESCE(".$row['automation_id']."($column_chd),$blank)
                FROM $table_chd WHERE $mmm_old 
-            );
-         -- WHERE $match_old;
+            )
+         WHERE $mmmw_o ;
     END IF;\n";
          $this->SpecDDL_TriggerFragment($table_chd,"DELETE","AFTER","6000",$s1);
          //continue;
@@ -3636,13 +4074,13 @@ function SpecDDL_Triggers_Automated_Aggregate()  {
 
       // Build the expression to create the compound key
       // IGNORED AS OF 3/14/07, just get list tabs_par
-      $lchd = $ufks[$table_chd."_".$table_par."_"]["cols_both"];
+      $lchd = $this->ufks[$table_chd."_".$table_par."_"]["cols_both"];
       $apairs= explode(',',$lchd);
       $aexpr = array();
       $apars = array();
       foreach($apairs as $pair) {
          list($colchd,$colpar) = explode(':',$pair);
-         $colprec = $utabs[$table_par]['flat'][$colpar]['colprec'];
+         $colprec = $this->utabs[$table_par]['flat'][$colpar]['colprec'];
          switch($table_info_chd[$colchd]['type_id']) {
             case 'char':
             case 'vchar':
@@ -3741,15 +4179,18 @@ function SpecDDL_Triggers_Automated_Aggregate()  {
          $acolschd=array();
          foreach($acols as $colpar=>$colinfo) {
             list($colchd,$automation_id)=$colinfo;
+             $table_info_chd = &$this->utabs[$tab_chd]["flat"];
+             $type_id_chd = $table_info_chd[$colchd]['type_id'];
+             $blank = $this->SQLFormatBlank($type_id_chd,true,true);
             $acolspar[]="new.".$colpar;
             if($automation_id=='SUM') {
-               $acolschd[]="COALESCE( SUM(COALESCE($colchd,0)), 0)";
+               $acolschd[]="COALESCE( SUM(COALESCE($colchd,0)), $blank)";
             }
             elseif($automation_id=='MIN') {
-               $acolschd[]="          MIN(         $colchd   )    ";
+               $acolschd[]="COALESCE( MIN(         $colchd   ), $blank)";
             }
             elseif($automation_id=='MAX') {
-               $acolschd[]="          max(         $colchd   )    ";
+               $acolschd[]="COALESCE( max(         $colchd   ), $blank)";
             }
             else {
                $acolschd[]="COALESCE( COUNT(*), 0)";
@@ -3759,7 +4200,7 @@ function SpecDDL_Triggers_Automated_Aggregate()  {
          $scolschd=implode(',',$acolschd);
          
          // Take the key and build a matching clause and a group by
-         $lmatches = $ufks[$tab_chd."_".$tab_par."_"]["cols_both"];
+         $lmatches = $this->ufks[$tab_chd."_".$tab_par."_"]["cols_both"];
          $apairs= explode(',',$lmatches);
          $amatches = array();
          $agroup = array();
@@ -3786,7 +4227,7 @@ function SpecDDL_Triggers_Automated_Aggregate()  {
          .$sq
          ."        new._agg=####;\n"
          ."    END IF;\n";
-      echo "building for $tab_par";
+      //echo "building for $tab_par";
       $this->SpecDDL_TriggerFragment(
           $tab_par,"UPDATE","BEFORE","4000",$sq
       );
@@ -3817,6 +4258,43 @@ function SpecDDL_Triggers_Automated_Queuepos()  {
       }
    }
    return true;
+}
+
+function SpecDDL_Triggers_Automated_Dominant()  {
+    
+    // Pull any column with DOMINANT automation
+    $results = $this->SQLREAD(
+        "Select table_id,column_id,auto_formula FROM zdd.tabflat_c".
+        " WHERE automation_id = 'DOMINANT'"
+    );
+    $qps = pg_fetch_all($results);
+    
+    if(is_array($qps)) {
+        foreach($qps as $qp) {
+            $t = $qp['table_id'];
+            $c = $qp['column_id'];
+            $af= $qp['auto_formula'];
+            
+            $SWhere = "$c = ##Y##";
+            if($af<>'') {
+                $match = $this->ufks[trim($t).'_'.trim($af).'_']['cols_match'];
+                $match = str_replace('chd.',''    ,$match);
+                $match = str_replace('par.','new.',$match);
+                $SWhere = $SWhere .' AND '.$match;
+            }
+            // Do this as an AFTER so that we know the skey value
+            $sq="\n"
+                ."    --- 4001 DOMINANT bumps \n"
+                ."    IF new.$c = ##Y## THEN\n"
+                ."        UPDATE $t SET $c = ##N##\n"
+                ."         WHERE $SWhere \n"
+                ."           AND skey <> new.skey;\n"
+                ."    END IF;\n";
+            $this->SpecDDL_TriggerFragment($t,"UPDATE","AFTER" ,"4001",$sq);
+            $this->SpecDDL_TriggerFragment($t,"INSERT","BEFORE","8000",$sq);
+        }
+    }
+    return true;
 }
 
 function SpecDDL_Triggers_ColConsTypes()  {
@@ -3907,11 +4385,10 @@ function SpecDDL_Triggers_ColConsMinMax()  {
 function SpecDDL_Triggers_Chains() {
 	$chains = $this->SpecDDL_Triggers_ChainsList();
 
-   // KFD 5/26/07, attach chains to $utabs, so we can save them
+   // KFD 5/26/07, attach chains to $this->utabs, so we can save them
    // out in the dd and use them in client code.
-   global $utabs;
    foreach($chains as $x=>$chain) {
-      $utabs[$chain['table_id']]['chains'][$x]=$chain;
+      $this->utabs[$chain['table_id']]['chains'][$x]=$chain;
    }
 
 
@@ -3982,17 +4459,19 @@ function SpecDDL_Triggers_ChainsCode(&$chains) {
 
 	foreach ($chains as $key=>$chain) {
 		$ctid = $rtid = "char";
+        $dsiz=0;
 		if (trim($chain["column_id"])!="") {
-			$tid = $chain["table_id"];
-			$cid = $chain["column_id"];
-			$ctid = $GLOBALS["utabs"][$tid]["flat"][$cid]["type_id"];
+            $tid = $chain["table_id"];
+            $cid = $chain["column_id"];
+            $ctid = $this->utabs[$tid]["flat"][$cid]["type_id"];
+            $dsiz = $this->utabs[$tid]["flat"][$cid]["dispsize"];
 			if (trim($chain["chain"])=="calc") $rtid = $ctid;
 		}			
 
 		$chaintext = "";
 		foreach ($chain["tests"] as $test) {
-			$return    = $this->TrigGen_ChainReturn( $rtid,$test);
-			$compare   = $this->TrigGen_ChainCompare($ctid,$test);
+			$return    = $this->TrigGen_ChainReturn( $rtid,$test,$dsiz);
+			$compare   = $this->TrigGen_ChainCompare($ctid,$test,$dsiz);
 			$chaintext.= "        WHEN $compare THEN $return \n";
 		}
 		
@@ -4007,20 +4486,31 @@ function SpecDDL_Triggers_ChainsCode(&$chains) {
 	}
 }
 
-function TrigGen_ChainReturn($rtid,$test) {
+function TrigGen_ChainReturn($rtid,$test,$dsiz) {
 	$funcoper = trim($test["funcoper"]);
 	$retval = "";
    
-   // Some functions are simple, or have fixed number of args
-   $cret=$test['_return'][0]['column_id_arg'];
-   switch ($funcoper) {
+    // Some functions are simple, or have fixed number of args
+    $cret0 = $this->zzArraySafe($test['_return'],0,array());
+    $cret  = $this->zzArraySafe($cret0,'column_id_arg','');
+    //$cret=$test['_return'][0]['column_id_arg'];
+    switch ($funcoper) {
       case 'SUBS':
          return $this->TrigGen_CRetSubstring($rtid,$test);
          break;
       case 'REPLACE': 
-      case 'LPAD':
-      case 'RPAD':
          return $this->TrigGen_CRetString3($rtid,$test);
+         break;
+      case 'LPAD':
+         $arg1 = $this->TrigGen_CRet_arg($rtid,$test['_return'][0]);
+         $arg2 = $this->TrigGen_CRet_arg($rtid,$test['_return'][1]);
+         return " LPAD($arg1,$dsiz,$arg2)";
+         break;
+      case 'RPAD':
+         $arg1 = $this->TrigGen_CRet_arg($rtid,$test['_return'][0]);
+         $arg2 = $this->TrigGen_CRet_arg($rtid,$test['_return'][1]);
+         return " RPAD($arg1,$dsiz,$arg2)";
+         //return $this->TrigGen_CRetString2($rtid,$test);
          break;
       case 'UPPER':
       case 'LOWER':
@@ -4052,7 +4542,7 @@ function TrigGen_ChainReturn($rtid,$test) {
          }
          return $expr;
          break;
-   }  
+    }  
    
 	foreach ($test["_return"] as $retinfo) {
       $arg = $this->TrigGen_CRet_Arg($rtid,$retinfo);
@@ -4121,6 +4611,15 @@ function TrigGen_CRetString3($rtid,$test) {
    
    return ' '.$test['funcoper']."($arg1,$arg2,$arg3) ";
 }
+
+function TrigGen_CRetString2($rtid,$test) {
+   // This is fixed behavior:
+   // return REPLACE($arg1,$arg2,$arg3)
+   $arg1 = $this->TrigGen_CRet_arg($rtid,$test['_return'][0]);
+   $arg2 = $this->TrigGen_CRet_arg($rtid,$test['_return'][1]);
+   
+   return ' '.$test['funcoper']."($arg1,$arg2) ";
+}
 function TrigGen_CRetString1($rtid,$test) {
    // This is fixed behavior:
    // return REPLACE($arg1,$arg2,$arg3)
@@ -4142,7 +4641,7 @@ function TrigGen_ChainCompare($ctid,$chaintest) {
 	$retinfo = $chaintest["_compare"][0];
 	if ($retinfo["column_id_arg"]<>"") {
 		$arg1 = trim($retinfo["column_id_arg"]);
-		$cta1 = $GLOBALS["utabs"][$chaintest["table_id"]]["flat"][$arg1]["type_id"];
+		$cta1 = $this->utabs[$chaintest["table_id"]]["flat"][$arg1]["type_id"];
 		$arg1 = "new.".$arg1;
 	}
 	else {
@@ -4313,7 +4812,7 @@ function SpecDDL_Triggers_Cascades()  {
 }
 
 function SpecDDL_Triggers_Cascades_One(&$cascade)  {
-	$utabs  = &$GLOBALS["utabs"];
+	$this->utabs  = &$this->utabs;
 	$tabsrc = $cascade["table_id"];
 	$tabdst = $cascade["table_id_dest"];
 
@@ -4323,13 +4822,13 @@ function SpecDDL_Triggers_Cascades_One(&$cascade)  {
    $stripx = trim($this->zzArraySafe($cascade,'copystripprefix'));
 	if ($stripx<>'') {
       //echo "Stripping prefix: $stripx\n";
-		foreach ($utabs[$tabsrc]["flat"] as $colsrc=>$colinfo) {
+		foreach ($this->utabs[$tabsrc]["flat"] as $colsrc=>$colinfo) {
          $x = substr($colsrc,0,strlen($stripx));
          //echo "Beginning of column is : $x\n";
          if (substr($colsrc,0,strlen($stripx))<>$stripx) continue;
          $coldst = substr($colsrc,strlen($stripx));
          //echo "Looking at destination column $coldst\n";
-         if (isset($utabs[$tabdst]["flat"][$coldst])) {
+         if (isset($this->utabs[$tabdst]["flat"][$coldst])) {
             //echo " --- Destination is there!\n";
 				$cols[$coldst] = "new.".$colsrc;
 			}
@@ -4338,10 +4837,10 @@ function SpecDDL_Triggers_Cascades_One(&$cascade)  {
 	
    $stripx = trim($this->zzArraySafe($cascade,'copystripsuffix'));
 	if ($stripx<>'') {
-		foreach ($utabs[$tabsrc]["flat"] as $colsrc=>$colinfo) {
+		foreach ($this->utabs[$tabsrc]["flat"] as $colsrc=>$colinfo) {
          if (substr($colsrc,-1,strlen($stripx))<>$stripx) continue;
          $coldst = substr($colsrc,0,strlen($colsrc)-strlen($stripx));
-         if (isset($utabs[$tabdst]["flat"][$coldst])) {
+         if (isset($this->utabs[$tabdst]["flat"][$coldst])) {
 				$cols[$coldst] = "new.".$colsrc;
 			}
 		}
@@ -4350,9 +4849,9 @@ function SpecDDL_Triggers_Cascades_One(&$cascade)  {
 
  	// Now build any columns caught by "copysamecols"
 	if ($cascade["copysamecols"]=="Y") {
-		foreach ($utabs[$tabsrc]["flat"] as $colname=>$colinfo) {
+		foreach ($this->utabs[$tabsrc]["flat"] as $colname=>$colinfo) {
 			if (!isset($cols[$colname])) {
-				if (isset($utabs[$tabdst]["flat"][$colname])) {
+				if (isset($this->utabs[$tabdst]["flat"][$colname])) {
 					$cols[$colname] = "new.".$colname;
 				}
 			}
@@ -4366,7 +4865,7 @@ function SpecDDL_Triggers_Cascades_One(&$cascade)  {
       if($colassign['retcol']=='') {
          $val=$this->SQLFORMATLITERAL(
             $colassign["retval"]
-            ,$utabs[$tabdst]["flat"][$col]["type_id"]
+            ,$this->utabs[$tabdst]["flat"][$col]["type_id"]
             ,true
             ,true
          );
@@ -4432,7 +4931,7 @@ function SpecDDL_Triggers_Cascades_One(&$cascade)  {
 		}
 		
       $fk = $tabsrc."_".$tabdst."_".$cascade['suffix'];
-		$colsmatch = $GLOBALS["ufks"][$fk]["cols_both"];
+		$colsmatch = $this->ufks[$fk]["cols_both"];
 		$this->LogEntry("cols_both is: ".$colsmatch);
 		$colsmatch = str_replace(":"," = ",$colsmatch);
 		$colsmatch = "new.".str_replace(","," AND new.",$colsmatch);
@@ -4498,63 +4997,13 @@ function SpecDDL_Triggers_Histories()  {
 }
 
 function SpecDDL_Triggers_Histories_One(&$history)  {
-	$utabs  = &$GLOBALS["utabs"];
+	$this->utabs  = &$this->utabs;
 	$tabsrc = $history["table_id"];
 	$tabdst = $history["table_id_dest"];
     
-	$cols = array();
-
-    // First build any columns caught by "copystripprefix" then suffix
-    /* This code was copied from cascades, but we don't want
-       to bother with copystripprefix
-    $stripx = trim($this->zzArraySafe($cascade,'copystripprefix'));
-    if ($stripx<>'') {
-      //echo "Stripping prefix: $stripx\n";
-        foreach ($utabs[$tabsrc]["flat"] as $colsrc=>$colinfo) {
-         $x = substr($colsrc,0,strlen($stripx));
-         //echo "Beginning of column is : $x\n";
-         if (substr($colsrc,0,strlen($stripx))<>$stripx) continue;
-         $coldst = substr($colsrc,strlen($stripx));
-         //echo "Looking at destination column $coldst\n";
-         if (isset($utabs[$tabdst]["flat"][$coldst])) {
-            //echo " --- Destination is there!\n";
-                $cols[$coldst] = "new.".$colsrc;
-            }
-        }
-    }
-    */
-
-    // We dont care about copystripsuffix either
-    /*
-    $stripx = trim($this->zzArraySafe($cascade,'copystripsuffix'));
-    if ($stripx<>'') {
-        foreach ($utabs[$tabsrc]["flat"] as $colsrc=>$colinfo) {
-         if (substr($colsrc,-1,strlen($stripx))<>$stripx) continue;
-         $coldst = substr($colsrc,0,strlen($colsrc)-strlen($stripx));
-         if (isset($utabs[$tabdst]["flat"][$coldst])) {
-                $cols[$coldst] = "new.".$colsrc;
-            }
-        }
-    }
-    */
-	
-    // Yet again, strip the item we don't care about
-    /*
- 	// Now build any columns caught by "copysamecols"
-	if ($cascade["copysamecols"]=="Y") {
-		foreach ($utabs[$tabsrc]["flat"] as $colname=>$colinfo) {
-			if (!isset($cols[$colname])) {
-				if (isset($utabs[$tabdst]["flat"][$colname])) {
-					$cols[$colname] = "new.".$colname;
-				}
-			}
-		}
-	}
-    */
-
+	$cols   = array();
+    $awhere = array();
     
-    // Explicit column assignments overwrite any options above
-    //
     foreach ($history["_cols"] as $colassign) {
         $col = $colassign["column_id"];
         $cols[$col]['i'] = null; 
@@ -4563,7 +5012,7 @@ function SpecDDL_Triggers_Histories_One(&$history)  {
         if($colassign['retval']!='') {
              $val=$this->SQLFORMATLITERAL(
                 $colassign["retval"]
-                ,$utabs[$tabdst]["flat"][$col]["type_id"]
+                ,$this->utabs[$tabdst]["flat"][$col]["type_id"]
                 ,true
                 ,true
              );
@@ -4572,10 +5021,12 @@ function SpecDDL_Triggers_Histories_One(&$history)  {
              $cols[$col]['d'] = $val;
         }
         elseif($colassign['retdiff'] != '') {
+            $rd = $colassign['retdiff'];
             $cols[$col]['i'] = 'new.'.$colassign['retdiff'];
             $cols[$col]['u'] = 'new.'.$colassign['retdiff'] 
                 .' - old.'.$colassign['retdiff'];
             $cols[$col]['d'] = '-old.'.$colassign['retdiff'];
+            $awhere[]="new.$rd <> old.$rd";
         }
         elseif($colassign['retold'] != '') {
             $cols[$col]['u'] = 'old.'.$colassign['retold']; 
@@ -4636,18 +5087,20 @@ function SpecDDL_Triggers_Histories_One(&$history)  {
         $this->SpecDDL_TriggerFragment($tabsrc,"INSERT","AFTER","9900",$s1);
         
     }
-    if(count($inscols)>0) {
+    if(count($updcols)>0) {
         $uc = implode("\n               ,",$updcols);
         $uv = implode("\n               ,",$updvals);
         $s1 = "\n"
             ."    -- 9900 History logging \n"
-            ."    INSERT INTO $tabdst \n"
-            ."               ( $uc) \n"
-            ."        VALUES ( $uv);\n";
+            ."    IF ".implode(' OR ',$awhere)." THEN\n"
+            ."        INSERT INTO $tabdst \n"
+            ."                   ( $uc) \n"
+            ."            VALUES ( $uv);\n"
+            ."    END IF;\n";
         $this->SpecDDL_TriggerFragment($tabsrc,"UPDATE","AFTER","9900",$s1);
         
     }
-    if(count($inscols)>0) {
+    if(count($delcols)>0) {
         $dc = implode("\n               ,",$delcols);
         $dv = implode("\n               ,",$delvals);
         $s1 = "\n"
@@ -4677,6 +5130,7 @@ function SpecDDL_Triggers_Pass2($trgs) {
 			"    AnyChar varchar;\n".
          "    AnyChar2 varchar;\n".
          "    AnyChar3 varchar;\n".
+         "    AnyChar4 varchar;\n".
 			"BEGIN\n".
          "    SET search_path TO public;\n\n";
 		$this->SpecDDL_TriggerFragment(
@@ -4839,7 +5293,7 @@ function Differences_One($strStub, $dst,$strDesc,$strKeys,$strWhere="")
 
 	$strList1 = "";
 	$this->LogEntry("Generating differences for ". $strStub . ", ". $strDesc);
-	foreach ($GLOBALS["utabs"][$strStub]["flat"] as $colname=>$colprops) {
+	foreach ($this->utabs[$strStub]["flat"] as $colname=>$colprops) {
 		$strList1.=
 			"a.". $colname . ",".
 			"b.". $colname . " as \"". $colname . "_r\",";
@@ -4858,34 +5312,193 @@ function Differences_One($strStub, $dst,$strDesc,$strKeys,$strWhere="")
 
 // ==========================================================
 // REGION: Specification Validation
-// Use the bootstrap information in $utabs to do unique
+// Use the bootstrap information in $this->utabs to do unique
 // and referential checks on the resolved spec
 // ==========================================================
 
 function SpecValidate()
 {
 	$retval = true;
-	$this->LogStage("Validating New Specification");
-	$failures = 0;
-	$this->LogEntry("Looking for uniqueness violations");
-	$failures += $this->SpecValidate_Unique();	
-	$this->LogEntry("Looking for referential violations");
-	$failures += $this->SpecValidate_RI();
-	$failures += $this->SpecValidate_Special();
-	if ($failures>0) { 
-		$this->LogEntry("******");
-		$this->LogEntry("****** Validation failure, $failures failures, processing cannot continue.");
-		$this->LogEntry("******");
-		$retval = false;
+	$this->LogStage("Validating After Flattening");
+	$errors = 0;
+
+    	$this->LogEntry("Looking for primary key on each table");
+	$results = $this->SQLRead(
+		"select table_id from zdd.tabflat_c ".
+		" group by table_id ".
+		" having sum(case when primary_key='Y' then 1 else 0 end) = 0");
+	while($row=pg_fetch_array($results)) {
+        $errors++;
+        $this->LogEntry("");
+        $this->LogEntry("ERROR >> table ". $row["table_id"]." has no primary key!");
+        $this->LogEntry("ERROR >> ");
 	}
-	return $retval;
+    
+    
+    // Check for no automation Id for some automations
+    $sql="SELECT table_id,column_id from zdd.tabflat_c
+          WHERE automation_id in 
+             ('FETCH','DISTRIBUTE','SUM','COUNT','MIN','MAX','LATEST')
+            AND COALESCE(auto_formula,'') = ''";
+	$results = $this->SQLRead($sql);
+    while($row=pg_fetch_array($results)) {
+        $this->LogEntry("");
+        $this->LogEntry("ERROR >> No auto_formula for "
+            .$row['table_id'].'.'.$row['column_id']
+        );
+        $errors++;        
+    }
+    
+    
+	$results=$this->SQLRead(
+			"select table_id,column_id,table_dep ".
+			" FROM zdd.column_deps ".
+			" WHERE automation_id in ('FETCH','DISTRIBUTE','SYNCH') ". 
+			"   AND NOT EXISTS ".
+			"   (SELECT table_id FROM zdd.tabfky_c fk ". 
+			"    WHERE fk.table_id     = zdd.column_deps.table_id ".
+			"      AND fk.table_id_par = zdd.column_deps.table_dep)");
+	while ($row=pg_fetch_array($results)) {
+		$retval=false;
+        $this->LogEntry("");
+		$this->LogEntry(
+			"ERROR >> Column ". $row["table_id"].".".$row["column_id"]. 
+			" FETCHes from non-parent table: ".$row["table_dep"]);
+        $errors++;
+	}
+
+	$results=$this->SQLRead(
+			"select table_id,column_id,table_dep ".
+			" FROM zdd.column_deps ".
+			" WHERE automation_id IN ('SUM','COUNT') ". 
+			"   AND NOT EXISTS ".
+			"   (SELECT table_id FROM zdd.tabfky_c fk ". 
+			"    WHERE fk.table_id     = zdd.column_deps.table_dep ".
+			"      AND fk.table_id_par = zdd.column_deps.table_id)");
+	while ($row=pg_fetch_array($results)) {
+		$retval=false;	
+        $this->LogEntry("");
+		$this->LogEntry(
+			"ERROR >> Column ". $row["table_id"].".".$row["column_id"].
+			" aggregates from non-child table: ".$row["table_dep"]);
+        $errors++;
+	}
+    
+	$results=$this->SQLRead("
+select table_id,column_id,
+       auto_table_id,auto_column_id,automation_id
+ from zdd.tabflat_c
+ where not exists (select skey from zdd.tabflat_c x
+                    where x.table_id = zdd.tabflat_c.auto_table_id
+                      AND x.column_id= zdd.tabflat_c.auto_column_id)
+   AND ( auto_table_id <> '' OR auto_column_id <> '')"
+     );
+	while ($row=pg_fetch_array($results)) {
+		$retval=false;	
+        $this->LogEntry("");
+		$this->LogEntry(
+			"ERROR >> Column ". $row["table_id"].".".$row["column_id"].
+			" has automation ".$row['automation_id']
+            ." to non-existent column: ".$row["auto_table_id"].'.'.$row['auto_column_id']);
+        $errors++;
+	}
+    
+    // Check that all table/column references work out
+    	$this->LogEntry("Checking all column references are valid");
+    $errors+=$this->SpecValidateRI('tabidxcol'    ,'column_id','Index');
+    $errors+=$this->SpecValidateRI('tabcascols'   ,'column_id','Upsave Definition');
+    $errors+=$this->SpecValidateRI('histcols'     ,'retcol'   ,'History Definition');
+    $errors+=$this->SpecValidateRI('tabprojcols'  ,'column_id','Projection');
+    $errors+=$this->SpecValidateRI('colchaintests','column_id','Chain Definition');
+    $errors+=$this->SpecValidateRI('colchainargs' ,'column_id_arg','Chain Definition');
+    
+    // Some manual RI checks
+    $sq="SELECT h.history,hc.table_id,hc.column_id
+           FROM zdd.histcols_c   hc
+           JOIN zdd.histories_c  h  ON hc.table_id = h.table_id
+                                 AND hc.history  = h.history
+          WHERE column_id <> ''
+            AND NOT EXISTS (
+                SELECT * from zdd.tabflat_c 
+                WHERE table_id  = h.table_id_dest
+                  AND column_id = hc.column_id
+               )";
+    $results = $this->SQLRead($sq);
+	while ($row=pg_fetch_array($results)) {
+		$retval=false;	
+        $this->LogEntry("");
+		$this->LogEntry(
+			"ERROR >> History definition ".$row['history']
+            ." in table ".$row['table_id']
+            ." assigns to undefined target column: ".$row['column_id']
+        );
+        $errors++;
+	}
+
+    return ($errors==0);
 }
 
+function SpecValidateRI($table,$col,$description) {
+    $errors = 0;
+    $sq="SELECT * FROM zdd.{$table}_c
+          WHERE $col <> ''
+            AND NOT EXISTS (
+                SELECT * from zdd.tabflat_c 
+                WHERE table_id  = zdd.{$table}_c.table_id
+                AND column_id = zdd.{$table}_c.$col
+               )";
+    $results = $this->SQLRead($sq);
+	while ($row=pg_fetch_array($results)) {
+		$retval=false;	
+        $this->LogEntry("");
+		$this->LogEntry(
+			"ERROR >> $description in table ".$row['table_id']
+            ." refers to undefined column ".$row['column_id']
+        );
+        $errors++;
+	}
+    return $errors;
+}
 
-function SpecValidate_Unique()
-{
-	$failures = 0;
-	foreach ($GLOBALS["utabs"] as $table_id=>$tabinfo) {
+/*
+function SpecValidate_Unique() {
+    // Get primary key definitions of dictionary tables,
+    // then look for uniqueness violations.
+    //
+    $failures = 0;
+    $sql = 
+        "SELECT table_id,column_id
+           FROM zdd.tabcols_c c
+           JOIN zdd.tables_c  t ON f.table_id = t.table_id
+          WHERE t.module='datadict'
+            AND c.primary_key = 'Y'";
+    $results = $this->SQLRead($sql);
+    $pk = array();
+    while($row = pg_fetch_array($results)) {
+        $pk[$row['table_id']][] = $row['column_id'];  
+    }
+    foreach($pk as $table_id=>$pkcols) {
+        $pk_list = implode(',',$pkcols);
+        $sql = 
+            "SELECT count(*) as _count,$pk_list ". 
+            " FROM zdd.". $table_id."_c".
+            " GROUP BY ". $pk_list . 
+            " HAVING COUNT(*) > 1 ";
+        $results = $this->SQLRead($sql);
+        while ($row = pg_fetch_row($results)) {
+            $vals = "";
+            for ($x = 1; $x< count($row); $x++) {
+               $vals.=$this->AddComma($vals).trim($row[$x]);
+            }
+            $this->LogEntry("Table ". $table_id . " has duplicates on columns ". $pk_list);
+            $this->LogEntry("    ".$row[0]." occurrences of: '".$vals."'");
+            $failures++;
+        }
+    }
+    return $failures;
+
+  	$failures = 0;
+	foreach ($this->utabs as $table_id=>$tabinfo) {
 		if ($tabinfo["module"]<>"datadict") continue;
 		$pk_list = $this->zzArray($tabinfo,"pk");
 		if ($pk_list=="") {
@@ -4910,8 +5523,11 @@ function SpecValidate_Unique()
 			}
 		}
 	}
-   //$utabs[$table_id]["indexes"][$idx_name] = array("unique"=>$index["idx_unique"],"cols"=>$cols);
- 	foreach ($GLOBALS["utabs"] as $table_id=>$tabinfo) {
+    */
+    
+    /*
+   //$this->utabs[$table_id]["indexes"][$idx_name] = array("unique"=>$index["idx_unique"],"cols"=>$cols);
+ 	foreach ($this->utabs as $table_id=>$tabinfo) {
 		if ($tabinfo["module"]<>"datadict") continue;
       foreach($tabinfo['indexes'] as $indexinfo) {
          if($indexinfo['unique']<>'Y') continue;
@@ -4937,13 +5553,16 @@ function SpecValidate_Unique()
 
 	return $failures;
 }
+*/
 
+
+/*
 function SpecValidate_RI() {
 	$failures=0;
-	$fks = &$GLOBALS["ddarr"]["data"]["table"];
+	$fks = &$this->ddarr["data"]["table"];
 
 	// Loop through each table looking for each FKEY
-	foreach ($GLOBALS["utabs"] as $table_id=>$tabstuff) {
+	foreach ($this->utabs as $table_id=>$tabstuff) {
 		if (isset($fks[$table_id]["foreign_key"])) {
 			foreach ($fks[$table_id]["foreign_key"] as $fkinfo) {
 				$table_id_par = $fkinfo["__keystub"];
@@ -4952,7 +5571,7 @@ function SpecValidate_RI() {
 				
 				// explode the primary key of parent and put back together
 				$compare = $fkchd = $fkpar = $fkcon = $fkEmp = "";
-				$pkarr = explode(",",$GLOBALS["utabs"][$table_id_par]["pk"]);
+				$pkarr = explode(",",$this->utabs[$table_id_par]["pk"]);
 				foreach ($pkarr as $pkone) {
 					$compare .= $this->AddList($compare," AND ").'x.'.$pkone."= ".
 						"zdd.".$table_id."_c.".$prefix.$pkone.$suffix;
@@ -4990,36 +5609,7 @@ function SpecValidate_RI() {
 	}
 	return $failures;
 }
-
-function SpecValidate_Special() {
-   $x=0;
-   
-	$this->LogEntry("Checking for table-name = module-name");
-	$results = $this->SQLRead(
-		"select table_id 
-         FROM zdd.tables_c  t
-         JOIN zdd.modules_c m ON t.table_id = m.module"
-   );
-   while($row=pg_fetch_array($results)) {
-      $t = $row['table_id'];
-      $this->LogEntry("     Module $t has same name as table $t "); 
-      $x++;
-   }
-   if($x > 0 ) {
-      $this->LogEntry(" --> PROBLEM WITH MODULE OR TABLE NAME");
-      $this->LogEntry(" --> Modules and tables may not have the ");
-      $this->LogEntry(" --> same name.  This is actually because");
-      $this->LogEntry(" --> our default user interface will     ");
-      $this->LogEntry(" --> end up in an infinite loop when it  ");
-      $this->LogEntry(" --> tryies to build a menu.             ");
-      $this->LogEntry(" -->            ");
-      $this->LogEntry(" --> Change either the module or table ");
-      $this->LogEntry(" --> names that are listed above.      ");
-      $retval=false;
-   }
-   
-   return $x;
-}
+*/
 
 // NOT CURRENTLY BEING CALLED, see SpecValidate_Special above
 function SpecValidate_Hardcode() {
@@ -5271,7 +5861,7 @@ function PlanMake_TablesUpd($table_id)
 		$SQL = "";
 		while (list($index,$column_id) = each($newcols)) {
 			//$this->LogEntry("  Adding to table $table_id new column $column_id");
-			$aid = trim(strtolower($GLOBALS["utabs"][$table_id]["flat"][$column_id]["automation_id"]));
+			$aid = trim(strtolower($this->utabs[$table_id]["flat"][$column_id]["automation_id"]));
 			//$this->LogEntry("  Automation id is: $aid");
 			switch ($aid) {
 				case "sequence":
@@ -5279,13 +5869,13 @@ function PlanMake_TablesUpd($table_id)
 					$newval = "nextval(#$table_id"."_$column_id#)";
 					break;
 				case "default": 
-					$type_id = trim(strtolower($GLOBALS["utabs"][$table_id]["flat"][$column_id]["type_id"]));
-					$auto_f  = trim($GLOBALS["utabs"][$table_id]["flat"][$column_id]["auto_formula"]);
+					$type_id = trim(strtolower($this->utabs[$table_id]["flat"][$column_id]["type_id"]));
+					$auto_f  = trim($this->utabs[$table_id]["flat"][$column_id]["auto_formula"]);
 					//$this->LogEntry("Type is $type_id and formula is $auto_f");
 					$newval = $this->SQLFORMATLITERAL($auto_f,$type_id,true);
 					break;
 				default: 
-					$newval = $this->DBB_SQLBlank($GLOBALS["utabs"][$table_id]["flat"][$column_id]["formshort"]);
+					$newval = $this->DBB_SQLBlank($this->utabs[$table_id]["flat"][$column_id]["formshort"]);
 			}
 			$SQL.=$this->AddComma($SQL)." $column_id = $newval";
 		}
@@ -5408,7 +5998,7 @@ function planMake_ViewsRowSecurity() {
        $defs2[$tab]['clause']=$tabclause;
     }
     // DEBUG NOTE: The best way to debug the code above is to examine
-    // the resulting assoiciative arrray.  You can examine the data and
+    // the resulting associative arrray.  You can examine the data and
     // the resulting clause together and see if it all makes sense
     $this->LogElapsedTime($ts);
     return $defs2;
@@ -5418,7 +6008,7 @@ function planMake_ViewsRowSecurity() {
 function PlanMake_ViewsColSecurity() {
    global $parm;
    $app=$parm['APP'];                       
-   global $ufks;
+   
    $ts=time();
    $this->LogEntry("Creating View Commands for Column Security");
 
@@ -5694,7 +6284,7 @@ function planMake_ViewsRowColCombine(&$defsrow,&$defscol) {
                  ON UPDATE TO $vwn
                  DO INSTEAD NOTHING"
          );
-         $cols=array_keys($GLOBALS['utabs'][$table_id]['flat']);
+         $cols=array_keys($this->utabs[$table_id]['flat']);
          $ins1=implode(',',$cols);
          $ins2="new.".implode(',new.',$cols);
          $aupd=array();
@@ -5736,7 +6326,7 @@ function planMake_ViewsRowColCombine(&$defsrow,&$defscol) {
             
             // Grab default list of columns, build the select list
             // and the update list
-            $cols =array_keys($GLOBALS['utabs'][$table_id]['flat']);
+            $cols =array_keys($this->utabs[$table_id]['flat']);
             $cols =array_flip($cols);
             $colsu=$cols;
             foreach($perms as $column_id=>$colperms) {
@@ -5861,7 +6451,7 @@ function PlanMake_DDR() {
    $this->LogEntry(" -- PLACEHOLDER, no action performed.");
    return true;
 	
-	foreach ($GLOBALS["ddarr"]["data"]["table"] as $OneTab=>$table) {
+	foreach ($this->ddarr["data"]["table"] as $OneTab=>$table) {
 		$List1 = "";
 		$List1a= "";
 		$List2 = "";
@@ -6081,7 +6671,7 @@ select e.column_id
   FROM (SELECT pc2.table_id,pc2.column_id
           FROM zdd.perm_cols_c    pc2
           JOIN zdd.groupsx_c      gx  ON pc2.group_id = gx.group_id
-         WHERE gx.group_id_eff  = 'usarisk_eff_' || tv.view_id
+         WHERE gx.group_id_eff  = '{$app}_eff_' || tv.view_id
            AND pc2.table_id     = pc.table_id                           
            AND pc2.permsel      = 'Y'  )   e
   FULL OUTER JOIN
@@ -6096,24 +6686,7 @@ select e.column_id
 )";
    $this->SQL($sq);
    
-   
-   // KFD 7/16/07.  Turn off all permissions for tables that have views
-   //          OUCH!  Bad!  Stopped doing this because it was 
-   //          screwing up the framework, all perms were NO!!
-   //          modified the filter below to not assign permissions
-   //          to tables that have permrow or permcol
-   /*
-   $this->SQL("
-      UPDATE zdd.perm_tabs_c  
-         SET permsel = 'N'
-            ,permupd = 'N'
-            ,permins = 'N'
-            ,permdel = 'N'
-        FROM (select table_id FROM zdd.table_views_c group by table_id ) x
-       WHERE zdd.perm_tabs_c.table_id = x.table_id"
-   );
-   */
-       
+ 
     
    // DONE!  Now execute them!
    //        Note the filter that does not apply any perms to
@@ -6199,6 +6772,7 @@ function PlanExecute() {
       ,5010=>'Backfill commands'
       ,6000=>'NSO Create Commands'
       ,6001=>'Trigger Create Part 2'
+      ,6002=>'FreeJoin Security Commands'
       ,6050=>'Sequence Update Commands'
       ,9000=>'Group and User Creation'
       ,9050=>'Deny by default REVOKE commands'
@@ -6222,7 +6796,7 @@ function PlanExecute() {
       $le="There are ".$this->hCount($stat['cnt'])
          ." commands of type "
          .$stat['cmdseq']
-         .', '.ArraySafe($cmdseq,$stat['cmdseq'],'NOT DEFINED');
+         .', '.$this->zzArraySafe($cmdseq,$stat['cmdseq'],'NOT DEFINED');
       $this->LogEntry($le);
    }
    
@@ -6273,7 +6847,6 @@ function PlanExecute() {
 
 function PlanExecuteCommand($TheCmd,$FILEOUT,$noreperr=false) {
    global $parm;
-   global $sqlCommandError;
    
    // This is aimed at triggers.  Triggers in PG are enclosed
    // in strings, requiring strings inside of them to be
@@ -6288,7 +6861,7 @@ function PlanExecuteCommand($TheCmd,$FILEOUT,$noreperr=false) {
    //fclose($FILEOUT);
 
    if ($this->SQL($TheCmd,$noreperr,false))	{	$TheRes = "'Y'";	$cmdErr = "''"; }
-   else { $TheRes = "'N'"; $cmdErr = $sqlCommandError; }
+   else { $TheRes = "'N'"; $cmdErr = $this->sqlCommandError; }
 
    //$this->SQL( 
    //   "Update zdd.ddl set executed_ok = ". $TheRes . ", ".
@@ -6308,73 +6881,16 @@ function PlanExecuteCommand($TheCmd,$FILEOUT,$noreperr=false) {
 // ==========================================================
 function ContentLoad() {
 	$this->LogStage("Loading data to user tables");
-	$this->DBB_LoadContent(false,$GLOBALS["content"],"","");
+	$this->DBB_LoadContent(false,$this->content,"","");
 	return true;
 }
 
-// ==========================================================
-// REGION: BootstrapNodeManager
-// 10/6/06.  Most of this stuff was in the routine for
-//           setting up security.  Moved it into its own
-//           area here.
-//   ** NOT ACTUALLY CALLED ** Everything here should be
-//           be taken care of by the installer
-// ==========================================================
-function BootstrapNodeManager() {
-   global $parm;
-	// Make new connection to server, node manager
-	$this->LogEntry("Making connection to node manager database");
-	$cnx = 
-		"dbname=andro".
-		" user=".$parm["UID"].
-		" password=".$GLOBALS["x_password"];
-   global $dbconna;
-   $dbconna=pg_connect($cnx);  // allows use of SQL_ANDRO routine
-
-   // Bootstrap test:  create webpath if not there
-   $webpath=$GLOBALS['parm']['DIR_PUBLIC'];
-   $dbres = pg_query($dbconna
-      ,"select count(*) as cnt from webpaths 
-         where dir_pub ='".$GLOBALS['parm']['DIR_PUBLIC']."'"
-   );
-	$row = pg_fetch_array($dbres);
-   if($row['cnt']==0) {
-      $this->SQL_Andro(
-         "insert into webpaths (webpath,dir_pub) 
-          values ('DEFAULT', '$webpath')"
-      );
-   }
-   else {
-      $dbres = pg_query($dbconna
-         ,"select webpath from webpaths 
-            where dir_pub ='".$GLOBALS['parm']['DIR_PUBLIC']."'"
-      );
-      $row=pg_fetch_Array($dbres);
-      $webpath=$row['webpath'];
-   }
-   
- 	// Bootstrap test: create this app if it is not there
-   $dbres = pg_query($dbconna
-      ,"select count(*) as cnt from applications 
-         where application ='".$parm['APP']."'"
-   );
-	$row = pg_fetch_array($dbres);
-	if($row['cnt']==0) {
-	   $this->LogEntry("Bootstrap build detected, adding app to Node Manager");
-      $this->SQL_Andro(
-         "insert into applications (application,appspec,webpath,description) "
-	     ." values ('".$parm['APP']."','".$parm['APP']."','DEFAULT','Andromeda Node Manager')"
-      );
-	}
-	pg_close($dbconna);
-}
 
 // ==========================================================
 // REGION: ContentDD
 // Copy all tables in the dd module 
 // ==========================================================
 function ContentDD() {
-   global $utabs;
 	$this->LogStage("Copying Data Dictionary into public schema");
    $this->LogEntry("  Each table has its triggers disabled ");
    $this->LogEntry("  and is completely repopulated.");
@@ -6383,7 +6899,7 @@ function ContentDD() {
    $tabs=pg_fetch_all($res);
    foreach($tabs as $tabrow) {
       $table_id=$tabrow['table_id'];
-      $cs=array_keys($utabs[$table_id]['flat']);
+      $cs=array_keys($this->utabs[$table_id]['flat']);
       $cs=implode(',',$cs);
       $this->LogEntry("Processing $table_id");
       $this->SQL("ALTER TABLE $table_id DISABLE TRIGGER ALL");
@@ -6576,16 +7092,14 @@ function DBB_SequenceName($table_id,$autoform,$column_id) {
 }
 		
 function DBB_RunOut($tb, $sf) {
-	$defColWidth=$GLOBALS["defcolwidth"];
-   
-	// This giant bit of code runs out a single table 
-	// pulling column definitions from all possible sources,
-	// such as tabcol, tabflat
-   //
-	$tb = strtolower(trim($tb));
-
-	// The second pull brings in the foreign key stuff
-	$SQLFK = 
+    // This giant bit of code runs out a single table 
+    // pulling column definitions from all possible sources,
+    // such as tabcol, tabflat
+    //
+    $tb = strtolower(trim($tb));
+    
+    // The second pull brings in the foreign key stuff
+    $SQLFK = 
 		"Insert into zdd.tabflat$sf 
 		(table_id,column_id,description,table_id_src,column_id_src,
 		 auto_table_id,auto_column_id,
@@ -6595,7 +7109,7 @@ function DBB_RunOut($tb, $sf) {
        uirows,uicols,
 		 suffix,prefix,prevent_fk_change,
 		 dispsize,uiwithnext,uino,
-		 uicolseq,primary_key,uisearch,
+		 uicolseq,primary_key,pk_change,uisearch,
 		 automation_id,auto_formula,
 		 colprec,colscale,colres,type_id,formula,formshort,
 		 uiinline,
@@ -6615,7 +7129,7 @@ function DBB_RunOut($tb, $sf) {
 		       COALESCE(fk.prevent_fk_change,'N') as prevent_fk_change,
 		       f.dispsize,f.uiwithnext,f.uino,
 		       RTRIM(fk.uicolseq) || '.' || f.uicolseq, 
-		       fk.primary_key,fk.uisearch, 
+		       fk.primary_key,fk.pk_change,fk.uisearch, 
 		       'NONE' as automation_id,'' as auto_formula, 
 		       f.colprec,f.colscale,f.colres,
 		       CASE WHEN f.column_id = 'skey' THEN 'I'   else f.type_id END as \"type_id\", 
@@ -6647,7 +7161,7 @@ function DBB_RunOut($tb, $sf) {
        uirows,uicols,
 		 suffix,prefix,auto_suffix,auto_prefix,prevent_fk_change,
 		 dispsize,uiwithnext,uino,
-		 uicolseq,primary_key,uisearch,
+		 uicolseq,primary_key,pk_change,uisearch,
 		 automation_id,auto_formula,
 		 colprec,colscale,colres,type_id,formula,formshort,
 		 uiinline,
@@ -6676,7 +7190,7 @@ function DBB_RunOut($tb, $sf) {
 		       CASE WHEN tc.uiwithnext<>'' THEN tc.uiwithnext 
 		            WHEN c.uiwithnext<>''  THEN c.uiwithnext ELSE t.uiwithnext END,
 		       tc.uino,
-		       tc.uicolseq,tc.primary_key,tc.uisearch,
+		       tc.uicolseq,tc.primary_key,tc.pk_change,tc.uisearch,
 		       CASE WHEN tc.automation_id <> '' 
 		            THEN tc.automation_id 
 		            ELSE c.automation_ID END as automation_id, 
@@ -6704,7 +7218,7 @@ function DBB_RunOut($tb, $sf) {
                           )";
 
 	$this->SQL($SQLC);
-   $this->SQL($SQLFK);
+    $this->SQL($SQLFK);
 		
 
 	// now override any explicit foreign key definitions
@@ -6728,11 +7242,11 @@ function DBB_RunOut($tb, $sf) {
 		    AND zdd.tabflat_c.column_id     = z.column_id";
 	$this->SQL($SQL);
    
-   // KEYWORD: TROUBLE
-   // KFD 6/1/07.  This correction would not be necessary if we 
-   //     eliminated SpecFlatten_Columns1(), or worked the sequence
-   //     of it into dbb_runout more properly
-   $SQL="UPDATE zdd.tabflat_c
+    // KEYWORD: TROUBLE
+    // KFD 6/1/07.  This correction would not be necessary if we 
+    //     eliminated SpecFlatten_Columns1(), or worked the sequence
+    //     of it into dbb_runout more properly
+    $SQL="UPDATE zdd.tabflat_c
             SET  table_id_fko = f.table_id
                 ,column_id_fko= f.column_id
   		     FROM zdd.tabfky$sf fk 
@@ -6744,13 +7258,13 @@ function DBB_RunOut($tb, $sf) {
 		      AND f.primary_key = 'Y'
 		      AND fk.nocolumns <> 'Y'
             AND f.range_from = ''";
-   $this->SQL($SQL);
-            
+    $this->SQL($SQL);
+             
    
-	// Any columns created in this table by using prefix/suffix, should now
-   // be put into tabflat so they can be referenced by other downstream
-   // tables.  Only safe to be used in agg, fetch, etc.
-	$SQL = 
+    // Any columns created in this table by using prefix/suffix, should now
+    // be put into tabflat so they can be referenced by other downstream
+    // tables.  Only safe to be used in agg, fetch, etc.
+    $SQL = 
 		"insert into zdd.columns_c ( 
           column_id, description 
           ,automation_id, auto_table_id, auto_column_id, auto_formula
@@ -6772,7 +7286,6 @@ function DBB_RunOut($tb, $sf) {
               SELECT column_id FROM zdd.columns_c
               )";
 	$this->SQL($SQL);
-   
 }
 
 function DBB_RunOutOverride($column,$src1,$src2) {
@@ -6783,18 +7296,78 @@ function DBB_RunOutOverride($column,$src1,$src2) {
 // ==========================================================
 
 function DBB_LoadYAMLFile($filename,&$retarr) {
-   // Now convert to YAML and dump
-   include_once("spyc.php");
-   $temparray=Spyc::YAMLLoad($filename);
-   $this->YAMLError=false;
-   
-   $this->YAMLPrevious=array("no entries yet, look at top of file");
-   $this->YAMLStack=array();
-   $this->YAMLContent=array();
-   $retarr['data']=$this->YAMLWalk($temparray);
-   $retarr['content']=$this->YAMLContent;
-   return !$this->YAMLError;
+    // KFD 12/8/07 New pre-scan, try to prevent known
+    //   syntax errors that will not be reported by spyc
+    // 
+    if(!$this->DBB_LoadYAMLFile_PreScan($filename)) return false;
+    
+    // Now convert to YAML and dump
+    include_once("spyc.php");
+    $temparray=Spyc::YAMLLoad($filename);
+    $this->YAMLError=false;
+    
+    $this->YAMLPrevious=array("no entries yet, look at top of file");
+    $this->YAMLStack=array();
+    $this->YAMLContent=array();
+    $retarr['data']=$this->YAMLWalk($temparray);
+    $retarr['content']=$this->YAMLContent;
+    return !$this->YAMLError;
 }
+
+// Scan for indentation errors
+function DBB_LoadYAMLFile_Prescan($filename) {
+    $this->LogEntry("Scanning file for correct formatting");
+    
+    // Load file, get rid of carriage returns, explode into lines
+    $fc = file_get_contents($filename);
+    $fc = str_replace("\r","",$fc);
+    $afc= explode("\n",$fc);
+    
+    $errors = 0;
+    
+    // Scan and look for stuff to report
+    foreach($afc as $linenum=>$oneline) {
+        $linenum++;
+        // Clip off comments
+        if(strpos($oneline,"#") !==false) {
+            if(strpos($oneline,"#")===0) continue;
+            $oneline = substr($oneline,0,strpos($oneline,'#')-1);
+        }
+        
+        // If nothing but whitespace, skip this line
+        if(strlen( preg_replace('/\s/','',$oneline) )==0) continue;
+        
+        // If any kind of bad quoting of "Y", spit out error
+        if(preg_match('/[a-z]:\s*"[YN]\s*$/',$oneline)) {
+            $this->LogEntry("Line $linenum, missing close quote");
+            $errors++;
+        }
+        if(preg_match('/[a-z]:\s*[YN]"\s*$/',$oneline)) {
+            $this->LogEntry("Line $linenum, missing open quote");
+            $errors++;
+        }
+        if(preg_match('/[a-z]:\s*[YN]\s*$/',$oneline)) {
+            $this->LogEntry("Line $linenum, missing quotes");
+            $errors++;
+        }
+        
+        // Look for bad indentations
+        $m = array();
+        preg_match('/^(\s*)[a-z]/',$oneline,$m);
+        if(isset($m[1])) {
+            if(strlen($m[1])>0) {
+                if( (strlen($m[1]) % 2)==1) {
+                    $this->LogEntry(
+                        "Line $linenum, Bad indentation level: ".strlen($m[1])
+                    );
+                    $errors++;
+                }
+            }
+        }
+    }    
+    return ($errors == 0);
+}
+
 
 function YAMLWalk($source) {
     global $parm;
@@ -6844,7 +7417,7 @@ function YAMLWalk($source) {
                $this->YAMLContent[$name]=Array_Merge(array($colnames),$values);
             }
             else {
-               $uicolseq=str_pad(++$GLOBALS["uicolseq"],6,'0',STR_PAD_LEFT);
+               $uicolseq=str_pad(++$this->uicolseq,5,'0',STR_PAD_LEFT);
                if(!$item) {
                   // This is a blank item, you get this if the spec file
                   // has entries like:
@@ -7051,8 +7624,8 @@ function DBB_LoadAddFile($filename,&$retarr) {
 			$table = $item["__id"];
 			unset($item["__type"]); 
 			unset($item["__id"]);
-			if (!isset($retarr["content"][$table])) { $retarr["content"][$table]=array(); }
-			$retarr["content"][$table] = array_merge($retarr["content"][$table],$item);
+			if (!isset($retarr['content'][$table])) { $retarr['content'][$table]=array(); }
+			$retarr['content'][$table] = array_merge($retarr['content'][$table],$item);
 		}
 		elseif ($item["__type"]=="meta") { 
 			unset($item["__type"]);
@@ -7107,7 +7680,7 @@ function DBB_LoadAddFileWalk(&$src,&$dst) {
 	
 	// if there are no id's, just add the row with no index
 	if (count($id)==0) {
-		$row["uicolseq"]=str_pad(++$GLOBALS["uicolseq"],6,'0',STR_PAD_LEFT);
+		$row["uicolseq"]=str_pad(++$this->uicolseq,6,'0',STR_PAD_LEFT);
 		$dst[$type][] = $row; }
 	else {
 		foreach ($id as $idone) {
@@ -7117,14 +7690,14 @@ function DBB_LoadAddFileWalk(&$src,&$dst) {
 			
 			if (!isset($dst[$type][$iduse])) {
 				$row["uicolseq"]
-               =str_pad(++$GLOBALS["uicolseq"],6,'0',STR_PAD_LEFT);
+               =str_pad(++$this->uicolseq,6,'0',STR_PAD_LEFT);
 				$dst[$type][$iduse] = $row;
 				$dst[$type][$iduse]["__keystub"] = $idone;
 			}
 			else { 
             array_merge($dst[$type][$iduse],$row);
             $dst[$type][$iduse]['uicolseq']
-               =str_pad(++$GLOBALS["uicolseq"],6,'0',STR_PAD_LEFT);
+               =str_pad(++$this->uicolseq,6,'0',STR_PAD_LEFT);
          }
 		}
 	}
@@ -7174,8 +7747,8 @@ function DBB_LoadContentSimpleInsert($arr,$prefix,$suffix) {
 function DBB_LoadContentComplex($arr,$prefix,$suffix) {
 	foreach ($arr as $table_id=>$stuff) {
       $this->LogEntry("Processing for table: ".$table_id);
-		$pk    = $GLOBALS["utabs"][$table_id]["pk"];
-      $flat  = &$GLOBALS["utabs"][$table_id]["flat"];
+		$pk    = $this->utabs[$table_id]["pk"];
+      $flat  = &$this->utabs[$table_id]["flat"];
 		$pkarr = explode(",", $pk );
 		
 		foreach ($stuff as $onelist) {
@@ -7223,7 +7796,7 @@ function DBB_Insert($prefix,$table,$suffix,$colvals,$noblanks=false) {
 	$cols = '';
 	$vals = '';
 	
-	foreach ($GLOBALS["utabs"][$table]["flat"] as $colname=>$colinfo) {
+	foreach ($this->utabs[$table]["flat"] as $colname=>$colinfo) {
 		if (isset($colvals[$colname])) { $val = $colvals[$colname]; }
 		else { if ($noblanks) continue; }
 		
@@ -7285,13 +7858,13 @@ function CodeGenerate_Info() {
 	$this->LogStage("Generating Application information files.");
 	$this->LogEntry("Generating Info file: generated/appinfo.php");
    global $parm;
-   $localhost_suffix=ArraySafe($parm,'LOCALHOST_SUFFIX');
+   $localhost_suffix=$this->zzArraySafe($parm,'LOCALHOST_SUFFIX');
 	$text = 
 		"<?php\n".
 		"\$AG['application']='".$parm["APP"]."';\n".
 		"\$AG['app_desc']='".$parm["APPDSC"]."';\n".
       "\$AG['localhost_suffix']='".$localhost_suffix."';\n".
-      "\$AG['template']='".ArraySafe($parm,'TEMPLATE')."';\n".
+      "\$AG['template']='".$this->zzArraySafe($parm,'TEMPLATE')."';\n".
       "\$AG['flag_pwmd5']='".$parm['FLAG_PWMD5']."';\n".
       "?>";
 	$this->zzFileWriteGenerated($text,'appinfo.php');
@@ -7307,7 +7880,6 @@ function CodeGenerate_Info() {
 // =====================================================================
 function CodeGenerate_Tables() {
 	$this->LogStage("Saving data dictionary as PHP Associative Arrays");
-   global $utabs;
    $app = $GLOBALS['parm']['APP'];
 	
    // Pull from tables, add in whether there are col/row perms
@@ -7368,6 +7940,8 @@ function CodeGenerate_Tables() {
       if(isset($table['skey']))               unset($table['skey']);
       if(isset($table['skey_quiet']))         unset($table['skey_quiet']);
       if(isset($table['_agg']))               unset($table['_agg']);
+      if(isset($table['skey_hn']))            unset($table['skey_hn']);
+      if(isset($table['skey_s']))             unset($table['skey_s']);
       
 		// Now put columns into the array 
 		$table["flat"] = array();
@@ -7382,8 +7956,8 @@ function CodeGenerate_Tables() {
          // If there is a foreign key, grab his fkdisplay setting
          $row['fkdisplay']='';
          if($row['table_id_fko']<>'') {
-            //hprint_r($utabs[$row['table_id_fko']]);
-            $row['fkdisplay']=$utabs[$row['table_id_fko']]['fkdisplay'];
+            //hprint_r($this->utabs[$row['table_id_fko']]);
+            $row['fkdisplay']=$this->utabs[$row['table_id_fko']]['fkdisplay'];
          }
 
          $row['uicolseq']=trim($row['uicolseq']);
@@ -7392,19 +7966,19 @@ function CodeGenerate_Tables() {
       
       // Put in a list of columns that force recalculations of the row
       $table['calcs']=array();
-      if(count(ArraySafe($calcs,$table_id,array()))>0) {
+      if(count($this->zzArraySafe($calcs,$table_id,array()))>0) {
          foreach($calcs[$table_id] as $colid) {
             $table['calcs'][]=$colid;
          }
       }
       
       // Add in the ordered list of columns
-      $table['sequenced']=ArraySafe($seqs,$table_id,array());
+      $table['sequenced']=$this->zzArraySafe($seqs,$table_id,array());
       
       // If there are chains for the table, run those out
-      if(count(ArraySafe($utabs[$table_id],'chains',array()))>0) {
+      if(count($this->zzArraySafe($this->utabs[$table_id],'chains',array()))>0) {
          $this->LogEntry("Found chains for $table_id");
-         foreach ($utabs[$table_id]['chains'] as $chain) {
+         foreach ($this->utabs[$table_id]['chains'] as $chain) {
             if($chain['chain']=='calc') {
                $table['flat'][$chain['column_id']]['chaincalc']=$chain;
             }
@@ -7415,7 +7989,7 @@ function CodeGenerate_Tables() {
       $table['projections']=array();
       
       // Copy in the fk fetch stuff
-      $table['FETCHDIST']=ArraySafe($utabs[$table_id],'FETCHDIST',array());
+      $table['FETCHDIST']=$this->zzArraySafe($this->utabs[$table_id],'FETCHDIST',array());
 		
 		// Loop through rows creating some projections
 		$pks = $u_uisearch = $u_uino ="";
@@ -7449,7 +8023,7 @@ function CodeGenerate_Tables() {
 		
       // Copy out the row definitions for views, if there are any
       //
-      $table['views']=ArraySafe($this->ViewDefs,$table_id,array());
+      $table['views']=$this->zzArraySafe($this->ViewDefs,$table_id,array());
       
       $table['tableresolve']=array();
       $res=$this->SQLRead(
@@ -7487,9 +8061,8 @@ if (!isset(\$GLOBALS['AG']['tables']['$table_id']))
 // =====================================================================
 function CodeGenerate_Tables_FK($table_id,$column_id) {
 	$retval = array();
-   global $utabs;
-   global $ufks;
-
+   
+   
 	// The other foreign key column	
 	$col2 = ($column_id=="table_id") ? "table_id_par" : "table_id";
 
@@ -7511,12 +8084,12 @@ function CodeGenerate_Tables_FK($table_id,$column_id) {
          
          // Get the "colsboth", we'll need that
          $fk=$table_id.'_'.Trim($rowx[$col2]).'_'.trim($row['suffix']);
-         if(isset($ufks[$fk])) {
-            $ufk=$ufks[$fk];
+         if(isset($this->ufks[$fk])) {
+            $ufk=$this->ufks[$fk];
             $rowx['cols_chd']  = $ufk['cols_chd'];
             $rowx['cols_par']  = $ufk['cols_par'];
             $rowx['cols_both'] = $ufk['cols_both'];
-            $rowx['fkdisplay'] = $utabs[$rowx[$col2]]['fkdisplay'];
+            $rowx['fkdisplay'] = $this->utabs[$rowx[$col2]]['fkdisplay'];
          }
          else {
             $rowx['cols_chd']  = 'X';
@@ -7524,13 +8097,12 @@ function CodeGenerate_Tables_FK($table_id,$column_id) {
             $rowx['cols_both'] = 'X';
             $rowx['fkdisplay'] = '';
          }
+         
+         $utab = $this->utabs[$row[$col2]];
+         $rowx['description'] = $utab['description'];
+         $rowx['module'] = $utab['module'];
+         
 	
-			// Now get information about the other table
-			//$results = $this->SQLRead(
-			//	"SELECT * from zdd.tables_c ".
-			//	"WHERE table_id = '".trim($row[$col2])."'");
-			//$rowtable = pg_fetch_array($results);
-			//$onerow["_table"] = $this->zzArrayAssociative($rowtable);
 
          // Establish key and save			
 			$key = $rowx["prefix"].$rowx[$col2].$rowx["suffix"];
@@ -7595,15 +8167,6 @@ SELECT  m.module,m.description as module_text,m.uisort,t.uisort
 				"#linknew#=>#".$row["linknew"]."#,".
 				"#linksearch#=>#".$row["linksearch"]."#,".
 				"#mode#=>#normal#);\n";
-		//}
-
-		// Here is a rapid-insert operation
-		//if ($row["menuins"]=="Y") {
-		//	$file.="\$AGMENU[#".$row["module"]."#][#items#][#".$row["table_id"]."#] = ".
-		//		"array(#name#=>#".$row["table_id"]."#,".
-		//		"#description#=>#".$row["table_text"]."#,".
-		//		"#mode#=>#ins#);\n";
-		//}
 
 	}	
 	$file.="?>";
@@ -7616,70 +8179,6 @@ SELECT  m.module,m.description as module_text,m.uisort,t.uisort
 	return true;
 }
 
-// =====================================================================
-// XMLRPC INFORMATION
-// =====================================================================
-function CodeGenerate_XMLRPC() {
-	global $parm;
-	$this->LogStage("Generating XML RPC Call Interfaces");
-	$results = $this->SQLRead(
-		"select c.callcode,h.hosturl,h.hostport,c.callmsg,".
-		"       h.hostuid,h.hostpwd,".
-		"       h.hostpath,c.callpath ".
-		"  FROM xmlrpchosts h ".
-		"  JOIN xmlrpccalls c ON h.hostcode = c.hostcode");
-	$allrows= array();
-	while ($row = pg_fetch_array($results)) {
-		$this->LogEntry("Registering ".$row["callcode"]);
-		$allrows[] = $row;
-	}
-	
-	$eol = "#,\n";
-	foreach ($allrows as $call) {
-		$this->LogEntry("Processing ".$call["callcode"]);
-		$callcode = trim($call["callcode"]);
-		$file = "<?php\n".
-			"\$table = array(\n".
-			"\t#id#=>#".$callcode.$eol.
-			"\t#url#=>#".trim($call["hosturl"]).$eol.
-			"\t#port#=>#".trim($call["hostport"]).$eol.
-			"\t#callmsg#=>#".trim($call["callmsg"]).$eol.
-			"\t#uid#=>#".trim($call["hostuid"]).$eol.
-			"\t#pwd#=>#".trim($call["hostpwd"]).$eol.
-			"\t#path#=>#".trim($call["hostpath"]).trim($call["callpath"])."#);\n\n".
-			"\$table_cols = array(\n";	
-		
-		$results = $this->SQLRead("SELECT * from xmlrpcparms WHERE callcode='$callcode' ORDER BY parm_seq");
-		$colnum = 0;
-		while ($row = pg_fetch_array($results)) {
-			$colnum++;
-			if ($colnum>1) { $file .= ",\n"; }
-			$colname = "col".$colnum;
-			$type = $row["parmdtype"];
-			if ($type=="double") { $type=="int"; }
-			$upd = "N";
-			if ($row["parmtype"]=="inp") { $upd="Y"; }
-			$file .=
-				"\t#$colname#=>array(\n".
-				"\t\t#name#=>#".trim($colname)."#,#value#=>#".$eol.
-				"\t\t#size#=>#20".$eol.
-				"\t\t#desc#=>#".trim($row["parm_desc"]).$eol.
-				"\t\t#type#=>#".trim($type).$eol.
-				"\t\t#xmltype#=>#".trim($row["parmdtype"]).$eol.
-				"\t\t#UI#=>#Y".$eol.
-				"\t\t#INS#=>#Y#,#UPD#=>#$upd".$eol.
-				"\t\t#TABLE_PAR#=>##,#UIWITHNEXT#=>#N#)";
-		}
-		
-		$file.=");\n?>";
-		$file = str_replace("#","\"",$file);
-
-		$this->zzFileWriteGenerated($file,"ddxmlrpc_$callcode.php");
-
-	}
-	return true;
-}
-
 // ==========================================================
 // Database Access Routines
 // ==========================================================
@@ -7688,14 +8187,14 @@ function SQLRead($sqlText,$noReport=false) {
    
 	//pg_send_query($dbconn2,$sqlText);
 	//$results=pg_get_result($dbconn2);
-	$results=pg_query($GLOBALS["dbconn2"],$sqlText);
+	$results=pg_query($this->dbconn2,$sqlText);
 	if (!$noReport) {
 		if ($t=pg_result_error($results)) { 
 			$this->LogEntry("");
 			$this->LogEntry("**** SQL ERROR ****: ".$t);
 			$this->LogEntry("Command was: " );
 			$this->LogEntry($sqlText,true);
-			$GLOBALS["sqlCommandError"]=$sqlText;
+			$this->sqlCommandError=$sqlText;
 		}
 	}
 	//error_reporting($errlevel);
@@ -7707,7 +8206,7 @@ function SQL_ANDRO($sqlText) {
 }
 
 function SQL($sqlText,$noReport=false,$split80=true,$dbx=null) {
-	if (is_null($dbx)) { $dbx = $GLOBALS["dbconn1"];}
+	if (is_null($dbx)) { $dbx = $this->dbconn1;}
 	$retval = true;
 	$errlevel = error_reporting(0);
 	
@@ -7731,12 +8230,14 @@ function SQLFORMATBLANK($type,$fortheplan=false,$doubleplan=false) {
 	switch ($type) {
 		case "char": 
 		case "vchar":
-		case "text":
-		case "cbool":
-      case 'ssn':
-      case 'ph12':
+		case "text":            
+        case 'ssn':
+        case 'ph12':
 		case "gender":
 			return $this->SQLFORMATLITERAL('',$type,$fortheplan,$doubleplan);
+			break;
+   		case "cbool":
+			return $this->SQLFORMATLITERAL('N',$type,$fortheplan,$doubleplan);
 			break;
       case 'date':
       case 'dtime':
@@ -7797,7 +8298,7 @@ function FS_Prepare() {
 
 function FS_PrepareCheck() {
 	$this->LogStage("Confirming server has proper file permissions");
-	$grp = $this->Shellwhoami();
+	$grp = $this->ShellWhoAmI();
    global $parm;
 	$app = $GLOBALS["parm"]["APP"];
 	$scn = "/tmp/andro_fix_$app.sh";
@@ -7825,16 +8326,28 @@ function FS_PrepareCheck() {
 	// are completely clean, every single file is readable 
 	// and writable by the web server
 	//
-	$SCRIPT .= $this->FS_CHECKDIR($dir_pubx,$grp,true);
+    // KFD 12/21/07, process only directories named in node manager,
+    // lets you ignore directories you creae yourself.
+    //
+    $dbres=pg_query($GLOBALS["dbconna"],"SELECT * FROM appdirs");
+    $dirs =pg_fetch_all($dbres);
+    foreach($dirs as $dir) {
+        $dir_pubx2=$dir_pubx.$this->FS_ADDSLASH($dir['dirname']);
+        if(is_dir($dir_pubx2)) {
+            $SCRIPT .= $this->FS_CHECKDIR($dir_pubx2,$grp,true);
+        }
+    }
+	//$SCRIPT .= $this->FS_CHECKDIR($dir_pubx,$grp,true);
 	if ($SCRIPT<>"") {
 		return $this->FS_PrepareFail($SCRIPT);
-	} 
+	}
+    
    
-   return true;
+    return true;
 }
 
 function FS_PrepareMake() {
-	$grp = $this->Shellwhoami();
+	$grp = $this->ShellWhoAmI();
    global $parm;
 	$app = $GLOBALS["parm"]["APP"];
 	$dir_pub = $this->FS_ADDSLASH($GLOBALS["parm"]["DIR_PUBLIC"]);
@@ -8110,7 +8623,7 @@ function LogStart()
 	// established that we can actually write to it
 	//
 	$GLOBALS["log_file"] = "";
-	$grp = $this->Shellwhoami();
+	$grp = $this->ShellWhoAmI();
 	
 	if (!isset($GLOBALS["parm"])) {
 		$this->LogEntry("===================================================" );
@@ -8154,8 +8667,14 @@ function LogStart()
 	}
 	
 	// clear the log
-	$cmd = 'echo "" > '.$pLogPath;
-	`$cmd`;
+	// no need to depend on external system calls
+    $handle = fopen($pLogPath, 'w');
+    if (!$handle ) {
+           $this->LogEntry("Cannot open file ($pLogPath)");
+           return false;
+	}
+	fclose($handle);
+
 	$GLOBALS["log_file"] = $pLogPath;	
 
    //  get the password if necessary
@@ -8167,27 +8686,14 @@ function LogStart()
       // Called from CLI, Unix user must be priveleged or it won't work
       $GLOBALS['x_password']='';
    }
-   
-   /*  October 20, 2006.  No longer require a password in the file, 
-       either the logged on user is OK or we are running from the command
-       line as a priveleged user.
-	if (!isset($GLOBALS["x_password"])) {
-		$this->LogEntry("===================================================" );
-		$this->LogEntry(" ANDROMEDA UPGRADE STARTUP ERROR                   " );
-		$this->LogEntry(" >>> please set superuser password in         <<<  " );
-		$this->LogEntry(' >>> $GLOBALS["x_password"] before starting   <<<  ' );
-		$this->LogEntry("===================================================" );
-		return false;
-	}
-   */
 	
-	$parm = &$GLOBALS["parm"];
-   if(ArraySafe($parm,'ROLE_LOGIN','')=='') {
-      $parm['ROLE_LOGIN']='Y';
-   }
-   if(ArraySafe($parm,'FLAG_PWMD5','')=='') {
-      $parm['FLAG_PWMD5']='N';
-   }
+    $parm = &$GLOBALS["parm"];
+    if($this->zzArraySafe($parm,'ROLE_LOGIN','')=='') {
+        $parm['ROLE_LOGIN']='Y';
+    }
+    if($this->zzArraySafe($parm,'FLAG_PWMD5','')=='') {
+        $parm['FLAG_PWMD5']='N';
+    }
 
 	$parm["DIR_PUB"] = 
 		$this->FS_AddSlash($parm["DIR_PUBLIC"]).
@@ -8274,7 +8780,7 @@ function LogEntry($logText="",$Split80=false) {
 		}
 		
 		if ($GLOBALS["log_file"]<>"") {
-         file_put_contents($GLOBALS['log_file'],$logText,FILE_APPEND);
+         file_put_contents($GLOBALS['log_file'],$logText."\n",FILE_APPEND);
 			//$cmd = "echo \"$logText\" >> ".$GLOBALS["log_file"];
 			//`$cmd`;
 		}
@@ -8404,8 +8910,8 @@ function zzArrayAsCode($array,$level=0) {
 }
 
 // Returns the key if it exists, else blank
-function zzArraySafe($arr,$key) {
-	if (isset($arr[$key])) return $arr[$key]; else return "";
+function zzArraySafe($arr,$key,$default='') {
+	if (isset($arr[$key])) return $arr[$key]; else return $default;
 }
 
 function array_combine($arr1,$arr2) {
@@ -8435,8 +8941,17 @@ function fsCopyPath($src,$dst) {
 }
 
 
-function ShellWhoAmi() {
-   return $this->ShellExec('whoami');	
+function ShellWhoAmI() {
+   // By virtue of this small change this function needs to be renamed.
+   //
+   if ($this->isWindows()) {
+      // This will fail in IIS so run this from the command line.
+      echo "Is windows\n";
+      return $this->ArraySafe($_SERVER, "USERNAME", "");
+   } else {
+      echo "Not windows\n";
+      return $this->ShellExec('whoami');
+   }
 }
 
 function ShellExec($cmd) {
@@ -8458,7 +8973,7 @@ function GetOS() {
 }
 
 function isWindows() {
-   $x=strpos(ArraySafe($_ENV,'OS',''),'indows');
+   $x=eregi('WIN',PHP_OS);
    return $x===false ? false : true;
 }
 

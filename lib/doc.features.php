@@ -1,7 +1,7 @@
 <?php
 /**
 name:Features List
-parent:Introduction
+parent:Countdown to Release One
 
 This is the definitive guide to all of the features of
 Andromeda.  There are no separate lists for end-user features

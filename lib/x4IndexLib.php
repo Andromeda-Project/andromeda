@@ -19,134 +19,6 @@
    Boston, MA  02110-1301  USA 
    or visit http://www.gnu.org/licenses/gpl.html
 \* ================================================================== */
-// ==================================================================
-//
-// READ ME FIRST:
-//
-// Certain spots in the code are marked with "DEBUG HINT", and 
-// these spots contain instructions for how to observe what
-// is going on in this file
-//
-// --KFD 9/13/07
-//
-// ==================================================================
-// ==================================================================
-// X4 Files
-// Here is a basic history of Andromeda.  In the beginning we
-// had index->index_hidden->raxlib and class x_table.  These files
-// evolved and changed from July 2004 - July 2007.
-//
-// The first real big change was to go from x_table to x_table2
-// in 2005.  This class worked much better as far as the
-// framework went, but offered nothing new for programming.
-//
-// In late 2006 it became very clear that the database features of
-// Andromeda were doing pretty well, and it also became pretty 
-// clear that we had no coherent UI strategy to match the DB
-// strategy.  Various experimental efforts were done until July
-// 2007 with a general designation of "x3".  None of these was
-// expected to be a real strategy.
-//
-// In August 2007 I worked up the final strategy for the UI side
-// of things, and so was born "x4", the fourth generation of 
-// framework code.  Unlike x_table2, which was only one class,
-// and x3, which was a collection of experiments, x4 is meant to
-// gather 3 years of experience into an eventual complete rewrite
-// of the code.  Some basic ideas are:
-//
-// ONE:    x4IndexLib.php will eventually contain all of the 
-//         "core" code used for all most common tasks, including
-//         library code and class code.  There will be no 
-//         2nd file for a library and no 2nd file for a class.
-//         This is purely for performance reasons, for any given
-//         amount of code that must be loaded, the fewer actual
-//         files the better.  Also, x4 puts so much code into the
-//         browser that there is just not much going on 
-//         here any more.
-//
-// TWO:    For performance reasons, most core code is not object
-//         oriented.  Everything is in functions.  The exception 
-//         is the UI, because I find OOPy code seems to work very
-//         well for UI stuff.
-//
-// THREE:  This script is executing at global scope, but we never
-//         create global variables.  Our equivalent is the global
-//         associative array $AG (which means all globals).
-//         NOTE: one exception: $AGdir, a global variable containing
-//         the application's root directory, w/o trailing slash.
-//
-// FOUR:   Our function naming convention is to:
-//         -> Begin each function with either a prefix or
-//            a return type (like 'row' for a row) in lower case
-//         -> Do not use underscores to separate words
-//         -> Use sentence word order: getABlueLabel();
-//         -> Capitalize the first letter of each word, as in
-//            dbConnect()
-//
-// FIVE:   The library prefixes are:
-//         NOTE: as of 9/13/07, these need to be reviewed.
-//         db:   all general purpose db routines
-//         sql:  a sql command, as in sqlInsert,sqlDelete, etc.
-//         a:    returns any kind of array
-//         row:  returns a row
-//         arow: returns a numerically indexed array of rows
-//
-// SIX:    The roadmap for this file is to assume the existence
-//         of the original framework for all features, and then
-//         add features into this file one-by-one.  
-// 
-//
-// SEVEN:  We do not abstract against projected cases.  In other
-//         words, if we *think* we *might* need a function in the
-//         future, we DO NOT MAKE A FUNCTION NOW, because we don't
-//         need it now.  This allows complete focus on the job 
-//         at hand without cluttering it up.  It also prevents
-//         the problems we get when eventually we need the 
-//         function but the need is different than we thought and
-//         the function is not quite right, so we either convolute
-//         the function or make a new one, making matters worse.
-//         The time to make a function is when you need it, that's
-//         the only time you know you can get it right.
-//
-// EIGHT:  We make a function when:
-//         -> We need generalization.  So on the big day when we
-//            finally add mySQL support, we'll need a 
-//            function dbConnect() that will generalize
-//            pg_connect() and mysql_connect().
-//         -> We need functionality in more than one place.  So
-//            if we need to create a second database connection,
-//            we take the literal code in this file, move it into
-//            a function, call that function from the original
-//            spot, then call that function from the new spot.
-//
-// NINE:   We use the same variables over and over in this
-//         file.  These variables are:
-//
-//         $table  The name of a table
-//         $view   Name of a view.  Presumably the name returned
-//                 by ddViewFromTab(), which works out column- and
-//                 row-security and gives us the view the user
-//                 is allowed to use.
-//         $tabdd  Reference to a table's data dictionary
-//         $row    Associative array containing a database row,
-//                    keys are column names and values are, well,
-//                    values.  This is used for raw data coming 
-//                    from browser or database, which has not yet
-//                    been escaped or formatted.
-//         $sfrow  Associative array containing SQL-formatted values.
-//                    Keys are column names, and are valid.  
-//                    Values are formatted, escaped and quoted, such 
-//                    as ('date'=>"'2007-08-07'",'name'=>"'O''Reilly'")
-//         $whr    Associative array containing where clause values
-//         $sfwhr  See sfrow above
-//         $flat   alias to $tabdd['flat']
-//         $type   An Andromeda type, including simple types like
-//                    char and complex types like ssn.
-//
-//         $retval The value that will be returned from a function
-//         $x      temporary variable used for a line or three
-//
-// ==================================================================
 
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -180,7 +52,7 @@
 //
 //   -- KFD 3/15/07
 //
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if(!isset($AG['tmpPathInsert'])) {
    $ruri=$_SERVER['REQUEST_URI'];
    // If there is a "?", strip that off and everything past it
@@ -193,13 +65,6 @@ if(!isset($AG['tmpPathInsert'])) {
    if(substr($ruri,0,1)=='/') $ruri = substr($ruri,1);
    $AG['tmpPathInsert']=$ruri;
 }
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-// PATH.  We do not set a path.  We only need to know the
-//        top-level directory.
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-// ini_set("include_path")=....
-//$AG['dir']=realpath(dirname(__FILE__)).'/';
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 // INI settings
@@ -239,14 +104,6 @@ if(get_magic_quotes_gpc()==1) {
    }
 }
 
-
-// command line programs now exit, otherwise proceed
-// to routing
-if(!isset($_SERVER['HTTP_HOST'])) return;
-if(isset($force_cli))   return;
-if(isset($header_mode)) return;
-
-
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 // Connect to database.  This is not in a function because we 
 // never need to call it except for here.  Earlier versions of
@@ -276,6 +133,7 @@ else {
 // x4c_* contents of widgets like input and textarea
 // x4w_* where clause values for selects, updates and deletes
 // 
+// x4xMenu         Please return the menu
 // x4xAjax         Ajax direct database access
 // x4xRowRet       1 if we should return row after ins and upd
 // x4xPage         means a base page request
@@ -289,10 +147,16 @@ else {
 // implement security in the server. 
 // 
 if( ($x4xAjax = gp('x4xAjax')) <> '') {
-   x4index_ajax($x4xAjax);
+    x4index_ajax($x4xAjax);
 }
 if( ($x4xPage = gp('x4xPage')) <> '') {
-   x4index_page($x4xPage);
+    x4index_page($x4xPage);
+}
+if( ($x4xDropdown = gp('x4xDropdown')) <> '') {
+    x4index_dropdown($x4xDropdown);
+}
+if(gpExists('x4xMenu')) {
+    x4index_menu();
 }
 
 // Take the return values we care about and put them 
@@ -314,37 +178,219 @@ return;
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// DISPATCH HANDLING: Generate a menu
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+function x4index_menu() {
+    returnItem('menu','default',SessionGet('AGMENU'));
+}
+
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// DISPATCH HANDLING: Generate a menu
+//   Return data to a dynamic select box
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+function x4index_dropdown($table_id_fk) {
+  
+   // Strip a leading slash from the value
+   $gpletters=gp('gp_letters');
+   
+   // Pull the rows from handy library routine.
+   $rows=RowsForSelect($table_id_fk,$gpletters,array(),'',true);   
+
+   ob_start();
+   foreach($rows as $idx=>$row) {
+       $prev = $idx==0                ? '' : $rows[$idx-1]['skey'];
+       $next = $idx==(count($rows)-1) ? '' : $rows[$idx+1]['skey'];
+       $s = $row['skey'];
+       $tds='';
+       $x=-1;
+       foreach($row as $colname=>$colvalue) {
+           $x++;
+           if($colname=='skey') continue;
+           if($x==1) $value = $colvalue;
+           $tds.="<td>$colvalue";
+       }
+       echo "<tr id='as$s' 
+                 x_prev='$prev' x_next='$next' x_skey='$s'
+                 x_value='$value'
+            onmouseover='x4Select.mo(this,$s)'
+            onclick=\"x4Select.click('$value')\";                
+            >"
+            .$tds;
+   }
+   ri('x4Select','rows',ob_get_clean());
+}
+
+function RowsForSelect($table_id,$firstletters='',$matches=array(),$distinct='',$allcols=false) {
+   $table=ddTable($table_id);
+
+   // Determine which columns to pull and get them
+   // KFD 10/8/07, a DISTINCT means we are pulling a single column of 
+   //              a multiple column key, pull only that column
+   if($distinct<>'') {
+       $proj = $distinct;
+   }
+   else {
+       if(ArraySafe($table['projections'],'dropdown')<>'') {
+          $proj=$table['projections']['dropdown'];
+       }
+       if(ArraySafe($table['projections'],'_uisearch')<>'') {
+          $proj=$table['projections']['_uisearch'];
+       }
+       else {
+          $proj=$table['pks'];
+       }
+   }
+   $aproj=explode(',',$proj);
+   $acollist=array();
+   foreach($aproj as $aproj1) {
+      $acollist[]="COALESCE($aproj1,'')";
+   }
+   $collist=str_replace(','," || ' - ' || ",$proj);
+   //$collist = implode(" || ' - ' || ",$acollist);
+   //syslog($collist);
+   
+   // Get the primary key, and resolve which view we have perms for
+   // KFD 10/8/07, do only one column if passed
+   if($distinct<>'') {
+       $pk = $distinct;
+   }
+   else {
+       $pk = $table['pks'];
+   }
+   $view_id=ddViewFromTab($table_id);
+
+   // Initialize the filters
+   $aWhere=array();
+
+   // Generate a filter for each pk that exists in session ajaxvars.  
+   // There is a BIG unchecked for issue here, which is that a multi-column
+   //  PK must have *all but one* column supplied, and it then returns
+   //  the unsupplied column.
+   $pkeys   = explode(',',$table['pks']);
+   //$ajaxvars=afromGP('adl_');
+   //foreach($pkeys as $index=>$pkey) {
+   //   if(isset($ajaxvars[$pkey])) {
+   //      $aWhere[]="$pkey=".SQLFC($ajaxvars[$pkey]);
+   //      // This is important!  Unset the pk column, we'll pick the leftover
+   //      unset($pkeys[$index]);
+   //   }
+   //}
+   // If we did the multi-pk route, provide the missing column
+   //  as the key value
+   //if(count($ajaxvars)>0) {
+   //   $pk=implode(',',$pkeys);
+   //} 
+
+   // Determine if this is a filtered table
+   if(isset($table['flat']['flag_noselect'])) {
+      $aWhere[]= "COALESCE(flag_noselect,'N')<>'Y'";
+   }
+   
+   // Add more matches on 
+   foreach($matches as $matchcol=>$matchval) {
+      $aWhere[] = $matchcol.' = '.SQLFC($matchval); 
+   }
+   
+   
+   // If "firstletters" have been passed, we will filter each 
+   // select column on it
+   //
+   // KFD 8/8/07, a comma in first letters now means look in 
+   //             1st column only + second column only
+   $SLimit='';
+   $xWhere=array();
+   if($firstletters<>'') {
+      $SLimit="Limit 30 ";
+      if(strpos($firstletters,',')===false) {
+         // original code, search all columns
+         $implode=' OR ';
+         foreach($aproj as $aproj1) { 
+            $sl=strlen($firstletters);
+            $xWhere[]
+               ="SUBSTRING(LOWER($aproj1) FROM 1 FOR $sl)"
+               ."=".strtolower(SQLFC($firstletters));
+         }
+      }
+      else {
+         // New code 8/8/07, search first column, 2nd, third only,
+         // based on existence of commas
+         $implode=' AND ';
+         $afl = explode(',',$firstletters);
+         foreach($afl as $x=>$fl) {
+            $sl = strlen($fl);
+            $xWhere[]
+               ="SUBSTRING(LOWER({$aproj[$x+1]}) FROM 1 FOR $sl)"
+               ."=".strtolower(SQLFC($fl));
+         }
+      }
+   }
+   if(count($xWhere)>0) {
+      $aWhere[] = "(".implode($implode,$xWhere).")";
+   }
+   
+   // Finish off the where clause
+   if (count($aWhere)>0) {
+      $SWhere = "WHERE ".implode(' AND ',$aWhere);
+   }
+   else {
+      $SWhere = '';
+   }
+
+   // Execute and return
+   $sDistinct = $distinct<>'' ? ' DISTINCT ' : '';
+   $SOB=$aproj[0];
+   if($allcols) {
+       $sq="SELECT skey,$proj 
+              FROM $view_id 
+           $SWhere 
+             ORDER BY 3 $SLimit";
+   }
+   else {
+       $sq="SELECT $sDistinct $pk as _value,$collist as _display 
+              FROM $view_id 
+           $SWhere 
+             ORDER BY $SOB $SLimit ";
+   }
+   $rows=x4SQLAllrows($sq);
+   return $rows;    
+}
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // DISPATCH HANDLING: Ajax direct database access
 //
 // You may be saying: OH NO!! DIRECT DATABASE ACCESS!!!  
 // If so, read up on Andromeda Security.
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 function x4index_ajax($x4xAjax) {
-   // For all raw access, there will be an array
-   // of column values, and a table to hit.
-   $row=rowFromGP('x4c_');  // values
-   $whr=rowFromGP('x4w_');  // where clause values
-   $table=gp('x4xTable');     // The table name
-   $rr =gp('x4xRetRow',0);  // row return command
-   
-   // There are four different database functions, so there
-   // are four library routines we might call.
-   $ra=$r1=false;
-   switch(strtolower($x4xAjax)) {
-   case 'del':   x4sqlDel($table,$whr);              break;
-   case 'sel':   $ra=x4sqlSel($table,$whr);          break;
-   case 'ins':   $r1=x4sqlIns($table,$row,$rr);      break;
-   case 'upd':   $r1=x4sqlUpd($table,$row,$whr,$rr); break;
-   case 'bsrch': searchBrowse($table,$whr);          break;
-   }
-   if(is_array($r1)) {
-      ri('data',$table,$r1);
-   }
-   if(is_array($ra)) {
-      foreach($ra as $ra1) {
-         ri('data',$table,$ra1);
-      }
-   }
+    // For all raw access, there will be an array
+    // of column values, and a table to hit.
+    $row=rowFromGP('x4c_');  // values
+    $whr=rowFromGP('x4w_');  // where clause values
+    $table=gp('x4xTable');     // The table name
+    $rr =gp('x4xRetRow',0);  // row return command
+    
+    // There are four different database functions, so there
+    // are four library routines we might call.
+    $ra=$r1=false;
+    switch(strtolower($x4xAjax)) {
+    case 'del':   x4sqlDel($table,$whr);              break;
+    case 'sel':   $ra=x4sqlSel($table,$whr);          break;
+    case 'ins':   $r1=x4sqlIns($table,$row,$rr);      break;
+    case 'upd':   $r1=x4sqlUpd($table,$row,$whr,$rr); break;
+    case 'bsrch': searchBrowse($table,$whr);          break;
+    }
+    if(is_array($r1)) {
+        foreach($r1 as $key=>$value) {
+            if(is_numeric($key)) unset($r1[$key]);
+        }
+        ri('data',$table,$r1);
+    }
+    if(is_array($ra)) {
+        foreach($ra as $ra1) {
+            ri('data',$table,$ra1);
+        }
+    }
 }
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // DISPATCH HANDLING: Base Page request
@@ -353,16 +399,70 @@ function x4index_ajax($x4xAjax) {
 // 'give me the orders page'
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 function x4index_page($x4xPage) {
-   // No code in the custom branch yet.  We'll do that next.
-   if(file_exists('application/'.$x4xPage.'.php')) {
-      // nothing happens here yet
-   } 
-   else {
-      $ox4xPage = new x4Page($x4xPage);
-      $ox4xPage->makeDefaultLayout();
-   }
-   // Return the item's HTML as the main content
-   $ox4xPage->makeJSONForBrowser();
+    // Begin by loading the data dictionary.  If there is
+    // none, not to worry, it comes back blank.
+    $ref = ddTable($x4xPage,true);
+    if(isset($ref['projections'])) {
+        foreach($ref['projections'] as $key=>$list) {
+            $ref['aProjections'][$key] = explode(',',$list);
+        }
+    }
+
+    // Now check for a custom page and its various tricks.
+    global $AGdir;
+    if(file_exists("$AGdir/application/$x4xPage.php")) {
+        include "$AGdir/application/$x4xPage.php";
+        $oPage = new $x4xPage();
+        
+        // KFD 12/31/07 (Happy new year!) If a server-side method
+        //              call, branch out to that instead.  Second
+        //              half of branch is all default stuff.
+        //
+        if(gpExists('x4xMethod')) {
+            $method = gp('x4xMethod');
+            if(method_exists($oPage,$method)) {
+                $ref['x'] = 0;  // prevents "Page not found" error,
+                                // even if nothing happens in code
+                $oPage->$method();
+            }
+            else {
+                ri('message','error'
+                    ,'Page Method Not found: '.$x4xPage.'.'.$method
+                );
+            }
+        }
+        else {
+            // execute the build code if there
+            if(method_exists($oPage,'build')) {
+                $oPage->build($ref);   
+            }
+            
+            // load literal html if it is there
+            if(method_exists($oPage,'pageHTML')) {
+                ob_start();
+                $oPage->pageHTML();
+                $ref['HTML'] = ob_get_clean();
+            }
+            
+            // Load a script if it is there
+            if(method_exists($oPage,'pageScript')) {
+                ob_start();
+                $oPage->pageScript();
+                $ref['Script'] = ob_get_clean();
+                $ref['Script'] = str_replace('<script>' ,'',$ref['Script']); 
+                $ref['Script'] = str_replace('</script>','',$ref['Script']); 
+            }
+        }
+    }
+    
+    // An empty array means nothing was loaded, we
+    // have a bad page request
+    if(count($ref)==0) {
+        ri('message','error','Page Not found');
+    }
+
+    ReturnItem('page','data',$ref);
+    return;
 }
 // ==================================================================
 // LIBRARY: Get / Post Variables
@@ -463,7 +563,12 @@ parm:any value
 Shortcut to [[returnItem]].
 */
 function ri($rettype,$retname,$retvalue) {
-   returnItem($rettype,$retname,$retvalue);
+   $r=arraySafe($GLOBALS['AG'],'returnItems',array());
+   $r[$rettype][$retname][] = $retvalue;
+   $GLOBALS['AG']['returnItems'] = $r;
+}
+function riarray($rettype,$retname,$retarray) {
+    $GLOBALS['AG']['returnItems'][$rettype][$retname]=$retarray;
 }
 
 /**
@@ -506,10 +611,9 @@ innerHTML of that element.
 
 */
 function returnItem($rettype,$retname,$retvalue) {
-   $r=arraySafe($GLOBALS['AG'],'returnItems',array());
-   $r[$rettype][$retname][] = $retvalue;
-   $GLOBALS['AG']['returnItems'] = $r;
+   $GLOBALS['AG']['returnItems'][$rettype][$retname] = $retvalue;
 }
+
 
 /**
 name:returnItems
@@ -620,24 +724,16 @@ function SessionReset() {
    }
 }
 
-function returnJSON($array) {
-    // DEBUG HINT:
-    // 
-    // Follow these instructions using the DEVELOP project
-    // (distributed with Andromeda)
-    // 
-    // FIRST, unrem the lines below
-    // SECOND, enter this URL: http:/...../x4index.php?x4xPage=flat1
-    // 
-    // This will show you, in the form of javascript, what the
-    // browser is going to be given.
-    /*
-    echo "<pre>";
-    print_r($array);
-    echo "</pre>";
-    return;
-    */
-    // DEBUG HINT: END
+function returnJSON(&$array) {
+    // Make sure mixed object/arrays are converted
+    // completely over to arrays
+    // PERFORMANCE HARD-CODED TRICK.  If "data" exists
+    //  we don't have to convert object to array, very
+    //  big gain to skip that!
+    //if(!isset($array['data'])) {
+    //    $array = ObjectToArray($array);
+    //}
+    
     if(function_exists('json_encode')) {
         x4Debug("json_encode exists");
         return json_encode($array);
@@ -648,21 +744,42 @@ function returnJSON($array) {
     }      
 }
 
+function ObjectToArray($obj) {
+    $retval=array();
+    
+    foreach($obj as $key=>$value) {
+        if(is_array($value) || is_object($value)) {
+            $retval[$key] = ObjectToArray($value);
+        }
+        else {
+            $retval[$key] = $value;
+        }
+    }
+    return $retval;
+}
+
 // ==================================================================
 // LIBRARY: Data Dictionary Access
 // Prefix/Suffix: dd
 // ==================================================================
-function ddTable($table) {
+function ddTable($table,$suppressError=false) {
     global $AGdir;
     @include_once("$AGdir/generated/ddtable_$table.php");
     if (!isset($GLOBALS['AG']['tables'][$table])) {
-        x4Error('No data dictionary available for '.$table);
+        if(!$suppressError) {
+            x4Error('No data dictionary available for '.$table);
+        }
         return array();
     }
     else {
         $retval=&$GLOBALS['AG']['tables'][$table];
         return $retval;
     }
+}
+
+function returnDD($table_id) {
+    $table_dd = ddTable($table_id);
+    ri('dd',$table_id,$table_dd);
 }
 
 /**
@@ -858,6 +975,10 @@ function sqlFormatRow($tabdd,$row) {
    return $retval;
 }
 
+function sqlFC($v,$clip=0) {
+    return sqlFormat('char',$v,$clip);
+}
+
 /**
 name:sqlFormat
 parm:string type
@@ -1020,61 +1141,61 @@ function hprint_r($var) {
 // Prefix/Suffix: x4sql
 // ==================================================================
 function x4sqlIns($table,$row,$rowret=0) {
-   $tabdd = ddTable($table);
-   if(count($tabdd)==0) {
-      x4Error('Cannot insert to '.$table.', no data dictionary');
-      return;
-   }
- 	$flat = &$tabdd["flat"];
-
-   // Convert all row values into sql-formatted values,
-   // only known columns come back from this call
-   $sfrow=sqlFormatRow($tabdd,$row);
-
-   // Drop the columns we are not allowed to insert to
-   $noWrites=ddNoWrites();
-   foreach($sfrow as $column=>$value) {
-      if(in_array($flat[$column]['automation_id'],$noWrites)) {
-         unset($sfrow[$column]);
-      }
-   }
-   
-   // Assemble and execute the SQL
-   $view = ddViewFromTab($table);
-	$sq='INSERT INTO '.$view
-      .' ('.implode(',',array_keys($sfrow)).')'
-      .' values '
-      .' ('.implode(',',$sfrow).')';
-   x4SQL($sq);
-   
-   // Fetch the skey value 
-	$notices = pg_last_notice($GLOBALS['AG']['dbconn']);
-   $anotices=explode(' ',$notices);
-   $retval = 0;
-   if(count($anotices)>1) {
-      $retval = array_pop($anotices);
-   }
-	//$matches = array();
-	//preg_match_all("/SKEY(\D*)(\d*);/",$notices,$matches);
-   //hprint_r($matches);
-	//if(isset($matches[2][0])) {
-   //   $retval = $matches[2][0];
-	//}
-   
-   // if row return was true, and no errors, return
-   // the row instead of the skey value
-   if($rowret==0) {
-      return $retval;
-   }
-   else {
-      if(x4Errors()) {
-         return array();
-      }
-      else {
-         $sq="SELECT * FROM $view WHERE skey=$retval";
-         return x4sqlOneRow($sq);
-      }
-   }
+    $tabdd = ddTable($table);
+    if(count($tabdd)==0) {
+        x4Error('Cannot insert to '.$table.', no data dictionary');
+        return;
+    }
+    $flat = &$tabdd["flat"];
+    
+    // Convert all row values into sql-formatted values,
+    // only known columns come back from this call
+    $sfrow=sqlFormatRow($tabdd,$row);
+    
+    // Drop the columns we are not allowed to insert to
+    $noWrites=ddNoWrites();
+    foreach($sfrow as $column=>$value) {
+        if(in_array($flat[$column]['automation_id'],$noWrites)) {
+            unset($sfrow[$column]);
+        }
+    }
+    
+    // Assemble and execute the SQL
+    $view = ddViewFromTab($table);
+    $sq='INSERT INTO '.$view
+        .' ('.implode(',',array_keys($sfrow)).')'
+        .' values '
+        .' ('.implode(',',$sfrow).')';
+    x4SQL($sq);
+    
+    // Fetch the skey value 
+    $notices = pg_last_notice($GLOBALS['AG']['dbconn']);
+    $anotices=explode(' ',$notices);
+    $retval = 0;
+    if(count($anotices)>1) {
+        $retval = array_pop($anotices);
+    }
+    //$matches = array();
+    //preg_match_all("/SKEY(\D*)(\d*);/",$notices,$matches);
+    //hprint_r($matches);
+    //if(isset($matches[2][0])) {
+    //   $retval = $matches[2][0];
+    //}
+    
+    // if row return was true, and no errors, return
+    // the row instead of the skey value
+    if($rowret==0) {
+        return $retval;
+    }
+    else {
+        if(x4Errors()) {
+            return array();
+        }
+        else {
+            $sq="SELECT * FROM $view WHERE skey=$retval";
+            return x4sqlOneRow($sq);
+        }
+    }
 }
   
 function x4sqlDel($table,$whr) {
@@ -1121,6 +1242,7 @@ function x4sqlSel($table,$whr) {
     }
     
     $sq='SELECT * FROM '.$view.$swhere.$sSort;
+    ri('message','debug',$sq);
     return x4SQLAllRows($sq);
 }
 
@@ -1199,6 +1321,10 @@ function x4SQL($sql) {
     return $results;   
 }
 
+function x4SQLRowCount($dbres) {
+    return pg_numrows($dbres);
+}
+
 function x4SQLOneRow($sql) {
 	$results = x4SQL($sql);
 	$row = pg_fetch_array($results);
@@ -1231,11 +1357,11 @@ function x4SQLAllRows($sql,$colname='') {
 // is really fundamentally different, it's all about the LIKE stuff.
 // ==================================================================
 function searchBrowse($table,$whr) {
-   // This function requires a few other things also
+   // Grab the parameters of interest to us
    $sortCol = gp('sortCol');
    $sortDir = gp('sortDir');
    $columns = gp('columns');
-   $limit   = gp('limit');
+   $offset  = gp('offset',0);
    
    $tabdd = ddTable($table);
    $flat  = &$tabdd['flat'];
@@ -1256,353 +1382,75 @@ function searchBrowse($table,$whr) {
       }
    }
    
+   // KFD 12/1/07, removed this, prevent returnAll feature from working
    // If there are no where clauses, forget it, return w/o doing anything
-   if(count($sflike)==0) return;
+   //if(count($sflike)==0) return;
+   $sWhere = count($sflike)==0 ? '' : ' WHERE '.implode(' AND ',$sflike);
    
    $view=ddViewFromTab($table);
    $sq="SELECT *
           FROM $view
-         WHERE ".implode(' AND ',$sflike)."
-         ORDER BY $sortCol $sortDir
-         LIMIT $limit";
+         $sWhere
+         ORDER BY $sortCol $sortDir LIMIT 1000";
    $results=x4SQLAllRows($sq);
-   foreach($results as $row) {
-      ri('data',$table,$row);
-   }
+   ReturnItem('data',$table,$results);
 }
 
 // KFD 5/17/07, support lists, ranges, and greater/lesser
 // Was rff_OneCol in raxlib.php, converted to browseSearchOneCol()
 // by KFD 8/29/07
 function searchBrowseOneCol($type,$colname,$tcv) {
-   $values=explode(',',$tcv);
-   $sql_new=array();
-   foreach($values as $tcv) {
-      $aStrings=array('char'=>0,'vchar'=>0,'text'=>0);
-      if(substr($tcv,0,1)=='>' || substr($tcv,0,1)=='<') {
-         // This is a greater than/less than situation,
-         // we ignore anything else they may have done
-         $new=$colname.substr($tcv,0,1).sqlFormat($type,substr($tcv,1));
-      }
-      elseif(strpos($tcv,'-')!==false && $type<>'ph12') {
-         list($beg,$end)=explode('-',$tcv);
-         $new=$colname.' BETWEEN ' 
-            .sqlFormat($type,$beg)
-            .' AND '
-            .sqlFormat($type,$end);
-      }
-      else {
-         if(! isset($aStrings[$type]) && strpos($tcv,'%')!==false) {
-            $new="cast($colname as varchar) like '$tcv'";
-         }
-         else {
-            $tcsql = sqlFormat($type,$tcv);
-            if(substr($tcsql,0,1)!="'" || $type=='date' || $type=='dtime') {
-               $new=$colname."=".$tcsql;
+    $values=explode(',',$tcv);
+    $sql_new=array();
+    foreach($values as $tcv) {
+        if(trim($tcv)=='') continue;
+        if($tcv=='*') $tcv='%';
+        $tcv = trim(strtoupper($tcv));
+        if(in_array($type,array('int','numb','date','time'))) {
+            $tcv=preg_replace('/[^0-9]/','',$tcv);
+        }
+        
+        // This is a greater than/less than situation,
+        // we ignore anything else they may have done
+        if(substr($tcv,0,1)=='>' || substr($tcv,0,1)=='<') {
+            $new=$colname.substr($tcv,0,1).sqlFormat($type,substr($tcv,1));
+            $sql_new[]="($new)";
+            continue;
+        }
+        
+        if(strpos($tcv,'-')!==false  && $type<>'ph12' && $type<>'ssn') {
+            list($beg,$end)=explode('-',$tcv);
+            x4Debug('-'.$end.'-');
+            if(trim($end)=='') {
+                $new=" UPPER($colname) like '".strtoupper($beg)."%'";                
             }
             else {
-               $tcsql = str_replace("'","''",$tcv); 
-               $new
-                  ="(    LOWER($colname) like '".strtolower($tcsql)."%'"
-                  ."  OR "
-                  ."     UPPER($colname) like '".strtoupper($tcsql)."%')";
+                $slbeg = strlen($beg);
+                $slend = strlen($end);
+                $new="SUBSTR($colname,1,$slbeg) >= ".sqlFormat($type,$beg)
+                    .' AND '
+                    ."SUBSTR($colname,1,$slend) <= ".sqlFormat($type,$end);
             }
-         }
-      }
-      $sql_new[]="($new)";
-   }
-   return implode(" OR ",$sql_new);
-}
-// ==================================================================
-// ==================================================================
-//
-// CLASS: x4Page 
-//
-// The basic class for generating a page.  The basic purpose
-// of this class is to build a hierarchy of "UI Objects".  These
-// are objects with properties that describe the UI.  In the case
-// of framework default code, all of these properties come 
-// straight from the data dictionary.
-//
-// The object hierarchy is then converted into javascript that
-// describes an "x4global" object.  This script is sent to the
-// browser as JSON, where it is eval'd, which creates the 
-// x4global object.  The return handler in the browser must then
-// walk through the x4global object and create objects out of
-// Javascript prototypes and tell them to initialize themselves.
-// ==================================================================
-// ==================================================================
-class x4Page {
-    // ##############################################################
-    // We believe this will likely be the only method a programmer
-    // would override.
-    // ##############################################################
-    function makeDefaultLayout() {
-        // Add a tab bar, then the browse and then the detail
-        // That's it!  Everything else occurs in the browser!
-        $this->x4root = new x4UIObject('blank');
-        $this->x4root->AddUIObject('titleBar',$this->x4Page);
-        $tab = $this->x4root->AddUIObject('tabBar'); 
-        $tab->AddUIObject('browse',$this->x4Page);
-        $tab->AddUIObject('detail',$this->x4Page);
-
-        // Now look for child tables that are displayed in grids
-        $tabdd = ddTable($this->x4Page);
-        $kids  = ArraySafe($tabdd,'fk_children',array());
-        foreach($kids as $table_child=>$table_info) {
-            $display = trim(ArraySafe($table_info,'uidisplay','drilldown'));
-            if($display=='grid') {
-                $tab->AddUIObject('grid',$table_child,$this->x4Page);
-            }
+            $sql_new[]="($new)";
+            continue;
         }
-    }
-    
-    // ##############################################################
-    // These are the methods that a programmer would not override
-    // ##############################################################
-    // Constructor assigns table name only, loads data dictionary
-    function x4Page($x4Page='') {
-        $this->x4Page = $x4Page;
-        
-        global $AGdir;
-        $PAGES = array();                // avoid annoying compiler warning
-        include("$AGdir/generated/ddpages.php");  // provided by builder
-        $this->pageTitle = $PAGES[$x4Page];
-    }
 
-    function makeJSONForBrowser() {
-        ob_start();
-        echo "\nx4global = new Object();";
-        echo "\nx4global.pageTitle = '".$this->pageTitle."'";
-        $this->makeJSONForBrowserRecurse($this->x4root,'x4global');
-        $script = ob_get_clean();
-        ri('script','x4global',$script);
-    }
-    
-    function makeJSONForBrowserRecurse($ArrOrObj,$prefix) {
-        foreach($ArrOrObj as $key=>$value) {
-            if(is_array($value) || is_object($value)) continue;
-            if(strpos($key,'Function')===false) {
-                $value = "'$value'";
-            }
-            $xkey = '[\''.$key.'\']';
-            echo "\n$prefix$xkey = $value;";
-        }
-        // Second pass, recurse sub-arrays and sub-objects
-        foreach($ArrOrObj as $key=>$value) {
-            if(!is_array($value) && !is_object($value)) continue;
-            //if(is_numeric($key)) $key = 'x'.$key;
-            $xkey = '[\''.$key.'\']';
-            echo "\n$prefix$xkey = new Object();";
-            $this->makeJSONForBrowserRecurse($value,$prefix.$xkey);
-        }
-    }   
-}
-// ----- END OF CLASS x4Page, if you can believe that!
-
-// ==================================================================
-// ==================================================================
-//
-// CLASS: x4UIObject
-//
-// The job of x4Page (above) is to create a hierarchy of
-// x4UIObject Objects.  The constructor expects a type and
-// possibly a table.  This class contains code that will
-// handle all simple framework types, such as titleBar, 
-// tabBar, detail, browse, and grid.  There are no subclasses
-// for those items, as things are not complex as of 9/14/07
-// to need subclasses.
-//
-// ==================================================================
-// ==================================================================
-class x4UIObject {
-    // Default constructor creates a blank item and then
-    // calls any framework code to assign special properties. 
-    function x4UIObject($objectType='blank',$table='',$parentTable='') {
-        $this->objectType = $objectType;
-
-        // These routines will add specialized properties 
-        // that will be used by the browser to generate HTML elements.
-        // Note that there is absolutely no actual HTML generation
-        // going on in PHP, we are generating them on the browser.
-        switch($objectType) {
-        case 'tabBar':   
-        case 'blank':    break;
-        case 'titleBar': $this->makeTitleBar($this,$table);
-        case 'detail':   $this->makeDetail(  $this,$table);
-        case 'grid':
-        case 'browse':   $this->makeBrowse(  $this,$table,$parentTable);
-        }
-    }
-    
-    // This constructor makes code in x4Page make more sense,
-    // see the x4Page::makeDefaultLayout() to see how it is used
-    function AddUIObject($objectType='blank',$table='blank',$parentTable='') {
-        // Make a new object
-        $x = new X4UIObject($objectType,$table,$parentTable);
-        $this->kids[] = $x;
-        $ref = &$x;
-        return $ref;
-    }    
-    
-    // This is a shortcut for adding HTML objects instead of our
-    // framework-style objects
-    function AddHTMLObject($tag,$innerHTML='',$className='') {
-        $x = new X4UIObject($tag);
-        $x->className = $className;
-        $x->innerHTML = $innerHTML;
-        $x->flagHTML  = 'Y';
-        $this->kids[] = $x;
-        $ref = &$x;
-        return $ref;
-    }
-
-    // This is a constructor to put in a stand-alone input
-    function AddInput($info) {
-        $x = new X4UIObject('input');
-        $x->column = $info;
-        $this->kids[] = $x;
-        $ref = &$x;
-        return $ref;
-    }
-    
-    // ---------------------------------------------------------
-    // MAKE ROUTINE: titleBar
-    // ---------------------------------------------------------
-    function makeTitleBar(&$ref,$x4Page) {
-        $ref->x4Page = $x4Page;
-        
-        global $AGdir;
-        $PAGES = array();                // avoid annoying compiler warning
-        include("$AGdir/generated/ddpages.php");  // provided by builder
-        $ref->title = $PAGES[$x4Page];
-    }
-        
-    // ---------------------------------------------------------
-    // MAKE ROUTINE: detail
-    // ---------------------------------------------------------
-    function makeDetail(&$ref,$x4Page,$custom=false) {
-        $ref->x4Page = $x4Page;
-        $ref->table  = $x4Page;
-        
-        // Custom is boring, just leave now so they can do their
-        // own thing.
-        if($custom) return;
-        
-        // Get a list of the columns we will be using, then load
-        // up the data dictionary.
-        $acols = ddColumnsFromProjection($x4Page);
-        $tabdd = ddTable($x4Page);
-        
-        // Now build a standard layout
-        $htab = $this->AddHTMLObject('TABLE','','x4Detail');
-        foreach($acols as $colname) {
-            // Make a table row
-            $hrow = $htab->AddHTMLObject('TR');
-            // Add the caption as a simple HTML element with innerhtml
-            // and a class assignment
-            $hrow->AddHTMLObject(
-                'TD'
-                ,$tabdd['flat'][$colname]['description']
-                ,'x4StandardCaption'
-            );
-            // Add the input as an HTML element with no innerHTML, and
-            // a class assignment, because....
-            $hinp = $hrow->AddHTMLObject('TD','','x4StandardInput');
-            // ...we will add the input as a framework object
-            $ci = $this->columnStats($tabdd['flat'][$colname]);
-            $hinp->AddInput($ci);
-        }
-    }
-
-    // ---------------------------------------------------------
-    // MAKE ROUTINE: browse
-    //
-    // As of 9/13/07 this is basically a copy of detail, 
-    // with the only difference being the projection that
-    // was pulled.  Here we pull '_uisearch'
-    // On 9/14/07 put in a few more differences for browse/grid
-    // ---------------------------------------------------------
-    function makeBrowse(&$ref,$x4Page,$parentTable='') {
-        $ref->x4Page = $x4Page;
-        $ref->table  = $x4Page;
-
-        // Get a list of the columns we will be using, then load
-        // up the data dictionary.
-        $acols = ddColumnsFromProjection($x4Page,'_uisearch');
-        $tabdd = ddTable($x4Page);
-
-        // Assume grid if a parent table is named
-        if($parentTable<>'') {
-            $ref->caption     = $tabdd['description'];
-            $ref->parentTable = $parentTable;
-            
-            // get pk of parent table and provide it
-            $tabddp = ddTable($parentTable);
-            $ref->parTabPK = $tabddp['pks'];
+        if(! isset($aStrings[$type]) && strpos($tcv,'%')!==false) {
+            $new="cast($colname as varchar) like '$tcv'";
         }
         else {
-            // This is assumed to be a browse
-            $ref->limit   = 15;
-            $ref->sortCol = $acols[0];
-            $ref->sortDir = 'ASC';
-        }
-        // This holds info about data returned from ajax calls
-        $ref->collist = implode(',',$acols);
-        $ref->data['rows'] = array();
-        $ref->data['rowCount']   = 0;
-        $ref->data['rowSelected']= 0;
-        
-        // Loop through the columns and assign properties
-        foreach($acols as $colname) {
-            if(isset($tabdd['flat'][$colname])) {
-                // $ci is "column Information"
-                $ci = &$tabdd['flat'][$colname];
-                // Build the array and assign it
-                $ref->columns[$colname] = $this->columnStats($ci);
+            $tcsql = sqlFormat($type,$tcv);
+            if(substr($tcsql,0,1)!="'" || $type=='date' || $type=='dtime') {
+                $new=$colname."=".$tcsql;
+            }
+            else {
+                $tcsql = str_replace("'","''",$tcv); 
+                $new=" UPPER($colname) like '".strtoupper($tcsql)."%'";
             }
         }
+        $sql_new[]="($new)";
     }
-    
-    // ---------------------------------------------------------
-    // HELPER ROUTINE: columnStats
-    //
-    // Builds an array of the essential information about a
-    // column and returns it.  Used to generate the properties
-    // that are returned to the browser in x4global.
-    // ---------------------------------------------------------
-    function columnStats($ci) {
-        $col = array();
-        $this->columnStatsOne($col,$ci,'name','column_id');
-        $this->columnStatsOne($col,$ci,'table','table_id');
-        $this->columnStatsOne($col,$ci,'description');
-        $this->columnStatsOne($col,$ci,'type_id');
-        $this->columnStatsOne($col,$ci,'formshort');
-        $this->columnStatsOne($col,$ci,'dispsize');
-        $this->columnStatsOne($col,$ci,'colprec');
-        $this->columnStatsOne($col,$ci,'colscale');
-        $this->columnStatsOne($col,$ci,'uiro');
-        $this->columnStatsOne($col,$ci,'primary_key');
-        $this->columnStatsOne($col,$ci,'automation_id');
-        $this->columnStatsOne($col,$ci,'auto_formula');
-        $this->columnStatsOne($col,$ci,'table_id_fko');
-        $this->columnStatsOne($col,$ci,'fkdisplay');
-        return $col;
-    }
-    
-    function columnStatsOne(&$dest,&$source,$dname,$sname='') {
-        if($sname=='') $sname = $dname;
-        
-        // If the source value is blank, don't send it, that reduces
-        // data sent over the wire.  The javascript on the other end
-        // has code that will return blank values for non-existent
-        // properties, which makes it all come out in the end.
-        if(trim($source[$sname])=='') {
-            return;
-        }
-        else {
-            $dest[$dname] = trim($source[$sname]);
-        }
-    }
+    $retval = implode(" OR ",$sql_new);
+    return $retval;
 }
 ?>

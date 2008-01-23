@@ -243,9 +243,11 @@ if (window.attachEvent) window.attachEvent("onload", sfHover);
 					<?php } ?>
 				</tr>
 			</table>
+            <?php if(! (vgfGet('x4')===true && LoggedIn())) {?>
 			<div id="bot-footer">
 				<?php mosLoadModules('footer', -1); ?>
 			</div>
+            <?php } ?>
 		</div>
 		<div id="bot-rocket">
 			<a href="http://www.rockettheme.com"><span class="rocket">&nbsp;</span></a>
