@@ -381,6 +381,9 @@ column formshort  { type_id: vchar; colprec: 40; colscale: 0; description: DDL t
 column srvtype    { type_id: vchar; colprec: 5;  colscale: 0; description: Server Type;  }
 column uiwithnext { type_id: char;  colprec: 1;  colscale: 0; description: UI Keep With Next; }
 column dispsize   { type_id: char;  colprec: 10; colscale: 0; description: Explicit UI Display Width; }
+column uisearch_ignore_dash {
+    type_id: char; colprec: 1; description: Ignore Dash;
+}
 table type_exps {
 	module: datadict;
 	description: Column Type Expansions;
@@ -388,38 +391,38 @@ table type_exps {
 
 	foreign_key types { uisearch: Y; primary_key: Y; }	
 	column { srvtype; primary_key: Y;}
-	column { formula;formshort;uiwithnext;dispsize }
+	column { formula;formshort;uiwithnext;dispsize ;uisearch_ignore_dash;}
 	column { skey; skey_quiet; _agg; }
 }
 
 content type_exps {
-	columns { type_id;srvtype;formula;formshort;uiwithnext;dispsize }
+	columns { type_id;srvtype;formula;formshort;uiwithnext;dispsize;uisearch_ignore_dash; }
 		// Fundamental or common types
-	values { char  ; PGSQL;char(<colprec>)              ;char    ;N;<colprec>; }
-	values { vchar ; PGSQL;varchar(<colprec>)           ;varchar ;N;<colprec>; }
-	values { numb  ; PGSQL;numeric(<colprec>,<colscale>);numb    ;N;<colprec>; }
-	values { money ; PGSQL;numeric(14,2)                ;numb    ;N;14       ; }
-	values { dtime ; PGSQL;timestamp;timestamp;N;23; }
-	values { int   ; PGSQL;int      ;int      ;N;8 ; }
-	values { text  ; PGSQL;text     ;text     ;N;0 ; }
-	values { date  ; PGSQL;date     ;date     ;N;11; }
+    values { char  ; PGSQL;char(<colprec>)              ;char    ;N;<colprec>; N; }
+	values { vchar ; PGSQL;varchar(<colprec>)           ;varchar ;N;<colprec>;  N;}
+	values { numb  ; PGSQL;numeric(<colprec>,<colscale>);numb    ;N;<colprec>;  N;}
+	values { money ; PGSQL;numeric(14,2)                ;numb    ;N;14       ;  N;}
+	values { dtime ; PGSQL;timestamp;timestamp;N;23;  N;}
+	values { int   ; PGSQL;int      ;int      ;N;8 ;  N;}
+	values { text  ; PGSQL;text     ;text     ;N;0 ;  N;}
+	values { date  ; PGSQL;date     ;date     ;N;11;  N;}
 		// Special types; fundamentals with extra behavior
-	values { time  ; PGSQL;int      ;int      ;N;11 ; }
-	values { cbool ; PGSQL;char(1)  ;char     ;N;1 ; }  // Boolean as character Y/N
-	values { gender; PGSQL;char(1)  ;char     ;N;1 ; }  // Sex; hardcoded to accept M/F
-	values { url   ; PGSQL;char(50) ;char     ;N;40; }  // UI should incorporate hyperlink
-	values { obj   ; PGSQL;char(50) ;char     ;N;40; }  // Webserver should stream/return file
+	values { time  ; PGSQL;int      ;int      ;N;11 ;  N;}
+	values { cbool ; PGSQL;char(1)  ;char     ;N;1 ;  N;}  // Boolean as character Y/N
+	values { gender; PGSQL;char(1)  ;char     ;N;1 ;  N;}  // Sex; hardcoded to accept M/F
+	values { url   ; PGSQL;char(50) ;char     ;N;40;  Y;}  // UI should incorporate hyperlink
+	values { obj   ; PGSQL;char(50) ;char     ;N;40;  N;}  // Webserver should stream/return file
     // Special types that are just characters with formatting
-    values { ph12   ;PGSQL;char(12) ;char     ;N;12; }
-    values { ssn    ;PGSQL;char(11) ;char     ;N;11; }
+    values { ph12   ;PGSQL;char(12) ;char     ;N;12;  Y;}
+    values { ssn    ;PGSQL;char(11) ;char     ;N;11;  N;}
     // KFD 9/7/07, when this was reintroduced we made it a text field
     //    instead of bytea, it is *so* much easier
-    values { mime-h; PGSQL;text     ;text     ;N;99; }
+    values { mime-h; PGSQL;text     ;text     ;N;99;  N;}
 	// KFD 9/7/07, these were all experimental back in '04 and '05 and
     //     are not being used.  
-	values { mime-x; PGSQL;text     ;text     ;N;99; }
-	values { mime-b; PGSQL;bytea    ;bytea    ;N;99; }
-	values { mime-f; PGSQL;varchar(250);varchar;N;99; }
+	values { mime-x; PGSQL;text     ;text     ;N;99;  N;}
+	values { mime-b; PGSQL;bytea    ;bytea    ;N;99;  N;}
+	values { mime-f; PGSQL;varchar(250);varchar;N;99; N;}
 }
 
 // ---------------------------------------------------------
@@ -628,7 +631,7 @@ table columns {
     column  { ins;uiro;uino;required;dispsize;uiwithnext;prefix_table_name; }
     column  { uiinline; }
     column { value_min; value_max; }
-    column { uirows;uicols; tooltip; }
+    column { uirows;uicols; tooltip; uisearch_ignore_dash; }
     column { alltables; }
     column { skey; skey_quiet; _agg; }
 }
@@ -660,7 +663,7 @@ table tabcol {
     column { ins; uiro; uino; uicolseq; }
     column { uiwithnext; uisearch; description; }
     column { range_from; range_to; }
-    column { value_min; value_max; }
+    column { value_min; value_max; uisearch_ignore_dash; }
     column { uirows;    uicols;    }
     
     foreign_key automations { allow_empty: Y; }
@@ -1259,7 +1262,7 @@ table tabflat {
     foreign_key tabflat { prefix: auto_; allow_empty: Y; }
     column { auto_formula; }
     column { range_from; range_to; }
-    column { value_min; value_max; }
+    column { value_min; value_max; uisearch_ignore_dash; }
     column { uirows;    uicols;    }
     
     column { uisearch; uicolseq; uiwithnext       }

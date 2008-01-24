@@ -5381,7 +5381,7 @@ function rowsFromFilters(&$table,$filters,$cols,$matches=array()) {
          }
          if ($tcv != "") {
             // trap for a % sign in non-string
-            $sw[]='('.rff_OneCol($colinfo['type_id'],$colname,$tcv).')';
+            $sw[]='('.rff_OneCol($colinfo,$colname,$tcv).')';
          }
       }
     }
@@ -5443,7 +5443,9 @@ function rowsFromFilters(&$table,$filters,$cols,$matches=array()) {
 
 // KFD 5/17/07, support lists, ranges, and greater/lesser
 //
-function rff_OneCol($tid,$colname,$tcv) {
+function rff_OneCol($colinfo,$colname,$tcv) {
+    $tid = $colinfo['type_id'];
+    $uiid= ArraySafe($colinfo,'uisearch_ignore_dash','N');
    $values=explode(',',$tcv);
    $sql_new=array();
    foreach($values as $tcv) {
@@ -5453,7 +5455,7 @@ function rff_OneCol($tid,$colname,$tcv) {
          // we ignore anything else they may have done
          $new=$colname.substr($tcv,0,1).SQL_FORMAT($tid,substr($tcv,1));
       }
-      elseif(strpos($tcv,'-')!==false && $tid<>'ph12') {
+      elseif(strpos($tcv,'-')!==false && $uiid<>'Y' ) {
          list($beg,$end)=explode('-',$tcv);
          $new=$colname.' BETWEEN ' 
             .SQL_Format($tid,$beg)

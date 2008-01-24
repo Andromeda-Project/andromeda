@@ -1897,38 +1897,38 @@ function returns the base table name itself, such as:
 
 */
 function DDTable_IDResolve($table_id) {
-   // Both super user and nobody get original table
-   if(SessionGet("ROOT")) {
+    // Both super user and nobody get original table
+    if(SessionGet("ROOT")) {
       return $table_id;
-   }
-   if(!LoggedIn()) {
-      return $table_id;
-   }
-   
-   $ddTable=dd_TableRef($table_id);
-   // This is case of nonsense table, give them back original table
-   if(count($ddTable)==0) return $table_id;
-   
-   //echo "permspec is: ".$ddTable['permspec'];
-   $views=ArraySafe($ddTable,'tableresolve',array());
-   if(count($views)==0) 
-      return $table_id;
-   else
-      return $views[SessionGet('GROUP_ID_EFF')];
-   /*
-   if(ArraySafe($ddTable,'permspec','N')=='Y') {
-      // strip off the app name and the "_eff_" part
-      $group_id=substr(
-         SessionGet("GROUP_ID_EFF")
-         ,strlen($GLOBALS['AG']['application'])+5
-      );
-      $view_id=$table_id."_".$group_id;
-      
-      //echo $view_id;
-      return  $view_id;
-   }
-   return $table_id;
-   */
+    }
+    // KFD 1/23/08.  This probably should never have been here,
+    //     since it would always return an unusable answer.
+    //
+    //if(!LoggedIn()) {
+    //   return $table_id;
+    //}
+    
+    $ddTable=dd_TableRef($table_id);
+    // This is case of nonsense table, give them back original table
+    if(count($ddTable)==0) return $table_id;
+    
+    //echo "permspec is: ".$ddTable['permspec'];
+    $views=ArraySafe($ddTable,'tableresolve',array());
+    if(count($views)==0) 
+        return $table_id;
+    else
+        // KFD 1/23/08.  This code takes advantage of the fact that
+        //   the public user by itself is always the very last
+        //   effective group.  Therefore, if a user is not logged
+        //   in, we will take the very last entry, assuming that it
+        //   gives the answer for somebody who is only in one group.
+        //
+        if(LoggedIn()) {
+           return $views[SessionGet('GROUP_ID_EFF')];
+        }
+        else {
+           return array_pop($views);   
+        }
 }
 
 /**
