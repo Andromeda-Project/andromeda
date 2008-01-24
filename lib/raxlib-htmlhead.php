@@ -1,7 +1,8 @@
 <?php
 // These are things that belong in the header of any template
+$title=vgfGet("PageTitle");
 ?>
-	<title><?=vgfGet("PageTitle")?></title>
+	<title><?=$title?></title>
 
    <style type="text/css">
    /* Styles generated specifically for a page */
