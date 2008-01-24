@@ -1451,7 +1451,7 @@ function SpecFlatten_Runout() {
                 ,primary_key,uisearch
                 ,colprec,colscale,colres,type_id
                 ,table_id_fko
-                ,uicolseq
+                ,uicolseq,uisearch_ignore_dash
                 ,formula,formshort,dispsize
              )
              SELECT 
@@ -1461,6 +1461,11 @@ function SpecFlatten_Runout() {
                  ,c.colprec,c.colscale,c.colres,c.type_id
                  ,'' as table_id_fko
                  ,trim(uicolseq)
+                 ,case when tc.uisearch_ignore_dash in ('Y','N')
+                       then tc.uisearch_ignore_dash
+                       when c.uisearch_ignore_dash in ('Y','N')
+                       then c.uisearch_ignore_dash
+                       else t.uisearch_ignore_dash end as uisearch_ignore_dash
                  ,t.formula,t.formshort,t.dispsize
              FROM zdd.tabcol_c tc
              JOIN zdd.columns_c   c ON tc.column_id_src = c.column_id
@@ -5748,51 +5753,50 @@ function Analyze()
 // REGION: Plan Make.   
 // ==========================================================
 
-function PlanMake()
-{
-	$this->LogStage("Building DDL Plan");
-	// Table commands:
-	// 3000: Create table commands
-	// 3010: Alter table commands (add columns)
-	//                     
-	// 4000: NSO Drop commands
-	//
-	// 5010: Backfill and data commands.  Put here because 
-	//          triggers that might interfere do not exist
-	//       ***  Triggers cannot be disabled in Postgres ***
-   //           WRONG!  alter table...disable trigger all!
-	// 5020: DDR Reconciliation commands.  Put here for same
-	//       reason as backfill commands.
-	//
-	// 6000: All NSO Create commands
-   // 6050: Sequence update commands
-	//
-	// 9000: Group create commands
-	//
-
-	//'  The basic outline is to remove things that would get
-	//'  in the way of table changes, then do the table changes,
-	//'  then layer back up the triggers, views, etc.
-	$this->PlanMake_Tables();
-   $this->PlanMake_Views();
-	$this->PlanMake_Build_NSO();
-	$this->PlanMake_Security();
-   
-   // 11/27/06, fix all sequences so they are always safe
-   $res=$this->SQLRead("Select table_id,column_id FROM zdd.tabflat_c 
+function PlanMake() {
+    $this->LogStage("Building DDL Plan");
+    // Table commands:
+    // 3000: Create table commands
+    // 3010: Alter table commands (add columns)
+    //                     
+    // 4000: NSO Drop commands
+    //
+    // 5010: Backfill and data commands.  Put here because 
+    //          triggers that might interfere do not exist
+    //       ***  Triggers cannot be disabled in Postgres ***
+    //           WRONG!  alter table...disable trigger all!
+    // 5020: DDR Reconciliation commands.  Put here for same
+    //       reason as backfill commands.
+    //
+    // 6000: All NSO Create commands
+    // 6050: Sequence update commands
+    //
+    // 9000: Group create commands
+    //
+    
+    //'  The basic outline is to remove things that would get
+    //'  in the way of table changes, then do the table changes,
+    //'  then layer back up the triggers, views, etc.
+    $this->PlanMake_Tables();
+    $this->PlanMake_Views();
+    $this->PlanMake_Build_NSO();
+    $this->PlanMake_Security();
+    
+    // 11/27/06, fix all sequences so they are always safe
+    $res=$this->SQLRead("Select table_id,column_id FROM zdd.tabflat_c 
          Where automation_id in ('SEQUENCE','SEQDEFAULT')");
-   while ($row=pg_fetch_array($res)) {
-      $tid=$row['table_id'];
-      $cid=$row['column_id'];
-      $seq=$tid."_".$cid;
-      $sq="SELECT SETVAL(#$seq#,(SELECT MAX($cid) FROM $tid)+1)";
-      $this->PlanMakeEntry("6050",$sq);
-   }
-   
-   $this->PlanMakeEntry("9200","UPDATE USERS set flag_newgroup=#Y#");
-
-	//$this->PlanMake_DDR();  //--this routine still exists
-	return true;
+    while ($row=pg_fetch_array($res)) {
+        $tid=$row['table_id'];
+        $cid=$row['column_id'];
+        $seq=$tid."_".$cid;
+        $sq="SELECT SETVAL(#$seq#,(SELECT MAX($cid) FROM $tid)+1)";
+        $this->PlanMakeEntry("6050",$sq);
+    }
+    
+    $this->PlanMakeEntry("9200","UPDATE USERS set flag_newgroup=#Y#");
+    
+    //$this->PlanMake_DDR();  //--this routine still exists
+    return true;
 }
 
 function PlanMake_Tables()                                      
