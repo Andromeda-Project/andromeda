@@ -1,11 +1,13 @@
 <?php
+require_once( 'smarty/libs/Smarty.class.php' );
+
 /**
  *
  * Outputs an Andromeda page definition on-screen using a 
  *  smarty template.
  *
  * @package androPage
- * @author Donald Organ????
+ * @author Donald Organ
  *
 */
 class androPageSmarty {
@@ -37,8 +39,26 @@ class androPageSmarty {
         $appdir=$GLOBALS['AG']['dirs']['root']."/application/";
         
         
-        // What needs to happen here is you must invoke smarty
-        // and make all of the assignments
+        try {
+                // Create new instance of smarty
+                $smarty = new Smarty();
+                $smarty->template_dir = $GLOBALS['AG']['dirs']['root'] .'application/templates/';
+                $smarty->compile_dir = $GLOBALS['AG']['dirs']['root'] .'lib/smarty/compile/';
+                $smarty->config_dir = $GLOBALS['AG']['dirs']['root'] .'lib/smarty/config/';
+                $smarty->cache_dir = $GLOBALS['AG']['dirs']['root'] .'lib/smarty/cache/';
+        
+                $smarty->caching = false;
+                foreach( $yamlP2['section'] as $section=>$props ) {
+                        $smarty->assign( $section, $props['rows'] );
+                }
+                foreach( $yamlP2['options'] as $option=>$val ) {
+                        $smarty->assign( $option, $val );
+                }
+
+                $smarty->display( $yamlP2['template'] );
+        } catch ( Exception $e ) {
+                echo( 'Unable to create Smarty Object for the following reason: ' .$e->getMessage() );       
+        }
     }    
 }
 ?>

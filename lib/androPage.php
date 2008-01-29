@@ -60,13 +60,14 @@ class androPage {
         $filename
             =$GLOBALS['AG']['dirs']['root']
             ."application/$page.page.yaml";
-        
+            
         include_once("spyc.php");
         $yamlRaw=Spyc::YAMLLoad($filename);
         $this->yamlP2=$this->YAMLPass2($yamlRaw);
         
         // If there are no sections, take content and make a section,
         // so that downstream code can unconditionally work with sections
+        
         if(!isset($this->yamlP2['section'])) {
             $this->yamlP2['section'] = array(
                 'default'=>array(
@@ -75,7 +76,6 @@ class androPage {
                 )
             );
         }
-
         switch(gp('gp_post')) {
         case '':
             $this->x3HTML();
@@ -147,7 +147,11 @@ class androPage {
             $table->appendChild($tr);
         }
         hidden('gp_page',$this->page);
-        hidden('gp_post','pdf');
+        if ( isset( $yamlP2['template'] ) ) {
+                hidden('gp_post','smarty' );
+        } else {
+                hidden('gp_post','pdf');       
+        }
         ?>
         <!-- x3HTML Render -->
         <br/><h1><?=$this->PageSubtitle?></h1>
@@ -188,8 +192,18 @@ class androPage {
         // Execute SQL and return all rows for all sections
         $sections = $this->yamlP2['section'];
         foreach($sections as $secname=>$secinfo) {
-            $this->yamlP2['section'][$secname]['rows']
-                =SQL_AllRows($secinfo['sql']);
+                if ( isset( $yamlP2['section'][$secname]['singlerecord'] ) ) {
+                        $onerow = $yamlP2['section'][$secname]['singlerecord'];   
+                } else {
+                        $onerow = $yamlP2['section'][$secname]['singlerecord'] = "N";
+                }
+                if ( $onerow ) {
+                        $this->yamlP2['section'][$secname]['rows'] 
+                                = SQL_OneRow( $secinfo['sql'] );
+                } else {
+                        $this->yamlP2['section'][$secname]['rows']
+                                =SQL_AllRows($secinfo['sql']);
+                }
         }
         
         // Create the Smarty handler and call out to that
