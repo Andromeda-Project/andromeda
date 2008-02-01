@@ -19,7 +19,7 @@ class install extends x_table2 {
             ,"APPDSC"=>"Andromeda Node Manager"
             ,"SPEC_BOOT"=>"AndroDBB"
             ,"SPEC_LIB"=>"andro_universal"
-            ,"SPEC_LIST"=>"andro"
+            ,"SPEC_LIST"=>"andro.dd.yaml"
          );
          include("AndroBuild.php");
          SessionSet('UID','');
