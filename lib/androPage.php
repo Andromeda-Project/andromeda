@@ -76,6 +76,24 @@ class androPage {
                 )
             );
         }
+        
+        // Go through filters and make them all uniform
+        $filters = ArraySafe($this->yamlP2,'uifilter',array());
+        foreach($filters as $id=>$info) {
+            // If a table is named, go for that
+            if(isset($info['table'])) {
+                $table_dd = dd_TableRef($info['table']);
+                $column   = ArraySafe($info,'column',$id);
+                $flat     = $table_dd['flat'][$column];
+                $filter = &$this->yamlP2['uifilter'][$id];
+                $filter['type_id'] =$flat['type_id'];
+                $filter['colprec'] =$flat['colprec'];
+                $filter['colscale']=$flat['colscale'];
+                $filter['description']=
+                    ArraySafe($filters[$id],'description',$flat['description']);
+            }
+        }
+        
         switch(gp('gp_post')) {
         case '':
             $this->x3HTML();
@@ -131,7 +149,7 @@ class androPage {
         }
         
         $table = createElement('table');
-        $filters = ArraySafe($yamlP2,'uifilter',array());
+        $filters = ArraySafe($this->yamlP2,'uifilter',array());
         foreach($filters as $id=>$options) {
             $type_id = ArraySafe($options,'type_id','vchar');
 
@@ -142,7 +160,7 @@ class androPage {
             $tr->appendChild($td);
             $td  = createElement('td');
             $td->style['text-align'] = 'left';
-            $td->innerHTML = hWidget($type_id,'ap_'.$id);
+            $td->innerHTML = $this->h3Widget($id,$options);
             $tr->appendChild($td);
             $table->appendChild($tr);
         }
@@ -162,7 +180,32 @@ class androPage {
         ></input>
         <?php
         echo "\n<!-- x3HTML Render (END) -->\n";
-    }    
+    }
+
+    function h3Widget($id,$options) {
+        // Simple case is no lookup, use hWidget()
+        if(ArraySafe($options,'lookup','N')=='N') {
+            // hwidget uses length of value to be length of
+            // box, so pass it suitably long string
+            $value = '';
+            if(ArraySafe($options,'colprec','')<>'') {
+                $value = str_pad('',$options['colprec']);
+            }
+            return hWidget($options['type_id'],'ap_'.$id,$value,100);
+        }
+        else {
+            // If doing a lookup we have to go to other code
+            $tab = dd_tableRef($options['table']);
+            $tab['flat'][$id]['table_id_fko'] = $options['table'];
+            $tab['flat'][$id]['fkdisplay']='dynamic';
+            $acols=aColsModeProj($tab,'upd');
+            $acols[$id]['writable']=true;
+            $ahcols=aHColsfromACols($acols);
+            return WidgetFromAhCols(
+                $ahcols,$id,'ap_','',0
+            ); 
+        }
+    }
 
     /**
      *  Run the report based on options provided by user.
@@ -178,6 +221,10 @@ class androPage {
         // For each section, run the output
         foreach($this->yamlP2['section'] as $secname=>$secinfo) {
             $dbres = SQL($secinfo['sql']);
+            if(Errors()) {
+                hprint_r($secinfo['sql']);
+                echo hErrors();
+            }
         
             // Now pass the SQL resource to the reporting engine
             $pdf->main($dbres,$this->yamlP2,$secinfo);
@@ -250,6 +297,31 @@ class androPage {
         foreach($uifilter as $colname=>$info) {
             $uifilter[$colname]['value'] = gp('ap_'.$colname);
         }
+        
+        // See if any of the columns have a GROUP setting,
+        // if so, all others must get group: Y
+        $yamlP2['groupby']=array();
+        $group=false;
+        foreach($yamlP2['table'] as $table_id=>$tabinfo) {
+            foreach($tabinfo['column'] as $colname=>$colinfo) {
+                if(ArraySafe($colinfo,'group','')<>'') {
+                    $group=true;
+                    break;
+                }
+            }
+        }
+        if($group) {
+            foreach($yamlP2['table'] as $table_id=>$tabinfo) {
+                foreach($tabinfo['column'] as $colname=>$colinfo) {
+                    if(ArraySafe($colinfo,'group','')=='') {
+                        if(ArraySafe($colinfo,'uino','N')=='N') {
+                            $yamlP2['groupby'][]="$table_id.$colname";
+                        }
+                    }
+                }
+            }
+        }
+        
 
         // Build various lists of columns
         $SQL_COLSA=array();
@@ -263,19 +335,27 @@ class androPage {
                             $table_dd['flat'][$colname]['type_id']
                             ,''
                         );
-                        $SQL_COLSA[]="COALESCE($table.$colname,$z) as $colname";
+                        $coldef="COALESCE($table.$colname,$z) as $colname";
                     }
                     else {
-                        $SQL_COLSA[]=$table.'.'.$colname;
+                        $coldef=$table.'.'.$colname;
                     }
+                    if(ArraySafe($colinfo,'group','')<>'') {
+                        $coldef = $colinfo['group'].'('.$coldef.") as $colname";
+                    }
+                    $SQL_COLSA[] = $coldef;
                 }
                 
                 if(isset($colinfo['compare'])) {
-                    $compare = $colname.' '.$colinfo['compare'];
+                    $compare = "$table.$colname ".$colinfo['compare'];
                     foreach($uifilter as $filtername=>$info) {
-                        $type_id = $table_dd['flat'][$colname]['type_id'];
-                        $val = SQL_FORMAT($type_id,$info['value']);
-                        $compare = str_replace('@'.$filtername,$val,$compare);
+                        if(strpos($compare,'@'.$filtername)!==false) {
+                            $type_id = $table_dd['flat'][$colname]['type_id'];
+                            $val = SQL_FORMAT($type_id,$info['value']);
+                            $compare = str_replace(
+                                '@'.$filtername,$val,$compare
+                            );
+                        }
                     }
                     $SQL_COLSWHA[] = $compare;
                 }
@@ -296,11 +376,18 @@ class androPage {
             $SQL_WHERE = "\n WHERE ".implode("\n   AND ",$SQL_COLSWHA);
         }
         
+        // Collapse the group by
+        $SQL_GROUPBY = '';
+        if(count($yamlP2['groupby'])>0) {
+            $SQL_GROUPBY = "\n GROUP BY ".implode(',',$yamlP2['groupby']);
+        }
+        
         // Now build the final SQL
         $SQ=" SELECT "
             .$SQL_COLS
             .$SQL_FROMJOINS
             .$SQL_WHERE
+            .$SQL_GROUPBY
             .$SQL_COLSOB;
          
         return $SQ;
@@ -326,30 +413,44 @@ class androPage {
         // parents they can join to
         foreach($tables as $table) {
             $dd1 = dd_TableRef($table);
-            $table_par = '';
-            foreach($tables_done as $table_done) {
-                if(isset($dd1['fk_parents'][$table_done])) {
-                    // Make the assignments
-                    $table_par = $table_done;
-                    // Grab the pk and build an expression
-                    $dd=dd_TableRef($table_par);
-                    $apks=explode(',',$dd['pks']);
-                    $apks2=array();
-                    foreach($apks as $apk) {
-                        $apks2[]="$table.$apk = $table_par.$apk";
+            $table_par = ArraySafe(
+                $yamlP2['table'][$table],'table_par',''
+            );
+            $table_chd = $table;
+            $table_join= $table_par;
+            if($table_par=='') {
+                foreach($tables_done as $table_done) {
+                    if(isset($dd1['fk_parents'][$table_done])) {
+                        $table_par = $table_done;
+                        $table_chd = $table;
+                        break;
                     }
-                    $SQL_Joins[$table] =array(
-                        "expression"=>implode(' AND ',$apks2)
-                        ,'left_join'=>ArraySafe(
-                            $yamlP2['table'][$table]['left_join'],'N'
-                         )
-                    );
-                    break;
+                    elseif(isset($dd1['fk_children'][$table_done])) {
+                        // Cause the loop to tstop
+                        $table_par = $table;
+                        $table_chd = $table_done;
+                        break;
+                    }
                 }
             }
-            if($table_par == '') {
+            if($table_par=='') {
                 $this->errorAdd("Table $table does not join to any "
                     ."previously listed table."
+                );
+            }
+            else {
+                $tables_done[] = $table;
+                $dd=dd_TableRef($table_par);
+                $apks=explode(',',$dd['pks']);
+                $apks2=array();
+                foreach($apks as $apk) {
+                    $apks2[]="$table_chd.$apk = $table_par.$apk";
+                }
+                $SQL_Joins[$table] =array(
+                    "expression"=>implode(' AND ',$apks2)
+                    ,'left_join'=>ArraySafe(
+                        $yamlP2['table'][$table]['left_join'],'N'
+                     )
                 );
             }
         }

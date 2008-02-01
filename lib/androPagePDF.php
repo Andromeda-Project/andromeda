@@ -87,10 +87,21 @@ class androPagePDF extends fpdf {
         // declare this to avoid jedit compiler warning
         $row=array();
         
+        // Call the routine that sets up an array of
+        // values to put into the bottom;
+        $bottom = $this->setupBottom($yamlP2);
+        
         // Begin by adding the first page
         $this->addPage($this->orientation);
         while($row=SQL_Fetch_Array($dbres)) {
             $this->outFromArray($row);
+            if(count($bottom)>0) {
+                $bottom = $this->processForBottom($yamlP2,$bottom,$row);
+            }
+        }
+        if(count($bottom)>0) {
+            $this->linesForColumns();
+            $this->outFromArray($bottom);
         }
         $this->overAndOut();
     }
@@ -116,7 +127,19 @@ class androPagePDF extends fpdf {
         $this->linespacing = 1;
         $this->cpi = 120/$this->fontsize;
         $this->lineheight = $this->fontsize * $this->linespacing;
+        
+        // Pull options from Yamlp2
+        $this->title1 = $yamlP2['options']['title'];
  
+        // Determine if there are filters to list:
+        $uifilters = ArraySafe($yamlP2,'uifilter',array());
+        $atitle2 = array();
+        foreach($uifilters as $name=>$info) {
+            $atitle2[] = $info['description'].':'.gp('ap_'.$name);
+        }
+        $this->title2 = count($atitle2)==0 ? '' : implode(",",$atitle2);
+        
+        
         // Tell the fpdf parent class about our setting choices
         $this->SetTextColor(0,0,0);
         $this->SetFont($this->fontname);
@@ -147,7 +170,7 @@ class androPagePDF extends fpdf {
                 $width += ($dispsize*$this->cpi)+.1; 
                 
                 // Save the captions for displaying in header
-                $caption = ArraySafe($colinfo,'caption','');
+                $caption = ArraySafe($colinfo,'description','');
                 $caption = $caption <> '' 
                     ? $caption
                     : $dd['flat'][$colname]['description'];
@@ -166,6 +189,64 @@ class androPagePDF extends fpdf {
         }
     }
     
+
+    /**
+     *  Automated report setup.  Setup an array of bottom
+     *  values if any of the columns actually have
+     *  sums, counts, or anything.
+     *
+     *  @param string $yamlP2  The processed page definition     
+     *  @since 1/31/08
+     */
+    function setupBottom($yamlP2) {
+        $retval = array();
+        $retcount= 0;
+        
+        foreach($yamlP2['table'] as $table=>$tabinfo) {
+            foreach($tabinfo['column'] as $colname=>$colinfo) {
+                if(ArraySafe($colinfo,'uino','N')=='Y') continue;
+                $bot=ArraySafe($colinfo,'bottom');
+                if($bot=='SUM' || $bot=='COUNT') {
+                    $retval[$colname] = 0;
+                    $retcount++;
+                }
+                else {
+                    $retval[$colname] = ' ';
+                }
+            }
+        }
+        
+        // The idea is to return an empty array if there is
+        // nothing to do.
+        if($retcount==0) return array();
+        return $retval;
+    }
+
+    /**
+     *  Processes the current row for report end totals
+     *  by counting or summing values
+     *
+     *  @param array $bottom  the current values for bottom
+     *  @param array $row     this particular row     
+     *  @since 1/31/08
+     */
+    function processForBottom($yamlP2,$bottom,$row) {
+        $x=0;
+        $keys=array_keys($row);
+        foreach($yamlP2['table'] as $table=>$tabinfo) {
+            foreach($tabinfo['column'] as $colname=>$colinfo) {
+                if(ArraySafe($colinfo,'uino','N')=='Y') continue;
+                $bot=ArraySafe($colinfo,'bottom');
+                $val=array_shift($row);
+                if($bot=='COUNT') $bottom[$keys[$x]]++;
+                if($bot=='SUM')   $bottom[$keys[$x]]+=$val;
+                $x++;
+            }
+        }
+        return $bottom;
+    }
+
+
     /**
      *  The FPDF library that we use (which I love by the way)
      *  requires the functions header() and footer() to be
@@ -175,7 +256,10 @@ class androPagePDF extends fpdf {
      */
     function footer() { }
     function header() {
-        $this->CenteredLine("Report Title",'B',$this->fontsize*1.2);
+        $this->CenteredLine($this->title1,'B',$this->fontsize*1.2);
+        if($this->title2<>'') {
+            $this->CenteredLine($this->title2,'B');
+        }
         $this->DateAndPage();
         $this->nextLine();
         $this->outFromArray($this->captions);
@@ -337,6 +421,10 @@ class androPagePDF extends fpdf {
        $xposition = $this->cols[$col]['xpos'];
        $width     = $this->cols[$col]['width'];
        $align     = $this->cols[$col]['align'];
+       if($align<>'R') {
+           $max = intval($this->cols[$col]['width']/$this->cpi);
+           $text = substr($text,0,$max);
+       }
        $this->Setx($xposition);
        $this->Cell($width,0,$text,0,0,$align);
        $this->lastCol = $col;
