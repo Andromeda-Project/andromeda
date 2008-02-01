@@ -77,6 +77,10 @@ class androPage {
             );
         }
         
+        if (!isset($this->yamlP2['template'] ) ) {
+                $this->yamlP2['template'] = '';
+        }
+        
         // Go through filters and make them all uniform
         $filters = ArraySafe($this->yamlP2,'uifilter',array());
         foreach($filters as $id=>$info) {
@@ -94,19 +98,16 @@ class androPage {
             }
         }
         
-        switch(gp('gp_post')) {
-        case '':
+        if ( gp( 'gp_post' ) == '' ) {
             $this->x3HTML();
-            break;
-        case 'pdf':
+        } else {
             $this->genSQL();
-            $this->pageReport();
-            break;
-        case 'smarty':
-            $this->genSQL();
-            $this->pageSmarty();
-            break;
-        }
+            if ( $this->yamlP2['template'] == '' ) {
+                $this->pageReport();
+            } else {
+                $this->pageSmarty();
+            }
+        } 
     }   
     
     /**
