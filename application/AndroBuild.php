@@ -2262,8 +2262,6 @@ Select column_id
 				$cols.=$this->AddComma($cols).$col["column_id"];
 			}
             
-            $this->LogEntry($table_id.'  '.$idx_name.'  '.$cols);
-			
 			$this->utabs[$table_id]["indexes"][$idx_name] = array("unique"=>$index["idx_unique"],"cols"=>$cols);
 		}
 	}
