@@ -272,6 +272,8 @@ class a_scontrol extends x_table2 {
    
    function WalkDir(&$files, $base, $path ) {
       if(!is_dir("$base/$path")) return;
+      if(substr($path,-4)=='.svn') return;
+      
       $DIR=opendir("$base/$path");
       while (false !== ($file = readdir($DIR))) {
          if($file=='.' || $file=='..') continue;
