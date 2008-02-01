@@ -98,17 +98,37 @@ class androPage {
             }
         }
         
-        if ( gp( 'gp_post' ) == '' ) {
-            $this->x3HTML();
+        // Check to see if nofilter option is set
+        if ( ArraySafe( $this->yamlP2['options'], 'nofilter') != '' ) {
+                $this->yamlP2['options']['nofilter'] = $this->yamlP2['options']['nofilter'];
         } else {
-            $this->genSQL();
-            if ( $this->yamlP2['template'] == '' ) {
-                $this->pageReport();
-            } else {
-                $this->pageSmarty();
-            }
+                $this->yamlP2['options']['nofilter'] = 'N';
+        }
+        
+        //If nofilter option is set to Y then display without filter
+        if ( $this->yamlP2['options']['nofilter'] == 'Y' ) {
+                $this->PassPage();
+        } else {
+                if ( gp( 'gp_post' ) == '' ) {
+                    $this->x3HTML();
+                } else {
+                    $this->PassPage();
+                }
         } 
-    }   
+    }
+     
+    /** 
+     * This function determines whether it should make the page a report or a Smarty template
+     * @access private
+     */
+    private function PassPage() {
+        $this->genSQL();
+        if ( $this->yamlP2['template'] == '' ) {
+                $this->pageReport();
+        } else {
+                $this->pageSmarty();
+        }
+    }
     
     /**
      *  Part of the YAML Processing arrangement. 
