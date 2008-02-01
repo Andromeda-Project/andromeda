@@ -1013,6 +1013,8 @@ function index_hidden_template() {
                    if ($filename=='.')  continue;
                    if ($filename=='..') continue;
                    if ($filename=='andro_classic') continue;
+                   // DO 2-1-2008 Added to ignore SVN directory
+                   if ($filename=='.svn') continue;
                    if (is_dir($dir.$filename)) {
                       SessionSet('TEMPLATE',scFileName($filename));
                       break;
