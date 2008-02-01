@@ -49,7 +49,16 @@ class androPageSmarty {
         
                 $smarty->caching = false;
                 foreach( $yamlP2['section'] as $section=>$props ) {
-                        $smarty->assign( $section, $props['rows'] );
+                        if(isset( $yamlP2['section'][$section]['onerow'] ) ) {
+                                $onerow = $yamlP2['section'][$section]['onerow'];
+                        } else {
+                                $onerow = 'N';
+                        }
+                        if ( $onerow == 'N' ) {
+                                $smarty->assign( $section, $props['rows'] );
+                        } elseif ( $onerow == 'Y' ) {
+                                $smarty->assign( $section, $props['rows']['0'] );       
+                        }
                 }
                 foreach( $yamlP2['options'] as $option=>$val ) {
                         $smarty->assign( $option, $val );
