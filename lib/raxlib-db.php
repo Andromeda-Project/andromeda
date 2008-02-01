@@ -411,7 +411,7 @@ function SQL_FORMAT($t,$v,$clip=0) {
             }
             if(strlen($parts[0])==4) {
                $parts = array($parts[1],$parts[2],$parts[0]);
-            }
+            }            
             elseif(strlen($parts[2])==2) {
                $parts[2] = $parts[2] < 20 ? '20'.$parts[2] : '19'.$parts[2];
             }
