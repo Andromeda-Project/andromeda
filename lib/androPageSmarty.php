@@ -54,7 +54,6 @@ class androPageSmarty {
                 foreach( $yamlP2['options'] as $option=>$val ) {
                         $smarty->assign( $option, $val );
                 }
-
                 $smarty->display( $yamlP2['template'] );
         } catch ( Exception $e ) {
                 echo( 'Unable to create Smarty Object for the following reason: ' .$e->getMessage() );       
