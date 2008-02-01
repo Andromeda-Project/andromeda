@@ -376,6 +376,8 @@ BEGIN
 		SELECT table_id,column_id,-1 FROM zdd.Column_deps
 		UNION SELECT table_dep,column_dep,-1 FROM zdd.column_deps;
 	
+    -- Begin by assigning a sequence of zero to all
+    -- columns that have no dependencies, the "leaf" columns
 	UPDATE zdd.column_seqs set sequence = 0 
 	  WHERE NOT EXISTS (Select table_id 
 				FROM zdd.column_deps a
@@ -385,18 +387,23 @@ BEGIN
                                   );
 
 	while rowcount > 0 LOOP
+        -- In plain english this means:
+        -- Set all columns at the next sequence level
+        -- if they are not sequenced and are dependent
+        -- on previously sequenced columns
+        --   FINS: A list of columns dependent on
+        --         columns that are already sequenced
 		UPDATE zdd.column_seqs set sequence = lnSeq
         	  FROM (SELECT t1.table_id,t1.column_id
-                          FROM zdd.column_deps t1
-                          JOIN zdd.column_seqs t2 
-			    ON t1.table_dep = t2.table_id 
-			   AND t1.column_dep = t2.column_id
-                         WHERE t1.table_id = t1.table_dep
-                         GROUP BY t1.table_id,t1.column_id
-                        HAVING MIN(t2.sequence) >= 0) fins
-	         WHERE zdd.column_seqs.table_id = fins.table_id
-		   AND zdd.column_seqs.column_id = fins.column_id
-        	   AND zdd.column_seqs.sequence = -1;
+                  FROM zdd.column_deps t1
+                  JOIN zdd.column_seqs t2 
+                    ON t1.table_dep  = t2.table_id 
+                   AND t1.column_dep = t2.column_id
+                 GROUP BY t1.table_id,t1.column_id
+                HAVING MIN(t2.sequence) >= 0) fins
+	      WHERE zdd.column_seqs.table_id  = fins.table_id
+		    AND zdd.column_seqs.column_id = fins.column_id
+        	    AND zdd.column_seqs.sequence = -1;
 
 		lnSeq := lnSeq + 1;
 		GET DIAGNOSTICS rowcount = ROW_COUNT;
@@ -664,9 +671,10 @@ function RealityGet_NSO_Indexes()
 {
 	$this->LogEntry("Pulling definitions of existing indexes (C)");
 	$results = $this->SQLRead(
-		"Select tablename,indexname,indexdef ".
-		" FROM pg_indexes".
-		" WHERE schemaname='public'");
+		"Select tablename,indexname,indexdef 
+           FROM pg_indexes
+           JOIN zdd.tables_c on pg_indexes.tablename = zdd.tables_c.table_id
+		 WHERE schemaname='public'");
 	while ($row=pg_fetch_array($results)) {
 		$object_id = strtolower($row["indexname"]);
 		$table_id = strtolower($row["tablename"]);
@@ -2419,7 +2427,7 @@ function SpecDDL_Indexes_keys() {
 	foreach ($this->utabs as $utab) {
 		if(true) {
 			//$this->LogEntry("PK for table ".$utab["table_id"]." on (".$utab["pk"].")");
-			$index = $utab["table_id"]."_PK";
+			$index = $utab["table_id"]."_pk";
 			$sql = "CREATE INDEX ".$index .
 				" ON ".$utab["table_id"]." (".$utab["pk"].")";
 			$def_short = "idx:".strtolower($utab["table_id"]).":".strtolower($utab["pk"]);
@@ -2433,7 +2441,7 @@ function SpecDDL_Indexes_keys() {
 			if (false!==strpos($utab["pk"],",")) {
 				$keys = explode(",",$utab["pk"]);
 				foreach ($keys as $key) {
-					$index = $utab["table_id"]."_PK_".$key;
+					$index = $utab["table_id"]."_pk_".$key;
 					$sql = "CREATE INDEX $index on ".$utab["table_id"]." ($key)";
 					$def_short = "idx:".strtolower($utab["table_id"]).":".strtolower($key);
 					$this->SQL(
@@ -2869,7 +2877,7 @@ END;
 \$BODY\$ LANGUAGE plpgsql SECURITY DEFINER";      
     $this->PlanMakeEntry("6002",$sq);
     $this->PlanMakeEntry("6002",
-        "GRANT EXECUTE ON FUNCTION add_me_to_$g() TO PUBLIC"
+        "GRANT EXECUTE ON FUNCTION add_me_to_$g(varchar) TO PUBLIC"
     );    
 }
 
@@ -5289,7 +5297,7 @@ function Differences()
 	$this->Differences_One(
 		"ns_objects", "ns_objects", 
 		"Non-storage Objects", 
-		"a.def_short = b.def_short");
+		"a.def_short = b.def_short AND a.object_id = b.object_id");
 	return true;
 }
 
@@ -6760,53 +6768,54 @@ function PlanMakeEntry($cmdseq,$cmdtext)
 // ==========================================================
 function PlanExecute() {
 	$this->LogStage("Executing Plan");
-   $ts=time();
-   global $parm;
+    $ts=time();
+    global $parm;
+    $retval = true;
 
-   // Work out the statistics on how many commands we
-   // need to execute   
-   $cmdseq=array(
-      2900=>'Drop View'
-      ,3000=>'CREATE Table commands'
-      ,3010=>'ALTER TABLE commands'      
-      ,3050=>'CREATE VIEW commands - row security'
-      ,3051=>'CREATE VIEW commands - column security'
-      ,3060=>'Create RULE commands'
-      ,4000=>'NSO Drop Commands'
-      ,5010=>'Backfill commands'
-      ,6000=>'NSO Create Commands'
-      ,6001=>'Trigger Create Part 2'
-      ,6002=>'FreeJoin Security Commands'
-      ,6050=>'Sequence Update Commands'
-      ,9000=>'Group and User Creation'
-      ,9050=>'Deny by default REVOKE commands'
-      ,9100=>'Permission REVOKE and GRANT'
-      ,9110=>'Grant EXECUTE on sequences'
-      ,9200=>'Reset all users effective groups'
-   );
-   $bunchers=array(3060,4000,6050,9000,9050,9100,9110);
-   $noerrors=array(2900);
-   // We skipped: 6000, contains trigger create commands
-   // We skipped: 3050, 3051 create view commands
-   $dbres=$this->SQLRead(
+    // Work out the statistics on how many commands we
+    // need to execute   
+    $cmdseq=array(
+        2900=>'Drop View'
+        ,3000=>'CREATE Table commands'
+        ,3010=>'ALTER TABLE commands'      
+        ,3050=>'CREATE VIEW commands - row security'
+        ,3051=>'CREATE VIEW commands - column security'
+        ,3060=>'Create RULE commands'
+        ,4000=>'NSO Drop Commands'
+        ,5010=>'Backfill commands'
+        ,6000=>'NSO Create Commands'
+        ,6001=>'Trigger Create Part 2'
+        ,6002=>'FreeJoin Security Commands'
+        ,6050=>'Sequence Update Commands'
+        ,9000=>'Group and User Creation'
+        ,9050=>'Deny by default REVOKE commands'
+        ,9100=>'Permission REVOKE and GRANT'
+        ,9110=>'Grant EXECUTE on sequences'
+        ,9200=>'Reset all users effective groups'
+    );
+    $bunchers=array(3060,4000,6050,9000,9050,9100,9110);
+    $noerrors=array(2900);
+    // We skipped: 6000, contains trigger create commands
+    // We skipped: 3050, 3051 create view commands
+    $dbres=$this->SQLRead(
       'SELECT cmdseq,count(*) as cnt 
          FROM zdd.ddl 
         GROUP BY cmdseq
         ORDER BY cmdseq'
-   );
-   $stats=pg_fetch_all($dbres);
-	$this->LogEntry(date("Y-m-d H:i:s a",time()));
-   foreach($stats as $stat) {
-      $le="There are ".$this->hCount($stat['cnt'])
-         ." commands of type "
-         .$stat['cmdseq']
-         .', '.$this->zzArraySafe($cmdseq,$stat['cmdseq'],'NOT DEFINED');
-      $this->LogEntry($le);
-   }
+    );
+    $stats=pg_fetch_all($dbres);
+    $this->LogEntry(date("Y-m-d H:i:s a",time()));
+    foreach($stats as $stat) {
+        $le="There are ".$this->hCount($stat['cnt'])
+            ." commands of type "
+            .$stat['cmdseq']
+            .', '.$this->zzArraySafe($cmdseq,$stat['cmdseq'],'NOT DEFINED');
+        $this->LogEntry($le);
+    }
    
-   // Now execute the commands
-	$FILEOUT=fopen($parm["DIR_TMP"].$parm["APP"].".plan","w");
-   foreach($stats as $stat) {
+    // Now execute the commands
+    $FILEOUT=fopen($parm["DIR_TMP"].$parm["APP"].".plan","w");
+    foreach($stats as $stat) {
       $noreperr = in_array($stat['cmdseq'],$noerrors);
       $this->LogEntry("");
       $this->LogEntry(
@@ -6819,6 +6828,7 @@ function PlanExecute() {
             FROM zdd.ddl
            WHERE cmdseq = ".$stat['cmdseq']
       );
+      /*
       if(in_array($stat['cmdseq'],$bunchers)) {
          $this->LogEntry("Executing as a compound statement.");
          // Put them all into one command and execute
@@ -6828,29 +6838,36 @@ function PlanExecute() {
          foreach($cmds as $cmd) {
             $cmdsql.="\n".$cmd['cmdsql'].";";
          }
-         $this->PlanExecuteCommand($cmdsql,$FILEOUT,$noreperr);
+         $retval = $retval &&
+            $this->PlanExecuteCommand($cmdsql,$FILEOUT,$noreperr);
       }
       else {
+          */
          $this->LogEntry("Executing as individual statements.");
          while ($row=pg_fetch_array($res)) {
             $TheCmd=$row["cmdsql"];
             //$TheOID=$row["oid"];
-            $this->PlanExecuteCommand($TheCmd,$FILEOUT,$noreperr);
+            $retval = $retval &&
+                $this->PlanExecuteCommand($TheCmd,$FILEOUT,$noreperr);
          }
+         /*
       }
-      $this->LogElapsedTime($ts);      
+      */
+      $this->LogElapsedTime($ts);
+        if(!$retval) break;      
    }
 	fclose($FILEOUT);
 
    $this->LogEntry("");
    $this->LogEntry("DDL Plan execution completed");
 	$this->LogEntry(date("Y-m-d H:i:s a",time()));
-	return true;
+	return $retval;
 }
 
 
 function PlanExecuteCommand($TheCmd,$FILEOUT,$noreperr=false) {
    global $parm;
+   $retval=true;
    
    // This is aimed at triggers.  Triggers in PG are enclosed
    // in strings, requiring strings inside of them to be
@@ -6862,20 +6879,25 @@ function PlanExecuteCommand($TheCmd,$FILEOUT,$noreperr=false) {
    fputs($FILEOUT,"Currently executing command: \n");
    fputs($FILEOUT,"-----------------------------\n");
    fputs($FILEOUT,$TheCmd . "\n\n");
-   //fclose($FILEOUT);
 
-   if ($this->SQL($TheCmd,$noreperr,false))	{	$TheRes = "'Y'";	$cmdErr = "''"; }
-   else { $TheRes = "'N'"; $cmdErr = $this->sqlCommandError; }
 
-   //$this->SQL( 
-   //   "Update zdd.ddl set executed_ok = ". $TheRes . ", ".
-   //   "       cmderr = '". $cmdErr . "' ".
-   //   "Where oid = ". $TheOID);
+   if ($this->SQL($TheCmd,$noreperr,false))	{
+       $TheRes = "'Y'";	$cmdErr = "''"; 
+   }
+   else { $TheRes = "'N'";
+       $retval = false;
+       $cmdErr = $this->sqlCommandError;
+       //$this->LogEntry($TheCmd);
+       $this->LogEntry("ERROR: >> ");
+       $this->LogEntry("ERROR: >> BUILD CANNOT CONTINUE.");
+       $this->LogEntry("ERROR: >> Please see command and error just above");
+       $this->LogEntry("ERROR: >> ");
+   }
 
-   //$FILEOUT=fopen($parm["DIR_TMP"].$parm["APP"].".plan","a");
    fputs($FILEOUT,"-----------------------------\n");
    fputs($FILEOUT,"SUCCESS: ". $TheRes." ".date('r')."\n");
    fputs($FILEOUT,"=============================\n");
+   return $retval;
 }
 
 
@@ -7376,6 +7398,10 @@ function DBB_LoadYAMLFile_Prescan($filename) {
 function YAMLWalk($source) {
     global $parm;
    $destination=array();
+   if(!is_array($source)) { 
+       $this->YAMLWalkError('freetext',$source); 
+       return $source;
+   };
    foreach($source as $key=>$item) {
       // Error 1, usually caused by misplaced or missing semicolon
       if(is_numeric($key)) {
@@ -7480,6 +7506,11 @@ function YAMLWalk($source) {
 
 function YAMLWalkError($type,$item) {
    switch($type) {
+      case 'freetext':
+         $this->LogEntry("ERROR IN YAML FILE, POSSIBLE FREE TEXT");
+         $this->LogEntry("  It appears that there may be some unformatted");
+         $this->LogEntry("  text in your file.  The value is:");
+         break;
       case 'numindex':
          $this->LogEntry("ERROR IN YAML FILE, NUMERIC INDEX");
          $this->LogEntry("  Below is a dump of nearby values, there may be");
@@ -8555,6 +8586,9 @@ function FS_CHECKDIR($dir,$grp,$checkallfiles=false) {
 		$SCRIPT.="chmod g+wr $dir\n";
 	}
 	else {
+        // Don't check subversion directories
+        if(substr($dir,-5)==".svn/") return '';
+        
 		if (! is_writable($dir) || !is_readable($dir)) {
 			$this->LogError("Wrong read/write perms on directory: $dir");
 			$SCRIPT.="chgrp $grp $dir \n"; 
