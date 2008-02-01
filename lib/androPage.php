@@ -260,18 +260,8 @@ class androPage {
         // Execute SQL and return all rows for all sections
         $sections = $this->yamlP2['section'];
         foreach($sections as $secname=>$secinfo) {
-                if ( isset( $yamlP2['section'][$secname]['singlerecord'] ) ) {
-                        $onerow = $yamlP2['section'][$secname]['singlerecord'];   
-                } else {
-                        $onerow = $yamlP2['section'][$secname]['singlerecord'] = "N";
-                }
-                if ( $onerow ) {
-                        $this->yamlP2['section'][$secname]['rows'] 
-                                = SQL_OneRow( $secinfo['sql'] );
-                } else {
-                        $this->yamlP2['section'][$secname]['rows']
-                                =SQL_AllRows($secinfo['sql']);
-                }
+                $this->yamlP2['section'][$secname]['rows']
+                        =SQL_AllRows($secinfo['sql']);
         }
         
         // Create the Smarty handler and call out to that
