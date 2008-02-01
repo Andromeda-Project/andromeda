@@ -2261,6 +2261,8 @@ Select column_id
 			while ($col = pg_fetch_array($respre)) {
 				$cols.=$this->AddComma($cols).$col["column_id"];
 			}
+            
+            $this->LogEntry($table_id.'  '.$idx_name.'  '.$cols);
 			
 			$this->utabs[$table_id]["indexes"][$idx_name] = array("unique"=>$index["idx_unique"],"cols"=>$cols);
 		}
@@ -2405,7 +2407,7 @@ function SpecDDL_Indexes_Normal() {
 	foreach ($this->utabs as $utab) {
 		
 		foreach ($utab["indexes"] as $idx_name=>$index) {
-         $idx_name=$utab['table_id'].'_'.$idx_name;
+         $idx_name=$utab['table_id'].'_IDX_'.$idx_name;
 			$sql = "CREATE INDEX ".trim($idx_name) .
 				" ON ".$utab["table_id"]." (".$index["cols"].")";
 			$def_short = "idx:".strtolower($utab["table_id"]).":".strtolower($index["cols"]);
@@ -2485,7 +2487,7 @@ function SpecDDL_Sequences()
 		       ELSE TRIM(auto_formula) END || '_' || TRIM(column_id)),
         'CREATE SEQUENCE ' ||  
         CASE WHEN auto_formula = '' THEN TRIM(table_id)
-		       ELSE TRIM(auto_formula) END || '_' || TRIM(column_id)
+		       ELSE TRIM(auto_formula) END || '_SEQ_' || TRIM(column_id)
    FROM zdd.tabflat_c
   WHERE automation_id IN ('SEQUENCE','SEQDEFAULT')");	
 }
@@ -5474,156 +5476,6 @@ function SpecValidateRI($table,$col,$description) {
 }
 
 /*
-function SpecValidate_Unique() {
-    // Get primary key definitions of dictionary tables,
-    // then look for uniqueness violations.
-    //
-    $failures = 0;
-    $sql = 
-        "SELECT table_id,column_id
-           FROM zdd.tabcols_c c
-           JOIN zdd.tables_c  t ON f.table_id = t.table_id
-          WHERE t.module='datadict'
-            AND c.primary_key = 'Y'";
-    $results = $this->SQLRead($sql);
-    $pk = array();
-    while($row = pg_fetch_array($results)) {
-        $pk[$row['table_id']][] = $row['column_id'];  
-    }
-    foreach($pk as $table_id=>$pkcols) {
-        $pk_list = implode(',',$pkcols);
-        $sql = 
-            "SELECT count(*) as _count,$pk_list ". 
-            " FROM zdd.". $table_id."_c".
-            " GROUP BY ". $pk_list . 
-            " HAVING COUNT(*) > 1 ";
-        $results = $this->SQLRead($sql);
-        while ($row = pg_fetch_row($results)) {
-            $vals = "";
-            for ($x = 1; $x< count($row); $x++) {
-               $vals.=$this->AddComma($vals).trim($row[$x]);
-            }
-            $this->LogEntry("Table ". $table_id . " has duplicates on columns ". $pk_list);
-            $this->LogEntry("    ".$row[0]." occurrences of: '".$vals."'");
-            $failures++;
-        }
-    }
-    return $failures;
-
-  	$failures = 0;
-	foreach ($this->utabs as $table_id=>$tabinfo) {
-		if ($tabinfo["module"]<>"datadict") continue;
-		$pk_list = $this->zzArray($tabinfo,"pk");
-		if ($pk_list=="") {
-			$this->LogEntry("Table ".$table_id." has no primary key! ");
-			$failures++;
-		}
-		else {
-			$sql = 
-				"SELECT count(*) as _count,$pk_list ". 
-				" FROM zdd.". $table_id."_c".
-				" GROUP BY ". $pk_list . 
-				" HAVING COUNT(*) > 1 ";
-			$results = $this->SQLRead($sql);
-			while ($row = pg_fetch_row($results)) {
-				$vals = "";
-				for ($x = 1; $x< count($row); $x++) {
-					$vals.=$this->AddComma($vals).trim($row[$x]);
-				}
-				$this->LogEntry("Table ". $table_id . " has duplicates on columns ". $pk_list);
-				$this->LogEntry("    ".$row[0]." occurrences of: ".$vals);
-				$failures++;
-			}
-		}
-	}
-    */
-    
-    /*
-   //$this->utabs[$table_id]["indexes"][$idx_name] = array("unique"=>$index["idx_unique"],"cols"=>$cols);
- 	foreach ($this->utabs as $table_id=>$tabinfo) {
-		if ($tabinfo["module"]<>"datadict") continue;
-      foreach($tabinfo['indexes'] as $indexinfo) {
-         if($indexinfo['unique']<>'Y') continue;
-         
-         $pk_list = $indexinfo['cols'];
-         $sql = 
-            "SELECT count(*) as _count,$pk_list ". 
-            " FROM zdd.". $table_id."_c".
-            " GROUP BY ". $pk_list . 
-            " HAVING COUNT(*) > 1 ";
-         $results = $this->SQLRead($sql);
-         while ($row = pg_fetch_row($results)) {
-            $vals = "";
-            for ($x = 1; $x< count($row); $x++) {
-               $vals.=$this->AddComma($vals).trim($row[$x]);
-            }
-            $this->LogEntry("Table ". $table_id . " has duplicates on columns ". $pk_list);
-            $this->LogEntry("    ".$row[0]." occurrences of: ".$vals);
-            $failures++;
-         }
-      }
-	}
-
-	return $failures;
-}
-*/
-
-
-/*
-function SpecValidate_RI() {
-	$failures=0;
-	$fks = &$this->ddarr["data"]["table"];
-
-	// Loop through each table looking for each FKEY
-	foreach ($this->utabs as $table_id=>$tabstuff) {
-		if (isset($fks[$table_id]["foreign_key"])) {
-			foreach ($fks[$table_id]["foreign_key"] as $fkinfo) {
-				$table_id_par = $fkinfo["__keystub"];
-				$prefix  = $this->zzArray($fkinfo,"prefix");
-				$suffix  = $this->zzArray($fkinfo,"suffix");
-				
-				// explode the primary key of parent and put back together
-				$compare = $fkchd = $fkpar = $fkcon = $fkEmp = "";
-				$pkarr = explode(",",$this->utabs[$table_id_par]["pk"]);
-				foreach ($pkarr as $pkone) {
-					$compare .= $this->AddList($compare," AND ").'x.'.$pkone."= ".
-						"zdd.".$table_id."_c.".$prefix.$pkone.$suffix;
-					$fkchd .= $this->AddComma($fkchd).$prefix.$pkone.$suffix;
-					$fkEmp .= $prefix.$pkone.$suffix." <> '' AND ";
-					$fkpar .= $this->AddComma($fkpar).$pkone;
-				}
-				
-				// This is so-called 'optional RI' 
-				if ($this->zzArray($fkinfo,"allow_empty")!="Y") $fkEmp = "";
-			
-				$sql = 
-					"SELECT ".$fkchd." FROM zdd.".$table_id."_c ".
-					" WHERE ".$fkEmp." NOT EXISTS (".
-					"  SELECT * FROM zdd.".$table_id_par."_c x WHERE ".$compare.")";
-				$results = $this->SQLRead($sql);
-				if (!$results) {
-					$this->LogEntry($sql);
-				}
-				if (pg_num_rows($results)>0) {
-					$failures++;
-					//$this->LogEntry($sql);
-					$this->LogEntry("");
-					$this->LogEntry("RI Failure $table_id($fkchd) to $table_id_par($fkpar)");
-					while ($row = pg_fetch_row($results)) {
-						$vals = "";
-						for ($x = 0; $x< count($row); $x++) {
-							$vals.=$this->AddComma($vals).trim($row[$x]);
-						}
-						$this->LogEntry("    Values are: ".$vals);
-					}
-				}
-			}
-		}
-	}
-	return $failures;
-}
-*/
-
 // NOT CURRENTLY BEING CALLED, see SpecValidate_Special above
 function SpecValidate_Hardcode() {
 	$this->LogEntry("Ensuring all tables have at least one UISearch column");
@@ -5714,8 +5566,7 @@ function SpecValidate_Hardcode() {
 	}
 	return $retval;
 }
-
-
+*/
 
 // ==========================================================
 // REGION: Analyze
@@ -7408,7 +7259,8 @@ function YAMLWalk($source) {
          $this->YAMLWalkError('numindex',$item);
       }
       else {
-         $split=explode(' ',$key);
+         //$split=explode(' ',$key);
+         $split = preg_split('/\s+/',$key);
          if(count($split)==1) {
             // If no split, this must be a property/value assignment
             if(is_array($item)) {
