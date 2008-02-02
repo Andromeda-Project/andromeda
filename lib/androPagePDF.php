@@ -135,9 +135,9 @@ class androPagePDF extends fpdf {
         $uifilters = ArraySafe($yamlP2,'uifilter',array());
         $atitle2 = array();
         foreach($uifilters as $name=>$info) {
-            $atitle2[] = $info['description'].':'.gp('ap_'.$name);
+            $atitle2[] = $info['description'].':'.trim(gp('ap_'.$name));
         }
-        $this->title2 = count($atitle2)==0 ? '' : implode(",",$atitle2);
+        $this->title2 = count($atitle2)==0 ? '' : implode(", ",$atitle2);
         
         
         // Tell the fpdf parent class about our setting choices
@@ -158,7 +158,10 @@ class androPagePDF extends fpdf {
                 $type_id = $dd['flat'][$colname]['type_id'];
                 $suffix = '';
                 if(in_array(trim($type_id),array('money','numb','int'))) {
-                    $suffix = ':R';
+                    $suffix .= ':R';
+                }
+                if(ArraySafe($colinfo,'dispsize','')<>'') {
+                    $suffix .= ':C'.$colinfo['dispsize'];
                 }
                 
                 // Work out size using cpi setting
@@ -272,7 +275,9 @@ class androPagePDF extends fpdf {
      *  many of the features of this class.  Each column
      *  is given a width.  Columns by default are left-justified
      *  unless a ":R" is put after the width, in which case
-     *  they are right-justified.
+     *  they are right-justified.  Columns with a ":C" put after
+     *  the width will be clipped down to the calculated
+     *  width of the column.
      *
      *  @param float $gutter Width of gutter between columns 
      *                       in inches
@@ -298,13 +303,21 @@ class androPagePDF extends fpdf {
             $colstuff = explode(':',$onestop);
             $width = array_shift($colstuff);
             $align='L';
-            if(count($colstuff)>0) {
-                $align = array_shift($colstuff);
+            $clip=0;
+            foreach($colstuff as $onesetting) {
+                if($onesetting=='R') $align='R';
+                if(substr($onesetting,0,1)=='C') {
+                    $clip=substr($onesetting,1);
+                }
             }
+            //if(count($colstuff)>0) {
+            //    $align = array_shift($colstuff);
+            //}
             $this->cols[] = array(
                 'xpos'=>$posx
                 ,'width'=>$onestop * 72
                 ,'align'=>$align
+                ,'clip'=>$clip
             );
             $posx += ($gutter+$onestop) * 72;
         }
@@ -421,9 +434,9 @@ class androPagePDF extends fpdf {
        $xposition = $this->cols[$col]['xpos'];
        $width     = $this->cols[$col]['width'];
        $align     = $this->cols[$col]['align'];
-       if($align<>'R') {
-           $max = intval($this->cols[$col]['width']/$this->cpi);
-           $text = substr($text,0,$max);
+       if($this->cols[$col]['clip']<>0) {
+           //$max = intval($this->cols[$col]['clip']/$this->cpi);
+           $text = substr($text,0,$this->cols[$col]['clip']);
        }
        $this->Setx($xposition);
        $this->Cell($width,0,$text,0,0,$align);
