@@ -2476,13 +2476,13 @@ function SpecDDL_Sequences()
  SELECT DISTINCT
         'sequence_' ||  
         LOWER(CASE WHEN auto_formula = '' THEN TRIM(table_id)
-		       ELSE TRIM(auto_formula) END || '_' || TRIM(column_id)),  
+		       ELSE TRIM(auto_formula) END || '_SEQ_' || TRIM(column_id)),  
         'sequence:' ||  
         LOWER(CASE WHEN auto_formula = '' THEN TRIM(table_id)
-		       ELSE TRIM(auto_formula) END || '_' || TRIM(column_id)),
+		       ELSE TRIM(auto_formula) END || '_SEQ_' || TRIM(column_id)),
         'sequence:' ||  
         LOWER(CASE WHEN auto_formula = '' THEN TRIM(table_id)
-		       ELSE TRIM(auto_formula) END || '_' || TRIM(column_id)),
+		       ELSE TRIM(auto_formula) END || '_SEQ_' || TRIM(column_id)),
         'CREATE SEQUENCE ' ||  
         CASE WHEN auto_formula = '' THEN TRIM(table_id)
 		       ELSE TRIM(auto_formula) END || '_SEQ_' || TRIM(column_id)
@@ -5645,7 +5645,7 @@ function PlanMake() {
     while ($row=pg_fetch_array($res)) {
         $tid=$row['table_id'];
         $cid=$row['column_id'];
-        $seq=$tid."_".$cid;
+        $seq=$tid."_SEQ_".$cid;
         $sq="SELECT SETVAL(#$seq#,(SELECT MAX($cid) FROM $tid)+1)";
         $this->PlanMakeEntry("6050",$sq);
     }
@@ -6837,7 +6837,7 @@ function SecurityNodeManager_Normal() {
 	$this->SQL("
       INSERT INTO users (user_id,skey,user_disabled) 
       select usename
-            ,nextval('users_skey')
+            ,nextval('users_SEQ_skey')
             ,'N'
         FROM pg_shadow s 
         JOIN pg_group g ON s.usesysid = ANY(g.grolist) 
@@ -6856,7 +6856,7 @@ function SecurityNodeManager_Normal() {
 	$this->LogEntry("Adding missing group assignments");
 	$this->SQL("
       INSERT INTO usersxgroups (user_id,group_id,skey) 
-      SELECT s.usename,g.groname,nextval('usersxgroups_skey')
+      SELECT s.usename,g.groname,nextval('usersxgroups_SEQ_skey')
         FROM pg_shadow s 
         JOIN pg_group  g ON s.usesysid = ANY(g.grolist)
        WHERE s.usename IN (
@@ -6962,7 +6962,7 @@ function DBB_SequenceName($table_id,$autoform,$column_id) {
 	$autoform = is_null($autoform) ? '' : $autoform;
 	$table_id = ($autoform=='') ? $table_id : $autoform;
 	return 
-		strtoupper(trim($table_id))."_".
+		strtoupper(trim($table_id))."_SEQ_".
 		strtoupper(trim($column_id));
 }
 		
