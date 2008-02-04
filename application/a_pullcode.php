@@ -28,6 +28,7 @@ class a_pullcode extends x_table2 {
       if(gp('gp_posted')==1) return $this->PullCode();
       if(gp('gp_posted')==2) return $this->PullAndro();
 
+      sourceDeprecated();
       ?>
       <h1>Upgrade Node Manager Only</h1>
 

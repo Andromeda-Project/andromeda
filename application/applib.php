@@ -66,5 +66,49 @@ function ExtractTGZ($filespec,$dir) {
    $tar = new Archive_Tar($filespec,'gz');
    $tar->extract($dir);
 }
+function sourceDeprecated() {
+    ?>
+    <div style="border: 3px solid #FF0700; padding: 5px; margin: 10px; 
+    background-color: #FFFF00; font-weight: bolder">
+    This feature has been deprecated and will be removed from Andromeda
+    soon.<br/><br/>  We are now using Subversion (SVN) for Andromeda
+    itself and we urge you to setup Subversion for your own applications.
+    Subversion is much more powerful than Andromeda's source control
+    operations, and it is well worth setting up.
+    </div>
+    <?php
+}
+/**
+ * Pull all apps out of the server and then examine
+ * the local station for latest versions
+ *
+ */
+function svnVersions() {
+    // Get a list of applications
+    $sq="SELECT application,description
+               ,svn_url
+               ,'  ' as local
+           FROM applications
+          ORDER by application";
+    $rows = SQL_Allrows($sq,'application');
+    
+    // Get latest pkg-apps entries
+    $dir=$GLOBALS['AG']['dirs']['root'].'pkg-apps/';
+    if(!file_exists($dir)) {
+        mkdir($dir);
+    }
+    
+    $vdirs=scandir($dir);
+    foreach($vdirs as $vdir) {
+        if($vdir=='.') continue;
+        if($vdir=='..') continue;
+        if(strpos($vdir,'-VER-')===false) continue;
+        
+        // split into app and version
+        list($app,$vers) = explode('-VER-',$vdir);
+        $rows[$app]['local']=max($rows[$app]['local'],$vers);
+    }
+    return $rows;
+} 
 
 ?>

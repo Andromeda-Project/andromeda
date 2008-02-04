@@ -26,40 +26,40 @@ class a_builder extends x_table2 {
 	}
 	
 	function main() {
-		$x_app = trim(gp('txt_application'));
+        $x_app = trim(gp('txt_application'));
         session_write_close();
-      ob_start();
-		
-		echo "<h1>Build in progress</h1>";
-		echo "<hr>";
-		echo "<p>The system is now building the application: <b>".$x_app."</b>.</p>";
-		echo "<p>If you are testing and expect to build several times in a row, do not ";
-		echo "close this window, just hit REFRESH and the build will start again.</p>";
-		echo "<p>All information below this line is from the build log.</p>";
-		echo "<hr>";
-		
-		// Get everything we need from the database, use it to build
-		// a "do" program.
-		// 
-		$GLOBALS["x_password"] = trim(CleanGet("supassword"));
-		
-		$tsql = 
-         'SELECT * from applications '
-         .' WHERE application = '.SQL_Format('char',$x_app);
-      $row_a = SQL_OneRow($tsql);
-		$tsql = 
-         'SELECT * from webpaths '
-         .' WHERE webpath = '.SQL_Format('char',$row_a['webpath']);
-      $row_n = SQL_OneRow($tsql);
-  
-		$dirws = trim($row_n["dir_pub"]);
-		if (substr($dirws,-1,1)<>"/") $dirws.="/";
-		$row["webserver_dir_pub"] = $dirws;
-		
-		$string = '
+        ob_start();
+        
+        echo "<h1>Build in progress</h1>";
+        echo "<hr>";
+        echo "<p>The system is now building the application: <b>".$x_app."</b>.</p>";
+        echo "<p>If you are testing and expect to build several times in a row, do not ";
+        echo "close this window, just hit REFRESH and the build will start again.</p>";
+        echo "<p>All information below this line is from the build log.</p>";
+        echo "<hr>";
+        
+        // Get everything we need from the database, use it to build
+        // a "do" program.
+        // 
+        $GLOBALS["x_password"] = trim(CleanGet("supassword"));
+        
+        $tsql = 
+            'SELECT * from applications '
+            .' WHERE application = '.SQL_Format('char',$x_app);
+        $row_a = SQL_OneRow($tsql);
+        $tsql = 
+            'SELECT * from webpaths '
+             .' WHERE webpath = '.SQL_Format('char',$row_a['webpath']);
+        $row_n = SQL_OneRow($tsql);
+        
+        $dirws = trim($row_n["dir_pub"]);
+        if (substr($dirws,-1,1)<>"/") $dirws.="/";
+        $row["webserver_dir_pub"] = $dirws;
+        
+        $string = '
 <?php
    // To run this program from the command line, you must
-	// be logged in as a user that has superuser priveleges, such
+   // be logged in as a user that has superuser priveleges, such
    // as root or postgres.  When running from the web app,
    // the current user\'s priveleges are used.
 	

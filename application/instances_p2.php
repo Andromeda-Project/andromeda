@@ -31,17 +31,25 @@ class instances_p2 extends x_table2 {
       $sVer =SQLFC(gp('gp_ver'));
       $hVer =hSanitize(gp('gp_ver'));
       
-      // Get information on latest version of Node Manager and
-      // link to that
-      $mv=SQL_OneValue("mv"
-         ,"SELECT max(version) as mv 
-             FROM appversions
-            WHERE application='andro'"
-      );
-      $DIR_LINK_LIB=$GLOBALS['AG']['dirs']['root'].'/pkg-apps/andro-'.$mv;
+      // KFD 2/4/08, If this is a subversion-enabled server, 
+      //     get version information from there
+      if(OptionGet('DEV_STATION','')<>'') {
+          $aversions = svnVersions();
+          $mv = '-VER-'.$aversions['andro']['local'];
+      }
+      else {
+          // Get information on latest version of Node Manager and
+          // link to that
+          $mv=SQL_OneValue("mv"
+             ,"SELECT max(version) as mv 
+                 FROM appversions
+                WHERE application='andro'"
+          );
+      }
+      $DIR_LINK_LIB=$GLOBALS['AG']['dirs']['root'].'/pkg-apps/andro'.$mv;
       
       // Source of symlinks for app directories 
-      $DIR_LINK_APP=$GLOBALS['AG']['dirs']['root']."/pkg-apps/$hApp-$hVer";
+      $DIR_LINK_APP=$GLOBALS['AG']['dirs']['root']."/pkg-apps/$hApp-VER-$hVer";
       
       
       // Get application information for the DO program

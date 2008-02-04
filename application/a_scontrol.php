@@ -53,6 +53,7 @@ class a_scontrol extends x_table2 {
       <p>For application 
          <a href="?gp_page=applications&gp_skey=<?=$skey?>"><?=$App?></a>.
       </p>
+      <?=sourceDeprecated()?>
       <?php
       if(!$this->CheckRemoteUID($node['node'])) return;
       ?>

@@ -24,9 +24,14 @@ class applications extends x_table2 {
       if($mode<>'upd') return array();
       $app = trim($this->row['application']);
       
-      $retval= array(
-         hLinkBuild($app,'Build This Application')
-         ,hLinkPopup(
+      // KFD 2/4/08, part of SVN system.  If this node has been set up
+      //     as a server that pulls from SVN, we do not offer the build
+      //     option on applications anymore, that is only for dev
+      //     workstation and old-fashioned non-svn servers. 
+      $retval = array();
+      if(OptionGet('DEV_STATION','')=='N') {
+          $retval[] = hLinkBuild($app,'Build This Application');
+          $retval[] = hLinkPopup(
             ''
             ,'View Most Recent Log'
             ,array(
@@ -34,9 +39,10 @@ class applications extends x_table2 {
                ,"gp_out"=>"info"
                ,'txt_application'=>$app
             )
-         )
-      );
+         );
+      }
 
+      
       // If no authoritative node is listed, we must be it, so list
       // an option.  Otherwise allow code control options.
       $lnk1="?gp_page=appversions_p&gp_app=".trim($this->row['application']);
@@ -50,8 +56,6 @@ class applications extends x_table2 {
       else {
          $retval[]=hLink('',"Source Code Functions",$lnk2);
       }
-      
-
 
       return $retval;
    }

@@ -3,62 +3,6 @@
 # (C) Copyright 2005 Kenneth Downs. 
 # This file is part of Andromeda
 # ========================================================================
-
-module sysmaint:
-    uisort: 820
-    description: System Maintenance
-
-module operations:
-    uisort: 100
-    description: Operations
-    group $LOGIN:
-        nomenu: "N"
-    group admin:
-        nomenu: "N"
-
-# Node manager needs URL to put into links for email resets
-
-#content gendercodes:
-#   columns: [ gendercode, description ]
-#   values:
-#       - [ M, Male      ]
-#       - [ F, Female    ]
-#       - [ U, Universal ]
-
-
-
-
-content variables:
-    columns: [ variable, description, variable_value ]
-    values:
-        - [ PWURL ]
-        - [ URL For Node Manager ]
-        - [ www.somewhere.com ]
-
-
-group thedudes:
-    description: Solo Dudes
-    solo: "Y"
-
-
-#  Extra menu item for new user; requires some extra stuff
-#
-#module special   { description: Special Tasks; uisort: 50; }
-#menu x_email     { description: Send a Test Email; module: special; }
-#menu x_printtest { description: Printing tests; module: system; }
-
-
-module tests:
-    description: Examples and Test
-    uisort: 300
-    group $LOGIN:
-        permins: "Y"
-        permdel: "Y"
-        permupd: "Y"
-        permsel: "Y"
-        nomenu: "N"
-
-
 group admin:
     permsel: "Y"
     permins: "Y"
@@ -86,215 +30,39 @@ group admin:
         permupd: "Y"
         permdel: "Y"
         nomenu: "N"
-# ========================================================================
-# AREA: Super users, a single table
-# ========================================================================
-
-table usersroot:
-    description: System Super-users
-    #risimple: "Y"
-    module: sysmaint
-	
-    column user_id:
-        primary_key: "Y"
-        uisearch: "Y"
-        
-    column user_name:
-        uisearch: "Y"
-    
-    column email:
-    column user_disabled:
-    column user_pwkey:
-    column user_pwexp:
-    column hostip:
-    
-    column member_password:
-        automation_id: BLANK
-        description: Password
-        
-    column member_md5:
-        prefix: member_
-        description: MD5 Password
-
-	#group andro_own  { permins: Y; permsel: Y; }
 
 # ========================================================================
-# AREA: Nodes and web directories
+# module: apps
 # ========================================================================
-
-menu a_pullcode:
-    module: operations
-    uisort: 99
-    description: Pull Software Updates 
-
-
-#  TABLE: Nodes
-#
-
-column node:
-    description: Node
-    type_id: char
-    colprec: 10
-
-column node_url:
-    description: Node URL
-    type_id: vchar
-    colprec: 100
-
-column dir_pub:
-    description: Public Directory
-    type_id: vchar
-    colprec: 100
-
-column local_flag:
-    description: Local Node
-    type_id: cbool
-
-column prod_flag:
-    description: Production Node
-    type_id: cbool
-    automation_id: DEFAULT
-    auto_formula: "N"
-    
-table nodes:
-    description: Nodes
-    module: operations
-    capspk: "Y"
-   
-    column node:
-        primary_key: "Y"
-        uisearch: "Y"
-    column description:
-        uisearch: "Y"
-    column node_url:
-        uisearch: "Y"
-        
-#column local_flag  { uisearch: Y; } 
-#column prod_flag   { uisearch: Y; }
-#column { dir_pub; }
-
-
-table test:
-    description: Test Table
-    module: operations
-    capspk: "Y"
-    column node:
-        primary_key: "Y"
-        uisearch: "Y"
-    column description:
-        uisearch: "Y"
-    column date:
-        uisearch: "Y"
-    column notes:
-        uisearch: "Y"
-        
-column webpath:
-    description: Nickname
-    type_id: char
-    colprec: 10
-
-table webpaths:
-    description: Local Web Directories
-    module: operations
-    capspk: "Y"
-    column webpath:
-        primary_key: "Y"
-        uisearch: "Y"
-    column description:
-        uisearch: "Y"
-    column dir_pub:
-
-
-# ========================================================================
-# AREA: Directories for libraries and applications
-#
-# Historical note: we use "templates" as the directory for 
-# ========================================================================
-
-column dirname:
-    type_id: vchar
-    colprec: 15
-    description: Top Directory
-
-table appdirs:
-    description: Application Directories
-    module: operations
-    nomenu: "N"
-
-    column dirname:
-        description: Top Directory 
-        uisearch: "Y"
-        primary_key: "Y"
-    column flag_vis:
-        suffix: _vis
-        description: Publicly Visible
-        uisearch: "Y"
-    column flag_copy:
-        suffix: _copy
-        uisearch: "Y"
-        description: Copy when publishing
-    column flag_lib:
-        suffix: _lib
-        uisearch: "Y" 
-        description: Library Directory
-    column description: 
-        uisearch: "Y"
-
-        
-#content gendercodes:
-#   columns: [ gendercode, description ]
-#   values:
-#       - [ M, Male      ]
-#       - [ F, Female    ]
-#       - [ U, Universal ]
-
-
-        
-content appdirs:
-    columns: [ dirname, flag_lib, flag_copy, flag_vis, description]
-    values:
-        - [ root, Y, Y, N, to be copied as root ]
-        - [ lib, Y, Y, N, Lib Server-Side Code ]
-        - [ clib, Y, Y, Y, Lib Client-Side Code ]
-        - [ application, N, Y, N, App Server-Side Code ]
-        - [ appclib, N, Y, Y, App Client-Side Code ]
-        - [ templates, Y, Y, Y, UI Templates ]
-        - [ generated, N, N, N, Dictionary-generated Code ]
-        - [ dynamic, N, N, N, Dynamic Cache ]
-        - [ files, N, N, N, Imports/Exports and Misc Files ]
-        - [ tmp, N, N, N, Temporary Build Files ]
-        - [ apppub, N, Y, Y, App Client-visible Files ]
-        - [ instpub, N, N, Y, Instance Client-visible Files ]
-        - [ docslib, Y, Y, N, Lib Docs ]
-        - [ docsapp, N, Y, N, App Docs ]
-        - [ docsgen, N, N, N, Generated Docs ]
-
-# ========================================================================
-# AREA: Application Versions and Files
-# ========================================================================
-#
-#  TABLE: Andromeda Applications
-#
+module apps:
+    uisort: 0
+    description: Applications
+    group $LOGIN:
+        nomenu: "N"
+    group admin:
+        nomenu: "N"
 
 column application:
-    description: Application
     type_id: char
     colprec: 10
-    
+    description: Application
 column appspec:
     description: Specification File
     type_id: vchar
     colprec: 30
-    
 column xdirs:
     description: Extra Dirs (Comma separated)
     type_id: vchar
     colprec: 200
-
+column svn_url:
+    description: Subversion URL
+    type_id: vchar
+    colprec: 200
+    
 table applications: 
     description: Applications
-    module: operations
-    #risimple: Y
+    module: apps
+    uisort: 100
 	
     column application:
         primary_key: "Y"
@@ -313,8 +81,7 @@ table applications:
         auto_formula: andro_universal
     column appspec:
         description: Spec File
-        
-# foreign_key webpaths truncated to match previous 'columns' convention
+    column svn_url:        
     foreign_key webpaths:
         column webpath:
             description: Web Path
@@ -328,10 +95,10 @@ table applications:
         automation_id: DEFAULT
         auto_formula: "N"
         description: Hardened Password Security
-    foreign_key nodes:
-        allow_empty: "Y" 
-    column node:
-        description: Authoritative Node
+    #foreign_key nodes:
+    #    allow_empty: "Y" 
+    #column node:
+    #    description: Authoritative Node
     column xdirs:
     column template:
     column ts_ins:
@@ -341,78 +108,20 @@ table applications:
     
     projection dropdown:
         column description:
-	
-column version:
-    description: Version Code
-    type_id: char
-    colprec: 10
     
-table appversions:
-    description: Application Versions
-    module: operations
-   
-    foreign_key applications:
-        uisearch: "Y"
-        primary_key: "Y"
-        uisearch: "Y"
-    column version:
-        uisearch: "Y"
-        primary_key: "Y"
-        uisearch: "Y"
-    column date_ts:
-        suffix: _ts
-        description: Version Date
-        uisearch: "Y"
-    column notes:
-        description: Version Notes
         
-table appfiles:
-    description: Application Version Files
-    module: operations
-    nomenu: "Y"
-   
-    foreign_key appversions:
-        primary_key: "Y"
-        uisearch: "Y"
-    foreign_key appdirs:
-        uisearch: "Y"
-        
-       
-    column filename:
-        primary_key: "Y"
-        uisearch: "Y"
-    column filepath:
-    column filecnts: 
-        uisearch: "Y"
-    column flag_del:
-        suffix: _del
-        description: File Deleted
-    column filets:
-        prefix: file
-        description: File timestamp
-        uisearch: "Y"
-    column filemd5:
-        prefix: file
-        description: File md5
-        
-# ========================================================================
-# AREA: Instances
-# An instance links into a application and version.  That application
-# itself links over to libraries.
-# ========================================================================
 column instance:
     description: Instance Code
     type_id:char
     colprec: 12
-    
 column template:
     description: Preferred Template
     type_id: vchar
     colprec: 40
-
 table instances:
-    module: operations
+    module: apps
     description: Instances
+    uisort: 110
    
     column instance:
         primary_key: "Y"
@@ -437,8 +146,13 @@ table instances:
         uisearch: "Y"
         uiro: "Y"
 
+column version: 
+    description: Version Code
+    type_id: char
+    colprec: 10
+    
 table instbuilds:
-    module: operations
+    module: apps
     description: Instance Builds
     nomenu: "Y"
    
@@ -469,24 +183,207 @@ table instbuilds:
         suffix: _ok
         uiro: "Y"
 
-#// Table of downloads history
-column iphash:
+menu a_pullsvn:
+    module: apps
+    uisort: 205
+    description: Update from Subversion 
+
+
+
+
+# ========================================================================
+# MODULE: This Node
+# ========================================================================
+module thisnode:
+    uisort: 200
+    description: This Node
+    group $LOGIN:
+        nomenu: "N"
+    group admin:
+        nomenu: "N"
+
+
+
+column webpath:
+    description: Nickname
     type_id: char
-    colprec: 32
-    description: IP Number Hash
-    
-table downloads:
-    module: operations
-    description: Download History
-   
-    column recnum:
+    colprec: 10
+column dir_pub:
+    description: Public Directory
+    type_id: vchar
+    colprec: 100
+table webpaths:
+    description: Local Web Directories
+    module: thisnode
+    uisort: 100
+    capspk: "Y"
+    column webpath:
         primary_key: "Y"
-    column iphash:
-        uisearch: "Y"    
-    column filename: 
         uisearch: "Y"
-    column ts_ins:
+    column description:
         uisearch: "Y"
-   
-    index iphash:
-        column iphash:
+    column dir_pub:
+
+    
+column dirname:
+    type_id: vchar
+    colprec: 15
+    description: Top Directory
+
+table appdirs:
+    description: Application Directories
+    module: thisnode
+    uisort: 999
+    nomenu: "N"
+
+    column dirname:
+        description: Top Directory 
+        uisearch: "Y"
+        primary_key: "Y"
+    column flag_vis:
+        suffix: _vis
+        description: Publicly Visible
+        uisearch: "Y"
+    column flag_copy:
+        suffix: _copy
+        uisearch: "Y"
+        description: Copy when publishing
+    column flag_lib:
+        suffix: _lib
+        uisearch: "Y" 
+        description: Library Directory
+    column description: 
+        uisearch: "Y"
+    
+        
+content appdirs:
+    columns: [ dirname, flag_lib, flag_copy, flag_vis, description]
+    values:
+        - [ root, Y, Y, N, to be copied as root ]
+        - [ lib, Y, Y, N, Lib Server-Side Code ]
+        - [ clib, Y, Y, Y, Lib Client-Side Code ]
+        - [ application, N, Y, N, App Server-Side Code ]
+        - [ appclib, N, Y, Y, App Client-Side Code ]
+        - [ templates, Y, Y, Y, UI Templates ]
+        - [ generated, N, N, N, Dictionary-generated Code ]
+        - [ dynamic, N, N, N, Dynamic Cache ]
+        - [ files, N, N, N, Imports/Exports and Misc Files ]
+        - [ tmp, N, N, N, Temporary Build Files ]
+        - [ apppub, N, Y, Y, App Client-visible Files ]
+        - [ instpub, N, N, Y, Instance Client-visible Files ]
+        - [ docslib, Y, Y, N, Lib Docs ]
+        - [ docsapp, N, Y, N, App Docs ]
+        - [ docsgen, N, N, N, Generated Docs ]
+
+
+
+table usersroot:
+    description: System Super-users
+    module: thisnode
+    uisort: 200
+	
+    column user_id:
+        primary_key: "Y"
+        uisearch: "Y"
+        
+    column user_name:
+        uisearch: "Y"
+    
+    column email:
+    column user_disabled:
+    column user_pwkey:
+    column user_pwexp:
+    column hostip:
+    
+    column member_password:
+        automation_id: BLANK
+        description: Password
+        
+    column member_md5:
+        prefix: member_
+        description: MD5 Password
+    
+
+content variables:
+    columns: [ variable, description, variable_value ]
+    values:
+        - [ PWURL ]
+        - [ URL For Node Manager ]
+        - [ www.somewhere.com ]
+
+
+# ========================================================================
+# MODULE: Deprecated source control
+# ========================================================================
+module source:
+    description: Source Control
+    uisort: 250
+    group $LOGIN:
+        nomenu: "N"
+    group admin:
+        nomenu: "N"
+
+menu a_pullcode:
+    module: source
+    uisort: 100
+    description: Pull Software Updates (Deprecated)
+
+    
+column version:
+    description: Version Code
+    type_id: char
+    colprec: 10
+
+table appversions:
+    description: Application Versions
+    uisort: 200
+    module: source
+    
+    foreign_key  applications: 
+        uisearch: "Y"
+        primary_key: "Y"
+    column version:
+        uisearch: "Y" 
+        primary_key: "Y"
+    column date_ts:
+        suffix: _ts
+        description: Version Date
+        uisearch: "Y"
+    column notes:
+        description: Version Notes
+
+        
+table appfiles:
+    description: Application Version Files;
+    module: source
+    uisort: 300
+    nomenu: "Y"
+    
+    foreign_key appversions:
+        primary_key: "Y"
+        uisearch: "Y"
+    
+    foreign_key appdirs:
+        uisearch: "Y"
+    
+    column      filename:
+        primary_key: "Y"
+        uisearch: "Y"
+    
+    column filepath:
+        uisearch: "Y"
+    column filecnts:
+    
+    column flag_del:
+        suffix: _del
+        description: File Deleted
+    
+    column filets:
+        prefix: file
+        description: File timestamp
+        uisearch: "Y"
+    
+    column filemd5:  
+        prefix: file
+        description: File md5
+
