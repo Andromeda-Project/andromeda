@@ -41,11 +41,11 @@ module system     {
    nomenu: Y; 
 }
 
-module xmlrpc  { 
-   description: XML RPC Definitions; 
-   uisort: 951;
-   nomenu: Y;
-}
+//module xmlrpc  { 
+//   description: XML RPC Definitions; 
+//   uisort: 951;
+//   nomenu: Y;
+//}
 
 // --------------------------------------------------------------------
 // Group that can do user maintenance
@@ -3250,81 +3250,81 @@ column hostport  { description: TCP Port;  type_id: char; colprec: 5;  }
 column hostpath  { description: XML Path Stem; type_id: char; colprec: 30; }
 column hostuid   { description: User ID;   type_id: char; colprec: 12; }
 column hostpwd   { description: Password;  type_id: char; colprec: 12; }
-table xmlrpchosts {
-	description: XML RPC Hosts;
-	module: xmlrpc;
-	
-	column hostcode { primary_key: Y; uisearch: Y; }
-	column hosturl  { uisearch: Y; }
-	column hostport { uisearch: Y; automation_id: DEFAULT; auto_formula: 80; }
-	column { hostpath;hostuid;hostpwd }
-}	
-
-//  Calls.  A call is a function.
-//
-column callcode { description: Call code;        type_id: char; colprec: 20; }
-column callpath { description: XML Path Suffix;  type_id: char; colprec: 30; }
-column callmsg  { description: XML Message Name; type_id: char; colprec: 30; }
-table xmlrpccalls {
-	description: XML RPC Function Calls;
-	module: xmlrpc;
-	
-	foreign_key { xmlrpchosts; uisearch: Y; }
-
-	column callcode { primary_key: Y; uisearch: Y; }
-	column { callpath; }
-	column callmsg  { uisearch: Y; }
-}
-
-//  Parameters.  
-//
-column parm_seq  { description: Parameter Sequence; type_id: int; }
-table xmlrpcparms {
-	description: XML RPC Function Parameters;
-	module: xmlrpc;
-
-	foreign_key { xmlrpccalls; uisearch: Y; primary_key: Y; }
-	column parm_seq { primary_key: Y; uisearch: Y; }
-	column description { uisearch: Y; }
-	
-	foreign_key { xmlrpcpdtypes; uisearch: Y; }
-	foreign_key { xmlrpcptypes;  uisearch: Y; }
-}
-
-//  Parameter Data types; including populated values
-//
-column parmdtype { description: Parameter Data Type; type_id: char; colprec: 10; }
-table xmlrpcpdtypes {
-	description: XML RPC Parm Data Types;
-	module: xmlrpc;
-	
-	column parmdtype { primary_key: Y; uisearch: Y; }
-	column description { uisearch: Y; }
-}
-
-content xmlrpcpdtypes {
-	columns { parmdtype; description }
-	values  { int; integer }
-	values  { double; Double-Precision }
-}
-
-
-// Parameter type; inbound and output
-//
-column parmtype { description: Input or Return; type_id: char; colprec: 3; }
-table xmlrpcptypes {
-	description: XML RPC Parm Type;
-	module: xmlrpc;
-
-	column parmtype { primary_key: Y; uisearch: Y; }
-	column description { uisearch: Y; }	
-}
-
-content xmlrpcptypes {
-	columns { parmtype; description }
-	values { ret;Return Value }
-	values { inp;Input to RPC Call }
-}
+// table xmlrpchosts {
+	// description: XML RPC Hosts;
+	// module: xmlrpc;
+	// 
+	// column hostcode { primary_key: Y; uisearch: Y; }
+	// column hosturl  { uisearch: Y; }
+	// column hostport { uisearch: Y; automation_id: DEFAULT; auto_formula: 80; }
+	// column { hostpath;hostuid;hostpwd }
+// }	
+// 
+// //  Calls.  A call is a function.
+// //
+// column callcode { description: Call code;        type_id: char; colprec: 20; }
+// column callpath { description: XML Path Suffix;  type_id: char; colprec: 30; }
+// column callmsg  { description: XML Message Name; type_id: char; colprec: 30; }
+// table xmlrpccalls {
+	// description: XML RPC Function Calls;
+	// module: xmlrpc;
+	// 
+	// foreign_key { xmlrpchosts; uisearch: Y; }
+// 
+	// column callcode { primary_key: Y; uisearch: Y; }
+	// column { callpath; }
+	// column callmsg  { uisearch: Y; }
+// }
+// 
+// //  Parameters.  
+// //
+// column parm_seq  { description: Parameter Sequence; type_id: int; }
+// table xmlrpcparms {
+	// description: XML RPC Function Parameters;
+	// module: xmlrpc;
+// 
+	// foreign_key { xmlrpccalls; uisearch: Y; primary_key: Y; }
+	// column parm_seq { primary_key: Y; uisearch: Y; }
+	// column description { uisearch: Y; }
+	// 
+	// foreign_key { xmlrpcpdtypes; uisearch: Y; }
+	// foreign_key { xmlrpcptypes;  uisearch: Y; }
+// }
+// 
+// //  Parameter Data types; including populated values
+// //
+// column parmdtype { description: Parameter Data Type; type_id: char; colprec: 10; }
+// table xmlrpcpdtypes {
+	// description: XML RPC Parm Data Types;
+	// module: xmlrpc;
+	// 
+	// column parmdtype { primary_key: Y; uisearch: Y; }
+	// column description { uisearch: Y; }
+// }
+// 
+// content xmlrpcpdtypes {
+	// columns { parmdtype; description }
+	// values  { int; integer }
+	// values  { double; Double-Precision }
+// }
+// 
+// 
+// // Parameter type; inbound and output
+// //
+// column parmtype { description: Input or Return; type_id: char; colprec: 3; }
+// table xmlrpcptypes {
+	// description: XML RPC Parm Type;
+	// module: xmlrpc;
+// 
+	// column parmtype { primary_key: Y; uisearch: Y; }
+	// column description { uisearch: Y; }	
+// }
+// 
+// content xmlrpcptypes {
+	// columns { parmtype; description }
+	// values { ret;Return Value }
+	// values { inp;Input to RPC Call }
+// }
 
 
 // =================================================================
