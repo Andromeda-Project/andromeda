@@ -23,7 +23,7 @@ class variables extends x_table2 {
             SQL($sq);
         }
         if(gpExists('gp_cache')) {
-            unlink($GLOBALS['AG']['dirs']['dynamic'].'table_variables.php');
+            //unlink($GLOBALS['AG']['dirs']['dynamic'].'table_variables.php');
             OptionGet('X');
         }
         if(gpExists('gp_xajax')) {

@@ -4873,6 +4873,10 @@ function OptionGet($varname,$default='') {
    return Option_Get($varname,$default);
 }
 function Option_Get($varname,$default='') {
+    if($varname=='X') {
+        unlink($GLOBALS['AG']['dirs']['dynamic'].'table_variables.php');
+        unset($GLOBALS['AG']['table_variables']);        
+    }
    if(!file_exists_incpath('table_variables.php')) {
       // Retrieve the file
       $rows=SQL_AllRows("select * from variables");
@@ -4886,7 +4890,7 @@ function Option_Get($varname,$default='') {
          ,"GLOBALS['AG']['table_variables']"
       );
    }
-   include_once('table_variables.php');
+   include('table_variables.php');
    return ArraySafe($GLOBALS['AG']['table_variables'],trim($varname),$default);
    
    // KFD 6/8/07, retired the old code that queried database on every pull
