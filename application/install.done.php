@@ -22,8 +22,8 @@ class install extends x_table2 {
             ,"SPEC_LIST"=>"andro.dd.yaml"
          );
          include("AndroBuild.php");
-         SessionSet('UID','');
-         SessionSet('PWD','');
+         SessionSet('UID','andro');
+         SessionSet('PWD','andro');
          echo  ob_get_clean();
          return;
       }
@@ -143,7 +143,7 @@ class install extends x_table2 {
       
       // If they manually forced a rollback to an earlier step,
       //  we will catch it below
-      $rb=gp('stepreset',-1);
+      $rb=gp('stepreset','-1');
    
       // look for flags that indicate manual approval of steps
       if(gp('pgconfig')==1) sessionSet('pgconfig',true);
@@ -173,7 +173,10 @@ class install extends x_table2 {
                }
 
                // Test if they gave us uid/pwd and if it works
-               if(SessionGet('xUID')=='') $finished=true;
+               if(SessionGet('xUID')=='') {
+			 $finished=true;
+
+		}
                else {
                   $cs=SQL_ConnString(
                      SessionGet('xUID')
@@ -235,7 +238,8 @@ class install extends x_table2 {
                $table_dd=dd_TableRef('webpaths');
                SQLX_UpdateorInsert($table_dd,$row); 
                
-               $table_dd=dd_TableRef('nodes');
+		/*               
+		$table_dd=dd_TableRef('nodes');
                $row=array(
                   'node'=>'DHOST2'
                   ,'description'=>"Andromeda Master Node"
@@ -248,6 +252,7 @@ class install extends x_table2 {
                   ,'node_url'=>'localhost'
                );
                SQLX_UpdateorInsert($table_dd,$row); 
+		*/
 
                $table_dd=dd_TableRef('applications');
                $row=array(

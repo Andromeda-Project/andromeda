@@ -12,7 +12,7 @@
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-                           
+               s            
    You should have received a copy of the GNU General Public License
    along with Andromeda; if not, write to the Free Software
    Foundation, Inc., 51 Franklin St, Fifth Floor,
@@ -8212,10 +8212,17 @@ function FS_PrepareCheck() {
 	// and writable by the web server
 	//
     // KFD 12/21/07, process only directories named in node manager,
-    // lets you ignore directories you creae yourself.
+    // lets you ignore directories you create yourself.
     //
-    $dbres=pg_query($GLOBALS["dbconna"],"SELECT * FROM appdirs");
-    $dirs =pg_fetch_all($dbres);
+    // KFD 2/5/08, fix huge bug introduced by this.  On a new
+    //             install this does not work, must have hardcoded dir
+    if(isset($this->dirsAll)) {
+        $dirs = $this->dirsAll;
+    }
+    else {
+        $dbres=pg_query($GLOBALS["dbconna"],"SELECT * FROM appdirs");
+        $dirs =pg_fetch_all($dbres);
+    }
     foreach($dirs as $dir) {
         $dir_pubx2=$dir_pubx.$this->FS_ADDSLASH($dir['dirname']);
         if(is_dir($dir_pubx2)) {
@@ -8252,8 +8259,16 @@ function FS_PrepareMake() {
    // Now handle all of the subdirectories, including templates, lib,
    // clib and so forth.  Read them out of the node manager.
    //
-   $dbres=pg_query($GLOBALS["dbconna"],"SELECT * FROM appdirs");
-   while($row=pg_fetch_array($dbres)) {
+    // KFD 2/5/08, fix huge bug introduced by this.  On a new
+    //             install this does not work, must have hardcoded dir
+    if(isset($this->dirsAll)) {
+        $dirs = $this->dirsAll;
+    }
+    else {
+        $dbres=pg_query($GLOBALS["dbconna"],"SELECT * FROM appdirs");
+        $dirs =pg_fetch_all($dbres);
+    }
+    foreach($dirs as $row) {
       $tgt=trim($row['dirname']);
       $this->LogEntry("Processing subdir: $tgt");
 
@@ -8564,6 +8579,31 @@ function LogStart()
 	fclose($handle);
 
 	$GLOBALS["log_file"] = $pLogPath;	
+    
+    
+    // KFD 2/5/08.  If installer is detected, hardcode some entries
+    //              so the install can run.
+    $x = dirname(__FILE__);
+    if(file_exists($x.'/install.php')) {
+        $this->dirsAll = array(
+            array('dirname'=>'root'        ,'flag_copy'=>'Y','flag_lib'=>'Y','flag_vis'=>'N')
+            ,array('dirname'=>'lib'        ,'flag_copy'=>'Y','flag_lib'=>'Y','flag_vis'=>'N')
+            ,array('dirname'=>'clib'       ,'flag_copy'=>'Y','flag_lib'=>'Y','flag_vis'=>'Y')
+            ,array('dirname'=>'application','flag_copy'=>'Y','flag_lib'=>'N','flag_vis'=>'N')
+            ,array('dirname'=>'appclib'    ,'flag_copy'=>'Y','flag_lib'=>'N','flag_vis'=>'Y')
+            ,array('dirname'=>'generated'  ,'flag_copy'=>'N','flag_lib'=>'N','flag_vis'=>'N')
+            ,array('dirname'=>'files'      ,'flag_copy'=>'N','flag_lib'=>'N','flag_vis'=>'N')
+            ,array('dirname'=>'tmp'        ,'flag_copy'=>'N','flag_lib'=>'N','flag_vis'=>'N')
+            ,array('dirname'=>'apppub'     ,'flag_copy'=>'Y','flag_lib'=>'N','flag_vis'=>'Y')
+            ,array('dirname'=>'dynamic'    ,'flag_copy'=>'N','flag_lib'=>'N','flag_vis'=>'N')
+            ,array('dirname'=>'templates'  ,'flag_copy'=>'Y','flag_lib'=>'N','flag_vis'=>'Y')
+            ,array('dirname'=>'instpub'    ,'flag_copy'=>'N','flag_lib'=>'N','flag_vis'=>'Y')
+            ,array('dirname'=>'docslib'    ,'flag_copy'=>'Y','flag_lib'=>'Y','flag_vis'=>'N')
+            ,array('dirname'=>'docsapp'    ,'flag_copy'=>'Y','flag_lib'=>'N','flag_vis'=>'N')
+            ,array('dirname'=>'docsgen'    ,'flag_copy'=>'N','flag_lib'=>'N','flag_vis'=>'N')
+         );
+    }
+    
 
    //  get the password if necessary
    if(function_exists("SessionGet")) {
