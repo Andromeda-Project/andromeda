@@ -183,10 +183,15 @@ table instbuilds:
         suffix: _ok
         uiro: "Y"
 
-menu a_pullsvn:
+menu a_pullsvna:
     module: apps
     uisort: 205
-    description: Update from Subversion 
+    description: Update Andromeda from Subversion 
+
+menu a_pullsvn:
+    module: apps
+    uisort: 206
+    description: Update Applications from Subversion 
 
 
 

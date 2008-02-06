@@ -50,26 +50,25 @@ class a_pullsvn extends x_table2 {
         <div style="font-size: 110%">
         <h3>Please Make DEV_STATION Setting</h3>
         
-        This machine can either be a development workstations or
-           a server.  Please click one of the links below to make
-           the setting.
+        This machine can either be a development workstation or
+        a server.  Please click one of the links below to make
+        the setting.
         <br/>
         <br/>
         
         <ul><li>
         <a href="?gp_page=a_pullsvn&gp_set=dev">Click Here To Make
         This Machine a Development Workstation</a>.  A Development workstation
-        is a machine that a programmer uses to write code.  On a
-        development workstation the programmer does not use Andromeda to
-        manage code, the programmer uses SVN tools to checkout 
-        code and commit changes. 
+        is a machine that a programmer uses to write code.  The programmer
+        uses Subversion to retrieve code updates and commit updates
+        to the Subversion server.
         <br/><br/>
         
         
         <li><a href="?gp_page=a_pullsvn&gp_set=serve">Click Here To Make
-        This Machine a Server</a>.  A server is a machine where no programmer
-        is modifying code.  Servers get their code updates by using
-        the "Updates From SVN" feature. 
+        This Machine a Server</a>.  Programmers do not directly modify
+        the code on a server.  Servers always get their code from Subversion
+        repositories using the "Update From Subversion" feature.
         </ul>
         
         </div>
@@ -90,24 +89,23 @@ class a_pullsvn extends x_table2 {
         <b>This is a development workstation.</b>  This machine has
         the "DEV_STATION" flag set to "Y", which means it is a development
         workstation.
-        <br/>
-        <br/>
         
-        Development workstations do not need to pull published code
-        from SVN repositories.  You can update the code on this workstation
-        using SVN tools.  If Andromeda were to pull SVN updates to this
-        machine, there is a risk of overwriting a programmer's work.
         <br/>
         <br/>
-
-        If you wish to convert this machine to a server, go
-        to the <a href="?gp_page=variables">System Variables</a> table
-        and change the setting for "DEV_WORKSTATION" to "N".
+        Development workstations do not use Andromeda to pull code,
+        because of the danger of overwriting programmers' changes.  Instead,
+        use your SVN client tool to retrieve code from your SVN server
+        to this workstation.
+        
+        <br/>
+        <br/>
+        If this machine is not supposed to be development workstation,
+        you can change it to a server by going to the
+        <a href="?gp_page=variables">System Variables</a> table
+        and changing "DEV_WORKSTATION" to "N".
         Don't forget to
         click on the "Force Cache Reload" link after you save your
         changes.
-        
-        
         </div>
         <?php
     }
@@ -156,13 +154,11 @@ class a_pullsvn extends x_table2 {
           <thead><tr><th>Application
                      <th>SVN Repository
                      <th>Local Version
-                     <th>Latest Available
           </thead>
         <?php foreach($rows as $row) { ?>
             <tr><td><?=$row['application']?>
                 <td><?=$row['svn_url']?>
                 <td><?=$row['local']?>
-                <td> -- ?? -- 
         <?php } ?>
         </table>
         
