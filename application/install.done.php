@@ -258,7 +258,7 @@ class install extends x_table2 {
                $row=array(
                   'application'=>'andro'
                   ,'description'=>"Andromeda Node Manager"
-                  ,'appspec'=>'andro'
+                  ,'appspec'=>'andro.dd.yaml'
                   ,'node'=>'LOCAL'
                   ,'webpath'=>'DEFAULT'
                );
