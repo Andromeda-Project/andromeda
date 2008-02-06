@@ -29,7 +29,7 @@ class applications extends x_table2 {
       //     option on applications anymore, that is only for dev
       //     workstation and old-fashioned non-svn servers. 
       $retval = array();
-      if(OptionGet('DEV_STATION','Y')=='Y' || $app=='andro') {
+      if(OptionGet('DEV_STATION','Y')=='Y' || $app=='andro' || OptionGet( 'BUILD_ALL_APPS','N')== 'Y') {
           $retval[] = hLinkBuild($app,'Build This Application');
           $retval[] = hLinkPopup(
             ''
