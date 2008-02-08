@@ -80,6 +80,7 @@ class x_builder {
         $retval = $retval && $this->DB_Connect();
         $retval = $retval && $this->FS_Prepare();
         
+        
         // If we passed most basic, we prepare the database
         // by loading stored procedures and making the zdd
         // schema to use during build.
@@ -124,6 +125,10 @@ class x_builder {
         $retval = $retval && $this->CodeGenerate_Info();
         $retval = $retval && $this->CodeGenerate_Tables();
         $retval = $retval && $this->CodeGenerate_Modules();
+        
+        // Big new thing, 2/6/08, build scripts
+        //
+        $retval = $retval && $this->BuildScripts();
         
         $this->DB_Close();
         $this->LogClose($retval,$ts);
@@ -8064,6 +8069,79 @@ SELECT  m.module,m.description as module_text,m.uisort,t.uisort
 	return true;
 }
 
+// =====================================================================
+// Run Build Scripts
+// =====================================================================
+function buildScripts() {
+	$this->LogStage("Running Build Scripts");
+    global $parm;
+    
+    // Get director, pull files, sort them, pop out
+    // the first two, which will be . and ..
+    $dir = $parm['DIR_PUB'].'/application/scripts/';
+    $this->logEntry("Will look for scripts here: ");
+    $this->logEntry($dir);
+    $this->LogEntry("");
+    if(!is_dir($dir)) {
+        $this->LogEntry("Script directory does not exist, nothing to do!");
+        return;
+    }
+
+    // alphabetize and pop off the . and ..
+    $scripts = scandir($dir);
+    sort($scripts);
+    array_shift($scripts);
+    array_shift($scripts);
+    if(count($scripts)==0) {
+        $this->LogEntry("No scripts, nothing to do!");
+        return;
+    }
+        
+    // Get the scripts that have been cleared
+    $finished = $this->SQLReadRows("Select * from scripts");
+    $completed = array();
+    if(is_array($finished)) {
+        foreach($finished as $onedone) {
+            $completed[$onedone['script']] = $onedone['script'];
+        }
+    }
+    
+    // Run em!
+    foreach($scripts as $script) {
+        if(in_array($script,$completed)) {
+            $this->logEntry("NOT RUNNING ".$script);
+            continue;
+            
+        }
+        $this->ScriptSet($script);
+        
+        $this->logEntry("");
+        $this->logEntry("Executing Script: $script"); 
+        include($dir.$script);
+    }
+    
+    return true;
+}
+
+function ScriptSet($script) {
+    $this->runningScript = $script;
+}
+
+function ScriptSuccess() {
+    $sql="insert into scripts (script) values ('$this->runningScript')";
+    $this->SQL($sql);
+    $this->LogEntry("  --- Script reported success --- ");
+    $this->LogEntry("");
+}
+
+function checkSuccess($script) {
+    $sql="SELECT * from scripts where script ='$script'";
+    $count = $this->SQLReadRows($sql);
+    return (count($count)>0) ? true : false;
+    
+}
+
+
 // ==========================================================
 // Database Access Routines
 // ==========================================================
@@ -8089,6 +8167,18 @@ function SQLRead($sqlText,$noReport=false) {
 function SQL_ANDRO($sqlText) {
 	return $this->SQL($sqlText,false,true,$GLOBALS["dbconna"]);	
 }
+
+function SQLReadRow($dbres) {
+    return pg_fetch_array($dbres);
+}
+function SQLReadRows($sqlText) {
+    $dbres = $this->SQLRead($sqlText);
+    $retval = pg_fetch_all($dbres);
+    
+    if(!$retval) return array();
+    else return $retval;
+}
+
 
 function SQL($sqlText,$noReport=false,$split80=true,$dbx=null) {
 	if (is_null($dbx)) { $dbx = $this->dbconn1;}
