@@ -3412,6 +3412,20 @@ table docpages {
 }
 
 // =========================================================
+// The lowly scripts table, which tracks which scripts
+// have been successfully run
+// =========================================================
+column script { type_id: vchar; colprec: 30; description: Script Name; }
+table scripts {
+    module: system;
+    description: Completed Upgrade Scripts;
+    nomenu: Y;
+    
+    column script { primary_key: Y; uisearch: Y; }
+}
+
+
+// =========================================================
 // Import map tables.  Everybody is allowed full access, 
 // though eventually we want row-level security based on
 // your connection to a table
