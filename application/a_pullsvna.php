@@ -10,10 +10,14 @@ class a_pullsvna extends x_table2 {
       * 
       */
     function main() {
-        ob_start();
-        if(gpExists('gp_out')) return $this->mainPull();
-        else $this->mainHTML();
-        ob_end_clean();
+        if(gpExists('gp_out')) {
+            ob_start();
+            $this->mainPull();
+            ob_end_clean();
+        }
+        else {
+            $this->mainHTML();
+        }
     }
     
     /**
