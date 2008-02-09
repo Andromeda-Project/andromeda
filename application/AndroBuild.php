@@ -8084,7 +8084,7 @@ function buildScripts() {
     $this->LogEntry("");
     if(!is_dir($dir)) {
         $this->LogEntry("Script directory does not exist, nothing to do!");
-        return;
+        return true;
     }
 
     // alphabetize and pop off the . and ..
@@ -8094,7 +8094,7 @@ function buildScripts() {
     array_shift($scripts);
     if(count($scripts)==0) {
         $this->LogEntry("No scripts, nothing to do!");
-        return;
+        return true;
     }
         
     // Get the scripts that have been cleared
