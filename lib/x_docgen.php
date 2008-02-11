@@ -76,7 +76,7 @@ class x_docgen extends x_table2 {
          in the application.
          
       <p><font color=red>This process completely purges out and replaces
-         the contents of table [[docpages]].  Any changes made to that
+         the contents of the DOCPAGES table.  Any changes made to that
          table from other sources will be lost every time this program
          runs.</font></p>
          
@@ -93,8 +93,10 @@ class x_docgen extends x_table2 {
       x_EchoFlush("BEGIN PROCESSING");
       x_EchoFlush("-----------------------------------------");
       x_EchoFlush("Purging generated pages...");
-      SQL("Delete from cms_hiers where flag_auto='Y'");
-      SQL("Delete from cms_pages where flag_auto='Y'");
+      //SQL("Delete from cms_hiers where flag_auto='Y'");
+      //SQL("Delete from cms_pages where flag_auto='Y'");
+      SQL("Delete from docpages where pagename='Documentation'");
+      SQL("Delete from docpages where pagename='Data Dictionary'");
       $m1="Framework API Reference";
       $m2="Application Files";
       $m3="Data Dictionary";
@@ -103,8 +105,9 @@ class x_docgen extends x_table2 {
       $this->parents=array();
       $this->parseqs=array();
       
+      $this->pageUpdate('Data Dictionary','');
+      /* UNBORK
       // Create/Update the basic pages
-      $this->pageUpdate('Documentation','');
       $this->pageUpdate('Global Concepts'        ,'','Documentation',220);
       $this->pageUpdate('Database Reference'     ,'','Documentation',250);
       $this->pageUpdate('Framework Guide'        ,'','Documentation',300);
@@ -112,15 +115,20 @@ class x_docgen extends x_table2 {
       $this->pageUpdate('Application Files'      ,'','Documentation',500);
       $this->pageUpdate('Essays'                 ,'','Documentation',800);
       $this->pageUpdate('Closing Matters'        ,'','Documentation',900);
+      */
       
       // Run the two processes
-      $this->ehProcessCode($m1,$m2);
-      //$this->ehProcessData($m3);
+      //$this->ehProcessCode($m1,$m2);
+      $this->ehProcessData($m3);
 
 
-      // Now insert the hierarchies      
-      $table_hiers=DD_TableREf('cms_hiers');
+      // Now insert the hierarchies
+      //$table_hiers=DD_TableREf('cms_hiers');
+          /* UNBORK
       foreach($this->parents as $child=>$info) {
+          $sq="Update docpages set pagename_par = '".$info[0]."'"
+            ." where pagename = '$child'";
+          SQL($sq);
          $row=array(
             'pagename_par'=>$info[0]
             ,'sequence'=>$info[1]
@@ -129,11 +137,13 @@ class x_docgen extends x_table2 {
          );
          scDBUpdateOrInsert($table_hiers,$row);
       }
-      
+         */
+
+        /* UNBORK      
       // Fix the hierarchies for generated stuff
       SQL("UPDATE cms_hiers SET sequence=220 WHERE pagename='Global Concepts'"); 
       SQL("UPDATE cms_hiers SET sequence=250 WHERE pagename='Database Reference'"); 
-
+      */
       
       x_EchoFlush("-----------------------------------------");
       x_EchoFlush(" ALL PROCESSING COMPLETE");
@@ -198,7 +208,7 @@ class x_docgen extends x_table2 {
    }
    
    function ProcessCode_File($path,$filename,$parent) {
-      $table=DD_TableRef('cms_pages');
+      $table=DD_TableRef('docpages');
       
       // Step one, grab the file and parse it
       $file=file_get_contents($path.'/'.$filename);
@@ -381,13 +391,18 @@ class x_docgen extends x_table2 {
    // ================================================================= \\
    function ehProcessData() {
       // Set the sequence for this main      
-      $this->PageUpdate('Data Dictionary','','Documentation',990);
+      //$this->PageUpdate('Data Dictionary','','Documentation',990);
 
       //$this->PageUpdate('Data Dictionary','','Documentation');
+      x_EchoFlush("Processing Tables");
       $this->PageUpdate('Tables'    ,'','Data Dictionary');
+      x_EchoFlush("Processing Modules");
       $this->PageUpdate('Modules'   ,'','Data Dictionary');
+      x_EchoFlush("Processing Groups");
       $this->PageUpdate('Groups'    ,'','Data Dictionary');
+      x_EchoFlush("Processing Column Definitions");
       $this->PageUpdate('Column Definitions'   ,'','Data Dictionary');
+      x_EchoFlush("Processing Spec Files");      
       $this->PageUpdate('Spec Files','','Data Dictionary');
 
       
@@ -398,9 +413,6 @@ class x_docgen extends x_table2 {
       $this->ProcessData_Groups();
       $this->ProcessData_SpecFiles();
       $this->ProcessData_Tables();
-      
-      //echo htmlx_errors();
-
    }
    
    function ProcessData_Top() {
@@ -951,15 +963,17 @@ select arg.*,test.funcoper,test.compoper
    // ================================================================= \\
    // ================================================================= \\
    function PageUpdate($pagename,$pagetext,$pagename_par=null,$seq=null) {
-      $table_pg=DD_TableRef('cms_pages');
-      $table_hi=DD_TableRef('cms_hiers');
+      $table_pg=DD_TableRef('docpages');
+      $table_hi=DD_TableRef('dochiers');
       $row=array(
          'pagename'=>$pagename
-         ,'pagewiki'=>$pagetext
+         ,'pagename_par'=>$pagename_par
+         ,'pagetext'=>$pagetext
          ,'flag_auto'=>'Y'
       );
       SQLX_UpdateOrInsert($table_pg,$row);
       
+      /*
       if (!is_null($pagename_par)) {
          // Get sequence if necessary.  
          if(is_null($seq)) {
@@ -973,6 +987,7 @@ select arg.*,test.funcoper,test.compoper
          // Store the hierachy link for saving later
          $this->parents[$pagename]=array($pagename_par,$seq);
       }
+      */
    }
    
    function linkTableFromRow($row) {

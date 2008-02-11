@@ -17,7 +17,7 @@ class x_docview extends x_table2 {
       $this->PageSubtitle="Documentation";
       //$sq="SELECT pagename FROM docpageshier WHERE pagehier=1";
       //$pageroot=SQL_OneValue('pagename',$sq);
-      $pageroot='Documentation';
+      $pageroot='Data Dictionary';
       
       $pn=gp('gppn');
       $pn=($pn=='') ? $pageroot : $pn; 
@@ -228,7 +228,7 @@ class x_docview extends x_table2 {
       echo "\n<hr>";
       echo "\n<htitle>".$pn."</htitle>\n";
       echo $html;
-      if (count($kids)>0) {
+      if (count($kids)>0 && $pn=='Data Dictionary') {
          echo "\n<hr>";
          echo "\n<head2>Child Topics</head2>";
          foreach($kids as $kid) {
