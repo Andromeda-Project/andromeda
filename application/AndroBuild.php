@@ -7288,7 +7288,7 @@ function YAMLWalk($source) {
                 $uisearch_found = false;
                 foreach( $item as $key2=>$table ) {
                     $split2 = preg_split('/\s+/',$key2);
-                    if ( $split2[0] == 'column' ) {
+                    if ( $split2[0] == 'column' || $split2[0] == 'foreign_key' ) {
                         if ( count( $item[$key2] ) > 0 ) {
                             foreach( $item[$key2] as $key3=>$prop ) {
                                 if( $key3 == 'uisearch' ) {
