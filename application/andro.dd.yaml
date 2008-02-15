@@ -161,27 +161,35 @@ table instbuilds:
     column application_from:
         suffix: _from
         uiro: "Y"
+        uisearch: "Y"
     column version_from:
         suffix: _from
         uiro: "Y"
+        uisearch: "Y"
     column application_to:
         suffix: _to
         uiro: "Y"
+        uisearch: "Y"
     column version_to:
         suffix: _to
         uiro: "Y"
+        uisearch: "Y"
     column ts_beg:
         suffix: _beg
         uiro: "Y"
+        uisearch: "Y"
     column ts_end:
         suffix: _end
         uiro: "Y"
+        uisearch: "Y"
     column flag_close:
         suffix: _close
         uiro: "Y"
+        uisearch: "Y"
     column flag_ok:
         suffix: _ok
         uiro: "Y"
+        uisearch: "Y"
 
 menu a_pullsvna:
     module: apps

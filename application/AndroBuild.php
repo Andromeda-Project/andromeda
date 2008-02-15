@@ -7278,9 +7278,32 @@ function YAMLWalk($source) {
             // split the key and renested it.  This is where we do real work
             // 
             $type=$split[0];
+            
             $name=$split[1];
             // KFD 9/26/07, allow $LOGIN group
             if($name=='$LOGIN') $name = $parm['APP'];
+            
+            // DO 2/14/08, Check for existance of at least one uisearch set to yes
+            if($type=='table') {
+                $uisearch_found = false;
+                foreach( $item as $key2=>$table ) {
+                    $split2 = preg_split('/\s+/',$key2);
+                    if ( $split2[0] == 'column' ) {
+                        if ( count( $item[$key2] ) > 0 ) {
+                            foreach( $item[$key2] as $key3=>$prop ) {
+                                if( $key3 == 'uisearch' ) {
+                                    if ( $prop == 'Y' ) {
+                                        $uisearch_found = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if ( !$uisearch_found ) {
+                    $this->YAMLWalkError('uisearch',$item);
+                }
+            }
             if($type=="content") {
                $colnames=array('__type'=>'columns');
                $values = array();
@@ -7397,6 +7420,10 @@ function YAMLWalkError($type,$item) {
          $this->LogEntry("  are the 'column colname:' and the");
          $this->LogEntry("  'values 00:' and 'values 01:' actual values.");
          break;
+      case 'uisearch':
+        $this->LogEntry("ERROR IN YAML FILE, MISSING TABLE REQUIREMENT");
+        $this->LogEntry("    You must have at least one uisearch property defined");
+        break;
    }
    hprint_r($item);
    $this->LogEntry("  Current object stack:");
