@@ -14,7 +14,9 @@ $title=vgfGet("PageTitle");
    </script>
 
    <!-- Standard andromeda js library -->
-   <script type="text/javascript"  src="/<?=tmpPathInsert()?>clib/raxlib.js?unq=<?=md5(Session_Id())?>"> </script>
+   <?php
+        jsInclude( '/' .tmpPathInsert() .'clib/raxlib.js?unq=' .md5( Session_Id() ) );
+   ?>
    <!-- CSS is objects generated in script only, all else is in template css -->
    <link rel='stylesheet' href="/<?=tmpPathInsert()?>clib/raxlib.css?unq=<?=md5(Session_Id())?>"> </script>
 
@@ -22,9 +24,9 @@ $title=vgfGet("PageTitle");
     <?php if(vgfGet('suppress_goodies_calendar')!==true) { ?>
     <link rel="stylesheet" 
         href="/<?=tmpPathInsert()?>clib/dhtmlgoodies_calendar.css" media="screen" />
-    <script type="text/javascript" 
-            src="/<?=tmpPathInsert()?>clib/dhtmlgoodies_calendar.js?unq=<?=md5(Session_Id())?>">
-    </script>
+    <?php
+        jsInclude(  '/' .tmpPathInsert() .'clib/dhtmlgoodies_calendar.js?unq=' .md5(Session_Id() ) );
+    ?>
     <?php } ?>
    
     <!-- This brings in AJAX select box from HTML Goodies -->
@@ -42,9 +44,11 @@ $title=vgfGet("PageTitle");
     <!-- This brings in the DHTML Goodies tooltip -->
     <?php if(vgfGet('suppress_goodies_tooltip')!==true) { ?>
     <link rel="stylesheet" href="/<?=tmpPathInsert()?>clib/dhtml-tt/css/form-field-tooltip.css" media="screen" type="text/css">
-    <script type="text/javascript" src="/<?=tmpPathInsert()?>clib/dhtml-tt/js/rounded-corners.js?unq=<?=md5(Session_Id())?>"></script>
-    <script type="text/javascript" src="/<?=tmpPathInsert()?>clib/dhtml-tt/js/form-field-tooltip.js?unq=<?=md5(Session_Id())?>"></script>
-    <?php } ?>
+    <?php
+        jsInclude( '/' .tmpPathInsert() .'clib/dhtml-tt/js/rounded-corners.js?unq=' .md5(Session_Id() ) );
+        jsInclude( '/' .tmpPathInsert() .'clib/dhtml-tt/js/form-field-tooltip.js?unq=' .md5(Session_Id()) );
+    }
+    ?>
    
    
     <!-- Positioning styles, neutral to color, font, etc. -->
