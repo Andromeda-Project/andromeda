@@ -236,9 +236,13 @@ class a_pullsvn extends x_table2 {
                 if ( OptionGet( 'BUILD_ALL_APPS','N')== 'Y' && trim( $row['application'] ) != 'andro' ) {
                         x_echoFlush( "  BUILD_ALL_APPS is set to Y: Copying release to appropriate directory for building" );
                         $basedir = str_replace( 'andro/', '', $GLOBALS['AG']['dirs']['root'] );
-                        $command2 = 'cp -Rf ' .$dirv .'/* ' .$basedir .trim( $row['application']) .'/';
-                        echo( $command2 );
+                        if ( isWindows() ) {
+                                $command = 'xcopy /y /e /c /k /o ' $dirv .'/* ' .$basedir .trim( $row['application'] ) .'/';
+                        } else {
+                                $command2 = 'cp -Rf ' .$dirv .'/* ' .$basedir .trim( $row['application']) .'/';
+                        }
                         `$command2`;
+                        echo( $command2 );
                 }
             }
         }
