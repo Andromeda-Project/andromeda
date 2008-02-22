@@ -8443,7 +8443,7 @@ function FS_PrepareMake() {
 
 
    $this->LogEntry("Copying /root files into root directory...");
-   if($this->isWindows()) {
+   if(isWindows()) {
       $cmd="copy \"$dir_pubx\\root\\*\" \"$dir_pubx\"\\";
       $cmd=str_replace('/','\\',$cmd);
       $this->LogEntry("  ".$cmd);
@@ -8478,7 +8478,7 @@ function FSCopyTree($src,$tgt,$name) {
       $this->LogEntry(" -> Destination exists and is symlink, no action taken");
    }
    else {
-      if($this->isWindows()) {
+      if(isWindows()) {
          $cmd="\"$src\\$name\*\" \"$tgt\\$name\"";
          $cmd=str_replace("/","\\",$cmd);
          $cmd=str_replace("\\\\","\\",$cmd);
@@ -8989,7 +8989,7 @@ function fsCopyPath($src,$dst) {
 function ShellWhoAmI() {
    // By virtue of this small change this function needs to be renamed.
    //
-   if ($this->isWindows()) {
+   if (isWindows()) {
       // This will fail in IIS so run this from the command line.
       echo "Is windows\n";
       return $this->ArraySafe($_SERVER, "USERNAME", "");
@@ -9011,15 +9011,6 @@ function ShellExec($cmd) {
    // $shell->Run('cmd /c start "" "' . $url . '"', 0, FALSE);
    //unset($shell); 
    return exec($cmd);
-}
-
-function GetOS() {
-   return $_ENV['OS'];
-}
-
-function isWindows() {
-   $x=eregi('WIN',PHP_OS);
-   return $x===false ? false : true;
 }
 
 function hCount($number) {

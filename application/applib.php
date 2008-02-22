@@ -111,4 +111,14 @@ function svnVersions() {
     return $rows;
 } 
 
+// DO 2-22-2008 Moved these out of AndroBuilder as they may be needed in other files 
+function GetOS() {
+   return $_ENV['OS'];
+}
+
+function isWindows() {
+   $x=eregi('WIN',PHP_OS);
+   return $x===false ? false : true;
+}
+
 ?>
