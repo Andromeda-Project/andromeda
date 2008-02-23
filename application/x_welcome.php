@@ -11,7 +11,6 @@ class x_welcome extends x_table2 {
         ob_start();
         $htmlVersions = file_get_contents($urlr);
         ob_end_clean();
-        //$htmlVersions = file_get_contents('application/test.php');
         $matches =array();
         preg_match_all(
             '/<li><a href=.*\>(.*)<\/a><\/li>/'
