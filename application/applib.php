@@ -110,6 +110,77 @@ function svnVersions() {
     }
     return $rows;
 } 
+/**
+ * KFD 2/23/08, Put frequently used links over on the left
+ * all of the time
+ *
+ */
+function appModuleLeft() {
+    if(!LoggedIn()) return false;
+
+    ?>
+    <div class="moduletable">
+    <h3>Updates</h3>
+    </div>
+    <table>
+      <tr><td class="leftcol"><a class="mainlevel" href="?gp_page=a_pullsvna"
+        >Update Andromeda from Subversion</a>
+      <tr><td class="leftcol"><a class="mainlevel" href="?gp_page=a_pullsvn"
+        >Update Applications from Subversion</a>
+    </table>
+    <br/> 
+    <?php
+
+    // Display either applications or instances, depending upon 
+    // which we have here
+    $ds =OptionGet('DEV_STATION','Y');
+    $boa=OptionGet( 'BUILD_ALL_APPS','N');
+    if($ds=='Y' || $boa == 'Y') { 
+        $apps=SQL_AllRows("Select * from applications order by application");
+        ?>
+        <div class="moduletable">
+        <h3>Applications</h3>
+        </div>
+        <table style="width:100%">
+        <?php foreach($apps as $app) { ?>
+           <tr>
+             <td align="left" class="leftcol">
+               <a href="?gp_page=applications&gp_skey=<?=$app['skey']?>"
+               ><?=$app['application']?></a>
+             <td align="right"  class="leftcol">
+               <?=hLinkBuild($app['application'],'Build')?>
+        <?php }?>
+        </table>
+        <br/>
+        <?php
+    }
+    
+    $instances = SQL_ALLROWS("Select * from instances
+        order by application,instance");
+    if(count($instances)>0) {
+        ?>
+        <div class="moduletable">
+        <h3>Instances</h3>
+        </div>
+        <table width="100%">
+        <?php foreach($instances as $i) { ?>
+            <tr>
+            <td align="left">
+              <a href="?gp_page=instances&bp_skey=<?=$i['skey']?>">
+              <?=$i['application'].' / '.$i['instance']?>
+              </a>
+            <td align="right">
+              <a href="?gp_page=instances_p&gp_app=<?=trim($i['application'])
+                  ?>&gp_inst=<?=$i['instance']?>"
+                  >Build/Upgrade</a>
+        <?php } ?>
+        </table>
+        <?php
+    }
+    
+    
+    return false;
+}
 
 // DO 2-22-2008 Moved these out of AndroBuilder as they may be needed in other files 
 function GetOS() {
