@@ -374,11 +374,13 @@ function x4index_ajax($x4xAjax) {
     // are four library routines we might call.
     $ra=$r1=false;
     switch(strtolower($x4xAjax)) {
-    case 'del':   x4sqlDel($table,$whr);              break;
-    case 'sel':   $ra=x4sqlSel($table,$whr);          break;
-    case 'ins':   $r1=x4sqlIns($table,$row,$rr);      break;
-    case 'upd':   $r1=x4sqlUpd($table,$row,$whr,$rr); break;
-    case 'bsrch': searchBrowse($table,$whr);          break;
+    case 'del'   : x4sqlDel($table,$whr);              break;
+    case 'sel'   : $ra=x4sqlSel($table,$whr);          break;
+    case 'ins'   : $r1=x4sqlIns($table,$row,$rr);      break;
+    case 'insset': x4sqlInsSet($table);                break;
+    case 'upd'   : $r1=x4sqlUpd($table,$row,$whr,$rr); break;
+    case 'bsrch' : searchBrowse($table,$whr);          break;
+    case 'sql'   : x4sqlQuery(gp('x4xSQL'));           break;
     }
     if(is_array($r1)) {
         foreach($r1 as $key=>$value) {
@@ -779,7 +781,7 @@ function ddTable($table,$suppressError=false) {
 
 function returnDD($table_id) {
     $table_dd = ddTable($table_id);
-    ri('dd',$table_id,$table_dd);
+    riArray('dd',$table_id,$table_dd);
 }
 
 /**
@@ -1197,7 +1199,18 @@ function x4sqlIns($table,$row,$rowret=0) {
         }
     }
 }
-  
+
+function x4sqlInsSet($table) {
+    $raw = json_decode(gp('x4c_insset'));
+    $colnames = array_shift($raw);
+    
+    foreach($raw as $onerow) {
+        $row = array_combine($colnames,$onerow);
+        x4sqlIns($table,$row);
+    }
+}
+
+
 function x4sqlDel($table,$whr) {
    $tabdd= ddTable($table);
    $view = ddViewFromTab($table);
@@ -1281,6 +1294,10 @@ function x4sqlUpd($table,$row,$whr,$retrow=0) {
       );
       return $rr;
    }
+}
+
+function x4SQLQuery($query) {
+    ri('data','query',x4SQLAllRows($query));
 }
 
 
