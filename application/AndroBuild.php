@@ -5417,7 +5417,7 @@ select table_id,column_id,
 		$this->LogEntry(
 			"ERROR >> Column ". $row["table_id"].".".$row["column_id"].
 			" has automation ".$row['automation_id']
-            ." to non-existent column: ".$row["auto_table_id"].'.'.$row['auto_column_id']);
+            ." referencing non-existent column: ".$row["auto_table_id"].'.'.$row['auto_column_id']);
         $errors++;
 	}
     
