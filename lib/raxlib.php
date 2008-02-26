@@ -8441,17 +8441,17 @@ function characterData($parser, $data) {
     endElement($parser,null);
 }
 
-function jsInclude( $file ) {
+function jsInclude( $file, $comments='' ) {
     $pinfo = pathInfo( $file );
     if ( OptionGet( 'DEBUG', 'N' ) == 'Y' ) {
             $newfile = str_replace( '?unq=' .md5( Session_Id() ), '', 'http' .(isset( $_SERVER['HTTPS'] ) ? ( $_SERVER['HTTPS'] == 1 ? 's' : '') : '' ) .'://' .$_SERVER['SERVER_NAME'] .$pinfo['dirname'] .'/' .$pinfo['filename'] .'-src' .'.' .$pinfo['extension'] );
             if ( file_get_contents( $newfile ) ) {
-                    echo( '<script type="text/javascript" language="javascript" src="' .$pinfo['dirname'] .'/' .$pinfo['filename'] .'-src.' .$pinfo['extension'] .'"></script>' ."\r\n" );
+                    echo( '<script type="text/javascript" language="javascript" src="' .$pinfo['dirname'] .'/' .$pinfo['filename'] .'-src.' .$pinfo['extension'] .'">' .(!empty( $comments ) ? $comments : '' ) .'</script>' ."\r\n" );
             } else {
-                    echo( '<script type="text/javascript" language="javascript" src="' .$pinfo['dirname'] .'/' .$pinfo['filename'] .'.' .$pinfo['extension'] .'"></script>' ."\r\n" );
+                    echo( '<script type="text/javascript" language="javascript" src="' .$pinfo['dirname'] .'/' .$pinfo['filename'] .'.' .$pinfo['extension'] .'">' .(!empty( $comments ) ? $comments : '' ) .'</script>' ."\r\n" );
             }
     } else {
-            echo( '<script type="text/javascript" language="javascript" src="' .$pinfo['dirname'] .'/' .$pinfo['filename'] .'.' .$pinfo['extension'] .'"></script>' ."\r\n" );
+            echo( '<script type="text/javascript" language="javascript" src="' .$pinfo['dirname'] .'/' .$pinfo['filename'] .'.' .$pinfo['extension'] .'">' .(!empty( $comments ) ? $comments : '' ) .'</script>' ."\r\n" );
     }
 }
 
