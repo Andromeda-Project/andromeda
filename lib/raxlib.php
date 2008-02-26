@@ -928,17 +928,16 @@ div.errorbox p {
 */
 function hErrors($class='errorbox') {
     $retval="";
-    if ( OptionGet( 'SQL_OUTPUT_ERROR', 'Y' ) == 'Y' ) {
-        global $AG;
-        $errors=ErrorsGet();
-   
-        if(count($errors)>0) {
-            $retval="\n<div class=\"".$class."\">";
-            foreach($errors as $error) {
-                $retval.="\n<p>".$error."</p>";
-            }
-            $retval.="\n</div>";
+    
+    global $AG;
+    $errors=ErrorsGet();
+
+    if(count($errors)>0) {
+        $retval="\n<div class=\"".$class."\">";
+        foreach($errors as $error) {
+            $retval.="\n<p>".$error."</p>";
         }
+        $retval.="\n</div>";
     }
     return $retval;
 }
