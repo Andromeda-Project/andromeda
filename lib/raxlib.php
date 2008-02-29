@@ -4604,6 +4604,10 @@ be performed:
 function JoomlaCompatibility($template_name,$template_color='') {
    // Templates won't run unless this is defined. 
    define('_VALID_MOS',true);
+
+   // These are 1.5 definitions
+   define('_JEXEC',true);
+   define('DS','/');
    
    // We don't know what this is
    define('_ISO','');
@@ -4638,6 +4642,8 @@ function JoomlaCompatibility($template_name,$template_color='') {
 class joomla_fake {
    var $id=false;
    var $template_name='';
+   // KFD 2/25/08 added for 
+   var $_session = array();
    
    function getTemplate() {
       return $this->template_name;
@@ -7363,6 +7369,12 @@ TODO:
 * It does not know how to make columns read-only when on
   a drill-down detail page, either insert or update.
 
+   * BIG ADDITION 2/29/08.  This code was written on the assumption
+   *     that we would want to cache generated HTML that would be
+   *     string-substituted at runtime. Such thinking has been
+   *     overcome by events, and we will not be doing it that way.
+   *     KFD added aWidgets(table,mode,row) that returns complete
+   *     set of widgets for any particular use.
 
    AColInfoFromDD(table) 
       takes dd information and renders it out column-by-column
@@ -7403,154 +7415,203 @@ TODO:
       Creates header routines to assign values, allow for
       reset, and invokes those routines.  Hits errors also.
       
+      
+      
+      
 */
-  
+
+// KFD 2/29/08 Return complete set of generated widgets
+function aWidgets($table,$row=array(),$mode='upd',$projection='') {
+    
+    // Do the two basics
+    $acols=aColsModeProj($table,$mode,$projection);
+    $ahcols=aHColsfromACols($acols);
+
+    // These calls are the top of hDetailFromAHCols
+    // We are doing cargo-cult programming putting them here
+    ahColsNames($ahcols,'x2t_',500);
+    $calcRow=vgaGet('calcRow');
+    $calcRow=str_replace('--NAME-PREFIX--','x2t_',$calcRow);
+    vgaSet('calcRow',$calcRow);
+    
+    // This loop is directly lifted from hDetailFromAHCols
+    foreach($ahcols as $colname=>$ahcol) {
+        //  if no first focus, set it now
+        if( vgfGet('HTML_focus')=='' && $ahcol['writable']) {
+            vgfSet('HTML_focus',$ahcol['cname']);
+        }
+        
+        // Replace out the HTML for MIME-H stuff
+        // KFD 9/7/07, replace the HTML if it is a WYSIWYG column
+        if($ahcol['type_id']=='mime-h') {
+            $ahcols[$colname]['htmlnamed'] 
+                = '--MIME-H--'.$ahcol['cname'].'--MIME-H--';
+            //$html = '--MIME-H--'.$ahcol['cname'].'--MIME-H--';
+        }
+    }
+    
+    // Now we want to make use of the already written jsValues
+    // code w/o copying and pasting too badly     
+    foreach($ahcols as $colname=>$ahcol) {
+        $h = $ahcol['htmlnamed'];
+        $ahcols[$colname]['htmlnamed'] =jsValuesOne(
+            $ahcols,$colname,$ahcol,'x2t_',$row,$h
+        );
+    }
+    return $ahcols;
+}
+
+
 // This routine generates the value assignments
 function jsValues($ahcols,$name,$row,$h) {
    foreach($ahcols as $colname=>$ahcol) {
-       // KFD 9/7/07, slip this in for mime-h columns, they are
-       //             much simpler.
-       if($ahcol['type_id']=='mime-h') {
-           $dir = $GLOBALS['AG']['dirs']['root'];
-           @include_once($dir.'/clib/FCKeditor/fckeditor.php');
-           $oFCKeditor = new FCKeditor($name.$colname);
-           $oFCKeditor->BasePath   = 'clib/FCKeditor/';
-           $oFCKeditor->ToolbarSet = 'Basic';
-           $oFCKeditor->Width  = '275' ;
-           $oFCKeditor->Height = '200' ;           
-           $oFCKeditor->Value = trim(ArraySafe($row,$colname,''));
-           $hx = $oFCKeditor->CreateHtml();
-           $h=str_replace('--MIME-H--'.$name.$colname.'--MIME-H--',$hx,$h);
-           
-           // Get rid of the error box completely on wysiwyg fields
-           $h=str_replace($name.$colname.'--ERROR--','',$h);
-           continue;
-       }
-       
-      // Set the value (which also sets x_value_original)
-      // KFD 8/6/07, put in the TRIM.  Otherwise a user clicks on a field
-      //             and it mysteriously won't accept input.  This is 
-      //             because it is full of blank spaces!
-      $colvalue=trim(ArraySafe($row,$colname,''));
-      if($colvalue=='' && $ahcol['mode']=='ins' && !is_null($ahcol['default'])){
-         $colvalue=$ahcol['default'];
-      }
-      // KFD 6/28/07, use formatted value for all except time, and 
-      //    blank numbers on lookup
-      // KFD 8/2/07,  removed this entirely, was putting in zeros
-      //              for key columns.  These things should be handled
-      //              entirely by defaults in the data dictionary.
-      // KFD 8/6/07,  put formatting for dates back in, otherwise it
-      //              was coming up 2007-08-07 for dates.
-      // KFD 9/7/07,  put in a clause to handle double quotes in char values.
-      if($ahcol['type_id']=='date' || $ahcol['type_id']=='dtime') {
-         $colvalue=hFormat($ahcol['type_id'],trim($colvalue));
-      }
-      if($ahcol['formshort']=='char' || 
-          $ahcol['formshort']=='varchar' ||
-          $ahcol['formshort']=='text' 
-          ) {
-         $colvalue=str_replace('"','&quot;',$colvalue);
-      }
-      /*
-      if($ahcol['type_id']<>'time') {
-         if(!(   $ahcol['mode']=='search' 
-              && in_array($ahcol['formshort'],array('int','numb'))
-              && trim($colvalue)==''
-              )
-            ) {
-            $colvalue=hFormat($ahcol['type_id'],trim($colvalue));
-         }
-      }
-      */
-      //echo "Setting $name.$colname to $colvalue<br/>";
-      $h=str_replace($name.$colname.'--VALUE--',$colvalue,$h);
-      if($ahcol['type_id']=='time' || 
-         $ahcol['type_id']=='cbool' ||
-         $ahcol['type_id']=='gender'
-         ) {
-         if(gp('ajxBUFFER')) {
-            ElementAdd('ajax',"_script|ob('$name$colname').value='$colvalue'");
-         }
-         else {
-            ElementAdd('scriptend',"ob('$name$colname').value='$colvalue'");
-         }
-      }
-
-      // If it's a select, we need to grab some hforSelect
-      $innerHTML='';
-      if($ahcol['table_id_fko']<>'' && $ahcol['fkdisplay']<>'dynamic') {
-         // Generate uifiltercolumns         
-         $uifc=trim(ArraySafe($ahcol,'uifiltercolumn',''));
-         $matches=array();
-         if($uifc<>'') {
-            $matches[$uifc]=ArraySafe($row,$uifc,'');
-         }
-         
-         // KFD 10/8/07, application PROMAT needs compound foreign key
-         $fkpks = explode(',',$ahcol['fk_pks']);
-         $pull  = true;
-         $dist  = '';
-         if(count($fkpks)>1) {
-             // This is a compound.  The first column gets distinct, the
-             // second and further columns get nothing
-             if(trim($colname)==trim($fkpks[0])) {
-                 $dist = $colname;  // pull distinct
-             }
-             else { 
-                 // Don't pull.  Use ajax during runtime and make a 
-                 // one-value dropdown now
-                 $pull = false;
-                 $innerHTML
-                    ="<option SELECTED value=\"$colvalue\">$colvalue</option>";
-             }
-         }
-         
-         // Pull the options
-         if ($pull) {
-             $innerHTML=hOptionsFromTable(
-                $ahcol['table_id_fko']
-                ,$colvalue
-                ,''
-                ,$matches
-                ,$dist
-             );
-         }
-         
-         // In some cases there should be a blank value
-         if(ArraySafe($ahcol,'allow_empty',false)) {
-            if(substr($innerHTML,0,26)<>'<OPTION VALUE="" SELECTED>') {
-               $innerHTML='<OPTION VALUE="" SELECTED></OPTION>'.$innerHTML;
-            }
-         }
-         
-      }
-      $h=str_replace($name.$colname.'--HINNER--',$innerHTML,$h);
-      
-      // Slip in the errors if they are there.
-      // Grab these for later
-      $colerrs=vgfget('errorsCOL',array());
-      $colerrsx=ArraySafe($colerrs,$colname,array());
-      $herr='';
-      if(count($colerrsx)>0) {
-         $herr="<span class=\"x2columnerr\">"
-            .implode("<br/>",$colerrsx)
-            ."</span>";
-         $scr="getNamedItem('x_class_base').value='err'";
-         $scr="ob('$name$colname').attributes.".$scr;
-         ElementAdd('ajax',"_script|$scr");
-         ElementAdd('ajax',"_script|ob('$name$colname').className='x3err'");
-      }
-      $h=str_replace($name.$colname.'--ERROR--',$herr,$h);
-      
-      
-      // ------------------------------------
-      // Infinity plus one, register the clear
-      // ------------------------------------
-      $x="ob('$name$colname')";
-      ElementAdd('clearBoxes',"if($x) { $x.value='' }");
+       $h = jsValuesOne($ahcols,$colname,$ahcol,$name,$row,$h);
    }
-   
+   return $h;
+}
+
+function jsValuesOne($ahcols,$colname,$ahcol,$name,$row,$h) {
+    // KFD 9/7/07, slip this in for mime-h columns, they are
+    //             much simpler.
+    if($ahcol['type_id']=='mime-h') {
+       $dir = $GLOBALS['AG']['dirs']['root'];
+       @include_once($dir.'/clib/FCKeditor/fckeditor.php');
+       $oFCKeditor = new FCKeditor($name.$colname);
+       $oFCKeditor->BasePath   = 'clib/FCKeditor/';
+       $oFCKeditor->ToolbarSet = 'Basic';
+       $oFCKeditor->Width  = '275' ;
+       $oFCKeditor->Height = '200' ;           
+       $oFCKeditor->Value = trim(ArraySafe($row,$colname,''));
+       $hx = $oFCKeditor->CreateHtml();
+       $h=str_replace('--MIME-H--'.$name.$colname.'--MIME-H--',$hx,$h);
+       
+       // Get rid of the error box completely on wysiwyg fields
+       $h=str_replace($name.$colname.'--ERROR--','',$h);
+       return $h;
+    }
+    
+    // Set the value (which also sets x_value_original)
+    // KFD 8/6/07, put in the TRIM.  Otherwise a user clicks on a field
+    //             and it mysteriously won't accept input.  This is 
+    //             because it is full of blank spaces!
+    $colvalue=trim(ArraySafe($row,$colname,''));
+    if($colvalue=='' && $ahcol['mode']=='ins' && !is_null($ahcol['default'])){
+     $colvalue=$ahcol['default'];
+    }
+    // KFD 6/28/07, use formatted value for all except time, and 
+    //    blank numbers on lookup
+    // KFD 8/2/07,  removed this entirely, was putting in zeros
+    //              for key columns.  These things should be handled
+    //              entirely by defaults in the data dictionary.
+    // KFD 8/6/07,  put formatting for dates back in, otherwise it
+    //              was coming up 2007-08-07 for dates.
+    // KFD 9/7/07,  put in a clause to handle double quotes in char values.
+    if($ahcol['type_id']=='date' || $ahcol['type_id']=='dtime') {
+     $colvalue=hFormat($ahcol['type_id'],trim($colvalue));
+    }
+    if($ahcol['formshort']=='char' || 
+      $ahcol['formshort']=='varchar' ||
+      $ahcol['formshort']=='text' 
+      ) {
+     $colvalue=str_replace('"','&quot;',$colvalue);
+    }
+    /*
+    if($ahcol['type_id']<>'time') {
+     if(!(   $ahcol['mode']=='search' 
+          && in_array($ahcol['formshort'],array('int','numb'))
+          && trim($colvalue)==''
+          )
+        ) {
+        $colvalue=hFormat($ahcol['type_id'],trim($colvalue));
+     }
+    }
+    */
+    //echo "Setting $name.$colname to $colvalue<br/>";
+    $h=str_replace($name.$colname.'--VALUE--',$colvalue,$h);
+    if($ahcol['type_id']=='time' || 
+     $ahcol['type_id']=='cbool' ||
+     $ahcol['type_id']=='gender'
+     ) {
+     if(gp('ajxBUFFER')) {
+        ElementAdd('ajax',"_script|ob('$name$colname').value='$colvalue'");
+     }
+     else {
+        ElementAdd('scriptend',"ob('$name$colname').value='$colvalue'");
+     }
+    }
+    
+    // If it's a select, we need to grab some hforSelect
+    $innerHTML='';
+    if($ahcol['table_id_fko']<>'' && $ahcol['fkdisplay']<>'dynamic') {
+     // Generate uifiltercolumns         
+     $uifc=trim(ArraySafe($ahcol,'uifiltercolumn',''));
+     $matches=array();
+     if($uifc<>'') {
+        $matches[$uifc]=ArraySafe($row,$uifc,'');
+     }
+     
+     // KFD 10/8/07, application PROMAT needs compound foreign key
+     $fkpks = explode(',',$ahcol['fk_pks']);
+     $pull  = true;
+     $dist  = '';
+     if(count($fkpks)>1) {
+         // This is a compound.  The first column gets distinct, the
+         // second and further columns get nothing
+         if(trim($colname)==trim($fkpks[0])) {
+             $dist = $colname;  // pull distinct
+         }
+         else { 
+             // Don't pull.  Use ajax during runtime and make a 
+             // one-value dropdown now
+             $pull = false;
+             $innerHTML
+                ="<option SELECTED value=\"$colvalue\">$colvalue</option>";
+         }
+     }
+     
+     // Pull the options
+     if ($pull) {
+         $innerHTML=hOptionsFromTable(
+            $ahcol['table_id_fko']
+            ,$colvalue
+            ,''
+            ,$matches
+            ,$dist
+         );
+     }
+     
+     // In some cases there should be a blank value
+     if(ArraySafe($ahcol,'allow_empty',false)) {
+        if(substr($innerHTML,0,26)<>'<OPTION VALUE="" SELECTED>') {
+           $innerHTML='<OPTION VALUE="" SELECTED></OPTION>'.$innerHTML;
+        }
+     }
+     
+    }
+    $h=str_replace($name.$colname.'--HINNER--',$innerHTML,$h);
+    
+    // Slip in the errors if they are there.
+    // Grab these for later
+    $colerrs=vgfget('errorsCOL',array());
+    $colerrsx=ArraySafe($colerrs,$colname,array());
+    $herr='';
+    if(count($colerrsx)>0) {
+     $herr="<span class=\"x2columnerr\">"
+        .implode("<br/>",$colerrsx)
+        ."</span>";
+     $scr="getNamedItem('x_class_base').value='err'";
+     $scr="ob('$name$colname').attributes.".$scr;
+     ElementAdd('ajax',"_script|$scr");
+     ElementAdd('ajax',"_script|ob('$name$colname').className='x3err'");
+    }
+    $h=str_replace($name.$colname.'--ERROR--',$herr,$h);
+    
+    
+    // ------------------------------------
+    // Infinity plus one, register the clear
+    // ------------------------------------
+    $x="ob('$name$colname')";
+    ElementAdd('clearBoxes',"if($x) { $x.value='' }");
    return $h;
 }
 
@@ -7624,11 +7685,11 @@ function WidgetFromAHCols(&$ahcols,$colname,$prefix,$value,$tabindex) {
 
 function AHColsNames(&$ahcols,$name,$tabindex) {
    foreach($ahcols as $colname=>$ahcol) {
-      AHColNames($ahcols,$colname,$name,$tabindex);
+      AHColNamesOne($ahcols,$colname,$name,$tabindex);
    }
 }
    
-function AHColNames(&$ahcols,$colname,$name,$tabindex) {
+function AHColNamesOne(&$ahcols,$colname,$name,$tabindex) {
    $cname=$name.$colname;
    $ahcol=$ahcols[$colname];
    $ahcols[$colname]['cname']=$cname;
@@ -8442,6 +8503,10 @@ function characterData($parser, $data) {
 
 function jsInclude( $file, $comments='' ) {
     $pinfo = pathInfo( $file );
+    $temp = $pinfo['basename'];
+    $atemp = explode('.',$temp);
+    array_pop($atemp);
+    $pinfo['filename'] = implode('.',$atemp);
     if ( OptionGet( 'DEBUG', 'N' ) == 'Y' ) {
             $newfile = str_replace( '?unq=' .md5( Session_Id() ), '', 'http' .(isset( $_SERVER['HTTPS'] ) ? ( $_SERVER['HTTPS'] == 1 ? 's' : '') : '' ) .'://' .$_SERVER['SERVER_NAME'] .$pinfo['dirname'] .'/' .$pinfo['filename'] .'-src' .'.' .$pinfo['extension'] );
             if ( file_get_contents( $newfile ) ) {
