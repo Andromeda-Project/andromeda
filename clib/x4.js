@@ -25,11 +25,12 @@
  *  These are the only public vars in x4.
  *
  */
-var x4http       = false;
-var x4httpData   = false;
-var x4httpAfterHandler= false;
-var x4httpAfterObject = false;
-var x4httpAfterMethod = false;
+// SYJOH
+//var x4http       = false;
+//var x4httpData   = false;
+//var x4httpAfterHandler= false;
+//var x4httpAfterObject = false;
+//var x4httpAfterMethod = false;
 
 /*
  *  The boot routine.  This code assumes the user has just
@@ -38,16 +39,17 @@ var x4httpAfterMethod = false;
 
 function x4Boot() {
     // Ajax initialization
-    if(navigator.appName == "Microsoft Internet Explorer")
-        x4http = new ActiveXObject("Microsoft.XMLHTTP");
-    else
-        x4http = new XMLHttpRequest();
+    // SYJOH
+    //if(navigator.appName == "Microsoft Internet Explorer")
+    //    x4http = new ActiveXObject("Microsoft.XMLHTTP");
+    //else
+    //    x4http = new XMLHttpRequest();
         
     // Create keystroke handler
     x4.addEventListener(document,'keypress',x4.bodyKeyPress);
 
     // Execute a request to get the menu
-    x4.ajax('x4xMenu=1',null,x4Menu,'init');
+    x4Menu.init();
 }
 
 /*
@@ -68,43 +70,39 @@ var x4 = {
      *  parm2:  (optional) function reference to handler
      *
      */
+    /* SYJOH
     ajax: function(getString,pHandler,pObj,pMethod) {
+    //if(navigator.appName == "Microsoft Internet Explorer")
+    //    x4http = new ActiveXObject("Microsoft.XMLHTTP");
+    //else
+    //    x4http = new XMLHttpRequest();
         //x4httpData  = false;
 
         // Set various method handlers
         x4httpAfterHandler = pHandler==null ? false : pHandler;
         x4httpAfterObject  = pObj==null     ? false : pObj;
         x4httpAfterMethod  = pMethod==null  ? false : pMethod;     
-    
+
+        //alert("ajax called for "+pMethod);
+
         x4http.open('get', 'x4index.php?'+getString);
         x4http.onreadystatechange = x4.ajaxResponseHandler;
         x4http.send(null);
+        
+        //alert("ajax sent, exiting");
     },
+    */
     
-    /*
-     * x4.ajaxErrors: returns array of errors or false
-     *
-     * no parameters
-     *
-     */
-    ajaxErrors: function() {
-        if(typeof(x4httpData.message)=='undefined') {
-            return false;
-        }
-        if(typeof(x4httpData.message.error)=='undefined') {
-            return false;
-        }
-        return x4httpData.message.error;
-    },
-
     /*
      *  x4.ajaxResponseHandler: the default return handler
      *     Will attempt to evaluate JSON response and hand it off
      *
      */ 
+     /* SYJOH
+     
     ajaxResponseHandler: function() {
         if(x4http.readyState != 4) return;
-        
+        //alert("ajax returned");
         var dataIsOK=false;
         try {
             eval('x4httpData = ('+x4http.responseText+')');
@@ -153,11 +151,29 @@ var x4 = {
             x4httpAfterHandler = false;
         }
         if(x4httpAfterObject) {
+            //alert("supposed to be goin to "+x4httpAfterMethod);
             x4httpAfterObject[x4httpAfterMethod]();
             x4httpAfterObject = false;
         }
     },
+    */
     
+    /*
+     * x4.ajaxErrors: returns array of errors or false
+     *
+     * no parameters
+     *
+     */
+    ajaxErrors: function() {
+        if(typeof(x4httpData.message)=='undefined') {
+            return false;
+        }
+        if(typeof(x4httpData.message.error)=='undefined') {
+            return false;
+        }
+        return x4httpData.message.error;
+    },
+
     /*
      *
      *  Set the status message
@@ -458,6 +474,129 @@ var x4 = {
         }
     }
 }   // var x4 //
+
+
+/*
+ * Object x4SYJOH
+ *
+ * This object communicates directly with the web server
+ * to make syjoh requests and process the results.  
+ *
+ * SYJOH stands for (SY)nchronous (J)SON (O)over (H)ttp.
+ *
+ */
+var x4SYJOH = {
+    // This is a round robin of the last 10 server responses
+    // 
+    responses: [ 
+        false,false, false, false, false, 
+        false,false, false, false, false ],
+        
+    // The current response we are filling in.  Initialize
+    // at nine so it flips to zero on the first call
+    respnum: 9,
+    // response map, use this instead of having to
+    // code a round-robin figure-outer-er
+    responsemaps: [
+        [ 0, 9, 8, 7, 6, 5, 4, 3, 2, 1 ], 
+        [ 1, 0, 9, 8, 7, 6, 5, 4, 3, 2 ], 
+        [ 2, 1, 0, 9, 8, 7, 6, 5, 4, 3 ], 
+        [ 3, 2, 1, 0, 9, 8, 7, 6, 5, 4 ], 
+        [ 4, 3, 2, 1, 0, 9, 8, 7, 6, 5 ], 
+        [ 5, 4, 3, 2, 1, 0, 9, 8, 7, 6 ], 
+        [ 6, 5, 4, 3, 2, 1, 0, 9, 8, 7 ], 
+        [ 7, 6, 5, 4, 3, 2, 1, 0, 9, 8 ], 
+        [ 8, 7, 6, 5, 4, 3, 2, 1, 0, 9 ], 
+        [ 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 ]
+     ],
+        
+    /*
+     * function x4SYJOH.serverCall()  
+     *
+     *  This is the core routine to make requests from
+     *  the server. 
+     * 
+     */
+    serverCall: function(getString) {
+        // First things first, create the object                
+        if(navigator.appName == "Microsoft Internet Explorer")
+            x4http = new ActiveXObject("Microsoft.XMLHTTP");
+        else
+            x4http = new XMLHttpRequest();
+
+        x4http.open('get', 'x4index.php?'+getString);
+        x4http.onreadystatechange = this.obligatoryHandler
+        x4http.send(null);
+        
+        // Here is the basic heresy.  We go into a loop 
+        // with no way to prevent burning CPU cycles.  The 
+        // obvious assumption here is that the call will succeed
+        while(x4http.readyState != 4) {
+            // Gosh, I sure wish Javascript had some kind of
+            // Sleep() function, I would do sleep(100) here
+        }
+
+        // Initialize the response tracking 
+        this.respnum = (this.respnum==9) ? 0 : this.respnum+1;
+        this.responses[this.respnum] = { 
+            good: false,
+            data: { },
+            bad: ''
+        }
+        var x = false;
+        try {
+            eval('x = ('+x4http.responseText+')');
+        }
+        catch(e) {
+            x4Popups.alert('Could not process server response');
+            this.responses[this.respnum].bad = x4http.responseText;
+            return false;
+        }
+        
+        // If we are still here, the server response was 
+        // intelligible, put it into the response history
+        this.responses[this.respnum].data = x;
+        this.responses[this.respnum].good = true;
+
+        // We may wish to report things to the user:
+        var messages = x4.getProperty(x,'message',false);
+        if(messages) {
+            var emsgs = x4.getProperty(message,'error',false);
+            var text  = "ERRORS REPORTED:";
+            x4.debug("Server errors follow:");
+            for(idx in emsgs) {
+                text+="\n\n"+emsgs[idx];
+                x4.debug(emsgs[idx]);
+            }
+            x4Popups.alert(msg);
+            
+            var dmsgs = x4.getProperty(message,'debug',false);
+            if(false) {
+                x4.debug("Server debug messages follow:");
+                for(idx in dmsgs) {
+                    x4.debug(dmsgs[idx]);
+                }
+                x4.debug("End of server debug messages.");
+            }
+        }
+        
+        // Save data dictionary arrays
+        var dd = x4.getProperty(x,'dd', { } );
+        for(var ddidx in dd) {
+            x4DD.tables[ddidx] = dd[ddidx];
+        }
+    },
+    
+    /*
+     * function x4SYJOH.obligatoryHandler
+     *
+     * A do-nothing routine to satisfy the XML request 
+     * object's need for a handler
+     */
+    obligatoryHandler: function() {
+         // Nothing happens here
+    }
+}
 
 
 /*
@@ -1656,6 +1795,8 @@ var x4Menu = {
     // 
     // The init function, called to actually create the menu
     init: function() {
+        x4SYJOH.serverCall('x4xMenu=1');
+        
         this.h=document.createElement('DIV');
         this.h.className = 'mainmenu';
         var xx = document.createElement('H1');
