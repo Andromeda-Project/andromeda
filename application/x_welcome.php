@@ -9,7 +9,13 @@ class x_welcome extends x_table2 {
         //
         $urlr="https://andro.svn.sourceforge.net/svnroot/andro/releases/";
         ob_start();
-        $htmlVersions = file_get_contents($urlr);
+        // KFD 3/1/08, if Andro Dev Station, don't mention andro upgrades
+        if(OptionGet('DEV_STATION_ANDRO')=='Y') {
+            $htmlVersions = '';
+        }
+        else {
+            $htmlVersions = file_get_contents($urlr);
+        }
         ob_end_clean();
         $matches =array();
         preg_match_all(
