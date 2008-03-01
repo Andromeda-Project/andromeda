@@ -82,15 +82,15 @@ class a_builder extends x_table2 {
 	include("AndroBuild.php");  
 ?>
 ';
-		$t=pathinfo(__FILE__);
-		$dircur = AddSlash($t["dirname"])."../tmp/";
-		$file = $dircur."do".$x_app.".php";
-		$FILE = fopen($file,"w");
-		fwrite($FILE,$string);
-		fclose($FILE);
-		x_EchoFlush("");
-		include($file);
-       echo ob_get_clean();
+        $t=pathinfo(__FILE__);
+        $dircur = AddSlash($t["dirname"])."../tmp/";
+        $file = $dircur."do".$x_app.".php";
+        $FILE = fopen($file,"w");
+        fwrite($FILE,$string);
+        fclose($FILE);
+        x_EchoFlush("");
+        include($file);
+        echo ob_get_clean();
 	}
 }
 ?>
