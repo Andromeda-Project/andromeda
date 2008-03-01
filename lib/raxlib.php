@@ -8183,7 +8183,7 @@ function aColInfoFromDDColumns(&$table,&$retval) {
       $c['ins']['writable']   =true;
       $c['upd']['writable']   =$perm_upd;
       // Look for reasons to turn writable off
-      if($colinfo['uiro']=='Y') {
+      if($colinfo['uiro']=='Y' || ArraySafe($colinfo,'upd') == 'N') {
          $c['ins']['writable']=false;
          $c['upd']['writable']=false;
       }
