@@ -4961,6 +4961,7 @@ function DDProjectionResolve(&$table,$projection='') {
             }
             else {
                if($cols2keep[$colname]==0) {
+                   $table['flat'][$colname]['securero']='Y';
                   $table['flat'][$colname]['upd']='N';
                   $table['flat'][$colname]['ins']='N';
                }
@@ -7421,7 +7422,7 @@ TODO:
 */
 
 // KFD 2/29/08 Return complete set of generated widgets
-function aWidgets($table,$row=array(),$mode='upd',$projection='') {
+function aWidgets(&$table,$row=array(),$mode='upd',$projection='') {
     
     // Do the two basics
     $acols=aColsModeProj($table,$mode,$projection);
@@ -8018,7 +8019,7 @@ function ahColFromACol(&$acol) {
 
 
 
-function aColsModeProj($table,$mode,$projection='') {
+function aColsModeProj(&$table,$mode,$projection='') {
    if(!Is_array($table)) $table = dd_tableref($table);
    // begin with the info from the data dictionary
    $cols1=aColInfoFromDD($table);
@@ -8043,14 +8044,19 @@ function aColsModeProj($table,$mode,$projection='') {
    // columns we will handle
    //
    $colsp=DDProjectionResolve($table,$projection);
-   //$cols3=array();
+
    foreach($colsp as $column_id) {
       $cols3[$column_id] = $cols2[$column_id];
       
-      // while we're going row by row,set some props.
+      // while we're going row by row, set some props.
       // This way downstream stuff doesn't need to be 
       // told again what mode we are in.
       $cols3[$column_id]['mode']=$mode;
+
+      // KFD 3/1/08, correction for column security
+      if(ArraySafe($table['flat'][$column_id],'securero')=='Y') {
+          $cols3[$column_id]['writable'] = false;
+      }
    }
    
    return $cols3;
@@ -8182,7 +8188,6 @@ function aColInfoFromDDColumns(&$table,&$retval) {
       $c['search']['writable']=true;
       $c['ins']['writable']   =true;
       $c['upd']['writable']   =$perm_upd;
-      // Look for reasons to turn writable off
       if($colinfo['uiro']=='Y') {
          $c['ins']['writable']=false;
          $c['upd']['writable']=false;
