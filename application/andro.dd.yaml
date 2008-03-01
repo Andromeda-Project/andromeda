@@ -272,21 +272,21 @@ table appdirs:
 content appdirs:
     columns: [ dirname, flag_lib, flag_copy, flag_vis, description]
     values:
-        - [ root, Y, Y, N, to be copied as root ]
-        - [ lib, Y, Y, N, Lib Server-Side Code ]
-        - [ clib, Y, Y, Y, Lib Client-Side Code ]
-        - [ application, N, Y, N, App Server-Side Code ]
-        - [ appclib, N, Y, Y, App Client-Side Code ]
-        - [ templates, Y, Y, Y, UI Templates ]
-        - [ generated, N, N, N, Dictionary-generated Code ]
-        - [ dynamic, N, N, N, Dynamic Cache ]
-        - [ files, N, N, N, Imports/Exports and Misc Files ]
-        - [ tmp, N, N, N, Temporary Build Files ]
-        - [ apppub, N, Y, Y, App Client-visible Files ]
-        - [ instpub, N, N, Y, Instance Client-visible Files ]
-        - [ docslib, Y, Y, N, Lib Docs ]
-        - [ docsapp, N, Y, N, App Docs ]
-        - [ docsgen, N, N, N, Generated Docs ]
+        - [ root, "Y", "Y", "N", to be copied as root ]
+        - [ lib, "Y", "Y", "N", Lib Server-Side Code ]
+        - [ clib, "Y", "Y", "Y", Lib Client-Side Code ]
+        - [ applicatio"N", "N", "Y", "N", App Server-Side Code ]
+        - [ appclib, "N", "Y", "Y", App Client-Side Code ]
+        - [ templates, "Y", "Y", "Y", UI Templates ]
+        - [ generated, "N", "N", "N", Dictionary-generated Code ]
+        - [ dynamic, "N", "N", "N", Dynamic Cache ]
+        - [ files, "N", "N", "N", Imports/Exports and Misc Files ]
+        - [ tmp, "N", "N", "N", Temporary Build Files ]
+        - [ apppub, "N", "Y", "Y", App Client-visible Files ]
+        - [ instpub, "N", "N", "Y", Instance Client-visible Files ]
+        - [ docslib, "Y", "Y", "N", Lib Docs ]
+        - [ docsapp, "N", "Y", "N", App Docs ]
+        - [ docsge"N", "N", "N", "N", Generated Docs ]
 
 
 
@@ -320,9 +320,7 @@ table usersroot:
 content variables:
     columns: [ variable, description, variable_value ]
     values:
-        - [ PWURL ]
-        - [ URL For Node Manager ]
-        - [ www.somewhere.com ]
+        - [ DEV_STATION_ANDROMEDA, Andromeda Developed Here, "N" ]
 
 
 # ========================================================================

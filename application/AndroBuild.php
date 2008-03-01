@@ -841,13 +841,25 @@ function SpecLoad() {
                         );
                     $this->LogEntry("Setting aside content for loading after build");
                     foreach($ta['content'] as $table_id=>$values) {
-                        if(!isset($GLOBALS['content'])) {
-                            $GLOBALS['content']=array();
-                        }
-                        $GLOBALS['content'][$table_id]=array_merge(
-                            $this->zzArraySafe($GLOBALS['content'],$table_id,array())
-                            ,$values
+                        // KFD 3/1/08, major fix to content loading on YAML 
+                        //if(!isset($GLOBALS['content'])) {
+                        //    $GLOBALS['content']=array();
+                        //}
+                        // First get the column names
+                        $colnames = $values[1];
+                        unset($colnames['__type']);
+                        // Clear this out, it will cause errors
+                        unset($values[2]['__type']);
+                        foreach($values[2] as $colvalues) {
+                            $GLOBALS['content'][$table_id][]=array_combine(
+                                $colnames,$colvalues
                             );
+                        }
+                        //$GLOBALS['content'][$table_id]=array_merge(
+                        //    $this->zzArraySafe($GLOBALS['content'],$table_id,array())
+                        //    ,$values
+                        //    );
+                        // KFD 3/1/8 END CHANGES
                     }
                 }
             }
@@ -8138,8 +8150,9 @@ function buildScripts() {
         if(in_array($script,$completed)) {
             $this->logEntry("NOT RUNNING ".$script);
             continue;
-            
         }
+        // Ignore SVN
+        if(substr($script,0,4)=='.svn') continue;
         $this->ScriptSet($script);
         
         $this->logEntry("");
