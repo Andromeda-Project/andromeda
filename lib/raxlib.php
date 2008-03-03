@@ -7587,7 +7587,8 @@ function jsValuesOne($ahcols,$colname,$ahcol,$name,$row,$h) {
            $innerHTML='<OPTION VALUE="" SELECTED></OPTION>'.$innerHTML;
         }
      }
-     
+     $innerHTML  = str_replace( '--SELECTED-N--', ' ', $innerHTML );
+     $innerHTML  = str_replace( '--SELECTED-Y--', ' SELECTED="SELECTED" ', $innerHTML );
     }
     $h=str_replace($name.$colname.'--HINNER--',$innerHTML,$h);
     
