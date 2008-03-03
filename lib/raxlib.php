@@ -8054,7 +8054,7 @@ function aColsModeProj(&$table,$mode,$projection='') {
       $cols3[$column_id]['mode']=$mode;
 
       // KFD 3/1/08, correction for column security
-      if(ArraySafe($table['flat'][$column_id],'securero')=='Y') {
+      if(ArraySafe($table['flat'][$column_id],'securero')=='Y' && $mode <> 'search') {
           $cols3[$column_id]['writable'] = false;
       }
    }
