@@ -21,18 +21,18 @@
 \* ================================================================== */
 class x_password extends x_table2 {
 	function main() {
-		echo "<h1>Password Processing</h1>";
-      
-		Hidden("gp_page","x_password");
-
-      if($GLOBALS['AG']['flag_pwmd5']=='Y') return $this->MainMD5();
-      
-		$gpp = gp('gpp');
-      if (gp('gpp')=='3')       $this->PW_ForgotPage3();  // process new pw
-		if (gp('gpp')=='2')       $this->PW_ForgotPage2();  // link back
-		if (gp('gpp')=='1')       $this->PW_ForgotPage1();  // send email
-		if (Errors() || $gpp=='') $this->PW_ForgotPage0();  // get info
-		
+        echo "<h1>Password Processing</h1>";
+        
+        Hidden("gp_page","x_password");
+        
+        if($GLOBALS['AG']['flag_pwmd5']=='Y') return $this->MainMD5();
+        
+        $gpp = gp('gpp');
+        if (gp('gpp')=='3')       $this->PW_ForgotPage3();  // process new pw
+        if (gp('gpp')=='2')       $this->PW_ForgotPage2();  // link back
+        if (gp('gpp')=='1')       $this->PW_ForgotPage1();  // send email
+        if (Errors() || $gpp=='') $this->PW_ForgotPage0();  // get info
+        
 	}
 	
 	function PW_ForgotPage0() {
@@ -40,18 +40,18 @@ class x_password extends x_table2 {
 		vgfSet("HTML_focus","txt_email");
 
 		?>
-      <input type="hidden" name="gpp" value="1">
+        <input type="hidden" name="gpp" value="1">
 		<p>Please enter your email below so we can process your
 		password request.  You will be sent an email that contains your
-      username and password.  The email will also contain a link that
-      you can use to change your password.</p>
+        username and password.  The email will also contain a link that
+        you can use to change your password.</p>
 	
 		<p>This page is not case-sensitive, so that 'John' or
 		'JOHN' or 'john' (and so forth) all mean the same thing.</p>
-      <p>Email:
+        <p>Email:
   		   <input name="txt_email" id="txt_email" width="30"
 			  value="<?=CleanGet("txt_email","",false)?>"></input>
-      </p>
+        </p>
            
 		<br><br>
 		<button type="submit" value="Submit">Submit</button>
@@ -60,56 +60,56 @@ class x_password extends x_table2 {
 	}
 		
 	function PW_ForgotPage1() {
-      // KFD 11/13/06.  Heavily modified for new system, threw out
-      //   the older code entirely, now that all apps have a users
-      //   table built into them.
-		$eml = trim(gp('txt_email'));
-      $seml= SQLFC(strtolower($eml));
-      $heml= hx($eml);
-      $ueml= urlencode($eml);
-      //$leml= MakeUserId(strtolower($eml));
-		$db2 = scDBConn_Push('usermaint');
-      $sq="Select skey,user_id,member_password,email FROM users "
+        // KFD 11/13/06.  Heavily modified for new system, threw out
+        //   the older code entirely, now that all apps have a users
+        //   table built into them.
+        $eml = trim(gp('txt_email'));
+        $seml= SQLFC(strtolower($eml));
+        $heml= hx($eml);
+        $ueml= urlencode($eml);
+        //$leml= MakeUserId(strtolower($eml));
+        $db2 = scDBConn_Push('usermaint');
+        $sq="Select skey,user_id,member_password,email FROM users "
          ." where LOWER(email)=$seml";
-      $member=SQL_AllRows($sq);
+        $member=SQL_AllRows($sq);
 
-      // Nothing of any kind is a bummer, we can't do anything
-      if (count($member)== 0) {
-         ErrorAdd('There are no active accounts with that email address');
-      }
-      else {
-         $leml=MakeUserID($eml);
-         $member=$member[0];
-         // If we know who they are, send a password and allow them to change it
-         $user_pwkey=md5($member['member_password'].$leml.time());
-         //$ref=$_SERVER['HTTP_REFERER'];
-         $http=httpWebSite()."/";
-         $row=array('skey'=>$member['skey'],'user_pwkey'=>$user_pwkey);
-         $UID=$member['user_id'];
-         $PWD=$member['member_password'];
-         // KFD 12/21/06.  Done for medinfo originally.  If UID looks like
-         //  the email, send the email instead
-         $emailUID=strtolower($UID)==strtolower($leml) ? $leml : $UID;
-         $table_dd=DD_Tableref('users');
-         SQLX_Update($table_dd,$row);
-         $emailuser_id = OptionGet('EMAIL_USERID','N')=='Y' ? $eml : $emailUID;
-         $text_email = "
+        // Nothing of any kind is a bummer, we can't do anything
+        if (count($member)== 0) {
+            ErrorAdd('There are no active accounts with that email address');
+        }
+        else {
+            $leml=MakeUserID($eml);
+            $member=$member[0];
+            // If we know who they are, send a password and allow them to change it
+            $user_pwkey=md5($member['member_password'].$leml.time());
+            //$ref=$_SERVER['HTTP_REFERER'];
+            $http=httpWebSite()."/";
+            $row=array('skey'=>$member['skey'],'user_pwkey'=>$user_pwkey);
+            $UID=$member['user_id'];
+            $PWD=$member['member_password'];
+            // KFD 12/21/06.  Done for medinfo originally.  If UID looks like
+            //  the email, send the email instead
+            $emailUID=strtolower($UID)==strtolower($leml) ? $leml : $UID;
+            $table_dd=DD_Tableref('users');
+            SQLX_Update($table_dd,$row);
+            $emailuser_id = OptionGet('EMAIL_USERID','N')=='Y' ? $eml : $emailUID;
+            $text_email = "
 Your username and password are: $emailuser_id and $PWD.
    
 If you would like to change your password, click here:
 <$http?gp_page=x_password&gpp=2&eml=$ueml&hash=$user_pwkey>
 ";
             
-         scDBConn_Pop();
-         //echo $text_email;
-         EmailSend($eml,'System Access Request',$text_email);
-         ?>
-<b>Email Has Been Sent</b>.  An email has been sent to you with information
-needed to access the system.
-         <?php
-         gpSet('gpp','X');
-      }
-   }
+            scDBConn_Pop();
+            //echo $text_email;
+            EmailSend($eml,'System Access Request',$text_email);
+            ?>
+            <b>Email Has Been Sent</b>.  An email has been sent to you with information
+            needed to access the system.
+            <?php
+            gpSet('gpp','X');
+        }
+    }
       
 	function PW_ForgotPage2() {
 		$retval=false;
