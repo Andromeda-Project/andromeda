@@ -805,6 +805,9 @@ class x_table2 {
                      case 'time':
                         $newrow[]=hTime($row[$colname]);
                         break;
+                     case 'dtime':
+                        $newrow[]=date('m/d/Y - h:m A',dEnsureTS($row[$colname]));
+                        break;
                      case 'date':
                         if(is_null($row[$colname])) {
                            $newrow[]='';
