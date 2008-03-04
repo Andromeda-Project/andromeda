@@ -12,6 +12,7 @@ class instances_p2 extends x_table2 {
    
    
    function main_pr_execute() {
+       ob_start();
       $sApp =SQLFC(gp('gp_app'));
       $sInst=SQLFC(gp('gp_inst'));
       $hApp =hSanitize(gp('gp_app'));
@@ -115,6 +116,8 @@ include("AndroBuild.php");
                  AND instance    = $sInst"
          );
       }
+      echo ob_get_clean();
+
    }      
 }
 ?>
