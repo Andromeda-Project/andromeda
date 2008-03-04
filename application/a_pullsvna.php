@@ -67,7 +67,7 @@ class a_pullsvna extends x_table2 {
 
         // First take care of where we are pulling version 
         // information from
-        $def = "https://andro.svn.sourceforge.net/svnroot/andro/releases/";
+        $def = "http://andro.svn.sourceforge.net/svnroot/andro/releases/";
         $row = SQL_OneRow(
             "Select * from applications where application='andro'"
         );

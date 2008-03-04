@@ -275,7 +275,7 @@ content appdirs:
         - [ root, "Y", "Y", "N", to be copied as root ]
         - [ lib, "Y", "Y", "N", Lib Server-Side Code ]
         - [ clib, "Y", "Y", "Y", Lib Client-Side Code ]
-        - [ applicatio"N", "N", "Y", "N", App Server-Side Code ]
+        - [ application, "N", "Y", "N", App Server-Side Code ]
         - [ appclib, "N", "Y", "Y", App Client-Side Code ]
         - [ templates, "Y", "Y", "Y", UI Templates ]
         - [ generated, "N", "N", "N", Dictionary-generated Code ]
@@ -286,7 +286,7 @@ content appdirs:
         - [ instpub, "N", "N", "Y", Instance Client-visible Files ]
         - [ docslib, "Y", "Y", "N", Lib Docs ]
         - [ docsapp, "N", "Y", "N", App Docs ]
-        - [ docsge"N", "N", "N", "N", Generated Docs ]
+        - [ docsgen, "N", "N", "N", Generated Docs ]
 
 
 

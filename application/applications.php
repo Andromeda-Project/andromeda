@@ -48,13 +48,15 @@ class applications extends x_table2 {
       $lnk1="?gp_page=appversions_p&gp_app=".trim($this->row['application']);
       $lnk2="?gp_page=a_scontrol&gp_skey=".$this->row['skey'];
       //hprint_r($this->row);
-      if(trim($this->row['node'])=='LOCAL'  
-        || trim($this->row['node'])==''
-        || is_null($this->row['node'])) {
-         $retval[]=hLink('',"Publish Current Code",$lnk1);
-      }
-      else {
-         $retval[]=hLink('',"Source Code Functions",$lnk2);
+      if(isset($this->row['node'])) {
+          if(trim($this->row['node'])=='LOCAL'  
+            || trim($this->row['node'])==''
+            || is_null($this->row['node'])) {
+             $retval[]=hLink('',"Publish Current Code",$lnk1);
+          }
+          else {
+             $retval[]=hLink('',"Source Code Functions",$lnk2);
+          }
       }
 
       return $retval;

@@ -114,7 +114,7 @@ class x_builder {
         
         // Assuming we did not fail validation, do it!
         $retval = $retval && $this->Analyze();
-        $retval = $retval && $this->PlanMake(); 
+        $retval = $retval && $this->PlanMake();
         $retval = $retval && $this->PlanExecute();
         $retval = $retval && $this->ContentLoad();
         $retval = $retval && $this->ContentDD();
@@ -467,7 +467,8 @@ function DDRMake() {
 	$strSQL =
 		"CREATE TABLE zdd.ddl (".
 		"  cmdseq char(4),". 
-		"  cmdtype char(10),".  
+		"  cmdtype char(10),".
+        "  cmdsubseq int,".
 		"  defines varchar(60),".  
 		"  cmddesc char(50),".
 		"  cmdsql text,".
@@ -477,7 +478,7 @@ function DDRMake() {
 		"  elapsed int,".
 		"  executed_ok char(1)) WITH OIDS";
 	$retval = $retval && $this->SQL($strSQL);
-   $strSQL = "CREATE INDEX ddl_cmdseq ON zdd.ddl (cmdseq)";
+   $strSQL = "CREATE INDEX ddl_cmdseq ON zdd.ddl (cmdseq,cmdsubseq)";
 	$retval = $retval && $this->SQL($strSQL);
 	
 	$strSQL = 
@@ -842,23 +843,17 @@ function SpecLoad() {
                     $this->LogEntry("Setting aside content for loading after build");
                     foreach($ta['content'] as $table_id=>$values) {
                         // KFD 3/1/08, major fix to content loading on YAML 
-                        //if(!isset($GLOBALS['content'])) {
-                        //    $GLOBALS['content']=array();
-                        //}
-                        // First get the column names
                         $colnames = $values[1];
-                        unset($colnames['__type']);
-                        // Clear this out, it will cause errors
+                        $colnames['__type']='columns';
+                        $this->content[$table_id][] = $colnames;
+                        
                         unset($values[2]['__type']);
                         foreach($values[2] as $colvalues) {
-                            $GLOBALS['content'][$table_id][]=array_combine(
-                                $colnames,$colvalues
+                            $this->content[$table_id][]=array_merge(
+                                array('__type'=>'values')
+                                ,$colvalues
                             );
                         }
-                        //$GLOBALS['content'][$table_id]=array_merge(
-                        //    $this->zzArraySafe($GLOBALS['content'],$table_id,array())
-                        //    ,$values
-                        //    );
                         // KFD 3/1/8 END CHANGES
                     }
                 }
@@ -6379,9 +6374,13 @@ function PlanMake_Security() {
    }
    
    // This hardcoded entry allows some stuff at login
-   $results = $this->SQLREad("GRANT ALL  ON SCHEMA zdd TO $app");
-   $results = $this->SQLREad("GRANT SELECT ON TABLE  zdd.perm_tabs_c TO $app");
-   $results = $this->SQLREad("GRANT SELECT ON TABLE  zdd.groups_c    TO $app");
+   // KFD 3/3/08 ouch, these were direct queries instead of plan entries!
+   $this->PlanMakeEntry("9000","GRANT ALL  ON SCHEMA zdd TO $app");
+   $this->PlanMakeEntry("9000","GRANT SELECT ON TABLE  zdd.perm_tabs_c TO $app");
+   $this->PlanMakeEntry("9000","GRANT SELECT ON TABLE  zdd.groups_c    TO $app");
+   //$results = $this->SQLREad("GRANT ALL  ON SCHEMA zdd TO $app");
+   //$results = $this->SQLREad("GRANT SELECT ON TABLE  zdd.perm_tabs_c TO $app");
+   //$results = $this->SQLREad("GRANT SELECT ON TABLE  zdd.groups_c    TO $app");
 
    
    // KFD 7/16/07, part of row-column fixup, drop effective groups we dont
@@ -6622,11 +6621,17 @@ SELECT pt.group_id,pt.table_id
 
 function PlanMakeEntry($cmdseq,$cmdtext)
 {
+    if(!isset($this->cmdsubseq)) {
+        $this->cmdsubseq = 0;
+    }
+    $this->cmdsubseq++;
+    
 	$this->SQL(
-		"Insert into zdd.ddl (cmdseq,cmdsql) ". 
+		"Insert into zdd.ddl (cmdseq,cmdsql,cmdsubseq) ". 
 		"values (".
 		"'". $cmdseq . "',". 
-		"'". $cmdtext . "')");
+		"'". $cmdtext . "',".
+        ".". $this->cmdsubseq. ")");
 }
 
 // ==========================================================
@@ -6692,7 +6697,8 @@ function PlanExecute() {
       $res=$this->SQLRead(
          "SELECT oid,cmdsql,cmdseq 
             FROM zdd.ddl
-           WHERE cmdseq = ".$stat['cmdseq']
+           WHERE cmdseq = '".$stat['cmdseq']."'
+           ORDER BY cmdsubseq"
       );
       /*
       if(in_array($stat['cmdseq'],$bunchers)) {
