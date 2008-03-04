@@ -67,6 +67,8 @@ class x_builder {
         $this->utabs = array();
         $this->ufks = array();
         $this->content = array();  // content loaded from specs
+        
+        $this->cmdsubseq=0;
     }
     
     function main() {	
@@ -6621,17 +6623,13 @@ SELECT pt.group_id,pt.table_id
 
 function PlanMakeEntry($cmdseq,$cmdtext)
 {
-    if(!isset($this->cmdsubseq)) {
-        $this->cmdsubseq = 0;
-    }
-    $this->cmdsubseq++;
-    
+    $this->cmdsubseq+=1;
 	$this->SQL(
-		"Insert into zdd.ddl (cmdseq,cmdsql,cmdsubseq) ". 
-		"values (".
-		"'". $cmdseq . "',". 
-		"'". $cmdtext . "',".
-        ".". $this->cmdsubseq. ")");
+		"Insert into zdd.ddl (cmdseq,cmdsql,cmdsubseq)  
+		values (
+		'$cmdseq', 
+		'$cmdtext',
+        $this->cmdsubseq)");
 }
 
 // ==========================================================
