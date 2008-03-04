@@ -82,7 +82,7 @@ link to create all of the directories and the empty database.</p>
 <h2>Your Application Program Files</h2>
 
 After building the application skeleton you can start working on the
-   database specification.  If you application code is "test", then put
+   database specification.  If your application code is "test", then put
    the database specification into the file
    <br/>
    <br/>
