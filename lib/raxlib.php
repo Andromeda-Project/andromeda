@@ -7507,8 +7507,13 @@ function jsValuesOne($ahcols,$colname,$ahcol,$name,$row,$h) {
     // KFD 8/6/07,  put formatting for dates back in, otherwise it
     //              was coming up 2007-08-07 for dates.
     // KFD 9/7/07,  put in a clause to handle double quotes in char values.
-    if($ahcol['type_id']=='date' || $ahcol['type_id']=='dtime') {
-     $colvalue=hFormat($ahcol['type_id'],trim($colvalue));
+    if($ahcol['type_id']=='date') {
+        $colvalue=hFormat($ahcol['type_id'],trim($colvalue));
+    }
+    elseif($ahcol['type_id']=='dtime') {
+        if(trim($colvalue)<>'') {
+            $colvalue=date('m/d/Y - h:m A',dEnsureTS($colvalue));
+        }
     }
     if($ahcol['formshort']=='char' || 
       $ahcol['formshort']=='varchar' ||
@@ -7540,6 +7545,13 @@ function jsValuesOne($ahcols,$colname,$ahcol,$name,$row,$h) {
         ElementAdd('scriptend',"ob('$name$colname').value='$colvalue'");
      }
     }
+
+    // KFD 3/3/08, translate y/n columns    
+    $replace_y = $colvalue=='Y' ? 'SELECTED' : '';
+    $replace_n = $colvalue=='N' ? 'SELECTED' : '';
+    $h=str_replace('--SELECTED-Y--',$replace_y,$h);
+    $h=str_replace('--SELECTED-N--',$replace_n,$h);
+    
     
     // If it's a select, we need to grab some hforSelect
     $innerHTML='';
@@ -7994,7 +8006,11 @@ function ahColFromACol(&$acol) {
    // ------------------------------------
    $hparms='';
    foreach($acol['hparms'] as $parm=>$value) {
-      $hparms.=$parm.'="'.$value.'"';
+       $hparms.=$parm.'="'
+        .($acol['type_id'] == 'mime-h' && $parm=='value' 
+            ? $value
+            : hx($value)
+        ).'"';
    }
    if($acol['text-align']=='right') {
       $hparms.=' style="text-align: right"';
