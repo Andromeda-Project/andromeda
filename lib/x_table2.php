@@ -372,9 +372,8 @@ class x_table2 {
          .($this->h['NavBar']=='' ? '' : '<br>');
       ?>
       <h1><?=$this->PageSubtitle?></h1>
-      <center>
       <table cellpadding=0 cellspacing=0 
-             style="width: 100%; border-collapse: collapse">
+             style="width: 100%; border-collapse: collapse" align="center">
          <?php  if(is_null($this->table_obj_child)) { ?>
             <?=$this->h['ButtonBar']?>
          <?php } ?>
@@ -396,7 +395,6 @@ class x_table2 {
           </td>
         </tr>
       </table>
-      </center>
       <?php
    }
    
@@ -1332,9 +1330,9 @@ class x_table2 {
       // Obtain the HTML for the inputs and output as table
       $ahc= ahInputsComprehensive($this->table,$mode,$this->row,$proj);
       return 
-         "\n<center>".hTable(100)
+         "\n".hTable(100)
          .$this->hBoxesFromAHComprehensive($ahc,$mode)      
-         ."\n</table></center>";
+         ."\n</table>";
    }
    
    function ehProjection($mode,$proj,$title='',$opts=array()) {
@@ -1343,11 +1341,9 @@ class x_table2 {
       ?>
       <div class="x2fieldset" style="margin-bottom: 2px;">
       <h4>&nbsp;&nbsp;<?=$title?></h4>
-      <center>
          <table height="100%">
          <?=$this->hBoxesFromAHComprehensive($ahc,$mode);?>
          </table>
-      </center>
       </div>
       <?php
    }
@@ -1359,11 +1355,9 @@ class x_table2 {
       <td class="x2fieldset">
       <div style="margin-bottom: 2px;">
       <h4>&nbsp;&nbsp;<?=$title?></h4>
-      <center>
          <table height="100%">
          <?=$this->hBoxesFromAHComprehensive($ahc);?>
          </table>
-      </center>
       </div>
       <?php
    }
