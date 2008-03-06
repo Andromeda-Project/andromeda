@@ -2956,7 +2956,7 @@ function SpecDDL_Triggers_Defaults() {
 	$results = 	$this->SQLRead(
 		"SELECT table_id,column_id,automation_id,formshort,auto_formula,type_id". 
 		" FROM zdd.tabflat_c ". 
-		" WHERE automation_id IN ('BLANK','DEFAULT','SEQUENCE','SEQDEFAULT','TS_INS','UID_INS','TS_UPD','UID_UPD','QUEUEPOS','UID_UPD_PG')"
+		" WHERE automation_id IN ('BLANK','DEFAULT','SEQUENCE','SEQDEFAULT','TS_INS','UID_INS','TS_UPD','UID_UPD','QUEUEPOS','TS_UPD_PG','UID_UPD_PG')"
    ); 
 
 	while ($row=pg_fetch_array($results)) {
@@ -3070,6 +3070,33 @@ function SpecDDL_Triggers_Defaults() {
 			$s1 = 
 				"    -- 1010 insert timestamp assignment\n".
 				"    new.". $column_id . " = now();\n";
+			$this->SpecDDL_TriggerFragment($table_id,"INSERT","BEFORE","1011",$s1);
+			$this->SpecDDL_TriggerFragment($table_id,"UPDATE","BEFORE","1011",$s1);
+		}
+		if ($automation_id=="TS_UPD_PG") {
+			$s1 = "\n".
+				"    -- 1010 timestamp validation\n".
+				"    IF NOT new.". $column_id . " IS NULL THEN \n".
+				"        ErrorCount = ErrorCount + 1;\n". 
+				"        ErrorList = ErrorList || ##$column_id,3005," . 
+								"$column_id (ts_upd_pg) may not be explicitly assigned;##;\n".
+				"    END IF;\n";
+			$this->SpecDDL_TriggerFragment($table_id,"INSERT","BEFORE","1010",$s1);
+			$s1 = "\n".
+				"    -- 1010 timestamp validation\n".
+				"    IF (new.". $column_id . " <> old.". $column_id . ") THEN \n".
+				"        ErrorCount = ErrorCount + 1;\n". 
+				"        ErrorList = ErrorList || ##$column_id,3004," . 
+								"$column_id (ts_upd_pg) may not be re-assigned;##;\n".
+				"    END IF;\n";
+			$this->SpecDDL_TriggerFragment($table_id,"UPDATE","BEFORE","1010",$s1);
+			
+			//$Seq = strtoupper($table_id) . "_". strtoupper($column_id);
+			$s1 = 
+				"    -- 1010 insert timestamp assignment\n".
+                                 " IF ( session_user <> ##postgres## ) THEN \n" .
+				"    new.". $column_id . " = now();\n" .
+                                " END IF;\n";
 			$this->SpecDDL_TriggerFragment($table_id,"INSERT","BEFORE","1011",$s1);
 			$this->SpecDDL_TriggerFragment($table_id,"UPDATE","BEFORE","1011",$s1);
 		}

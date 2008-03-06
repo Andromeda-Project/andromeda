@@ -157,6 +157,7 @@ column explain { description: Explanation; type_id: text; }
 //
 column ts_ins   { description: Created           ; type_id: dtime ; colprec:  0; colscale: 0; automation_id: TS_INS; uiwithnext: Y; }
 column ts_upd   { description: Last Changed      ; type_id: dtime ; colprec:  0; colscale: 0; automation_id: TS_UPD; uiwithnext: Y; }
+column ts_upd_nopost  { description: Last Changed      ; type_id: dtime ; colprec:  0; colscale: 0; automation_id: TS_UPD_PG; uiwithnext: Y; }
 column uid_ins  { description: By                ; type_id: vchar  ; colprec: 40; colscale: 0; automation_id: UID_INS; }
 column uid_upd  { description: By                ; type_id: vchar  ; colprec: 40; colscale: 0; automation_id: UID_UPD; }
 column uid_upd_nopost  { description: By                ; type_id: vchar  ; colprec: 40; colscale: 0; automation_id: UID_UPD_PG; }
