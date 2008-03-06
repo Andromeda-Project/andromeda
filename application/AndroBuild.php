@@ -2956,7 +2956,7 @@ function SpecDDL_Triggers_Defaults() {
 	$results = 	$this->SQLRead(
 		"SELECT table_id,column_id,automation_id,formshort,auto_formula,type_id". 
 		" FROM zdd.tabflat_c ". 
-		" WHERE automation_id IN ('BLANK','DEFAULT','SEQUENCE','SEQDEFAULT','TS_INS','UID_INS','TS_UPD','UID_UPD','QUEUEPOS')"
+		" WHERE automation_id IN ('BLANK','DEFAULT','SEQUENCE','SEQDEFAULT','TS_INS','UID_INS','TS_UPD','UID_UPD','QUEUEPOS','UID_UPD_PG')"
    ); 
 
 	while ($row=pg_fetch_array($results)) {
@@ -3122,6 +3122,33 @@ function SpecDDL_Triggers_Defaults() {
 			$this->SpecDDL_TriggerFragment($table_id,"INSERT","BEFORE","1011",$s1);
 			$this->SpecDDL_TriggerFragment($table_id,"UPDATE","BEFORE","1011",$s1);
 		}
+                if ($automation_id=='UID_UPD_PG' ) {
+                        $s1 = "\n".
+				"    -- 1010 User Update validation\n".
+				"    IF NOT new.". $column_id . " IS NULL THEN \n".
+				"        ErrorCount = ErrorCount + 1;\n". 
+				"        ErrorList = ErrorList || ##$column_id,3009," . 
+								"$column_id (uid_upd_pg) may not be explicitly assigned;##;\n".
+				"    END IF;\n";
+			$this->SpecDDL_TriggerFragment($table_id,"INSERT","BEFORE","1010",$s1);
+			$s1 = "\n".
+				"    -- 1010 User Update validation\n".
+				"    IF (new.". $column_id . " <> old.". $column_id . ") THEN \n".
+				"        ErrorCount = ErrorCount + 1;\n". 
+				"        ErrorList = ErrorList || ##$column_id,3010,". 
+								"$column_id (uid_upd_pg) may not be re-assigned;##;\n".
+				"    END IF;\n";
+			$this->SpecDDL_TriggerFragment($table_id,"UPDATE","BEFORE","1010",$s1);
+			
+			//$Seq = strtoupper($table_id) . "_". strtoupper($column_id);
+			$s1 = 
+				"    -- 1010 Update user id assignment\n".
+                                " IF ( session_user <> ##postgres## ) THEN \n" .
+				"    new.". $column_id . " = session_user; \n" .
+                                " END IF;\n";
+			$this->SpecDDL_TriggerFragment($table_id,"INSERT","BEFORE","1011",$s1);
+			$this->SpecDDL_TriggerFragment($table_id,"UPDATE","BEFORE","1011",$s1);
+                }
 		
 		if ($automation_id=="BLANK" || $automation_id=='QUEUEPOS') {
 			$def = $this->SQLFormatBLank($row["type_id"],true,true);

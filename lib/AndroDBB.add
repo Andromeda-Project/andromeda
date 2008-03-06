@@ -486,6 +486,7 @@ content automations {
     values { SYNCH      ; Synchronize Parent/Child; }
     values { QUEUEPOS   ; Enforces unique Queue Position; }
     values { DOMINANT   ; Only one row can have value Y; }
+    values { UID_UPD_PG ; Update User ignoring postgres }
 }
 
 // ---------------------------------------------------------

@@ -159,6 +159,7 @@ column ts_ins   { description: Created           ; type_id: dtime ; colprec:  0;
 column ts_upd   { description: Last Changed      ; type_id: dtime ; colprec:  0; colscale: 0; automation_id: TS_UPD; uiwithnext: Y; }
 column uid_ins  { description: By                ; type_id: vchar  ; colprec: 40; colscale: 0; automation_id: UID_INS; }
 column uid_upd  { description: By                ; type_id: vchar  ; colprec: 40; colscale: 0; automation_id: UID_UPD; }
+column uid_upd_nopost  { description: By                ; type_id: vchar  ; colprec: 40; colscale: 0; automation_id: UID_UPD_PG; }
 column gender   { description: Gender            ; type_id: gender; }
 column rulecode { description: Rule Code         ; type_id: cbool;  }
 column notes    { description: Notes             ; type_id: text; }
