@@ -8086,9 +8086,9 @@ SELECT  m.module,m.description as module_text,m.uisort,t.uisort
       $file2.="\$PAGES[#".$row["table_id"]."#]=#".$row['table_text']."#;\n";
       
 		if ($row["module"]!==$module) {
-			$file.="\$AGMENU[#".$row["module"]."#]=array();\n";
+			//$file.="\$AGMENU[#".$row["module"]."#]=array();\n";
 			$file.="\$AGMENU[#".$row["module"]."#][#description#] = #".$row["module_text"]."#;\n";
-			$file.="\$AGMENU[#".$row["module"]."#][#items#]=array();\n";
+			//$file.="\$AGMENU[#".$row["module"]."#][#items#]=array();\n";
 			$module = $row["module"];
 		}
 		
