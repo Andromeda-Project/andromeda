@@ -7858,7 +7858,7 @@ function ahColFromACol(&$acol) {
       //              changes to field can be "disabled"
       if ( !$acol['writable'] ) {
           $acol['html_element']='input';
-      }
+      } else {
           $acol['html_element']='select';
           $prefix=$acol['mode']=='search' ? '<option value=""></option>' : '';
           $acol['html_inner']
