@@ -610,7 +610,7 @@ column value_min         {  type_id: vchar; colprec: 50;  colscale: 0; descripti
 column value_max         {  type_id: vchar; colprec: 50;  colscale: 0; description: Maximum Value; }    
 column uirows            {  type_id: int  ;                            description: TextArea Rows; }    
 column uicols            {  type_id: int  ;                            description: TextArea Cols; }    
-column tooltip           {  type_id: vchar; colprec: 200; description: UI Tooltip; }
+column tooltip           {  type_id: vchar; colprec: 300; description: UI Tooltip; }
 
 table columns {
     module: datadict;
