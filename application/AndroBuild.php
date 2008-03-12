@@ -844,6 +844,22 @@ function SpecLoad() {
                         );
                     $this->LogEntry("Setting aside content for loading after build");
                     foreach($ta['content'] as $table_id=>$values) {
+                        if(!isset($values[2])) {
+                            $this->logEntry("");
+                            $this->logEntry(">>> ERROR");
+                            $this->logEntry(">>> Error in CONTENT for table $table_id");
+                            $this->logEntry(">>> There do not appear to be any values.");
+                            $this->logEntry(">>>  The correct format is: ");
+                            $this->logEntry(">>>  content table_id:       ");
+                            $this->logEntry(">>>      columns: [ col1,col2 ]");
+                            $this->logEntry(">>>      values:            ");
+                            $this->logEntry(">>>          - [ val1, val2 ]");
+                            $this->logEntry(">>>          - [ val1, val2 ]");
+                            $this->logEntry(">>>          - [ val1, val2 ]");
+                            return false;
+                        }
+                        
+                        
                         // KFD 3/1/08, major fix to content loading on YAML 
                         $colnames = $values[1];
                         $colnames['__type']='columns';
@@ -7981,11 +7997,11 @@ function CodeGenerate_Tables() {
 		// Loop through rows creating some projections
 		$pks = $u_uisearch = $u_uino ="";
 		foreach ($table["flat"] as $colname=>$colinfo) {
-			if ($colinfo["primary_key"]=="Y") 
+			if ($this->zzArraySafe($colinfo,"primary_key")=="Y") 
             $pks       .=$this->AddComma($pks).$colname;
-			if ($colinfo["uisearch"]=="Y") 
+			if ($this->zzArraySafe($colinfo,"uisearch")=="Y") 
             $u_uisearch.=$this->AddComma($u_uisearch).$colname;
-			if ($colinfo["uino"]=="Y") 
+			if ($this->zzArraySafe($colinfo,"uino")=="Y") 
             $u_uino    .=$this->AddComma($u_uino).$colname;
 		}
 		$table["pks"] = $pks;
