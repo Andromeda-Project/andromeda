@@ -1,0 +1,302 @@
+/* ---------------------------------------------------- *\ 
+   ----------------------------------------------------
+   This style sheet is set up so that you only have to
+   make each assignment once.  In particular, sizes are
+   separated from colors.  No color is ever used more 
+   than once. 
+   
+   There are very few ID rules, and they are strictly
+   limited to positioning and sizing of these unique
+   elements.
+   ----------------------------------------------------
+\* ---------------------------------------------------- */ 
+/* ---------------------------------------------------- *\ 
+   FONT SIZES AND NAMES
+\* ---------------------------------------------------- */
+body, td {
+    font-size: 15px;
+    font-family: monospace;
+}
+
+h1 {
+    font-size: 22px;
+    text-align: center;  
+    font-stretch: wider;
+}
+h2 {
+    font-size: 20px;    
+    text-align: center;    
+}
+h3 {
+    font-size: 18px;    
+    text-align: center;    
+}
+h4 {
+    font-size: 15px;   
+}
+
+a {
+    text-decoration: none;   
+}
+   
+/* ---------------------------------------------------- *\ 
+   POSITIONING AND SIZE
+\* ---------------------------------------------------- */
+body,html {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    height: 100%;
+    width: 100%;
+}
+
+/* pseudo-element.  Resizing routines should read this */
+#x4BarHeights {
+    height: 50px;
+}
+
+#x4ActionBar {
+    height: 25px;
+}
+#x4StatusBar {
+    height: 25px;
+}
+.x4BarGroupRight {
+    float: right; 
+}
+.x4BarGroupLeft {
+    float: left; 
+}
+
+/* scheme 0 is associated with main content area */
+div.scheme0 , td.scheme0 { 
+    border-width: 1px;
+    border-style: solid;
+    padding: 5px;
+}
+
+/* scheme 1 is associated with action bar at top */
+div.scheme1 , td.scheme1 {
+    border-width: 1px 1px 0px;  
+    border-style: solid;
+    padding: 4px 10px 0px 10px;
+}
+
+/* scheme 0 is associated with status bar at bottom */
+div.scheme2 , td.scheme2 {
+    border-width: 0px 1px 1px;  
+    border-style: solid;
+    padding: 4px 10px 0px 10px;
+}
+
+/* ---------------------------------------------------- *\ 
+   COLORING OF SCHEMES
+   
+   In any particular scheme, we have to define:
+   basic colors
+   anchor colors
+   h1 and other colors.
+   Bright Green:  00ff00
+   Regular Green: 00AF00
+   
+\* ---------------------------------------------------- */
+div.scheme0 , td.scheme0 {
+    background-color: black;     
+    border-color: #00AF00;
+    color: #00AF00;   
+}
+.scheme0 a {
+   color: #00AF00;
+   font-weight: bolder;
+}
+.scheme0 a.hilite {
+   background-color: #00AF00;
+   color: black;
+   font-weight: bolder;
+}
+.scheme0 h1,.scheme0 h2,.scheme0 h3,.scheme0 h4 {
+    color: #00FF00;
+}
+
+
+div.scheme1 , td.scheme1 {
+    background-color: black;     
+    border-color: #00AF00;
+    color: #00AF00;   
+}
+.scheme1 a {
+   color: #00AF00;
+   font-weight: bolder;
+}
+.scheme1 a.hilite {
+   background-color: #00AF00;
+   color: black;
+   font-weight: bolder;
+}
+
+div.scheme2 , td.scheme2 {
+    background-color: black;     
+    border-color: #00AF00;
+    color: #00AF00;   
+}
+.scheme2 a {
+   color: #00AF00;
+   font-weight: bolder;
+}
+.scheme2 a.hilite {
+   background-color: #00AF00;
+   color: black;
+   font-weight: bolder;
+}
+
+
+/* ---------------------------------------------------- *\ 
+   GENERIC MODIFIERS
+\* ---------------------------------------------------- */
+.dim {
+    opacity: 0.7;
+}
+
+/* ---------------------------------------------------- *\
+   ----------------------------------------------------
+   Menu Styles       
+   ----------------------------------------------------
+\* ---------------------------------------------------- */
+table.gsMenu {
+    width: 100%;
+    border-spacing: 20px;
+}
+
+table.gsMenu td {
+    text-align: left;
+    vertical-align: top;
+}
+
+table.gsMenu a {
+    display: block;
+}
+/* ---------------------------------------------------- *\
+   ----------------------------------------------------
+   Select Box       
+   ----------------------------------------------------
+\* ---------------------------------------------------- */
+.select {
+        position: relative;
+        border: 1px solid #000000;
+        width:157px;
+        height:20px;
+        z-index:0;
+        background-color:#FFFFFF;
+        padding-top: 3px;
+}
+.selectValue {
+        height: 18px;
+        max-height: 18px;
+        min-height: 18px;
+        width: 135px;
+        background: #FFFFFF;
+        vertical-align:middle;
+        border: 0px;
+        float:left;
+        cursor:pointer;
+        overflow:hidden;
+        padding-top: 1px;
+        padding-left: 2px;
+        padding-right: 2px;
+        float:left;
+}
+.dropButton {
+        width:17px;
+        min-width:17px;
+        max-width:17px;
+        height:20px;
+        min-height:20px;
+        max-height:20px;
+        background-image:url(images/select.gif);
+        background-repeat: no-repeat;
+}
+
+.selectChildren {
+        position: absolute;
+        top:10;
+        width:140px;
+        background-color: #FFFFFF;
+        border-left: 1px solid #000099;
+        border-right: 1px solid #000099;
+        border-bottom: 1px solid #000099;
+        border-top: 1px solid #DFDFDF;
+        cursor: pointer;
+        padding-top: 2px;
+        display:inline;
+        z-index:1;
+}
+
+.selectChild {
+        position:relative;
+        display: block;
+        width: 100%;
+        cursor: pointer;
+        color: #000000;
+        text-decoration: none;
+        height:18px;
+        white-space: nowrap;
+        font-size:10pt;
+}
+
+.selectChild:hover {
+        background-color: #080793;
+        color: #FFFFFF;
+}
+
+.selectChildren {
+        position: absolute;
+        top:10;
+        width:140px;
+        background-color: #FFFFFF;
+        border-left: 1px solid #000099;
+        border-right: 1px solid #000099;
+        border-bottom: 1px solid #000099;
+        border-top: 1px solid #DFDFDF;
+        cursor: pointer;
+        padding-top: 2px;
+        display:inline;
+        z-index:1;
+}
+
+.selectChild {
+        position:relative;
+        display: block;
+        width: 100%;
+        cursor: pointer;
+        color: #000000;
+        text-decoration: none;
+        height:18px;
+        white-space: nowrap;
+        font-size:10pt;
+}
+
+.selectChild:hover {
+        background-color: #080793;
+        color: #FFFFFF;
+}
+.childContainer {
+        clear: both;
+        width:140px;
+        min-width:140px;
+        height:15px;
+        padding-left:2px;
+        padding-right:2px;
+}
+
+.childElement {
+        float:left;
+        text-align:left;
+        height:16px;
+        min-height:16px;
+        max-height:16px;
+        white-space: nowrap;
+        width:90px;
+}
+
+
+
