@@ -27,37 +27,40 @@ class x_login extends x_table2 {
 	var $pmenu = array();
    
 	function main() {
-		$this->PageSubtitle = "Please Login";
-      
-      hidden('gp_page','x_login');
-      hidden('gp_posted','1');
-      
-      // Send these out so they are available after successful login
-      $gpz=aFromGp('gpz_');
-      foreach($gpz as $var=>$val) {
-         hidden('gpz_'.$var,$val);
-      }
+        $this->PageSubtitle = "Please Login";
+        
+        // KFD 3/6/08, changed login processing to st2login=1,
+        //             its not a page anymore.
+        hidden('st2login',1);          
+        hidden('gp_page','');
+        hidden('gp_posted','1');
+        
+        // Send these out so they are available after successful login
+        $gpz=aFromGp('gpz_');
+        foreach($gpz as $var=>$val) {
+            hidden('gpz_'.$var,$val);
+        }
       
 		$loginUID = CleanGet("loginUID","",false);
 		vgfSet("HTML_focus","loginUID");
       
-      // EXPERIMENTAL.  DOING THIS FOR ONLY ONE CLIENT RIGHT NOW
-      $hForgot=(vgaget('hfmode',false)==true)
-         ? 'x_password.phtml'
-         : 'index.php?gp_page=x_password';
+        // EXPERIMENTAL.  DOING THIS FOR ONLY ONE CLIENT RIGHT NOW
+        $hForgot=(vgaget('hfmode',false)==true)
+             ? 'x_password.phtml'
+             : 'index.php?gp_page=x_password';
       
-      /**
-      name:Replace Login Form
-      
-      You can replace the default login form by putting a file named
-      "x_login_form.inc.html" into the [[Application Directory]].  
-      */
-      if(File_exists_incpath('x_login_form.inc.html')) {
-         if (vgaGet('html_main')<>('html_skin_tc')) {
-            include('x_login_form.inc.html');
-            return;
-         }
-      }
+        /**
+        name:Replace Login Form
+        
+        You can replace the default login form by putting a file named
+        "x_login_form.inc.html" into the [[Application Directory]].  
+        */
+        if(File_exists_incpath('x_login_form.inc.html')) {
+            if (vgaGet('html_main')<>('html_skin_tc')) {
+                include('x_login_form.inc.html');
+                return;
+            }
+        }
       
 		?>	
 
@@ -91,34 +94,34 @@ class x_login extends x_table2 {
 		<?php
 	}
 
-   // ------------------------------------------------------------------
-   // ------------------------------------------------------------------
-   // Various helper functions
-   function _MenuX($content,$newline,$class,$id='') {
-      //$id=hTagParm('id',$id);
-      if ($this->pmenu['MENU_TYPE']<>'TABLE') {
-         return $newline.'<div class="'.$class.'">'.$content.'</div>';
-      }
-      else {
-         return "$newline<tr><td id=\"$id\" class=\"$class\">"
-            .$content."</td></tr>";
-      }
-   }
+    // ------------------------------------------------------------------
+    // ------------------------------------------------------------------
+    // Various helper functions
+    function _MenuX($content,$newline,$class,$id='') {
+        //$id=hTagParm('id',$id);
+        if ($this->pmenu['MENU_TYPE']<>'TABLE') {
+            return $newline.'<div class="'.$class.'">'.$content.'</div>';
+        }
+        else {
+            return "$newline<tr><td id=\"$id\" class=\"$class\">"
+                .$content."</td></tr>";
+        }
+    }
 
-   function _MenuModule($content) {
-      if(vgaGet('MENU_TAG_MODL','')<>'') {
-         $mt=vgaGet('MENU_TAG_MODL','');
-         return "<$mt>$content</$mt>"; 
-      }
-      else {
-         return $this->_MenuX(
-            $content,"\n\n",$this->pmenu['MENU_CLASS_MODL']
-         );
-      }
-   }
+    function _MenuModule($content) {
+        if(vgaGet('MENU_TAG_MODL','')<>'') {
+            $mt=vgaGet('MENU_TAG_MODL','');
+            return "<$mt>$content</$mt>"; 
+        }
+        else {
+            return $this->_MenuX(
+                $content,"\n\n",$this->pmenu['MENU_CLASS_MODL']
+            );
+        }
+    }
 
-   // Various helper functions
-   function _MenuItem($content,$dest,$ins=false,$extra=array()) {
+    // Various helper functions
+    function _MenuItem($content,$dest,$ins=false,$extra=array()) {
       // The parms are the table plus maybe the insert mode
 		$parms = array('gp_page'=>$dest);
       $id='menu_'.$dest;
@@ -138,7 +141,7 @@ class x_login extends x_table2 {
          .hLinkPostFromArray($class,$content,$parms);
       
       return $this->_MenuX($href,"\n",$this->pmenu['MENU_CLASS_ITEM'],$id);
-   }
+    }
    
    // ------------------------------------------------------------------
    // LOGIN PROCESS
