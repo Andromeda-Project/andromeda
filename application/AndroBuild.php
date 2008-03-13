@@ -2017,7 +2017,7 @@ function specFlattenRowCol() {
    $gnumb=0;
    $this->GroupBinary(1,$app,$gkeys,$gnumb);
 
-   $this->LogEntry("Flagging tables with row security");
+   $this->LogEntry("Flagging tables with row security, pass 1 of 2");
    $this->SQL("UPDATE zdd.tables_c SET permrow='N',permcol='N'");
    $this->SQL("
       UPDATE zdd.tables_c
@@ -2030,6 +2030,17 @@ function specFlattenRowCol() {
              ) x
         WHERE zdd.tables_c.table_id = x.table_id"
    );
+   $this->LogEntry("Flagging tables with row security, pass 2 of 2");
+   $this->SQL("
+      UPDATE zdd.tables_c
+         SET permrow = 'Y'
+        FROM ( SELECT table_id
+                 FROM zdd.permxtablesrow_c
+                GROUP BY table_id
+             ) x
+        WHERE zdd.tables_c.table_id = x.table_id"
+   );
+
    $this->LogEntry("Flagging tables with column security"); 
    $this->SQL("
 update zdd.tables_c set permcol = 'Y'
@@ -5857,8 +5868,6 @@ select pgg.rolname as gname,pgu.rolname as uname
    $this->PlanMakeEntry("3050",$sq);
    
 
-
-
    $defsrow = $this->PlanMake_ViewsRowSecurity();
    $defscol = $this->Planmake_ViewsColSecurity();
    
@@ -5868,11 +5877,11 @@ select pgg.rolname as gname,pgu.rolname as uname
 }
 
 function planMake_ViewsRowSecurity() {
-   // ----- big step: create the row security clauses   
-   $ts=time();
- 	$this->LogEntry("Creating View commands for row security");
-   // PUll out the definitions
-   $res=$this->SQLRead("
+    // ----- big step: create the row security clauses   
+    $ts=time();
+    $this->LogEntry("Creating View commands for row security");
+    // Pull out the definitions
+    $res=$this->SQLRead("
        SELECT table_id,column_id,group_id
               ,coalesce(permrow,'')      as permrow
               ,coalesce(table_id_row,'') as table_id_row
@@ -5880,14 +5889,15 @@ function planMake_ViewsRowSecurity() {
         WHERE coalesce(permrow,'')      <> ''
            OR coalesce(table_id_row,'') <> ''"
     );
-    $defs=pg_fetch_alL($res);
+    $defs=pg_fetch_all($res);
+    
     // Now run through them and reslot them by table/column.  The
     // result is
-    //  defs2:
-    //    tables:
-    //       columns:
-    //          type   = permrow or table_id_row
-    //          groups = array of groups that have NO filtering
+    //  defs2:         master list
+    //    table_id:  
+    //       column_id:
+    //          'table_id_row'=> table_id_row
+    //          groups:  array()         These have NO security
     $defs2=array();
     if($defs) {
        foreach($defs as $def) {
@@ -5901,6 +5911,20 @@ function planMake_ViewsRowSecurity() {
           }
        }
     }
+
+    // Now Pull out the secondary definitions and slot those
+    $res=$this->SQLRead("
+       SELECT table_id,table_id_row,column_id,group_id
+         FROM zdd.permxtablesrow_c"
+    );
+    $d2nd=pg_fetch_all($res);
+    // Begin slotting the defs2 array.  We want an array of the
+    // group/column/tables that are using 2ndary lookups.
+    foreach($d2nd as $d2) {
+        $defs2[$d2['table_id']][$d2['column_id']]['xg'][$d2['group_id']][]
+            =$d2['table_id_row'];
+    }
+
     // Now loop through the defs2 array and build the row-level
     // filtering clause for the row-level view.  There is exactly
     // one row-level view per table.  
@@ -5908,13 +5932,29 @@ function planMake_ViewsRowSecurity() {
        $colclauses=array();
        foreach($columns as $column_id=>$colinfo) {
           // Do finisher first actually
-          if(!isset($colinfo['table_id_row'])) {
+          if(isset($colinfo['xg'])) {
+              $finisher='';
+              foreach($colinfo['xg'] as $group_id=>$atables) {
+                  $finisher.="
+                         (select count(*) from an_authname_members
+                          where uname = current_user 
+                            AND gname = #$group_id# )> 0 ";  
+                  foreach($atables as $atable) {
+                      $view = $atable.'_v_99999';
+                      $finisher.="
+                            AND exists (SELECT skey FROM $view
+                                        WHERE $tab.$column_id = $view.$column_id
+                                        ORDER BY skey limit 1)";
+                  }
+              }
+          }
+          elseif(!isset($colinfo['table_id_row'])) {
              $finisher="$column_id = current_user ";
           }
           else {
              $tirow=$colinfo['table_id_row'];
-             $finisher
-               ="EXISTS (SELECT skey FROM $tirow 
+             $finisher="
+                 EXISTS (SELECT skey FROM $tirow 
                                 WHERE $tirow.user_id = current_user\n
                            AND $tab.$column_id = $tirow.$column_id)
                ";
@@ -5931,15 +5971,18 @@ function planMake_ViewsRowSecurity() {
                             AND gname = #$group_id# )> 0 
                      THEN true";
              }
-             $colclause.="\n                     ELSE $finisher END ";
+             $colclause.="\n                     ELSE $finisher 
+             END ";
           }
           $colclauses[]=$colclause;
        }
        $tabclause
-            ="\nwhere case when (select rolsuper from pg_roles where rolname=current_user)"
-            ."\n           then true "
+            ="\nWHERE CASE"
+            ."\n      WHEN (select rolsuper from pg_roles where rolname=current_user)"
+            ."\n      THEN true "
             ."\n      ELSE ( ".implode("\n       AND\n",$colclauses)
-            ."\n           ) END ";
+            ."\n           ) "
+            ."\n      END ";
        $defs2[$tab]['clause']=$tabclause;
     }
     // DEBUG NOTE: The best way to debug the code above is to examine
