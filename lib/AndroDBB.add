@@ -96,6 +96,8 @@ meta {
 	
 	keyword table_column             { table: tabcol;        keycol: column_id; keystub: column_id_src;     }
 	keyword table_column_group       { table: perm_cols;     keycol: group_id; }
+	keyword table_column_group_table_id_row 
+                                 { table: permxtablesrow; keycol: table_id_row;  }
 	keyword table_chain              { table: tabchains;     keycol: chain; }
 	keyword table_chain_test         { table: tabchaintests; keycol: X;     }
 	keyword table_column_chain       { table: colchains;     keycol: chain; }
@@ -110,7 +112,7 @@ meta {
 	keyword table_child_table        { table: tabfky;        keycol: table_id_par_comp; keystub: table_id_par;  }
 	keyword table_child_table_automation  { table: tabfkyauto; keycol: automation_id; }
 	keyword table_child_table_automation_column  { table: tabfkyautocols; keycol: column_id; }
-	keyword table_group          { table: permxtables; keycol: group_id;  }
+	keyword table_group               { table: permxtables;    keycol: group_id;  }
 	keyword table_index          { table: tabidx;      keycol: idx_name;  }
 	keyword table_index_column   { table: tabidxcol;   keycol: column_id; }
 	keyword table_cascade        { table: tabcas;      keycol: cascade;   }
@@ -1024,6 +1026,19 @@ table permxtables {
 	foreign_key {  tables;  primary_key: Y; uisearch: Y; uicolseq: 2; }
 	column { skey; skey_quiet; _agg; }
 }
+
+table permxtablesrow {
+	module: datadict;
+	description: Group Table Ref Perms;
+	table_seq:2001;
+	
+
+	foreign_key {  groups;  primary_key: Y; uisearch: Y; }
+	foreign_key {  tables;  primary_key: Y; uisearch: Y; }
+    column { column_id; primary_key: Y; }
+    column { table_id_row; }
+}
+
 
 table permxmodules {
 	module: datadict;
