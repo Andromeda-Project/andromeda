@@ -1,4 +1,6 @@
 <?php
+include('androHTMLFoot.php');
+return;
 // Script goes out at absolute end, after <html> element is closed
 if (vgfGet("HTML_focus")=="") {
    // This is used only in the default Andromeda template, you need to

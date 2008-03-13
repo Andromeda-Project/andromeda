@@ -1,4 +1,6 @@
 <?php
+include('lib/androHTMLHead.php');
+return;
 // These are things that belong in the header of any template
 $title=vgfGet("PageTitle");
 ?>
