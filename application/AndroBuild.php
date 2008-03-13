@@ -5920,9 +5920,11 @@ function planMake_ViewsRowSecurity() {
     $d2nd=pg_fetch_all($res);
     // Begin slotting the defs2 array.  We want an array of the
     // group/column/tables that are using 2ndary lookups.
-    foreach($d2nd as $d2) {
-        $defs2[$d2['table_id']][$d2['column_id']]['xg'][$d2['group_id']][]
-            =$d2['table_id_row'];
+    if($d2nd) {
+        foreach($d2nd as $d2) {
+            $defs2[$d2['table_id']][$d2['column_id']]['xg'][$d2['group_id']][]
+                =$d2['table_id_row'];
+        }
     }
 
     // Now loop through the defs2 array and build the row-level
