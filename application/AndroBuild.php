@@ -8486,26 +8486,26 @@ function FS_PrepareCheck() {
 }
 
 function FS_PrepareMake() {
-	$grp = $this->ShellWhoAmI();
-   global $parm;
-	$app = $GLOBALS["parm"]["APP"];
-	$dir_pub = $this->FS_ADDSLASH($GLOBALS["parm"]["DIR_PUBLIC"]);
-	$dir_pubx= $dir_pub.$this->FS_ADDSLASH($GLOBALS["parm"]["DIR_PUBLIC_APP"]);
+    $grp = $this->ShellWhoAmI();
+    global $parm;
+    $app = $GLOBALS["parm"]["APP"];
+    $dir_pub = $this->FS_ADDSLASH($GLOBALS["parm"]["DIR_PUBLIC"]);
+    $dir_pubx= $dir_pub.$this->FS_ADDSLASH($GLOBALS["parm"]["DIR_PUBLIC_APP"]);
 	
 
-   // Establish the source 
-	$this->LogStage("Building Directories and Copying Files");
-   if(isset($parm['IVER'])) {
-      $dirl = AddSlash($parm['DIR_LINK_LIB']);
-      $dira = AddSlash($parm['DIR_LINK_APP']);
-   }
-   else {
-      $dirl = $dira = $GLOBALS['dir_andro'];       
-   }
+    // Establish the source 
+    $this->LogStage("Building Directories and Copying Files");
+    if(isset($parm['IVER'])) {
+        $dirl = AddSlash($parm['DIR_LINK_LIB']);
+        $dira = AddSlash($parm['DIR_LINK_APP']);
+    }
+    else {
+        $dirl = $dira = $GLOBALS['dir_andro'];       
+    }
 
-   // Now handle all of the subdirectories, including templates, lib,
-   // clib and so forth.  Read them out of the node manager.
-   //
+    // Now handle all of the subdirectories, including templates, lib,
+    // clib and so forth.  Read them out of the node manager.
+    //
     // KFD 2/5/08, fix huge bug introduced by this.  On a new
     //             install this does not work, must have hardcoded dir
     if(isset($this->dirsAll)) {
@@ -8516,23 +8516,36 @@ function FS_PrepareMake() {
         $dirs =pg_fetch_all($dbres);
     }
     foreach($dirs as $row) {
-      $tgt=trim($row['dirname']);
-      $this->LogEntry("Processing subdir: $tgt");
+        $tgt=trim($row['dirname']);
+        $this->LogEntry("Processing subdir: $tgt");
+        
+        if(!file_exists($dir_pubx.$tgt)) {
+            $this->LogEntry(" -> Creating this directory");
+            mkdir($dir_pubx.$tgt);
+        }
 
-      if(!file_exists($dir_pubx.$tgt)) {
-         $this->LogEntry(" -> Creating this directory");
-         mkdir($dir_pubx.$tgt);
-      }
-
+        // KFD 4/13/08, must remove minified JS files during build
+        if($tgt=='clib') {
+            $jsfiles=scandir($dir_pubx.$tgt);
+            foreach($jsfiles as $jsfile) {
+                if($jsfile=='.') continue;
+                if($jsfile=='..') continue;
+                if(substr($jsfile,-3)<>'.js') continue;
+                if(substr($jsfile,0,7)<>'js-min-') continue;
+                $jsfile2 = "$dir_pubx$tgt/$jsfile";
+                $this->LogENtry("Deleting minified file: ".$jsfile2);
+                unlink($jsfile2);
+            }
+        }
       
-      if($row['flag_copy']<>'Y') {
-         $this->LogEntry(" -> Nothing will be copied for this directory.");
-         if($tgt=='generated' || $tgt=='dynamic') {
-            $this->LogEntry(" -> Purging this directory");
-            //$cmd="rm $dir$tgt/*";
-            //`$cmd`;
-         }
-      }
+        if($row['flag_copy']<>'Y') {
+            $this->LogEntry(" -> Nothing will be copied for this directory.");
+            if($tgt=='generated' || $tgt=='dynamic') {
+                $this->LogEntry(" -> Purging this directory");
+                //$cmd="rm $dir$tgt/*";
+                //`$cmd`;
+            }
+        }
       else {
          // In this branch we have directories that must be copied.
          // They may be application or library directories, and this
