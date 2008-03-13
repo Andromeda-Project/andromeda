@@ -26,6 +26,12 @@ This is the hidden part of the two-file universal dispatch system.
 The public file is index.php, which sets the path and immediately
 passes execution to this file.
 
+INVENTORY OF framework gp variables:
+
+* gp_page     means page processing, and is the default action
+* st2logout   command to logout
+* st2login    command to login
+
 */
 
 // ==================================================================
@@ -33,166 +39,158 @@ passes execution to this file.
 // >>> Make INI file settings here
 // >>> 
 // ==================================================================
-index_hidden_ini_set();
-index_hidden_session_start();
-index_hidden_appinfo();
-index_hidden_getpost();
-index_hidden_context();
-index_hidden_includes();
-SessionSet('count',SessionGet('count')+1);
-vgfSet('cache_pkey',array('member_profiles'));
+ini_set("allow_url_open",false);
+ini_set("error_reporting",E_ALL);
+ini_set("display_errors",true);
+ini_set("log_errors",true);
+ini_set("short_tag_open",true);
 
-// Valid session with logout request logs out that session
+// ==================================================================
+// >>> 
+// >>> Start session
+// >>> 
+// ==================================================================
+session_start();
+header("Cache-control: private");  
+
+// ==================================================================
+// >>> 
+// >>> Find file of application information
+// >>> 
+// ==================================================================
+@include("appinfo.php");
+if (!isset($AG['application'])) {
+    $AG['application'] = 'andro';
+    $AG['app_desc'] = 'Unknown';
+}
+
+// ==================================================================
+// >>> 
+// >>> Copy the $_POST array and overlay with $_GET
+// >>> 
+// ==================================================================
+$AG['clean']= array();
+$AG['clean']['gp_page'] = '';
+$AG['clean']['gp_action'] = '';
+$AG['clean'] = array_merge($AG['clean'],$_POST,$_GET); 
+
+// >>> 
+// >>> Restore the context (taken from g/p variables)
+// >>> 
+if(!isset($AG['clean']['gpContext'])) {
+    $AG['clean']['gpContext']=array();
+}
+else {
+    if(!isset($AG['clean']['gpContext'])) {
+        $t2=array();
+    }
+    else { 
+        $t2 = base64_decode($AG['clean']['gpContext']);
+        $t2 = gzuncompress($t2);
+        $t2 = unserialize($t2);
+    }
+    $AG['clean']['gpContext'] = $t2;
+}
+
+// ==================================================================
+// >>> 
+// >>> Load the libraries
+// >>> 
+// ==================================================================
+include_once('androLib.php');
+$x=fsDirTop().'application/applib.php';
+if (file_exists($x)) {
+  include_once($x);
+}
+
+// ==================================================================
+// >>> 
+// >>> Up the session hit counter
+// >>> 
+// ==================================================================
+SessionSet('count',SessionGet('count')+1);
+
+// QUESTIONABLE.  Added long time ago and not used by any
+//                live systems.  commented kfd 3/6/08, delete
+//                completely after july 08
+//vgfSet('cache_pkey',array('member_profiles'));
+
+// ==================================================================
+// >>> 
+// >>> Redirections.  QUESTIONABLE PLACEMENT AND APPROACH
+// >>>                Almost definitely should be moved into
+// >>>                index_hidden_page
+// >>> 
+// ==================================================================
+// The parameter 'gp_pageal' means page to go to after a login.
+// Save it now.  Used originally for project cme.
+if(gpExists('gp_pageal')) {
+  SessionSet('clean',array('gp_page'=>gp('gp_pageal')));
+}
+   
+// The parameter 'gp_aftersave' means go to a page after saving
+// information somewhere else.  The program processPost will look
+// for this after saving and do a gpSet() to this value.
+if(gpExists('gp_aftersave')) {
+  SessionSet('gp_aftersave',gp('gp_aftersave'));
+}
+
+// ==================================================================
+// >>> 
+// >>> Determine the User ID, or UID
+// >>> 
+// ==================================================================
+
+// A logout command comes first
 if(gp('st2logout')<>'') {
    SessionReset();
 }
 
-if(gpExists('x_module')) {
-   SessionSet('AGMENU_MODULE',gp('x_module'));
+// This is the only place where we branch out of sequence to 
+// actual page processing, and it is only for logins.
+//
+// Begin with an anonymous connection if no identity.  An expired
+// session will create a new session and return no ID, same as
+// the first visit.
+//
+$uid = SessionGet('UID','');
+if($uid=='') {
+  SessionReset();
+  SessionSet('UID',$AG['application']);
+  SessionSet('PWD',$AG['application']);
 }
-elseif(vgaGet('nomodule')<>'' && SessionGet('AGMENU_MODULE')=='') {
-   SessionSet('AGMENU_MODULE',vgaGet('nomodule'));
-}
-
-index_hidden_redirections();
-index_hidden_uid_determine();
-
-// command line programs now exit, otherwise proceed
-// to routing
-if(!isset($_SERVER['HTTP_HOST'])) return;
-if(isset($force_cli))   return;
-if(isset($header_mode)) return;
-
-index_hidden_routing();
-// ==================================================================
-// MAIN PROCESSOR ROUTINES
-// ==================================================================
-function index_hidden_ini_set() {
-   ini_set("allow_url_open",false);
-   ini_set("error_reporting",E_ALL);
-   ini_set("display_errors",true);
-   ini_set("log_errors",true);
-   ini_set("short_tag_open",true);
-}
-
-function Index_Hidden_Session_Start() {
-   session_start();
-   header("Cache-control: private");  // added at advice of tutorial
-}
-
-function index_hidden_appinfo() {
-   global $AG;
-   @include("appinfo.php");
-   if (!isset($AG['application'])) {
-      $AG['application'] = 'andro';
-      $AG['app_desc'] = 'Unknown';
-   }
-}
-
-function index_hidden_getpost() {
-   global $AG;
-   $AG['clean']= array();
-   $AG['clean']['gp_page'] = '';
-   $AG['clean']['gp_action'] = '';
-
    
-   Index_Hidden_RecurseGP($AG['clean'],$_POST);
-   Index_Hidden_RecurseGP($AG['clean'],$_GET);
+// A direct assignment of uid/pwd must still go through
+// the login system, but it does it in "quiet" mode, not bothering
+// to set up menus or anything like that.
+//
+$directlogin=false;
+if (gp('gp_uid')<>'') {
+  $directlogin=true;
+  $directclean = $AG['clean'];
+  gpSet('loginUID',gp('gp_uid'));
+  gpSet('loginPWD',gp('gp_pwd'));
+  gpSet('gp_posted',1);
+  gpSet('gp_page','x_login');
 }
-
-function index_hidden_recursegp(&$dest,&$src) {
-   foreach($src as $key=>$value) {
-      if(is_array($value)) {
-         $dest[$key]=array();
-         Index_Hidden_RecurseGP($dest[$key],$value);
-      }
-      else {
-         $dest[$key] 
-            =get_magic_quotes_gpc()==1
-            ? stripslashes($value) 
-            : $value;
-      }
-   }
-}
-
-function index_hidden_context() {
-   global $AG;
-   if(!isset($AG['clean']['gpContext'])) {
-      $AG['clean']['gpContext']=array();
-   }
-   else {
-      if(!isset($AG['clean']['gpContext'])) {
-         $t2=array();
-      }
-      else {
-         $t2 = base64_decode($AG['clean']['gpContext']);
-         $t2 = gzuncompress($t2);
-         $t2 = unserialize($t2);
-      }
-      $AG['clean']['gpContext'] = $t2;
-   }
-}
-
-function index_hidden_redirections() {
-   // The parameter 'gp_pageal' means page to go to after a login.
-   // Save it now.  Used originally for project cme.
-   if(gpExists('gp_pageal')) {
-      SessionSet('clean',array('gp_page'=>gp('gp_pageal')));
-   }
    
-   // The parameters 'gp_aftersave' means go to a page after saving
-   // information somewhere else.  The program processPost will look
-   // for this after saving and do a gpSet() to this value.
-   if(gpExists('gp_aftersave')) {
-      SessionSet('gp_aftersave',gp('gp_aftersave'));
-   }
-}
-
-function index_hidden_uid_determine() {
-   global $AG;
-   // This is the only place where we branch out of sequence to 
-   // actual page processing, and it is only for logins.
-   //
-   // Begin with an anonymous connection if no identity.  An expired
-   // session will create a new session and return no ID, same as
-   // the first visit.
-   //
-   $uid = SessionGet('UID','');
-   if($uid=='') {
-      SessionReset();
-      SessionSet('UID',$AG['application']);
-      SessionSet('PWD',$AG['application']);
-   }
-   
-   // A direct assignment of uid/pwd must still go through
-   // the login system, but it does it in "quiet" mode, not bothering
-   // to set up menus or anything like that.
-   //
-   $directlogin=false;
-   if (gp('gp_uid')<>'') {
-      $directlogin=true;
-      $directclean = $AG['clean'];
-      gpSet('loginUID',gp('gp_uid'));
-      gpSet('loginPWD',gp('gp_pwd'));
-      gpSet('gp_posted',1);
-      gpSet('gp_page','x_login');
-   }
-   
-   $gp_page = gp('gp_page');
-   if (gp('gp_page') == 'x_login') {
-      $obj_login = raxTableObject('x_login');
-      $obj_login->directlogin = $directlogin;
-      $obj_login->Login_Process();
-      if(LoggedIn()) {
-         // A direct login restores the "clean" array as it was
-         if($directlogin) {
+$gp_page = gp('gp_page');
+// KFD 3/6/08 Changed login processing from page x_login to
+//            the st2login command
+if (gp('st2login')==1) {
+    $obj_login = raxTableObject('x_login');
+    $obj_login->directlogin = $directlogin;
+    $obj_login->Login_Process();
+    if(LoggedIn()) {
+        // A direct login restores the "clean" array as it was
+        if($directlogin) {
             unset($directclean['gp_uid']);
             unset($directclean['gp_pwd']);
             unset($directclean['loginUID']);
             unset($directclean['loginPWD']);
             $AG['clean']=$directclean;
-         }
-         elseif(count(SessionGet('clean',array()))<>0) {
+        }
+        elseif(count(SessionGet('clean',array()))<>0) {
             // These were a page attempt made w/o being logged in,
             // which is now being ok'd since the user is logged in.
             $GLOBALS['AG']['clean'] = SessionGet('clean');
@@ -204,80 +202,88 @@ function index_hidden_uid_determine() {
             if(vgaGET('POS_SECURITY',false)==true) {
                SessionSet('POS_PAGE',gp('gp_page'),'FW');
             }
-         }
-      }
-   }
+        }
+    }
+}
 
-   // This is an after-the-fact check.  The login is never supposed
-   // to allow logins to "postgres" or any user whose name begins 
-   // with the application code.  If the login system let something
-   // get by, then we trap it here.  We also set the user to anonymous
-   //
-   // Note however that an EXACT match of user_id to application code
-   // is ok, that is the so-called "anonymous" account.  
-   // 
-   $uid=trim(SessionGet('UID'));
-   $app=trim($AG['application']);
-   $uidx=substr($uid,0,strlen($app));
-   if(!trim($uid)==trim($app)) { 
-      if($uid=='postgres' || $uidx == $app) {
-         SessionReset();
-         SessionSet('UID',$app);
-         SessionSet('PWD',$app);
-         fwLogEntry(1002,'Logged in as postgres or group role',$uid);      
-      }
-   }
+// This is an after-the-fact check.  The login is never supposed
+// to allow logins to "postgres" or any user whose name begins 
+// with the application code.  If the login system let something
+// get by, then we trap it here.  We also set the user to anonymous
+//
+// Note however that an EXACT match of user_id to application code
+// is ok, that is the so-called "anonymous" account.  
+// 
+$uid=trim(SessionGet('UID'));
+$app=trim($AG['application']);
+$uidx=substr($uid,0,strlen($app));
+if(!trim($uid)==trim($app)) { 
+    if($uid=='postgres' || $uidx == $app) {
+        SessionReset();
+        SessionSet('UID',$app);
+        SessionSet('PWD',$app);
+        fwLogEntry(1002,'Logged in as postgres or group role',$uid);      
+    }
 }
 
 
-function index_hidden_routing() {
-   //include_once('raxlib-db.php');
+// ==================================================================
+// >>> 
+// >>> Command line programs now exit after loading framework
+// >>> 
+// ==================================================================
+if(!isset($_SERVER['HTTP_HOST'])) return;
+if(isset($force_cli))   return;
+if(isset($header_mode)) return;
 
-   // If making an ajax call and session time out, send to logout
-   if(Count(SessionGet('clean',array()))>0 && gpExists('ajxBUFFER')) {
-      echo '_redirect|?st2logout=1';
-      return;
-   }
-   
-   // If the search flag is set, we need to know what class for this
-   // application handles searchs
-   if(gpExists('gp_search')) {
-      gpSet('gp_page',vgaGet('SEARCH_CLASS'));
-   }
-   
-   // If gp_echo, just echo back.  This is for debugging of course.
-   if(gpExists('gp_echo')) {
-      echo "echo|".gp('gp_echo');
-      return;
-   }
-   
-   // connect and dispatch the request
-   scDBConn_Push();
-      
-   // KFD 6/7/07, make any calls just after db connection
-   if(function_exists('app_after_db_connect')) {
-      app_after_db_connect();
-   }
-   
-   // This one is not exclusive.  Calling a command populates
-   // gp variables to redirect the call
-   if(gpExists('gp_command')) index_hidden_command();
-   
-   if(    gp('ajxFETCH')   =='1') index_hidden_ajxFETCH();
-   // KFD 10/8/07, 2-column foreign key
-   elseif(gp('ajxfSELECT')  <>'') index_hidden_ajxfSELECT();
-   elseif(gp('ajxc1table')  <>'') index_hidden_ajx1ctable();
-   elseif(gp('gp_function') <>'') index_hidden_function();
-   elseif(gp('gp_dropdown') <>'') index_hidden_dropdown();
-   elseif(gp('gp_fetchrow') <>'') index_hidden_fetchrow();
-   elseif(gp('gp_sql')      <>'') index_hidden_sql();
-   elseif(gp('gp_ajaxsql')  <>'') index_hidden_ajaxsql();
-   else                           index_hidden_page();
-   
-   // All finished, disconnect and leave. 
-   scDBConn_Pop();
-   return;
+// ==================================================================
+// >>> 
+// >>> Dispatching, pass execution to the relevant handler
+// >>> 
+// ==================================================================
+
+// If making an ajax call and session time out, send to logout
+if(Count(SessionGet('clean',array()))>0 && gpExists('ajxBUFFER')) {
+    echo '_redirect|?st2logout=1';
+    return;
 }
+
+
+// If gp_echo, just echo back.  This is for debugging of course.
+if(gpExists('gp_echo')) {
+    echo "echo|".gp('gp_echo');
+    return;
+}
+
+// Everything after assumes we need a database connection
+scDBConn_Push();
+  
+// KFD 6/7/07, make any calls just after db connection
+if(function_exists('app_after_db_connect')) {
+    app_after_db_connect();
+}
+
+// Only one path can be chosen, and each path is completely
+// responsible for returning all headers, HTML or anything
+// else it wants to send back.
+if(gpExists('gp_command')) index_hidden_command();
+if(gp('ajxFETCH')   =='1') index_hidden_ajxFETCH();
+if(gp('ajxfSELECT')  <>'') index_hidden_ajxfSELECT();
+if(gp('ajxc1table')  <>'') index_hidden_ajx1ctable();
+if(gp('gp_function') <>'') index_hidden_function();
+if(gp('gp_dropdown') <>'') index_hidden_dropdown();
+if(gp('gp_fetchrow') <>'') index_hidden_fetchrow();
+if(gp('gp_sql')      <>'') index_hidden_sql();
+if(gp('gp_ajaxsql')  <>'') index_hidden_ajaxsql();
+else                       index_hidden_page();
+
+
+// All finished, disconnect and leave. 
+scDBConn_Pop();
+return;
+// ==================================================================
+// DISPATCH DESTINATIONS
+// ==================================================================
 // ------------------------------------------------------------------
 // >> Ajax refresh a select that is 2nd column in foreign key
 // ------------------------------------------------------------------
@@ -708,8 +714,24 @@ function index_hidden_page_mime() {
 // ------------------------------------------------------------------
 function index_hidden_page() {
    global $AG;
-   global $AGOBJ;
    $sessok=!LoggedIn() ? false : true;
+
+    // KFD 3/6/08, moved here from the main stream of index_hidden
+    //             because these are relevant only to page processing
+    if(gpExists('x_module')) {
+       SessionSet('AGMENU_MODULE',gp('x_module'));
+    }
+    elseif(vgaGet('nomodule')<>'' && SessionGet('AGMENU_MODULE')=='') {
+       SessionSet('AGMENU_MODULE',vgaGet('nomodule'));
+    }
+   
+   
+    // If the search flag is set, we need to know what class for this
+    // application handles searchs
+    if(gpExists('gp_search')) {
+        gpSet('gp_page',vgaGet('SEARCH_CLASS'));
+    }
+   
    
    // Load up a list of pages that public users are allowed to see,
    // with home and password always there.
@@ -781,7 +803,6 @@ function index_hidden_page() {
                 else {
                    $gp_page = 'x_welcome';
                 }
-                //$gp_page = $AGOBJ->WelcomePageName();
              }
           }
        }
@@ -1045,1071 +1066,5 @@ function index_hidden_template() {
    }
    
 }
-
-function index_hidden_includes() {
-   include_once('raxlib.php');
-   include_once('raxlib-db.php');
-   // CODE PURGE 7/5/07 KFD
-   //if (substr(phpversion(),0,1)=='4') { 
-   //   include_once('raxlib-php4.php'); 
-   //}
-   $x=fsDirTop().'application/applib.php';
-   if (file_exists($x)) {
-      include_once($x);
-   }
-}
-
-// ==================================================================
-// END OF LIVE CODE, beginning of library
-// ==================================================================
-/**
-name:hprint_r
-parm:any Input
-returns:string HTML_Fragment
-
-Invokes the PHP print_r command, but wraps it in HTML PRE tags so
-it is readable in a browser.
-*/
-function hprint_r($anyvalue) {
-	echo "<pre>\n";
-   print_r($anyvalue);
-	echo "</pre>";
-}
-
-// ------------------------------------------------------------------
-/**
-name:Session Variables
-parent:Framework API Reference
-
-Andromeda provides wrappers for accessing session variables.  The
-PHP superglobal $_SESSION should not be directly accessed, instead
-an Andromeda program should use [[SessionGet]] and [[SessionSet]]. 
-
-Do not use session variables for storing information across different
-requests, such as storing user replies going page-to-page through
-a wizard.  Use [[Context Functions]] or [[Hidden Variables]]
-for these instead, they are much more flexible and robust.
-
-It may happen that you have multiple Andromeda applications on a server,
-and that a browser is connected to more than one of them in multiple
-tabls.  This would result in a collision if you were access $_SESSION
-directly, because each app would overwrite the variables of the others.
-Andromeda prevents these collisions automatically whenever 
-[[SessionGet]] and [[SessionSet]] are used.
-
-Andromeda also prevents collissions between session variables used by
-the framework and those you may put into your application.  All of the
-Session variables accept an optional last parameter (not documented in
-the individual functions)  The default value of this parameter is
-'app', but some framework functions call it with a value of 'fw' to keep
-these variables separate from application variables.  It should be noted
-that sometimes the framework uses application session variables, so that
-the application can find them if necessary.  Examples of this are session
-variables UID (current user_id) and PWD (password of current user).
-
-*/
-
-/**
-name:SessionGet
-parm:string Var_Name
-parm:any Default_Value
-returns:any
-
-This program returns a session variable.  The second parameter 
-is a [[Standard Default Value]] and will be returned if the 
-Session variable Var_Name does not exist.
-
-The framework itself tracks only 2 session variables.  These are UID, which
-is user_id, and PWD, which is user password.  An application must be
-careful not to overwrite those values, as the framework will make no
-provision to prevent such an accident.
-*/
-function SessionGet($key,$default="",$sfx='app') {
-   $xkey=$GLOBALS["AG"]["application"]."_".$sfx."_".$key;
-	if (isset($_SESSION[$xkey])) {
-		return $_SESSION[$xkey];
-	}
-	else return $default;
-}
-
-/**
-name:SessionSet
-parm:string Var_Name
-parm:any Var_Value
-returns:any
-
-This program sets a session variable.  The variable will exist
-as long as the PHP session is alive.
-
-The framework tracks only 2 session variables.  These are UID, which
-is user_id, and PWD, which is user password.  An application must be
-careful not to overwrite those values, as the framework will make no
-provision to prevent such an accident.
-*/
-function SessionSet($key,$value,$sfx='app') {
-   $xkey=$GLOBALS["AG"]["application"]."_".$sfx."_".$key;
-	$_SESSION[$xkey] = $value;
-}
-
-/**
-name:SessionUnSet
-parm:string Var_Name
-returns:void
-
-Destroys the named session variable.
-
-The framework tracks only 2 session variables.  These are UID, which
-is user_id, and PWD, which is user password.  An application should
-never call SessionUnSet on these variables. 
-*/
-function SessionUnSet($key,$context='app',$sfx='app') {
-   $x=$context;
-   $xkey=$GLOBALS["AG"]["application"]."_".$sfx."_".$key;
-	unset($_SESSION[$xkey]);
-}
-
-/**
-name:SessionReset
-returns:void
-
-Destroys all session variables for the current application.  We use this
-instead of PHP session_destroy because it allows a user to be logged in
-to several apps at once, because the framework makes effective sessions
-for each separate application.
-
-Note that this function destroys both application and framework session
-variables, there is more information on what these are on the
-[[Session Variables]] page.
-*/
-function SessionReset() {
-   global $AG;
-   foreach($_SESSION as $key=>$value) {
-      $app = $AG['application'].'_';
-      if (substr($key,0,strlen($app))==$app) {
-         unset($_SESSION[$key]);
-      }
-   }
-}
-
-/* DEPRECATED */
-function SessionUnSet_Prefix($prefix) {
-	$prefix = $GLOBALS["AG"]["application"]."_".$prefix;
-	foreach ($_SESSION as $key=>$value) {
-		if (substr($key,0,strlen($prefix))==$prefix) {
-			unset($_SESSION[$key]);
-		}
-	}
-}
-// ==================================================================
-// ==================================================================
-// Global Variables
-// ==================================================================
-// ==================================================================
-/**
-name:_default_
-parent:Global Variables
-*/
-// ------------------------------------------------------------------
-/**
-name:Global Variables
-parent:Framework API Reference
-
-Andromeda provides some wrapper functions for getting and setting
-framework variables.  The main purpose of these is to allow your
-application to create variables without worrying about name collisions
-with framework global variables.
-
-A global variable is one that exists from the beginning to the end of
-a server request.  Once the HTML has been delivered to the browser, the
-globals are all gone.  If you need to store variables that are
-persistent from request to request, consider using [[Context Variables]].
-
-You can set a Global Variable with [[vgaSet]] and
-retrieve it with [[vgaGet]].
-
-These values can be any valid PHP type.
-
-The framework uses the corresponding functions [[vgfSet]] and
-[[vgfGet]].
-*/
-/* DEPRECATED */
-function ValueSet($key,$value) {
-   echo "Calling Valueset $key <br/>";
-   vgfSet($key,$value);
-   if(!isset($GLOBALS['AG']['values'])) $GLOBALS['AG']['values']=array();
-	$GLOBALS["AG"]["values"][$key] = $value;
-}
-/* DEPRECATED */
-function ValueGet($key) {
-   if(!isset($GLOBALS['AG']['values'])) $GLOBALS['AG']['values']=array();
-	if (isset($GLOBALS["AG"]["values"][$key])) 
-      return $GLOBALS["AG"]["values"][$key];
-	else 
-   	return "";
-}
-/* DEPRECATED */
-function V($key,$value=null) {
-	if (is_null($value)) { return ValueGet($key); }
-	else ValueSet($key,$value);
-}
-
-/**
-name:vgaGet
-parm:string var_name
-parm:string Default_Value
-returns:any
-group:
-
-This function returns a [[Global Variable]].  The second parameter
-names a [[Standard Default Value]] that will be returned if the
-requested variable does not eixst.
-
-You can use [[vgaGet]] and [[vgaSet]] to store and retrieve global
-variables without worrying about naming collisions with the framework.
-*/
-function vgaGet($key,$default='') {
-   return isset($GLOBALS['appdata'][$key])
-      ? $GLOBALS['appdata'][$key]
-      : $default;
-}
-/**
-name:vgaSet
-parm:string var_name
-parm:any var_value
-returns:void
-
-This function sets the value of a global variable.
-The variable will exist during the current request and can be 
-accessed from any scope with the [[vgaGet]] function.
-
-You can use [[vgaGet]] and [[vgaSet]] to store and retrieve global
-variables without worrying about naming collisions with the framework.
-*/
-function vgaSet($key,$value='') {
-   $GLOBALS['appdata'][$key]=$value;
-}
-
-
-/**
-name:vgfGet
-parm:string var_name
-parm:string Default_Value
-returns:any
-group:
-
-This function returns a [[Global Variable]].  The second parameter
-names a [[Standard Default Value]] that will be returned if the
-requested variable does not eixst.
-
-The framework uses [[vgfGet]] and [[vgfSet]] to store and retrieve global
-variables without worrying about naming collisions with an application.
-*/
-function vgfGet($key,$default='') {
-   // hardcopy routines.  Some framework variables are actually
-   // constructed from other things
-   $hc=array('PageTitle');
-   if(in_array($key,$hc)) return vgfGetHC($key,$default);
-   
-   if(isset($GLOBALS['fwdata'][$key])) {
-      return $GLOBALS['fwdata'][$key];
-   }
-   elseif(isset($GLOBALS['AG'][$key])) {
-      return $GLOBALS['AG'][$key];
-   }
-   else {
-      return $default;
-   }
-}
-
-
-function vgfGetHC($key,$default='') {
-   switch($key) {
-      case 'PageTitle':
-         if(vgfGet('UseSubtitle',false)) {
-            return vgfGet('PageSubtitle');
-            break;
-         }
-         else {
-            $repl=Optionget('SITETITLE');
-            $base=$repl=='' ? ValueGet('PageTitle') : $repl;
-            if(vgaGet('PageTitleSuffix')<>'') {
-               $base=trim($base).": ".trim(vgaGet('PageTitleSuffix'));
-            }
-            return $base;
-            break;
-         }
-      default:
-         return $default;
-   }
-}
-
-/**
-name:vgfSet
-parm:string var_name
-parm:any var_value
-returns:void
-
-This function sets the value of a global variable.
-The variable will exist during the current request and can be 
-accessed from any scope with the [[vgfGet]] function.
-
-The framework uses [[vgfGet]] and [[vgfSet]] to store and retrieve global
-variables without worrying about naming collisions with the framework.
-*/
-function vgfSet($key,$value='') {
-    //echo $key." - ".$value;
-    //$a=xdebug_get_function_stack();
-    //hprint_r($a);
-    //echo $key." - ".$value."<br/><br/>";
-   $GLOBALS['fwdata'][$key]=$value;
-}
-// ==================================================================
-// ==================================================================
-// Library Routines: Post/Get processing
-// ==================================================================
-// ==================================================================
-/**
-name:_default_
-parent:GET-POST Variables
-*/
-// ------------------------------------------------------------------
-/**
-name:GET-POST Variables
-parent:Framework API Reference
-
-=Accessing POST and GET Variables=
-
-Andromeda combines the PHP superglobals <span class="syntax10">$_GET</span>
-and <span class="syntax10">$_POST</span> into one array.  The POST variables
-are processed first, and then the GET variables are processed,
-so that a GET will override a POST of the same name.  This feature
-is entirely for the convenience of the programmer so that you do not
-have to distinguish between these two sources.
-
-Unlike many systems, Andromeda does ''not want to sanitize''
-or in any way modify the data that comes in through POST/GET.  
-There are two reasons for this:
-   
-*The sanitation process is different for a browser or a database,
-      and sanitizing for one corrupts for the other.  Therfore we
-      <a href="coding.html#5">Sanitize when Sending</a>.
-*You may need to handle the raw data. 
-
-The "no-sanitization" policy runs counter to the default installation
-   of PHP5.  By default PHP5 has a setting turned on called
-   <a class="phpfunc" href="http://www.php.net/manual/en/ref.info.php#ini.magic-quotes-gpc">magic-quotes-gpc</a> which modifies data.  During the
-   processing of GET-POST Variables, Andromeda detects this setting.
-   If the setting is turned on, Andromeda will pass the data through
-   <a class="phpfunc" href="http://www.php.net/manual/en/function.stripslashes.php">stripslashes()</a> to return it to its original state.
-   However, there is a small chance that this process will not return
-   the exact value originally posted, so if you have a server used
-   exclusively for Andromeda, you should turn off
-   <a class="phpfunc" href="http://www.php.net/manual/en/ref.info.php#ini.magic_quotes_gpc">magic_quotes_gpc</a> in PHP.INI.
-
-=Reading Variables From A Request=
-
-You can pull any value from the current request with the [[gp]] function, 
-which takes as its arguments the variable name.
-
-You can find out if a variable was posted in by passing the variable name to
-the [[gpExists]] function, which returns true or false.
-
-You can capture a family of variables into a [[row array]] with the 
-function [[roowFromGP]], which takes as its single argument a string prefix.
-All variables whose name begins with that prefix will be put into the array 
-that is returned.  The key names will have the prefix itself stripped off.
-
-You can set the value of a posted variable, to make it look to later code as 
-if it came from the browser, with [[gpSet]].  A variable set 
-this way does not go out to the browser, it appears as if it came in on the
-current request.  You can set the value of hidden variables that will go
-back to the browser with the [[Hidden]] function.
-
-=Writing Variables=
-
-You can set the value of a hidden variable that will go out to the browser with
-[[Hidden]] which takes as its arguments a name and a value.  This is not the
-same as using [[gpSet]], because the former puts a value onto the form that
-will be sent to the browser, and therefore returned on the next request, while the
-latter "fakes" the appearance of a variable coming in on the current request.
-
-=Framework Conventions=
-
-The framework generates a lot of its own variables, which follow certain conventions. 
-The framework uses prefixes to group variables together for similar treatment.
-The special prefix for application-specific variables is "ga_", the framework will 
-absolutely never create a form variable with that name prefix.
-
-The conventions in use by the framework are:
-
-*prefix: gp_, control parameters for a page request, such as a table name, 
-     a flag to go to the next page, and so forth.  Never contains user data.
-*subset: gp_dd_, used by the framework to specify drilldown and drillback commands.
-8prefix: gpx_, These appear in every page sent to the browser, and contain 
-     the parameters used to process and generate this HTML.  The gp_* variables
-     that are read and processed at the beginning of a page request are written
-     out at the end of the page request to generate these values.
-*prefix: ga_, <b>reserved for application use</b>.  The framework will never produce
-    variables with this name prefix.
-*prefix: array_, visible user input controls such as HTML INPUT
-        and TEXTAREA controls.
-*prefix: parent_, hidden controls that contain the values of the primary key 
-    of the current row of the current table.
-*variable: gpContext, contains the entire [[window context]].  Serialized and base64'd.
-*variable: gpControls, contains information about the array_* controls
-    Serialized and base64'd.
-
-The following are [[deprecated]] form variable conventions:
-                                           
-*prefix: txt_, deprecated.  Class x_table used these for user input controls.
-*prefix: dd_, deprecated.  Class x_table used these 
-  for drilldown information.
-
-
-*/
-
-
-/**
-function:gp
-parm:string GP_Name
-parm:any GP_Default (optional)
-returns: string
-
-Returns the value of a [[GET-POST Variable]].  
-
-If the variable was not received on the current request, and there is
-no second parameter, gp returns an empty string.
-
-If the variable was not received on the current request, and there is
- a second parameter, gp returns that value.  This makes for convenient
- coding of default values.
-
-<pre class="code">
-$value=gp('user_id','anonymous');
-$value=SQLFC($value);
-$sq="Select option from member_profiles WHERE user_id=$value";
-</pre>
-   
-*/
-function gp($key,$vardefault='') {
-	$post=$GLOBALS["AG"]["clean"];
-	if (!isset($post[$key])) return $vardefault;
-	else return $post[$key];
-}
-
-/**
-name:gpExists
-parm:string GP_Name
-returns:bool
-
-Returns true if the named [[GET-POST Variable]] was sent by the browser
-in the current request.
-*/
-function gpExists($key) {
-	return isset($GLOBALS["AG"]["clean"][$key]);   
-}
-
-/**
-function:hgp
-parm:string GP_Name
-parm:any GP_Default (optional)
-returns:string
-
-Returns the value of a [[GET-POST Variable]], having first sanitized
-it for the browser.
-
-Equivalent to calling [[gp]] and then passing it through
-[[php:htmlentities]].
-*/
-function hgp($key,$default='') {
-   $temp=gp($key,$default);
-   return htmlentities($temp);
-}
-
-
-/**
-name:rowFromGP
-parm:string GP_Prefix
-returns:array Row
-
-Returns a [[Row Array]] taken from a subset of the GET-POST Variables
-sent by the browser.  Only variables that begin with GP_Prefix will
-be returned, and the GP_Prefix will be stripped off of the key.
-
-!>example:Using rowFromGP
-!>php:If an HTML Form contains these controls:
-<input name='txt_control1' value='Foo'>
-<input name='txt_control2' value='bar'>
-!<
-!>php:When the user submits the form, we use rowFromGP
-<?php
-$row=rowFromGP('txt_');
-print_r($row)
-?>
-!<
-!>output:Which will output the following
-control1:control2;Foo:bar
-!<
-!<
-
-*/
-function rowFromgp($prefix) {
-   return aFromgp($prefix);  
-}
-
-
-function removetrailingnewlines($input) {
-   while(substr($input,-1,1)=="\n") {
-      $input=substr($input,0,strlen($input)-1);
-   }
-   return $input;
-}
-
-/* DEPRECATED  (it was named wrong, should have been rowFromGP */
-function aFromgp($prefix) {
-	$strlen = strlen($prefix);
-	$row = array();
-	foreach ($GLOBALS["AG"]["clean"] as $colname=>$colvar) {
-		if (substr($colname,0,$strlen)==$prefix) {
-         $row[substr($colname,$strlen)] = $colvar;
-		}
-	}
-	return $row;
-}
-
-
-/**
-name:gpSet
-parm:string GP_Name
-parm:any NewValue
-
-Sets the value of a GET-POST Variable so that later code sees it
-as if it were passed from the browser.
-
-The return value is not defined.
-
-*/
-function gpSet($key,$value='') {
-	$GLOBALS["AG"]["clean"][$key] = $value;
-}
-
-/**
-name:gpSetFromArray
-parm:string GP_prefix
-parm:array Row
-
-Sets the value of a one or more GET-POST Variables so that later code sees 
-them as if they were passed from the browser. 
-
-One GET-POST Variable will be created for each element in the [[Row array]].
-The name of the variable will be the string concatenation of GP_Prefix
-and the array element's index.  The value will come from the array 
-element's value.
-
-*/
-function gpSetFromArray($prefix,$array) {
-   foreach($array as $key=>$value) {
-      gpSet($prefix.$key,$value);
-   }
-}
-
-/**
-name:gpUnset
-parm:string GP_Name
-
-Destroys a GET-POST Variable so that later code cannot see it, simulating
-the situation where the browser did not send the variable.
-*/
-function gpUnSet($key) {
-	if (isset($GLOBALS["AG"]["clean"][$key])) {
-      unset($GLOBALS["AG"]["clean"][$key]);
-   }
-}
-
-/**
-name:gpUnsetPrefix
-parm:string GP_Prefix
-
-Destroys all GET-POST Variables whose names begin with GP_Prefix,
-so that later code cannot see them, simulating
-the situation where the browser did not send the variables.
-*/
-function gpUnsetPrefix($prefix) {
-   foreach($GLOBALS['AG']['clean'] as $key=>$value) {
-      if(substr($key,0,strlen($prefix))==$prefix) {
-         gpUnset($key);
-      }
-   }
-}
-
-
-
-/**
-name:gpcontrols
-returns:Array Special
-
-Returns an array of information about the user input controls that
-were sent out to the browser and returned by the current request. 
-The structure of the array is:
-
-Array(
-  [0] => Array(
-     't'=> table_id
-     'c'=> column_id
-     'v'=> column_value
-     's'=> skey value
-  ),
-  [1] => ....
-)
- 
-*/
-function gpControls() {
-   return unserialize(base64_decode(gp('gpControls')));
-}
-
-
-/* DEPRECATED */
-function rowFromgpInputs() {
-   return afromgp('txt_');  
-}
-
-/* DEPRECATED */
-/*
-function rowFromgp($table_id) {
-   // First look for gp_skey
-   $skey=CleanGet('gp_skey','',false);
-   $skey=$skey<>'' ? $skey : Cleanget('txt_skey','',false);
-   if($skey<>'') {
-      $sq="SELECT * FROM ".$table_id." WHERE skey=".SQL_Format('numb',$skey);
-      return SQL_OneRow($sq);
-   }
-   
-   // no skey?  Look for the primary key, assume one column
-   $table=DD_TableRef($table_id);
-   $pkcol=$table['pks'];
-   $pkval = CleanGet('gp_'.$pkcol,'',false);
-   $pkval = $pkval<>'' ? $pkval : CleanGet('txt_'.$pkcol,'',false);
-   if($pkval=='') {
-      return false;
-   }
-   $sq="SELECT * FROM ".$table_id." WHERE $pkcol=".SQL_Format('char',$pkval);
-   return SQL_OneRow($sq);
-}
-*/
-
-/**
-name:gpToSession
-flag:framework
-
-This function saves all [[GET-POST Variables]] to the session for
-later retrieval.  It saves them to the session variable "clean".
-They can be retrieved by calling SessionGet('clean').
-
-This function is used by the framework when a user calls for a page
-that requires a login.  This function caches the request until after
-the user has logged in.
-
-There is no stack of user requests.  If this function is called twice
-without retrieving the values, then the second call overwrites the
-first.
-
-There is no function to retrieve the variables.  The framework 
-pulls them directly by calling SessionGet('clean').
-*/
-function gpToSession() {
-   SessionSet('clean',$GLOBALS['AG']['clean']);
-}
-
-// ------------------------------------------------------------------
-// Named stack functions
-// ------------------------------------------------------------------
-/** (SYSTEM) Initialize a Stack
-  *
-  * Initializes a stack for {@link scStackPush} and {@link scStackPop}
-  *
-  * @param $stackname string 
-  * @category miscellaneous utility
-  */
-function _scStackInit($stackname) {
-   if (!isset($GLOBALS['STACK'])) {
-      $GLOBALS['STACK']=array();
-   }
-   if (!isset($GLOBALS['STACK'][$stackname])) {
-      $GLOBALS['STACK'][$stackname]=array();
-   }
-}
-/** Push a value to a named stack
-  * 
-  * Pushes $value to the stack named by $stackname.  The value
-  * can be retrieved with scStackPop.
-  */
-function scStackPush($stackname,$value) {
-   _scStackInit($stackname);
-   $GLOBALS['STACK'][$stackname][] = $value;
-}
-/** Pops a value from a named stack
-  *
-  * Pops the last-added value from a named stack.  Returns
-  * null if the stack is empty, an empty stack does not
-  * throw an error.
-  *
-  */
-function scStackPop($stackname) {
-   _scStackInit($stackname);
-   return array_pop($GLOBALS['STACK'][$stackname]);
-}
-// ------------------------------------------------------------------
-// Routines to assemble return values
-// ------------------------------------------------------------------
-function return_value_add($element,$value) {
-   global $AG;
-   $retvals=ArraySafe($AG,'retvals',array());
-   $retvals[$element]=$value;
-   $GLOBALS['AG']['retvals']=$retvals;
-}
-function retCmd($command,$element,$value) {
-   return_command_add($command,$element,$value);
-}
-function return_command_add($command,$element,$value) {
-   global $AG;
-   $retcommands=ArraySafe($AG,'retcommands',array());
-   $retcommands[$command][$element]=$value;
-   $GLOBALS['AG']['retcommands']=$retcommands;
-}
-
-function returns_as_ajax() {
-   global $AG;
-   $retvals=ArraySafe($AG,'retvals',array());
-   $rv2=array();
-   foreach($retvals as $element=>$value) {
-      $rv2[]=$element.'|'.$value;
-   }
-   $retcommands=ArraySafe($AG,'retcommands',array());
-   foreach($retcommands as $cmd=>$info) {
-      foreach($info as $element=>$value) {
-         $rv2[] = $cmd.'|'.$element.'|'.$value;
-      }
-   }
-   echo implode("|-|",$rv2);
-}
-
-
-
-// ------------------------------------------------------------------
-// Data Dictionary Routines
-// ------------------------------------------------------------------
-function DD_EnsureREf(&$unknown) {
-   if(is_array($unknown)) return $unknown;
-   else return dd_TableRef($unknown);
-}
-function DD_Table($table_id) {
-	include_once("ddtable_".$table_id.".php");
-	return $GLOBALS["AG"]["tables"][$table_id];
-}
-
-/**
-name:ddUserPerm
-parm:string Table_ID
-parm:string Perm_ID
-returns:boolean
-
-This function will tell you if the user is granted a particular permission
-on a particular table.  
-
-The permissions you can request are:
-* sel: May the user select?
-* ins: May the user Insert?
-* upd: May the user Update?
-* del: May the user Delete?
-* menu: Does this person see this on the menu?  To return a true for this
-  permission, the user must have menu permission and SELECT permission. 
-*/
-function ddUserPerm($table_id,$perm_id) {
-   // Menu is done a little differently than the rest
-   if($perm_id=='menu') {
-      // KFD 7/19/07.  This code assumes that tablepermsmenu lists
-      //               both the base table and derived column-security table,
-      //               while tablepermssel lists only the views, go figure.
-      $view_id=DDTable_idresolve($table_id);
-      $pm = in_array($table_id,SessionGet('TABLEPERMSMENU',array()));
-      $ps = in_array($view_id,SessionGet('TABLEPERMSSEL',array()));
-      return $pm && ($ps || SessionGet("ROOT"));
-   }
-   
-   // These are pretty simple
-   $perm_id=strtoupper($perm_id);
-   
-   //$prms=SessionGET('TABLEPERMS'.$perm_id);
-   
-   return in_array($table_id,SessionGET('TABLEPERMS'.$perm_id));
-}
-
-//function D*D_arrBrowseColumns(&$table) {
-//   $table=DD_EnsureRef($table);
-//   $retval=array();
-//   foreach($table['flat'] as $colname=>$colinfo) {
-//      if(DD_ColumnBrowse($colinfo,$table)) {
-//         $retval[$colname]=$colinfo['description'];
-//      }
-//   }
-//   return $retval;
-//}
-function DD_ColumnBrowse(&$col,&$table)
-{
-	if ($col["column_id"]=="skey") return false;
-	if ($col["uino"]=="Y")        return false;
-	if ($col["uisearch"]=="Y")    return true;
-	if ($table["risimple"]=="Y")  return true;
-   return false;
-}
-function DD_TableProperty($table_id,$property) {
-	$table = DD_Tableref($table_id);
-	return $table[$property];	
-}
-function DD_TableDropdown($table_id) {
-	// Get reference to table's data dictionary
-	$table = DD_TableRef($table_id);
-	
-	// Look for a projection called "dropdown".  If
-	// not found, use the list "pks"
-	if (isset($table["projections"]["dropdown"])) {
-		$ret = $table["projections"]["dropdown"];
-	}
-	else {
-		$ret = $table["pks"];
-	}
-	return explode(",",$ret);	
-}
-
-/**
-name:DDTable_IDResolve
-parm:string $table_id
-returns:string $view_id
-
-Accepts the name of a table and returns the appropriate view to
-access based on the user's effective group.
-
-The name of a view is only returned if there is some reason to redirect
-the user to a view.  In very many cases, oftentimes in all cases, the
-function returns the base table name itself, such as:
-
-* If no column or row security is on the table
-* If the user is a root user
-* If the user is the anonymous (login) user
-
-*/
-function DDTable_IDResolve($table_id) {
-    // Both super user and nobody get original table
-    if(SessionGet("ROOT")) {
-      return $table_id;
-    }
-    // KFD 1/23/08.  This probably should never have been here,
-    //     since it would always return an unusable answer.
-    //
-    //if(!LoggedIn()) {
-    //   return $table_id;
-    //}
-    
-    $ddTable=dd_TableRef($table_id);
-    // This is case of nonsense table, give them back original table
-    if(count($ddTable)==0) return $table_id;
-    
-    //echo "permspec is: ".$ddTable['permspec'];
-    $views=ArraySafe($ddTable,'tableresolve',array());
-    if(count($views)==0) 
-        return $table_id;
-    else
-        // KFD 1/23/08.  This code takes advantage of the fact that
-        //   the public user by itself is always the very last
-        //   effective group.  Therefore, if a user is not logged
-        //   in, we will take the very last entry, assuming that it
-        //   gives the answer for somebody who is only in one group.
-        //
-        if(LoggedIn()) {
-           return $views[SessionGet('GROUP_ID_EFF')];
-        }
-        else {
-           return array_pop($views);   
-        }
-}
-
-/**
-name:DD_ColInsertsOK
-parm:$colinfo
-parm:$mode='html'
-returns:bool
-
-Accepts an array of dictionary information about a column and
-then works out if inserts are allowed to that column.  Useful for
-disabling HTML controls.
-
-The optional 2nd parameter defaults to "html" but can also be "db".
-If it is "html" it tells you if the user should be allowed to 
-specify a value, while the value of "db" determines if a SQL Insert
-should be allowed to specify a value for this column.
-
-*/
-function DD_ColInsertsOK(&$colinfo,$mode='html') {
-   // If in a drilldown, any parent column is read-only
-   if(DrillDownLevel()>0 & $mode=='html') {
-      $dd=DrillDownTop();
-      if(isset($dd['parent'][$colinfo['column_id']])) return false;
-   }
-	$aid = strtolower(trim($colinfo["automation_id"]));
-	return in_array($aid,
-      array('seqdefault','fetchdef','default'
-          ,'blank','none','','synch'
-          ,'queuepos','dominant'
-      )
-   );
-}
-
-function DD_ColUpdatesOK(&$colinfo) {
-    // KFD 10/22/07, allow changes to primary key
-    if($colinfo['primary_key']=='Y') {
-        if(ArraySafe($colinfo,'pk_change','N')=='Y')
-            return true;
-        else 
-            return false;
-    }
-    if(DrillDownLevel()>0) {
-        $dd=DrillDownTop();
-        if(isset($dd['parent'][$colinfo['column_id']])) return false;
-    }
-    $aid = strtolower(trim($colinfo["automation_id"]));
-    if($aid=='') return true;
-    $automations=array('seqdefault','fetchdef','default'
-        ,'blank','none','','synch'
-        ,'queuepos','dominant'
-    );
-    return in_array($aid,$automations);
-}
-
-function DDColumnWritable(&$colinfo,$gpmode,$value) {
-   $NEVERUSED=$value;
-   // If neither update or ins we don't know, just say ok
-   if($gpmode <> 'ins' && $gpmode <> 'upd') return true;
-      
-   // Look for explicit settings in the dd arrays
-   if(ArraySafe($colinfo,'upd','')=='N' && $gpmode=='upd') return false;
-   if(ArraySafe($colinfo,'ins','')=='N' && $gpmode=='ins') return false;
-   
-   // so much for the exceptions, now just go for normal answer
-   if ($gpmode=='ins') return DD_ColInsertsOK($colinfo);
-   else return DD_ColUpdatesOK($colinfo);
-}
-
-/**
-name:dd_tableref
-parm:string table_id
-returns:array Table_data_dictionary
-
-Loads the data dictionary for a given table and returns a reference.
-*/
-function DD_TableRef($table_id) {
-	if (!isset($GLOBALS["AG"]["tables"][$table_id])) {
-      $file=fsDirTop()."generated/ddtable_".$table_id.".php";
-      if(!file_exists($file)) {
-         return array(); 
-      }
-      else {
-         include($file);
-      }
-   }
-   $retval=&$GLOBALS["AG"]["tables"][$table_id];
-   return $retval;
-}
-
-// ------------------------------------------------------------------
-// File system functions
-// ------------------------------------------------------------------
-/**
-name:fsDirTop
-returns:string Directory Path
-
-This function returns the path to the application's
-[[top directory]].  All other directories, such as the
-[[lib directory]] and the [[application directory]] are all
-directly below the [[top directory]].
-
-The return value already contains a trailing slash.
-*/
-function fsDirTop() {
-   return $GLOBALS['AG']['dirs']['root'];  
-}
-
-// ------------------------------------------------------------------
-// Generic Language Extensions
-// ------------------------------------------------------------------
-/**
-name:ArraySafe
-parm:Array Candidate_Array
-parm:string Array_Key
-parm:any Default_value
-
-Allows you to safely retrieve the value of an array by index value,
-returning a [[Standard Default Value]] if the key does not exist.
-*/
-function ArraySafe(&$arr,$key,$value="") {
-	if(isset($arr[$key])) return $arr[$key]; else return $value; 
-}
-
-// ------------------------------------------------------------------
-// PHP functions that mimic Javascript DOM functions
-// ------------------------------------------------------------------
-/**
-name:createElement
-parm:type
-
-Allows you to safely retrieve the value of an array by index value,
-returning a [[Standard Default Value]] if the key does not exist.
-*/
-function createElement($type) {
-	 return new androHElement($type);
-}
-
-class androHElement {
-    var $style = array();
-    var $atts  = array();
-    
-    function androHElement($type) {
-        $this->type = $type;
-        $this->children = array();
-        $this->atts = array();
-        $this->innerHTML = '';
-    }
-    
-    function appendChild($object) {
-        $this->children[] = $object;
-    }
-    
-    function render($indent=0) {
-        $hIndent = str_pad('',$indent*3);
-        
-        $retval="\n$hIndent<".$this->type;
-        
-        // Do style attributes
-        $hstyle = '';
-        foreach($this->style as $stylename=>$value) {
-            $hstyle.="$stylename: $value;";
-        }
-        if($hstyle<>'') {
-            $this->atts['style'] = $hstyle;
-        }
-        // Now output the attributes
-        foreach($this->atts as $name=>$value) {
-            $retval.=" $name = \"$value\"";
-        }
-        $retval.=">";
-        foreach($this->children as $onechild) {
-            $retval.=$onechild->render($indent+1);
-        }
-        $retval.=$this->innerHTML;
-        $retval.="\n$hIndent</".$this->type.">";
-        return $retval;
-    }
-}
-
-
 
 ?>
