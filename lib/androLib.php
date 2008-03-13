@@ -8881,20 +8881,32 @@ function ahColFromACol(&$acol) {
       $acol['html_inner']=$hinner;
       break;
    case 'cbool':
-      $acol['html_element']='select';
-      $prefix=$acol['mode']=='search' ? '<option value=""></option>' : '';
-      $acol['html_inner']
-         =$prefix
-         ."\n<option --SELECTED-Y-- value='Y'>Y</option>"
-         ."<option --SELECTED-N-- value='N'>N</option>";
+      // DO 3-7-2008  Added if statement so that when column level security is present 
+      //              changes to field can be "disabled"
+      if ( !$acol['writable'] ) {   
+              $acol['html_element']='input';
+      } else {
+              $acol['html_element']='select';
+              $prefix=$acol['mode']=='search' ? '<option value=""></option>' : '';
+              $acol['html_inner']
+                 =$prefix
+                 ."\n<option --SELECTED-Y-- value='Y'>Y</option>"
+                 ."<option --SELECTED-N-- value='N'>N</option>";
+      }
       break;
    case 'gender':
-      $acol['html_element']='select';
-      $prefix=$acol['mode']=='search' ? '<option value=""></option>' : '';
-      $acol['html_inner']
-         =$prefix
-         ."\n<option value='M'>M</option>"
-         ."<option value='F'>F</option>";
+      // DO 3-7-2008  Added if statement so that when column level security is present 
+      //              changes to field can be "disabled"
+      if ( !$acol['writable'] ) {
+          $acol['html_element']='input';
+      } else {
+          $acol['html_element']='select';
+          $prefix=$acol['mode']=='search' ? '<option value=""></option>' : '';
+          $acol['html_inner']
+             =$prefix
+             ."\n<option value='M'>M</option>"
+             ."<option value='F'>F</option>";
+      }
       break;
    case 'text':
       $acol['html_element']='textarea';
