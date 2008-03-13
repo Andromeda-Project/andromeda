@@ -925,9 +925,12 @@ function index_hidden_page() {
    if(file_exists($dir.$gp_page.".page.yaml")){
        include 'androPage.php';
        $obj_page = new androPage();
-       ob_start();
+       if ($obj_page->flag_buffer) { ob_start(); }
        $obj_page->main($gp_page);
-       vgfSet("HTML",ob_get_clean());
+       if ($obj_page->flag_buffer) {
+               vgfSet("HTML",ob_get_clean());
+               ob_end_clean();
+       }
        vgfSet("PageSubtitle",$obj_page->PageSubtitle);
    }
    else {

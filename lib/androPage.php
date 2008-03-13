@@ -97,6 +97,9 @@ class androPage {
                     ArraySafe($filters[$id],'description',$flat['description']);
             }
         }
+        if ( ArraySafe( $this->yamlP2['options'], 'buffer', 'Y' ) == 'N' ) {
+                $this->flag_buffer = false;
+        }
         
         // Check to see if nofilter option is set
         if ( ArraySafe( $this->yamlP2['options'], 'nofilter') != '' ) {
