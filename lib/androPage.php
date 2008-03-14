@@ -379,9 +379,13 @@ class androPage {
         // Collapse the lists into strings
         $SQL_COLS=implode("\n       ,",$SQL_COLSA);
         $SQL_COLSOB='';
-        if(count($SQL_COLSOBA)>0) {
-            ksort($SQL_COLSOBA);
-            $SQL_COLSOB="\n ORDER BY ".implode(',',$SQL_COLSOBA);
+        if ( isset( $yamlP2['orderby'] ) ) {
+                $SQL_COLSOB="\n ORDER BY " .$yamlP2['orderby'];
+        } else {
+                if(count($SQL_COLSOBA)>0) {
+                    ksort($SQL_COLSOBA);
+                    $SQL_COLSOB="\n ORDER BY ".implode(',',$SQL_COLSOBA);
+                }
         }
         
         // For the UI Filter values, add in the values provided by the user
