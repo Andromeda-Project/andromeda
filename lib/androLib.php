@@ -4351,6 +4351,18 @@ function ArrayKeyAndValue(&$arr,$colkey,$colvalue) {
    }
 	return $retval;
 }
+
+// returns a number-indexed array of values from the
+// numbered "column" in an rows array
+// 
+function arrFromColumn($arr,$index=0) {
+    $retval = array();
+    foreach($arr as $row) {
+        $retval[] = $row[$index];
+    }
+    return $retval;
+}
+
 /**
 name:arrofArrays
 parm:array Keys
@@ -9575,12 +9587,52 @@ function characterData($parser, $data) {
     endElement($parser,null);
 }
 
-function cssInclude($file) {
-    // This program echos out immediately
-    ?>
-    <link rel='stylesheet' href='/<?=tmpPathInsert().$file?>' />
-    <?php
+function cssInclude($file,$force_immediate=false) {
+    // This program echos out immediately if not in debug
+    // mode, otherwise they all get output as one
+    if(OptionGet('DEBUG','N')=='Y' || $force_immediate) {
+    //if(true) {
+        ?>
+        <link rel='stylesheet' href='/<?=tmpPathInsert().$file?>' />
+        <?php
+    }
+    else {
+        $css = vgfGet('cssIncludes',array());
+        $css[]=$file;
+        vgfSet('cssIncludes',$css);
+    }
 }
+
+function cssOutput() {
+    // Get the array of files to output and combine
+    $css = vgfGet('cssIncludes',array());
+    if( count($css)==0 ) return;
+    
+    // To do a combo output, make up a filename, generate
+    // the combinations, and create a link
+    //
+    $list = implode('|',$css);
+    $md5  = substr(md5($list),0,15);
+    $file = fsDirTop()."/clib/css-min-$md5.css";
+    
+    if(!file_exists($file)) {
+        $string = '';
+        foreach($css as $cssone) {
+            $string.="\n/* FILE: $cssone */\n";
+            $string.=file_get_contents( fsDirTop().$cssone );
+        }
+        file_put_contents($file,$string);
+    }
+
+    // Finally, put out the file
+    ?>
+    <link rel='stylesheet'
+         href='/<?=tmpPathInsert()."clib/css-min-$md5.css"?>' />
+    <?php    
+}
+
+
+
 
 function jsInclude( $file, $comments='',$immediate=false ) {
     if($immediate) {
@@ -10440,7 +10492,7 @@ function SQLX_Insert($table,$colvals,$rewrite_skey=true,$clip=false) {
 	}
    
    // Possibly cache the row
-   $cache_pkey0=vgfget('cache_pkey');
+   $cache_pkey0=vgfget('cache_pkey',array());
    $cache_pkey=array_flip($cache_pkey0);
    if(isset($cache_pkey[$table_id])) {
       CacheRowPut($table,$colvals);
