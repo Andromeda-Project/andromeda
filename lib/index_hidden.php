@@ -1031,20 +1031,34 @@ function index_hidden_template() {
              else {
                 // At this point nobody has told us what to do, pick the
                 // first template we can find.
+                
+                // Big change by KFD 3/15/08  If we do not know what
+                // template to use, prefer to pick rt_pixel, our 
+                // default template, unless we find another one.
+                // In that case we assume that template is there for
+                // a reason and we use it.
                 $dir = $AG['dirs']['root'].'templates/';
                 $DIR = opendir($dir);
+                $rt_pixel = false;
                 while (false!==($filename = readdir($DIR))) {
                    if ($filename=='.')  continue;
                    if ($filename=='..') continue;
                    if ($filename=='andro_classic') continue;
+                   if ($filename=='x4') continue;
                    // DO 2-1-2008 Added to ignore SVN directory
                    if ($filename=='.svn') continue;
+                   if ($filename=='rt_pixel') $rt_pixel = true; 
                    if (is_dir($dir.$filename)) {
                       SessionSet('TEMPLATE',scFileName($filename));
                       break;
                    }
                 }
                 closedir($DIR);
+                // Here is where we pick rt_pixel if we could not
+                // find anything else
+                if($rt_pixel && SessionGet('TEMPLATE','')=='') {
+                    SessionSet('TEMPLATE',$rt_pixel);
+                }
              }
           }
        }
