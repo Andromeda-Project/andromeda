@@ -41,10 +41,20 @@ require($mosConfig_absolute_path."/templates/" . $mainframe->getTemplate() . "/r
 ?>
 <meta http-equiv="Content-Type" content="text/html; <?php echo _ISO; ?>" />
 <link rel="alternate" type="application/rss+xml" title="RSS" href="<?php echo $mosConfig_live_site;?>/index.php?option=com_rss&amp;feed=RSS2.0&amp;no_html=1" />
+<?php 
+// KFD 3/14/08, switch these to using cssInclude();
+cssInclude('templates/'.$mainframe->getTemplate().'/css/template_css.css');
+cssInclude('templates/'.$mainframe->getTemplate().'/css/'.$contraststyle.'.css',true);
+cssInclude('templates/'.$mainframe->getTemplate().'/css/'.$colorstyle.'.css');
+cssInclude('templates/'.$mainframe->getTemplate().'/css/suckerfish.css');
+
+/*
 <link href="<?php echo $mosConfig_live_site;?>/templates/<?php echo $mainframe->getTemplate(); ?>/css/template_css.css" rel="stylesheet" type="text/css" />
 <link href="<?php echo $mosConfig_live_site;?>/templates/<?php echo $mainframe->getTemplate(); ?>/css/<?php echo $contraststyle; ?>.css" rel="stylesheet" type="text/css" />
 <link href="<?php echo $mosConfig_live_site;?>/templates/<?php echo $mainframe->getTemplate(); ?>/css/<?php echo $colorstyle; ?>.css" rel="stylesheet" type="text/css" />
 <link href="<?php echo $mosConfig_live_site;?>/templates/<?php echo $mainframe->getTemplate(); ?>/css/suckerfish.css" rel="stylesheet" type="text/css" />
+*/
+?>
 <!--[if lte IE 6]>
 <link href="<?php echo $mosConfig_live_site;?>/templates/<?php echo $mainframe->getTemplate(); ?>/css/template_ie.css" rel="stylesheet" type="text/css" />
 <![endif]-->
@@ -53,12 +63,14 @@ require($mosConfig_absolute_path."/templates/" . $mainframe->getTemplate() . "/r
 <!-- Andromeda Changes -->
 <!-- ================= -->
 <?php
-if(defined("_ANDROMEDA_JOOMLA")) { 
-   include("raxlib-htmlhead.php");   
+cssInclude('templates/'.$mainframe->getTemplate().'/css/x2-'.$colorstyle.'.css');  
+cssInclude('templates/'.$mainframe->getTemplate().'/css/x2-'.$contraststyle.'.css');
+include("raxlib-htmlhead.php");
+/*
 ?>
 <link href="<?php echo $mosConfig_live_site.'/templates/'.$mainframe->getTemplate().'/css/x2-'.$colorstyle.'.css'?>" rel="stylesheet" type="text/css" />
 <link href="<?php echo $mosConfig_live_site.'/templates/'.$mainframe->getTemplate().'/css/x2-'.$contraststyle.'.css'?>" rel="stylesheet" type="text/css" />
-<?php } ?>
+<?php */ ?>
 <!-- ======================= -->
 <!-- Andromeda Changes (END) -->
 <!-- ======================= -->
