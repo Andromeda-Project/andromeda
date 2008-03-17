@@ -488,6 +488,7 @@ content automations {
     values { SYNCH      ; Synchronize Parent/Child; }
     values { QUEUEPOS   ; Enforces unique Queue Position; }
     values { DOMINANT   ; Only one row can have value Y; }
+    values { FETCH_DOM;    Pull value from Dominant child row; }
     values { UID_UPD_PG ; Update User ignoring postgres }
     values { TS_UPD_PG ; Update Timestamp ignoring postgres }
 }

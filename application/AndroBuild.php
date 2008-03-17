@@ -307,7 +307,6 @@ language plperlu
 // ==========================================================
 function SP_Load() {
 	global $parm;
-   $file = 'AndroDBB.sp.pgsql.7.4.sql';
 	$retval = true;
 	$this->LogEntry("");
 	$this->LogEntry("Loading server-side code to use during build");
@@ -3689,6 +3688,7 @@ function SpecDDL_Triggers_Automated() {
     $retval = $retval && $this->SpecDDL_Triggers_Automated_Aggregate();
     $retval = $retval && $this->specddl_triggers_automated_queuepos();
     $retval = $retval && $this->specddl_triggers_automated_dominant();
+    $retval = $retval && $this->specddl_triggers_automated_dominant_agg();
     return $retval;	
 }
 
@@ -4404,6 +4404,82 @@ function SpecDDL_Triggers_Automated_Dominant()  {
     }
     return true;
 }
+
+function SpecDDL_Triggers_Automated_Dominant_agg()  {
+    
+    // Pull any column with DOMINANT automation
+    $results = $this->SQLREAD(
+        "Select table_id,column_id,auto_formula FROM zdd.tabflat_c".
+        " WHERE automation_id = 'FETCH_DOM'"
+    );
+    $qps = pg_fetch_all($results);
+    if(!is_array($qps)) return true;
+    
+    // Split out into combinations of parent/child tables
+    $ads = array();
+    foreach($qps as $qp) {
+        list($tab_chd,$col_chd) = explode('.',$qp['auto_formula']);
+        $ads[$tab_chd][$qp['table_id']][] = array(
+            'col_chd'=>$col_chd,'col_par'=>$qp['column_id']
+        );
+    }
+
+    // Now get a list of the dominant flag columns for each pair
+    $results = $this->SQLREAD(
+            "Select table_id as tab_chd,auto_formula as tab_par
+                   ,column_id
+               FROM zdd.tabflat_c
+              WHERE automation_id = 'DOMINANT'"
+    );
+    $qps  = pg_fetch_all($results);
+    $doms = array();
+    foreach($qps as $qp) {
+        $dom[trim($qp['tab_chd'])][trim($qp['tab_par'])] = $qp['column_id'];
+    }
+    
+    
+    // Now process sets of commands for each child-> parent combination
+    //
+    foreach($ads as $tab_chd=>$adss1) {
+        foreach($adss1 as $tab_par=>$adss2) {
+            // Now convert the pairs into SQL comparisons
+            foreach($adss2 as $adss3) {
+                $col_chd = $adss3['col_chd'];
+                $col_par = $adss3['col_par'];
+                $pairs[] = "$col_par = new.$col_chd";
+            }
+            
+            // Get the SQL Match
+            $match = $this->ufks[$tab_chd.'_'.$tab_par.'_']['cols_match'];
+            $match = str_replace('chd.','new.'     ,$match);
+            $match = str_replace('par.',"$tab_par.",$match);
+            $SWhere = $match;
+            
+            // Fetch the dominant column
+            $col_dom = $dom[$tab_chd][$tab_par];
+            
+            // Create the insert....
+            $sq="\n"
+                ."    --- 4001 AGGREGATE DOMINANT upsaves\n"
+                ."    IF new.$col_dom = ##Y## THEN\n"
+                ."        UPDATE $tab_par SET ".implode("\n              ,",$pairs)."\n"
+                ."         WHERE $SWhere; \n"
+                ."    END IF;\n";
+            $this->SpecDDL_TriggerFragment($tab_chd,"INSERT","AFTER" ,"4002",$sq);
+
+            // Create the update...
+            $sq="\n"
+                ."    --- 4001 AGGREGATE DOMINANT upsaves\n"
+                ."    IF new.$col_dom = ##Y## AND old.$col_dom = ##N## THEN\n"
+                ."        UPDATE $tab_par SET ".implode("\n              ,",$pairs)."\n"
+                ."         WHERE $SWhere; \n"
+                ."    END IF;\n";
+            $this->SpecDDL_TriggerFragment($tab_chd,"UPDATE","AFTER" ,"4001",$sq);
+        }
+    }
+    return true;
+}
+
 
 function SpecDDL_Triggers_ColConsTypes()  {
 	$this->LogEntry("Building Type-based column constraints");
@@ -8532,11 +8608,20 @@ function FS_PrepareMake() {
             foreach($jsfiles as $jsfile) {
                 if($jsfile=='.') continue;
                 if($jsfile=='..') continue;
-                if(substr($jsfile,-3)<>'.js') continue;
-                if(substr($jsfile,0,7)<>'js-min-') continue;
-                $jsfile2 = "$dir_pubx$tgt/$jsfile";
-                $this->LogENtry("Deleting minified file: ".$jsfile2);
-                unlink($jsfile2);
+                if(substr($jsfile,-3)=='.js') { 
+                    if(substr($jsfile,0,7)=='js-min-') {
+                        $jsfile2 = "$dir_pubx$tgt/$jsfile";
+                        $this->LogENtry("Deleting minified file: ".$jsfile2);
+                        unlink($jsfile2);
+                    }
+                }
+                if(substr($jsfile,-4)=='.css') { 
+                    if(substr($jsfile,0,8)=='css-min-') {
+                        $jsfile2 = "$dir_pubx$tgt/$jsfile";
+                        $this->LogENtry("Deleting css combo file: ".$jsfile2);
+                        unlink($jsfile2);
+                    }
+                }
             }
         }
       
