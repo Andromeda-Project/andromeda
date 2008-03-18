@@ -454,6 +454,7 @@ function SaveAndPost(varname,varvalue) {
 	ob(varname).value = varvalue;
 	formSubmit();
 }
+var ajaxTM=0;
 function formPostAjax(stringparms) {
    var ajaxTMold=ajaxTM;
    ajaxTM=1;
