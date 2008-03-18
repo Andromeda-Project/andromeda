@@ -401,6 +401,8 @@ table.outer td.left {
 table.outer td.middle {
 	border-width:  6px 6px 0 6px;
 	border-style:  solid;
+	height:270px;
+	min-height:270px;
 }
 
 table.outer td.right {
