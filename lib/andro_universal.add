@@ -289,6 +289,17 @@ table users {
    index email { idx_unique: Y; column { email; }}
 }
 
+//menu impersonate {
+//    module: usermaint;
+//    nomenu: Y;
+//    permsel: N;
+//    description: Impersonate User;
+//    group usermaint {
+//        nomenu: N;
+//        permsel: Y;
+//    }
+//}
+
 //  TABLE: Cross-reference users to node groups
 //
 table usersxgroups {
