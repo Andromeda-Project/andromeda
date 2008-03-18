@@ -256,6 +256,9 @@ if(gpExists('gp_echo')) {
 }
 
 // Everything after assumes we need a database connection
+// KFD 3/18/08 If a user has passed in an "impersonation" 
+// user_id, save that in the session
+if(gpExists('gpimp')) SessionSet('UID_IMPERSONATE',gp('gpimp'));
 scDBConn_Push();
   
 // KFD 6/7/07, make any calls just after db connection
