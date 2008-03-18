@@ -34,7 +34,7 @@
 	Feb 16 2005  Created, outlined, drafted
    ================================================================== 
 */
-class x_table_x_email extends x_table {
+class x_table_x_email extends x_table2 {
 	
 	function main() {
 		$this->PageSubtitle="Send a Test Email";
