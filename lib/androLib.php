@@ -4358,7 +4358,7 @@ function ArrayKeyAndValue(&$arr,$colkey,$colvalue) {
 function arrFromColumn($arr,$index=0) {
     $retval = array();
     foreach($arr as $row) {
-        $retval[] = $row[$index];
+        $retval[] = trim($row[$index]);
     }
     return $retval;
 }
@@ -5852,6 +5852,15 @@ function scFileName($filespec) {
    else {
       return '';
    }
+}
+
+function scBaseName($filespec) {
+    $filename = scFileName($filespec);
+    $list = explode(".",$filename);
+    if(count($list)>1) {
+        array_pop($list);
+    }
+    return implode(".",$list);
 }
 
 function scFileExt($filespec) {
@@ -9781,6 +9790,11 @@ function scDBConn_Push($role='',$db='') {
    
    // Now make a connection
    $GLOBALS['dbconn'] = SQL_Conn($uid,$pwd,$db);
+   
+   // If the "impersonate" function is there, go with it
+   if(SessionGET("UID_IMPERSONATE")<>'') {
+       SQL("SET SESSION AUTHORIZATION ".SessionGet("UID_IMPERSONATE"));
+   }
 }
 
 
