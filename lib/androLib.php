@@ -5943,6 +5943,22 @@ function X_UNIX_TO_SQLDATE($dt,$skipquotes=false) {
 function OptionGet($varname,$default='') {
    return Option_Get($varname,$default);
 }
+
+function getRegexOptionVal( $matches ) {
+        
+        //return OptionGet( $matches[1] );
+        $query = "SELECT * FROM variables WHERE variable='" .$matches[1] ."'";
+        $result = SQL_OneRow( $query );
+        $ret = ''; 
+        if ( count( $result ) > 0 ) {
+                $ret = preg_replace_callback( "/%%(.+?)%%/"
+                        ,"getRegexOptionVal",
+                        $result['variable_value']
+                );
+        }
+        return $ret;
+}
+
 function Option_Get($varname,$default='') {
     if($varname=='X') {
         unlink($GLOBALS['AG']['dirs']['dynamic'].'table_variables.php');
@@ -5953,7 +5969,10 @@ function Option_Get($varname,$default='') {
       $rows=SQL_AllRows("select * from variables");
       $cache=array();
       foreach($rows as $row) {
-         $cache[$row['variable']]=$row['variable_value'];
+         $line = preg_replace_callback( "/%%(.+?)%%/"
+             ,"getRegexOptionVal"
+             ,$row['variable_value'] );
+         $cache[$row['variable']]=$line;
       }
       fsFileFromArray(
          'table_variables.php'
