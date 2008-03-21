@@ -1115,6 +1115,7 @@ class x_table2 {
       //}
       $acols=aColsModeProj($this->table,'ins','_uisearch');
       $ahcols=aHColsfromACols($acols,$prefilled);
+      
       $name_prefix='gp_onscreen_'.$table_id.'_';
       $xh=hDetailFromAHCols(
          $ahcols,$name_prefix,500,'tds'
