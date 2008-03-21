@@ -2,6 +2,22 @@
 // Output the command to load javascript
 jsOutput();
 
+// Output any JQuery document ready stuff
+$jqueryDocumentReady = ElementImplode('jqueryDocumentReady');
+if($jqueryDocumentReady<>'') {
+    ?>
+    <script type="text/javascript">
+    $(document).ready(function() {
+    <?=$jqueryDocumentReady?>
+    });
+    </script>
+    <?php
+}
+
+
+return;
+
+
 // Script goes out at absolute end, after <html> element is closed
 if (vgfGet("HTML_focus")=="") {
    // This is used only in the default Andromeda template, you need to
