@@ -531,7 +531,10 @@ var x4SYJOH = {
         // Here is the basic heresy.  We go into a loop 
         // with no way to prevent burning CPU cycles.  The 
         // obvious assumption here is that the call will succeed
+        var xtimeout=0
         while(x4http.readyState != 4) {
+            xtimeout++;
+            if(xtimeout>100) return;
             // Gosh, I sure wish Javascript had some kind of
             // Sleep() function, I would do sleep(100) here
         }
