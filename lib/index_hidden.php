@@ -932,7 +932,7 @@ function index_hidden_page() {
        $obj_page->main($gp_page);
        if ($obj_page->flag_buffer) {
                vgfSet("HTML",ob_get_clean());
-               ob_end_clean();
+               //ob_end_clean();
        }
        vgfSet("PageSubtitle",$obj_page->PageSubtitle);
    }
