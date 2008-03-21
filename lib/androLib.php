@@ -20,10 +20,6 @@
    Boston, MA  02110-1301  USA 
    or visit http://www.gnu.org/licenses/gpl.html
 \* ================================================================== */
-
-// ==================================================================
-// END OF LIVE CODE, beginning of library
-// ==================================================================
 /**
 name:hprint_r
 parm:any Input
@@ -5032,6 +5028,10 @@ function Element($type) {
    if(!isset($AG[$type])) return false;
 	if (count($AG[$type])>0) return true; else return false; 
 }
+function ElementImplode($type,$implode="\n") {
+    if(!isset($GLOBALS['AG'][$type])) return '';
+    else return implode($implode,$GLOBALS['AG'][$type]);
+}
 function ElementOut($type,$dohtml=false) {
 	global $AG;
 
@@ -8870,6 +8870,16 @@ function ahColFromACol(&$acol) {
       ,'x_value_focus'=>''
       ,'x_type_id'=>$acol['type_id']
    );
+   
+   $TOOLTIPS = OptionGet('TOOLTIPS','N');
+   switch($TOOLTIPS) {
+   case 'JQUERY_ALSO':
+       $acol['hparms']['title'] = $acol['hparms']['tooltip'];
+       break;
+   case 'JQUERY_ONLY':
+       $acol['hparms']['title'] = $acol['hparms']['tooltip'];
+       unset($acol['hparms']['tooltip']);
+   }
 
    // For read-onlies, add another class      
    if(!$acol['writable']) {
@@ -9165,6 +9175,29 @@ function aColsModeProj(&$table,$mode,$projection='') {
       // KFD 3/1/08, correction for column security
       if(ArraySafe($table['flat'][$column_id],'securero')=='Y' && $mode <> 'search') {
           $cols3[$column_id]['writable'] = false;
+      }
+      
+      // KFD 3/21/08, add in a calculated tooltip, if option is set
+      if(ArraySafe($table['flat'][$column_id],'tooltip')=='') {
+          $tooltip = '';
+          $aid = trim($table['flat'][$column_id]['auto_formula']);
+          switch(trim($table['flat'][$column_id]['automation_id'])) {
+          case 'SEQUENCE':
+              $tooltip="This value is automatically generated";
+              break;
+          case 'SUM':
+              $tooltip = "This value is the calculated sum of ".$aid;
+              break;
+          case 'MAX':
+              $tooltip = "This value is the calculated minimum from ".$aid;
+              break;
+          case 'MIN':
+              $tooltip = "This value is the calculated minimum from ".$aid;
+              break;
+          }
+          if($tooltip <> '') {
+              $cols3[$column_id]['tooltip'] = $tooltip;
+          }
       }
    }
    
@@ -9618,8 +9651,7 @@ function characterData($parser, $data) {
 function cssInclude($file,$force_immediate=false) {
     // This program echos out immediately if not in debug
     // mode, otherwise they all get output as one
-    if(OptionGet('DEBUG','N')=='Y' || $force_immediate) {
-    //if(true) {
+    if(OptionGet('JS_CSS_DEBUG','Y')=='Y' || $force_immediate) {
         ?>
         <link rel='stylesheet' href='/<?=tmpPathInsert().$file?>' />
         <?php
@@ -9689,7 +9721,7 @@ function jsOutput() {
     // Loop through each file and either add it to list of 
     // files to minify or output it directly
     foreach($ajs as $js) {
-        if(OptionGet('DEBUG','Y')=='N') {
+        if(OptionGet('JS_CSS_DEBUG','Y')=='N') {
             $aj[] = $js['file'];
             if($js['comments']<>'') {
                 ?>
