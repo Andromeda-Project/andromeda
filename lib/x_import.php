@@ -88,10 +88,14 @@ class x_import extends x_table2 {
          ?>
          <div id="xajax"></div>
          <div id="xajaxm"></div>
+         
          <script type="text/javascript">
-         andrax('?gp_page=x_import&gp_table_id=<?=gp("gp_table_id")?>&gp_xajax=1');
+         
          </script>
          <?php
+         elementAdd('scriptend',"andrax('?gp_page=x_import&gp_table_id="
+             .gp("gp_table_id")."&gp_xajax=1');"
+         );
          return;
       }
       else {
