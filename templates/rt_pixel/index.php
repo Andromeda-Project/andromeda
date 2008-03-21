@@ -1,5 +1,6 @@
 <?php
-defined( '_VALID_MOS' ) or die( 'Direct Access to this location is not allowed.' );
+defined( '_VALID_MOS' ) 
+    or die( 'Direct Access to this location is not allowed.' );
 require($mosConfig_absolute_path."/templates/" . $mainframe->getTemplate() . "/rt_styleswitcher.php");
 $iso = split( '=', _ISO );
 ?>
@@ -65,7 +66,7 @@ cssInclude('templates/'.$mainframe->getTemplate().'/css/suckerfish.css');
 <?php
 cssInclude('templates/'.$mainframe->getTemplate().'/css/x2-'.$colorstyle.'.css');  
 cssInclude('templates/'.$mainframe->getTemplate().'/css/x2-'.$contraststyle.'.css');
-include("raxlib-htmlhead.php");
+include("androHTMLHead.php");
 /*
 ?>
 <link href="<?php echo $mosConfig_live_site.'/templates/'.$mainframe->getTemplate().'/css/x2-'.$colorstyle.'.css'?>" rel="stylesheet" type="text/css" />
@@ -271,11 +272,8 @@ if (window.attachEvent) window.attachEvent("onload", sfHover);
 <!-- Andromeda Changes -->
 <!-- ================= -->
 <?php
-include('raxlib-htmlfoot.php');
+include('androHTMLFoot.php');
 ?>
-<script>
-var firebug='watch me!'
-</script>
 <!-- ======================= -->
 <!-- Andromeda Changes (END) -->
 <!-- ======================= -->
