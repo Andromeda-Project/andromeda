@@ -94,8 +94,11 @@ meta {
     keyword group_table       { table: permxtables;  keycol: table_id;  }
     keyword group_module      { table: permxmodules; keycol: module;  }
 	
-	keyword table_column             { table: tabcol;        keycol: column_id; keystub: column_id_src;     }
-	keyword table_column_group       { table: perm_cols;     keycol: group_id; }
+	keyword table_column             { table: tabcol;        keycol: column_id; keystub: column_id_src; }
+	keyword table_column_table_id_res
+                                     { table: tabcolres;     keycol: table_id_res; }
+	keyword table_column_group
+                                     { table: perm_cols;     keycol: group_id; }
 	keyword table_column_group_table_id_row 
                                  { table: permxtablesrow; keycol: table_id_row;  }
 	keyword table_chain              { table: tabchains;     keycol: chain; }
@@ -488,6 +491,7 @@ content automations {
     values { SYNCH      ; Synchronize Parent/Child; }
     values { QUEUEPOS   ; Enforces unique Queue Position; }
     values { DOMINANT   ; Only one row can have value Y; }
+    values { RESOLVE    ; Will hold resolved foreign key table; }
     values { FETCH_DOM;    Pull value from Dominant child row; }
     values { UID_UPD_PG ; Update User ignoring postgres }
     values { TS_UPD_PG ; Update Timestamp ignoring postgres }
@@ -548,6 +552,7 @@ column table_seq     {  type_id: int;   colprec: 0;  colscale: 0; description: T
 column table_id      {  type_id: vchar; colprec: 50; colscale: 0; description: Table ID; }
 column table_id_par  {  type_id: vchar; colprec: 50; colscale: 0; description: Table ID (Parent); }
 column table_id_row  {  type_id: vchar; colprec: 50; colscale: 0; description: Table ID (Row); }
+column table_id_res  {  type_id: vchar; colprec: 50; colscale: 0; description: Table ID (Row); }
 column table_id_par_comp
                      {  type_id: vchar; colprec: 50; colscale: 0; description: FK Composite Identifier; }
 column column_prefix {  type_id: vchar; colprec: 50;   colscale: 0;  description: Column Prefix; }
@@ -681,6 +686,16 @@ table tabcol {
     column { tooltip;  }
     column { skey; skey_quiet; _agg; }
 }
+
+table tabcolres {
+    module: datadict;
+    description: Resolution Tables;
+    table_seq: 1101;
+    
+    column { column_id; table_id; primary_key: Y; }
+    column { table_id_res; primary_key: Y; }
+}
+
 
 // *********************************************************
 // Foreign keys are defined by naming a table and a parent
