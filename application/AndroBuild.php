@@ -1966,7 +1966,7 @@ select fkg.table_id
       ,TRIM(fkg.prefix) || trim(flt.column_id) || TRIM(fkg.suffix)
       ,fkg.permupd
       ,fkg.permsel
-      ,'N'
+      ,''
   FROM zdd.tabfkygroups_c fkg
   JOIN zdd.tabflat_c      flt ON fkg.table_id_par = flt.table_id
  WHERE flt.primary_key = 'Y'"; 
