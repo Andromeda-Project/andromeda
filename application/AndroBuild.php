@@ -2774,7 +2774,7 @@ function SpecDDL_Triggers_Security() {
              WHERE variable = ##EMAIL_FROM##;
        IF AnyChar4 IS NULL THEN AnyChar4 = ####; END IF;
        
-       new.md5 := md5(now());
+       new.md5 := md5(now()::varchar);
        PERFORM pwmail(AnyChar
           ,##Password Reset Request##
           ,AnyChar2 || new.md5
@@ -4688,12 +4688,12 @@ function TrigGen_ChainReturn($rtid,$test,$dsiz) {
       case 'LPAD':
          $arg1 = $this->TrigGen_CRet_arg($rtid,$test['_return'][0]);
          $arg2 = $this->TrigGen_CRet_arg($rtid,$test['_return'][1]);
-         return " LPAD($arg1,$dsiz,$arg2)";
+         return " LPAD($arg1::varchar,$dsiz,$arg2::varchar)";
          break;
       case 'RPAD':
          $arg1 = $this->TrigGen_CRet_arg($rtid,$test['_return'][0]);
          $arg2 = $this->TrigGen_CRet_arg($rtid,$test['_return'][1]);
-         return " RPAD($arg1,$dsiz,$arg2)";
+         return " RPAD($arg1::varchar,$dsiz,$arg2::varchar)";
          //return $this->TrigGen_CRetString2($rtid,$test);
          break;
       case 'UPPER':
