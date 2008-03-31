@@ -278,6 +278,7 @@ if(gp('gp_dropdown') <>'') index_hidden_dropdown();
 if(gp('gp_fetchrow') <>'') index_hidden_fetchrow();
 if(gp('gp_sql')      <>'') index_hidden_sql();
 if(gp('gp_ajaxsql')  <>'') index_hidden_ajaxsql();
+if(gp('json')       <>'')  index_hidden_JSONDispatch();
 else                       index_hidden_page();
 
 
@@ -287,6 +288,59 @@ return;
 // ==================================================================
 // DISPATCH DESTINATIONS
 // ==================================================================
+// ------------------------------------------------------------------
+// >> index_hidden_x4Page
+// ------------------------------------------------------------------
+function index_hidden_JSONDispatch() {
+    $GLOBALS['AG']['JSON'] = array(
+        'error'=>array()
+        ,'debug'=>array()
+        ,'notice'=>array()
+        ,'html'=>array()
+        ,'script'=>array()
+        ,'fatal'=>''
+    );
+    
+    // Determine the library to open.  If the page exists, open
+    // it, otherwise use default
+    //
+    include_once("androX4.php");
+    $x4Page = gp('x4Page');
+    $file   = fsDirTop()."/application/$x4Page.php";
+    $class  = 'androX4';
+    if(file_exists($file)) {
+        include_once($file);
+        $class = $x4Page;
+    }
+    $object = new $class();
+    
+    // Now determine the method to invoke.  If none was named,
+    // do a browse
+    //
+    $method = gp('x4Action','browse');
+    
+    // We do buffering because we assume any direct HTML output has
+    // to be an error.
+    ob_start();
+    $object->$method();
+    $errors = ob_get_clean();
+    if($errors <> '') {
+        jsonFatal($errors);
+    }
+
+    // Put errors in
+    if(Errors()) {
+        $errs = errorsGet();
+        foreach($errs as $err) {
+            jsonError($err);
+        }
+    }
+    
+    // Spit out the returns
+    //
+    echo json_encode_safe($GLOBALS['AG']['JSON']);
+    return;
+}
 // ------------------------------------------------------------------
 // >> Ajax refresh a select that is 2nd column in foreign key
 // ------------------------------------------------------------------
