@@ -1,7 +1,28 @@
 <?php
 echo "\n<title>".vgfGet('pageTitle')."</title>\n";
 
-jsInclude('clib/jquery-1.2.3.js');
+// We now include JQuery all of the time
+jsInclude('clib/jquery-1.2.3.js','JQuery is distributed under the GPL
+      license, written by a team of programmers, more info at
+      http://www.jquery.com');
+
+// This is the old CSS library for x2
+cssInclude('templates/'.$mainframe->getTemplate().'/css/x2.css');
+
+// The new css library for x4 and the new js library for x4
+cssInclude('clib/x4.css');
+jsInclude('clib/androLib.js');
+
+// Try out the ui.datepicker for JQuery
+cssInclude('clib/ui.datepicker.css');
+jsInclude('clib/ui.datepicker.js');
+
+// Another jquery add-on: key  navigation 
+//jsInclude('clib/keynav.js');
+// Yet another jquery add-on: blocking the UI, useful when calling an alert
+//jsInclude('clib/jqModal.js','jqModal was written by Brice Burgess
+//     and is distributed under the MIT license.  His website is
+//     http://dev.iceburg.net/jquery/jqModal/');
 
 
 ob_start();
@@ -51,9 +72,6 @@ if(vgfGet('suppress_andromeda_css')!==true || vgfGet('x4')===true) {
     cssInclude("clib/andromeda.css");
 }
 
-if(! (vgfGet('x4')===true && LoggedIn()) ) { 
-    cssInclude('templates/'.$mainframe->getTemplate().'/css/x2.css');
-} 
 
 
 // If debug mode is on, this will output all of the CSS files as one

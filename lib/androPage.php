@@ -407,7 +407,7 @@ class androPage {
             .$SQL_WHERE
             .$SQL_GROUPBY
             .$SQL_COLSOB;
-         
+        
         return $SQ;
     }
     

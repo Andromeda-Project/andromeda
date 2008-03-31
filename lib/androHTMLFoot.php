@@ -1,6 +1,14 @@
 <?php
-// Output the command to load javascript
+// Output the command to load javascript files
 jsOutput();
+
+// Handle the first focus
+//echo vgfGet('HTML_focus');
+if(vgfGet('HTML_focus')<>'') {
+    $f = vgfGet('HTML_focus');
+    ElementAdd('jqueryDocumentReady','$("#'.$f.'").focus()');
+}
+
 
 // Output any JQuery document ready stuff
 $jqueryDocumentReady = ElementImplode('jqueryDocumentReady');
@@ -14,51 +22,13 @@ if($jqueryDocumentReady<>'') {
     <?php
 }
 
-
-return;
-
-
-// Script goes out at absolute end, after <html> element is closed
-if (vgfGet("HTML_focus")=="") {
-   // This is used only in the default Andromeda template, you need to
-   // change your menu generation program to create it.  See
-   // rt_pixel/rt_suckerfish
-   vgfSet('HTML_focus','FIRSTMENU');  
-}
-if (vgfGet("HTML_focus")<>"") {
-   ?>
-   <script type="text/javascript">
-<!--//--><![CDATA[//><!--
-theFocus=function() {
-   if ( ob('<?=vgfGet("HTML_focus")?>') != null ) {
-   ob('<?=vgfGet("HTML_focus")?>').focus();
-   }
+$scriptend = ElementImplode('scriptend');
+if($scriptend<>'') {
+    ?>
+    <script type="text/javascript">
+    <?=$scriptend?>
+    </script>
+    <?php
 }
 
-
-if (window.attachEvent) window.attachEvent("onload", theFocus);
-else {
-   if(ob('<?=vgfGet("HTML_focus")?>')) {
-      ob('<?=vgfGet("HTML_focus")?>').focus();
-   }
-}
-
-//--><!]]>
-   </script>
-   <?php if(vgfGet('suppress_goodies_tooltip')!==true) { ?>
-   <script type="text/javascript">
-   var tooltipObj = new DHTMLgoodies_formTooltip();
-   tooltipObj.setTooltipPosition('right');
-   tooltipObj.setPageBgColor('#EEEEEE');
-   tooltipObj.setTooltipCornerSize(15);
-   tooltipObj.initFormFieldTooltip();
-   </script>
-   <?php } ?>
-   <script type="text/javascript">
-   /* output of ElementOut('scriptend') */
-   <?=ElementOUt('scriptend',false)?>
-   </script>
-   
-   <?php
-}
 ?>
