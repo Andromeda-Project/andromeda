@@ -4,10 +4,10 @@
  * Parses .page.yaml files and generates various
  * outputs.  The two main stages are 1) generating forms
  * requesting user input and 2) displaying results.
- * 
+ *
  * Special thanks go to Donald Organ for inspiring what is
- * probably the most important strategic aspect of this 
- * class.  This class allows the Andromeda programmer to 
+ * probably the most important strategic aspect of this
+ * class.  This class allows the Andromeda programmer to
  * continue to use YAML in application development, and further
  * strengthens our strategy of putting application assets
  * into data files instead of code.
@@ -16,12 +16,12 @@
  * @author Kenneth Downs <ken@secdat.com>
  *
  *
- * 
+ *
 */
 
 class androPage {
     /**
-     *  Included for compatibility with index_hidden.php. 
+     *  Included for compatibility with index_hidden.php.
      *  Currently hardcoded to true.
      *  @var flag_buffer
      *  @access public
@@ -44,43 +44,43 @@ class androPage {
      *  @access public
      */
     var $page = '';
-    
+
     /**
      *  Entry point for all processing.  Assumes a file
      *  named "$page.page.yaml" is in the application
      *  directory.
      *
-     *  @param string $page   Name of page. 
+     *  @param string $page   Name of page.
      *  @access public
      */
     function main($page) {
         // Store the name of the page
         $this->page = $page;
-        
+
         $filename
             =$GLOBALS['AG']['dirs']['root']
             ."application/$page.page.yaml";
-            
+
         include_once("spyc.php");
         $yamlRaw=Spyc::YAMLLoad($filename);
         $this->yamlP2=$this->YAMLPass2($yamlRaw);
-        
+
         // If there are no sections, take content and make a section,
         // so that downstream code can unconditionally work with sections
-        
+
         if(!isset($this->yamlP2['section'])) {
             $this->yamlP2['section'] = array(
                 'default'=>array(
-                    'table'=>$this->yamlP2['table']
-                    ,'uifilter'=>$this->yamlP2['uifilter']
+                    'table'=>(isset( $this->yamlP2['table'] ) ? $this->yamlP2['table'] : '' )
+                    ,'uifilter'=>(isset( $this->yamlP2['uifilter'] ) ? $this->yamlP2['uifilter'] : '' )
                 )
             );
         }
-        
+
         if (!isset($this->yamlP2['template'] ) ) {
                 $this->yamlP2['template'] = '';
         }
-        
+
         // Go through filters and make them all uniform
         $filters = ArraySafe($this->yamlP2,'uifilter',array());
         foreach($filters as $id=>$info) {
@@ -100,14 +100,14 @@ class androPage {
         if ( ArraySafe( $this->yamlP2['options'], 'buffer', 'Y' ) == 'N' ) {
                 $this->flag_buffer = false;
         }
-        
+
         // Check to see if nofilter option is set
         if ( ArraySafe( $this->yamlP2['options'], 'nofilter') != '' ) {
                 $this->yamlP2['options']['nofilter'] = $this->yamlP2['options']['nofilter'];
         } else {
                 $this->yamlP2['options']['nofilter'] = 'N';
         }
-        
+
         //If nofilter option is set to Y then display without filter
         if ( $this->yamlP2['options']['nofilter'] == 'Y' ) {
                 $this->PassPage();
@@ -117,10 +117,10 @@ class androPage {
                 } else {
                     $this->PassPage();
                 }
-        } 
+        }
     }
-     
-    /** 
+
+    /**
      * This function determines whether it should make the page a report or a Smarty template
      * @access private
      */
@@ -132,21 +132,21 @@ class androPage {
                 $this->pageSmarty();
         }
     }
-    
+
     /**
-     *  Part of the YAML Processing arrangement. 
+     *  Part of the YAML Processing arrangement.
      *  Andromeda maintains a set of conventions for using YAML,
      *  which requires that we make a second pass of the associative
      *  array to re-shuffle it a bit.
      *
      *  This routine calls itself recursively on sub arrays.
      *
-     *  @param string $array  The raw result of processing by Spyc. 
+     *  @param string $array  The raw result of processing by Spyc.
      *  @access private
      */
     private function YamlPass2($array) {
         if(!is_array($array)) return $array;
-        
+
         $retval = array();
         foreach($array as $index=>$subarr) {
             $aIdx = explode(" ",$index);
@@ -159,10 +159,10 @@ class androPage {
         }
         return $retval;
     }
-    
+
     /**
      *  Generates an x3 HTML page requesting input from the
-     *  user.  No parameters, accesses the object's yamlP2 property. 
+     *  user.  No parameters, accesses the object's yamlP2 property.
      *
      *  @access private
      */
@@ -171,7 +171,7 @@ class androPage {
         if(isset($yamlP2['options']['title'])) {
             $this->PageSubtitle = $yamlP2['options']['title'];
         }
-        
+
         $table = createElement('table');
         $filters = ArraySafe($this->yamlP2,'uifilter',array());
         foreach($filters as $id=>$options) {
@@ -192,7 +192,7 @@ class androPage {
         if ( isset( $yamlP2['template'] ) ) {
                 hidden('gp_post','smarty' );
         } else {
-                hidden('gp_post','pdf');       
+                hidden('gp_post','pdf');
         }
         ?>
         <!-- x3HTML Render -->
@@ -227,21 +227,21 @@ class androPage {
             $ahcols=aHColsfromACols($acols);
             return WidgetFromAhCols(
                 $ahcols,$id,'ap_','',0
-            ); 
+            );
         }
     }
 
     /**
      *  Run the report based on options provided by user.
      *
-     *  @param string $yamlP2  A processed YAML page description 
+     *  @param string $yamlP2  A processed YAML page description
      *  @access private
      */
     private function pageReport() {
         // Create the PDF object
         require_once('androPagePDF.php');
         $pdf = new androPagePDF();
-        
+
         // For each section, run the output
         foreach($this->yamlP2['section'] as $secname=>$secinfo) {
             $dbres = SQL($secinfo['sql']);
@@ -249,7 +249,7 @@ class androPage {
                 hprint_r($secinfo['sql']);
                 echo hErrors();
             }
-        
+
             // Now pass the SQL resource to the reporting engine
             $pdf->main($dbres,$this->yamlP2,$secinfo);
         }
@@ -260,47 +260,51 @@ class androPage {
      *
      */
     private function pageSmarty() {
-        // Execute SQL and return all rows for all sections
-        $sections = $this->yamlP2['section'];
-        foreach($sections as $secname=>$secinfo) {
-                $this->yamlP2['section'][$secname]['rows']
-                        =SQL_AllRows($secinfo['sql']);
+        if ( ArraySafe( $this->yamlP2['options']['noquery'],'N') == 'N' ) {
+            // Execute SQL and return all rows for all sections
+            $sections = $this->yamlP2['section'];
+            foreach($sections as $secname=>$secinfo) {
+                    $this->yamlP2['section'][$secname]['rows']
+                            =SQL_AllRows($secinfo['sql']);
+            }
         }
-        
+
         // Create the Smarty handler and call out to that
         require_once('androPageSmarty.php');
         $smarty = new androPageSmarty();
-        
+
         // Now pass the whole ball of wax to the smarty handler
-        $smarty->main($this->yamlP2,$this->page);        
+        $smarty->main($this->yamlP2,$this->page);
     }
-    
+
     /**
-     *  Generate the SQL expression for each section by 
+     *  Generate the SQL expression for each section by
      *  examining the table/column information.  This routine
      *  actually recurses the sections and invokes genSQLSection
      *  for each one.
-     *  
+     *
      *  @access private
      */
-   function genSQL() {
-       foreach($this->yamlP2['section'] as $secname=>$info) {
-           $this->yamlP2['section'][$secname]['sql']
-            =$this->genSQLSection($secname);
-       }
-   }
-   
+    function genSQL() {
+        if ( ArraySafe( $this->yamlP2['options'], 'noquery','N') == 'N' ) {
+            foreach($this->yamlP2['section'] as $secname=>$info) {
+                $this->yamlP2['section'][$secname]['sql']
+                 =$this->genSQLSection($secname);
+            }
+        }
+    }
+
     /**
      *  Generate the SQL expression for a particular named
      *  section by examining the table/column details in
      *  the processed yaml.
-     *  
+     *
      *  @access private
      */
    function genSQLSection($secname) {
         $yamlP2 = $this->yamlP2['section'][$secname];
         $page = $this->page;
-    
+
         // Go get the joins
         $SQL_FROMJOINS=$this->genSQLFromJoins($yamlP2);
 
@@ -311,7 +315,7 @@ class androPage {
         foreach($uifilter as $colname=>$info) {
             $uifilter[$colname]['value'] = gp('ap_'.$colname);
         }
-        
+
         // See if any of the columns have a GROUP setting,
         // if so, all others must get group: Y
         $yamlP2['groupby']=array();
@@ -335,7 +339,7 @@ class androPage {
                 }
             }
         }
-        
+
 
         // Build various lists of columns
         $SQL_COLSA=array();
@@ -359,7 +363,7 @@ class androPage {
                     }
                     $SQL_COLSA[] = $coldef;
                 }
-                
+
                 if(isset($colinfo['compare'])) {
                     $compare = "$table.$colname ".$colinfo['compare'];
                     foreach($uifilter as $filtername=>$info) {
@@ -375,7 +379,7 @@ class androPage {
                 }
             }
         }
-        
+
         // Collapse the lists into strings
         $SQL_COLS=implode("\n       ,",$SQL_COLSA);
         $SQL_COLSOB='';
@@ -387,19 +391,19 @@ class androPage {
                     $SQL_COLSOB="\n ORDER BY ".implode(',',$SQL_COLSOBA);
                 }
         }
-        
+
         // For the UI Filter values, add in the values provided by the user
         $SQL_WHERE='';
         if(count($SQL_COLSWHA)>0) {
             $SQL_WHERE = "\n WHERE ".implode("\n   AND ",$SQL_COLSWHA);
         }
-        
+
         // Collapse the group by
         $SQL_GROUPBY = '';
         if(count($yamlP2['groupby'])>0) {
             $SQL_GROUPBY = "\n GROUP BY ".implode(',',$yamlP2['groupby']);
         }
-        
+
         // Now build the final SQL
         $SQ=" SELECT "
             .$SQL_COLS
@@ -407,17 +411,21 @@ class androPage {
             .$SQL_WHERE
             .$SQL_GROUPBY
             .$SQL_COLSOB;
+<<<<<<< .mine
+
+=======
         
+>>>>>>> .r218
         return $SQ;
     }
-    
+
     /**
      *  Generate a list of FROM and JOIN commands out of the
      *  processed YAML page description.  Assume the first entry
-     *  is the FROM table and that all entries will join to 
+     *  is the FROM table and that all entries will join to
      *  something above them.
      *
-     *  @param array $yamlP2 The processed page description 
+     *  @param array $yamlP2 The processed page description
      *  @access private
      */
     function genSQLFromJoins($yamlP2) {
@@ -472,7 +480,7 @@ class androPage {
                 );
             }
         }
-        
+
         // Now join them all up and return
         $retval = "\n  FROM $SQL_from ";
         foreach($SQL_Joins as $table_id=>$SQL_Join) {
@@ -488,7 +496,7 @@ class androPage {
      *  Placeholder error function since our current error system
      *  may not deal with processing errors that well.
      *
-     *  @param string $message The error message 
+     *  @param string $message The error message
      *  @access private
      */
     function errorAdd($message) {
