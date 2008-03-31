@@ -354,9 +354,11 @@ class x_table2 {
       $dd = ContextGet('drilldown',array());
       if(isset($dd[0]['page'])) {
          $tpar = $dd[0]['page'];
-         $uid=trim($this->table['fk_parents'][$tpar]['uidisplay']);
-         if($uid=='mover') { 
-            return 'mover';
+         if(isset($this->table['fk_parents'][$tpar])) {
+             $uid=trim($this->table['fk_parents'][$tpar]['uidisplay']);
+             if($uid=='mover') { 
+                return 'mover';
+             }
          }
       }
       return '';
