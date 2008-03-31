@@ -104,6 +104,23 @@ if (file_exists($x)) {
 }
 
 // ==================================================================
+// >>>
+// >>> Load Andromeda Plugin Manager
+// >>>      Allows for the creation of plugins which simplifies
+// >>>      interactions with external data feeds or APIs
+// >>>
+// ==================================================================
+
+/* DJO 3/24/2008
+  This creates a global variable so that the plugin manager
+  is accessible throughout the application
+*/
+require_once('AndroPluginManager.php');
+require_once('AndroPlugin.php');
+$GLOBALS['AG']['plugins'] = new AndroPluginManager();
+
+
+// ==================================================================
 // >>> 
 // >>> Up the session hit counter
 // >>> 
@@ -359,7 +376,7 @@ function index_hidden_ajxfSELECT() {
     $html = hOptionsFromTable($table,$col2val,'',$matches,$col2);
     
     echo "$pfx$col2|".$html;
-    
+    exit();
 }
 
 // ------------------------------------------------------------------
