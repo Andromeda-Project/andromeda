@@ -411,11 +411,6 @@ class androPage {
             .$SQL_WHERE
             .$SQL_GROUPBY
             .$SQL_COLSOB;
-<<<<<<< .mine
-
-=======
-        
->>>>>>> .r218
         return $SQ;
     }
 
