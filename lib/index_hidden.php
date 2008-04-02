@@ -67,12 +67,19 @@ if (!isset($AG['application'])) {
 // ==================================================================
 // >>> 
 // >>> Copy the $_POST array and overlay with $_GET
+// >>> Reverse the effects of magic quotes if found
 // >>> 
 // ==================================================================
 $AG['clean']= array();
 $AG['clean']['gp_page'] = '';
 $AG['clean']['gp_action'] = '';
-$AG['clean'] = array_merge($AG['clean'],$_POST,$_GET); 
+$AG['clean'] = array_merge($AG['clean'],$_POST,$_GET);
+if(ini_get('magic_quotes_gpc')) {
+    foreach($AG['clean'] as $var=>$value) {
+        if($var=='gpContext') continue;
+        $AG['clean'][$var]=stripslashes($value);  
+    }
+}
 
 // >>> 
 // >>> Restore the context (taken from g/p variables)
@@ -323,11 +330,11 @@ function index_hidden_JSONDispatch() {
     //
     include_once("androX4.php");
     $x4Page = gp('x4Page');
-    $file   = fsDirTop()."/application/$x4Page.php";
+    $file   = fsDirTop()."/application/x4$x4Page.php";
     $class  = 'androX4';
     if(file_exists($file)) {
         include_once($file);
-        $class = $x4Page;
+        $class = 'x4'.$x4Page;
     }
     $object = new $class();
     
