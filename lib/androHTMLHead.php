@@ -25,9 +25,7 @@ jsInclude('clib/ui.datepicker.js');
 //     http://dev.iceburg.net/jquery/jqModal/');
 
 
-ob_start();
-ElementOut('styles');
-$styles = ob_get_clean();
+$styles = ElementImplode('styles');
 if($styles<>'') {
     ?>
     <style type="text/css">
@@ -74,6 +72,6 @@ if(vgfGet('suppress_andromeda_css')!==true || vgfGet('x4')===true) {
 
 
 
-// If debug mode is on, this will output all of the CSS files as one
+// If debug mode is off, this will output all of the CSS files as one
 cssOutput();
 ?>

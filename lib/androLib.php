@@ -9011,6 +9011,7 @@ function WidgetFromAHCols(&$ahcols,$colname,$prefix,$value,$tabindex) {
    return $h; 
 }
 
+
 function AHColsNames(&$ahcols,$name,$tabindex) {
    foreach($ahcols as $colname=>$ahcol) {
       AHColNamesOne($ahcols,$colname,$name,$tabindex);
@@ -9038,6 +9039,34 @@ function AHColNamesOne(&$ahcols,$colname,$name,$tabindex) {
    $hrgt=str_replace('--TABINDEX--',hpTabIndexNext($tabindex),$hrgt);
    $ahcols[$colname]['hrgtnamed']=$hrgt;      
 }
+
+// Added back in by KFD 4/2/08, required by the classic
+// medical program.  We don't care if its the same routine as something
+// else because all of this code is now superseded by the html() 
+// class and related functions.
+//
+function AHColNames(&$ahcols,$colname,$name,$tabindex) {
+   $cname=$name.$colname;
+   $ahcol=$ahcols[$colname];
+   $ahcols[$colname]['cname']=$cname;
+
+   if($ahcol['writable']==false) $tabindex=10000;
+
+   // Replace out the HTML
+   $html=$ahcol['html'];
+   $html=str_replace('--NAME--'       ,$cname     ,$html);
+   $html=str_replace('--ID--'         ,$cname     ,$html);
+   $html=str_replace('--TABINDEX--'   ,hpTabIndexNext($tabindex),$html);
+   $html=str_replace('--NAME-PREFIX--',$name      ,$html);
+   $ahcols[$colname]['htmlnamed']=$html;
+
+   // Replace out the stuff to the right
+   $hrgt=$ahcol['html_right'];
+   $hrgt=str_replace('--NAME--',$cname,$hrgt);
+   $hrgt=str_replace('--TABINDEX--',hpTabIndexNext($tabindex),$hrgt);
+   $ahcols[$colname]['hrgtnamed']=$hrgt;
+}
+
 
 
 // Takes an array of column information and makes
@@ -9107,6 +9136,9 @@ function ahColFromACol(&$acol) {
    
    $TOOLTIPS = OptionGet('TOOLTIPS','N');
    switch($TOOLTIPS) {
+   case 'NONE':
+       $acol['hparms']['title']   = '';
+       $acol['hparms']['tooltip'] = '';
    case 'JQUERY_ALSO':
        $acol['hparms']['title'] = $acol['hparms']['tooltip'];
        break;
@@ -9412,25 +9444,27 @@ function aColsModeProj(&$table,$mode,$projection='') {
       }
       
       // KFD 3/21/08, add in a calculated tooltip, if option is set
-      if(ArraySafe($table['flat'][$column_id],'tooltip')=='') {
-          $tooltip = '';
-          $aid = trim($table['flat'][$column_id]['auto_formula']);
-          switch(trim($table['flat'][$column_id]['automation_id'])) {
-          case 'SEQUENCE':
-              $tooltip="This value is automatically generated";
-              break;
-          case 'SUM':
-              $tooltip = "This value is the calculated sum of ".$aid;
-              break;
-          case 'MAX':
-              $tooltip = "This value is the calculated minimum from ".$aid;
-              break;
-          case 'MIN':
-              $tooltip = "This value is the calculated minimum from ".$aid;
-              break;
-          }
-          if($tooltip <> '') {
-              $cols3[$column_id]['tooltip'] = $tooltip;
+      if(OPtionGet('TOOLTIP','N')<>'NONE') {
+          if(ArraySafe($table['flat'][$column_id],'tooltip')=='') {
+              $tooltip = '';
+              $aid = trim($table['flat'][$column_id]['auto_formula']);
+              switch(trim($table['flat'][$column_id]['automation_id'])) {
+              case 'SEQUENCE':
+                  $tooltip="This value is automatically generated";
+                  break;
+              case 'SUM':
+                  $tooltip = "This value is the calculated sum of ".$aid;
+                  break;
+              case 'MAX':
+                  $tooltip = "This value is the calculated minimum from ".$aid;
+                  break;
+              case 'MIN':
+                  $tooltip = "This value is the calculated minimum from ".$aid;
+                  break;
+              }
+              if($tooltip <> '') {
+                  $cols3[$column_id]['tooltip'] = $tooltip;
+              }
           }
       }
    }
