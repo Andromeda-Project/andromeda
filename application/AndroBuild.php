@@ -1321,6 +1321,7 @@ function SpecFlatten() {
 	$retval = $retval && $this->SpecFlatten_ColumnsAll();
 	$retval = $retval && $this->SpecFlatten_ColumnsPre();
 	$retval = $retval && $this->SpecFlatten_Runout();
+    $retval = $retval && $this->SpecFlatten_FixFKO();
 	//$retval = $retval && $this->SpecFlatten_Tables();
 	$retval = $retval && $this->SpecFlatten_HARDCODE();
 	$retval = $retval && $this->SpecFlatten_ColumnDeps();
@@ -1646,6 +1647,26 @@ function col3num($colname) {
                  ELSE c.$colname END AS $colname";
 }
 
+
+function SpecFlatten_FixFKO() {
+    // KFD 4/2/08, If you have an FK, and also define the column,
+    //      the table_id_fko value is lost.  This puts it back in
+    $sql="
+update zdd.tabflat_c 
+   SET table_id_fko = x.table_id_par
+  FROM
+(
+select fk.table_id,fk.table_id_par,fk.prefix || tf.column_id || fk.suffix as column_id
+  from zdd.tabfky_c  fk
+  JOIN zdd.tabflat_c tf ON fk.table_id_par = tf.table_id
+ WHERE tf.primary_key = 'Y'
+) x
+ WHERE zdd.tabflat_c.table_id = x.table_id
+   AND zdd.tabflat_c.column_id= x.column_id
+   AND zdd.tabflat_c.table_id_fko = ''";
+     $this->SQL($sql);
+     return true;
+}
 
 function SpecFlatten_Tables()
 {
