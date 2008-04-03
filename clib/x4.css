@@ -1,7 +1,7 @@
 /* --- The Layer class always contains all content --- */
 #andromeda_main_content {
     position: relative;
-    min-height: 500px;
+    min-height: 300px;
 }
 #Form1 div.x4Layer {
     position: absolute;
