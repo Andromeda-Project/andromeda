@@ -6759,12 +6759,13 @@ function rowsFromFilters(&$table,$filters,$cols,$matches=array()) {
     ConSet('table',$table_id,'complex_orderby',$sob);
     
     // Retrieve the limit as a vgaget, defaulting to 300
-    $SQL_Limit=vgaGet("SQL_Limit",300);
+    // DJO 4-8-2008 Allow for system variable override, 0 would be all records
+    $SQL_Limit = OptionGet( 'SQL_LIMIT', vgaGet( 'SQL_Limit', 300 ) );
       
     // Execute the sql, pull down the skey values
     $skeys=array();
     $sq="SELECT ".$cols." FROM ".$view_id.$sql_where
-      ." ORDER BY ".$sob." LIMIT ".$SQL_Limit;
+      ." ORDER BY ".$sob .( $SQL_Limit > 0 ? " LIMIT ".$SQL_Limit : '' );
     $rows =SQL_ALLRows($sq);
     $retval=($rows===false) ? array() : $rows;
     return $retval;
