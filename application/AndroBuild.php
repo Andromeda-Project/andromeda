@@ -1,4 +1,4 @@
-<?php
+har<?php
 /* ================================================================== *\
    (C) Copyright 2005 by Secure Data Software, Inc.
    This file is part of Andromeda
@@ -884,8 +884,8 @@ function SpecLoad() {
 //
 function SpecLoad_ArrayToTables($arr,$cLoadSuffix,$parent_row=array(),$parent_prefix="") {
 	
-   global $srcfile;
-   global $parm;
+    global $srcfile;
+    global $parm;
 	$retval = true;
 	
 	foreach ($arr as $keyword=>$object) {
@@ -893,7 +893,7 @@ function SpecLoad_ArrayToTables($arr,$cLoadSuffix,$parent_row=array(),$parent_pr
 		if (! is_array($object)) { continue; }
 
 		// Now use $keyword to get table name we will insert into
-      //$this->LogEntry("$parent_prefix - $keyword");
+        //$this->LogEntry("$parent_prefix - $keyword");
 		$table     = $this->ddarr["meta"]["keyword"][$parent_prefix.$keyword]["table"];
 		$pkcolname = $this->ddarr["meta"]["keyword"][$parent_prefix.$keyword]["keycol"];
 		$keystub   = $this->zzArray($this->ddarr["meta"]["keyword"][$parent_prefix.$keyword],"keystub");
@@ -968,10 +968,16 @@ function SpecLoad_ArrayToTables($arr,$cLoadSuffix,$parent_row=array(),$parent_pr
                $row['group_id']=$parm['APP'].'_'.$row['group_id'];
             }
          }
+         // KFD 4/9/08, support for lowercase automations by uppercasing
+         // them on the way in
+         if(isset($row['automation_id'])) {
+             $row['automation_id'] = strtoupper($row['automation_id']);
+         }
             
 			// Finally, execute it
          $row['srcfile']=$srcfile;
-			$this->DBB_Insert("zdd.",$table,$cLoadSuffix,$row);
+			$retval = $retval &&
+                $this->DBB_Insert("zdd.",$table,$cLoadSuffix,$row);
 		}
 	}
 	return $retval;
@@ -1511,6 +1517,8 @@ function SpecFlatten_Runout() {
             WHERE tc.table_id = '$table_id'"; 
         $this->SQL($sq);
 
+        // Create flattened column definitions from foreign 
+        // keys.  Insert all non-mutable 
         $sq="INSERT INTO zdd.tabflat_c (
                  table_id,column_id_src,column_id,suffix,prefix
                 ,description
@@ -1524,7 +1532,7 @@ function SpecFlatten_Runout() {
                   '$table_id',x1.column_id
                  ,rtrim(x1.prefix) || rtrim(x1.column_id) || rtrim(x1.suffix)
                  ,x1.suffix,x1.prefix
-                 ,c.description
+                 ,x1.description
                  ,x1.primary_key,x1.uisearch
                  ,c.colprec,c.colscale,c.colres,c.type_id
                  ,x1.table_id_fko
@@ -1532,13 +1540,16 @@ function SpecFlatten_Runout() {
                  ,t.formula,t.formshort,t.dispsize
              FROM (
                  SELECT column_id,column_id_src,suffix,prefix
+                       ,MAX(description)                as description
                        ,MAX(COALESCE(primary_key ,'N')) as primary_key
                        ,MAX(COALESCE(uisearch    ,'N')) as uisearch
                        ,MAX(COALESCE(table_id_fko,'' )) as table_id_fko
                        ,MAX(uicolseq)                   as uicolseq
                    FROM (
+                     -- This is the core data from the flat table
                      SELECT f.column_id,f.column_id_src
                            ,fk.suffix,fk.prefix
+                           ,f.description
                            ,fk.primary_key,fk.uisearch
                            ,fk.table_id_par as table_id_fko
                            ,TRIM(fk.uicolseq) || '.' || TRIM(f.uicolseq) as uicolseq
@@ -7976,8 +7987,7 @@ function DBB_Insert($prefix,$table,$suffix,$colvals,$noblanks=false) {
 	}
 	
 	$sql = "INSERT INTO ".$prefix.$table.$suffix." ( ".$cols." ) VALUES ( ".$vals." )";
-   //echo $sql;
-	$this->SQL($sql);
+	return $this->SQL($sql);
 }
 
 function DBB_SQLBlank($formshort) {
