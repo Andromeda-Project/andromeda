@@ -1,0 +1,24 @@
+.androSelect {
+    position: absolute;
+    border: 1px solid black;
+    z-index: 100;
+    background-color: white;
+    overflow:auto;
+}
+
+.androSelect table {
+    border-collapse: collapse;
+    border-spacing: 0px;
+    width: 100%;
+}
+
+.androSelect table td {
+    padding: 1px;
+    font-size: 0.9em;
+    border: 1px solid #D0D0D0;
+}
+
+.androSelect table tr.hilite {
+    background-color: #A0A0A0;
+}
+
