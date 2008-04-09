@@ -90,11 +90,25 @@ class androPagePDF extends fpdf {
         // Call the routine that sets up an array of
         // values to put into the bottom;
         $bottom = $this->setupBottom($yamlP2);
+        $break  = $this->setupBreak($yamlP2);
         
         // Begin by adding the first page
         $this->addPage($this->orientation);
+        $row1 = false;
         while($row=SQL_Fetch_Array($dbres)) {
+            if($row1) {
+                if(!$this->compareBreak($yamlP2,$break,$row)) {
+                    $this->linesForColumns();
+                    $this->outFromArray($break);
+                    $this->nextLine();
+                    $break = $this->SetupBreak($yamlP2);
+                }
+            }
+            $row1=true;
             $this->outFromArray($row);
+            if(count($break)>0) {
+                $break = $this->processForBreak($yamlP2,$break,$row);
+            }
             if(count($bottom)>0) {
                 $bottom = $this->processForBottom($yamlP2,$bottom,$row);
             }
@@ -139,7 +153,6 @@ class androPagePDF extends fpdf {
         }
         $this->title2 = count($atitle2)==0 ? '' : implode(", ",$atitle2);
         
-        
         // Tell the fpdf parent class about our setting choices
         $this->SetTextColor(0,0,0);
         $this->SetFont($this->fontname);
@@ -159,6 +172,9 @@ class androPagePDF extends fpdf {
                 $suffix = '';
                 if(in_array(trim($type_id),array('money','numb','int'))) {
                     $suffix .= ':R';
+                }
+                if(trim($type_id)=='money') {
+                    $suffix .= ':M';
                 }
                 if(ArraySafe($colinfo,'dispsize','')<>'') {
                     $suffix .= ':C'.$colinfo['dispsize'];
@@ -182,9 +198,9 @@ class androPagePDF extends fpdf {
         }
         
         $this->setupColumns(.1,implode(',',$setupArr));
-    
+        
         // Finally, establish orientation by looking at size of report
-        if($width < 7.5) {
+        if(($width/72) < 7.5) {
             $this->orientation = 'P';
         }
         else {
@@ -226,6 +242,38 @@ class androPagePDF extends fpdf {
     }
 
     /**
+     *  Automated report setup.  Setup an array of break
+     *  values if any of the columns actually have
+     *  sums, counts, or anything.
+     *
+     *  @param string $yamlP2  The processed page definition     
+     *  @since 4/3/08
+     */
+    function setupBreak($yamlP2) {
+        $retval = array();
+        $retcount= 0;
+        
+        foreach($yamlP2['table'] as $table=>$tabinfo) {
+            foreach($tabinfo['column'] as $colname=>$colinfo) {
+                if(ArraySafe($colinfo,'uino','N')=='Y') continue;
+                $bot=ArraySafe($colinfo,'break');
+                if($bot=='SUM' || $bot=='COUNT') {
+                    $retval[$colname] = 0;
+                    $retcount++;
+                }
+                else {
+                    $retval[$colname] = ' ';
+                }
+            }
+        }
+        
+        // The idea is to return an empty array if there is
+        // nothing to do.
+        if($retcount==0) return array();
+        return $retval;
+    }
+    
+    /**
      *  Processes the current row for report end totals
      *  by counting or summing values
      *
@@ -249,6 +297,49 @@ class androPagePDF extends fpdf {
         return $bottom;
     }
 
+    /**
+     *  Processes the current row for breaking totals
+     *
+     *  @param array $break   the current values for bottom
+     *  @param array $row     this particular row     
+     *  @since 4/3/08
+     */
+    function processForBreak($yamlP2,$bottom,$row) {
+        $x=0;
+        $keys=array_keys($row);
+        foreach($yamlP2['table'] as $table=>$tabinfo) {
+            foreach($tabinfo['column'] as $colname=>$colinfo) {
+                if(ArraySafe($colinfo,'uino','N')=='Y') continue;
+                $bot=ArraySafe($colinfo,'break');
+                $val=array_shift($row);
+                if($bot=='COUNT') $bottom[$keys[$x]]++;
+                if($bot=='SUM')   $bottom[$keys[$x]]+=$val;
+                if($bot=='Y')     $bottom[$keys[$x]]=$val;
+                $x++;
+            }
+        }
+        return $bottom;
+    }
+    
+    /**
+     *  Compares breaking variables to see if we broke
+     *
+     *  @param array $yamlP2  the processed YAML array
+     *  @param array $break   the current values for break
+     *  @param array $row     this particular row   
+     *  @since 4/3/08
+     */
+    function compareBreak($yamlP2,$bottom,$row) {
+        foreach($yamlP2['table'] as $table=>$tabinfo) {
+            foreach($tabinfo['column'] as $colname=>$colinfo) {
+                if(ArraySafe($colinfo,'break')<>'Y') continue;
+                if($bottom[$colname]<>$row[$colname]) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 
     /**
      *  The FPDF library that we use (which I love by the way)
@@ -265,7 +356,7 @@ class androPagePDF extends fpdf {
         }
         $this->DateAndPage();
         $this->nextLine();
-        $this->outFromArray($this->captions);
+        $this->outFromArray($this->captions,true);
         $this->LinesForColumns();
     }
 
@@ -304,11 +395,13 @@ class androPagePDF extends fpdf {
             $width = array_shift($colstuff);
             $align='L';
             $clip=0;
+            $money=false;
             foreach($colstuff as $onesetting) {
                 if($onesetting=='R') $align='R';
                 if(substr($onesetting,0,1)=='C') {
                     $clip=substr($onesetting,1);
                 }
+                if($onesetting=='M') $money=true;
             }
             //if(count($colstuff)>0) {
             //    $align = array_shift($colstuff);
@@ -318,6 +411,7 @@ class androPagePDF extends fpdf {
                 ,'width'=>$onestop * 72
                 ,'align'=>$align
                 ,'clip'=>$clip
+                ,'money'=>$money
             );
             $posx += ($gutter+$onestop) * 72;
         }
@@ -402,9 +496,9 @@ class androPagePDF extends fpdf {
      * }
      *
      */
-   function outFromArray($alist) {
+   function outFromArray($alist,$titles=false) {
        while($value = array_shift($alist)) {
-           $this->atNextCol($value);
+           $this->atNextCol($value,$titles);
        }
        $this->nextLine();
    }
@@ -423,7 +517,7 @@ class androPagePDF extends fpdf {
      *                    prior call to setupColumns()
      *
      */
-   function AtCol($col,$text,$flush='L') {
+   function AtCol($col,$text,$titles=false) {
        if(!isset($this->cols[$col])) {
            echo "<b>ERROR: Output past last column, did you 
             forget a \$this->nextLine()?";
@@ -438,6 +532,13 @@ class androPagePDF extends fpdf {
            //$max = intval($this->cols[$col]['clip']/$this->cpi);
            $text = substr($text,0,$this->cols[$col]['clip']);
        }
+       
+       // if a money column, reformat value, unless it
+       // looks like a 
+       if($this->cols[$col]['money'] && !$titles) {
+           $text = number_format($text);
+       }
+       
        $this->Setx($xposition);
        $this->Cell($width,0,$text,0,0,$align);
        $this->lastCol = $col;
@@ -457,8 +558,8 @@ class androPagePDF extends fpdf {
      *                    prior call to setupColumns()
      *
      */
-   function AtNextCol($text,$flush='L') {
-       $this->AtCol($this->lastCol+1,$text,$flush);
+   function AtNextCol($text,$titles=false) {
+       $this->AtCol($this->lastCol+1,$text,$titles);
    }
    
     /**

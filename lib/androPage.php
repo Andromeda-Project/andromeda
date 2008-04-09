@@ -199,10 +199,19 @@ class androPage {
         <br/><h1><?=$this->PageSubtitle?></h1>
         <?=$table->render()?>
         <br/>
-        <input type="submit" value="F10: Print Now" id="object_for_f10"
+        <input type="submit" value="Print Now" id="object_for_f10"
             onclick="javascript:formPost()"
         ></input>
         <?php
+        if(SessionGet('ADMIN')==true) {
+            ?>
+            &nbsp;&nbsp;
+            <input type="submit" name="showsql" value="Show SQL" 
+                onclick="javascript:formPost()"
+            ></input>
+            <?php
+        }
+        
         echo "\n<!-- x3HTML Render (END) -->\n";
     }
 
@@ -245,9 +254,15 @@ class androPage {
         // For each section, run the output
         foreach($this->yamlP2['section'] as $secname=>$secinfo) {
             $dbres = SQL($secinfo['sql']);
+            if(gpExists("showsql")) {
+                hprint_r($secinfo['sql']);
+            }
             if(Errors()) {
                 hprint_r($secinfo['sql']);
                 echo hErrors();
+            }
+            if(gpExists("showsql")) {
+                return;
             }
 
             // Now pass the SQL resource to the reporting engine
@@ -307,7 +322,7 @@ class androPage {
 
         // Go get the joins
         $SQL_FROMJOINS=$this->genSQLFromJoins($yamlP2);
-
+        
         // Get the values from the UI Filter fields into a temp array,
         // for use below in the column list building
         $SQL_COLSWHA=array();
@@ -347,6 +362,10 @@ class androPage {
         foreach($yamlP2['table'] as $table=>$table_info) {
             $table_dd = dd_TableRef($table);
             foreach($table_info['column'] as $colname=>$colinfo) {
+                if(ArraySafe($colinfo,'order','N')=='Y') {
+                    $SQL_COLSOBA[] = "$table.$colname";
+                }
+                
                 if(ArraySafe($colinfo,'uino','N')<>'Y') {
                     if(ArraySafe($table_info,'left_join','N')=='Y') {
                         $z = SQL_Format(
@@ -359,23 +378,32 @@ class androPage {
                         $coldef=$table.'.'.$colname;
                     }
                     if(ArraySafe($colinfo,'group','')<>'') {
+                        $coldef = str_replace("as $colname","",$coldef);
                         $coldef = $colinfo['group'].'('.$coldef.") as $colname";
                     }
                     $SQL_COLSA[] = $coldef;
                 }
 
+                $noempty = ArraySafe($colinfo,'no_empty_compare','Y');
                 if(isset($colinfo['compare'])) {
                     $compare = "$table.$colname ".$colinfo['compare'];
                     foreach($uifilter as $filtername=>$info) {
                         if(strpos($compare,'@'.$filtername)!==false) {
                             $type_id = $table_dd['flat'][$colname]['type_id'];
                             $val = SQL_FORMAT($type_id,$info['value']);
+                            if($noempty=='Y' && trim($info['value'])=='') {
+                                $compare='';
+                                break;
+                            }
                             $compare = str_replace(
                                 '@'.$filtername,$val,$compare
                             );
+                            
                         }
                     }
-                    $SQL_COLSWHA[] = $compare;
+                    if($compare<>'') {
+                        $SQL_COLSWHA[] = $compare;
+                    }
                 }
             }
         }
