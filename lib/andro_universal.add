@@ -377,7 +377,7 @@ table adm_emails {
 // System Variables
 // User-defined system variables control how things behave
 // =================================================================
-column variable       { description: Variable Name; type_id: char; colprec: 20; }
+column variable       { description: Variable Name; type_id: char; colprec: 25; }
 column variable_value { description: Value; type_id: text; }
 
 table variables {
