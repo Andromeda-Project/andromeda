@@ -1107,7 +1107,7 @@ var $a = {
                     $(":input[@xColumnId="+idx+"]")[0].value=retval;
                 }
             }
-        },
+        }
     },
 
     /**

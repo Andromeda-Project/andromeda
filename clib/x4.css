@@ -1,15 +1,101 @@
 /* --- The Layer class always contains all content --- */
 #andromeda_main_content {
     position: relative;
-    min-height: 300px;
+    min-height: 500px;
 }
-#Form1 div.x4Layer {
-    position: absolute;
+#Form1 div.x4Display {
+    position: relative;
     display: none;
-    top: 0;
+}
+
+/* +++ ---------------------------------------------- +++ */
+/* +++ The Menu Bar                                   +++ */
+/* +++ ---------------------------------------------- +++ */
+#Form1 div.x4MenuBar {
+  text-align: left;
+  font-family: Verdana;
+  padding: 8px;
+  padding-bottom: 4px;
+  padding-top: 6px; /* 4px only needed for firefox, 6 for ie */
+  padding-left: 0px;
+}
+
+#Form1 div.x4MenuBar A  { 
+   padding-top: 4px; padding-bottom: 4px;
+   padding-left:8px; padding-right: 8px;
+   border: 2px solid gray;
+   
+   /* this is gray, neutral for all styles */
+   background-color: #d8dce3;
+   margin-right: 15px;
+}
+
+/* +++ ---------------------------------------------- +++ */
+/* +++ The Row Info Bar                               +++ */
+/* +++ ---------------------------------------------- +++ */
+#x4RowInfo {
+  text-align: left;
+  font-family: Verdana;
+  padding: 8px;
+  padding-bottom: 4px;
+  padding-top: 6px; /* 4px only needed for firefox, 6 for ie */
+  padding-left: 0px;
+  margin: 8px 0;
+}
+
+#x4RowInfo A  { 
+   padding-top: 4px; padding-bottom: 4px;
+   padding-left:8px; padding-right: 8px;
+   border: 2px solid gray;
+   
+   /* this is gray, neutral for all styles */
+   background-color: #d8dce3;
+   margin-right: 15px;
+}
+
+/* +++ ---------------------------------------------- +++ */
+/* +++ The search grid styles                         +++ */
+/* +++ ---------------------------------------------- +++ */
+#Form1 .highlight {
+  color: white;
+  background-color: gray;
+}
+
+
+/* +++ ---------------------------------------------- +++ */
+/* +++ The Tab Bar                                    +++ */
+/* +++ ---------------------------------------------- +++ */
+#x4TabBar {
+    text-align: left;
+    font-family: Verdana;
+    padding: 8px 4px 5px 0;
+    border-bottom: 2px solid gray;
+}
+
+#x4TabBar A  { 
+   padding-top: 4px; padding-bottom: 4px;
+   padding-left:8px; padding-right: 8px;
+   border: 2px solid gray;
+   
+   /* this is gray, neutral for all styles */
+   background-color: #d8dce3;
+   margin-right: 15px;
+}
+
+/* +++ ---------------------------------------------- +++ */
+/* +++ The content view ports                         +++ */
+/* +++ ---------------------------------------------- +++ */
+/* --- for search grids --- */
+#Form1 .x4VerticalScroll1 {
+    position: absolute;
+    top: 15px;
     left: 0;
-    margin-left: 10px;
-    width: 900px;
+}
+/* ---- for tab bars ---- */
+#x4TabContainer {
+    position: absolute;
+    top: 65px;
+    left: 0;
 }
 
 

@@ -1,3 +1,8 @@
+#andromeda_main_content {
+    position: relative;
+    min-height: 300px;
+}
+
 /* ------------------------------------------------- */
 /* X3 styles are in x2, to keep from loading a new   */
 /* file                                              */

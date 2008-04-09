@@ -842,6 +842,7 @@ function x4Detail(oHTML,oParent) {
         var row  = $a.json.data.row;
         for(var idx in x4dd.dd[this.xTableId].fk_children) {
             var tabChild = x4dd.dd[this.xTableId].fk_children[idx].table_id;
+            if(typeof(x4dd.dd[tabChild])=='undefined') continue;
             var dd = x4dd.dd[tabChild];
             for(var pkidx in apks) {
                 var pk = apks[pkidx];

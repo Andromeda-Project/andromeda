@@ -17,8 +17,10 @@ cssInclude('clib/raxlib.css');
 
 
 // The new css library for x4 and the new js library for x4
-cssInclude('clib/x4.css');
-jsInclude('clib/androX4.js');
+if(gp('gp_page')=='androX4Menu') {
+    cssInclude('clib/x4.css');
+    jsInclude('clib/androX4.js');
+}
 
 // Try out the ui.datepicker for JQuery
 cssInclude('clib/ui.datepicker.css');
