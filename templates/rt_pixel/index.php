@@ -28,7 +28,7 @@ $default_color = "blue";           // red | blue | green | orange
 $default_contrast = "light";	// light | med | dark
 $show_access = "true";            // true | false
 $show_menu = "true";             // true | false
-if(gp('gp_page')=='androX4') {
+if(gp('gp_page')=='androX4Menu') {
     $show_menu= false;
 }
 $show_pathway = "false";        // true | false
@@ -265,11 +265,28 @@ if (window.attachEvent) window.attachEvent("onload", sfHover);
 			</div>
             <?php } ?>
 		</div>
+        <?php if(gp('gp_page')<>'androX4Menu') { ?>
 		<div id="bot-rocket">
 			<a href="http://www.rockettheme.com"><span class="rocket">&nbsp;</span></a>
 		</div>
+        <?php } ?>
 	</div>
 
+<div id="jqmModal" class="jqmWindow">
+       <table border="0" 
+         cellspacing="0" cellpadding="0" 
+         style="width:100%:height:100%;" 
+         id="jqmModalWindow">
+               <tr class="jqmHeader">
+                       <td id="jqmTitle" ></td>
+               </tr>
+               <tr>
+                       <td colspan="2" class="jqmBody" id="jqmMessage">
+                       </td>
+               </tr>
+       </table>
+</div>    
+    
 <?php mosLoadModules( 'debug', -1 );?>
 <!-- ================= -->
 <!-- Andromeda Changes -->
