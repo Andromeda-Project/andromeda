@@ -23,7 +23,7 @@
             if ( $this->type == 'UI' ) {
                 $arr1 = split( ",", $args );
                 foreach( $arr1 as $ar1 ) {
-                        $arr2 = split( "=", $ar1);
+                        $arr2 = split( ";", $ar1);
                         if ( in_array( $arr2[0], $this->reserved ) ) {
                             trigger_error( "AndroPlugin: Reserved word \"" . $arr2[0] ."\" cannot be used" , E_USER_ERROR );
                         } else {
