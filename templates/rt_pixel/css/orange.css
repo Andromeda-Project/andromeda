@@ -18,7 +18,7 @@ body #color-insert {
 }
 
 /* menu area */
-div#horiz-menu {
+div#horiz-menu, td#jqmTitle {
 	border-color: #BF5A21; 
 	background: #D96726; 
 }

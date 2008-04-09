@@ -114,6 +114,7 @@ td.x3input .x3ro {
    
    /* this is gray, neutral for all styles */
    background-color: #d8dce3;
+  margin-right: 15px;
 }
 .x2menubar A:hover  { background-color: white; } 
 .x2menubar A:active { background-color: white; } 
@@ -122,6 +123,7 @@ td.x3input .x3ro {
    padding-top: 4px; padding-bottom: 4px;
    padding-left:8px; padding-right: 8px;
 
+    margin-right: 15px;
    background-color: #c0c0c0;
    color: #707070;
    border: 2px solid #5A5A5A;
