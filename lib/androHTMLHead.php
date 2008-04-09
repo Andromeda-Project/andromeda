@@ -4,14 +4,21 @@ echo "\n<title>".vgfGet('pageTitle')."</title>\n";
 // We now include JQuery all of the time
 jsInclude('clib/jquery-1.2.3.js','JQuery is distributed under the GPL
       license, written by a team of programmers, more info at
-      http://www.jquery.com');
+      http://www.jquery.com'
+);
+//jsInclude('clib/jQuery.moreSelectors.js','By George Adamson at
+//    http://www.softwareunity.com/sandbox/JQueryMoreSelectors/'
+//);
 
 // This is the old CSS library for x2
 cssInclude('templates/'.$mainframe->getTemplate().'/css/x2.css');
+// ..and this (misnamed) holds info for dynamic select
+cssInclude('clib/raxlib.css');
+
 
 // The new css library for x4 and the new js library for x4
 cssInclude('clib/x4.css');
-jsInclude('clib/androLib.js');
+jsInclude('clib/androX4.js');
 
 // Try out the ui.datepicker for JQuery
 cssInclude('clib/ui.datepicker.css');
@@ -20,9 +27,10 @@ jsInclude('clib/ui.datepicker.js');
 // Another jquery add-on: key  navigation 
 //jsInclude('clib/keynav.js');
 // Yet another jquery add-on: blocking the UI, useful when calling an alert
-//jsInclude('clib/jqModal.js','jqModal was written by Brice Burgess
-//     and is distributed under the MIT license.  His website is
-//     http://dev.iceburg.net/jquery/jqModal/');
+jsInclude('clib/jqModal.js','jqModal was written by Brice Burgess
+     and is distributed under the MIT license.  His website is
+     http://dev.iceburg.net/jquery/jqModal/');
+cssInclude('clib/jqModal.css');
 
 
 $styles = ElementImplode('styles');
@@ -46,7 +54,7 @@ if($script<>'') {
 }
 
 // Standard Andromeda Libraries
-jsInclude('clib/raxlib.js');
+jsInclude('clib/androLib.js');
 
 // DHTML Goodies calendar
 if(vgfGet('suppress_goodies_calendar')!==true) { 

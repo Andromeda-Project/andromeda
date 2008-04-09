@@ -196,6 +196,16 @@ function json_encode_safe($data) {
 # ==============================================================
 // KFD X4
 function html($tag,&$parent=null,$innerHTML='') {
+    // Branch off if an array and return an array
+    if(is_array($innerHTML) ) {
+        $retval = array();
+        foreach($innerHTML as $oneval) {
+            $retval[] = html($tag,$parent,$oneval);
+        }
+        return $retval;
+    }
+    
+    
     $retval = & new androHtml();
     $retval->setHtml($innerHTML);
     
@@ -229,6 +239,14 @@ class androHtml {
     function addClass($value) {
         $this->classes[] = $value;
     }
+    function removeClass($value) {
+        $index = array_search($value,$this->classes);
+        if($index) unset($this->classes[$index]);
+    }
+    function addChild($object) {
+        $this->children[] = $object;
+    }
+    
     
     #  Returns pointer to first child
     function firstChild() {
@@ -276,7 +294,7 @@ class androHtml {
             $parms.="\n    $parmname=\"$parmvalue\"";
         }
         if(count($this->ap)>0) {
-            $js = "\nvar x = x4.byId('".$this->hp['id']."');";
+            $js = "\nvar x = \$a.byId('".$this->hp['id']."');";
             foreach($this->ap as $parmname=>$parmvalue) {
                 $js.="\nx.$parmname=\"$parmvalue\"";
             }
@@ -331,11 +349,46 @@ function input($colinfo) {
         $input->hp['rows'] = $rows;
         $input->hp['cols'] = $cols;
     }
-    elseif(a($colinfo,'table_id_fko')<>'' && a($colinfo,'fkdisplay'=='')) {
-        $input = html('select');
+    elseif(a($colinfo,'table_id_fko')<>'') {
+        // First work out which control to use
+        $table_id_fko = $colinfo['table_id_fko'];
+        if(a($colinfo,'fkdisplay')=='') {
+            $input = html('select');
+            $rows = rowsForSelect($colinfo['table_id_fko']);
+            $x = '';
+            foreach($rows as $row) {
+                $x .="<option value='".$row['_value']."'>"
+                    .$row['_display']."</option>";
+            }
+            $input->setHtml($x);
+        }
+        else {
+            $input = html('input');
+            $fkparms='gp_dropdown='.$colinfo['table_id_fko'];
+            $input->hp['onkeyup']  ="androSelect_onKeyUp(  this,'$fkparms',event)";
+            $input->hp['onkeydown']='androSelect_onKeyDown(event)';
+        }
+        
+        // If any columns are supposed to fetch from here, 
+        // set an event to go to server looking for fetches
+        //
+        if($table_id <> '') {
+            $tabdd = ddTable($table_id);
+            $fetchdist = $table_id."_".$table_id_fko."_";
+            if(isset($tabdd['FETCHDIST'][$fetchdist])) {
+                $input->hp['onchange'] 
+                    ="\$a.forms.fetch("
+                    ."'$table_id','$column_id',this.value"
+                    .")";
+            }        
+        }
     }
     else {
         $input = html('input');
+    }
+    
+    #  If we ended up with an INPUT above, set the size
+    if($input->htype=='input') {
         $input->hp['size'] = min(
             a($colinfo,'dispsize',30)
             ,OptionGet('dispsize',30)
@@ -344,8 +397,8 @@ function input($colinfo) {
     }
     
     # Establish identifying stuff
-    $input->ap['x_table_id']  = $table_id;
-    $input->ap['x_column_id'] = $column_id;
+    $input->ap['xTableId']  = $table_id;
+    $input->ap['xColumnId'] = $column_id;
     if($table_id<>'') {
         $input->hp['id'] = 'x4inp_'.$table_id.'_'.$column_id;
     }
@@ -362,21 +415,21 @@ function input($colinfo) {
     
     # Work out the read-only status for insert and update
     # Begin with unconditional
-    $input->ap['x_ro_ins'] = a($colinfo,'uiro','N');
-    $input->ap['x_ro_upd'] = a($colinfo,'uiro','N');
+    $input->ap['xRoIns'] = a($colinfo,'uiro','N');
+    $input->ap['xRoUpd'] = a($colinfo,'uiro','N');
     $autos = array('SUM','COUNT','FETCH','DISTRIBUTE','SEQUENCE'
         ,'TS_INS','TS_UPD','UID_INS','UID_UPD','EXTEND'
     );
     if(in_array(a($colinfo,'automation_id','none'),$autos)) {
-        $input->ap['x_ro_ins'] = 'Y';
-        $input->ap['x_ro_upd'] = 'Y';
+        $input->ap['xRoIns'] = 'Y';
+        $input->ap['xRoUpd'] = 'Y';
     }
     if(a($colinfo,'uiro','N')=='Y') {
-        $input->ap['x_ro_ins'] = 'Y';
-        $input->ap['x_ro_upd'] = 'Y';
+        $input->ap['xRoIns'] = 'Y';
+        $input->ap['xRoUpd'] = 'Y';
     }
     if(a($colinfo,'primary_key','N')=='Y') {
-        $input->ap['x_ro_upd'] = 'Y';
+        $input->ap['xRoUpd'] = 'Y';
     }
     
     # Put on special classes that will be used by JQuery 
@@ -385,17 +438,13 @@ function input($colinfo) {
     }
 
     # These are universal properties that were passed in    
-    $input->ap['x_type_id'] = $type_id;
-    $input->ap['x_colprec'] = $colprec;
-    $input->ap['x_colscale'] = $colscale;
+    $input->ap['xTypeId'] = $type_id;
+    $input->ap['xColprec'] = $colprec;
+    $input->ap['xColscale'] = $colscale;
     
     # For now that's all we are going to do.
     return $input;    
 }
-
-
-
-
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -919,14 +968,15 @@ function ddTable($table_id) {
     if(is_array($table_id)) {
         $table_id = $table_id['table_id'];
     }
-    if(isset($GLOBALS['AG']['tables'][$table_id]));
-    $retval = &$GLOBALS['AG']['tables'][$table_id];
-    return $retval;
+    if(isset($GLOBALS['AG']['tables'][$table_id])) {
+        $retval = &$GLOBALS['AG']['tables'][$table_id];
+        return $retval;
+    }
     
     # First run the include and get a reference
 	include_once("ddtable_".$table_id.".php");
     $tabdd = &$GLOBALS['AG']['tables'][$table_id];
-	
+    
     # First action, assign the permissions from the session so
     # they are handy
     $tabdd['perms']['menu']
@@ -944,11 +994,23 @@ function ddTable($table_id) {
     # which may change below
     $tabdd['viewname'] = $table_id;
     
+    #  Work out the singular form of the description
+    if(!isset($tabdd['singular'])) {
+        $desc = $tabdd['description'];
+        if(substr($desc,-3)=='ies') {
+            $sing = substr($desc,0,strlen($desc)-3).'y';
+        }
+        else {
+            $sing = substr($desc,0,strlen($desc)-1);
+        }
+        $tabdd['singular'] = $sing;
+    }    
+    
     # --> EARLY RETURN
     #     If a root user, or there is no group, no point
     #     in continuing
-    if(SessionGet('ROOT')) return;
-    if(SessionGet('GROUP_ID_EFF','')=='') return;
+    if(SessionGet('ROOT')) return $tabdd;
+    if(SessionGet('GROUP_ID_EFF','')=='') return $tabdd;
     
     # Capture the effective group and keep going
     $group = SessionGet('GROUP_ID_EFF');
@@ -974,6 +1036,7 @@ function ddTable($table_id) {
             }
         }
     }    
+    return $tabdd;
 }
 
 // KFD X4
@@ -11327,8 +11390,8 @@ function RowsForSelect($table_id,$firstletters='',$matches=array(),$distinct='',
    if($allcols) {
        $sq="SELECT skey,$proj 
               FROM $view_id 
-           $SWhere 
-             ORDER BY 3 $SLimit";
+           $SWhere  
+            ORDER BY 2 $SLimit";
    }
    else {
        $sq="SELECT $sDistinct $pk as _value,$collist as _display 
