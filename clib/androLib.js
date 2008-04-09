@@ -761,7 +761,7 @@ function field_changed(page,field,value) {
 }
 
 function andrax(getString,handler) {
-    http.open('get', 'index.php'+getString);
+    http.open('POST', 'index.php'+getString);
     if(handler==null) {
         http.onreadystatechange = handleResponse;
     }
