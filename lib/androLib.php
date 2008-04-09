@@ -182,7 +182,7 @@ function json_encode_safe($data) {
         return json_encode($data);
     }   
     else {
-        return '{ "error": ["JSON extension not available on server"] }';
+        return '{ "error": ["No JSON function in this version of PHP!"] }';
     }      
     return;
 }
