@@ -77,7 +77,14 @@ $AG['clean'] = array_merge($AG['clean'],$_POST,$_GET);
 if(ini_get('magic_quotes_gpc')) {
     foreach($AG['clean'] as $var=>$value) {
         if($var=='gpContext') continue;
-        $AG['clean'][$var]=stripslashes($value);  
+        if(!is_array($value)) {
+            $AG['clean'][$var]=stripslashes($value);
+        }
+        else {
+            foreach($value as $key=>$subval) {
+                $AG['clean'][$var][$key] = stripslashes($subval);
+            }
+        }
     }
 }
 
@@ -293,17 +300,17 @@ if(function_exists('app_after_db_connect')) {
 // Only one path can be chosen, and each path is completely
 // responsible for returning all headers, HTML or anything
 // else it wants to send back.
-if(gpExists('gp_command')) index_hidden_command();
-if(gp('ajxFETCH')   =='1') index_hidden_ajxFETCH();
-if(gp('ajxfSELECT')  <>'') index_hidden_ajxfSELECT();
-if(gp('ajxc1table')  <>'') index_hidden_ajx1ctable();
-if(gp('gp_function') <>'') index_hidden_function();
-if(gp('gp_dropdown') <>'') index_hidden_dropdown();
-if(gp('gp_fetchrow') <>'') index_hidden_fetchrow();
-if(gp('gp_sql')      <>'') index_hidden_sql();
-if(gp('gp_ajaxsql')  <>'') index_hidden_ajaxsql();
-if(gp('json')       <>'')  index_hidden_JSONDispatch();
-else                       index_hidden_page();
+if(    gpExists('gp_command')) index_hidden_command();
+elseif(gp('ajxFETCH')   =='1') index_hidden_ajxFETCH();
+elseif(gp('ajxfSELECT')  <>'') index_hidden_ajxfSELECT();
+elseif(gp('ajxc1table')  <>'') index_hidden_ajx1ctable();
+elseif(gp('gp_function') <>'') index_hidden_function();
+elseif(gp('gp_dropdown') <>'') index_hidden_dropdown();
+elseif(gp('gp_fetchrow') <>'') index_hidden_fetchrow();
+elseif(gp('gp_sql')      <>'') index_hidden_sql();
+elseif(gp('gp_ajaxsql')  <>'') index_hidden_ajaxsql();
+elseif(gp('json')       <>'')  index_hidden_JSONDispatch();
+else                           index_hidden_page();
 
 
 // All finished, disconnect and leave. 
@@ -341,7 +348,7 @@ function index_hidden_JSONDispatch() {
     // Now determine the method to invoke.  If none was named,
     // do a browse
     //
-    $method = gp('x4Action','browse');
+    $method = gp('x4Action','main');
     
     // We do buffering because we assume any direct HTML output has
     // to be an error.
@@ -491,7 +498,6 @@ function index_hidden_command() {
 //    Active 1/17/07, used by ajax-dyanmic-list
 // ------------------------------------------------------------------
 function index_hidden_dropdown() {
-  
    // Get the target table that we need
    $table_id_fk=gp('gp_dropdown');
    
@@ -532,7 +538,7 @@ function index_hidden_dropdown() {
                 .$tds;
        }
        echo ob_get_clean();
-       return;                                               
+       return;
    }
    
    
