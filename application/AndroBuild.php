@@ -1665,9 +1665,12 @@ function SpecFlatten_FixFKO() {
     $sql="
 update zdd.tabflat_c 
    SET table_id_fko = x.table_id_par
+      ,column_id_fko = x.column_id_fko
   FROM
 (
-select fk.table_id,fk.table_id_par,fk.prefix || tf.column_id || fk.suffix as column_id
+select fk.table_id,fk.table_id_par
+      ,fk.prefix || tf.column_id || fk.suffix as column_id
+      ,tf.column_id as column_id_fko
   from zdd.tabfky_c  fk
   JOIN zdd.tabflat_c tf ON fk.table_id_par = tf.table_id
  WHERE tf.primary_key = 'Y'
@@ -5625,8 +5628,8 @@ select table_id,column_id,
     $errors+=$this->SpecValidateRI('tabcascols'   ,'column_id','Upsave Definition');
     $errors+=$this->SpecValidateRI('histcols'     ,'retcol'   ,'History Definition');
     $errors+=$this->SpecValidateRI('tabprojcols'  ,'column_id','Projection');
-    $errors+=$this->SpecValidateRI('colchaintests','column_id','Chain Definition');
-    $errors+=$this->SpecValidateRI('colchainargs' ,'column_id_arg','Chain Definition');
+    $errors+=$this->SpecValidateRI('colchaintests','column_id','Chain Test Definition');
+    $errors+=$this->SpecValidateRI('colchainargs' ,'column_id_arg','Chain Argument Definition');
     
     // Some manual RI checks
     $sq="SELECT h.history,hc.table_id,hc.column_id
@@ -5656,7 +5659,7 @@ select table_id,column_id,
 
 function SpecValidateRI($table,$col,$description) {
     $errors = 0;
-    $sq="SELECT * FROM zdd.{$table}_c
+    $sq="SELECT table_id,{$col} as column_id FROM zdd.{$table}_c
           WHERE $col <> ''
             AND NOT EXISTS (
                 SELECT * from zdd.tabflat_c 
