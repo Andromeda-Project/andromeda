@@ -172,6 +172,7 @@ class androPagePDF extends fpdf {
                 $suffix = '';
                 if(in_array(trim($type_id),array('money','numb','int'))) {
                     $suffix .= ':R';
+                    $suffix .= ':'.trim($dd['flat'][$colname]['colscale']);
                 }
                 if(trim($type_id)=='money') {
                     $suffix .= ':M';
@@ -395,13 +396,18 @@ class androPagePDF extends fpdf {
             $width = array_shift($colstuff);
             $align='L';
             $clip=0;
-            $money=false;
+            $money=false;  // WARNING: No longer used as of 4/9/08 KFD
+            $colscale = 0;
             foreach($colstuff as $onesetting) {
                 if($onesetting=='R') $align='R';
                 if(substr($onesetting,0,1)=='C') {
                     $clip=substr($onesetting,1);
                 }
-                if($onesetting=='M') $money=true;
+                
+                //if($onesetting=='M') $money=true;
+                if($onesetting>=1 && $onesetting<=9) {
+                    $colscale = $onesetting;
+                }
             }
             //if(count($colstuff)>0) {
             //    $align = array_shift($colstuff);
@@ -411,6 +417,7 @@ class androPagePDF extends fpdf {
                 ,'width'=>$onestop * 72
                 ,'align'=>$align
                 ,'clip'=>$clip
+                ,'colscale'=>$colscale
                 ,'money'=>$money
             );
             $posx += ($gutter+$onestop) * 72;
@@ -535,8 +542,13 @@ class androPagePDF extends fpdf {
        
        // if a money column, reformat value, unless it
        // looks like a 
-       if($this->cols[$col]['money'] && !$titles) {
-           $text = number_format($text);
+       //if($this->cols[$col]['money'] && !$titles) {
+       //     $text = number_format($text);
+       //}
+       if($this->cols[$col]['colscale'] > 0 && !$titles) {
+            $colscale = $this->cols[$col]['colscale'];
+            $text = number_format($text,$colscale);
+            
        }
        
        $this->Setx($xposition);
