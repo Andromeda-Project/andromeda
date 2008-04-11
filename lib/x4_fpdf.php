@@ -1,10 +1,10 @@
 <?php
+include_once('PEAR.php');
+include_once('fpdf153/fpdf.php');
 
-require_once 'PEAR.php';
-require_once 'fpdf153/fpdf.php';
 
 
-/**
+/*
  *
  * Creates conventional business reports as PDF
  * files.  Is column-oriented, the programmer defines the

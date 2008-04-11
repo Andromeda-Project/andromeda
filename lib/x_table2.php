@@ -475,7 +475,7 @@ class x_table2 {
                ="<tr>"
                ."<td height=\"40\" valign=top>"
                ."\n<div class=\"x2menubar\">\n"
-               .implode("\n&nbsp;&nbsp;",$buts)
+               .implode("\n&nbsp;",$buts)
                ."\n</div>";
          }
       }
