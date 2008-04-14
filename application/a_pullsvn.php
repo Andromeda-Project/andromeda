@@ -194,6 +194,9 @@ class a_pullsvn extends x_table2 {
                 continue;
             }
 
+            # Add a trailing slash to svn_url
+            $row['svn_url'] = AddSlash(trim($row['svn_url']));
+            
             x_echoFlush("  SVN Repository: ".$row['svn_url']);
             $command = 'svn list '.$row['svn_url'];
             x_echoFlush("  Command: ".$command);
