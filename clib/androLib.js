@@ -1054,13 +1054,13 @@ function androSelect_click(value,suppress_focus) {
     }
 }
 
-
 /*
  * This is the General Purpose Library of most basic 
  * Andromeda javascript functions.  It has a long 
  * complex name: $a
  *            
  */
+
 var $a = {
     /*
      * Dialogs.  Placeholders to use JQuery plugins
@@ -1085,7 +1085,7 @@ var $a = {
                +'<input type="button" name="OK" value="OK" class="jqmClose" '
                +'   style="font-weight:bold;text-align:center;'
                +'cursor:pointer;" /></p>');
-           $('#jqmModal').jqm({modal:true,overlay:75}).jqmShow();        
+           $('#jqmModal').jqm({modal:true,overlay:75,onHide:jqModalClose,onShow:jqModalOpen}).jqmShow();
         }
     }, 
     
@@ -1352,4 +1352,5 @@ jQuery.fn.focusTrack = function(newContext) {
     });
 }
 
-
+var jqModalClose=function(hash) { hash.w.fadeOut(500, function() { hash.o.fadeOut(250);}); };
+var jqModalOpen=function(hash) { hash.w.fadeIn(500);hash.o.fadeIn(500);};
