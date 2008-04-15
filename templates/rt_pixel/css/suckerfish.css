@@ -74,7 +74,7 @@
 	position: absolute;
 	left: -999em;
 	height: auto;
-	width: 170px;
+	width: 225px;
 	font-weight: normal;
 	border-width: 0;
 	margin: 0;
@@ -93,12 +93,12 @@
 #nav li li {
 	float: left;
 	padding: 0;
-  width: 170px;
+  width: 225px;
 }
 
 /* margin for pullouts */
 #nav li ul ul {
-	margin: -23px 0 0 170px;
+	margin: -23px 0 0 225px;
 }
 
 

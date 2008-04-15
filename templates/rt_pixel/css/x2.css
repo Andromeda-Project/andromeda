@@ -3,6 +3,15 @@
     min-height: 300px;
 }
 
+div.warning {
+    border: 2px solid red;
+    background: yellow;
+    padding: 10px;
+    margin: 10px;
+    color: black;
+    font-weight: bolder;    
+}
+
 /* ------------------------------------------------- */
 /* X3 styles are in x2, to keep from loading a new   */
 /* file                                              */

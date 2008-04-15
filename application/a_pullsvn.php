@@ -6,11 +6,13 @@ class a_pullsvn extends x_table2 {
       * 
       */
     function main() {
-        if(gpExists('gp_set')) $this->mainDevSet();
+        # KFD 4/15/08, overhaul to go app-by-app on downloads
+        #if(gpExists('gp_set')) $this->mainDevSet();
         
-        $dev_station = OptionGet('DEV_STATION');
-        if($dev_station=='') return $this->mainPick();
-        if($dev_station=='Y') return $this->mainNotAllowed();
+        # KFD 4/15/08, overhaul to go app-by-app on downloads
+        #$dev_station = OptionGet('DEV_STATION');
+        #if($dev_station=='') return $this->mainPick();
+        #if($dev_station=='Y') return $this->mainNotAllowed();
         
         if(gpExists('svnpull')) return $this->mainPull();
         else $this->mainHTML();
@@ -23,6 +25,7 @@ class a_pullsvn extends x_table2 {
       *  the setting change now.
       * 
       */
+    /* KFD 4/15/08
     function mainDevSet() {
         $row = array(
             'variable'=>'DEV_STATION'
@@ -35,6 +38,7 @@ class a_pullsvn extends x_table2 {
         // a force cache reload.
         OptionGet('X');
     }
+    */
     
     /**
       *  If the user has never set the DEV_STATION flag
@@ -43,6 +47,7 @@ class a_pullsvn extends x_table2 {
       *  or a server.
       * 
       */
+    /* KFD 4/15/08
     function mainPick() {
         ?>
         <h1>Updates From SVN</h1>
@@ -74,12 +79,14 @@ class a_pullsvn extends x_table2 {
         </div>
         <?php
     }
+    */
         
     /**
       *  If this is a dev workstation the user may not do
       *  software downloads.  
       * 
       */
+    /* KFD 4/15/08
     function mainNotAllowed() {
         ?>
         <h1>Updates From SVN</h1>
@@ -109,6 +116,7 @@ class a_pullsvn extends x_table2 {
         </div>
         <?php
     }
+    */
     
     /**
      * The user is running on a server and wants to get the
@@ -143,28 +151,73 @@ class a_pullsvn extends x_table2 {
         </script>
         
         
+        
         <div id="svn1">
-        <h1>Check For Updates</h1>
+        <h1>Pull Code From Subversion</h1>
         
-        <p>Click the link below to search all SVN repositories
-        for software updates.  The search will cover:
-        </p>
-        
-        <table id="chart">
-          <thead><tr><th>Application
-                     <th>SVN Repository
-                     <th>Local Version
-          </thead>
-        <?php foreach($rows as $row) { ?>
-            <tr><td><?=$row['application']?>
-                <td><?=$row['svn_url']?>
-                <td><?=$row['local']?>
+        <?php if(count($rows)==0) { ?>
+            <b>None of your applications have the "Overwrite From SVN" flag
+               set to "Y".  Therefore there is nothing to do on this page.
+               <br/><br/>
+               This may not be a bad thing -- normally on a development
+               workstation you do not use this feature because you use a 
+               Subversion client manually.
+               <br/><br/>
+               If this is a server
+               then you will want to set the "Overwrite From SVN" flag to 
+               "Y" for each application you will host on this server.
+            </b>
+            <?php return; ?>
         <?php } ?>
-        </table>
         
+        <div class="warning">
+        Warning! If you use this program on a development workstation you
+        can <i>overwrite your own work</i>, because this program 
+        unconditionally overwrites the application code.  On development
+        workstations you should use manual Subversion tools.
+        </div>
+        <h2>Application List</h2>
+        <table id="chart">
+          <thead><tr><th>Application / Respository
+                     <th>Local Version
+                     <th>User Name
+                     <th>Password
+          </thead>
+        <?php
+        $dd = ddTable('applications');
+        foreach($rows as $row) {
+            $tr = html('tr');
+            $a=html('a');
+            $a->setHTML($row['application']);
+            $a->hp['href']="?gp_page=applications&gp_skey=".$row['skey'];
+            $td = html('td',$tr,$a->bufferedRender());
+            $td = html('td',$tr,$row['local']);
+            $td = html('td',$tr,$row['svn_uid']);
+            $pwd = $row['svn_pwd']=='' ? '' : '********';
+            $td = html('td',$tr,$pwd);
+            $tr->render();
+            
+            $tr = html('tr');
+            $td = html('td',$tr,$row['svn_url']."<br/><br/>");
+            $td->hp['colspan'] = 4;
+            $tr->render();
+        }
+        ?>
+        </table>
+
+        <br/>
+        <br/>
+        This program will use any username and password that are supplied.
+        If they are not supplied, the program assumes they are not
+        needed.  If you need to change the username or password, go to the
+        details page for the particular application.
         <br/>
         <br/>
         <a href="javascript:svnSearch()">Search For Updates Now</a>
+
+        <br/>
+        <br/>
+        <a href="javascript:window.location.reload()">Refresh This Page</a>
         
         </div>
         <?php
@@ -179,8 +232,11 @@ class a_pullsvn extends x_table2 {
      *
      */
     function mainPull() { 
+        # Don't hold up the system
+        Session_write_close();
+        
         $rows=svnVersions();
-        $dir=$GLOBALS['AG']['dirs']['root'].'pkg-apps/';
+        $dir=fsDirTop().'pkg-apps/';
 
         x_echoFlush('<pre>');
         x_EchoFlush('<h2>Pulling Software Updates From SVN</h2>');
@@ -197,57 +253,63 @@ class a_pullsvn extends x_table2 {
             # Add a trailing slash to svn_url
             $row['svn_url'] = AddSlash(trim($row['svn_url']));
             
-            x_echoFlush("  SVN Repository: ".$row['svn_url']);
-            $command = 'svn list '.$row['svn_url'];
-            x_echoFlush("  Command: ".$command);
+            # If there is a username and password both, use those
+            $urlDisplay = $row['svn_url'];
+            $url = $row['svn_url'];
+            if($row['svn_uid']<>'' && $row['svn_pwd'] <> '') {
+                list($proto,$urlstub) = explode("//",$url);
+                $uid=$row['svn_uid'];
+                $pwd=$row['svn_pwd'];
+                $url="$proto//$uid:$pwd@$urlstub";
+                $urlDisplay = "$proto//$uid:*****@$urlstub";
+                    
+            }
+            x_echoFlush("  Complete URL: ".$urlDisplay);
+            
+            # Now pull the list of versions
             x_echoFlush("  Querying for latest version");
-            $rawtext = `$command`;
-            //x_echoFlush("  return is: $rawtext");
-            if($rawtext=='') {
+            $rawtext = file_get_contents($url);
+            $matches=array();
+            preg_match_all('!\<li\>\<a.*\>(.*)\</a\>\</li\>!U',$rawtext,$matches);
+            $versions = $matches[1];
+            if(count($versions)==0) {
                 x_EchoFlush("  No versions listed, nothing to pull.");
                 continue;
             }
-            $rawtext = str_replace("\r","",$rawtext);
-            $lines = explode("\n",$rawtext);
-            // clear blank entry, then fetch latest
-            array_pop($lines);
-            if(count($lines)==0) {
-                x_EchoFlush("  There are no versions listed, nothing to pull.");
-                continue;
-            }
-            $latest=array_pop($lines);
+            
+            # Work out what the latest was and report it
+            $latest=array_pop($versions);
             if(substr($latest,-1)=='/') {
                 $latest = substr($latest,0,strlen($latest)-1);
             }
-            
             x_echoFlush("  Latest version is: ".$latest);
             x_EchoFlush("  Local version is: ".$row['local']);
 
+            # Decide if we need to continue
             if($latest == $row['local']) {
                 x_EchoFlush("  Local version is latest, nothing do to.");
+                continue;
+            }
+
+            # Determine some stub values and pass processing to
+            # the recursive file puller
+            x_EchoFlush("  Local version is out of date, pulling latest");
+            $dirv = $dir.trim($row['application']).'-VER-'.$latest.'/';
+            mkdir($dirv);
+            $this->svnWalk("$url/$latest/",$dirv);
+            
+            x_echoFlush("  Copying files into application directory");
+            $basedir = str_replace( 'andro/', '', fsDirTop()); 
+            if ( isWindows() ) {
+               $command = 'xcopy /y /e /c /k /o ' .$dirv .'* ' 
+                    .$basedir .trim( $row['application'] ) .'/';
             }
             else {
-                x_EchoFlush("  Local version is out of date, pulling latest");
-                $dirv = $dir.trim($row['application']).'-VER-'.$latest;
-                $command = 'svn export '.
-                    $row['svn_url'].$latest.' '.$dirv;
-                x_echoFlush(
-                    "  Pulling code now, this make take a minute or three..."
-                );
-                `$command`;
-                x_echoFlush("  Code pulled, finished with this application.");
-                if ( OptionGet( 'BUILD_ALL_APPS','N')== 'Y' && trim( $row['application'] ) != 'andro' ) {
-                        x_echoFlush( "  BUILD_ALL_APPS is set to Y: Copying release to appropriate directory for building" );
-                        $basedir = str_replace( 'andro/', '', $GLOBALS['AG']['dirs']['root'] );
-                        if ( isWindows() ) {
-                                $command = 'xcopy /y /e /c /k /o ' .$dirv .'/* ' .$basedir .trim( $row['application'] ) .'/';
-                        } else {
-                                $command2 = 'cp -Rf ' .$dirv .'/* ' .$basedir .trim( $row['application']) .'/';
-                        }
-                        `$command2`;
-                        echo( $command2 );
-                }
+               $command2 = 'cp -Rf ' .$dirv .'* ' 
+                    .$basedir .trim( $row['application']) .'/';
             }
+            echo( $command2 );
+            `$command2`;
         }
         
         x_echoFlush("<hr/>");
@@ -255,5 +317,31 @@ class a_pullsvn extends x_table2 {
         
         $this->flag_buffer=false;
     }        
+    
+    function svnWalk($url,$dirv) {
+        x_EchoFlush("    Directory: ".$dirv);
+        # pull the URL, which is expected to be a list
+        # of directories and files, and process each
+        # accordingly
+        #
+        $raw = file_get_contents($url);
+        $matches=array();
+        preg_match_all('!\<li\>\<a.*\>(.*)\</a\>\</li\>!U',$raw,$matches);
+        $files = $matches[1];
+        
+        #  A trailing backslash means a directory, make the
+        #  directory and recurse.  Otherwise write the file
+        foreach($files as $file) {
+            if($file=='..') continue;
+            if(substr($file,-1)=='/') {
+                mkdir($dirv.$file);
+                $this->svnWalk($url."/$file",$dirv.$file);
+            }
+            else {
+                $fileText = file_get_contents($url.$file);
+                file_put_contents($dirv.$file,$fileText);
+            }
+        }
+    }
 }
 ?>

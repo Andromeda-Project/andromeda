@@ -1,4 +1,10 @@
 <?php
+# Deprecate files list:
+#
+# a_pullsvna.php, since 4/14/08, not necessary after we "rationalized"
+#                  the downloads.
+
+
 SessionSet('TEMPLATE','rt_pixel');
 //vgaSet('MENU_TYPE','TABLE');
 global $MPPages;
@@ -60,12 +66,14 @@ function hLinkBuild($app,$caption) {
    );
 }
 
+/* KFD 4/15/08
 function ExtractTGZ($filespec,$dir) {
    chdir($dir);
    require_once "Archive/Tar.php";
    $tar = new Archive_Tar($filespec,'gz');
    $tar->extract($dir);
 }
+*/
 function sourceDeprecated() {
     ?>
     <div style="border: 3px solid #FF0700; padding: 5px; margin: 10px; 
@@ -85,15 +93,18 @@ function sourceDeprecated() {
  */
 function svnVersions() {
     // Get a list of applications
-    $sq="SELECT application,description
+    $sq="SELECT skey,application,description
                ,svn_url
                ,'  ' as local
+               ,'  ' as latest
+               ,svn_uid,svn_pwd,flag_svn
            FROM applications
+          WHERE flag_svn = 'Y'
           ORDER by application";
     $rows = SQL_Allrows($sq,'application');
     
     // Get latest pkg-apps entries
-    $dir=$GLOBALS['AG']['dirs']['root'].'pkg-apps/';
+    $dir=fsDirTop().'pkg-apps/';
     if(!file_exists($dir)) {
         mkdir($dir);
     }
@@ -123,19 +134,19 @@ function appModuleLeft() {
     <h3>Updates</h3>
     </div>
     <table>
-      <tr><td class="leftcol"><a class="mainlevel" href="?gp_page=a_pullsvna"
-        >Update Andromeda from Subversion</a>
       <tr><td class="leftcol"><a class="mainlevel" href="?gp_page=a_pullsvn"
-        >Update Applications from Subversion</a>
+        >Pull Code From Subversion</a>
     </table>
     <br/> 
     <?php
 
     // Display either applications or instances, depending upon 
     // which we have here
-    $ds =OptionGet('DEV_STATION','Y');
-    $boa=OptionGet( 'BUILD_ALL_APPS','N');
-    if($ds=='Y' || $boa == 'Y') { 
+    # KFD 4/15/08, make this unconditional
+    #$ds =OptionGet('DEV_STATION','Y');
+    #$boa=OptionGet( 'BUILD_ALL_APPS','N');
+    #if($ds=='Y' || $boa == 'Y') {
+    if(True) {
         $apps=SQL_AllRows("Select * from applications order by application");
         ?>
         <div class="moduletable">

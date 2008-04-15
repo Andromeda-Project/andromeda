@@ -7,34 +7,28 @@ class x_welcome extends x_table2 {
         
         // Work out if there is a new release available
         //
-        $urlr="https://andro.svn.sourceforge.net/svnroot/andro/releases/";
-        ob_start();
-        // KFD 3/1/08, if Andro Dev Station, don't mention andro upgrades
-        if(OptionGet('DEV_STATION_ANDRO')=='Y') {
+        $apps = appVersions();
+        $andro = $apps['andro'];
+        
+        if(trim($andro['svn_url'])=='') {
             $htmlVersions = '';
         }
         else {
-            $htmlVersions = file_get_contents($urlr);
+            $htmlVersions = file_get_contents($andro['svn_url']);
         }
-        ob_end_clean();
         $matches =array();
         preg_match_all(
             '/<li><a href=.*\>(.*)<\/a><\/li>/'
             ,$htmlVersions
             ,$matches
         );
-        $versions = ArraySafe($matches,1,'');
+        $versions = ArraySafe($matches,1,array());
         if(count($versions)>0) {
             $latest = array_pop($versions);
             $latest = str_replace('/','',$latest);
             
             // Get current latest
-            $current = '';
-            $file=$GLOBALS['AG']['dirs']['application'].'_andro_version_.txt';
-            if(file_exists($file)) {
-                $current = file_get_contents($file);
-            }
-            
+            $current = $andro['local'];
             if($latest >= $current)  {
             ?>
             <br/>
@@ -43,8 +37,8 @@ class x_welcome extends x_table2 {
             <h2>New Version of Andromeda Available</h2>
             
             <p>Version <?=$latest?> is available at the Andromeda 
-            Sourceforge repository.   <a href="?gp_page=a_pullsvna"
-            >Click Here </a> to upgrade the Node Manager.
+            Sourceforge repository.   <a href="?gp_page=a_pullsvn"
+            >Click Here </a> to go to the Pull Code From Subversion.
             </div>
             <?php        
             }

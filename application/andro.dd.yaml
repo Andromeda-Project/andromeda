@@ -58,6 +58,15 @@ column svn_url:
     description: Subversion URL
     type_id: vchar
     colprec: 200
+column svn_uid:
+    description: Subversion Username
+    type_id: vchar
+    colprec: 25
+column svn_pwd:
+    description: Subversion Password
+    type_id: vchar
+    colprec: 25
+    
     
 table applications: 
     description: Applications
@@ -81,7 +90,17 @@ table applications:
         auto_formula: andro_universal
     column appspec:
         description: Spec File
-    column svn_url:        
+    column flag_svn:
+        suffix: _svn
+        description: Overwrite from SVN
+        tooltip: This flag must be set to Y to use subversion
+        automation_id: DEFAULT
+        auto_formula: "N"
+    column svn_url:   
+    column svn_uid:
+        tooltip: Type this in if your Subversion repository requires login.
+    column svn_pwd:
+        tooltip: Type this in if your Subversion repository requires login. 
     foreign_key webpaths:
         column webpath:
             description: Web Path
@@ -191,15 +210,15 @@ table instbuilds:
         uiro: "Y"
         uisearch: "Y"
 
-menu a_pullsvna:
-    module: apps
-    uisort: 205
-    description: Update Andromeda from Subversion 
+#menu a_pullsvna:
+#    module: apps
+#    uisort: 205
+#    description: Update Andromeda from Subversion 
 
 menu a_pullsvn:
     module: apps
     uisort: 206
-    description: Update Applications from Subversion 
+    description: Pull Code From Subversion
 
 
 
