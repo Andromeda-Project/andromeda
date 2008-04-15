@@ -117,7 +117,9 @@ function svnVersions() {
         
         // split into app and version
         list($app,$vers) = explode('-VER-',$vdir);
-        $rows[$app]['local']=max($rows[$app]['local'],$vers);
+        if(isset($rows[$app])) {
+            $rows[$app]['local']=max($rows[$app]['local'],$vers);
+        }
     }
     return $rows;
 } 

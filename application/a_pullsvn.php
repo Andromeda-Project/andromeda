@@ -292,11 +292,22 @@ class a_pullsvn extends x_table2 {
             }
 
             # Determine some stub values and pass processing to
-            # the recursive file puller
+            # the recursive file puller.  If no uid & pwd, use subversion
             x_EchoFlush("  Local version is out of date, pulling latest");
             $dirv = $dir.trim($row['application']).'-VER-'.$latest.'/';
-            mkdir($dirv);
-            $this->svnWalk("$url/$latest/",$dirv);
+            if($row['svn_uid']<>'' && $row['svn_pwd'] <> '') {
+                mkdir($dirv);
+                $this->svnWalk("$url/$latest/",$dirv);
+            }
+            else {
+                $command = "svn export $url$latest $dirv";
+                x_echoFlush(
+                    "  Pulling code now, this make take a minute or three..."
+                );
+                x_EchoFlush($command);
+                `$command`;
+                x_echoFlush("  Code pulled, finished with this application.");
+            }
             
             x_echoFlush("  Copying files into application directory");
             $basedir = str_replace( 'andro/', '', fsDirTop()); 
