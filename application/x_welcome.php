@@ -7,8 +7,8 @@ class x_welcome extends x_table2 {
         
         // Work out if there is a new release available
         //
-        $apps = appVersions();
-        $andro = $apps['andro'];
+        $apps = svnVersions();
+        $andro = a($apps,'andro',array('svn_url'=>''));
         
         if(trim($andro['svn_url'])=='') {
             $htmlVersions = '';
