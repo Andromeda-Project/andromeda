@@ -4467,13 +4467,18 @@ returns:String
 Adds a slash to the end of a directory if not already present.
 */
 function AddSlash($input,$prefix='') {
-	$input = trim($input);
-	if ($prefix!='') {
-		if (substr($input,0,strlen($prefix))!=$prefix) { 
-			$input = $prefix.$input;
-		}
-	}
-	if (substr($input,-1,1) <> '/') $input.='/';
+	// Justin Dearing 12/26/07, detects windows
+    // KFD NOTE: rem'd out because untested on windows
+  	$input = trim($input);
+  	$prefix = trim($prefix);
+  	$dir_delimeter = isWindows() ? "\\" : '/';
+   
+   	if ($prefix!='') {
+   		if (substr($input,0,strlen($prefix))!=$prefix) {
+   			$input = $prefix.$input;
+   		}
+   	}
+	if (substr($input,-1) <> $dir_delimeter) $input.='/';
 	return $input;
 }
 

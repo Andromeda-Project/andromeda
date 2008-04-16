@@ -297,9 +297,9 @@ table pcoldeps {
 	description: Pseudocolumn Dependencies;
 	table_seq: 350;
 	
-	column { table_id; column_id; primary_key: Y; } 
+	column { table_id; column_id; primary_key: Y; uisearch: Y; } 
 	foreign_key { pcolumns; primary_key: Y; }
-	column { skey; skey_quiet; _agg; }
+	column { skey; skey_quiet; _agg; uisearch: Y; }
 }
 
 
@@ -692,8 +692,8 @@ table tabcolres {
     description: Resolution Tables;
     table_seq: 1101;
     
-    column { column_id; table_id; primary_key: Y; }
-    column { table_id_res; primary_key: Y; }
+    column { column_id; table_id; primary_key: Y; uisearch: Y; }
+    column { table_id_res; primary_key: Y; uisearch: Y; }
 }
 
 
@@ -757,7 +757,7 @@ table tabfkyauto {
 	description: Column Automations;
 	table_seq: 1252;
 
-	column { table_id; table_id_par; suffix; prefix; primary_key: Y; }
+	column { table_id; table_id_par; suffix; prefix; primary_key: Y;uisearch: Y;  }
 	foreign_key { tabfky; uisearch: Y; nocolumns: Y; }
    column { automation_id; primary_key: Y; }
 	column { skey; skey_quiet; _agg; }
@@ -768,10 +768,10 @@ table tabfkyautocols {
 	table_seq: 1253;
 
  	column { table_id; table_id_par; suffix; prefix; automation_id; 
-      primary_key: Y;
+      primary_key: Y; uisearch: Y; 
    }
 	foreign_key { tabfkyauto; uisearch: Y; nocolumns: Y; }
-   column { column_id; primary_key: Y; }
+   column { column_id; primary_key: Y; uisearch: Y;  }
 
    column { column_id_arg; uicolseq }
 	column { skey; skey_quiet; _agg; }
@@ -783,7 +783,9 @@ table tabfkygroups {
 	description: Group Permissions; 
 	table_seq: 1254;
 
-	column { table_id; table_id_par; suffix; prefix; group_id; primary_key:Y;}
+	column { table_id; table_id_par; suffix; prefix; group_id; primary_key:Y;
+        uisearch: Y; 
+    }
    column { permsel; permupd; }
    
    	column { skey; skey_quiet; _agg; }
@@ -1235,9 +1237,9 @@ table colchainargsv {
 	module: datadict;
 	table_seq: 2457;
 	
-	foreign_key tabflat { primary_key: Y; }
-	column { uicolseq; primary_key: Y; }
-	column { skey; skey_quiet; _agg; }
+	foreign_key tabflat { primary_key: Y; uisearch: Y; }
+	column { uicolseq; primary_key: Y;uisearch: Y;  }
+	column { skey; skey_quiet; _agg; uisearch: Y; }
 }
 
 // ---------------------------------------------------------

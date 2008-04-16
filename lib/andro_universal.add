@@ -3461,6 +3461,6 @@ table importmapcolumns {
    group $LOGIN { permsel:Y;permins:Y;permupd:Y;permdel:Y; }
    
    foreign_key importmaps { primary_key: Y; }
-   column column_id { description: Target Column; primary_key: Y; }
-   column column_id { suffix: _src; description: Source; }
+   column column_id { description: Target Column; primary_key: Y; uisearch: Y; }
+   column column_id { suffix: _src; description: Source;uisearch: Y;  }
 }
