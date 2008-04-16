@@ -5552,7 +5552,22 @@ function SpecValidate()
         $this->LogEntry("ERROR >> table ". $row["table_id"]." has no primary key!");
         $this->LogEntry("ERROR >> ");
 	}
-    
+
+    // KFD 4/16/08, there was code in the YAML walking that served
+    //              this purpose, but it really belongs here
+	$results = $this->SQLRead(
+		"select table_id from zdd.tabflat_c ".
+		" group by table_id ".
+		" having sum(case when uisearch='Y' then 1 else 0 end) = 0");
+	while($row=pg_fetch_array($results)) {
+        $errors++;
+        $this->LogEntry("");
+        $this->LogEntry(
+            "ERROR >> table ". $row["table_id"]." has no uisearch columns!"
+        );
+        $this->LogEntry("ERROR >> ");
+	}
+
     
     // Check for no automation Id for some automations
     $sql="SELECT table_id,column_id from zdd.tabflat_c
@@ -7526,6 +7541,8 @@ function YAMLWalk($source) {
             if($name=='$LOGIN') $name = $parm['APP'];
             
             // DO 2/14/08, Check for existance of at least one uisearch set to yes
+            // KFD 4/16/08, Moved to SpecValidate()
+            /*
             if($type=='table') {
                 $uisearch_found = false;
                 foreach( $item as $key2=>$table ) {
@@ -7546,6 +7563,7 @@ function YAMLWalk($source) {
                     $this->YAMLWalkError('uisearch',$item);
                 }
             }
+            */
             if($type=="content") {
                $colnames=array('__type'=>'columns');
                $values = array();
