@@ -317,7 +317,6 @@ function input($colinfo) {
     $colscale = a($colinfo,'colscale');
     $table_id = a($colinfo,'table_id');
     $column_id= a($colinfo,'column_id');
-    
 
     # First decision is to work out what kind of control to make
     if($type_id=='gender') {
@@ -348,6 +347,16 @@ function input($colinfo) {
         $cols = $cols == 0 ? 50 : $cols;
         $input->hp['rows'] = $rows;
         $input->hp['cols'] = $cols;
+    }
+    elseif(a($colinfo,'value_max','')<>'' && a($colinfo,'value_min','')<>'') {
+        $input = html('select');
+        $min = a($colinfo,'value_min');
+        $max = a($colinfo,'value_max');
+        for($x = $min; $x <= $max; $x++) {
+            $option = html('option',$input);  // this is a blank option
+            $option->hp['value']=$x;
+            $option->setHTML($x);
+        }
     }
     elseif(a($colinfo,'table_id_fko')<>'') {
         // First work out which control to use
@@ -9320,6 +9329,21 @@ function ahColFromACol(&$acol) {
       }
    }
    
+    // ------------------------------------
+    // Big deal GLEPH, value_min & value_max
+    // ------------------------------------
+    if(a($acol,'value_min','')<>'' && a($acol,'value_max','')<>'') {
+        $acol['html_element']='select';
+        $acol['hparms']['size']=1;
+        $hinner='';
+        $xmin = a($acol,'value_min');
+        $xmax = a($acol,'value_max');
+        for ($x=$xmin;$x<=$xmax;$x++) {
+            $hinner.="\n<option value=\"$x\">".$x."</option>";
+        }
+        $acol['html_inner']=$hinner;
+    }
+
    // ------------------------------------
    // Big deal B), foreign keys
    // ------------------------------------
