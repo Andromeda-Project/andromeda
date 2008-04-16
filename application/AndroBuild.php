@@ -4478,10 +4478,12 @@ function SpecDDL_Triggers_Automated_Dominant_agg()  {
     foreach($ads as $tab_chd=>$adss1) {
         foreach($adss1 as $tab_par=>$adss2) {
             // Now convert the pairs into SQL comparisons
+            $compares = '';
             foreach($adss2 as $adss3) {
                 $col_chd = $adss3['col_chd'];
                 $col_par = $adss3['col_par'];
                 $pairs[] = "$col_par = new.$col_chd";
+                $compares[] = "new.$col_chd <> old.$col_chd";
             }
             
             // Get the SQL Match
@@ -4505,7 +4507,10 @@ function SpecDDL_Triggers_Automated_Dominant_agg()  {
             // Create the update...
             $sq="\n"
                 ."    --- 4001 AGGREGATE DOMINANT upsaves\n"
-                ."    IF new.$col_dom = ##Y## AND old.$col_dom = ##N## THEN\n"
+                ."    IF new.$col_dom = ##Y## AND old.$col_dom = ##N## \n"
+                ."       OR (      new.$col_dom = ##Y## \n"
+                ."           AND (   (".implode( ")\n             OR (",$compares)." ) "
+                .")) THEN\n"
                 ."        UPDATE $tab_par SET ".implode("\n              ,",$pairs)."\n"
                 ."         WHERE $SWhere; \n"
                 ."    END IF;\n";
