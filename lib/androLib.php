@@ -145,36 +145,32 @@ function gpToSession() {
 # Add elements to the JSON RETURN ARRAY
 # ==============================================================
 // KFD X4
-function jsonError($parm1) {
-    $GLOBALS['AG']['JSON']['error'][] = $parm1;
+function x4Error($parm1) {
+    $GLOBALS['AG']['x4']['error'][] = $parm1;
 }
-// Framework, occurs only if there were fatal errors
-function jsonFatal($parm1) {
-    $GLOBALS['AG']['JSON']['fatal'] = $parm1;
+function x4Notice($parm1) {
+    $GLOBALS['AG']['x4']['notice'][] = $parm1;
 }
-function jsonNotice($parm1) {
-    $GLOBALS['AG']['JSON']['notice'][] = $parm1;
+function x4Debug($parm1) {
+    $GLOBALS['AG']['x4']['debug'][] = $parm1;
 }
-function jsonDebug($parm1) {
-    $GLOBALS['AG']['JSON']['debug'][] = $parm1;
+function x4HTML($parm1,$parm2) {
+    $GLOBALS['AG']['x4']['html'][$parm1] = $parm2;
 }
-function jsonHTML($parm1,$parm2) {
-    $GLOBALS['AG']['JSON']['html'][$parm1] = $parm2;
-}
-function jsonSCRIPT($parm1) {
+function x4SCRIPT($parm1) {
     $parm1 = preg_replace("/<script>/i",'',$parm1);
     $parm1 = preg_replace("/<\/script>/i",'',$parm1);
-    $GLOBALS['AG']['JSON']['script'][] = $parm1;
+    $GLOBALS['AG']['x4']['script'][] = $parm1;
 }
-function jsonData($name,$data) {
-    $script = "\nthis.data.$name = ".json_encode_safe($data).";";
-    jsonScript($script);
+function x4Data($name,$data) {
+    $script = "\n\$a.data.$name = ".json_encode_safe($data).";";
+    x4Script($script);
     
 }
 function jsonPrint_r($data) {
     ob_start();
     hprint_r();
-    jsonHTML('*MAIN*',ob_get_clean());
+    $GLOBALS['AG']['x4']['html']['*MAIN'].=ob_get_clean();
 }
 function json_encode_safe($data) {
     // Package up the JSON
@@ -298,7 +294,7 @@ class androHtml {
             foreach($this->ap as $parmname=>$parmvalue) {
                 $js.="\nx.$parmname=\"$parmvalue\"";
             }
-            jsonScript($js);
+            x4Script($js);
         }
         echo "\n<".$this->htype.' '.$parms.'>'.$this->innerHtml;
         foreach($this->children as $child) {
@@ -983,7 +979,15 @@ function ddTable($table_id) {
     }
     
     # First run the include and get a reference
-	include_once("ddtable_".$table_id.".php");
+    if(!file_exists(fsDirTop()."generated/ddtable_$table_id.php")) {
+        $GLOBALS['AG']['tables'][$table_id] = array(
+            'flat'=>array()
+            ,'description'=>$table_id
+        );
+    }
+    else {
+        include_once("ddtable_".$table_id.".php");
+    }
     $tabdd = &$GLOBALS['AG']['tables'][$table_id];
     
     # First action, assign the permissions from the session so

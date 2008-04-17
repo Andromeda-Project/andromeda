@@ -29,6 +29,7 @@ passes execution to this file.
 INVENTORY OF framework gp variables:
 
 * gp_page     means page processing, and is the default action
+* x4Page      page processing through x4 instead of x_table2
 * st2logout   command to logout
 * st2login    command to login
 
@@ -269,6 +270,26 @@ if(isset($header_mode)) return;
 
 // ==================================================================
 // >>> 
+// >>> Dispatch redirection.  We may convert a conventional
+// >>> "x2" call into an x4 call if force flags have been set
+// >>> set these flags in applib
+// >>> 
+// ==================================================================
+if( ($gp_page=gp('gp_page'))!='' && gp('x4Page')=='') {
+    if(vgfGet('x4ForceAlways',false)==true) {
+        gpSet('x4Page',$gp_page);
+    }
+    else if(vgfGet('x4ForceIfFound',false)==true) {
+        $x4File = fsDirTop()."application/x4$gp_page.php";
+        if(file_exists($x4File)) {
+            gpSet('x4Page',$gp_page);
+        }
+    }
+}
+
+
+// ==================================================================
+// >>> 
 // >>> Dispatching, pass execution to the relevant handler
 // >>> 
 // ==================================================================
@@ -309,7 +330,7 @@ elseif(gp('gp_dropdown') <>'') index_hidden_dropdown();
 elseif(gp('gp_fetchrow') <>'') index_hidden_fetchrow();
 elseif(gp('gp_sql')      <>'') index_hidden_sql();
 elseif(gp('gp_ajaxsql')  <>'') index_hidden_ajaxsql();
-elseif(gp('json')       <>'')  index_hidden_JSONDispatch();
+elseif(gp('x4Page')      <>'')  index_hidden_x4Dispatch();
 else                           index_hidden_page();
 
 
@@ -322,14 +343,15 @@ return;
 // ------------------------------------------------------------------
 // >> index_hidden_x4Page
 // ------------------------------------------------------------------
-function index_hidden_JSONDispatch() {
-    $GLOBALS['AG']['JSON'] = array(
+function index_hidden_x4Dispatch() {
+    # This is everything that *might* go back, make a place
+    # for all of it
+    $GLOBALS['AG']['x4'] = array(
         'error'=>array()
         ,'debug'=>array()
         ,'notice'=>array()
         ,'html'=>array()
         ,'script'=>array()
-        ,'fatal'=>''
     );
     
     // Determine the library to open.  If the page exists, open
@@ -337,7 +359,9 @@ function index_hidden_JSONDispatch() {
     //
     include_once("androX4.php");
     $x4Page = gp('x4Page');
-    $file   = fsDirTop()."/application/x4$x4Page.php";
+    $file = strtolower($x4Page)=='menu'
+        ? fsDirTop()."lib/androX4Menu.php"
+        : fsDirTop()."application/x4$x4Page.php";
     $class  = 'androX4';
     if(file_exists($file)) {
         include_once($file);
@@ -356,20 +380,45 @@ function index_hidden_JSONDispatch() {
     $object->$method();
     $errors = ob_get_clean();
     if($errors <> '') {
-        jsonFatal($errors);
+        x4Error($errors);
     }
 
     // Put errors in
     if(Errors()) {
         $errs = errorsGet();
         foreach($errs as $err) {
-            jsonError($err);
+            x4Error($err);
         }
     }
     
-    // Spit out the returns
-    //
-    echo json_encode_safe($GLOBALS['AG']['JSON']);
+    # if the "json" flag is set, we return all output as JSON,
+    # otherwise we package it up with the normal template and
+    # return it as main content
+    if(gp('json')==1) {
+        echo json_encode_safe($GLOBALS['AG']['x4']);
+    }
+    else {
+        #  Put things where the template expects to find them
+        vgfSet('HTML',$GLOBALS['AG']['x4']['html']['*MAIN*']);
+        foreach($GLOBALS['AG']['x4']['script'] as $script) {
+            elementAdd("jqueryDocumentReady",$script);
+        }
+
+        # DUPLICATE ALERT: This code copied from 
+        #                  index_hidden_page() below
+        index_hidden_template();
+        global $J;
+        $mainframe               = $J['mainframe'];
+        $my                      = $J['my'];
+        $mosConfig_absolute_path = $J['mC_absolute_path'];
+        $mosConfig_live_site     = $J['mC_live_site'];
+        $template_color          = $J['template_color'];
+        $template_color = 'red';
+        $file
+            =$GLOBALS['AG']['dirs']['root'].'/templates/'
+            .$mainframe->GetTemplate()."/index.php";
+        include($file);
+    }
     return;
 }
 // ------------------------------------------------------------------
@@ -1062,6 +1111,8 @@ function index_hidden_page() {
       }
       elseif(defined('_VALID_MOS')) {
          // This is the default branch, using a Joomla template
+         // DUPLICATE ALERT: This code copied into
+         //          index_hidden_x4Dispatch() above
          global $J;
          $mainframe               = $J['mainframe'];
          $my                      = $J['my'];

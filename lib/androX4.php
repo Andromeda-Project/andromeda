@@ -32,9 +32,12 @@ class androX4 {
     function main() {
         # All top-level elements will go inside of this div 
         $div = html('div');
+        $div->hp['id']='x4Top';
         $this->mainLayout($div);
-        jsonHtml('*MAIN*',$div->bufferedRender());
-        jsonData('dd.'.$this->table_id,$this->dd);
+        x4Html('*MAIN*',$div->bufferedRender());
+        x4Data('dd.'.$this->table_id,$this->dd);
+        x4Data('return',gp('x4Return'));
+        x4Script("x4Page.init()");
         return;
     }
     
@@ -91,7 +94,7 @@ class androX4 {
         foreach($this->dd['fk_children'] as $table_id=>$info) {
             $tabid = 'xTableTop_'.$table_id;
             $ddChild = ddTable($table_id);
-            jsonData('dd.'.$table_id,$ddChild);
+            x4Data('dd.'.$table_id,$ddChild);
             $span=html('a-void',$tabB,$ddChild['description']);
             $span->hp['onclick'] = "x4MenuBar.tabEvent(this,'$tabid')";
             
@@ -347,7 +350,7 @@ class androX4 {
              .$SWhere
              ." ORDER BY ".implode(',',$aorder).$SLimit;
         $answer =SQL_AllRows($SQL);
-        jsonDebug($SQL);
+        x4Debug($SQL);
 
         // Format as HTML
         ob_start();
@@ -360,10 +363,10 @@ class androX4 {
                 echo "<td>".$value;
             }
         }
-        jsonHtml('*MAIN*',ob_get_clean());
+        x4Html('*MAIN*',ob_get_clean());
         $skeys = array_flip($skeys);  // want to go by skey, not index
-        jsonData('skeys',$skeys);
-        jsonData('rowCount',count($skeys));
+        x4Data('skeys',$skeys);
+        x4Data('rowCount',count($skeys));
         
     }
     
@@ -434,7 +437,7 @@ class androX4 {
     function fetchRow() {
         $skey = SQLFN(gp('x4w_skey'));
         $row = SQL_OneRow("SELECT * FROM ".$this->table_id." WHERE skey=$skey");
-        jsonData('row',$row);
+        x4Data('row',$row);
     }
 
     # ===================================================================
@@ -458,7 +461,7 @@ class androX4 {
                     "Select * FROM $table_id WHERE skey = $skey"
                 );
             }
-            jsonData('row',$row);
+            x4Data('row',$row);
         }
         else {
             SQLX_Update($this->dd,$row);
@@ -467,7 +470,7 @@ class androX4 {
                 $row=SQL_OneRow(
                     "Select * FROM $table_id WHERE skey = $skey"
                 );
-                jsonData('row',$row);
+                x4Data('row',$row);
             }
         }
     }
@@ -517,7 +520,7 @@ class androX4 {
             ."  FROM ".ddTable_idResolve($table_id_fko)
             ." WHERE ".$this->dd['fk_parents'][$table_id_fko]['cols_par']."= $value";
         $answer = SQL_OneRow($sql);
-        jsonData('row',$answer);
+        x4Data('row',$answer);
     }    
 }
 ?>

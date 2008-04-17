@@ -19,7 +19,15 @@ function mosShowListMenu($menutype) {
       // Cachegrind cost to build menu          : 259 / 199
       // Cachegrind cost logging in             : 140
       // Cachegrind cost login, cache to session: 2!!!!
-      // Cachegrind cost to cache to disk       : 400!       
+      // Cachegrind cost to cache to disk       : 400!
+      # KFD 4/17/08, rebuild menu if they switched modes
+      $menu_mode = gpExists('x4Page') 
+        ? (vgfGet('x4menu',false)==true ? 'x4' : 'classic')  
+        : 'classic';
+      if($menu_mode <> SessionGet('menu_mode')) {
+          sessionSet('menu','');
+          sessionSet('menu_mode',$menu_mode);
+      }
       $menu=SessionGet('menu','');
       if($menu<>'') {
          echo $menu;
@@ -43,7 +51,12 @@ function mosShowListMenu($menutype) {
          $x=new joomla_fake;
          $x->type='url';
          $x->id=$menuid;
-         $x->link="?x_module=".urlencode($menuid);
+         if(sessionGet('menu_mode')=='x4') {
+             $x->link = 'javascript:void(0);';
+         }
+         else {
+             $x->link = "?x_module=".urlencode($menuid);
+         }
          $x->browserNav='';
          $x->name=$menuinfo['description'];
          $children[0][]=$x;
@@ -56,7 +69,12 @@ function mosShowListMenu($menutype) {
                 $x->link="javascript:x4Page('$page','$pd')";
             }
             else {
-                $x->link="?x_module=$menuid&gp_page=".urlencode($page);
+                if(sessionGet('menu_mode')=='x4') {
+                    $x->link='?x4Page='.urlencode($page);
+                }
+                else {
+                    $x->link="?x_module=$menuid&gp_page=".urlencode($page);
+                }
                 if(ArraySafe($pageinfo,'menu_parms')<>'') {
                    $x->link.='&'.urlencode($pageinfo['menu_parms']);  
                 }

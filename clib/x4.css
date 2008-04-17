@@ -101,10 +101,10 @@
 
 
 /* --- Menu operations --- */
-#Form1 div.x4Layer a {
+#Form1  a {
     text-decoration: none;
 }
-#Form1 div.x4Layer a.x4MenuOn {
+#Form1 a.x4MenuOn {
     background-color: #3F7CB9;
     color: white;
 }
@@ -113,7 +113,7 @@
 table.tab100 {
     width: 100%
 }
-#Form1 div.x4Layer .x4box {
+#Form1  .x4box {
     border: 6px solid #E6E3E6;
     margin: 5px;
     padding: 6px;

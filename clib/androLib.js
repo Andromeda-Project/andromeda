@@ -1063,6 +1063,12 @@ function androSelect_click(value,suppress_focus) {
 
 var $a = {
     /*
+     *  For data returned from a json call
+     */
+     data: { dd: {} },
+    
+    
+    /*
      * Dialogs.  Placeholders to use JQuery plugins
      *
      */

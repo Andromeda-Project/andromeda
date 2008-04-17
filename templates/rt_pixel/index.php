@@ -28,8 +28,8 @@ $default_color = "blue";           // red | blue | green | orange
 $default_contrast = "light";	// light | med | dark
 $show_access = "true";            // true | false
 $show_menu = "true";             // true | false
-if(gp('gp_page')=='androX4Menu') {
-    $show_menu= false;
+if(vgfGet("show_menu",true)==false) {
+    $show_menu = false;
 }
 $show_pathway = "false";        // true | false
 

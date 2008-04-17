@@ -19,7 +19,7 @@
    or visit http://www.gnu.org/licenses/gpl.html
 \* ================================================================== */
 
-var fadeSpeed = 'medium';
+var fadeSpeed = 'fast';
 
 /*
  * The x4Menu object accepts control when an x4Menu is passed back
@@ -27,155 +27,39 @@ var fadeSpeed = 'medium';
  * type controllers 
  *
  */
-var x4Menu = {
-    divId: '',
-    jqid: '',
-    lastFocusId: '',
-    
+var x4Page =  {
     init: function() {
-        // Record our div ID, and the jQuery version of it
-        this.divId = $('#Form1 div:first')[0].id;
-        this.jqid = '#' + this.divId;
-        
-        // Capture a public variable generated in PHP
-        this.grid = grid;
-        
-        // NOTE: we do not have to put event tracking
-        //       onto the menu elements, they arrive from
-        //       the web server with events already 
-        //       pointing to the x4Menu object.
+        x4dd.dd = $a.json.data.dd;
+        // Find, initialize and activate the first x4Display
+        var rootObj = $("#x4Top").find(".x4Display")[0];
+        this.initDisplay(rootObj,false);
+        rootObj.activate();
+    },
 
-        // Turn on the focus tracking, then fade in and set focus
-        $(this.jqid + " a").focusTrack();
-        $(this.jqid).fadeIn(fadeSpeed,function() {
-            $(x4Menu.jqid+" td a:first").focus();
-        });
-        
-        // Hijack the ctrl key for the entire page
-        $(".wrapper").keydown(function(event) {
-            // If ctrl, look for item with that id
-            var letter = $a.charLetter(event.which);
-            if(event.ctrlKey) {
-                // Copy-n-paste operations are allowed
-                if(letter=='x') return true;
-                if(letter=='v') return true;
-                if(letter=='c') return true;
-                
-                var x = $("[@accesskey="+letter+"]:visible");
-                // count if there is a match
-                if(x.length > 0) {
-                    x.click();
-                }
-                event.stopPropagation();
-                return false;
-            }
-        });
-    },
-    
-    click: function(e,col,row) {
-        var keyLabel = $a.keyLabel(e);
-        if(keyLabel == 'Tab' || keyLabel == 'ShiftTab') {
-            e.stopPropagation();
-            return false;
-        }
-        var nextId = false;
-        if(keyLabel == 'UpArrow') {
-            if(row > 0) nextId = this.grid[col][row-1];
-        }
-        if(keyLabel == 'DownArrow') {
-            var maxRow = this.grid[col].length - 1;
-            if(row < maxRow) nextId = this.grid[col][row+1];
-        }
-        if(keyLabel == 'LeftArrow') {
-            if(col > 0) {
-                col--;
-                if( row > this.grid[col].length - 1) 
-                    row = this.grid[col].length - 1;
-                nextId = this.grid[col][row];
-            }
-        }
-        if(keyLabel == 'RightArrow') {
-            if(col < this.grid.length - 1) {
-                col++;
-                if( row > this.grid[col].length - 1) 
-                    row = this.grid[col].length - 1;
-                nextId = this.grid[col][row];
-            }
-        }
-        if(e.keyCode >= 49 && e.keyCode <= 57) {
-            if ( (e.keyCode - 48) <= this.grid.length ) { 
-                col = e.keyCode - 49;
-                if( row > this.grid[col].length - 1) 
-                    row = this.grid[col].length - 1;
-                nextId = this.grid[col][row];
-            }
-        }
-        if(e.keyCode >= 65 && e.keyCode <= 90) {
-            if ( (e.keyCode - 65) <= (this.grid[col].length-1) ) {
-                nextId = this.grid[col][e.keyCode - 65];
-            }
-        }
-
-        if(nextId) {
-            $('#'+nextId).focus();
-            e.stopPropagation();
-            return false;
-        }
-    },
-    
-    open: function(page) {
-        // Make menu go away
-        $.focusTrackBlur();
-        $('#'+this.divId).css('display','none');
-        
-        // Make new layer
-        var divObj = document.createElement('div');
-        divObj.id = 'x4divLayer_2';
-        divObj.style.height='100%';
-        $a.byId('Form1').appendChild(divObj);        
-        
-        $a.json.init('x4Page',page);
-        if($a.json.execute()) {
-            $a.json.process(divObj.id);
-            x4dd.dd = $a.json.data.dd;
-            // Find, initialize and activate the first x4Display
-            var rootObj = $(divObj).find(".x4Display")[0];
-            this.initDisplay(rootObj,false);
-            this.rootObj = rootObj;
-            rootObj.activate();
-        }
-    },
-    
     initDisplay: function(obj,oParent) {
         // Assign a controller object
         if(obj.xType=='x4TableTop') {
             x4TableTop(obj,oParent);
         }
-        if(obj.xType=='x4Grid') {
+        else if(obj.xType=='x4Grid') {
             x4Grid(obj,oParent);
         }
-        if(obj.xType=='x4Detail') {
+        else if(obj.xType=='x4Detail') {
             x4Detail(obj,oParent);
         }
-        if(obj.xType=='x4TabContainer') {
+        else if(obj.xType=='x4TabContainer') {
             x4TabContainer(obj,oParent);
+        }
+        else {
+            obj.activate = function() { };
         }
         
         // Now process through to the children
         $(obj).children('.x4Display').each(function() {
                 var parent = $(this).parent('.x4Display')[0];
-                x4Menu.initDisplay(this,parent);
+                x4Page.initDisplay(this,parent);
         })
     },
-    
-    // Called by a page that is ready to exit, says "please
-    // get rid of me" and "make yourself displayed again"
-    restore: function() {
-        $('#x4divLayer_2').remove();
-        $(this.jqid).fadeIn(fadeSpeed,function() {
-            $.focusTrackRestore(); 
-        });
-    },    
 }
 
 
@@ -267,7 +151,12 @@ function x4TableTop(oHTML,oParent) {
         if(this.xParent)
             this.xParent.deactivate();
         else
-            x4Menu.restore();
+            if($a.aProp($a.data,'return','')=='') {
+                window.location="index.php?x4Focus="+self.xTableId;
+            }
+            else {
+                window.location="?x4Page=menu&x4Focus="+self.xTableId;
+            }
     }
     
     /* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -480,6 +369,7 @@ function x4Grid(oHTML,oParent) {
             this.fetch();
         }
 
+        console.log(this.xTableId);
         $("#x4H1Top").html( x4dd.dd[this.xTableId].description);
         
         $(this).fadeIn(fadeSpeed,function() {

@@ -17,7 +17,7 @@ cssInclude('clib/raxlib.css');
 
 
 // The new css library for x4 and the new js library for x4
-if(gp('gp_page')=='androX4Menu') {
+if(gpExists('x4Page')) {
     cssInclude('clib/x4.css');
     jsInclude('clib/androX4.js');
 }
