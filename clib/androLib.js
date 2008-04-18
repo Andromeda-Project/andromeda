@@ -1108,8 +1108,8 @@ var $a = {
             $a.json.addParm('value',value);
             if($a.json.execute()) {
                 $a.json.process();
-                for(var idx in $a.json.data.row) {
-                    var retval = $a.json.data.row[idx];
+                for(var idx in $a.data.row) {
+                    var retval = $a.data.row[idx];
                     $(":input[@xColumnId="+idx+"]")[0].value=retval;
                 }
             }
@@ -1166,16 +1166,10 @@ var $a = {
                 return false;
             }
 
-            // Fatal errors are thrown up immediately.
-            if(this.jdata.fatal!='') {
-                $a.dialogs.alert(this.jdata.fatal);
-                return false;
-            }
-            
             // If there were server errors, report those
-            //if(this.jdata.errors.length>1) {
-            //    x4.dialogs.alert(this.jdata.errors.combine("\n\n"));
-            //}
+            if(this.jdata.error.length>1) {
+                x4.dialogs.alert(this.jdata.error.combine("\n\n"));
+            }
             
             if(autoProcess) {
                 this.process();

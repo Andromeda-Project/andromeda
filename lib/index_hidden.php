@@ -330,7 +330,7 @@ elseif(gp('gp_dropdown') <>'') index_hidden_dropdown();
 elseif(gp('gp_fetchrow') <>'') index_hidden_fetchrow();
 elseif(gp('gp_sql')      <>'') index_hidden_sql();
 elseif(gp('gp_ajaxsql')  <>'') index_hidden_ajaxsql();
-elseif(gp('x4Page')      <>'')  index_hidden_x4Dispatch();
+elseif(gp('x4Page')      <>'') index_hidden_x4Dispatch();
 else                           index_hidden_page();
 
 
@@ -357,30 +357,38 @@ function index_hidden_x4Dispatch() {
     // Determine the library to open.  If the page exists, open
     // it, otherwise use default
     //
-    include_once("androX4.php");
     $x4Page = gp('x4Page');
-    $file = strtolower($x4Page)=='menu'
-        ? fsDirTop()."lib/androX4Menu.php"
-        : fsDirTop()."application/x4$x4Page.php";
-    $class  = 'androX4';
-    if(file_exists($file)) {
-        include_once($file);
-        $class = 'x4'.$x4Page;
+    hidden('x4Page',$x4Page);  # makes form submits come back here
+    if(file_exists("application/$x4Page.dd.yaml")) {    
+       include 'androPage.php';
+       $obj_page = new androPage();
+       if ($obj_page->flag_buffer) { ob_start(); }
+       $obj_page->main($x4Page);
+       if ($obj_page->flag_buffer) {
+           x4HTML("*MAIN*",ob_get_clean());
+       }
     }
-    $object = new $class();
-    
-    // Now determine the method to invoke.  If none was named,
-    // do a browse
-    //
-    $method = gp('x4Action','main');
-    
-    // We do buffering because we assume any direct HTML output has
-    // to be an error.
-    ob_start();
-    $object->$method();
-    $errors = ob_get_clean();
-    if($errors <> '') {
-        x4Error($errors);
+    else {
+        include_once("androX4.php");
+        $file = strtolower($x4Page)=='menu'
+            ? fsDirTop()."lib/androX4Menu.php"
+            : fsDirTop()."application/x4$x4Page.php";
+        $class  = 'androX4';
+        if(file_exists($file)) {
+            include_once($file);
+            $class = 'x4'.$x4Page;
+        }
+        $object = new $class();
+        
+        # Determine method and invoke it.  Notice any
+        # direct output is considered an error
+        $method = gp('x4Action','main');
+        ob_start();
+        $object->$method();
+        $errors = ob_get_clean();
+        if($errors <> '') {
+            x4Error($errors);
+        }
     }
 
     // Put errors in

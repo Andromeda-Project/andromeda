@@ -29,7 +29,7 @@ var fadeSpeed = 'fast';
  */
 var x4Page =  {
     init: function() {
-        x4dd.dd = $a.json.data.dd;
+        x4dd.dd = $a.data.dd;
         // Find, initialize and activate the first x4Display
         var rootObj = $("#x4Top").find(".x4Display")[0];
         this.initDisplay(rootObj,false);
@@ -442,8 +442,8 @@ function x4Grid(oHTML,oParent) {
             if( $a.json.execute()) {
                 var gridBodyId = this.xGridBodyId;
                 $a.json.process( gridBodyId );
-                this.skeys = $a.json.data.skeys;
-                this.rowCount = $a.json.data.rowCount;
+                this.skeys = $a.data.skeys;
+                this.rowCount = $a.data.rowCount;
                 
                 // Tell x4Browse how many rows it has
                 this.zRowCount = $a.byId(gridBodyId).rows.length;
@@ -729,7 +729,7 @@ function x4Detail(oHTML,oParent) {
         
         // Tell child tables that our PK is default
         var apks = x4dd.dd[this.xTableId].pks.split(',');
-        var row  = $a.json.data.row;
+        var row  = $a.data.row;
         for(var idx in x4dd.dd[this.xTableId].fk_children) {
             var tabChild = x4dd.dd[this.xTableId].fk_children[idx].table_id;
             if(typeof(x4dd.dd[tabChild])=='undefined') continue;
@@ -748,9 +748,9 @@ function x4Detail(oHTML,oParent) {
         var text = 'Row '+rowNow+' of '+this.xParent.pane1.rowCount;
         $("#x4RowInfoText").html(text);
         
-        var row = $a.json.data.row;
+        var row = $a.data.row;
         $(this).find(":input").each(function() {
-            var row = $a.json.data.row;
+            var row = $a.data.row;
             var id    = this.id;
             var input = this;
             var column_id = this.xColumnId;
@@ -853,7 +853,7 @@ function x4Detail(oHTML,oParent) {
         else {
             var col1  = x4dd.firstPkColumn(this.xTableId);
             var title = x4dd.dd[this.xTableId].singular 
-                + ": "+ $a.json.data.row[col1]; 
+                + ": "+ $a.data.row[col1]; 
             if(x4dd.pkColumnCount(this.xTableId)>1) {
                 title += '...';
             }
