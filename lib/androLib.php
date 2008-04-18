@@ -9346,6 +9346,7 @@ function ahColFromACol(&$acol) {
             $hinner.="\n<option value=\"$x\">".$x."</option>";
         }
         $acol['html_inner']=$hinner;
+        $acol['hparms']['style'] = 'text-align:left';
     }
 
    // ------------------------------------
