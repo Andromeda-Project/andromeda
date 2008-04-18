@@ -9342,6 +9342,10 @@ function ahColFromACol(&$acol) {
         $hinner='';
         $xmin = a($acol,'value_min');
         $xmax = a($acol,'value_max');
+	// DJO 4-18-08 Add empty row during lookup mode
+	if($acol['mode']=='search') {
+		$hinner .= "\n<option value=\"\"></option>";
+	}
         for ($x=$xmin;$x<=$xmax;$x++) {
             $hinner.="\n<option value=\"$x\">".$x."</option>";
         }
