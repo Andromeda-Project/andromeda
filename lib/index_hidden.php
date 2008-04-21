@@ -109,7 +109,7 @@ else {
 
 // ==================================================================
 // >>> 
-// >>> Load the libraries
+// >>> Load the framework library
 // >>> 
 // ==================================================================
 include_once('androLib.php');
@@ -146,6 +146,7 @@ SessionSet('count',SessionGet('count')+1);
 //                live systems.  commented kfd 3/6/08, delete
 //                completely after july 08
 //vgfSet('cache_pkey',array('member_profiles'));
+
 
 // ==================================================================
 // >>> 

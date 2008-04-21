@@ -6,9 +6,6 @@ jsInclude('clib/jquery-1.2.3.js','JQuery is distributed under the GPL
       license, written by a team of programmers, more info at
       http://www.jquery.com'
 );
-//jsInclude('clib/jQuery.moreSelectors.js','By George Adamson at
-//    http://www.softwareunity.com/sandbox/JQueryMoreSelectors/'
-//);
 
 // This is the old CSS library for x2
 cssInclude('templates/'.$mainframe->getTemplate().'/css/x2.css');
@@ -68,12 +65,6 @@ if(vgfGet('suppress_goodies_calendar')!==true) {
 jsInclude("clib/jquery.dimensions.js");
 jsInclude("clib/jquery.tooltip.js");
 cssInclude("clib/jquery.tooltip.css");
-// DHTML Goodies tooltip
-#if(vgfGet('suppress_goodies_tooltip')!==true) {
-#    cssInclude('clib/dhtml-tt/css/form-field-tooltip.css');
-#    jsInclude('clib/dhtml-tt/js/rounded-corners.js');
-#    jsInclude('clib/dhtml-tt/js/form-field-tooltip.js');
-#}
 
 // Positioning styles
 if(vgfGet('suppress_andromeda_css')!==true || vgfGet('x4')===true) {

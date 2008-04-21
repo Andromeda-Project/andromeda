@@ -349,7 +349,7 @@ function input($colinfo) {
         $min = a($colinfo,'value_min');
         $max = a($colinfo,'value_max');
         for($x = $min; $x <= $max; $x++) {
-            $option = html('option',$input);  // this is a blank option
+            $option = html('option',$input);
             $option->hp['value']=$x;
             $option->setHTML($x);
         }
@@ -8932,16 +8932,23 @@ function jsValuesOne($ahcols,$colname,$ahcol,$name,$row,$h) {
     */
     //echo "Setting $name.$colname to $colvalue<br/>";
     $h=str_replace($name.$colname.'--VALUE--',$colvalue,$h);
-    if($ahcol['type_id']=='time' || 
-     $ahcol['type_id']=='cbool' ||
-     $ahcol['type_id']=='gender'
-     ) {
-     if(gp('ajxBUFFER')) {
-        ElementAdd('ajax',"_script|ob('$name$colname').value='$colvalue'");
-     }
-     else {
-        ElementAdd('scriptend',"ob('$name$colname').value='$colvalue'");
-     }
+    $setInScript = false;
+    # KFD 4/21/08, also set in script for value_min/max
+    if($ahcol['type_id']=='time')   $setInScript = true;
+    if($ahcol['type_id']=='cbool')  $setInScript = true;
+    if($ahcol['type_id']=='gender') $setInScript = true;
+    if($ahcol['value_min']<>'')     $setInScript = true;
+    #if($ahcol['type_id']=='time' || 
+    #    $ahcol['type_id']=='cbool' ||
+    #    $ahcol['type_id']=='gender'
+    # ) {
+    if($setInScript) {
+        if(gp('ajxBUFFER')) {
+            ElementAdd('ajax',"_script|ob('$name$colname').value='$colvalue'");
+        }
+        else {
+            ElementAdd('scriptend',"ob('$name$colname').value='$colvalue'");
+        }
     }
 
     // KFD 3/3/08, translate y/n columns    
@@ -9346,7 +9353,7 @@ function ahColFromACol(&$acol) {
 	if($acol['mode']=='search') {
 		$hinner .= "\n<option value=\"\"></option>";
 	}
-        for ($x=$xmin;$x<=$xmax;$x++) {
+    for ($x=$xmin;$x<=$xmax;$x++) {
             $hinner.="\n<option value=\"$x\">".$x."</option>";
         }
         $acol['html_inner']=$hinner;
@@ -10061,8 +10068,11 @@ function cssOutput() {
     <?php    
 }
 
-
-
+function jqPlugin( $file, $comments='') {
+    $jqp = vgfGet('jqPlugins',array());
+    $jqp[] = array('file'=>$file,'comments'=>$comments);
+    vgfSet('jqPlugins',$jqp);
+}
 
 function jsInclude( $file, $comments='',$immediate=false ) {
     if($immediate) {
@@ -10083,6 +10093,8 @@ function jsInclude( $file, $comments='',$immediate=false ) {
 function jsOutput() {
     // Get the array and see if there is anything to do
     $ajs = vgfGet('jsIncludes',array());
+    $jqp = vgfGet('jqPlugins',array());
+    $ajs = array_merge($ajs,$jqp);
     if( count($ajs)==0 ) return;
     
     // Initialize array of files that must be minified
