@@ -1352,5 +1352,15 @@ jQuery.fn.focusTrack = function(newContext) {
     });
 }
 
+jQuery.getCSS = function( url, media, rel, title ) {
+   jQuery( document.createElement('link') ).attr({
+       href: url,
+       media: media || 'screen',
+       type: 'text/css',
+       title: title || '',
+       rel: rel || 'stylesheet'
+   }).appendTo('head');
+};
+
 var jqModalClose=function(hash) { hash.w.fadeOut(500, function() { hash.o.fadeOut(250);}); };
 var jqModalOpen=function(hash) { hash.w.fadeIn(500);hash.o.fadeIn(500);};
