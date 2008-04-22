@@ -269,11 +269,16 @@ class a_pullsvn extends x_table2 {
             # Now pull the list of versions
             x_echoFlush("  Querying for latest version");
             $rawtext = file_get_contents($url);
-            $matches=array();
-            preg_match_all('!\<li\>\<a.*\>(.*)\</a\>\</li\>!U',$rawtext,$matches);
-            $versions = $matches[1];
-            if(count($versions)==0) {
-                x_EchoFlush("  No versions listed, nothing to pull.");
+            if ( $rawtext ) {
+                $matches=array();
+                preg_match_all('!\<li\>\<a.*\>(.*)\</a\>\</li\>!U',$rawtext,$matches);
+                $versions = $matches[1];
+                if(count($versions)==0) {
+                    x_EchoFlush("  No versions listed, nothing to pull.");
+                    continue;
+                }
+            } else {
+                x_EchoFlush( "Unable to get a release list from the svn server.");
                 continue;
             }
             
