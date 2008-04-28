@@ -143,7 +143,12 @@ if (window.attachEvent) window.attachEvent("onload", sfHover);
 </script>             
         	<?php if ($menu_type == "module") mosLoadModules('toolbar'); ?>
         	<?php if ($menu_type == "suckerfish") mosShowListMenu($menu_name);	?>
-  			</div>
+  			</div> <!-- nav -->
+            <?php if(mosCountModules('menuright')) { ?>
+                <div id="nav" style="float:right">
+                    <?=mosLoadModules('menuright') ?>
+                </div>
+            <?php } ?>
 			</div>
 			<div class="clr"></div>
          <?php /* Andromeda change, add a line of links */ ?>
@@ -265,7 +270,7 @@ if (window.attachEvent) window.attachEvent("onload", sfHover);
 			</div>
             <?php } ?>
 		</div>
-        <?php if(gp('gp_page')<>'androX4Menu') { ?>
+        <?php if(!gpExists('x4Page')) { ?>
 		<div id="bot-rocket">
 			<a href="http://www.rockettheme.com"><span class="rocket">&nbsp;</span></a>
 		</div>

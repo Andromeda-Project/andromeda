@@ -24,6 +24,7 @@ function mosShowListMenu($menutype) {
       $menu_mode = gpExists('x4Page') 
         ? (vgfGet('x4menu',false)==true ? 'x4' : 'classic')  
         : 'classic';
+      vgfSet('menu_mode',$menu_mode);
       if($menu_mode <> SessionGet('menu_mode')) {
           sessionSet('menu','');
           sessionSet('menu_mode',$menu_mode);
@@ -43,6 +44,7 @@ function mosShowListMenu($menutype) {
       );
       $class_sfx=null;
       $hilightid=SessionGET('AGMENU_MODULE');
+      $hilightid='';
       
       $menus=SessionGET("AGMENU");
       foreach($menus as $menuid=>$menuinfo) {
@@ -71,6 +73,9 @@ function mosShowListMenu($menutype) {
             else {
                 if(sessionGet('menu_mode')=='x4') {
                     $x->link='?x4Page='.urlencode($page);
+                    if(gp('x4Return')=='menu') {
+                        $x->link.='&x4Return=menu';
+                    }
                 }
                 else {
                     $x->link="?x_module=$menuid&gp_page=".urlencode($page);
@@ -170,11 +175,14 @@ function mosShowListMenu($menutype) {
 		while ($maxrecurse-- > 0) {
 			$parentid = getParentRow($subrows, $parentid);
 			if (isset($parentid) && $parentid >= 0 && $subrows[$parentid]) {
-				$hilightid = $parentid;
+                if(vgfGet('menu_mode')<>'x4') {
+                    $hilightid = $parentid;
+                }
 			} else {
 				break;	
 			}
 		}	
+        if(vgfGet('menu_mode')=='x4') $hilightid = '';
   //echo "<!--[if lte IE 7]>\n";		
   include_once( "$mosConfig_absolute_path/templates/" . $cur_template . "/js/ie.js" );
   //echo "<![endif]-->\n";
@@ -259,7 +267,9 @@ function mosRecurseListMenu( $id, $level, &$children, $open, &$indents, $class_s
             if(defined('_ANDROMEDA_JOOMLA')) {
                $current_itemid='';
                if($row->id==SessionGet('AGMENU_MODULE')) {
-                  $li="<li class='active'>";
+                   if(vgfGet('menu_mode')<>'x4') {
+                       $li="<li class='active'>";
+                   }
                }
             }
             else {
@@ -269,7 +279,7 @@ function mosRecurseListMenu( $id, $level, &$children, $open, &$indents, $class_s
                      $row->id == $highlight || 
                    (sefRelToAbs( substr($_SERVER['PHP_SELF'],0,-9) . $row->link)) == $_SERVER['REQUEST_URI'] ||
                    (sefRelToAbs( substr($_SERVER['PHP_SELF'],0,-9) . $row->link)) == $HTTP_SERVER_VARS['REQUEST_URI']) {
-                        $li = "<li class='active'>";
+                           $li = "<li class='active'>";
                    }
             }
 	         echo $li;

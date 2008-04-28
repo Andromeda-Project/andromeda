@@ -35,6 +35,7 @@ function tmpLoadModules($module_name,$var=null) {
 }
 
 function tmpModuleTop() {
+    return;
    echo "<div style='height:6px; overflow:hidden'>&nbsp;</div>";
    if (vgfGet('x4')!==true) {
        ehLoginHorizontal();

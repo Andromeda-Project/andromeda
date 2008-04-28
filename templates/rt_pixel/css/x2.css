@@ -153,7 +153,7 @@ td.x3input .x3ro {
 /* ------------------------------------------------------ */
 /* Any basic tabular data entry
 /* ------------------------------------------------------ */
-#x2data1 thead tr th
+#x2data1 thead tr th, #x2data1 thead tr td
 { 
    background-color: #202020;
    color: #E0E0E0;
