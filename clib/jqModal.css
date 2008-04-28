@@ -36,6 +36,11 @@ td#jqmTitle {
     color: white;
     font-size: 125%;
     padding-left: 8px;
+    font-weight:bold;
+}
+
+.jqmHeader {
+    background-color: #0000AA;
 }
 
 td#jqmMessage {
