@@ -1135,6 +1135,29 @@ var $a = {
             if(this.callString!='') this.callString+="&";
             this.callString += name + '=' + encodeURIComponent(value);
         },
+        
+        /*
+         * Add the value of all inputs to the json request, only
+         * if not empty.
+         *
+         */
+        inputs: function(obj) {
+            $(obj).find(":input:not([@readonly])").each( function() {
+                    if(this.value!='') {
+                        $a.json.addParm(this.id,this.value);
+                    }
+            });
+        },
+        
+        /*
+         * Take what was supposed to be a JSON call and execute
+         * it as if it were a regular hyperlink
+         *
+         */
+        windowLocation: function() {
+            var entireGet = 'index.php?'+this.callString;
+            window.location = entireGet;
+        },
 
         /**
           * Make a synchronous call to the server, expecting
@@ -1168,7 +1191,7 @@ var $a = {
 
             // If there were server errors, report those
             if(this.jdata.error.length>1) {
-                x4.dialogs.alert(this.jdata.error.combine("\n\n"));
+                $a.dialogs.alert(this.jdata.error.join("\n\n"));
             }
             
             if(autoProcess) {

@@ -3,7 +3,7 @@
     position: relative;
     min-height: 500px;
 }
-#Form1 div.x4Display {
+#andromeda_main_content div.x4Pane {
     position: relative;
     display: none;
 }
@@ -11,7 +11,7 @@
 /* +++ ---------------------------------------------- +++ */
 /* +++ The Menu Bar                                   +++ */
 /* +++ ---------------------------------------------- +++ */
-#Form1 div.x4MenuBar {
+#andromeda_main_content div.x4MenuBar {
   text-align: left;
   font-family: Verdana;
   padding: 8px;
@@ -20,7 +20,7 @@
   padding-left: 0px;
 }
 
-#Form1 div.x4MenuBar A  { 
+#andromeda_main_content div.x4MenuBar A  { 
    padding-top: 4px; padding-bottom: 4px;
    padding-left:8px; padding-right: 8px;
    border: 2px solid gray;
@@ -56,7 +56,7 @@
 /* +++ ---------------------------------------------- +++ */
 /* +++ The search grid styles                         +++ */
 /* +++ ---------------------------------------------- +++ */
-#Form1 .highlight {
+#andromeda_main_content .highlight {
   color: white;
   background-color: gray;
 }
@@ -86,7 +86,7 @@
 /* +++ The content view ports                         +++ */
 /* +++ ---------------------------------------------- +++ */
 /* --- for search grids --- */
-#Form1 .x4VerticalScroll1 {
+#andromeda_main_content .x4VerticalScroll1 {
     position: absolute;
     top: 15px;
     left: 0;
@@ -101,10 +101,10 @@
 
 
 /* --- Menu operations --- */
-#Form1  a {
+#andromeda_main_content  a {
     text-decoration: none;
 }
-#Form1 a.x4MenuOn {
+#andromeda_main_content a.x4MenuOn {
     background-color: #3F7CB9;
     color: white;
 }
@@ -113,7 +113,7 @@
 table.tab100 {
     width: 100%
 }
-#Form1  .x4box {
+#andromeda_main_content  .x4box {
     border: 6px solid #E6E3E6;
     margin: 5px;
     padding: 6px;
@@ -126,7 +126,7 @@ table.tab100 {
 }
 
 /* --- Input controls --- */
-#Form1 .x4caption {
+#andromeda_main_content .x4caption {
     text-align: right;
     padding-right: 3px;
     vertical-align: top;

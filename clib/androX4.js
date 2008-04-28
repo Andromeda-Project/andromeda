@@ -19,49 +19,176 @@
    or visit http://www.gnu.org/licenses/gpl.html
 \* ================================================================== */
 
-var fadeSpeed = 'fast';
-
 /*
- * The x4Menu object accepts control when an x4Menu is passed back
- * from the server.  It will then pass control up to other page
- * type controllers 
+ * This is the generic and top level object for the
+ * Extended Desktop system.
  *
  */
-var x4Page =  {
-    init: function() {
-        x4dd.dd = $a.data.dd;
-        // Find, initialize and activate the first x4Display
-        var rootObj = $("#x4Top").find(".x4Display")[0];
-        this.initDisplay(rootObj,false);
-        rootObj.activate();
+var x4 =  {
+    // Simple setting for behavior
+    fadeSpeed: 'fast',
+    
+    /* 
+     * initialize a json request that uses x4Page and
+     * all inputs on object
+     *
+     */
+    initPost: function(obj) {
+        $a.json.init('x4Page', $a.byId('x4Page').value);
+        $a.json.inputs();
     },
+    
+    // Stack of context objects used during initialization
+    contextStack:  [ ],
+    
+    /*
+     * Add an item to the context, and return the parent
+     * so this object knows who to pass control up to
+     *
+     */
+    context: function(object) {
+        /* get the return value before adding an item */
+        var retval =
+            (this.contextStack.length == 0) 
+            ? false 
+            : this.contextStack[this.contextStack.length-1];
+            
+        /* if object was null, they were asking for context */
+        if(object==null) return retval;
+         
+        /* add the item */
+        this.contextStack[this.contextStack.length] = object;
+        
+        /* return the parent */
+        return retval;
+    },
+    contextPop: function() {
+        if(this.contextStack.length > 0) this.contextStack.pop();
+    },
+    
+    /*
+     * Simple routine to allow passing of events up to
+     * parents.  The return value is a little funny.  You return
+     * true if event handling should continue, false if it should
+     * stop.
+     *
+     */
+     passUp: function(child,functionName,event) {
+         if(typeof(child.xParent)!='undefined') {
+             if(child.xParent) {
+                 if(typeof(child.xParent[functionName])!='undefined') {
+                     return child.xParent[functionName](event);
+                 }
+             }
+         }
+         return true;
+     },
+ 
+    
+    /*
+     * Code entry point: the server returns a page of HTML that
+     * invokes this function, so browser execution
+     * begins here.
+     *
+     */
+    main: function() {
+        // Capture the data dictionary
+        x4dd.dd = $a.data.dd;
 
-    initDisplay: function(obj,oParent) {
-        // Assign a controller object
-        if(obj.xType=='x4TableTop') {
-            x4TableTop(obj,oParent);
+        // Find the top object, and begin recursing it
+        var rootObj = $a.byId('x4Top');
+        this.initRecurse(rootObj);
+        
+        // The top object is a container only.  The activation
+        // system begins with the first child we can find.
+        if($(rootObj).children('.x4Pane').length > 0) {
+            $(rootObj).children('.x4Pane')[0].activate();
         }
-        else if(obj.xType=='x4Grid') {
-            x4Grid(obj,oParent);
-        }
-        else if(obj.xType=='x4Detail') {
-            x4Detail(obj,oParent);
-        }
-        else if(obj.xType=='x4TabContainer') {
-            x4TabContainer(obj,oParent);
+    },
+    
+    /*
+     * Return function attempts to go back to menu
+     *
+     */
+    returnToMenu: function(focus) {
+        if($a.aProp($a.data,'return','')=='') {
+            window.location="index.php";
         }
         else {
-            obj.activate = function() { };
+            getString = '?x4Page=menu';
+            if(focus!=null) {
+                getString += '&x4Focus='+focus
+            }
+            window.location=getString;
         }
-        
-        // Now process through to the children
-        $(obj).children('.x4Display').each(function() {
-                var parent = $(this).parent('.x4Display')[0];
-                x4Page.initDisplay(this,parent);
-        })
+    },
+    
+
+    /*
+     * x4.initRecurse
+     *
+     * Makes two significant actions.
+     *
+     * First, it puts activate methods onto all inputs and
+     * hyperlinks.
+     *
+     * Second, it recurses child .x4Pane divs to look
+     * for special-purpose constructors.
+     *
+     */
+    initRecurse: function(obj) {
+        $(obj).children(".x4Pane").each( function() {
+            /* tell the object who its parent controller is */
+            this.xParent = x4.context(this);
+            
+            /*
+             * Create default keystroke handlers that "pass the buck"
+             * up to the parent.  These are only invoked if inputs 
+             * on the pane invoke them, otherwise they are inert.
+             * Also they are subject to being overwritten by specific
+             * code by controller constructors.
+             *
+             */
+            this.keyDown = function(event) {
+                return x4.passUp(this,'keyDown',event);
+            }
+            this.keyPress = function(event) {
+                return x4.passUp(this,'keyPress',event);
+            }
+            this.keyUp = function(event) {
+                return x4.passUp(this,'keyUp',event);
+            }
+            
+                
+            /* Look for all controller constructors based on classes */
+            var classes = this.className.split(' ');
+            for(var x in classes) {
+                var oneClass = classes[x];
+                if(oneClass=='x4Pane') continue;
+                var constructor = false;
+                /* This attempts to find a constructor */
+                try {
+                    constructor = eval(oneClass);
+                }
+                catch(e) { 
+                    /* do nothing on error */ 
+                }
+                if(constructor) {
+                    constructor(this);
+                }
+            }
+                
+            /* Always do a tab loop */
+            $a.tabLoopInit(this);
+                
+            /* And of course, do the sub-panes as well */
+            x4.initRecurse(this);
+            
+            /* After recursion is complete, surrender control of context */
+            x4.contextPop();
+        });
     },
 }
-
 
 /*
  * The menu bar object is a conduit to the current
@@ -112,26 +239,217 @@ var x4dd = {
     }
 }
 
+/* ========================================================
+ *
+ * Controller Constructor for the androPage system
+ *
+ * ========================================================
+ */
+function x4AndroPage(self) {
+    /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+     * 
+     * Activation Code
+     *
+     * @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+     */
+    self.activate = function() {
+        $(this).fadeIn(x4.fadeSpeed,function() {
+            if($(this).find(":input,a").length > 0) {
+                $(this).find(":input,a")[0].focus();
+            }
+        });
+    }
+    /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+     * 
+     * Activation Code (END)
+     *
+     * @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 
+     */
+    
+    /*
+     * A keyboard handler runs the three programs
+     *
+     */
+    self.keyDown = function(event) {
+        var letter = $a.charLetter(event.which);
+        // Various control key functions
+        if(event.ctrlKey) {
+            if(letter=='p') {
+                this.printNow();
+                return false;
+            }
+            if(letter=='o') {
+                this.showOnScreen();
+                return false;
+            }
+            if(letter=='q') {
+                this.showSql();
+                return false;
+            }
+        }
+        
+        // ENTER and ESC functions
+        var keyLabel = $a.keyLabel(event);
+        if(keyLabel=='Enter') {
+            if(this.defaultOutput!='') {
+                this[this.defaultOutput]();
+                return false;
+            }
+        }
+        if(keyLabel == 'Esc') {
+            x4.returnToMenu( $a.byId('x4Page').value );
+            return false;
+        }
+        
+        // Up and down arrows
+        if(keyLabel == 'PageUp') {
+            this.highlightRow('row_0');
+            return false;
+        }
+        if(keyLabel == 'PageDown') {
+            this.highlightRow('row_'+(this.rowCount-1));
+            return false;
+        }
+        if(keyLabel == 'UpArrow') {
+            if(this.rowCurrentId) {
+                var id = Number(this.rowCurrentId.slice(4));
+                if(id != 0) {
+                    this.highlightRow('row_'+(id-1));
+                    return false;
+                }
+            }
+        }
+        if(keyLabel == 'DownArrow') {
+            if(this.rowCurrentId) {
+                var id = Number(this.rowCurrentId.slice(4));
+                if(id < (this.rowCount-1)) {
+                    this.highlightRow('row_'+(id+1));
+                    return false;
+                }
+            }
+        }
+  
+        /* if not handled, pass up to parent */
+        return x4.passUp(this,'keyDown',event);
+    }
+    
+    /*
+     *
+     * Assignment of handlers to children.  Everything goes straight up
+     *
+     */
+    $(self).find(":input,:button").each( function() {
+            this.xParent = x4.context();
+    }).keydown(function(event) {
+        // If we want to prevent event propagation we must return
+        // false *here*, in the function that first received the event
+        return x4.passUp(this,'keyDown',event);
+    });
+    
+    
+    /*
+     *
+     * The functions
+     *
+     */
+    self.printNow = function() {
+        $a.byId('gp_post').value='pdf';
+        x4.initPost(this);
+        $a.json.windowLocation();
+    }
+    self.showSql = function() {
+        x4.initPost(this);
+        $a.json.addParm('showsql',1);
+        $a.json.execute();
+        $a.json.process('divShowSql');
+    }
+    self.showOnScreen = function() {
+        this.tBody = null;
+        
+        $a.byId('gp_post').value='onscreen';
+        x4.initPost(this);
+        $a.json.execute();
+        $a.json.process('divOnScreen');
+        
+        // Always remove the last row from the body, because 
+        // AndroPage always has a trailing blank row
+        var tbody = $(this).find("#divOnScreen table tbody")[0];
+        $(tbody).find("tr:last").remove();
+        this.rowCurrentId = false;
+        this.tBody = false;
+        this.rowCount = 0;
+        if(tbody.rows.length > 0) {
+            this.tBody = tbody;
+            tbody.parentContext = this;
+            this.rowCount = tbody.rows.length;
+            
+            $(tbody).find("tr").mouseover( function() {
+                this.parentNode.parentContext.highlightRow(this.id);
+            });
+            this.highlightRow('row_0');
+        }
+    }
+    
+    /*
+     * The row highlighter
+     *
+     */
+    self.highlightRow = function(rowId) {
+        if(!this.tBody) return;
+        // Turn off any old row
+        if(this.rowCurrentId) {
+            $a.byId(this.rowCurrentId).className = '';
+        }
+        this.rowCurrentId = false;
+        
+        // Turn on the highlighted one if it exists
+        $('#'+rowId).each( function() {
+                this.parentNode.parentContext.rowCurrentId = this.id;
+                this.className = 'highlight'
+        });
+         
+    }     
+}
 
 /* ========================================================
- * Constructor Funtion x4TableTop
+ * Controller Constructor Funtion For x4Window
+ *
+ * A window object contains a menu bar and (assuming) at
+ * least one x4TableTop
+ * ========================================================
+ */
+function x4Window(self) {
+    self.keyDown = function(event) {
+        
+        
+        
+    }
+    
+    // Activate should be no-nonsense, make visible and 
+    // activate first x4Pane
+    self.activate = function() {
+        this.style.display='block';
+        $(this).children(".x4Pane")[0].activate();
+    }
+}
+
+/* ========================================================
+ * Controller Constructor Funtion For x4TableTop
  *
  * Controller for a root object that can have 1 or more child
  * panes that have grids, details, or tab containers.
  * ========================================================
  */
-function x4TableTop(oHTML,oParent) {
-    var self = oHTML;
-    self.xParent = oParent;
-    self.currentDisplay = false;
-    self.pane1 = $(self).children(".x4Display")[0];
-    self.pane2 = $(self).children(".x4Display")[1];
+function x4TableTop(self) {
+    self.pane1 = $(self).children(".x4Pane")[0];
+    self.pane2 = $(self).children(".x4Pane")[1];
     
     // If the object above has a table, find it
-    if(oParent==false) 
+    if(self.xParent==false) 
         self.xTableIdPar = '';
-    else
-        self.xTableIdPar = oParent.xTableId;
+    else {
+        self.xTableIdPar = self.xParent.xTableId;
+    }
     
     /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
      * 
@@ -150,13 +468,8 @@ function x4TableTop(oHTML,oParent) {
     self.deactivate = function() {
         if(this.xParent)
             this.xParent.deactivate();
-        else
-            if($a.aProp($a.data,'return','')=='') {
-                window.location="index.php?x4Focus="+self.xTableId;
-            }
-            else {
-                window.location="?x4Page=menu&x4Focus="+self.xTableId;
-            }
+        else 
+            x4.returnToMenu();
     }
     
     /* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -185,11 +498,9 @@ function x4TableTop(oHTML,oParent) {
  * tabletops or details
  * ========================================================
  */
-function x4TabContainer(oHTML,oParent) {
-    var self = oHTML;
-    self.xParent = oParent;
+function x4TabContainer(self) {
     self.currentDisplay = false;
-    self.pane1 = $(self).children(".x4Display")[0];
+    self.pane1 = $(self).children(".x4Pane")[0];
     
     /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
      * 
@@ -213,7 +524,7 @@ function x4TabContainer(oHTML,oParent) {
         if(this.xParent)
             return false;
         else
-            x4Menu.restore();
+            x4.returnToMenu();
     }
     
     /* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -232,30 +543,22 @@ function x4TabContainer(oHTML,oParent) {
 
 /* ========================================================
  *
- * Constructor Funtion x4Grid
+ * Controller Constructor for x4Grid
  *
  * A search or display grid that shows relevant rows.
  *
  * ========================================================
  */
-function x4Grid(oHTML,oParent) {
-    /* ####################################################
-     * 
-     * Initialization Code
-     *
-     * ####################################################
-     */
-    var self = oHTML;
-    self.xParent = oParent;
+function x4Grid(self) {
     self.xTableIdPar = self.xParent.xTableIdPar;
-    self.xTableId = self.xParent.xTableId;
+    self.xTableId    = self.xParent.xTableId;
     self.lastFocus = false;
     self.zRowId = false;
     self.inputs = [];
     self.tabLoop= [];
     
     // Turn on a tab loop
-    $a.tabLoopInit(oHTML);
+    $a.tabLoopInit(self);
     
     // Make all assignments to inputs
     $(self).find(":input").each(function() {
@@ -338,10 +641,17 @@ function x4Grid(oHTML,oParent) {
             }
         }
         
+        // Do nothing on the keyup for SHIFT, that is confusing
+        if(keyLabel=='Shift') return false;
+        
         // Pass control to the fetch program
         this.oHTML.fetch(doFetch);
+    }).keydown(function(event) {
+        // Keydown is where you trap the control functions
+        return x4.passUp(this,'keyDown',event);
     });
     
+
     var idxMax = self.tabLoop.length - 1;
     self.tabNext = [];
     self.tabPrev = [];
@@ -353,8 +663,6 @@ function x4Grid(oHTML,oParent) {
         self.tabNext[ self.tabLoop[x] ] = $a.byId(self.tabLoop[x+1]);
         self.tabPrev[ self.tabLoop[x] ] = $a.byId(self.tabLoop[x-1]);
     }
-    
-    
     
     /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
      * 
@@ -369,10 +677,9 @@ function x4Grid(oHTML,oParent) {
             this.fetch();
         }
 
-        console.log(this.xTableId);
         $("#x4H1Top").html( x4dd.dd[this.xTableId].description);
         
-        $(this).fadeIn(fadeSpeed,function() {
+        $(this).fadeIn(x4.fadeSpeed,function() {
             $("#button-sav").css('display','none');
             $("#button-snw").css('display','none');
             $("#button-sxt").css('display','none');
@@ -388,8 +695,6 @@ function x4Grid(oHTML,oParent) {
         $(this.lastFocus).blur();
     }
     
-
-    
    /*
     * Sets the sort order for searches.  Expects a
     * column name and literal "ASC" or "DESC".  If column
@@ -397,8 +702,8 @@ function x4Grid(oHTML,oParent) {
     * sortable
     *
     */
-    self.setOrderBy = function(inputId,direction) {
-        if(inputId==null) {
+    self.setOrderBy = function(inputCol,direction) {
+        if(inputCol==null) {
             var inputCol = '';
             if(this.inputs.length>0) {
                 inputCol = this.inputs[0].xColumnId;
@@ -408,33 +713,49 @@ function x4Grid(oHTML,oParent) {
         this.xSortCol = inputCol;
         this.xSortAD = direction;
     }
+    /*
+     * After defining it, invoke it
+     *
+     */
+    self.setOrderBy();
+    
        
     self.fetch = function(doFetch) {
         if(doFetch==null) doFetch=false;
         this.doFetch=doFetch;
+        this.cntNoBlank = 0;
         
+        // Initialize and then scan 
+        $a.json.init('x4Page',this.xTableId);
         $(this).find(":input").each(function() {
             if(this.value!=this.xValue) {
-                this.oHTML.doFetch = true;  
+                this.oHTML.doFetch = true;
+            }
+            if(this.value!='') {
+                this.oHTML.cntNoBlank++;
             }
             this.xValue = this.value;
             $a.json.addParm('x4w_'+this.xColumnId,this.value);
         });
         
-        if(this.xTableIdPar!=='') {
+        if(this.xTableIdPar!='') {
             $a.json.addParm('tableIdPar',this.xTableIdPar);
-            if(typeof(this.xParent.xParent.pane1.skey)!='function') {
-                var skey = this.xParent.xParent.xParent.pane1.skey();
-            }
-            else {
-                var skey = this.xParent.xParent.pane1.skey();
-            }
-            $a.json.addParm('skeyPar',skey);
+            //if(typeof(this.xParent.xParent.pane1.skey)!='function') {
+            //    var skey = this.xParent.xParent.xParent.pane1.skey();
+            //}
+            //else {
+            //    var skey = this.xParent.xParent.pane1.skey();
+            //}
+            //$a.json.addParm('skeyPar',skey);
             this.doFetch=true;
         }
         
+        console.log("hello "+this.cntNoBlank);
         if(this.doFetch) {
-            $a.json.addParm('x4Page' ,this.xTableId);
+            if(this.cntNoBlank==0) {
+                this.clear();
+                return;
+            }
             $a.json.addParm('sortCol',this.xSortCol);
             $a.json.addParm('sortAD' ,this.xSortAD);
             $a.json.addParm('x4Action','browseFetch');
@@ -557,7 +878,7 @@ function x4Grid(oHTML,oParent) {
                 this.fetch();
             }
         }
-    } 
+    }
 }
 
 /* ========================================================
@@ -566,9 +887,7 @@ function x4Grid(oHTML,oParent) {
  * Shows details for some columns
  * ========================================================
  */
-function x4Detail(oHTML,oParent) {
-    var self = oHTML;
-    self.xParent = oParent;
+function x4Detail(self) {
     self.xTableId = self.xParent.xTableId;
     self.lastFocus = false;
     self.inputs = [];
@@ -677,7 +996,7 @@ function x4Detail(oHTML,oParent) {
         $("#button-sxt").css('display','');
         
         
-        $(this).fadeIn(fadeSpeed,function() {
+        $(this).fadeIn(x4.fadeSpeed,function() {
             if(this.lastFocus) {
                 $(this.lastFocus).focus();
             }
@@ -847,7 +1166,6 @@ function x4Detail(oHTML,oParent) {
         
         // Title
         if(mode=='new') {
-            console.log(this.xTableId);
             var title = 'New ' + x4dd.dd[this.xTableId].singular;
         }
         else {
