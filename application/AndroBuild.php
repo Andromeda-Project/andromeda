@@ -1521,7 +1521,7 @@ function SpecFlatten_Runout() {
         // keys.  Insert all non-mutable 
         $sq="INSERT INTO zdd.tabflat_c (
                  table_id,column_id_src,column_id,suffix,prefix
-                ,description
+                ,description,descshort
                 ,primary_key,uisearch
                 ,colprec,colscale,colres,type_id
                 ,table_id_fko
@@ -1532,7 +1532,7 @@ function SpecFlatten_Runout() {
                   '$table_id',x1.column_id
                  ,rtrim(x1.prefix) || rtrim(x1.column_id) || rtrim(x1.suffix)
                  ,x1.suffix,x1.prefix
-                 ,x1.description
+                 ,x1.description,x1.descshort
                  ,x1.primary_key,x1.uisearch
                  ,c.colprec,c.colscale,c.colres,c.type_id
                  ,x1.table_id_fko
@@ -1541,6 +1541,7 @@ function SpecFlatten_Runout() {
              FROM (
                  SELECT column_id,column_id_src,suffix,prefix
                        ,MAX(description)                as description
+                       ,MAX(descshort)                  as descshort
                        ,MAX(COALESCE(primary_key ,'N')) as primary_key
                        ,MAX(COALESCE(uisearch    ,'N')) as uisearch
                        ,MAX(COALESCE(table_id_fko,'' )) as table_id_fko
@@ -1549,7 +1550,7 @@ function SpecFlatten_Runout() {
                      -- This is the core data from the flat table
                      SELECT f.column_id,f.column_id_src
                            ,fk.suffix,fk.prefix
-                           ,f.description
+                           ,f.description,f.descshort
                            ,fk.primary_key,fk.uisearch
                            ,fk.table_id_par as table_id_fko
                            ,TRIM(fk.uicolseq) || '.' || TRIM(f.uicolseq) as uicolseq
@@ -1580,6 +1581,7 @@ function SpecFlatten_Runout() {
                    ,pk_change     = res.pk_change
                    ,range_from    = res.range_from
                    ,description   = res.description
+                   ,descshort     = res.descshort
                    ,tooltip       = res.tooltip
                    ,value_min     = res.value_min
                    ,value_max     = res.value_max
@@ -1600,6 +1602,7 @@ function SpecFlatten_Runout() {
                          ,COALESCE(tc.value_min,c.value_min) as value_min
                          ,COALESCE(tc.value_max,c.value_max) as value_max
                          ,".$this->col3res('description')."
+                         ,".$this->col3res('descshort')."
                          ,".$this->col3res('tooltip')."
                          ,".$this->col3num('uirows')."
                          ,".$this->col3num('uicols')."
@@ -1623,14 +1626,14 @@ function SpecFlatten_Runout() {
         // in other tables, automations, etc.
         $SQL = 
             "insert into zdd.columns_c ( 
-              column_id, description 
+              column_id, description, descshort 
               ,automation_id, auto_table_id, auto_column_id, auto_formula
               ,ins,uiro,uino,required,dispsize,uiwithnext,prefix_table_name
               ,value_min,value_max
               ,type_id,colprec,colscale,colres
               ,uiinline,alltables )
            select
-              f.column_id, f.description 
+              f.column_id, f.description, f.descshort 
               ,c.automation_id, c.auto_table_id, c.auto_column_id, c.auto_formula
               ,c.ins,c.uiro,c.uino,c.required,c.dispsize,c.uiwithnext,c.prefix_table_name
               ,c.value_min,c.value_max
@@ -7408,14 +7411,14 @@ function DBB_RunOut($tb, $sf) {
     // tables.  Only safe to be used in agg, fetch, etc.
     $SQL = 
 		"insert into zdd.columns_c ( 
-          column_id, description 
+          column_id, description ,descshort 
           ,automation_id, auto_table_id, auto_column_id, auto_formula
           ,ins,uiro,uino,required,dispsize,uiwithnext,prefix_table_name
           ,value_min,value_max
           ,type_id,colprec,colscale,colres
           ,uiinline,alltables )
        select
-          f.column_id, f.description 
+          f.column_id, f.description ,f.descshort
           ,c.automation_id, c.auto_table_id, c.auto_column_id, c.auto_formula
           ,c.ins,c.uiro,c.uino,c.required,c.dispsize,c.uiwithnext,c.prefix_table_name
           ,c.value_min,c.value_max
