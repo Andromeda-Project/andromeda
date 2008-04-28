@@ -1,11 +1,15 @@
 <?php
 echo "\n<title>".vgfGet('pageTitle')."</title>\n";
 
-// We now include JQuery all of the time
+# The jQuery library always comes first
 jsInclude('clib/jquery-1.2.3.js','JQuery is distributed under the GPL
       license, written by a team of programmers, more info at
       http://www.jquery.com'
 );
+
+# Then Andromeda Library Comes Second
+jsInclude('clib/androLib.js');
+
 
 // This is the old CSS library for x2
 cssInclude('templates/'.$mainframe->getTemplate().'/css/x2.css');
@@ -13,7 +17,9 @@ cssInclude('templates/'.$mainframe->getTemplate().'/css/x2.css');
 cssInclude('clib/raxlib.css');
 
 
-// The new css library for x4 and the new js library for x4
+# The new x4 libraries.  It is important that x4.js come after
+# androLib.js, because we may want x4 to redefine functions
+# in androLib.php
 if(gpExists('x4Page')) {
     cssInclude('clib/x4.css');
     jsInclude('clib/androX4.js');
@@ -51,9 +57,6 @@ if($script<>'') {
     </script>
     <?php
 }
-
-// Standard Andromeda Libraries
-jsInclude('clib/androLib.js');
 
 // DHTML Goodies calendar
 if(vgfGet('suppress_goodies_calendar')!==true) { 

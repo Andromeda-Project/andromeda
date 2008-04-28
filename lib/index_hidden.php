@@ -276,16 +276,19 @@ if(isset($header_mode)) return;
 // >>> set these flags in applib
 // >>> 
 // ==================================================================
-if( ($gp_page=gp('gp_page'))!='' && gp('x4Page')=='') {
-    if(vgfGet('x4ForceAlways',false)==true) {
-        gpSet('x4Page',$gp_page);
-    }
-    else if(vgfGet('x4ForceIfFound',false)==true) {
-        $x4File = fsDirTop()."application/x4$gp_page.php";
-        if(file_exists($x4File)) {
-            gpSet('x4Page',$gp_page);
-        }
-    }
+#if( ($gp_page=gp('gp_page'))!='' && gp('x4Page')=='') {
+#    if(vgfGet('x4ForceAlways',false)==true) {
+#        gpSet('x4Page',$gp_page);
+#    }
+#    else if(vgfGet('x4ForceIfFound',false)==true) {
+#        $x4File = fsDirTop()."application/x4$gp_page.php";
+#        if(file_exists($x4File)) {
+#            gpSet('x4Page',$gp_page);
+#        }
+#    }
+#}
+if(vgfGet('x4Welcome') && gp('x4Page')=='' && LoggedIn()) {
+    gpSet('x4Page','menu');
 }
 
 
@@ -342,7 +345,7 @@ return;
 // DISPATCH DESTINATIONS
 // ==================================================================
 // ------------------------------------------------------------------
-// >> index_hidden_x4Page
+// >> index_hidden_x4Dispatch
 // ------------------------------------------------------------------
 function index_hidden_x4Dispatch() {
     # This is everything that *might* go back, make a place
@@ -360,7 +363,7 @@ function index_hidden_x4Dispatch() {
     //
     $x4Page = gp('x4Page');
     hidden('x4Page',$x4Page);  # makes form submits come back here
-    if(file_exists("application/$x4Page.dd.yaml")) {    
+    if(file_exists("application/$x4Page.page.yaml")) {   
        include 'androPage.php';
        $obj_page = new androPage();
        if ($obj_page->flag_buffer) { ob_start(); }
@@ -407,6 +410,14 @@ function index_hidden_x4Dispatch() {
         echo json_encode_safe($GLOBALS['AG']['x4']);
     }
     else {
+        # Tell the client-side library to initialize the
+        # 'inert' HTML that it received from us.
+        #
+        x4Script("x4.main()");
+        
+        # Don't need a form in x4 mode
+        vgaSet('NOFORM',true);
+
         #  Put things where the template expects to find them
         vgfSet('HTML',$GLOBALS['AG']['x4']['html']['*MAIN*']);
         foreach($GLOBALS['AG']['x4']['script'] as $script) {

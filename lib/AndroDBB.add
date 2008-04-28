@@ -152,7 +152,8 @@ column uicolseq { description: Column Sequence;  type_id: vchar; colprec: 99; }
 
 // This column is used in a lot of places
 //
-column description {  type_id: vchar; colprec: 40;  colscale: 0; description: Description;  }
+column description { type_id: vchar; colprec: 40; description: Description;  }
+column descshort   { type_id: vchar; colprec: 15; description: Short Description; }
      
 // This column is added by the builder to EVERY TABLE in the
 // database.  It is a general-purpose surrogate key.  It should
@@ -628,6 +629,7 @@ table columns {
     
     column column_id   { primary_key: Y; uisearch: Y; }
     column description { uisearch: Y; }
+    column { descshort; }
     
     // all automation stuff
     foreign_key { automations; }
@@ -672,6 +674,7 @@ table tabcol {
     column { colres; }
     column { ins; uiro; uino; uicolseq; }
     column { uiwithnext; uisearch; description; }
+    column { descshort; }
     column { range_from; range_to; }
     column { value_min; value_max; uisearch_ignore_dash; }
     column { uirows;    uicols;    }
@@ -726,6 +729,7 @@ table tabfky {
 	column prefix { primary_key: Y; }
 	column { table_id_par_comp; } 
 	column { primary_key; pk_change; uicolseq; uisearch; description; }
+    column { descshort; }
 
 	column { auto_insert; copysamecols; }
 	column { uicolseq; nocolumns; allow_empty; allow_orphans; }
@@ -1284,6 +1288,7 @@ table tabflat {
 		
 	column { table_id; column_id;	primary_key: Y; uisearch: Y;  }
 	column { description; }
+    column { descshort; }
 
 	column primary_key { uisearch: Y; }
     column pk_change { uisearch: Y; }

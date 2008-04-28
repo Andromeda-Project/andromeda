@@ -7,7 +7,6 @@ class x4Menu extends androX4 {
     #
     # ===================================================================
     function mainLayout(&$container) {
-        echo "in the override";
         ob_start();
         ?>
         <div id="x4Menu" class="x4Display">
@@ -104,7 +103,7 @@ window.x4Menu = {
 
         // Turn on the focus tracking, then fade in and set focus
         $(this.jqid + " a").focusTrack();
-        $(this.jqid).fadeIn(fadeSpeed,function() {
+        $(this.jqid).fadeIn(x4.fadeSpeed,function() {
                 if(x4Menu.lastFocusId!='') {
                     $('#'+x4Menu.lastFocusId).focus();
                 }
@@ -184,42 +183,6 @@ window.x4Menu = {
             return false;
         }
     },
-    
-    /*
-    open: function(page) {
-        // Make menu go away
-        $.focusTrackBlur();
-        $('#'+this.divId).css('display','none');
-        
-        // Make new layer
-        var divObj = document.createElement('div');
-        divObj.id = 'x4divLayer_2';
-        divObj.style.height='100%';
-        $a.byId('Form1').appendChild(divObj);        
-        
-        $a.json.init('x4Page',page);
-        if($a.json.execute()) {
-            $a.json.process(divObj.id);
-            x4dd.dd = $a.json.data.dd;
-            // Find, initialize and activate the first x4Display
-            var rootObj = $(divObj).find(".x4Display")[0];
-            this.initDisplay(rootObj,false);
-            this.rootObj = rootObj;
-            rootObj.activate();
-        }
-    },
-    */
-    
-    // Called by a page that is ready to exit, says "please
-    // get rid of me" and "make yourself displayed again"
-    /*
-    restore: function() {
-        $('#x4divLayer_2').remove();
-        $(this.jqid).fadeIn(fadeSpeed,function() {
-            $.focusTrackRestore(); 
-        });
-    },
-    */    
 }
         </script>
         <?php

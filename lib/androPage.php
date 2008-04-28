@@ -71,8 +71,9 @@ class androPage {
         if(!isset($this->yamlP2['section'])) {
             $this->yamlP2['section'] = array(
                 'default'=>array(
-                    'table'=>(isset( $this->yamlP2['table'] ) ? $this->yamlP2['table'] : '' )
-                    ,'uifilter'=>(isset( $this->yamlP2['uifilter'] ) ? $this->yamlP2['uifilter'] : '' )
+                    'table'=>a($this->yamlP2,'table',array())
+                    ,'union'=>a($this->yamlP2,'union',array())
+                    ,'uifilter'=>a($this->yamlP2,'uifilter',array())
                 )
             );
         }
@@ -108,16 +109,34 @@ class androPage {
                 $this->yamlP2['options']['nofilter'] = 'N';
         }
 
-        //If nofilter option is set to Y then display without filter
-        if ( $this->yamlP2['options']['nofilter'] == 'Y' ) {
-                $this->PassPage();
-        } else {
-                if ( gp( 'gp_post' ) == '' ) {
-                    $this->x3HTML();
-                } else {
-                    $this->PassPage();
-                }
+        
+        // KFD 4/21/08, determine when to display HTML and
+        // when to run page
+        $runHTML = true;
+        if( $this->yamlP2['options']['nofilter'] == 'Y' )   $runHTML = false;
+        if( gp('gp_post')<>'' && gp('gp_post')<>'onscreen') $runHTML = false;
+        if( gp('gp_post')=='onscreen' && gpExists('x4Page'))$runHTML = false;
+        $runPage = true;
+        if(gp('gp_post')=='') $runPage = false;
+        
+        if($runHTML) {
+            $this->x3HTML();
         }
+        if($runPage) {
+            $this->PassPage();
+        }
+        
+        //If nofilter option is set to Y then display without filter
+        #if ( $this->yamlP2['options']['nofilter'] == 'Y' ) {
+        #        $this->PassPage();
+        #} else {
+        #        if ( gp( 'gp_post' ) == '' ) {
+        #            $this->x3HTML();
+        #        } else {
+        #            $this->PassPage();
+        #        }
+        #}
+        # KFD 4/21/08, changed logic for running htmland page
     }
 
     /**
@@ -169,75 +188,118 @@ class androPage {
     private function x3HTML() {
         $yamlP2 = $this->yamlP2;
         if(isset($yamlP2['options']['title'])) {
+            # This is for classic x2 displays
             $this->PageSubtitle = $yamlP2['options']['title'];
         }
+        
+        # Hidden variables so posts will come back here
+        if(gpExists('x4Page')) {
+            x4Data('return','menu');
+            hidden('x4Page',$this->page);
+        }
+        else {
+            hidden('gp_page',$this->page);
+        }
+        
+        # List of ids for buttons below
+        $ids=array('pdf'=>'printNow','onscreen'=>'showOnScreen'
+            ,'showSql'=>'showSql'
+        );
 
-        $table = createElement('table');
+        # Create top-level div, x4 library is looking for this
+        # and x2 library will ignore it.
+        $top = html('div');
+        $top->hp['id'] = 'x4Top';
+        $top->autoFormat(true);
+        $x4D = html('div',$top);
+        $x4D->addClass('x4Pane');
+        $x4D->addClass('x4AndroPage'); # Triggers all browser-side x4 stuff
+        $x4D->hp['id'] = 'x4AndroPage';
+        $x4D->ap['defaultOutput'] = a($ids, a($yamlP2['options'],'default')); 
+
+        # Put out the title
+        html('h1',$x4D,$this->PageSubtitle);
+        
+        # Make top level container
+        $tabtop = html('table',$x4D);
+        $tr = html('tr',$tabtop);
+        $td1 = html('td',$tr);
+        $td2 = html('td',$tr);
+        
+        # Do right-hand side first actually, the on-screen display area 
+        $div = html('div',$td2);
+        $div->hp['id']='divOnScreen';
+
+        # Put out the inputs
+        $table = html('table',$td1);
         $filters = ArraySafe($this->yamlP2,'uifilter',array());
         foreach($filters as $id=>$options) {
-            $type_id = ArraySafe($options,'type_id','vchar');
+            $options['inputId']='ap_'.$id;
+            $options['value'] = gp('ap_'.$id);
+            $type_id = a($options,'type_id','vchar');
 
-            $tr = createElement('tr');
-            $td  = createElement('td');
-            $td->style['text-align'] = 'right';
-            $td->innerHTML = $options['description'];
-            $tr->appendChild($td);
-            $td  = createElement('td');
-            $td->style['text-align'] = 'left';
-            $td->innerHTML = $this->h3Widget($id,$options);
-            $tr->appendChild($td);
-            $table->appendChild($tr);
+            $tr = html('tr',$table);
+            $td = html('td',$tr);
+            $td->hp['style']="text-align: right";
+            $td->setHTML($options['description']);
+            $td = html('td',$tr);
+            $td->hp['style']="text-align: left";
+            $input = input($options);
+            $td->setHTML($input->bufferedRender());
         }
-        hidden('gp_page',$this->page);
         if ( isset( $yamlP2['template'] ) ) {
                 hidden('gp_post','smarty' );
         } else {
                 hidden('gp_post','pdf');
         }
-        ?>
-        <!-- x3HTML Render -->
-        <br/><h1><?=$this->PageSubtitle?></h1>
-        <?=$table->render()?>
-        <br/>
-        <input type="submit" value="Print Now" id="object_for_f10"
-            onclick="javascript:formPost()"
-        ></input>
-        <?php
-        if(SessionGet('ADMIN')==true) {
-            ?>
-            &nbsp;&nbsp;
-            <input type="submit" name="showsql" value="Show SQL" 
-                onclick="javascript:formPost()"
-            ></input>
-            <?php
-        }
         
-        echo "\n<!-- x3HTML Render (END) -->\n";
-    }
-
-    function h3Widget($id,$options) {
-        // Simple case is no lookup, use hWidget()
-        if(ArraySafe($options,'lookup','N')=='N') {
-            // hwidget uses length of value to be length of
-            // box, so pass it suitably long string
-            $value = '';
-            if(ArraySafe($options,'colprec','')<>'') {
-                $value = str_pad('',$options['colprec']);
-            }
-            return hWidget($options['type_id'],'ap_'.$id,$value,100);
+        $td1->br();
+        
+        # First button: print
+        $inp = html('button',$td1);
+        $inp->hp['id'] = $ids['pdf'];
+        $inp->setHTML('<b>P</b>rint Now');
+        if(gpExists('x4Page')) {
+            $inp->hp['onclick'] = 'this.contextParent.printNow()';
         }
         else {
-            // If doing a lookup we have to go to other code
-            $tab = dd_tableRef($options['table']);
-            $tab['flat'][$id]['table_id_fko'] = $options['table'];
-            $tab['flat'][$id]['fkdisplay']='dynamic';
-            $acols=aColsModeProj($tab,'upd');
-            $acols[$id]['writable']=true;
-            $ahcols=aHColsfromACols($acols);
-            return WidgetFromAhCols(
-                $ahcols,$id,'ap_','',0
-            );
+            $inp->hp['onclick'] = 'formSubmit();';
         }
+        $td1->br(2);
+        
+        # Second button: show onscreen
+        $inp = html('button',$td1);
+        $inp->setHTML('Show <b>O</b>nscreen');
+        $inp->hp['id'] = $ids['onscreen'];
+        if(gpExists('x4Page')) {
+            $inp->hp['onclick'] = 'this.contextParent.showOnScreen()';
+        }
+        else {
+            $inp->hp['onclick'] = "SetAndPost('gp_post','onscreen')";
+        }
+        $td1->br(2);
+        
+        if(SessionGet('ADMIN')==true) {
+            $x4D->nbsp(2);
+            $inp = html('button',$td1);
+            $inp->hp['id'] = $ids['showSql'];
+            $inp->hp['name'] = 'showsql';
+            $inp->SetHTML('Show S<b>Q</b>L');
+            if(gpExists('x4Page')) {
+                $inp->hp['onclick'] = 'this.contextParent.showSql()';
+            }
+            else {
+                $inp->hp['onclick'] = "formSubmit()";
+            }
+        }
+        
+        # Put in the spot where we display the SQL
+        $td1->br(2);
+        $showSql = html('div',$td1);
+        $showSql->hp['id'] = 'divShowSql';
+        
+        
+        echo $top->render();
     }
 
     /**
@@ -248,9 +310,9 @@ class androPage {
      */
     private function pageReport() {
         // Create the PDF object
-        require_once('androPagePDF.php');
-        $pdf = new androPagePDF();
-
+        require_once('androPageReport.php');
+        $pdf = new androPageReport();
+        
         // For each section, run the output
         foreach($this->yamlP2['section'] as $secname=>$secinfo) {
             $dbres = SQL($secinfo['sql']);
@@ -302,9 +364,17 @@ class androPage {
      */
     function genSQL() {
         if ( ArraySafe( $this->yamlP2['options'], 'noquery','N') == 'N' ) {
+            // Get the values from the UI Filter fields into a temp array,
+            // for use below in the column list building
+            $uifilter=ArraySafe($this->yamlP2,'uifilter',array());
+            foreach($uifilter as $colname=>$info) {
+                $this->yamlP2['uifilter'][$colname]['value'] 
+                    = gp('ap_'.$colname);
+            }
+
             foreach($this->yamlP2['section'] as $secname=>$info) {
                 $this->yamlP2['section'][$secname]['sql']
-                 =$this->genSQLSection($secname);
+                    =$this->genSQLSection($secname);
             }
         }
     }
@@ -312,24 +382,84 @@ class androPage {
     /**
      *  Generate the SQL expression for a particular named
      *  section by examining the table/column details in
-     *  the processed yaml.
+     *  the processed yaml.  A section can contain:
+     *  
+     *  a) A UNION block.  The list of tables inside of here
+     *       will be unioned together.
+     *  b) A list of tables.  These will all be joined together
+     *
+     *  This routine does not aim to reproduce the entire SQL
+     *  SELECT statement.  Mostly it is all about automating
+     *  straightforward SQL SELECT statements.
      *
      *  @access private
      */
-   function genSQLSection($secname) {
-        $yamlP2 = $this->yamlP2['section'][$secname];
+    function genSQLSection($secname) {
+        $yamlP2 = &$this->yamlP2['section'][$secname];
+        
+        if(count($yamlP2['union'])>0) {
+            list($table,$cols) = each($yamlP2['union']['table']);
+            $this->yamlP2['table']=array($table=>$cols);
+            return $this->genSQLSectionUnion($yamlP2['union']['table']);
+        }
+        else {
+            return $this->genSQLSectionJoin($yamlP2);
+        }
+        
+   }
+   
+    /**
+     *  Takes a list of tables and UNIONs them together
+     *  and builds the complete query for them.  Supports
+     *  only very limited abilities at this time, basically
+     *  assuming the queries are defined correctly and
+     *  doing a UNION ALL.
+     *
+     *  Returns: A SQL SELECT statement
+     */
+    function genSQLSectionUnion($yamlP2) {
         $page = $this->page;
+        $uifilter = $this->page['uifilter'];
+        
+        $sql=array();
+        
+        foreach($yamlP2 as $table_id=>$tabinfo) {
+            $SQL_COLSWHA = array();
+            
+            $collist = array("'$table_id' as _source");
+            foreach($tabinfo['column'] as $column_id=>$colinfo) {
+                $collist[]="$table_id.$column_id";
+                $compare=$this->SQLCompare($table_id,$column_id,$colinfo);
+                if($compare<>'') {
+                    $SQL_COLSWHA[] = $compare;
+                }
+                
+            }
+            $sq = "SELECT ".implode("\n      ,",$collist)
+                ." FROM $table_id ";
+            if(count($SQL_COLSWHA)>0) {
+                $sq.="\n WHERE ".implode("\n   AND ",$SQL_COLSWHA);
+            }  
+            $sql[] = $sq;
+        }
+        
+        return implode("\nUNION ALL\n",$sql);
+    }   
+   
+    /**
+     *  Takes a list of tables and JOINs them together
+     *  and builds the complete query for them.
+     *
+     *  Returns: A SQL SELECT statement
+     */
+    function genSQLSectionJoin($yamlP2) {
+        $page = $this->page;
+        $uifilter = $this->yamlP2['uifilter'];
 
         // Go get the joins
         $SQL_FROMJOINS=$this->genSQLFromJoins($yamlP2);
         
-        // Get the values from the UI Filter fields into a temp array,
-        // for use below in the column list building
         $SQL_COLSWHA=array();
-        $uifilter=ArraySafe($this->yamlP2,'uifilter',array());
-        foreach($uifilter as $colname=>$info) {
-            $uifilter[$colname]['value'] = gp('ap_'.$colname);
-        }
 
         // See if any of the columns have a GROUP setting,
         // if so, all others must get group: Y
@@ -354,7 +484,6 @@ class androPage {
                 }
             }
         }
-
 
         // Build various lists of columns
         $SQL_COLSA=array();
@@ -384,23 +513,8 @@ class androPage {
                     $SQL_COLSA[] = $coldef;
                 }
 
-                $noempty = ArraySafe($colinfo,'no_empty_compare','Y');
                 if(isset($colinfo['compare'])) {
-                    $compare = "$table.$colname ".$colinfo['compare'];
-                    foreach($uifilter as $filtername=>$info) {
-                        if(strpos($compare,'@'.$filtername)!==false) {
-                            $type_id = $table_dd['flat'][$colname]['type_id'];
-                            $val = SQL_FORMAT($type_id,$info['value']);
-                            if($noempty=='Y' && trim($info['value'])=='') {
-                                $compare='';
-                                break;
-                            }
-                            $compare = str_replace(
-                                '@'.$filtername,$val,$compare
-                            );
-                            
-                        }
-                    }
+                    $compare=$this->SQLCompare($table,$colname,$colinfo);
                     if($compare<>'') {
                         $SQL_COLSWHA[] = $compare;
                     }
@@ -515,6 +629,37 @@ class androPage {
         return $retval;
     }
 
+   /**
+     *  Generate a comparison expression for a column
+     *
+     *  @param string $table_id the table
+     *  @param string $colname  the column
+     *  @param string $colinfo  other column information
+     *  @access private
+     */
+    function SQLCompare($table,$colname,$colinfo) {
+        if(a($colinfo,'compare','')=='') return;
+        $noempty = ArraySafe($colinfo,'no_empty_compare','Y');
+        $table_dd = ddTable($table);
+        $uifilter = $this->yamlP2['uifilter'];     
+        $compare = "$table.$colname ".a($colinfo,'compare','');
+        foreach($uifilter as $filtername=>$info) {
+            if(strpos($compare,'@'.$filtername)!==false) {
+                $type_id = $table_dd['flat'][$colname]['type_id'];
+                $val = SQL_FORMAT($type_id,$info['value']);
+                if($noempty=='Y' && trim($info['value'])=='') {
+                    $compare='';
+                    break;
+                }
+                $compare = str_replace(
+                    '@'.$filtername,$val,$compare
+                );
+                
+            }
+        }
+        return $compare;
+    }
+ 
     /**
      *  Placeholder error function since our current error system
      *  may not deal with processing errors that well.

@@ -10,7 +10,7 @@ require_once 'fpdf153/fpdf.php';
  * @author Kenneth Downs <ken@secdat.com>
  *
 */
-class androPagePDF extends fpdf {
+class androPageReport extends fpdf {
     /**
      *  The last column that was written to
      *  @var lastCol
@@ -66,7 +66,7 @@ class androPagePDF extends fpdf {
      *  @access public
      *  @since 0.1
      */
-    function androPagePDF($ori='l',$uom='pt',$paper='letter') {
+    function androPageReport($ori='l',$uom='pt',$paper='letter') {
         // Tab Stops
         $this->cols  = array();
         

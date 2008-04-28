@@ -224,9 +224,10 @@ class androHtml {
     var $hp   = array();
     var $ap   = array();
     var $style= array();
-    var $innerHtml='';
-    var $htype    = '';
-    var $classes = array();
+    var $innerHtml  = '';
+    var $htype      = '';
+    var $classes    = array();
+    var $autoFormat = false;
     
     #set
     function setHtml($value) {
@@ -241,6 +242,24 @@ class androHtml {
     }
     function addChild($object) {
         $this->children[] = $object;
+    }
+    function br($count=1) {
+        for($x=1;$x<=$count;$x++) {
+            $this->children[] = '<br/>';
+        }
+    }
+    function hr($count=1) {
+        for($x=1;$x<=$count;$x++) {
+            $this->children[] = '<hr/>';
+        }
+    }
+    function nbsp($count=1) {
+        for($x=1;$x<=$count;$x++) {
+            $this->children[] = '&nbsp;';
+        }
+    }
+    function autoFormat($setting=true) {
+        $this->autoFormat = $setting;
     }
     
     
@@ -274,7 +293,10 @@ class androHtml {
     }
     
     # The Render Command
-    function render() {
+    function render($indent='') {
+        if($this->autoFormat) {
+            echo "$indent\n<!-- ELEMENT ID ".$this->hp['id']." (BEGIN) -->";   
+        }
         $parms='';
         if(count($this->classes) > 0) {
             $this->hp['class'] = implode(' ',$this->classes);
@@ -287,7 +309,7 @@ class androHtml {
             $this->hp['style']=$style;
         }
         foreach($this->hp as $parmname=>$parmvalue) {
-            $parms.="\n    $parmname=\"$parmvalue\"";
+            $parms.="\n$indent    $parmname=\"$parmvalue\"";
         }
         if(count($this->ap)>0) {
             $js = "\nvar x = \$a.byId('".$this->hp['id']."');";
@@ -296,18 +318,26 @@ class androHtml {
             }
             x4Script($js);
         }
-        echo "\n<".$this->htype.' '.$parms.'>'.$this->innerHtml;
+        echo "\n$indent<".$this->htype.' '.$parms.'>'.$this->innerHtml;
         foreach($this->children as $child) {
-            $child->render();
+            if(is_string($child)) {
+                echo $child;
+            }
+            else {
+                $child->render($indent.'    ');
+            }
         }
-        echo "\n</".$this->htype.">";
+        echo "\n$indent</".$this->htype.">";
+        if($this->autoFormat) {
+            echo "$indent\n<!-- ELEMENT ID ".$this->hp['id']." (END) -->";   
+        }
     }
 }
 
 
 # Lower level routine to generate an input 
 function input($colinfo) {
-    $formshort= a($colinfo,'formshort');
+    $formshort= a($colinfo,'formshort',a($colinfo,'type_id','char'));
     $type_id  = a($colinfo,'type_id');
     $colprec  = a($colinfo,'colprec');
     $colscale = a($colinfo,'colscale');
@@ -394,6 +424,12 @@ function input($colinfo) {
     
     #  If we ended up with an INPUT above, set the size
     if($input->htype=='input') {
+        # KFD 4/24/08, makes it easier to make widgets in
+        #              in custom code, don't require 'dispsize';
+        if(!isset($colinfo['dispsize'])&&isset($colinfo['colprec'])) {
+            $colinfo['dispsize'] = $colinfo['colprec']+1;
+        }
+        
         $input->hp['size'] = min(
             a($colinfo,'dispsize',30)
             ,OptionGet('dispsize',30)
@@ -404,13 +440,25 @@ function input($colinfo) {
     # Establish identifying stuff
     $input->ap['xTableId']  = $table_id;
     $input->ap['xColumnId'] = $column_id;
-    if($table_id<>'') {
+    if(a($colinfo,'inputId','') <> '') {
+        $input->hp['id'] = $colinfo['inputId'];
+    }
+    elseif($table_id<>'') {
         $input->hp['id'] = 'x4inp_'.$table_id.'_'.$column_id;
     }
     else {
         $inputno = vgfGet('inputNumber',0)+1;
         $input->hp['id'] = 'x4inp_'.$inputno;
         vgfSet('inputNumber',$inputno);
+    }
+    $input->hp['name'] = $input->hp['id'];
+    
+    # If a value is included, set it.  In some situations a value
+    # is set in JS, in other situatons (like androPage) it is
+    # set during form generation
+    #
+    if(a($colinfo,'value')<>'') {
+        $input->hp['value'] = $colinfo['value'];
     }
     
     # Set text alignment

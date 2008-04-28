@@ -37,7 +37,6 @@ class androX4 {
         x4Html('*MAIN*',$div->bufferedRender());
         x4Data('dd.'.$this->table_id,$this->dd);
         x4Data('return',gp('x4Return'));
-        x4Script("x4Page.init()");
         return;
     }
     
@@ -47,13 +46,20 @@ class androX4 {
         # be displayed for the entire time.
         $h1  = html('h1',$div,$this->dd['description']);
         $h1->hp['id']='x4H1Top';
-        $div->addChild( $this->menuBar($this->dd) );
+        
+        # The window controller is very top object, contains menu
+        # bar and any details
+        #
+        $x4Window = html('div',$div);
+        $x4Window->addClass('x4Pane');
+        $x4Window->addClass('x4Window');
+        $x4Window->addChild( $this->menuBar($this->dd) );
         
         #  This is the top level display item
         #
-        $x4Display = html('div',$div);
-        $x4Display->addClass('x4Display');
-        $x4Display->ap['xType'] = 'x4TableTop';
+        $x4Display = html('div',$x4Window);
+        $x4Display->addClass('x4Pane');
+        $x4Display->addClass('x4TableTop');
         $x4Display->ap['xTableId'] = $this->table_id;
         $x4Display->hp['id'] = 'x4TableTop_'.$this->table_id;
         
@@ -67,10 +73,9 @@ class androX4 {
         #
         $tabC = html('div',$x4Display);
         $tabC->addChild($this->rowDisplay());
-        $tabC->addClass('x4Display');
+        $tabC->addClass('x4Pane');
         $tabC->addClass('x4TabContainer');
         $tabC->hp['id'] = 'x4TabContainer_'.$this->table_id;
-        $tabC->ap['xType'] = 'x4TabContainer';
         $tabC->ap['xTableId'] = $this->table_id;
         $tabB = html('div',$tabC);
         $tabB->addClass('x4TabBar');
@@ -100,9 +105,9 @@ class androX4 {
             
             # Make a tableTop container
             $tabx = html('div',$tabC);
-            $tabx->addClass('x4Display');
+            $tabx->addClass('x4Pane');
+            $tabx->addClass('x4TableTop');
             $tabx->hp['id'] = $tabid;
-            $tabx->ap['xType'] = 'x4TableTop';
             $tabx->ap['xTableId'] = $table_id;
             
             # Add into it the grid and the detail
@@ -194,9 +199,9 @@ class androX4 {
         $t =  html('table');
         $t->hp['id'] = 'grid_'.$table_id;
         $t->ap['xTableId'] = $table_id;
-        $t->ap['xType'] = 'x4Grid';
         $t->ap['xReturnAll'] = 'N';
-        $t->addClass('x4Display');
+        $t->addClass('x4Pane');
+        $t->addClass('x4Grid');
         $tb1 = html('tbody',$t);
         $th = html('tr',$tb1);
         if($inputs=='Y') {
@@ -239,9 +244,9 @@ class androX4 {
     function detailPane($dd,&$tabs=null,&$tabbar=null) {
         $div = html('div',$tabs);
         $div->hp['id'] = 'detail_'.$dd['table_id'];
-        $div->ap['xType']    = 'x4Detail';
         $div->ap['xTableId'] = $dd['table_id'];
-        $div->addClass('x4Display');
+        $div->addClass('x4Pane');
+        $div->addClass('x4Detail');
         
         # create the table that will hold the inputs 
         $table = html('table',$div);
