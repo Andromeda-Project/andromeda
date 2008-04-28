@@ -74,6 +74,9 @@ var x4 =  {
      *
      */
      passUp: function(child,functionName,event) {
+         //console.log("in pass up "+functionName);
+         //console.log(child);
+         //console.log(event);
          if(typeof(child.xParent)!='undefined') {
              if(child.xParent) {
                  if(typeof(child.xParent[functionName])!='undefined') {
@@ -188,36 +191,6 @@ var x4 =  {
             x4.contextPop();
         });
     },
-}
-
-/*
- * The menu bar object is a conduit to the current
- * controlling object.  When an object is activated
- * it tells the menu bar "go to me!"
- *
- */
-var x4MenuBar = {
-    obj: false,
-    tab: false,
-    eventHandler: function(type) {
-        if(!this.obj) {
-            $a.dialogs.alert("Event "+type+" called, but no object defined.");
-        }
-        else if( typeof(this.obj[type])==undefined) {
-            $a.dialogs.alert(
-                "Event "+type+" is undefined on current controller"
-            );
-        }
-        else {
-            // Execute!
-            this.obj[type]();
-        }
-    },
-    tabEvent: function(tab,tabId) {
-        console.log(tabId);
-        console.log($('#'+tabId)[0]);
-        this.tab.goTab(tabId);
-    }
 }
 
 /*
@@ -420,9 +393,13 @@ function x4AndroPage(self) {
  */
 function x4Window(self) {
     self.keyDown = function(event) {
-        
-        
-        
+        // determine the letter and if it is ctrl key
+        if(event.ctrlKey) {
+            // Get the letter, and invoke any visible 
+            // link with that accesskey
+            var letter = $a.charLetter(event.which);
+            $(this);
+        }
     }
     
     // Activate should be no-nonsense, make visible and 
@@ -432,6 +409,37 @@ function x4Window(self) {
         $(this).children(".x4Pane")[0].activate();
     }
 }
+
+/*
+ * The menu bar object is a conduit to the current
+ * controlling object.  When an object is activated
+ * it tells the menu bar "go to me!"
+ *
+ */
+var x4MenuBar = {
+    obj: false,
+    tab: false,
+    eventHandler: function(type) {
+        if(!this.obj) {
+            $a.dialogs.alert("Event "+type+" called, but no object defined.");
+        }
+        else if( typeof(this.obj[type])==undefined) {
+            $a.dialogs.alert(
+                "Event "+type+" is undefined on current controller"
+            );
+        }
+        else {
+            // Execute!
+            this.obj[type]();
+        }
+    },
+    tabEvent: function(tab,tabId) {
+        console.log(tabId);
+        console.log($('#'+tabId)[0]);
+        this.tab.goTab(tabId);
+    }
+}
+
 
 /* ========================================================
  * Controller Constructor Funtion For x4TableTop
@@ -563,6 +571,7 @@ function x4Grid(self) {
     // Make all assignments to inputs
     $(self).find(":input").each(function() {
         this.oHTML = $('#'+this.oHTMLId)[0];
+        this.xParent = this.oHTML;
         this.oHTML.inputs[this.oHTML.inputs.length] = this;
         this.oHTML.tabLoop[this.oHTML.tabLoop.length] = this.id;
     }).focus(function() {
@@ -750,7 +759,6 @@ function x4Grid(self) {
             this.doFetch=true;
         }
         
-        console.log("hello "+this.cntNoBlank);
         if(this.doFetch) {
             if(this.cntNoBlank==0) {
                 this.clear();
