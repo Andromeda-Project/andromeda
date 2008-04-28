@@ -268,7 +268,7 @@ class a_pullsvn extends x_table2 {
             
             # Now pull the list of versions
             x_echoFlush("  Querying for latest version");
-            $rawtext = file_get_contents($url);
+            $rawtext = @file_get_contents($url);
             if ( $rawtext ) {
                 $matches=array();
                 preg_match_all('!\<li\>\<a.*\>(.*)\</a\>\</li\>!U',$rawtext,$matches);
