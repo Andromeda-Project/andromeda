@@ -207,7 +207,7 @@ class androPageReport extends fpdf {
             $dd = ddTable($table);
             foreach($columns['column'] as $colname=>$colinfo) {
                 if(ArraySafe($colinfo,'uino','N')=='Y') continue;
-                $md = array();
+                $md = array('linkskey'=>a($colinfo,'linkskey','N'));
                 
                 // Use type to figure out if right or left
                 $type_id = $dd['flat'][$colname]['type_id'];
@@ -242,11 +242,11 @@ class androPageReport extends fpdf {
                 # Work out if this guy is a foreign key.  If they
                 # have given a page then link unconditionally
                 if( ($tlink= a($colinfo,'linkpage','')) <> '') {
-                    $md=array('linkpage'=>$tlink);
+                    $md['linkpage']=$tlink;
                 }
                 elseif( $dd['flat'][$colname]['primary_key']=='Y') {
                     if( $colname == $dd['pks'] ) {
-                        $md=array('linkpage'=>$table);
+                        $md['linkpage']=$table;
                     }
                 }
                 else {
@@ -254,7 +254,7 @@ class androPageReport extends fpdf {
                     if($tfko<>'') {
                         $ddpar = ddTable($tfko);
                         if($tfko = $ddpar['pks']) {
-                            $md=array('linkpage'=>$tfko);
+                            $md['linkpage']=$tfko;
                         }
                     }
                 }
@@ -589,7 +589,9 @@ class androPageReport extends fpdf {
      */
    function outFromArray($alist,$titles=false) {
        $this->source = a($alist,'_source','');
+       $this->skey   = a($alist,'skey','');
        if(isset($alist['_source'])) unset($alist['_source']);
+       if(isset($alist['skey'])) unset($alist['skey']);
        
        while($value = array_shift($alist)) {
            $this->atNextCol($value,$titles);
@@ -643,12 +645,22 @@ class androPageReport extends fpdf {
        if($this->format=='onscreen') {
            if(a($this->md[$col],'linkpage')<>'' && !$titles) {
                $link = $this->md[$col]['linkpage'];
+               $lsky = a($this->md[$col],'linkskey','N');
+               if($lsky=='Y') {
+                   $href = '&gp_skey='.$this->skey;
+               }
+               else {
+                   $href = '&gp_pk='.$text;
+               }
+               if($this->source <>'') {
+                   $href.='&gp_source='.$this->source;
+               }
                if(gpExists('x4Page')) {
-                   $text="<a href='?x4Page=$link&gp_pk=$text'
+                   $text="<a href='?x4Page=$link$href'
                         target=\"_BLANK\">$text</a>";
                }
                else {
-                   $text="<a href='?gp_page=$link&gp_pk=$text'>$text</a>";
+                   $text="<a href='?gp_page=$link$href'>$text</a>";
                }
            }
            $align=($align=='R') ? 'right' : 'left';

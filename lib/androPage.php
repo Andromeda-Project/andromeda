@@ -260,7 +260,7 @@ class androPage {
         $inp->hp['id'] = $ids['pdf'];
         $inp->setHTML('<b>P</b>rint Now');
         if(gpExists('x4Page')) {
-            $inp->hp['onclick'] = 'this.contextParent.printNow()';
+            $inp->hp['onclick'] = 'this.xParent.printNow()';
         }
         else {
             $inp->hp['onclick'] = 'formSubmit();';
@@ -272,7 +272,7 @@ class androPage {
         $inp->setHTML('Show <b>O</b>nscreen');
         $inp->hp['id'] = $ids['onscreen'];
         if(gpExists('x4Page')) {
-            $inp->hp['onclick'] = 'this.contextParent.showOnScreen()';
+            $inp->hp['onclick'] = 'this.xParent.showOnScreen()';
         }
         else {
             $inp->hp['onclick'] = "SetAndPost('gp_post','onscreen')";
@@ -286,7 +286,7 @@ class androPage {
             $inp->hp['name'] = 'showsql';
             $inp->SetHTML('Show S<b>Q</b>L');
             if(gpExists('x4Page')) {
-                $inp->hp['onclick'] = 'this.contextParent.showSql()';
+                $inp->hp['onclick'] = 'this.xParent.showSql()';
             }
             else {
                 $inp->hp['onclick'] = "formSubmit()";
@@ -427,6 +427,7 @@ class androPage {
             $SQL_COLSWHA = array();
             
             $collist = array("'$table_id' as _source");
+            $collist[]='skey';
             foreach($tabinfo['column'] as $column_id=>$colinfo) {
                 $collist[]="$table_id.$column_id";
                 $compare=$this->SQLCompare($table_id,$column_id,$colinfo);
