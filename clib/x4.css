@@ -57,10 +57,21 @@
 /* +++ The search grid styles                         +++ */
 /* +++ ---------------------------------------------- +++ */
 #andromeda_main_content .highlight {
-  color: white;
-  background-color: gray;
+  background-color: #E0E0E0;
 }
 
+#andromeda_main_content .highlight td.link {
+    background-color: #E0E0E0;
+}
+
+#andromeda_main_content .highlight td.link a {
+    text-decoration: underline;
+}
+
+
+#divOnScreen {
+    max-height: 510px;
+}
 
 /* +++ ---------------------------------------------- +++ */
 /* +++ The Tab Bar                                    +++ */

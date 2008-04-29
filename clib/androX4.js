@@ -270,36 +270,84 @@ function x4AndroPage(self) {
             }
         }
         if(keyLabel == 'Esc') {
-            x4.returnToMenu( $a.byId('x4Page').value );
-            return false;
+            if( $(this).find("#divOnScreen").html() == '' ) {
+                x4.returnToMenu( $a.byId('x4Page').value );
+                return false;
+            }
+            else {
+                $(this).find(":input").each( function() {
+                        this.value='';
+                });
+                $(this).find("#divOnScreen").html('');
+            }
         }
         
         // Up and down arrows
-        if(keyLabel == 'PageUp') {
-            this.highlightRow('row_0');
-            return false;
-        }
-        if(keyLabel == 'PageDown') {
-            this.highlightRow('row_'+(this.rowCount-1));
-            return false;
-        }
-        if(keyLabel == 'UpArrow') {
+        //if(keyLabel == 'CtrlPageUp') {
+        //    this.highlightRow('row_0',true);
+        //    return false;
+        //}
+        //if(keyLabel == 'CtrlPageDown') {
+        //    this.highlightRow('row_'+(this.rowCount-1),true);
+        //    return false;
+        //}
+        if(keyLabel == 'UpArrow' || keyLabel=='PageUp') {
             if(this.rowCurrentId) {
                 var id = Number(this.rowCurrentId.slice(4));
-                if(id != 0) {
-                    this.highlightRow('row_'+(id-1));
-                    return false;
+                if(keyLabel=='UpArrow') {
+                    if(id != 0) {
+                        this.highlightRow('row_'+(id-1),true);
+                        return false;
+                    }
+                }
+                if(keyLabel == 'PageUp') {
+                    if(id > 20) {
+                        this.highlightRow('row_'+(id-20),true);
+                        return false;
+                    }
+                    else {
+                        this.highlightRow('row_0',true);
+                        return false;
+                    }
                 }
             }
         }
-        if(keyLabel == 'DownArrow') {
+        if(keyLabel == 'DownArrow' || keyLabel=='PageDown') {
             if(this.rowCurrentId) {
                 var id = Number(this.rowCurrentId.slice(4));
-                if(id < (this.rowCount-1)) {
-                    this.highlightRow('row_'+(id+1));
-                    return false;
+                if(keyLabel=='DownArrow') {
+                    if(id < (this.rowCount-1)) {
+                        this.highlightRow('row_'+(id+1),true);
+                        return false;
+                    }
+                }
+                if(keyLabel=='PageDown') {
+                    if(id >= (this.rowCount-20)) {
+                        this.highlightRow('row_'+(id+1),true);
+                        return false;
+                    }
+                    else {
+                        this.highlightRow('row_'+(id+20),true);
+                        return false;
+                    }
                 }
             }
+        }
+        
+        // The right arrow is "go ahead to first link"
+        if(keyLabel=='RightArrow') {
+            if(this.rowCurrentId) {
+                var x = $('#'+this.rowCurrentId+' a:first').attr('href');
+                if(typeof(x)!='undefined') {
+                    window.location=x;
+                }
+            }
+        }
+        
+        // The F1 key is help
+        if(keyLabel == 'F1') {
+            this.help();
+            return false;
         }
   
         /* if not handled, pass up to parent */
@@ -337,6 +385,9 @@ function x4AndroPage(self) {
         $a.json.process('divShowSql');
     }
     self.showOnScreen = function() {
+        // Hide the display during rendering
+        //$("#divOnScreen").css('opacity','0');
+        
         this.tBody = null;
         
         $a.byId('gp_post').value='onscreen';
@@ -360,14 +411,19 @@ function x4AndroPage(self) {
                 this.parentNode.parentContext.highlightRow(this.id);
             });
             this.highlightRow('row_0');
+            
+            $(this).find("#divOnScreen table").Scrollable(500,500);
         }
+        // Restore the display after sizing
+        //$("#divOnScreen").css('opacity','1');
+        //$("#divOnScreen").css('display','block');
     }
     
     /*
      * The row highlighter
      *
      */
-    self.highlightRow = function(rowId) {
+    self.highlightRow = function(rowId,fromKeyBoard) {
         if(!this.tBody) return;
         // Turn off any old row
         if(this.rowCurrentId) {
@@ -380,8 +436,50 @@ function x4AndroPage(self) {
                 this.parentNode.parentContext.rowCurrentId = this.id;
                 this.className = 'highlight'
         });
-         
-    }     
+
+        // If they came from the keyboard, we need to 
+        // scroll down
+        if(fromKeyBoard!=null) {
+            var height = $("#row_1").height();
+            var row = Number(rowId.slice(4));
+            if(row < 23) {
+                $("#divOnScreen table tbody").scrollTop(0);
+            }
+            else {
+                var offSet = (height+2) * (row - 23);
+                $("#divOnScreen table tbody").scrollTop(offSet);
+            }
+        }
+    },
+    
+    /*
+     *
+     * The Help Stuff
+     *
+     */
+    self.help = function() {
+        var $msg='';
+        $msg+="This is the "+$('#x4H1Top').html()+" inquiry screen.";
+        $msg+="\n\n";
+        $msg+="The input boxes accept a very flexible set of values,\n";
+        $msg+="you can enter ranges like a-e or 100-200, you can enter\n";
+        $msg+="comparisons like >x or <500, and you can put multiple\n";
+        $msg+="criteria separated by commas, like <b,d,g-k,>x";
+        $msg+="\n\n";
+        $msg+="Hit CTRL-P to get a printable PDF report, or hit \n";
+        $msg+="CTRL-O to see the results displayed onscreen.";
+        $msg+="\n\n";
+        $msg+="When results are displayed onscreen, use the up and down\n";
+        $msg+="arrow keys to navigate, or the pageUp and pageDown keys.";
+        $msg+="\n\n";
+        $msg+="Sometimes the onscreen results will show hyperlinks to \n";
+        $msg+="other pages.  Hit rightArrow to jump to the link.";
+        $msg+="\n\n";
+        $msg+="Hit ESC to clear results, and ESC to return to menu";
+        
+        alert($msg,"Inquiry Help Screen");
+        $('#'+this.lastFocusId).focus();
+    }
 }
 
 /* ========================================================
