@@ -210,7 +210,13 @@ class androPageReport extends fpdf {
                 $md = array('linkskey'=>a($colinfo,'linkskey','N'));
                 
                 // Use type to figure out if right or left
-                $type_id = $dd['flat'][$colname]['type_id'];
+                // KFD 4/29/08, constants will not exist, use char
+                if(!isset($dd['flat'][$colname]['type_id'])) {
+                    $type_id = 'char';
+                }
+                else {
+                    $type_id = $dd['flat'][$colname]['type_id'];
+                }
                 $suffix = '';
                 if(in_array(trim($type_id),array('money','numb','int'))) {
                     $suffix .= ':R';
@@ -643,7 +649,9 @@ class androPageReport extends fpdf {
        # Onscreen version: just output a table cell
        # PDF version: output a cell and advance column counter
        if($this->format=='onscreen') {
+           $class='';
            if(a($this->md[$col],'linkpage')<>'' && !$titles) {
+               $class='class="link"';
                $link = $this->md[$col]['linkpage'];
                $lsky = a($this->md[$col],'linkskey','N');
                if($lsky=='Y') {
@@ -664,7 +672,7 @@ class androPageReport extends fpdf {
                }
            }
            $align=($align=='R') ? 'right' : 'left';
-           echo "<td style=\"text-align: $align\">$text</td>";
+           echo "<td $class style=\"text-align: $align\">$text</td>";
        }
        else {
            $this->Setx($xposition);

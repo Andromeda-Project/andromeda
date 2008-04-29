@@ -224,6 +224,7 @@ class androX4 {
                 $inp= html('input');
                 $inp->hp['tabindex']  = ++$this->tabindex;
                 $inp->hp['id'] = 'search_'.$table_id.'_'.$column;
+                $inp->hp['autocomplete'] = 'off';
                 $inp->ap['xTabindex']  = $this->tabindex;
                 $inp->ap['xValue']='';
                 $inp->ap['xColumnId'] = $column;

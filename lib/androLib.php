@@ -327,7 +327,12 @@ class androHtml {
                 $child->render($indent.'    ');
             }
         }
-        echo "\n$indent</".$this->htype.">";
+        //if(count($this->children)==0 && $this->innerHtml=='') {
+            echo "</$this->htype>";
+        //}
+        //else {
+        //    echo "\n$indent</".$this->htype.">";
+        //}
         if($this->autoFormat) {
             echo "$indent\n<!-- ELEMENT ID ".$this->hp['id']." (END) -->";   
         }
@@ -6905,43 +6910,43 @@ function rowsFromFilters(&$table,$filters,$cols,$matches=array()) {
 function rff_OneCol($colinfo,$colname,$tcv) {
     $tid = $colinfo['type_id'];
     $uiid= ArraySafe($colinfo,'uisearch_ignore_dash','N');
-   $values=explode(',',$tcv);
-   $sql_new=array();
-   foreach($values as $tcv) {
-      $aStrings=array('char'=>0,'vchar'=>0,'text'=>0);
-      if(substr($tcv,0,1)=='>' || substr($tcv,0,1)=='<') {
-         // This is a greater than/less than situation,
-         // we ignore anything else they may have done
-         $new=$colname.substr($tcv,0,1).SQL_FORMAT($tid,substr($tcv,1));
-      }
-      elseif(strpos($tcv,'-')!==false && $uiid<>'Y' ) {
-         list($beg,$end)=explode('-',$tcv);
-         $new=$colname.' BETWEEN ' 
-            .SQL_Format($tid,$beg)
-            .' AND '
-            .SQL_Format($tid,$end);
-      }
-      else {
-         if(! isset($aStrings[$tid]) && strpos($tcv,'%')!==false) {
-            $new="cast($colname as varchar) like '$tcv'";
-         }
-         else {
-            $tcsql = SQL_Format($tid,$tcv);
-            if(substr($tcsql,0,1)!="'" || $tid=='date' || $tid=='dtime') {
-               $new=$colname."=".$tcsql;
+    $values=explode(',',$tcv);
+    $sql_new=array();
+    foreach($values as $tcv) {
+        $aStrings=array('char'=>0,'vchar'=>0,'text'=>0);
+        if(substr($tcv,0,1)=='>' || substr($tcv,0,1)=='<') {
+            // This is a greater than/less than situation,
+            // we ignore anything else they may have done
+            $new=$colname.substr($tcv,0,1).SQL_FORMAT($tid,substr($tcv,1));
+        }
+        elseif(strpos($tcv,'-')!==false && $uiid<>'Y' ) {
+            list($beg,$end)=explode('-',$tcv);
+            $new=$colname.' BETWEEN ' 
+                .SQL_Format($tid,$beg)
+                .' AND '
+                .SQL_Format($tid,$end);
+        }
+        else {
+            if(! isset($aStrings[$tid]) && strpos($tcv,'%')!==false) {
+                $new="cast($colname as varchar) like '$tcv'";
             }
             else {
-               $tcsql = str_replace("'","''",$tcv); 
-               $new
-                  ="(    LOWER($colname) like '".strtolower($tcsql)."%'"
-                  ."  OR "
-                  ."     UPPER($colname) like '".strtoupper($tcsql)."%')";
+                $tcsql = SQL_Format($tid,$tcv);
+                if(substr($tcsql,0,1)!="'" || $tid=='date' || $tid=='dtime') {
+                    $new=$colname."=".$tcsql;
+                }
+                else {
+                    $tcsql = str_replace("'","''",$tcv); 
+                    $new
+                        ="(    LOWER($colname) like '".strtolower($tcsql)."%'"
+                        ."\n          OR "
+                        ."     UPPER($colname) like '".strtoupper($tcsql)."%')";
+                }
             }
-         }
-      }
-      $sql_new[]="($new)";
-   }
-   return implode(" OR ",$sql_new);
+        }
+        $sql_new[]="($new)";
+    }
+    return implode("\n        OR ",$sql_new);
 }
 
 

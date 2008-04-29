@@ -16,6 +16,13 @@ cssInclude('templates/'.$mainframe->getTemplate().'/css/x2.css');
 // ..and this (misnamed) holds info for dynamic select
 cssInclude('clib/raxlib.css');
 
+# Flexigrid 
+if(gpExists('x4Page')) {
+    jsInclude('clib/webtoolkit.jscrollable.js','Scrollable table is
+        available at www.webtoolkit.info');
+    jsInclude('clib/webtoolkit.scrollabletable.js','Scrollable table is
+        available at www.webtoolkit.info');
+}
 
 # The new x4 libraries.  It is important that x4.js come after
 # androLib.js, because we may want x4 to redefine functions

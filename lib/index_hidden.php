@@ -276,21 +276,12 @@ if(isset($header_mode)) return;
 // >>> set these flags in applib
 // >>> 
 // ==================================================================
-#if( ($gp_page=gp('gp_page'))!='' && gp('x4Page')=='') {
-#    if(vgfGet('x4ForceAlways',false)==true) {
-#        gpSet('x4Page',$gp_page);
-#    }
-#    else if(vgfGet('x4ForceIfFound',false)==true) {
-#        $x4File = fsDirTop()."application/x4$gp_page.php";
-#        if(file_exists($x4File)) {
-#            gpSet('x4Page',$gp_page);
-#        }
-#    }
-#}
+# First redirection is to x4 welcome page, the menu, if they
+# have turned on that flag
+#
 if(vgfGet('x4Welcome') && gp('x4Page')=='' && LoggedIn()) {
     gpSet('x4Page','menu');
 }
-
 
 // ==================================================================
 // >>> 
@@ -357,6 +348,20 @@ function index_hidden_x4Dispatch() {
         ,'html'=>array()
         ,'script'=>array()
     );
+    
+    # If they are not logged in, or have timed out,
+    # send a redirection command to the login page
+    #
+    if(!LoggedIn()) {
+        if(gpExists('json')) {
+            x4Script("window.location='index.php?gp_page=x_login'");
+            echo json_encode_safe($GLOBALS['AG']['x4']);
+        }
+        else {
+            echo "<script>window.location='index.php?gp_page=x_login'</script>";
+        }
+        return;
+    }
     
     // Determine the library to open.  If the page exists, open
     // it, otherwise use default

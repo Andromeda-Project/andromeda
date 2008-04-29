@@ -217,8 +217,19 @@ class androPage {
         $x4D->hp['id'] = 'x4AndroPage';
         $x4D->ap['defaultOutput'] = a($ids, a($yamlP2['options'],'default')); 
 
-        # Put out the title
-        html('h1',$x4D,$this->PageSubtitle);
+        # Put out the title and the help link
+        $tabx  = html('table',$x4D);
+        $tabx->addClass('tab100');
+        $tabxtr= html('tr',$tabx);
+        $td    = html('td',$tabxtr);
+        $td->hp['style'] = "text-align: left; vertical-align: top";
+        $h1=html('h1',$td,$this->PageSubtitle);
+        $h1->hp['id'] = 'x4H1Top';
+        $td    = html('td',$tabxtr);
+        $td->hp['style'] = "text-align: right; vertical-align: top;
+        padding-top: 8px; font-size: 120%";
+        $a = html('a-void',$td,"F1:Help");
+        $a->hp['onclick'] = "$('#x4AndroPage')[0].help()";
         
         # Make top level container
         $tabtop = html('table',$x4D);
@@ -245,6 +256,7 @@ class androPage {
             $td = html('td',$tr);
             $td->hp['style']="text-align: left";
             $input = input($options);
+            $input->hp['autocomplete'] = 'off';
             $td->setHTML($input->bufferedRender());
         }
         if ( isset( $yamlP2['template'] ) ) {
@@ -258,7 +270,7 @@ class androPage {
         # First button: print
         $inp = html('button',$td1);
         $inp->hp['id'] = $ids['pdf'];
-        $inp->setHTML('<b>P</b>rint Now');
+        $inp->setHTML('<u>P</u>rint Now');
         if(gpExists('x4Page')) {
             $inp->hp['onclick'] = 'this.xParent.printNow()';
         }
@@ -269,7 +281,7 @@ class androPage {
         
         # Second button: show onscreen
         $inp = html('button',$td1);
-        $inp->setHTML('Show <b>O</b>nscreen');
+        $inp->setHTML('Show <u>O</u>nscreen');
         $inp->hp['id'] = $ids['onscreen'];
         if(gpExists('x4Page')) {
             $inp->hp['onclick'] = 'this.xParent.showOnScreen()';
@@ -284,7 +296,7 @@ class androPage {
             $inp = html('button',$td1);
             $inp->hp['id'] = $ids['showSql'];
             $inp->hp['name'] = 'showsql';
-            $inp->SetHTML('Show S<b>Q</b>L');
+            $inp->SetHTML('Show S<u>Q</u>L');
             if(gpExists('x4Page')) {
                 $inp->hp['onclick'] = 'this.xParent.showSql()';
             }
@@ -429,12 +441,16 @@ class androPage {
             $collist = array("'$table_id' as _source");
             $collist[]='skey';
             foreach($tabinfo['column'] as $column_id=>$colinfo) {
-                $collist[]="$table_id.$column_id";
-                $compare=$this->SQLCompare($table_id,$column_id,$colinfo);
-                if($compare<>'') {
-                    $SQL_COLSWHA[] = $compare;
+                if(a($colinfo,'constant','')<>'') {
+                    $collist[]=SQLFC($colinfo['constant'])." as $column_id";
                 }
-                
+                else {
+                    $collist[]="$table_id.$column_id";
+                    $compare=$this->SQLCompare($table_id,$column_id,$colinfo);
+                    if($compare<>'') {
+                        $SQL_COLSWHA[] = $compare;
+                    }
+                }
             }
             $sq = "SELECT ".implode("\n      ,",$collist)
                 ." FROM $table_id ";
@@ -492,34 +508,44 @@ class androPage {
         foreach($yamlP2['table'] as $table=>$table_info) {
             $table_dd = dd_TableRef($table);
             foreach($table_info['column'] as $colname=>$colinfo) {
+                // order by
                 if(ArraySafe($colinfo,'order','N')=='Y') {
                     $SQL_COLSOBA[] = "$table.$colname";
                 }
                 
-                if(ArraySafe($colinfo,'uino','N')<>'Y') {
-                    if(ArraySafe($table_info,'left_join','N')=='Y') {
-                        $z = SQL_Format(
-                            $table_dd['flat'][$colname]['type_id']
-                            ,''
-                        );
-                        $coldef="COALESCE($table.$colname,$z) as $colname";
-                    }
-                    else {
-                        $coldef=$table.'.'.$colname;
-                    }
-                    if(ArraySafe($colinfo,'group','')<>'') {
-                        $coldef = str_replace("as $colname","",$coldef);
-                        $coldef = $colinfo['group'].'('.$coldef.") as $colname";
-                    }
-                    $SQL_COLSA[] = $coldef;
-                }
-
+                // comparison
                 if(isset($colinfo['compare'])) {
                     $compare=$this->SQLCompare($table,$colname,$colinfo);
                     if($compare<>'') {
                         $SQL_COLSWHA[] = $compare;
                     }
                 }
+
+                // group by 
+                if(ArraySafe($colinfo,'group','')<>'') {
+                    $coldef = str_replace("as $colname","",$coldef);
+                    $coldef = $colinfo['group'].'('.$coldef.") as $colname";
+                }
+
+                // If not in output, stop now
+                if(a($colinfo,'uino','N')=='Y') continue;
+                
+                // if a constant, add the constant and skip the rest
+                $constant = a($colinfo,'constant','');
+                if(ArraySafe($table_info,'left_join','N')=='Y') {
+                    $z = SQL_Format(
+                        $table_dd['flat'][$colname]['type_id']
+                        ,''
+                    );
+                    $cval = $constant=='' ? "$table.$colname" : "'$constant'";
+                    $coldef="COALESCE($cval,$z) as $colname";
+                }
+                else {
+                    $coldef = $constant=='' 
+                        ? "$table.$colname"
+                        : "'$constant' as $colname";
+                }
+                $SQL_COLSA[] = $coldef;
             }
         }
 
@@ -639,7 +665,12 @@ class androPage {
      *  @access private
      */
     function SQLCompare($table,$colname,$colinfo) {
+        // Early return and alternate branch
         if(a($colinfo,'compare','')=='') return;
+        if(substr($colinfo['compare'],0,1)=='*') return $this->SQLCompareStar(
+            $table,$colname,$colinfo
+        );
+            
         $noempty = ArraySafe($colinfo,'no_empty_compare','Y');
         $table_dd = ddTable($table);
         $uifilter = $this->yamlP2['uifilter'];     
@@ -660,7 +691,29 @@ class androPage {
         }
         return $compare;
     }
- 
+
+    
+   /**
+     *  Generate a comparison expression using dashes, commas etc.
+     *
+     *  @param string $table_id the table
+     *  @param string $colname  the column
+     *  @param string $colinfo  other column information
+     *  @access private
+     */
+    function SQLCompareStar($table,$colname,$colinfo) {
+        // Get the uifilter being used and its value
+        // skip the asterisk and the @sign
+        $uif_name = substr($colinfo['compare'],2);
+        $uiv_val  = $this->yamlP2['uifilter'][$uif_name]['value'];
+        if($uiv_val=='') return '';
+        
+        // Get data dictionary
+        $dd = ddTable($table);
+        
+        return "(".rff_OneCol($dd['flat'][$colname],$colname,$uiv_val).")";
+    }
+    
     /**
      *  Placeholder error function since our current error system
      *  may not deal with processing errors that well.
