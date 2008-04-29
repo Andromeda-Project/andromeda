@@ -20,17 +20,20 @@ function tmpCountModules($module_name) {
    if(substr($module_name,0,4)=='user') return false;
    if($module_name=='quicklinks')       return false;
    if($module_name=='right')            return false;
-   if($module_name=='commands')         return loggedin();
+   if($module_name=='commands')         return loggedin() && !gpExists('x4Page');
+   if($module_name=='menuright')        return loggedin();
+   if(gpExists('x4Page'))               return false;
    return true;
 }
 function tmpLoadModules($module_name,$var=null) {
    $var=null;  // We do not know what 2nd parm is for
    switch($module_name) {
-      case 'left':    tmpModuleLeft();    break;
-      case 'right':   tmpModuleRight();   break;
-      case 'footer':  tmpModuleFooter();  break;
-      case 'top':     tmpModuleTop();     break;
-      case 'commands':ehModuleCommands(); break;
+      case 'left':     tmpModuleLeft();     break;
+      case 'right':    tmpModuleRight();    break;
+      case 'footer':   tmpModuleFooter();   break;
+      case 'top':      tmpModuleTop();      break;
+      case 'commands': ehModuleCommands();  break;
+      case 'menuright':tmpModuleMenuRight();break;
    }
 }
 
@@ -110,4 +113,20 @@ function tmpModuleFooter() {
    powered by Andromeda.
    <?php
 }
+
+function tmpModuleMenuRight() {
+    if(!LoggedIn()) return;
+    $extra = '';
+    if(!vgfGet('x4Welcome',false) && gpExists('x4Page')) {
+        $extra = '<li><a href="?index.php">Classic</a>';
+    }
+    ?>
+    <ul>
+        <?=$extra?>
+        <li><a href='?st2logout=1'>Logout</a></li>
+    </ul>
+    <?php
+    return false;
+}
+
 ?>
