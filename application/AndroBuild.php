@@ -9282,7 +9282,7 @@ function ShellWhoAmI() {
    if (isWindows()) {
       // This will fail in IIS so run this from the command line.
       echo "Is windows\n";
-      return $this->ArraySafe($_SERVER, "USERNAME", "");
+      return $this->zzArraySafe($_SERVER, "USERNAME", "");
    } else {
       echo "Not windows\n";
       return $this->ShellExec('whoami');
