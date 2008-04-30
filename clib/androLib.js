@@ -1073,7 +1073,10 @@ var $a = {
      *
      */
     dialogs: {
-        alert: function($msg, $title) {
+        alert: function(msg) {
+            alert(msg);
+        },
+        alertx: function($msg, $title) {
            if ( $title == null ) {
                $title = 'Alert';
            }
@@ -1324,7 +1327,8 @@ var $a = {
         if(charcode >= 65 && charcode <= 90) {
             return letters[charcode - 65];
         }
-        
+    },
+    charNumber: function(charcode) {
         var numbers = [ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ];
         if(charcode >= 48 && charcode <= 57) {
             return numbers[charcode - 48];
