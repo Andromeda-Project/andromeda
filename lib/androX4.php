@@ -31,10 +31,13 @@ class androX4 {
       */
     function main() {
         # All top-level elements will go inside of this div 
-        $div = html('div');
-        $div->hp['id']='x4Top';
-        $this->mainLayout($div);
-        x4Html('*MAIN*',$div->bufferedRender());
+        $x4Top = html('div');
+        $x4Top->hp['id']='x4Top';
+        $x4Window = html('div',$x4Top);
+        $x4Window->addClass('x4Window');
+        $x4Window->addClass('x4Div');
+        $this->mainLayout($x4Window);
+        x4Html('*MAIN*',$x4Top->bufferedRender());
         x4Data('dd.'.$this->table_id,$this->dd);
         x4Data('return',gp('x4Return'));
         return;
@@ -47,17 +50,12 @@ class androX4 {
         $h1  = html('h1',$div,$this->dd['description']);
         $h1->hp['id']='x4H1Top';
         
-        # The window controller is very top object, contains menu
-        # bar and any details
-        #
-        $x4Window = html('div',$div);
-        $x4Window->addClass('x4Pane');
-        $x4Window->addClass('x4Window');
-        $x4Window->addChild( $this->menuBar($this->dd) );
+        # Add the menu bar
+        $div->addChild( $this->menuBar($this->dd) );
         
         #  This is the top level display item
         #
-        $x4Display = html('div',$x4Window);
+        $x4Display = html('div',$div);
         $x4Display->addClass('x4Pane');
         $x4Display->addClass('x4TableTop');
         $x4Display->ap['xTableId'] = $this->table_id;
@@ -85,23 +83,27 @@ class androX4 {
         # later on we want more
         #
         $tabid = 'tab_'.$this->dd['table_id'];
-        $span = html('a-void',$tabB,'Detail');
+        $span = html('a-void',$tabB,'1: Detail');
+        $span->hp['accesskey'] = 1;
         $tabx = html('div',$tabC);
         $detail = $this->detailPane($this->dd);
         $detailId = $detail->hp['id'];
         $detail->addClass('x4VerticalScroll2');
-        $span->hp['onclick']="x4MenuBar.tabEvent(this,'$detailId')";
+        $span->hp['onclick']="this.xParent.goTab('$detailId')";
         $tabC->addChild( $detail );
         
         # Child table panes are added in a loop because there
         # may be more than one
         #
+        $tabNumber = 2;
         foreach($this->dd['fk_children'] as $table_id=>$info) {
             $tabid = 'xTableTop_'.$table_id;
             $ddChild = ddTable($table_id);
             x4Data('dd.'.$table_id,$ddChild);
-            $span=html('a-void',$tabB,$ddChild['description']);
-            $span->hp['onclick'] = "x4MenuBar.tabEvent(this,'$tabid')";
+            $span=html('a-void',$tabB,$tabNumber.': '.$ddChild['description']);
+            $span->hp['accesskey']=$tabNumber;
+            $tabNumber++;
+            $span->hp['onclick'] = "this.xParent.goTab('$tabid')";
             
             # Make a tableTop container
             $tabx = html('div',$tabC);
@@ -124,46 +126,47 @@ class androX4 {
     # ===================================================================
     function menuBar($dd) {
         $menubar = html('div');
-        $menubar->hp['class'] = 'x4MenuBar';
+        $menubar->addClass('x4MenuBar');
+        $menubar->addClass('x4Div');
         
         $a = html('a-void',$menubar,'<b><u>N</u></b>ew '
             .$dd['singular']
         );
-        $a->hp['onclick']="x4MenuBar.eventHandler('newRow')";
+        $a->hp['onclick']="this.xParent.eventHandler('newRow')";
         $a->hp['id']='button-new';
         $a->hp['accesskey']='n';
         
         $a = html('a-void',$menubar,'<b><u>D</u></b>elete');
         $a->hp['id']='button-del';
-        $a->hp['onclick']="x4MenuBar.eventHandler('deleteRow')";
+        $a->hp['onclick']="this.xParent.eventHandler('deleteRow')";
         $a->hp['accesskey']='d';
         
         $a = html('a-void',$menubar,'Co<b><u>p</u></b>y');
         $a->hp['id']='button-cpy';
-        $a->hp['onclick']="x4MenuBar.eventHandler('copyRow')";
+        $a->hp['onclick']="this.xParent.eventHandler('copyRow')";
         $a->hp['accesskey']='p';
         
         $a = html('a-void',$menubar,'<b><u>S</u></b>ave');
         $a->hp['id']='button-sav';
-        $a->hp['onclick']="x4MenuBar.eventHandler('saveRow')";
+        $a->hp['onclick']="this.xParent.eventHandler('saveRow')";
         $a->hp['accesskey']='s';
         
         $a = html('a-void',$menubar,'S<b><u>a</u></b>ve &amp; New');
         $a->hp['id']='button-snw';
-        $a->hp['onclick']="x4MenuBar.eventHandler('saveRowAndNewRow')";
+        $a->hp['onclick']="this.xParent.eventHandler('saveRowAndNewRow')";
         $a->hp['accesskey']='a';
         
         $a = html('a-void',$menubar,'Save &amp; E<b><u>x</u></b>it');
         $a->hp['id']='button-sxt';
-        $a->hp['onclick']="x4MenuBar.eventHandler('saveRowAndExit')";
+        $a->hp['onclick']="this.xParent.eventHandler('saveRowAndExit')";
         $a->hp['accesskey']='x';
         
         $a = html('a-void',$menubar,"ESC: Quit");
         $a->hp['id']='button-esc';
-        $a->hp['onclick']="x4MenuBar.eventHandler('onEscape')";
+        $a->hp['onclick']="this.xParent.eventHandler('onEscape')";
         
         $a = html('a',$menubar,"Imports");
-        $a->hp['href'] = "?gp_page=x_imports&gp_table_id=".$dd['table_id'];
+        $a->hp['href'] = "?gp_page=x_import&gp_table_id=".$dd['table_id'];
         
         return $menubar;
     }        
@@ -172,15 +175,15 @@ class androX4 {
         $div = html('div');
         $div->hp['id'] = 'x4RowInfo';
         $aTop  = html('a-void',$div,'Top');
-        $aTop->hp['onclick'] = "x4Detail.move('CtrlPageUp')";
+        $aTop->hp['onclick'] = "this.xParent.passUp('CtrlPageUp')";
         $aPrev = html('a-void',$div,'Previous');
-        $aPrev->hp['onclick'] = "x4Detail.move('PageUp')";
+        $aPrev->hp['onclick'] = "this.xParent.passUp('PageUp')";
         $span = html('span',$div,'Row x of y');
         $span->hp['id'] = 'x4RowInfoText';
         $aNext = html('a-void',$div,'Next');
-        $aNext->hp['onclick'] = "x4Detail.move('PageDown')";
+        $aNext->hp['onclick'] = "this.xParent.passUp('PageDown')";
         $aBot  = html('a-void',$div,'Bottom');
-        $aBot->hp['onclick'] = "x4Detail.move('CtrlPageDown')";
+        $aBot->hp['onclick'] = "this.xParent.passUp('CtrlPageDown')";
         return $div;
     }
             
@@ -297,12 +300,14 @@ class androX4 {
         #  By default the search criteria come from the 
         #  variables, unless it is a child table search
         $vals = aFromGP('x4w_');
+        hprint_r($vals);
         if(gp('tableIdPar')<>'') {
             $ddpar = ddTable(gp('tableIdPar'));
             $pks   = $ddpar['pks'];
             $stab  = SQLFN(gp('tableIdPar'));
             $skey  = SQLFN(gp('skeyPar'));
             $vals  = SQL_OneRow("SELECT $pks FROM $stab WHERE skey = $skey");
+            hprint_r($vals);
         }
         
         # Build the where clause        

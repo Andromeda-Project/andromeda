@@ -126,17 +126,6 @@ class androPage {
             $this->PassPage();
         }
         
-        //If nofilter option is set to Y then display without filter
-        #if ( $this->yamlP2['options']['nofilter'] == 'Y' ) {
-        #        $this->PassPage();
-        #} else {
-        #        if ( gp( 'gp_post' ) == '' ) {
-        #            $this->x3HTML();
-        #        } else {
-        #            $this->PassPage();
-        #        }
-        #}
-        # KFD 4/21/08, changed logic for running htmland page
     }
 
     /**

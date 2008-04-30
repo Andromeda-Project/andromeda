@@ -1061,7 +1061,7 @@ function ddTable($table_id) {
     $tabdd['viewname'] = $table_id;
     
     #  Work out the singular form of the description
-    if(!isset($tabdd['singular'])) {
+    if(a($tabdd,'singular')=='') {
         $desc = $tabdd['description'];
         if(substr($desc,-3)=='ies') {
             $sing = substr($desc,0,strlen($desc)-3).'y';
