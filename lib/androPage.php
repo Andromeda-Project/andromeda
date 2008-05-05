@@ -338,7 +338,7 @@ class androPage {
      *
      */
     private function pageSmarty() {
-        if ( ArraySafe( $this->yamlP2['options']['noquery'],'N') == 'N' ) {
+        if ( ArraySafe( $this->yamlP2['options'], 'noquery', 'N') == 'N' ) {
             // Execute SQL and return all rows for all sections
             $sections = $this->yamlP2['section'];
             foreach($sections as $secname=>$secinfo) {
@@ -397,8 +397,7 @@ class androPage {
      */
     function genSQLSection($secname) {
         $yamlP2 = &$this->yamlP2['section'][$secname];
-        
-        if(count($yamlP2['union'])>0) {
+        if(count(ArraySafe( $yamlP2, 'union',array() ) )>0) {
             list($table,$cols) = each($yamlP2['union']['table']);
             $this->yamlP2['table']=array($table=>$cols);
             return $this->genSQLSectionUnion($yamlP2['union']['table']);
