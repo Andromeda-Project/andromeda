@@ -40,36 +40,36 @@ class androPageSmarty {
 
 
         try {
-                // Create new instance of smarty
-                $smarty = new Smarty();
-                $smarty->template_dir = $GLOBALS['AG']['dirs']['root'] .'application/templates/';
-                $smarty->compile_dir = $GLOBALS['AG']['dirs']['root'] .'lib/smarty/compile/';
-                $smarty->config_dir = $GLOBALS['AG']['dirs']['root'] .'lib/smarty/config/';
-                $smarty->cache_dir = $GLOBALS['AG']['dirs']['root'] .'lib/smarty/cache/';
+            // Create new instance of smarty
+            $smarty = new Smarty();
+            $smarty->template_dir = $GLOBALS['AG']['dirs']['root'] .'application/templates/';
+            $smarty->compile_dir = $GLOBALS['AG']['dirs']['root'] .'lib/smarty/compile/';
+            $smarty->config_dir = $GLOBALS['AG']['dirs']['root'] .'lib/smarty/config/';
+            $smarty->cache_dir = $GLOBALS['AG']['dirs']['root'] .'lib/smarty/cache/';
 
-                $smarty->caching = false;
-                if ( ArraySafe( $yamlP2['options'], 'noquery','N') == 'N' ) {
-                    foreach( $yamlP2['section'] as $section=>$props ) {
-                            if ( count( $props ) > 0 ) {
-                                if(isset( $yamlP2['section'][$section]['onerow'] ) ) {
-                                        $onerow = $yamlP2['section'][$section]['onerow'];
-                                } else {
-                                        $onerow = 'N';
-                                }
-                                if ( $onerow == 'N' ) {
-                                        $smarty->assign( $section, $props['rows'] );
-                                } elseif ( $onerow == 'Y' ) {
-                                        $smarty->assign( $section, $props['rows']['0'] );
-                                }
-                            }
+            $smarty->caching = false;
+            if ( ArraySafe( $yamlP2['options'], 'noquery','N') == 'N' ) {
+                foreach( $yamlP2['section'] as $section=>$props ) {
+                    if ( count( $props ) > 0 ) {
+                        if(isset( $yamlP2['section'][$section]['onerow'] ) ) {
+                            $onerow = $yamlP2['section'][$section]['onerow'];
+                        } else {
+                            $onerow = 'N';
+                        }
+                        if ( $onerow == 'N' ) {
+                            $smarty->assign( $section, $props['rows'] );
+                        } elseif ( $onerow == 'Y' ) {
+                            $smarty->assign( $section, $props['rows']['0'] );
+                        }
                     }
                 }
-                foreach( $yamlP2['options'] as $option=>$val ) {
-                        $smarty->assign( $option, $val );
-                }
-                $smarty->display( $yamlP2['template'] );
+            }
+            foreach( $yamlP2['options'] as $option=>$val ) {
+                $smarty->assign( $option, $val );
+            }
+            $smarty->display( $yamlP2['template'] );
         } catch ( Exception $e ) {
-                echo( 'Unable to create Smarty Object for the following reason: ' .$e->getMessage() );
+            echo( 'Unable to create Smarty Object for the following reason: ' .$e->getMessage() );
         }
     }
 }
