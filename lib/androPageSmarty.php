@@ -57,9 +57,13 @@ class androPageSmarty {
                             $onerow = 'N';
                         }
                         if ( $onerow == 'N' ) {
-                            $smarty->assign( $section, $props['rows'] );
+                            if ( count( $props['rows'] ) > 0) {
+                                $smarty->assign( $section, $props['rows'] );
+                            }
                         } elseif ( $onerow == 'Y' ) {
-                            $smarty->assign( $section, $props['rows']['0'] );
+                            if ( $props['rows'] ) {
+                                $smarty->assign( $section, $props['rows']['0'] );
+                            }
                         }
                     }
                 }
