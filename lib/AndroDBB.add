@@ -334,6 +334,7 @@ content cascadeactions {
 //
 //
 column type_id    { type_id: vchar; colprec: 6;  colscale: 0;  description: Type ID; }
+column inputmask  { type_id: vchar; colprec: 50; description: Input Mask;}
 
 table types {
 	module: datadict;
@@ -342,11 +343,12 @@ table types {
 		
 	column type_id { primary_key: Y; uisearch: Y; }
 	column description  { uisearch: Y; }
+    column inputmask { uisearch: Y; }
 	column { skey; skey_quiet; _agg; }
 }
 
 content types {
-	columns { type_id;description; }
+	columns { type_id;description;}
 	// Fundamental or common types
 	values { char  ; Character; }
 	values { vchar ; Character Varying; }
@@ -398,37 +400,39 @@ table type_exps {
 	foreign_key types { uisearch: Y; primary_key: Y; }	
 	column { srvtype; primary_key: Y;}
 	column { formula;formshort;uiwithnext;dispsize ;uisearch_ignore_dash;}
+    column { inputmask; }
 	column { skey; skey_quiet; _agg; }
 }
 
 content type_exps {
-	columns { type_id;srvtype;formula;formshort;uiwithnext;dispsize;uisearch_ignore_dash; }
+	columns { type_id;srvtype;inputmask;formula;formshort;uiwithnext;
+        dispsize;uisearch_ignore_dash; }
 		// Fundamental or common types
-    values { char  ; PGSQL;char(<colprec>)              ;char    ;N;<colprec>; N; }
-	values { vchar ; PGSQL;varchar(<colprec>)           ;varchar ;N;<colprec>;  N;}
-	values { numb  ; PGSQL;numeric(<colprec>,<colscale>);numb    ;N;<colprec>;  N;}
-	values { money ; PGSQL;numeric(14,2)                ;numb    ;N;14       ;  N;}
-	values { dtime ; PGSQL;timestamp;timestamp;N;23;  N;}
-	values { int   ; PGSQL;int      ;int      ;N;8 ;  N;}
-	values { text  ; PGSQL;text     ;text     ;N;0 ;  N;}
-	values { date  ; PGSQL;date     ;date     ;N;11;  N;}
+    values { char  ; PGSQL; ;char(<colprec>)              ;char    ;N;<colprec>; N; }
+	values { vchar ; PGSQL;;varchar(<colprec>)           ;varchar ;N;<colprec>;  N;}
+	values { numb  ; PGSQL;;numeric(<colprec>,<colscale>);numb    ;N;<colprec>;  N;}
+	values { money ; PGSQL;999999.99;numeric(14,2)                ;numb    ;N;14       ;  N;}
+	values { dtime ; PGSQL;;timestamp;timestamp;N;23;  N;}
+	values { int   ; PGSQL;99999999;int      ;int      ;N;8 ;  N;}
+	values { text  ; PGSQL;;text     ;text     ;N;0 ;  N;}
+	values { date  ; PGSQL;99/99/9999;date     ;date     ;N;11;  N;}
 		// Special types; fundamentals with extra behavior
-	values { time  ; PGSQL;int      ;int      ;N;11 ;  N;}
-	values { cbool ; PGSQL;char(1)  ;char     ;N;1 ;  N;}  // Boolean as character Y/N
-	values { gender; PGSQL;char(1)  ;char     ;N;1 ;  N;}  // Sex; hardcoded to accept M/F
-	values { url   ; PGSQL;char(50) ;char     ;N;40;  Y;}  // UI should incorporate hyperlink
-	values { obj   ; PGSQL;char(50) ;char     ;N;40;  N;}  // Webserver should stream/return file
+    values { time  ; PGSQL;;int      ;int      ;N;11 ;  N;}
+	values { cbool ; PGSQL;;char(1)  ;char     ;N;1 ;  N;}  // Boolean as character Y/N
+	values { gender; PGSQL;;char(1)  ;char     ;N;1 ;  N;}  // Sex; hardcoded to accept M/F
+	values { url   ; PGSQL;;char(50) ;char     ;N;40;  Y;}  // UI should incorporate hyperlink
+	values { obj   ; PGSQL;;char(50) ;char     ;N;40;  N;}  // Webserver should stream/return file
     // Special types that are just characters with formatting
-    values { ph12   ;PGSQL;char(12) ;char     ;N;12;  Y;}
-    values { ssn    ;PGSQL;char(11) ;char     ;N;11;  N;}
+    values { ph12   ;PGSQL;999/999-9999;char(12) ;char     ;N;12;  Y;}
+    values { ssn    ;PGSQL;999-99-9999;char(11) ;char     ;N;11;  N;}
     // KFD 9/7/07, when this was reintroduced we made it a text field
     //    instead of bytea, it is *so* much easier
-    values { mime-h; PGSQL;text     ;text     ;N;99;  N;}
+    values { mime-h; PGSQL;;text     ;text     ;N;99;  N;}
 	// KFD 9/7/07, these were all experimental back in '04 and '05 and
     //     are not being used.  
-	values { mime-x; PGSQL;text     ;text     ;N;99;  N;}
-	values { mime-b; PGSQL;bytea    ;bytea    ;N;99;  N;}
-	values { mime-f; PGSQL;varchar(250);varchar;N;99; N;}
+	values { mime-x; PGSQL;;text     ;text     ;N;99;  N;}
+	values { mime-b; PGSQL;;bytea    ;bytea    ;N;99;  N;}
+	values { mime-f; PGSQL;;varchar(250);varchar;N;99; N;}
 }
 
 // ---------------------------------------------------------
@@ -630,6 +634,7 @@ table columns {
     column column_id   { primary_key: Y; uisearch: Y; }
     column description { uisearch: Y; }
     column { descshort; }
+    column { inputmask; }
     
     // all automation stuff
     foreign_key { automations; }
@@ -667,7 +672,7 @@ table tabcol {
     foreign_key columns { uisearch: Y; suffix: _src; }
     foreign_key tables  {  primary_key: Y; uisearch: Y; }
     column { column_id; suffix; prefix; primary_key: Y; }
-    column { auto_suffix; auto_prefix; }
+    column { auto_suffix; auto_prefix; inputmask}
     
     column primary_key { uisearch: Y; }
     column pk_change { uisearch: Y; }
@@ -1287,7 +1292,7 @@ table tabflat {
 	table_seq:5000; // don't change, see note above
 		
 	column { table_id; column_id;	primary_key: Y; uisearch: Y;  }
-	column { description; }
+	column { description; inputmask; }
     column { descshort; }
 
 	column primary_key { uisearch: Y; }

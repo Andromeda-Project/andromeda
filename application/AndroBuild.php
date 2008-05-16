@@ -1,4 +1,4 @@
-har<?php
+<?php
 /* ================================================================== *\
    (C) Copyright 2005 by Secure Data Software, Inc.
    This file is part of Andromeda
@@ -1493,7 +1493,7 @@ function SpecFlatten_Runout() {
         $sq="INSERT INTO zdd.tabflat_c (
                  table_id,column_id_src,column_id,suffix,prefix
                 ,primary_key,uisearch
-                ,colprec,colscale,colres,type_id
+                ,colprec,colscale,colres,type_id,inputmask
                 ,table_id_fko
                 ,uicolseq,uisearch_ignore_dash
                 ,formula,formshort,dispsize
@@ -1503,6 +1503,13 @@ function SpecFlatten_Runout() {
                  ,tc.column_id
                  ,tc.suffix,tc.prefix,tc.primary_key,tc.uisearch
                  ,c.colprec,c.colscale,c.colres,c.type_id
+                 ,case when c.inputmask <> '' 
+                       then c.inputmask
+                       when t.inputmask <> '' 
+                       then t.inputmask
+                       when t.type_id = 'numb'
+                       then lpad(''::text,c.colprec::int,' '::text)||'.'||lpad(''::text,c.colscale::int,' '::text)
+                       else '' end
                  ,'' as table_id_fko
                  ,trim(uicolseq)
                  ,case when tc.uisearch_ignore_dash in ('Y','N')
@@ -1523,7 +1530,7 @@ function SpecFlatten_Runout() {
                  table_id,column_id_src,column_id,suffix,prefix
                 ,description,descshort
                 ,primary_key,uisearch
-                ,colprec,colscale,colres,type_id
+                ,colprec,colscale,colres,type_id,inputmask
                 ,table_id_fko
                 ,uicolseq
                 ,formula,formshort,dispsize
@@ -1535,6 +1542,7 @@ function SpecFlatten_Runout() {
                  ,x1.description,x1.descshort
                  ,x1.primary_key,x1.uisearch
                  ,c.colprec,c.colscale,c.colres,c.type_id
+                 ,t.inputmask
                  ,x1.table_id_fko
                  ,trim(uicolseq)
                  ,t.formula,t.formshort,t.dispsize
