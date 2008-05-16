@@ -190,7 +190,19 @@ a.mainlevel {
 h1 {
 	line-height: 100%;
 	font-size: 200%;
-   margin: 7px 0px;
+    /* These were replaced by SDS to prevent the height of
+       the main window from "jumping" by 7px when elements were
+       made visible 
+     */
+    /* margin: 7px 0px; */
+    padding: 7px 0px 14px;
+    margin: 0px;
+}
+div.x4h1 {
+    line-height: 100%;
+	font-size: 200%;
+    padding: 7px 0px 14px;
+    font-weight: bolder;
 }
 
 h2 {

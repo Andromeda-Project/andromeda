@@ -70,6 +70,8 @@ cssInclude('templates/'.$mainframe->getTemplate().'/css/suckerfish.css');
 cssInclude('templates/'.$mainframe->getTemplate().'/css/x2-'.$colorstyle.'.css');  
 cssInclude('templates/'.$mainframe->getTemplate().'/css/x2-'.$contraststyle.'.css');
 include("androHTMLHead.php");
+cssInclude('templates/'.$mainframe->getTemplate().'/css/x4.css');  
+cssInclude('templates/'.$mainframe->getTemplate().'/css/x4-'.$colorstyle.'.css');  
 /*
 ?>
 <link href="<?php echo $mosConfig_live_site.'/templates/'.$mainframe->getTemplate().'/css/x2-'.$colorstyle.'.css'?>" rel="stylesheet" type="text/css" />
@@ -121,7 +123,16 @@ include("androHTMLHead.php");
 			</div>
          <?php } /* mosloadmodules('top-head') */ ?>
          
-			<?php if($show_menu=="true") { ?>
+			<?php if($show_menu<>"true") { ?>
+			<div id="horiz-menu">
+                <div id="nav">
+                
+                <span style="float: right">
+                <a href="?st2logout=1">Logout</a>
+                </span>
+                </div>
+            </div>
+            <?php } else { ?>
 			<div id="horiz-menu">
 				<div id="nav">
         	        	<script type="text/javascript">
