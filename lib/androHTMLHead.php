@@ -11,7 +11,7 @@ jsInclude('clib/jquery-1.2.3.js','JQuery is distributed under the GPL
 jsInclude('clib/androLib.js');
 
 
-// This is the old CSS library for x2
+// The x2 css file is loaded 
 cssInclude('templates/'.$mainframe->getTemplate().'/css/x2.css');
 // ..and this (misnamed) holds info for dynamic select
 cssInclude('clib/raxlib.css');
@@ -28,8 +28,8 @@ if(gpExists('x4Page')) {
 # androLib.js, because we may want x4 to redefine functions
 # in androLib.php
 if(gpExists('x4Page')) {
-    cssInclude('clib/x4.css');
     jsInclude('clib/androX4.js');
+    jsInclude('clib/androX4Grid.js');
 }
 
 // Try out the ui.datepicker for JQuery
