@@ -30,13 +30,22 @@ class androX4 {
       * @author: Kenneth Downs
       */
     function main() {
+        # If we see a "gp_pk" variable, they are requesting a certain
+        # detail row.  Find out the skey and pass instructions on.
+        # Notice the assumption of only a single column.
+        if( ($gpPk = gp('gp_pk')) <> '') {
+            $pkc = $this->dd['pks'];
+            $pkv = SQLFC($gpPk);
+            $skey=SQL_OneValue('skey'
+                ,"Select skey FROM $this->table_id WHERE $pkc = $pkv"
+            );
+            x4Data('init',$skey);
+        }
+        
         # All top-level elements will go inside of this div 
         $x4Top = html('div');
         $x4Top->hp['id']='x4Top';
-        $x4Window = html('div',$x4Top);
-        $x4Window->addClass('x4Window');
-        $x4Window->addClass('x4Div');
-        $this->mainLayout($x4Window);
+        $this->mainLayout($x4Top);
         x4Html('*MAIN*',$x4Top->bufferedRender());
         x4Data('dd.'.$this->table_id,$this->dd);
         x4Data('return',gp('x4Return'));
@@ -44,22 +53,30 @@ class androX4 {
     }
     
     function mainLayout(&$div) {
+        # Add the top level item as an x4Pane so it will fade in        
+        $x4Window = html('div',$div);
+        $x4Window->addClass('x4Window');
+        $x4Window->addClass('x4Pane');
+        $x4Window->hp['id']='x4Window';
+        $x4Window->setAsParent();
+        
         # The first two are simple, a description 
         # and the menu bar.  These are permanent and will
         # be displayed for the entire time.
-        $h1  = html('h1',$div,$this->dd['description']);
+        $h1  = html('h1',$x4Window,$this->dd['description']);
         $h1->hp['id']='x4H1Top';
-        
+
         # Add the menu bar
-        $div->addChild( $this->menuBar($this->dd) );
+        $x4Window->addChild( $this->menuBar($this->dd) );
         
         #  This is the top level display item
         #
-        $x4Display = html('div',$div);
+        $x4Display = html('div',$x4Window);
         $x4Display->addClass('x4Pane');
         $x4Display->addClass('x4TableTop');
         $x4Display->ap['xTableId'] = $this->table_id;
         $x4Display->hp['id'] = 'x4TableTop_'.$this->table_id;
+        $x4Display->setAsParent();
         
         # Create a grid for the default display
         $grid = $this->grid($this->dd);
@@ -67,43 +84,42 @@ class androX4 {
         $x4Display->addChild( $grid );
         
         # Create a container and tab bar, 
-        # with the row-display inside of it
         #
         $tabC = html('div',$x4Display);
-        $tabC->addChild($this->rowDisplay());
         $tabC->addClass('x4Pane');
         $tabC->addClass('x4TabContainer');
-        $tabC->hp['id'] = 'x4TabContainer_'.$this->table_id;
+        $tabCId = 'x4TabContainer_'.$this->table_id;
+        $tabC->hp['id'] = $tabCId;
         $tabC->ap['xTableId'] = $this->table_id;
+        $tabC->setAsParent();
         $tabB = html('div',$tabC);
         $tabB->addClass('x4TabBar');
-        $tabB->hp['id']='x4TabBar';
+        $tabB->addClass('x4Div');
+        $tabBId = 'x4TabBar';
+        $tabB->hp['id']=$tabBId;
         
         # For now we create only one detail pane, 
         # later on we want more
         #
         $tabid = 'tab_'.$this->dd['table_id'];
-        $span = html('a-void',$tabB,'1: Detail');
-        $span->hp['accesskey'] = 1;
         $tabx = html('div',$tabC);
         $detail = $this->detailPane($this->dd);
         $detailId = $detail->hp['id'];
         $detail->addClass('x4VerticalScroll2');
-        $span->hp['onclick']="this.xParent.goTab('$detailId')";
         $tabC->addChild( $detail );
+        $span = html('a-void',$tabB,'1: Detail');
+        $span->hp['xAction'] = 'Ctrl1';
+        $span->hp['id'] = 'tabFor_'.$detailId;
+        $span->hp['onclick']="\$a.byId('$tabCId').dispatch('$detailId')";
         
         # Child table panes are added in a loop because there
         # may be more than one
         #
         $tabNumber = 2;
         foreach($this->dd['fk_children'] as $table_id=>$info) {
-            $tabid = 'xTableTop_'.$table_id;
+            $tabid = 'x4TableTop_'.$table_id;
             $ddChild = ddTable($table_id);
             x4Data('dd.'.$table_id,$ddChild);
-            $span=html('a-void',$tabB,$tabNumber.': '.$ddChild['description']);
-            $span->hp['accesskey']=$tabNumber;
-            $tabNumber++;
-            $span->hp['onclick'] = "this.xParent.goTab('$tabid')";
             
             # Make a tableTop container
             $tabx = html('div',$tabC);
@@ -111,11 +127,18 @@ class androX4 {
             $tabx->addClass('x4TableTop');
             $tabx->hp['id'] = $tabid;
             $tabx->ap['xTableId'] = $table_id;
+            $tabx->setAsParent();
             
             # Add into it the grid and the detail
-            $options = array('inputs'=>'N');
-            $tabx->addChild( $this->grid($ddChild,$options) );
-            $tabx->addChild( $this->detailPane($ddChild) );
+            $tabx->addChild( $this->grid($ddChild,$this->table_id) );
+            $tabx->addChild( $this->detailPane($ddChild,$this->table_id) );
+            
+            # Make the tab entry
+            $span=html('a-void',$tabB,$tabNumber.': '.$ddChild['description']);
+            $span->hp['xAction']='Ctrl'.$tabNumber;
+            $span->hp['id'] = 'tabFor_'.$tabid;
+            $tabNumber++;
+            $span->hp['onclick'] = "\$a.byId('$tabCId').dispatch('$tabid')";
         }
     }        
         
@@ -125,78 +148,103 @@ class androX4 {
     #
     # ===================================================================
     function menuBar($dd) {
-        $menubar = html('div');
-        $menubar->addClass('x4MenuBar');
-        $menubar->addClass('x4Div');
+        $menuBar = html('div');
+        $menuBar->addClass('x4MenuBar');
+        $menuBar->addClass('x4Div');
+        //$menuBar->hp['style']='float:left';
+        $id = 'x4MenuBar';
+        $menuBar->hp['id'] = $id;
+        $menuBar->setAsParent();
         
-        $a = html('a-void',$menubar,'<b><u>N</u></b>ew '
-            .$dd['singular']
-        );
-        $a->hp['onclick']="this.xParent.eventHandler('newRow')";
+        $mbTab=html('table',$menuBar);
+        $mbTab->addClass('tab100');
+        $mbr  =html('tr',$mbTab);
+        $mbl  =html('td',$mbr);
+        $mbr  =html('td',$mbr);
+        $mbr->hp['style'] = 'text-align: right';
+        //$mbr = &$menuBar;
+        //$mbl = &$menuBar;
+        
+        $a = html('a-void',$mbl,'<u>N</u>ew '.$dd['singular']);
+        $a->hp['onclick']="x4.parent(this).keyPress(this.getAttribute('xAction'))";
         $a->hp['id']='button-new';
-        $a->hp['accesskey']='n';
+        $a->hp['xLabel']='CtrlN';
+        $a->hp['xAction'] = 'newRow';
         
-        $a = html('a-void',$menubar,'<b><u>D</u></b>elete');
+        $a = html('a-void',$mbl,'<u>D</u>elete');
+        $a->hp['onclick']="x4.parent(this).keyPress(this.getAttribute('xAction'))";
         $a->hp['id']='button-del';
-        $a->hp['onclick']="this.xParent.eventHandler('deleteRow')";
-        $a->hp['accesskey']='d';
+        $a->hp['xLabel']='CtrlD';
+        $a->hp['xAction'] = 'deleteRow';
         
-        $a = html('a-void',$menubar,'Co<b><u>p</u></b>y');
+        $a = html('a-void',$mbl,'Co<u>p</u>y');
+        $a->hp['onclick']="x4.parent(this).keyPress(this.getAttribute('xAction'))";
         $a->hp['id']='button-cpy';
-        $a->hp['onclick']="this.xParent.eventHandler('copyRow')";
-        $a->hp['accesskey']='p';
+        $a->hp['xLabel']='CtrlP';
+        $a->hp['xAction'] = 'copyRow';
         
-        $a = html('a-void',$menubar,'<b><u>S</u></b>ave');
+        $a = html('a-void',$mbl,'<u>S</u>ave');
+        $a->hp['onclick']="x4.parent(this).keyPress(this.getAttribute('xAction'))";
         $a->hp['id']='button-sav';
-        $a->hp['onclick']="this.xParent.eventHandler('saveRow')";
-        $a->hp['accesskey']='s';
-        
-        $a = html('a-void',$menubar,'S<b><u>a</u></b>ve &amp; New');
+        $a->hp['xLabel']='CtrlS';
+        $a->hp['xAction'] = 'saveRow';
+
+        $a = html('a-void',$mbl,'S<u>a</u>ve &amp; New');
+        $a->hp['onclick']="x4.parent(this).keyPress(this.getAttribute('xAction'))";
         $a->hp['id']='button-snw';
-        $a->hp['onclick']="this.xParent.eventHandler('saveRowAndNewRow')";
-        $a->hp['accesskey']='a';
+        $a->hp['xLabel']='CtrlA';
+        $a->hp['xAction'] = 'saveRowAndNewRow';
         
-        $a = html('a-void',$menubar,'Save &amp; E<b><u>x</u></b>it');
+        $a = html('a-void',$mbl,'Save &amp; E<u>x</u>it');
+        $a->hp['onclick']="x4.parent(this).keyPress(this.getAttribute('xAction'))";
         $a->hp['id']='button-sxt';
-        $a->hp['onclick']="this.xParent.eventHandler('saveRowAndExit')";
-        $a->hp['accesskey']='x';
+        $a->hp['xLabel']='CtrlX';
+        $a->hp['xAction'] = 'saveRowAndExit';
         
-        $a = html('a-void',$menubar,"ESC: Quit");
+        
+        $a = html('a-void',$mbl,"ESC: Quit");
+        $a->hp['onclick']="x4.parent(this).keyPress(this.getAttribute('xAction'))";
         $a->hp['id']='button-esc';
-        $a->hp['onclick']="this.xParent.eventHandler('onEscape')";
+        $a->hp['xLabel'] = 'Esc';
+        $a->hp['xAction'] = 'Esc';
         
-        $a = html('a',$menubar,"Imports");
-        $a->hp['href'] = "?gp_page=x_import&gp_table_id=".$dd['table_id'];
-        
-        return $menubar;
-    }        
-        
-    function rowDisplay() {
-        $div = html('div');
-        $div->hp['id'] = 'x4RowInfo';
-        $aTop  = html('a-void',$div,'Top');
-        $aTop->hp['onclick'] = "this.xParent.passUp('CtrlPageUp')";
-        $aPrev = html('a-void',$div,'Previous');
-        $aPrev->hp['onclick'] = "this.xParent.passUp('PageUp')";
-        $span = html('span',$div,'Row x of y');
+        $a = html('a-void',$mbr,'Top');
+        $a->hp['onclick']="x4.parent(this).keyPress(this.getAttribute('xAction'))";
+        $a->ap['xLabel'] = 'CtrlPageUp';
+        $a->hp['xAction'] = 'CtrlPageUp';
+
+        $a = html('a-void',$mbr,'Previous');
+        $a->hp['onclick']="x4.parent(this).keyPress(this.getAttribute('xAction'))";
+        $a->ap['xLabel'] = 'PageUp';
+        $a->hp['xAction'] = 'PageUp';
+
+        $span = html('span',$mbr,'No Records');
         $span->hp['id'] = 'x4RowInfoText';
-        $aNext = html('a-void',$div,'Next');
-        $aNext->hp['onclick'] = "this.xParent.passUp('PageDown')";
-        $aBot  = html('a-void',$div,'Bottom');
-        $aBot->hp['onclick'] = "this.xParent.passUp('CtrlPageDown')";
-        return $div;
-    }
+        html('span',$mbr,'&nbsp;');
+
+        $a = html('a-void',$mbr,'Next');
+        $a->hp['onclick']="x4.parent(this).keyPress(this.getAttribute('xAction'))";
+        $a->ap['xLabel'] = 'PageDown';
+        $a->hp['xAction'] = 'PageDown';
+
+        $a  = html('a-void',$mbr,'Bottom');
+        $a->hp['onclick']="x4.parent(this).keyPress(this.getAttribute('xAction'))";
+        $a->ap['xLabel'] = 'CtrlPageDown';
+        $a->hp['xAction'] = 'CtrlPageDown';
+        return $menuBar;
+    }        
             
     # ===================================================================
     #
     # Major Area 3: Generate a grid for a table 
     #
     # ===================================================================
-    function grid($dd,$options = array()) {
+    function grid($dd,$tableIdPar = '') {
         $table_id = $dd['table_id'];
         
         # Generate default options
-        $inputs = a($options,'inputs','Y');
+        #$inputs = a($options,'inputs','Y');
+        $inputs='Y';
         
         # Everything goes into this table        
         $t =  html('table');
@@ -204,7 +252,8 @@ class androX4 {
         $t->ap['xTableId'] = $table_id;
         $t->ap['xReturnAll'] = 'N';
         $t->addClass('x4Pane');
-        $t->addClass('x4Grid');
+        $t->addClass('x4GridSearch');
+        $t->setAsParent();
         $tb1 = html('tbody',$t);
         $th = html('tr',$tb1);
         if($inputs=='Y') {
@@ -216,26 +265,32 @@ class androX4 {
         
         // Create the headers and inputs
         $cols = explode(',',$dd['projections']['_uisearch']);
+        $tabLoop = array();
+        $fakeCI = array('colprec'=>'10');
         foreach($cols as $column) {
             $colinfo = $dd['flat'][$column];
+            if($tableIdPar == $colinfo['table_id_fko'] && $tableIdPar<>'') {
+                continue;
+            }
             
             $column = trim($column);
             $hx = html('th',$th);
             $hx->innerHtml = $colinfo['description'];
             
             if($inputs=='Y') {
-                $inp= html('input');
-                $inp->hp['tabindex']  = ++$this->tabindex;
+                $inp= input($fakeCI,$tabLoop);
                 $inp->hp['id'] = 'search_'.$table_id.'_'.$column;
                 $inp->hp['autocomplete'] = 'off';
-                $inp->ap['xTabindex']  = $this->tabindex;
                 $inp->ap['xValue']='';
                 $inp->ap['xColumnId'] = $column;
-                $inp->ap['oHTMLId'] = $t->hp['id'];
+                $inp->ap['xParentId'] = $t->hp['id'];
+                $inp->ap['xNoEnter'] = 'Y';
                 $td = html('td',$ti);
                 $td->addChild($inp);
             }
         }
+        inputsTabLoop($tabLoop,array('xParentId'=>$t->hp['id']));
+        
         return $t;
     }
     
@@ -245,18 +300,20 @@ class androX4 {
     # Major Area 4: Detail Panes 
     #
     # ===================================================================
-    function detailPane($dd,&$tabs=null,&$tabbar=null) {
-        $div = html('div',$tabs);
+    function detailPane($dd,$parentTable=null) {
+        $div = html('div');
         $div->hp['id'] = 'detail_'.$dd['table_id'];
         $div->ap['xTableId'] = $dd['table_id'];
         $div->addClass('x4Pane');
         $div->addClass('x4Detail');
+        $div->setAsParent();
         
         # create the table that will hold the inputs 
         $table = html('table',$div);
         
         $table->hp['class'] = 'x4detail';
         $tid   = $dd['table_id'];
+        $tabLoop = array();
         foreach($dd['flat'] as $column_id=>$colinfo) {
             // Early exits
             if($colinfo['uino']=='Y'   ) continue;
@@ -273,12 +330,14 @@ class androX4 {
             // The input
             $td = html('td',$tr);
             $td->hp['class'] = 'x4input';
-            $input = input($colinfo);
+            $input = input($colinfo,$tabLoop
+                ,array('parentTable'=>$parentTable)
+            );
             $input->addClass('x4input');
-            $input->ap['oHTMLId'] = $div->hp['id'];
-            $input->hp['tabindex'] = ++$this->tabindex;
+            $input->ap['xParentId'] = $div->hp['id'];
             $td->addChild($input);
         }
+        inputsTabLoop($tabLoop,array('xParentId'=>$div->hp['id']));
         return $div;
     }
 
@@ -300,32 +359,35 @@ class androX4 {
         #  By default the search criteria come from the 
         #  variables, unless it is a child table search
         $vals = aFromGP('x4w_');
-        hprint_r($vals);
-        if(gp('tableIdPar')<>'') {
+        $awhere = array();
+        $tabPar = gp('tableIdPar');
+        if($tabPar<>'') {
             $ddpar = ddTable(gp('tableIdPar'));
             $pks   = $ddpar['pks'];
             $stab  = SQLFN(gp('tableIdPar'));
             $skey  = SQLFN(gp('skeyPar'));
-            $vals  = SQL_OneRow("SELECT $pks FROM $stab WHERE skey = $skey");
-            hprint_r($vals);
+            $vals2 = SQL_OneRow("SELECT $pks FROM $stab WHERE skey = $skey");
+            $vals  = array_merge($vals,$vals2);
         }
         
         # Build the where clause        
         #
-        $awhere = array();
         foreach($vals as $column_id=>$colvalue) {
             if(!isset($this->flat[$column_id])) continue;
             $colinfo = $this->flat[$column_id];
+            $exact = isset($vals2[$column_id]);
             
-            $tcv  = trim($colvalue);
+            //$tcv  = trim($colvalue);
+            $tcv = $colvalue;
             $type = $colinfo['type_id'];
             if($type=='dtime' || $type=='date') {
                 $tcv=dEnsureTS($tcv);
             }
             if ($tcv != "") {
                 // trap for a % sign in non-string
-                $awhere[]
-                    ='('.$this->searchBrowseOneCol($type,$column_id,$tcv).')';
+                $awhere[]='('
+                    .$this->searchBrowseOneCol($type,$column_id,$tcv,$exact)
+                    .')';
             }
         }
 
@@ -343,31 +405,40 @@ class androX4 {
             }
         }
         if(count($aorder)==0) {
-            $aorder[] = $acols[0];
+            $SQLOrder = " LIMIT 20";
+            #$aorder[] = $acols[0];
+        }
+        else {
+            $SQLOrder = " ORDER BY ".implode(',',$aorder)." Limit 20";
         }
         
+        # just before building the query, drop out
+        # any columns that have a table_id_fko to the parent
+        foreach($acols as $idx=>$column_id) {
+            if($this->flat[$column_id]['table_id_fko'] == $tabPar
+                && $tabPar <> '') {
+                unset($acols[$idx]);
+            }
+        }
         
-        // Build the query.  For a "returnall" table we actually
-        // ignore the WHERE clause completely
-        $SWhere = '';
+        // Build the where and limit
         $SLimit = ' LIMIT 20';
-        if($this->dd['returnall'] <> 'Y') {
-            $SWhere = ' WHERE '.implode(' AND ',$awhere);
-            $SLimit = ' LIMIT 20';
-        }
+        $SWhere = ' WHERE '.implode(' AND ',$awhere);
+
         // Retrieve data
         $SQL ="SELECT skey,".implode(',',$acols)
              ."  FROM ".$this->view_id
              .$SWhere
-             ." ORDER BY ".implode(',',$aorder).$SLimit;
+             .$SQLOrder;
         $answer =SQL_AllRows($SQL);
         x4Debug($SQL);
 
         // Format as HTML
         ob_start();
         $skeys = array();
-        foreach($answer as $row) {
-            echo "<tr id='x4row_{$row['skey']}' class='x4brrow'>";
+        foreach($answer as $idx=>$row) {
+            $skey = $row['skey'];
+            echo "<tr xIndex=\"$idx\" id='x4row_$skey' class='x4brrow'>";
             $skeys[] = $row['skey']; 
             foreach($row as $idx=>$value) {
                 if($idx=='skey') continue;
@@ -381,13 +452,14 @@ class androX4 {
         
     }
     
-    function searchBrowseOneCol($type,$colname,$tcv) {
+    function searchBrowseOneCol($type,$colname,$tcv,$exact) {
         $values=explode(',',$tcv);
         $sql_new=array();
         foreach($values as $tcv) {
             if(trim($tcv)=='') continue;
             if($tcv=='*') $tcv='%';
-            $tcv = trim(strtoupper($tcv));
+            //$tcv = trim(strtoupper($tcv));
+            $tcv = strtoupper($tcv);
             if(in_array($type,array('int','numb','date','time'))) {
                 $tcv=preg_replace('/[^0-9]/','',$tcv);
             }
@@ -416,7 +488,11 @@ class androX4 {
                 continue;
             }
     
-            if(! isset($aStrings[$type]) && strpos($tcv,'%')!==false) {
+            if($exact) {
+                $tcsql = sql_Format($type,$tcv);
+                $new=$colname."=".$tcsql;
+            }
+            else if(! isset($aStrings[$type]) && strpos($tcv,'%')!==false) {
                 $new="cast($colname as varchar) like '$tcv'";
             }
             else {
@@ -426,7 +502,7 @@ class androX4 {
                 }
                 else {
                     $tcsql = str_replace("'","''",$tcv); 
-                    $new=" UPPER($colname) like '".strtoupper($tcsql)."%'";
+                    $new=" UPPER($colname) like '%".strtoupper($tcsql)."%'";
                 }
             }
             $sql_new[]="($new)";
@@ -492,7 +568,7 @@ class androX4 {
     #
     # ===================================================================
     /**
-      * Execute an skey-based update
+      * Execute an skey-based delete
       *
       */
     function delete() {
