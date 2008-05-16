@@ -19,72 +19,102 @@
    or visit http://www.gnu.org/licenses/gpl.html
 \* ================================================================== */
 
-/*
- * This is the generic and top level object for the
- * Extended Desktop system.
+/* =====================================================
+ * Top level context controller and utility provider
  *
+ * confirmed final form KFD 5/10/08
+ * =====================================================
  */
 var x4 =  {
     // Simple setting for behavior
     fadeSpeed: 'fast',
-    
-    /* 
-     * initialize a json request that uses x4Page and
-     * all inputs on object
-     *
-     */
-    initPost: function(obj) {
-        $a.json.init('x4Page', $a.byId('x4Page').value);
-        $a.json.inputs();
-    },
-    
-    // Stack of context objects used during initialization
-    contextStack:  [ ],
-    
-    /*
-     * Add an item to the context, and return the parent
-     * so this object knows who to pass control up to
-     *
-     */
-    context: function(object) {
-        /* get the return value before adding an item */
-        var retval =
-            (this.contextStack.length == 0) 
-            ? false 
-            : this.contextStack[this.contextStack.length-1];
-            
-        /* if object was null, they were asking for context */
-        if(object==null) return retval;
-         
-        /* add the item */
-        this.contextStack[this.contextStack.length] = object;
-        
-        /* return the parent */
-        return retval;
-    },
-    contextPop: function() {
-        if(this.contextStack.length > 0) this.contextStack.pop();
-    },
+    flagDebug: true,
     
     /*
      * Code entry point: the server returns a page of HTML that
-     * invokes this function, so browser execution
+     * invokes this function, so browsertab execution
      * begins here.
      *
      */
     main: function() {
+        x4.debug(" -- Beginning Initialization -- ");
+        var tsBeg = new Date();
+        x4.debug(" -- "+tsBeg);
         // Capture the data dictionary
         x4dd.dd = $a.data.dd;
-
+        
+        // Do things to the document
+        this.mainDocument();
+        
         // Find the top object, and begin recursing it
         window.rootObj = $a.byId('x4Top');
         this.initRecurse(window.rootObj);
         
         // The top object is a container only.  The activation
         // system begins with the first child we can find.
+        x4.debug(" -- Ending Initialization,going to activate -- ");
+        var tsEnd = new Date();
+        x4.debug(" -- "+tsEnd);
+        x4.debug(" -- " + ((tsEnd.getTime() - tsBeg.getTime())/1000));
         if($(window.rootObj).children('.x4Pane,.x4Div').length > 0) {
             $(window.rootObj).children('.x4Pane,.x4Div')[0].activate();
         }
+    },
+    
+    /*
+     * Create default handlers at document level
+     *
+     */
+    mainDocument: function() { 
+        document.x4RegkeyPress= [ ];
+        document.x4UnRegister = function(eName) {
+            var prop = 'x4Reg'+eName;
+            if( this[prop].length > 0) this[prop].pop();
+            x4.debug(
+                "Have popped one entry from "+prop
+                +" Current stack is "+this[prop]
+            );
+        }
+        document.x4Register = function(eName,obj) {
+            x4.debug("Registering "+eName+" for "+obj.jqId);
+            if(eName == 'keyPress') {
+                document.x4RegkeyPress[document.x4RegkeyPress.length] = obj;
+                x4.debug("current stack is now "+document.x4RegkeyPress);
+                if(document.x4RegkeyPress.length==1) {
+                    $(document).keypress(function(e) {
+                        var suffix= $a.label(e);
+                        var label = 'keyPress_'+suffix;
+                        x4.debug("document received "+label);
+                        for(var x = 0; x<this.x4RegkeyPress.length; x++ ) {
+                            var obj = this.x4RegkeyPress[x];
+                            if(typeof(obj[label])=='function') {
+                                x4.debug("dispatching "+label+" to "+obj.jqId);
+                                return obj[label]();
+                            }
+                            else if(typeof(obj.keyPress)=='function') {
+                                x4.debug("dispatching "
+                                    +suffix+" to keyPress() of  "+obj.jqId
+                                );
+                                if(! obj.keyPress(suffix)) {
+                                    x4.debug("document keypress done");
+                                    return false;
+                                }
+                            }
+                            else {
+                                x4.debug("object "+obj.jqId+" has neither "
+                                    +" keyPress_"+label+"() or keyPress()");
+                            }
+                        }
+                        x4.debug("document keyPress found nobody to "
+                            +" handle "+label);
+                        return true;
+                    });
+                }
+            }
+            else {
+                $a.dialogs.alert("Bad x4Register attempt: " + eName);
+            }
+        }        
     },
     
     /*
@@ -97,6 +127,9 @@ var x4 =  {
         }
         else {
             getString = '?x4Page=menu';
+            if(focus==null && $("#x4Page").length > 0 ) {
+                focus = $("#x4Page")[0].value;
+            }
             if(focus!=null) {
                 getString += '&x4Focus='+focus
             }
@@ -119,99 +152,251 @@ var x4 =  {
      */
     initRecurse: function(obj) {
         $(obj).children(".x4Div,.x4Pane").each( function() {
-            /* tell the object who its parent controller is */
-            this.xParent = x4.context(this);
-            
-            /*
-             * The default register method attempts to register
-             * with the parent, which will continue doing so
-             * until some controller constructor has overridden
-             * this for specific function names.
-             *
-             */
-            this.register = function(name,object) {
-                if(this.xParent) {
-                    this.xParent.register(name,object);
-                }
-            }  
-            
             /*
              * Create default event handler that attempts to
              * pass the buck up the chain.  Individual
              * controller constructors will override this.
              *
              */
-            this.passUp = function(functionName,event) {
-                if(this.xParent) {
-                    return this.xParent.passUp(functionName,event);
+            // -- confirmed 5/9/08 -- //
+            this.sendUp = function(name,value) {
+                if(x4.parent(this)) {
+                    return x4.parent(this).sendUp(name,value);
                 }
-                return true;
+                return false;
             }
             
             /*
-             * Generic attempt to pull a value, if not found
-             * it tries to pull it from the parent
+             * Return variables
              *
              */
-            this.pullDown = function(property) {
-                if(typeof(this[property])!='undefined') {
-                    return this[property];
+            this.pullDownVars = [ ];
+            this.pullDown = function(name) {
+                // If variable has been listed as one that is returned,
+                // return it now.
+                if(this.pullDownVars.indexOf(name) >= 0) {
+                    x4.debug(this.id+" is returning "+name+": "+this[name]);
+                    return this[name];
                 }
                 else {
-                    if(this.xParent) {
-                        return this.xParent.pullDown(property);
+                    if(x4.parent(this)) {
+                        x4.debug(this.id+" requesting "+name+" from parent");
+                        return x4.parent(this).pullDown(name);
                     }
-                    else {
-                        return false;
-                    }
+                    return false;
                 }
-            }     
+            }
             
             /*
              * A default deactivate action, call the parent
              * and tell it which of its children is deactivating
              *
              */
+            // -- confirmed 5/9/08 -- //
             this.deactivate = function(child) {
-                this.xParent.deactivate(this);
+                x4.debug("Generic deactivate terminating in: "+this.jqId);
+            }     
+            this.activate = function(child) {
+                x4.debug("Generic activate terminating in: "+this.jqId);
             }     
                 
             /* Look for all controller constructors based on classes */
+            // -- confirmed 5/9/08 -- //
+            this.zParent      = x4.parent(this);
+            this.zLastFocusId = false;
+            this.jqId         = "var x = $a.byId('"+this.id+"')";
             var classes = this.className.split(' ');
             for(var x in classes) {
                 var oneClass = classes[x];
                 if(oneClass=='x4Pane') continue;
                 var constructor = false;
-                /* This attempts to find a constructor */
+                // This attempts to find a constructor
                 try {
                     constructor = eval(oneClass);
                 }
                 catch(e) { 
-                    /* do nothing on error */ 
+                    // do nothing on error 
                 }
                 if(constructor) {
+                    this.zType = oneClass; 
                     constructor(this);
                 }
             }
-                
-            /* Always do a tab loop */
-            $a.tabLoopInit(this);
-                
+           
             /* And of course, do the sub-panes as well */
             x4.initRecurse(this);
-            
-            /* After recursion is complete, surrender control of context */
-            x4.contextPop();
         });
+    },
+    
+    /*
+     * The "stdlib" object provides commonly used code snippets.
+     * In an ideal world, these snippets would be assigned as anonymous
+     * functions during page initialization, but we have a general speed
+     * issue with init, and anonymous code assignments to inputs was the
+     * biggest problem.  Therefore we have the PHP input generator
+     * assign "onkeypress" and other properties that point to this 
+     * standard library of handlers.  So we trade off some unpleasant 
+     * code coupling for snappy performance.
+     *
+     */
+    stdlib: {
+        inputKeyPress: function(e,self) {
+            var prop = false;
+            var keyLabel = $a.label(e);
+            x4.debug("stdlib.inputKeyPress received: "+keyLabel);
+            if(keyLabel=='Tab' && self.getAttribute('xNoTab')!='Y') {
+                prop = 'xTabNext';
+            }
+            if(keyLabel=='Enter' && self.getAttribute('xNoEnter')!='Y') {
+                prop = 'xTabNext';
+            }
+            if(keyLabel=='ShiftTab' && self.getAttribute('xNoTab')!='Y') {
+                prop = 'xTabPrev'
+            }
+            if(keyLabel=='ShiftEnter' && self.getAttribute('xNoEnter')!='Y') {
+                prop = 'xTabPrev'
+            }
+            if(prop) {
+                x4.debug('Having decided to do: '+prop);
+                var nextId = $(self).attr(prop);
+                while(true) {
+                    // If we end up looping around, stop
+                    if(nextId == self.Id) break;
+                    
+                    // If the item is not read-only, stop
+                    if(!$a.byId(nextId).readOnly) {
+                        break;
+                    }
+                    
+                    // ...otherwise, move on and try again
+                    var nextId = $('#'+nextId).attr(prop);
+                }
+                if(nextId != self.id) {
+                    $(self).blur();
+                    $('#'+nextId).focus();
+                }
+                e.stopPropagation();
+                return false;
+            }
+            //if(keyLabel == 'PageUp' || keyLabel=='PageDown') {
+            //    return false;
+            //}
+        },
+        
+        inputKeyUpDate: function(e,obj) {
+            var objval = obj.value;
+            if(objval.length==6) {
+                if(objval.indexOf('/')==-1) {
+                    if(objval.indexOf('-')==-1) {
+                        var month=objval.substr(0,2);
+                        var day  =objval.substr(2,2);
+                        var year =objval.substr(4,2);
+                        yearint = parseInt(year);
+                        if(yearint < 30) {
+                            year = '20'+year
+                        }
+                        else {
+                            year = '19'+year
+                        }
+                        obj.value=month+'/'+day+'/'+year;
+                    }
+                }
+            }
+        },
+        
+        findFocus: function(obj) {
+            // see if there is a last focus.  If it is read only,
+            // clear it.
+            if(obj.zLastFocusId) {
+                if( $a.byId(obj.zLastFocusId).readOnly) {
+                    x4.debug("last focus was read only, clearing");
+                    obj.zLastFocusId=false;
+                }
+            }
+            
+            // Now either pick the last focused item, or find the
+            // first that is not read only
+            if(obj.zLastFocusId) {
+                $('#'+obj.zLastFocusId).focus();
+            }
+            else {
+                $(obj).find(":input:not([@readonly]):first").focus();
+            }
+        }
+
+    },
+    
+    /* UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU
+     * 
+     * Utilties
+     *
+     * UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU
+     */
+
+    /* 
+     * initialize a json request that uses x4Page and
+     * all inputs on object
+     *
+     */
+    initPost: function(obj) {
+        $a.json.init('x4Page', $a.byId('x4Page').value);
+        $a.json.inputs();
+    },
+
+    /*
+     * Find an objects parent.  Shortcut.
+     *
+     */
+    parent: function(self) {
+        var x = $(self).attr('xParentId');
+        if(x == 'undefined') {
+            return { };
+        }
+        else {
+            return $a.byId( x );
+        }
+    },
+    
+    /*
+     *  Safe log function.  Won't fire if console does not exist
+     *
+     */
+    log: function(msg) {
+        if(typeof(console)!='undefined') {
+            console.log(msg);
+        }
+    },
+    debugIndent: '',
+    debug: function(msg,indent) {
+        if(indent==0) { 
+            var x = this.debugIndent;
+            this.debugIndent = x.slice(0,x.length-2);
+        }
+        if(this.flagDebug) {
+            if(typeof(console)!='undefined') {
+                console.log(this.debugIndent + msg);
+            }
+        }
+        if(indent==1) { this.debugIndent+='  '; }
+    },
+    debugOpen: function(type,jqId) {
+        this.debug(type+": "+jqId,1);
+    },
+    debugClose: function(type,jqId) {
+        this.debug(type+": "+jqId+" (COMPLETE)",0);
     },
 }
 
-/*
+/* =====================================================
+ * Data dictionary static object
+ *
  * The x4dd contains the data dictionary of the current
  * table.  It is normally populated by the x4Browse
  * init routine, which pulls it from the json data and
  * puts it here.
- *            
+ *
+ * Confirmed Final Form KFD 4/10/08
+ * =====================================================            
  */
 var x4dd = {
     dd: { },
@@ -230,84 +415,171 @@ var x4dd = {
  *
  * A window object contains a menu bar and (assuming) at
  * least one x4TableTop
+ *
+ * Confirmed in final form: 5/10/08 KFD
  * ========================================================
  */
 function x4Window(self) {
     self.menuBar = $(self).find(".x4MenuBar")[0];
     
-    self.passUp = function(eventName,event) {
-        if(eventName=='PageUp')       return this.menuBar.obj.move('PageUp');
-        if(eventName=='PageDown')     return this.menuBar.obj.move('PageDown');
-        if(eventName=='CtrlPageUp')   return this.menuBar.obj.move('CtrlPageUp');
-        if(eventName=='CtrlPageDown') return this.menuBar.obj.move('CtrlPageDown');
-        if(eventName!='keyDown') return true;
-        if(event.ctrlKey) {
-            // push a control key back down to the menubar
-            return this.menuBar.keyDown(event);
-        }
-        return true;
+    // Set up the H1 to handle requests
+    var h1 = $a.byId('x4H1Top');
+    h1.zStem = '';
+    h1.saveStem = function() {
+        this.zStem = this.innerHTML;
+        x4.debug("Saving h1 stem: "+this.zStem);
     }
-    
-    /*
-     * Override default sendUp to look for an object that
-     * wants menubar events.  Otherwise discard.
+    h1.clearStem = function() {
+        this.innerHTML = this.zStem;
+        this.zStem = '';
+        x4.debug("Clearing h1 stem");
+    }
+    h1.setHTML = function(text) {
+        if(h1.zStem == '') {
+            this.innerHTML = text;
+        }
+        else {
+            this.innerHTML = this.zStem + ", " + text;
+        }
+        x4.debug("Changing h1 to "+this.innerHTML); 
+    }
+
+    /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
      * 
+     * Activation Code
+     *
+     * @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
      */
-    self.register = function(name,object) {
-        if(name=='menubar') {
-            this.menuBar.obj = object;   
-        }
+    self.activate = function() {
+        x4.debugOpen('ACTIVATE ',this.jqId);
+        // Tell menu bar to look alive
+        this.menuBar.activate();
+
+        // Initial make visible     
+        var parm1 =$a.aProp($a.data,'init',null);
+        $(this).children(".x4Pane")[0].makeVisible(parm1);
+        $(this).fadeIn(x4.fadeSpeed,function() {
+            $(this).children(".x4Pane")[0].activate(parm1);
+        });
+        x4.debugClose('ACTIVATE ',this.jqId);
     }
     
-    // Activate should be no-nonsense, make visible and 
-    // activate first x4Pane
-    self.activate = function() {
-        this.style.display='block';
-        $(this).children(".x4Pane")[0].activate();
-    }
-    self.deactivate = function() {
-        x4.returnToMenu();
-    }
+    /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
+     * 
+     * UP-down code
+     *
+     * /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+     */
+    self.sendUp = function(name,value) {
+        if(name=='rowInfo') {
+            $a.byId('x4RowInfoText').innerHTML = value;
+            return this.id;
+        }
+        else if(name=='Esc') {
+            x4.debug("Top level window returning to menu");
+            x4.returnToMenu();
+        }
+        else if(name=='menuBarDisable') {
+            if(value=='') {
+                x4.debug(this.jqId+" is enabling all menu bar buttons");
+                $(this.menuBar).find('a').removeClass('disabled');
+            }
+            else {
+                var arr = value.split(',');
+                x4.debug(this.jqId+" disabling menu bar: "+arr);
+                for(var x in arr) {
+                    var label = arr[x];
+                    $(this.menuBar).find('a[xAction='+label+']')
+                        .addClass('disabled');
+                }
+            }
+        }
+        else if(name=='menuBarLabel') {
+            $(this.menuBar).find('a[xAction=newRow]').html(
+                '<u>N</u>ew '+value
+            );
+        }
+        else if(name!='menuBar') {
+            return false;
+        }
+        else {
+            x4.debug("menu bar now sending events to "+value.jqId);
+            this.menuBar.obj = value;  
+            
+            // Now do a really neat trick, look at each button
+            // and have it enable or disable itself if the
+            // object has a handler
+            $(this.menuBar).find("a").each(function() {
+                var act = $(this).attr('xAction');
+                var obj = x4.parent(this).obj;
+                var mth = 'keyPress_'+act;
+                if( typeof(obj[mth]) == 'undefined' ) {
+                    $(this).addClass("disabled");
+                }
+                else {
+                    $(this).removeClass("disabled");
+                }
+            });
+            return this.id;
+        }
+    }    
 }
 
 /* ========================================================
  *
  * Controller Constructor for a menu bar
  *
+ * Confirmed in final form: 5/10/08 KFD
  * ========================================================
  */
 function x4MenuBar(self) {
     self.obj = false;
-    self.tab = false;
     
-    // Assign parent object to all links
-    $(self).find("a").each( function() {
-            this.xParent = x4.context();
-    });
-    
-    self.keyDown = function(event) {
-        var letter = $a.charLetter(event.which);
-        var x = $(this).find("a[@accesskey="+letter+"]")[0];
-        if(typeof(x)=='undefined') {
+    /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+     * 
+     * Activation Code
+     *
+     * @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+     */
+    self.activate = function() {
+        x4.debugOpen("ACTIVATE ",this.jqId);
+        document.x4Register('keyPress',this);
+        x4.debugClose("ACTIVATE ",this.jqId);
+    }
+       
+    /* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+     * 
+     * Local logic
+     *
+     * <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+     */
+    self.keyPress = function(type) {
+        x4.debug("Menubar is in keyPress method for "+type);
+        // Refuse to do it if disabled
+        if( $(this).find('a[xAction='+type+'].disabled').length>0) {
+            x4.debug(" ! button is disabled, refusing to handle it");
+            return false;
+        }
+        if( $(this).find('a[xLabel='+type+'].disabled').length>0) {
+            x4.debug(" ! button is disabled, refusing to handle it");
+            return false;
+        }
+        
+        var method = 'keyPress_' + type
+        if(!this.obj) {
+            x4.debug(" -> MenuBar, Event "+type+" called, but no object defined.");
+            return true;
+        }
+        else if( typeof(this.obj[method])!='function') {
+            x4.debug(
+                " -> Event "+type+" is undefined on current controller, " 
+                +'object '+ this.obj.id+' does not have method '+method
+            );
             return true;
         }
         else {
-            $(x).click();
-            return false;
-        }
-    }
-    
-    self.eventHandler = function(type) {
-        if(!this.obj) {
-            $a.dialogs.alert("Event "+type+" called, but no object defined.");
-        }
-        else if( typeof(this.obj[type])=='undefined') {
-            $a.dialogs.alert(
-                "Event "+type+" is undefined on current controller"
-            );
-        }
-        else {
-            this.obj[type]();
+            x4.debug(" -> Menubar dispatching to "+this.obj.jqId);
+            return this.obj[method]();
         }
     }
 }
@@ -318,18 +590,20 @@ function x4MenuBar(self) {
  *
  * Controller for a root object that can have 1 or more child
  * panes that have grids, details, or tab containers.
+ *
+ * Confirmed final form KFD 5/10/08
  * ========================================================
  */
 function x4TableTop(self) {
-    self.pane1 = $(self).children(".x4Pane")[0];
-    self.pane2 = $(self).children(".x4Pane")[1];
+    self.zTableIdPar = self.zParent.pullDown('zTableIdPar');
+    self.zTableId    = self.getAttribute('xTableId');
+    self.zPane1 = $(self).children(".x4Pane")[0];
+    self.zPane2 = $(self).children(".x4Pane")[1];
+    self.zIsChild    = self.zTableIdPar ? true : false;
     
-    // If the object above has a table, find it
-    if(self.xParent==false) 
-        self.xTableIdPar = '';
-    else {
-        self.xTableIdPar = self.xParent.xTableId;
-    }
+    // Define the pull down variables that are returned
+    self.pullDownVars = [ 'zTableId', 'zTableIdPar', 'zGridPane','zSkey' ];
+    self.zGridPane    = self.zPane1;
     
     /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
      * 
@@ -337,80 +611,105 @@ function x4TableTop(self) {
      *
      * @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
      */
-    // x4TableTop.activate
-    self.activate=function() {
-        // Send up notice that we are the target of 
-        // menubar stuff.
-        
-        if(!this.currentDisplay) {
-            this.goGrid();
-            this.currentDisplay = this.pane1;
+    self.makeVisible = function(parm1) { 
+        x4.debugOpen("Make Visible ",this.jqId);
+        if(!this.zCurrentDisplay) {
+            if(parm1 == null ) {
+                x4.debug("Parm1 is null, going to pane 1");
+                this.zPane1.makeVisible();
+            }
+            else {
+                x4.debug("Parm2 is not null, going to pane 2");
+                this.zPane2.makeVisible();
+            }
         }
-        this.setMenuBar();
-        this.style.display='block';   
-        this.currentDisplay.activate();
-    }
-    // x4TableTop.deactivate
-    self.deactivate=function(child) {
-        // if the deactivation is coming from detail
-        // side, go to the grid, else up to parent
-        if(this.currentDisplay == this.pane1) {
-            this.xParent.deactivate(this);
-        }
-        else {
-            this.goGrid();
-            this.currentDisplay.activate();
-        }
-    }
-
-    /* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-     *                   
-     * Display Switching Code
-     *
-     * <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-     */
-    self.goGrid = function() {
-        this.pane2.style.display = 'none';
-        this.currentDisplay = this.pane1;
-        this.setMenuBar();
-    }
-    self.goDetail = function() {
-        this.pane1.style.display = 'none';
-        this.currentDisplay = this.pane2;
-        this.setMenuBar();
-    }
-    self.setMenuBar = function() {
-        if(this.currentDisplay==this.pane1) {
-            $("#button-sav").css('display','none');
-            $("#button-snw").css('display','none');
-            $("#button-sxt").css('display','none');
-            $("#button-new").css('display','');
-            $("#button-del").css('display','');
-            $("#button-cpy").css('display','');
-        }
-        else {
-            $("#button-sav").css('display','');
-            $("#button-snw").css('display','');
-            $("#button-sxt").css('display','');
-        }
-    }
-
-    /* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-     *                   
-     * Up-Down code
-     * Event Handlers
-     *
-     * <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-     */
-    self.passUp = function(eventName,event) {
-        if(     eventName=='editRow')      return this.currentDisplay.editRow();
-        else return this.xParent.passUp(eventName,event);
-        
-    }
-    self.getGridPane = function() {
-        return this.pane1;
+        this.style.display='block';
+        x4.debugClose("Make Visible ",this.jqId);
     }
     
+    self.activate=function(parm1) {
+        x4.debugOpen("ACTIVATE ",this.jqId);
+        var parm2 = null;
+        if(parm1!=null) { 
+            parm2 = parm1;
+            parm1 = 'edit';
+        }
+        x4.debug("parm 1 and 2 "+parm1 +" "+parm2);
+        this.zSKeyPar    = this.zIsChild
+            ? this.zParent.pullDown('zSkeyPar')
+            : 0;
+        var h1 = $a.byId('x4H1Top');
+        if(this.zIsChild) $a.byId('x4H1Top').saveStem();
+        
+        if(!this.zCurrentDisplay) {
+            if(parm1 != null) {
+                this.zCurrentDisplay = this.zPane2;
+            }
+            else {
+                this.zCurrentDisplay = this.zPane1;
+            }
+        }       
+        this.style.display='block';
+        this.zCurrentDisplay.activate(parm1,parm2);
+        x4.debugClose("ACTIVATE ",this.jqId);
+    }
+    self.deactivate=function() {
+        x4.debugOpen("Deactivating ",this.jqId);
+        if(this.zIsChild) $a.byId('x4H1Top').clearStem();
+        this.zCurrentDisplay.deactivate();
+        this.zCurrentDisplay.style.display='none';
+        x4.debugClose("Deactivating ",this.jqId);
+    }
+    
+    /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
+     * 
+     * UP-down code
+     *
+     * /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+     */
+    self.sendUp = function(name,value) {
+        if(name=='Esc') {
+            x4.debug(
+                "Child Esc request from " + value.jqId
+                +" to " + this.jqId
+            );
+            value.deactivate();
+            value.style.display='none';
+            if(value == this.zPane1) {
+                x4.debug(' --> on grid');
+                if(value.zCmd == 'Esc') {
+                    x4.debug(" --> Sending up esc request");
+                    this.zParent.sendUp('Esc',this);
+                }
+                else { 
+                    x4.debug(" --> Assuming request to go to detail");
+                    if(this.zPane2.zType=='x4TabContainer') {
+                        this.zPane2.makeVisible(false);
+                    }
+                    this.zCurrentDisplay = this.zPane2;
+                    this.zPane2.activate(value.zCmd,value.zCmdSkey);
+                }
+            }
+            else {
+                x4.debug(' --> assuming detail, going to grid');
+                this.zCurrentDisplay = this.zPane1;
+                this.zPane1.activate(value.zCmd);
+            }
+        }
+        else if(name=='tabBarOnlyMe') {
+            // A table top must intercept and pass itself
+            // as the object that wants to be the only
+            // enabled tab
+            this.zParent.sendUp('tabBarOnlyMe',this);   
+        }
+        else if(name=='zSkey') {
+            x4.debug(this.jqId+" caught and saved zSkey: "+value);
+            this.zSkey = value;
+        }
+        else {
+            return this.zParent.sendUp(name,value);
+        }
+    }
 }
 
 /* ========================================================
@@ -418,22 +717,17 @@ function x4TableTop(self) {
  *
  * Contains a tab bar and tabs, which themselves may be
  * tabletops or details
+ *
+ * Confirmed in final form KFD 5/10/08
  * ========================================================
  */
 function x4TabContainer(self) {
-    self.currentDisplay = false;
-    self.pane1 = $(self).children(".x4Pane")[0];
+    self.zTableIdPar     = self.zParent.pullDown('zTableId');
+    self.zCurrentDisplay = false;
+    self.zPane1 = $(self).children(".x4Pane")[0];
+    self.zTabBar = $(self).children(".x4TabBar")[0];
     
-    // Tell all hyperlinks in Row Info who their parent is
-    window.temp = self;
-    $(self).find("#x4RowInfo a").each(function() {
-            this.xParent = window.temp;
-    });
-    // Tell all hyperlinks in tab bar who their parent is
-    $(self).find("#x4TabBar a").each(function() {
-            this.xParent = window.temp;
-    });
-    window.temp = null;
+    self.pullDownVars = [ 'zSkeyPar','zTableIdPar' ];
     
     /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
      * 
@@ -441,178 +735,226 @@ function x4TabContainer(self) {
      *
      * @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
      */
-    self.activate=function(parm1,parm2) {
-        x4MenuBar.tab = this;
-        if(!this.currentDisplay) {
-            this.currentDisplay = this.pane1;
+    self.makeVisible = function(doYourself) {
+        x4.debug("makeVisible in "+this.jqId);
+        if(doYourself) {
+            x4.debug(" -> Instructed to make myself visible");
+            this.style.display='block';
         }
-        this.style.display='block';   
-        this.currentDisplay.activate(parm1,parm2);
+        if(!this.zCurrentDisplay) {
+            x4.debug(" -> No current display, making first pane visible.");
+            this.zPane1.style.display='block';
+        }
+        else {
+            x4.debug(" -> There was a current display, doing nothing");
+        }
+    }
+     
+    self.activate=function(parm1,parm2) {
+        x4.debugOpen("ACTIVATE ",this.jqId);
+        this.zSkeyPar    = this.zParent.pullDown('zSkey');
+        this.zTabBar.activate();
+        $(this).fadeIn(x4.fadeSpeed,function() {
+            this.goTab(this.zPane1.id,parm1,parm2);
+        });
+        x4.debugClose("ACTIVATE ",this.jqId);
+    }
+    self.deactivate = function() {
+        x4.debugOpen("DEACTIVATE",this.jqId);
+        this.zTabBar.deactivate();
+        x4.debugClose("DEACTIVATE",this.jqId);
     }
 
     /* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
      *                   
-     * Up-Down code
+     * Local Logic
      *
      * <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
      */
-    self.getGridPane = function() {
-        return this.xParent.getGridPane();         
+    self.dispatch = function(tabId) {
+        if( tabId != this.zCurrentDisplay.id) {
+            this.goTab(tabId);
+        }
     }
-    
-    self.passUp = function(eventName,event) {
-        if(eventName=='keyDown') {
-            if(event.ctrlKey) {
-                var let = $a.charNumber(event.keyCode);
-                console.log(let);
-                window.temp = this;
-                window.ev = event;
-                var x = $(this).find('#x4TabBar a[@accesskey='+let+']')[0];
-                if(typeof(x)!='undefined') {
-                    $(x).click();
-                    return false;
-                }
+     
+    self.goTab = function(tabId,parm1,parm2) {
+        x4.debug("Tab switch from "+this.zCurrentDisplay.jqId
+            +" to " + tabId
+        );
+        if( $(this.zTabBar).find('#tabFor_'+tabId+".disabled").length>0 ) {
+            x4.debug(" ! That tab is disabled, ignoring");
+            return false;
+        }
+        if(this.zCurrentDisplay) {
+            x4.debug(" -> Deactivating old tab");
+            x4.debug("old: "+this.zCurrentDisplay.id);
+            x4.debug("new: "+tabId);
+            if(this.zCurrentDisplay.id == tabId) {
+                x4.debug(" -> old an new are the same.");
+            }
+            else {
+                x4.debug(" -> old and new are not the same, deactivating old");
+                $('#tabFor_'+this.zCurrentDisplay.id).removeClass('tabSelected');
+                this.zCurrentDisplay.deactivate();
+                this.zCurrentDisplay.style.display = 'none';
             }
         }
-        return true;
-    }
+        this.zCurrentDisplay = $a.byId(tabId);
+        $('#tabFor_'+tabId).addClass('tabSelected');
+        this.zCurrentDisplay.activate(parm1,parm2);
+    }    
 
+    /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
+     * 
+     * UP-down code
+     *
+     * /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+     */
+    self.sendUp = function(name,value) {
+        x4.debug(this.jqId+" handling sendUp("+name+")");
+        x4.debug(value);
+        if(name=='tabBarOnlyMe') {
+            // Disable all tabs except this one
+            window.value = value;
+            var id = 'tabFor_'+value.id;
+            window.theId = id;
+            $(this.zTabBar).find("a:not([id="+id+"])").addClass("disabled");
+            return true;
+        }
+        else if(name=='tabBarEverybody') {
+            $(this.zTabBar).find("a").removeClass("disabled");
+            return true;
+        }
+        else if(name=='Esc') {
+            value.deactivate();
+            if(value == this.zPane1) {
+                this.zParent.sendUp('Esc',this);
+            }
+            else {
+                this.goTab(this.zPane1.id);
+            }
+        }
+        else {
+            x4.debug("Tab container passing up request "+name);
+            this.zParent.sendUp(name,value);
+        }
+    }
+}
+/* ========================================================
+ * Constructor Funtion x4TabBar
+ *
+ * Contains tabs
+ *
+ * Confirmed in final form KFD 5/13/08
+ * ========================================================
+ */
+function x4TabBar(self) {
+    /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+     * 
+     * Activation Code
+     *
+     * @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+     */
+    self.activate=function() {
+        x4.debugOpen("ACTIVATE",this.jqId);
+        document.x4Register('keyPress',this);
+        x4.debugClose("ACTIVATE",this.jqId);
+    }
+    self.deactivate = function() {
+        x4.debugOpen("ACTIVATE",this.jqId);
+        document.x4UnRegister('keyPress',this);
+        x4.debugClose("ACTIVATE",this.jqId);
+    }
+    
     /* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
      *                   
-     * Branching Code---<
+     * Local Logic
      *
      * <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
      */
-    self.goTab = function(tabId) {
-        console.log(tabId);
-        $(this.currentDisplay).css('display','none');
-        this.currentDisplay = $('#'+tabId)[0];
-        this.currentDisplay.activate();
-    }    
+    self.keyPress = function(label) {
+        // Determine if there is an enabled button
+        x4.debugOpen("TABBAR KEYPRESS",this.jqId);
+        var x = $(this).find('a[xAction='+label+']:not(.disabled)');
+        var retval = true;        
+        if(x.length==0) {
+            x4.debug('No enabled tabs found, no action');
+            retval = true;
+        }
+        else {
+            x4.debug('Found a tab, going for it');
+            $(x).click();
+            retval = false;
+        }
+        x4.debugClose("TABBAR KEYPRESS",this.jqId);
+        return retval;
+    }     
 }
 
 
 /* ========================================================
  *
- * Controller Constructor for x4Grid
+ * Controller Constructor for x4GridSearch
  *
  * A search or display grid that shows relevant rows.
  *
+ * Confirmed in final form KFD 5/10/08
  * ========================================================
  */
-function x4Grid(self) {
-    self.xTableIdPar = $a.aProp(self.xParent,'xTableIdPar');
-    self.xTableId    = $a.aProp(self.xParent,'xTableId');
-    self.lastFocus = false;
-    self.zRowId = false;
-    self.inputs = [];
-    self.tabLoop= [];
+function x4GridSearch(self) {
+    self.zTableId    = self.getAttribute('xTableId');
+    self.zTableIdPar = self.zParent.pullDown('zTableIdPar');
+    self.zRowId      = false;
+    self.zActivated  = false;
+    self.zSortCol    = false;
+    self.zSortAD     = false;
     
-    // Turn on a tab loop
-    $a.tabLoopInit(self);
+    // Work out if a child pane
+    self.zIsChild = self.zTableIdPar ? true : false;
     
-    // Make all assignments to inputs
-    $(self).find(":input").each(function() {
-        this.oHTML = $('#'+this.oHTMLId)[0];
-        this.xParent = this.oHTML;
-        this.oHTML.inputs[this.oHTML.inputs.length] = this;
-        this.oHTML.tabLoop[this.oHTML.tabLoop.length] = this.id;
-    }).focus(function() {
-        this.oHTML.lastFocus = this;
-    }).keypress(function(event) {
-        var keyLabel = $a.keyLabel(event);
-        
-        // On tab, find next input
-        var timeout=0;
-        if(keyLabel=='Tab' || keyLabel=='Enter') {
-            var next = this.oHTML.tabNext[ this.id ];
-            while(next.readOnly) {
-                next = this.oHTML.tabNext[ next.id ];
-                if(timeout++ > 50) break;
-            }
-            $(this).blur();
-            $(next).focus();
-            return false;
-        }
-        if(keyLabel=='ShiftTab' || keyLabel == 'ShiftEnter') {
-            var next = this.oHTML.tabPrev[ this.id ];
-            while(next.readOnly) {
-                next = this.oHTML.tabPrev[ next.id ];
-                if(timeout++ > 50) break;
-            }
-            $(this).blur();
-            $(next).focus();
-            return false;
-        }
-    }).keyup(function(event) {
+    /* 
+     * keyUp handler for inputs is for fetching only:
+     * detects changed values and changed sort orders.
+     * Need "KeyUp" because it is after the fact, all inputs
+     * reflect the new values.
+     *
+     */
+    $(self).find(":input").keyup(function(event) {
         // Key label comes first
-        var keyLabel = $a.keyLabel(event);
+        var keyLabel = $a.label(event);
+        var par    = x4.parent(this);
         
-        if(keyLabel == 'Esc') {
-            return this.xParent.onEscape();
+        if(keyLabel=='Enter') {
+            x4.parent(this).keyPress_editRow();
+            return false;
+        }
+        if(keyLabel=='ShiftUpArrow') {
+            var colNew = this.getAttribute('xColumnId');
+            if(colNew != par.zSortCol || par.zSortAD != 'ASC') {
+                par.setOrderBy(this,'ASC');
+                par.fetch(true);
+            }
+            return false;
+        }
+        if(keyLabel=='ShiftDownArrow') {
+            var colNew = this.getAttribute('xColumnId');
+            if(colNew != par.zSortCol || par.zSortAD != 'DESC') {
+                par.setOrderBy(this,'DESC');
+                par.fetch(true);
+            }
+            return false;
+        }
+        
+        // If no sort order is set yet, and this is not empty,
+        // set sort order to this control
+        if(!par.zSortCol && this.value!='') {
+            par.setOrderBy(this,'ASC');
         }
 
-        // Initialize this flag now
-        var doFetch = false;
-        if(keyLabel == 'ShiftUpArrow') {
-            this.oHTML.setOrderBy(this.xColumnId,'ASC');
-            doFetch = true;
-        }
-        if(keyLabel == 'ShiftDownArrow') {
-            this.oHTML.setOrderBy(this.xColumnId,'DESC');
-            doFetch = true;
-        }
-        
-        if(this.oHTML.zRowId){
-            if(keyLabel == 'UpArrow') {
-                this.oHTML.moveUp();
-                event.stopPropagation();
-                return;
-            }
-            if(keyLabel == 'DownArrow') {
-                this.oHTML.moveDown();
-                event.stopPropagation();
-                return;
-            }
-            if(keyLabel == 'PageUp') {
-                this.oHTML.moveTop();
-                event.stopPropagation();
-                return;
-            }
-            if(keyLabel == 'PageDown') {
-                this.oHTML.moveBottom();
-                event.stopPropagation();
-                return;
-            }
-            if(keyLabel == 'Enter') {
-                $('#'+this.oHTML.zRowId).click(); // ENTER is click
-                event.stopPropagation();
-                return;
-            }
-        }
-        
-        // Do nothing on the keyup for SHIFT, that is confusing
-        if(keyLabel=='Shift') return false;
-        
         // Pass control to the fetch program
-        this.oHTML.fetch(doFetch);
-    }).keydown(function(event) {
-        // Keydown is where you trap the control functions
-        return this.xParent.passUp('keyDown',event);
+        x4.parent(this).fetch();
+        return;
     });
-    
-
-    var idxMax = self.tabLoop.length - 1;
-    self.tabNext = [];
-    self.tabPrev = [];
-    self.tabNext[ self.tabLoop[0] ]     = $a.byId(self.tabLoop[1]);
-    self.tabPrev[ self.tabLoop[0] ]     = $a.byId(self.tabLoop[idxMax  ]);
-    self.tabNext[ self.tabLoop[idxMax]] = $a.byId(self.tabLoop[0]);
-    self.tabPrev[ self.tabLoop[idxMax]] = $a.byId(self.tabLoop[idxMax-1]);
-    for(var x = 1; x < idxMax; x++ ) {
-        self.tabNext[ self.tabLoop[x] ] = $a.byId(self.tabLoop[x+1]);
-        self.tabPrev[ self.tabLoop[x] ] = $a.byId(self.tabLoop[x-1]);
-    }
     
     /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
      * 
@@ -620,77 +962,101 @@ function x4Grid(self) {
      *
      * @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
      */
-    // x4Grid.activate
+    self.makeVisible = function() {
+        x4.debugOpen("Make Visible",this.jqId);
+        this.style.display='block';
+        x4.debugClose("Make Visible",this.jqId);
+    }
     self.activate=function() {
-        this.xParent.register('menubar',this);
-        if(this.xTableIdPar!='') {
-            this.skeyPar = this.xParent.pullDown('skey'); 
-            this.fetch(true);
+        x4.debugOpen("ACTIVATE ",this.jqId);
+        if(this.zActivated) {
+            x4.debug("no action, already activated");
         }
+        else {
+            document.x4Register('keyPress',this);
+            this.zParent.sendUp('menuBar',this);
+            this.zParent.sendUp('tabBarEverybody');
+            this.zParent.sendUp(
+                'menuBarLabel',x4dd.dd[this.zTableId].singular
+            );
+            
+            if(this.zIsChild) {
+                this.zSkeyPar = x4.parent(this).pullDown('zSkeyPar'); 
+                this.fetch(true);
+            }
+            
+            $a.byId('x4H1Top').setHTML(x4dd.dd[this.zTableId].description);
+            
+            // Make your entrance
+            $(this).fadeIn(x4.fadeSpeed,function() {
+                if(!this.zLastFocus) {
+                    this.zLastFocusId=$(this).find(":input:first")[0].id;
+                }
+                $('#'+this.zLastFocusId).focus();
+                this.zActivated = true;
+            });
+        }
+        x4.debugClose("ACTIVATE ",this.jqId);
+    }
 
-        $("#x4H1Top").html( x4dd.dd[this.xTableId].description);
-        
-        $(this).fadeIn(x4.fadeSpeed,function() {
-            if(this.lastFocus==false) {
-                this.lastFocus=$(this).find(":input:first")[0];
-            }
-            $(this.lastFocus).focus();
-            this.fetch(true);
-        });
+    self.deactivate = function() {    
+        x4.debugOpen("DEACTIVATE ",this.jqId);
+        if(!this.zActivated) {
+            x4.debug("No action, already deactivated");
+        }
+        else {
+            document.x4UnRegister('keyPress');
+            $('#'+this.zLastFocusId).blur();
+            this.zActivated = false;
+        }
+        x4.debugClose("DEACTIVATE ",this.jqId);
     }
-    
-    // x4Grid.deactivate
-    self.deactivate = function() {
-        $(this.lastFocus).blur();
-    }
-    
-   
-   /*
-    * Sets the sort order for searches.  Expects a
-    * column name and literal "ASC" or "DESC".  If column
-    * name is not passed it makes the first column
-    * sortable
-    *
-    */
-    self.setOrderBy = function(inputCol,direction) {
-        if(inputCol==null) {
-            var inputCol = '';
-            if(this.inputs.length>0) {
-                inputCol = this.inputs[0].xColumnId;
-            }
+
+    /* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+     * 
+     * Basic logic for fetching
+     *
+     * <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+     */
+
+    self.setOrderBy = function(inputObj,direction) {
+        if(inputObj==null || inputObj==undefined) {
+            var inputObj = $(this).find(":input:first")[0];
             direction = 'ASC';
         }
-        this.xSortCol = inputCol;
-        this.xSortAD = direction;
+        if(inputObj==null || inputObj==undefined) return;
+        inputCol = inputObj.getAttribute('xColumnId');
+        this.zSortCol = inputCol;
+        this.zSortAD = direction;
+        x4.debug("sorting on "+this.zSortCol+", "+this.zSortAD);
     }
-    /*
-     * After defining it, invoke it
-     *
-     */
-    self.setOrderBy();
+    //self.setOrderBy();
     
-       
     self.fetch = function(doFetch) {
         if(doFetch==null) doFetch=false;
         this.doFetch=doFetch;
         this.cntNoBlank = 0;
         
         // Initialize and then scan 
-        $a.json.init('x4Page',this.xTableId);
+        $a.json.init('x4Page',this.zTableId);
         $(this).find(":input").each(function() {
-            if(this.value!=this.xValue) {
-                this.oHTML.doFetch = true;
+            if(typeof(this.zValue)=='undefined') 
+                this.zValue = this.getAttribute('xValue');
+            if(this.value!=this.zValue) {
+                x4.parent(this).doFetch = true;
             }
             if(this.value!='') {
-                this.oHTML.cntNoBlank++;
+                x4.parent(this).cntNoBlank++;
             }
-            this.xValue = this.value;
-            $a.json.addParm('x4w_'+this.xColumnId,this.value);
+            this.zValue = this.value;
+            $a.json.addParm('x4w_'+this.getAttribute('xColumnId'),this.value);
         });
         
-        if(this.xTableIdPar!='') {
-            $a.json.addParm('tableIdPar',this.xTableIdPar);
-            $a.json.addParm('skeyPar',this.skeyPar);
+        // If there is a parent table, this code "fakes it out"
+        // to force a fetch and not to clear
+        if(this.zIsChild) {
+            $a.json.addParm('tableIdPar',this.zTableIdPar);
+            $a.json.addParm('skeyPar',this.zSkeyPar);
             this.doFetch=true;
             this.cntNoBlank = 100;
         }
@@ -700,12 +1066,12 @@ function x4Grid(self) {
                 this.clear();
                 return;
             }
-            $a.json.addParm('sortCol',this.xSortCol);
-            $a.json.addParm('sortAD' ,this.xSortAD);
+            $a.json.addParm('sortCol',this.zSortCol);
+            $a.json.addParm('sortAD' ,this.zSortAD);
             $a.json.addParm('x4Action','browseFetch');
             $a.json.addParm('x4Limit',300);
             if( $a.json.execute()) {
-                var gridBodyId = this.xGridBodyId;
+                var gridBodyId = this.getAttribute('xGridBodyId');
                 $a.json.process( gridBodyId );
                 this.skeys = $a.data.skeys;
                 this.rowCount = $a.data.rowCount;
@@ -713,17 +1079,23 @@ function x4Grid(self) {
                 // Tell x4Browse how many rows it has
                 this.zRowCount = $a.byId(gridBodyId).rows.length;
 
-                window.temp = $a.byId(gridBodyId).parentNode;
+                window.temp = this;
                 $('#'+gridBodyId).find('tr').each( function() {
-                    this.xParent = window.temp;
+                    this.zParent = window.temp;
                 }).click(function() {
-                    this.xParent.passUp('editRow');
+                    this.zParent.keyPress_editRow();
                 }).mouseover( function() {
-                    if(this.xParent.zRowId) {
-                        $("#"+this.xParent.zRowId).removeClass('highlight');
+                    if(this.zParent.zRowId) {
+                        $("#"+this.zParent.zRowId).removeClass('highlight');
                     }
                     $(this).addClass('highlight');
-                    this.xParent.zRowId = this.id;
+                    this.zParent.zRowId = this.id;
+                    this.zParent.zSkey = Number(this.id.slice(6));
+                    this.zParent.zParent.zSkey = this.zParent.zSkey;
+                    var rx = Number(this.getAttribute('xIndex'))+1;
+                    this.zParent.sendUp(
+                        'rowInfo','Record '+rx+' of '+this.zParent.zRowCount
+                    );
                 });
                 window.temp=null;
                 
@@ -739,52 +1111,64 @@ function x4Grid(self) {
     self.clear = function() {
         this.zRowId = false;
         this.zRowCount = 0;
-        $a.byId(this.xGridBodyId).innerHTML = '';
+        $a.byId(this.getAttribute('xGridBodyId')).innerHTML = '';
         $(this).find(":input").each(function() {
             this.value='';
             this.x_value='';
         });
+        this.sendUp('rowInfo','No Records');
     }
     
-    /**
-      * Move up a row or down a row, and return the skey
-      * that was passed
-      */
-    self.moveUp = function() {
+
+    /* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+     * 
+     * Row navigation, up and down
+     *
+     * <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+     */
+    self.keyPress_UpArrow = function() {
+        if(!this.zRowId) return false;
         var x = $a.byId(this.zRowId);
         if(x.previousSibling!=null) {
             $('#'+x.previousSibling.id).mouseover();
         }
-        return this.skey();
+        return false; 
     }
-    self.moveDown = function() {
+    self.keyPress_PageUp = self.keyPress_UpArrow;
+    
+    self.keyPress_DownArrow = function() {
+        if(!this.zRowId) return false;
         var x = $a.byId(this.zRowId);
         if(x.nextSibling!=null) {
             $('#'+x.nextSibling.id).mouseover();
         }
-        return this.skey();
+        return false; 
     }
-    self.moveTop = function() {
-        if(this.rowId != $a.byId(this.xGridBodyId).firstChild.id) {
-            $('#'+this.xGridBodyId+' tr:first').mouseover();
+    self.keyPress_PageDown = self.keyPress_DownArrow; 
+
+    self.keyPress_CtrlUpArrow = function() {
+        var bid = $a.byId(this.getAttribute('xGridBodyId'));
+        window.bid = bid;
+        if(bid.firstChild) {
+            if(this.zRowId != bid.firstChild.id) {
+                $(bid).find('tr:first').mouseover();
+            }
         }
-        return this.skey();
+        return false; 
     }
-    self.moveBottom = function() {
-        if(this.rowId != $a.byId(this.xGridBodyId).lastChild.id) {
-            $('#'+this.xGridBodyId+' tr:last').mouseover();
+    self.keyPress_CtrlPageUp = self.keyPress_CtrlUpArrow;
+
+    self.keyPress_CtrlDownArrow = function() {
+        var bid = $a.byId(this.getAttribute('xGridBodyId'));
+        if(bid.lastChild) {
+            if(this.zRowId != bid.lastChild.id) {
+                $(bid).find('tr:last').mouseover();
+            }
         }
-        return this.skey();
+        return false; 
     }
-    
-    self.skey = function() {
-        if(this.zRowId) {
-            return this.zRowId.slice(6);
-        }
-        else { 
-            return 0;
-        }
-    }
+    self.keyPress_CtrlPageDown = self.keyPress_CtrlDownArrow;
+
     
     /* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
      *                   
@@ -792,137 +1176,109 @@ function x4Grid(self) {
      *
      * <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
      */
-    // x4TableTop.newRow()
-    self.newRow = function() {
-        this.xParent.goDetail();
-        this.xParent.pane2.activate(0,'new');
-        return false;
-    }
-    self.editRow = function() {
-        this.xParent.goDetail();
-        this.xParent.pane2.activate(this.skey(),'edit');
-        return false;
-    }
-    self.copyRow = function() {
-        this.xParent.goDetail();
-        this.xParent.pane2.activate(this.skey(),'copy');
-        return false;
-    }
-    self.onEscape = function() {
-        if(this.zRowCount > 0 && this.xReturnAll!='Y') {
+    self.keyPress_Esc = function() {
+        if(this.zRowCount > 0 && !this.zIsChild) {
             this.clear();
         }
         else {
-            this.deactivate();
-            this.xParent.deactivate();
+            x4.debug("Sending escape request to parent from "+this.jqId);
+            this.zCmd = 'Esc';
+            this.zParent.sendUp('Esc',this);
+            return false;
         }
     }
-    self.deleteRow = function() {
+    self.keyPress_newRow = function() {
+        this.zCmdSkey = 0;
+        this.zCmd     = 'new';
+        this.zParent.sendUp('Esc',this);
+        return false;
+    }
+    self.keyPress_CtrlN = self.keyPress_newRow;
+    self.keyPress_editRow = function() {
+        if(this.zRowCount > 0) {
+            this.zCmdSkey = this.zSkey;
+            this.zCmd     = 'edit';
+            this.zParent.sendUp('Esc',this);
+            return false;
+        }
+    }
+    self.keyPress_copyRow = function() {
+        this.zCmdSkey = this.zSkey;
+        this.zCmd     = 'new';
+        this.zParent.sendUp('Esc',this);
+        return false;
+    }
+    self.keyPress_CtrlP = self.keyPress_copyRow;
+ 
+    self.keyPress_deleteRow = function() {
         if(!this.zRowId) {
             $a.dialogs.alert('I cannot delete because there is nothing selected.');
-            $(this.xLastFocus).focus();
         }
         else {
-            $a.json.init('x4Page',this.xTableId);
-            $a.json.addParm('x4Action','delete');
-            $a.json.addParm('skey',this.skey());
-            if($a.json.execute()) {
-                $a.dialogs.alert('The selected row was deleted.');
-                this.fetch(true);
+            if($a.dialogs.confirm("Do you really want to delete?")) {
+                $a.json.init('x4Page',this.zTableId);
+                $a.json.addParm('x4Action','delete');
+                $a.json.addParm('skey',this.zSkey);
+                if($a.json.execute()) {
+                    if(!$a.json.hadErrors) {
+                        $a.dialogs.alert('The selected row was deleted.');
+                        this.fetch(true);
+                    }
+                }
             }
         }
+        return false;
     }
+    self.keyPress_CtrlD = self.keyPress_deleteRow;
+    x4.debug(self);
 }
 
 /* ========================================================
  * Constructor Funtion x4Detail
  *
  * Shows details for some columns
+ *
+ * Confirmed in final form KFD 5/10/08
  * ========================================================
  */
 function x4Detail(self) {
-    self.xTableId = $a.aProp(self.xParent,'xTableId');
-    self.lastFocus = false;
-    self.inputs = [];
-    self.tabLoop = [ ];
-    self.tabNext = { };
-    self.tabPrev = { };
+    self.zTableId    = self.getAttribute('xTableId');
+    self.zTableIdPar = self.zParent.pullDown('zTableIdPar');
+    self.zGridPane   = self.zParent.pullDown('zGridPane')
     
-    // Ask higher objects for the grid pane
-    self.gridPane = self.xParent.getGridPane();
+    // Work out if child
+    if(!self.zTableIdPar) 
+        self.zIsChild = false;
+    else 
+        self.zIsChild = self.zTableId == self.zTableIdPar ? false : true;
     
-    // Turn on focus tracking, tab loop, escape key and so forth
-    $(self).find(":input").each(function() {
-        this.xParent = $('#'+this.oHTMLId)[0];
-        this.xParent.inputs[this.xParent.inputs.length] = this;
-        this.xParent.tabLoop[this.xParent.tabLoop.length] = this.id;
-    }).focus(function() {
-        this.xParent.lastFocus = this;
-        $(this).addClass('x4Focus');
-    }).blur( function() {
-        $(this).removeClass('x4Focus');
-    }).keyup( function(event) {
-        var keyLabel = $a.keyLabel(event);
-        if(keyLabel=='Esc') {
-            this.xParent.onEscape();
-        }
-    }).keypress( function(event) {
-        var keyLabel = $a.keyLabel(event);
-        if(keyLabel=='') return;
-        var labels ='PageUp PageDown CtrlPageDown CtrlPageUp';
-        if(labels.indexOf(keyLabel)>-1) {
-            return this.xParent.move(keyLabel);
-        }
-        
-        // On tab, find next input
-        var timeout=0;
-        if(keyLabel=='Tab' || keyLabel=='Enter') {
-            var next = this.xParent.tabNext[ this.id ];
-            while(next.readOnly) {
-                next = this.xParent.tabNext[ next.id ];
-                if(timeout++ > 50) break;
-            }
-            $(this).blur();
-            $(next).focus();
-            return false;
-        }
-        if(keyLabel=='ShiftTab' || keyLabel=='ShiftEnter') {
-            var next = this.xParent.tabPrev[ this.id ];
-            while(next.readOnly) {
-                next = this.xParent.tabPrev[ next.id ];
-                if(timeout++ > 50) break;
-            }
-            $(this).blur();
-            $(next).focus();
-            return false;
-        }
-    }).keydown(function(event) {
-        return this.xParent.passUp('keyDown',event);
-    });
-            
-    // Now that all iterations are done, populate the
-    // tab loops
-    var idxMax = self.tabLoop.length - 1;
-    self.tabNext[ self.tabLoop[0] ]     = $a.byId(self.tabLoop[1]);
-    self.tabPrev[ self.tabLoop[0] ]     = $a.byId(self.tabLoop[idxMax  ]);
-    self.tabNext[ self.tabLoop[idxMax]] = $a.byId(self.tabLoop[0]);
-    self.tabPrev[ self.tabLoop[idxMax]] = $a.byId(self.tabLoop[idxMax-1]);
-    for(var x = 1; x < idxMax; x++ ) {
-        self.tabNext[ self.tabLoop[x] ] = $a.byId(self.tabLoop[x+1]);
-        self.tabPrev[ self.tabLoop[x] ] = $a.byId(self.tabLoop[x-1]);
-    }
-
+    // Assign input masks to dates
+    // No Good: Works only for fixed-length, no good for numerics
+    //$(self).find(':input[xInputMask]').each(function() {
+    //    $(this).mask(this.getAttribute('xInputMask'),{placeholder:' '});
+    //});
+    
     /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
      * 
      * Activation Code
      *
      * @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
      */
-    // x4Detail.activate
-    self.activate=function(skey,action) {
+    self.makeVisible = function() {
+        x4.debug("makeVisible in "+this.jqId);
+        this.style.display='block';
+    }
+     
+    self.activate=function(action,skey) {
         // Tell the powers that be we want menu bar events
-        this.xParent.register('menubar',this);
-
+        x4.debugOpen("ACTIVATE ",this.jqId);
+        x4.debug("With '"+action+"' and '" +skey+"'");
+        document.x4Register('keyPress',this);
+        this.zParent.sendUp('menuBar',this);
+        this.zParent.sendUp(
+            'menuBarLabel',x4dd.dd[this.zTableId].singular
+        );
+        
         // Before displaying, do possible fetch         
         if(skey > 0) {
             this.fetchRow(skey);
@@ -932,7 +1288,7 @@ function x4Detail(self) {
             if(action=='new')
                 this.setDefaults(true);
             else
-                this.setDefaults();
+                this.setDefaults(false);
             this.setMode('new');
         }
         else {
@@ -940,18 +1296,15 @@ function x4Detail(self) {
         }
 
         $(this).fadeIn(x4.fadeSpeed,function() {
-            //if(this.lastFocus) {
-            //    $(this.lastFocus).focus();
-            //}
-            //else {
-                $(this).find(":input:not([@readonly]):first").focus();
-            //}
+            x4.stdlib.findFocus(this);
         });
+        x4.debugClose("ACTIVATE ",this.jqId);
     }
-    // x4Detail.deactivate
+    
     self.deactivate = function() {
-        $(this.lastFocus).blur();
-        this.xParent.deactivate(this);
+        x4.debug("Deactivating "+this.jqId);
+        document.x4UnRegister('keyPress');
+        $('#'+this.zLastFocusId).blur();
     }
     
     /* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -960,45 +1313,31 @@ function x4Detail(self) {
      *
      * <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
      */
-    self.move = function(keyLabel) {
-        if(this.tryToSave()) {
-            if(     keyLabel=='PageUp')  
-                var skey = this.gridPane.moveUp();
-            else if(keyLabel=='PageDown')
-                var skey = this.gridPane.moveDown();
-            else if(keyLabel=='CtrlPageUp')
-                var skey = this.gridPane.moveTop();
-            else if(keyLabel=='CtrlPageDown')
-                var skey = this.gridPane.moveBottom();
-            if(skey!=this.skey) {
-                this.fetchRow(skey);
-            }
-            return false;
-        }
-    },
     
     // Magic number alert: zero equals a new row, insert mode
     self.fetchRow = function(skey) {
         this.skey = skey;
-        this.xParent.skey = skey;
         
         // If not a new row, go fetch it
         $a.json.init();
-        $a.json.addParm('x4Page',this.xTableId);
+        $a.json.addParm('x4Page',this.zTableId);
         $a.json.addParm('x4Action','fetchRow');
         $a.json.addParm('x4w_skey',skey);
         $a.json.execute(true);
         this.displayRow();
         
         // Tell child tables that our PK is default
-        var apks = x4dd.dd[this.xTableId].pks.split(',');
+        var apks = x4dd.dd[this.zTableId].pks.split(',');
         var row  = $a.data.row;
-        for(var idx in x4dd.dd[this.xTableId].fk_children) {
-            var tabChild = x4dd.dd[this.xTableId].fk_children[idx].table_id;
+        for(var idx in x4dd.dd[this.zTableId].fk_children) {
+            var tabChild = x4dd.dd[this.zTableId].fk_children[idx].table_id;
             if(typeof(x4dd.dd[tabChild])=='undefined') continue;
             var dd = x4dd.dd[tabChild];
             for(var pkidx in apks) {
                 var pk = apks[pkidx];
+                //x4.debug("assigning default value "+row[pk]+" to "
+                //    +tabChild+'.'+pk
+                //);
                 x4dd.dd[tabChild].flat[pk].automation_id='DEFAULT';
                 x4dd.dd[tabChild].flat[pk].auto_formula = row[pk];
             }
@@ -1006,9 +1345,9 @@ function x4Detail(self) {
     },
     
     self.displayRow = function() {
-        var skeys=$a.aProp(this.gridPane,'skeys',[]);
-        var rowNow = $a.aProp(skeys,this.gridPane.skey(),'0')+1;
-        var text = 'Row '+rowNow+' of '+this.gridPane.zRowCount;
+        var skeys=$a.aProp(this.zGridPane,'skeys',[]);
+        var rowNow = $a.aProp(skeys,this.zGridPane.zSkey,'0')+1;
+        var text = 'Row '+rowNow+' of '+this.zGridPane.zRowCount;
         $("#x4RowInfoText").html(text);
         
         this.setTitle('');
@@ -1018,10 +1357,10 @@ function x4Detail(self) {
             var row = $a.data.row;
             var id    = this.id;
             var input = this;
-            var column_id = this.xColumnId;
+            var column_id = this.getAttribute('xColumnId');
             var value = $a.aProp(row,column_id,'');
             if(value==null) value='';
-            if(input.xTypeId=='dtime') {
+            if(input.getAttribute('xTypeId')=='dtime') {
                 if(value=='') {
                     input.value = '';
                 }
@@ -1040,35 +1379,40 @@ function x4Detail(self) {
     },
     
     self.setDefaults = function(blank) {
-        for(var idx in this.inputs) {
-            var inp = this.inputs[idx];
-            var col = inp.xColumnId;
-            var autoid = x4dd.dd[this.xTableId].flat[col].automation_id;
+        window.temp = blank;
+        $(this).find(":input").each( function() {
+            var tab = this.getAttribute('xTableId');
+            var col = this.getAttribute('xColumnId');
+            var autoid = x4dd.dd[tab].flat[col].automation_id;
             if(autoid=='DEFAULT') {
-                inp.value = x4dd.dd[this.xTableId].flat[col].auto_formula;
+                this.value = x4dd.dd[tab].flat[col].auto_formula;
             }
             else {
-                if(blank) {
-                    inp.value = '';
+                if(window.temp) {
+                    this.value = '';
                 }
             }
-            inp.x_value = inp.value;
-        }
+            this.xValue = this.value;
+        });
     },
     
     self.setMode= function(mode) {
-        // Buttons
+        // Send up a request to enable/disable tabs
         if(mode=='new') {
-            this.skey=0;
-            this.xParent.skey = 0;
-            $("#button-new").css('display','none');
-            $("#button-del").css('display','none');
-            $("#button-cpy").css('display','none');
+            this.zParent.sendUp('tabBarOnlyMe',this);
         }
         else {
-            $("#button-new").css('display','');
-            $("#button-del").css('display','');
-            $("#button-cpy").css('display','');
+            this.zParent.sendUp('tabBarEverybody',this);
+        }
+        
+        if(mode=='new') {
+            this.skey=0;
+            var str='newRow,deleteRow,copyRow';
+            str   += ',CtrlPageUp,PageUp,CtrlPageDown,PageDown';
+            this.zParent.sendUp('menuBarDisable',str);
+        }
+        else {
+            this.zParent.sendUp('menuBarDisable','');
         }
         
         // Title
@@ -1077,9 +1421,12 @@ function x4Detail(self) {
         // Set the read-only and the coloring, and defaults for new
         $(this).find(":input").each( function() {
             var inp = this;
-            var col = inp.xColumnId;
-            var ro = mode=='new' ? inp.xRoIns : inp.xRoUpd;
-            if(ro==' ') ro = 'N';
+            var col = inp.getAttribute('xColumnId');
+            var ro = mode=='new' 
+                ? inp.getAttribute('xRoIns')
+                : inp.getAttribute('xRoUpd');
+            if(ro=='')   ro = 'N';
+            if(ro==' ')  ro = 'N';
             if(ro==null) ro = 'N';
             if( ro=='Y') {
                 inp.readOnly = true;
@@ -1102,99 +1449,181 @@ function x4Detail(self) {
     
     self.setTitle = function(mode) {
         if(mode=='new') {
-            var title = 'New ' + x4dd.dd[this.xTableId].singular;
-            $("#x4RowInfoText").html(title);
+            var title = 'New ' + x4dd.dd[this.zTableId].singular;
+            this.zParent.sendUp('rowInfo','New Entry');
         }
         else {
-            var col1  = x4dd.firstPkColumn(this.xTableId);
-            var title = x4dd.dd[this.xTableId].singular 
+            var col1  = x4dd.firstPkColumn(this.zTableId);
+            var title = x4dd.dd[this.zTableId].singular 
                 + ": "+ $a.data.row[col1]; 
-            if(x4dd.pkColumnCount(this.xTableId)>1) {
+            if(x4dd.pkColumnCount(this.zTableId)>1) {
                 title += '...';
             }
         }
-        $("#x4H1Top").html(title);       
+        $a.byId('x4H1Top').setHTML(title);
     }
     
-    self.tryToSave = function() {
-        var mustSave = false;
+    self.tryToSave = function(force) {
+        this.zMustSave = false;
+        window.temp = this;
+        window.changes = '';
         $a.json.init();
-        for(var idx in this.inputs) {
-            var input = this.inputs[idx];
-            if ((input.value != input.x_value) || this.skey==0) {
-                mustSave=true;
-                $a.json.addParm('x4v_'+input.xColumnId,input.value);
+        $(this).find(":input").each(function() {
+            if ((this.value != this.xValue) || window.temp.skey==0) {
+                if(this.value !=this.xValue) {
+                    var col = this.getAttribute('xColumnId');
+                    var tab = this.getAttribute('xTableId');
+                    var cap = x4dd.dd[tab].flat[col].description;
+                    window.changes+=cap+" changed to: "+this.value;
+                    window.changes+="\n";
+                }
+                window.temp.zMustSave=true;
+                $a.json.addParm('x4v_'+this.getAttribute('xColumnId')
+                    ,this.value
+                );
+            }
+        });
+        
+        if(!this.zMustSave) return true;
+        
+        if(force!=true) {
+            var text ="Would you like to save changes?\n\n"+window.changes;
+            if(!$a.dialogs.confirm(text)) {
+                return false;
             }
         }
         
-        if(!mustSave) return true;
-        
-        if (mustSave) {
-            $a.json.addParm('x4v_skey',this.skey);
-            $a.json.addParm('x4Page'  ,this.xTableId);
-            $a.json.addParm('x4Action','update');
-            $a.json.execute(true);
-            if($a.json.jdata.error.length==0)
-                return true;
-            else 
-                return false;
+        $a.json.addParm('x4v_skey',this.skey);
+        $a.json.addParm('x4Page'  ,this.zTableId);
+        $a.json.addParm('x4Action','update');
+        $a.json.execute(true);
+        if(!$a.json.hadErrors) {
+            if(this.skey == 0) {
+                $a.dialogs.alert("New "+x4dd.dd[this.zTableId].singular
+                    +" has been saved.");
+                this.skey = $a.data.row.skey;
+                this.zParent.sendUp('zSkey',this.skey);
+                if(this.zParent.zType = 'x4TabContainer') {
+                    this.zParent.zSkeyPar = this.skey;
+                }
+            }
+            else {
+                $a.dialogs.alert("Changes to "
+                    +$a.byId('x4H1Top').innerHTML
+                    +" have been saved.");
+            }
+            return true;
         }
-        
-        return true;
+        else {
+            return false;
+        }
     }
+
     /* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
      *                   
-     * Event Handling code
+     * Record Navigation 
      *
      * <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
      */
-    self.onEscape = function() {
-        this.deactivate(); 
-    }
-    
-    self.deleteRow = function() {
-        console.log("in deelete");
-        $a.json.init('x4Page',this.xTableId);
-        $a.json.addParm('x4Action','delete');
-        $a.json.addParm('skey',this.skey);
-        if($a.json.execute()) {
-            $a.dialogs.alert('The selected row was deleted.');
-            this.deactivate();
+     self.move = function(keyLabel) {
+        if(this.tryToSave()) {
+            this.zGridPane['keyPress_'+keyLabel]();
+            var skey = this.zGridPane.zSkey;
+            if(skey!=this.skey) {
+                this.fetchRow(skey);
+            }
+            return false;
         }
-        return true;
+    }
+    self.keyPress_PageDown = function()     { return self.move('PageDown'); }
+    self.keyPress_PageUp   = function()     { return self.move('PageUp'); }
+    self.keyPress_CtrlPageDown = function() { return self.move('CtrlPageDown');}
+    self.keyPress_CtrlPageUp   = function() { return self.move('CtrlPageUp'); }
+    
+    /* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+     *                   
+     * Menu Bar and keyboard dispatching 
+     *
+     * <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+     */
+    self.keyPress_Esc = function() {
+        this.zCmd = false;
+        window.isChanges = false;
+        $(this).find(":input").each( function() {
+                if(this.xValue != this.value) {
+                    window.isChanges=true;
+                }
+        });
+        if(!window.isChanges) {
+            this.zParent.sendUp('Esc',this);
+        }
+        else {
+            if($a.dialogs.confirm("Abandon changes?")) {
+                this.zParent.sendUp('Esc',this);
+            }
+            else {
+                this.zParent.sendUp('Esc',this);
+            }
+        }
     }
     
-    self.newRow = function() {
+    self.keyPress_deleteRow = function() {
+        if($a.dialogs.confirm("Do you really want to delete?")) {
+            $a.json.init('x4Page',this.zTableId);
+            $a.json.addParm('x4Action','delete');
+            $a.json.addParm('skey',this.skey);
+            if($a.json.execute()) {
+                if(!$a.json.hadErrors) {
+                    $a.dialogs.alert('The selected row was deleted.');
+                    this.zCmd = true;
+                    this.zParent.sendUp('Esc',this);
+                }
+            }
+        }
+        return false;
+    }
+    self.keyPress_CtrlD     = self.keyPress_deleteRow;
+    
+    self.keyPress_newRow = function() {
         this.setDefaults(true);  // clear
         this.setMode('new');
+        return false;
     }
+    self.keyPress_CtrlN  = self.keyPress_newRow;
     
-    self.saveRow = function() {
-        if(this.tryToSave()) {
+    self.keyPress_saveRow = function() {
+        if(this.tryToSave(true)) {
             this.displayRow();
             this.setMode('upd');
         }
+        return false;
     }
+    self.keyPress_CtrlS  = self.keyPress_saveRow;
     
-    self.saveRowAndNewRow = function() {
-        if(this.tryToSave()) {
-            this.newRow();
+    self.keyPress_saveRowAndNewRow = function() {
+        if(this.tryToSave(true)) {
+            this.keyPress_newRow();
         }
-            
+        return false;
     }
+    self.keyPress_CtrlA  = self.keyPress_saveRowAndNewRow;
     
-    self.saveRowAndExit = function() {
-        if(this.tryToSave()) {
-            this.deactivate();
+    self.keyPress_saveRowAndExit = function() {
+        if(this.tryToSave(true)) {
+            this.keyPress_Esc();
         }
-        
+        return false;
     }
+    self.keyPress_CtrlX  = self.keyPress_saveRowAndExit;
     
-    self.copyRow = function() {
+    self.keyPress_copyRow = function() {
+        this.setDefaults(false);
         this.setMode('new');
+        return false;
     }
-   
+    self.keyPress_CtrlP   = self.keyPress_copyRow;
 }
+
 /* ========================================================
  *
  * Controller Constructor for the androPage system
@@ -1209,149 +1638,99 @@ function x4AndroPage(self) {
      * @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
      */
     self.activate = function() {
+        document.x4Register('keyPress',this);
+        
         $(this).fadeIn(x4.fadeSpeed,function() {
             if($(this).find(":input,a").length > 0) {
                 $(this).find(":input,a")[0].focus();
             }
         });
     }
-    /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-     * 
-     * Activation Code (END)
-     *
-     * @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 
-     */
     
-    /*
-     * A keyboard handler runs the three programs
+    /* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+     *                   
+     * Keyboard events
      *
+     * <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
      */
-    self.passUp = function(eventName,event) {
-        if(eventName!='keyDown') return true;
-        
-        var letter = $a.charLetter(event.which);
-        // Various control key functions
-        if(event.ctrlKey) {
-            if(letter=='p') {
-                this.printNow();
-                return false;
-            }
-            if(letter=='o') {
-                this.showOnScreen();
-                return false;
-            }
-            if(letter=='q') {
-                this.showSql();
-                return false;
-            }
+    self.keyPress_Enter = function() {
+        if(this.defaultOutput!='') {
+            this[this.getAttribute('defaultOutput')]();
         }
-        
-        // ENTER and ESC functions
-        var keyLabel = $a.keyLabel(event);
-        if(keyLabel=='Enter') {
-            if(this.defaultOutput!='') {
-                this[this.defaultOutput]();
-                return false;
-            }
-        }
-        if(keyLabel == 'Esc') {
-            if( $(this).find("#divOnScreen").html() == '' ) {
-                x4.returnToMenu( $a.byId('x4Page').value );
-                return false;
-            }
-            else {
-                $(this).find(":input").each( function() {
-                        this.value='';
-                });
-                $(this).find("#divOnScreen").html('');
-            }
-        }
-        
-        // Up and down arrows
-        //if(keyLabel == 'CtrlPageUp') {
-        //    this.highlightRow('row_0',true);
-        //    return false;
-        //}
-        //if(keyLabel == 'CtrlPageDown') {
-        //    this.highlightRow('row_'+(this.rowCount-1),true);
-        //    return false;
-        //}
-        if(keyLabel == 'UpArrow' || keyLabel=='PageUp') {
-            if(this.rowCurrentId) {
-                var id = Number(this.rowCurrentId.slice(4));
-                if(keyLabel=='UpArrow') {
-                    if(id != 0) {
-                        this.highlightRow('row_'+(id-1),true);
-                        return false;
-                    }
-                }
-                if(keyLabel == 'PageUp') {
-                    if(id > 20) {
-                        this.highlightRow('row_'+(id-20),true);
-                        return false;
-                    }
-                    else {
-                        this.highlightRow('row_0',true);
-                        return false;
-                    }
-                }
-            }
-        }
-        if(keyLabel == 'DownArrow' || keyLabel=='PageDown') {
-            if(this.rowCurrentId) {
-                var id = Number(this.rowCurrentId.slice(4));
-                if(keyLabel=='DownArrow') {
-                    if(id < (this.rowCount-1)) {
-                        this.highlightRow('row_'+(id+1),true);
-                        return false;
-                    }
-                }
-                if(keyLabel=='PageDown') {
-                    if(id >= (this.rowCount-20)) {
-                        this.highlightRow('row_'+(id+1),true);
-                        return false;
-                    }
-                    else {
-                        this.highlightRow('row_'+(id+20),true);
-                        return false;
-                    }
-                }
-            }
-        }
-        
-        // The right arrow is "go ahead to first link"
-        if(keyLabel=='RightArrow') {
-            if(this.rowCurrentId) {
-                var x = $('#'+this.rowCurrentId+' a:first').attr('href');
-                if(typeof(x)!='undefined') {
-                    window.location=x;
-                }
-            }
-        }
-        
-        // The F1 key is help
-        if(keyLabel == 'F1') {
-            this.help();
-            return false;
-        }
-  
-        /* if not handled, pass up to parent */
-        return this.passUp(this,'keyDown',event);
+        return false;
     }
     
-    /*
-     *
-     * Assignment of handlers to children.  Everything goes straight up
-     *
-     */
-    $(self).find(":input,:button").each( function() {
-            this.xParent = x4.context();
-    }).keydown(function(event) {
-        // If we want to prevent event propagation we must return
-        // false *here*, in the function that first received the event
-        return this.xParent.passUp('keyDown',event);
-    });
+    self.keyPress_Esc = function() {    
+        if( $(this).find("#divOnScreen").html() == '' ) {
+            x4.returnToMenu( $a.byId('x4Page').value );
+        }
+        else {
+            $(this).find(":input").each( function() {
+                    this.value='';
+            });
+            $(this).find("#divOnScreen").html('');
+        }
+        return false;
+    }
+
+    self.keyPress_UpArrow = function() {
+        if(this.rowCurrentId) {
+            var id = Number(this.rowCurrentId.slice(4));
+            if(id != 0) {
+                this.highlightRow('row_'+(id-1),true);
+            }
+        }
+        return false;
+    }
+    self.keyPress_PageUp = function() {
+        if(this.rowCurrentId) {
+            var id = Number(this.rowCurrentId.slice(4));
+            if(id > 20) {
+                this.highlightRow('row_'+(id-20),true);
+            }
+            else {
+                this.highlightRow('row_0',true);
+            }
+        }
+        return false;
+    }
     
+    self.keyPress_DownArrow = function() {
+        if(this.rowCurrentId) {
+            var id = Number(this.rowCurrentId.slice(4));
+            if(id < (this.rowCount-1)) {
+                this.highlightRow('row_'+(id+1),true);
+            }
+        }
+        return false;
+    }
+    self.keyPress_PageDown = function() {
+        if(this.rowCurrentId) {
+            var id = Number(this.rowCurrentId.slice(4));
+            if(id >= (this.rowCount-20)) {
+                this.highlightRow('row_'+(id+1),true);
+            }
+            else {
+                this.highlightRow('row_'+(id+20),true);
+            }
+        }
+        return false;
+    }
+        
+    self.keyPress_RightArrow = function() {
+        if(this.rowCurrentId) {
+            var x = $('#'+this.rowCurrentId+' a:first').attr('href');
+            if(typeof(x)!='undefined') {
+                window.location=x;
+            }
+        }
+        return false;
+    }
+        
+    self.keyPress_F1 = function() {
+        this.help();
+        return false;
+    }
     
     /*
      *
@@ -1363,16 +1742,17 @@ function x4AndroPage(self) {
         x4.initPost(this);
         $a.json.windowLocation();
     }
+    self.keyPress_CtrlP = self.printNow;
+    
     self.showSql = function() {
         x4.initPost(this);
         $a.json.addParm('showsql',1);
         $a.json.execute();
         $a.json.process('divShowSql');
     }
+    self.keyPress_CtrlQ = self.showSql;
+    
     self.showOnScreen = function() {
-        // Hide the display during rendering
-        //$("#divOnScreen").css('opacity','0');
-        
         this.tBody = null;
         
         $a.byId('gp_post').value='onscreen';
@@ -1389,20 +1769,21 @@ function x4AndroPage(self) {
         this.rowCount = 0;
         if(tbody.rows.length > 0) {
             this.tBody = tbody;
-            tbody.parentContext = this;
             this.rowCount = tbody.rows.length;
             
-            $(tbody).find("tr").mouseover( function() {
-                this.parentNode.parentContext.highlightRow(this.id);
+            window.temp = this;
+            $(tbody).find("tr").each(function() {
+                this.zParent = window.temp;
+            }).mouseover( function() {
+                this.zParent.highlightRow(this.id);
             });
             this.highlightRow('row_0');
+            window.temp = null;
             
             $(this).find("#divOnScreen table").Scrollable(500,500);
         }
-        // Restore the display after sizing
-        //$("#divOnScreen").css('opacity','1');
-        //$("#divOnScreen").css('display','block');
     }
+    self.keyPress_CtrlO = self.showOnScreen;
     
     /*
      * The row highlighter
@@ -1418,7 +1799,7 @@ function x4AndroPage(self) {
         
         // Turn on the highlighted one if it exists
         $('#'+rowId).each( function() {
-                this.parentNode.parentContext.rowCurrentId = this.id;
+                this.zParent.rowCurrentId = this.id;
                 this.className = 'highlight'
         });
 

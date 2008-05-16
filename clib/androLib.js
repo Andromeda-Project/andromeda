@@ -1076,6 +1076,9 @@ var $a = {
         alert: function(msg) {
             alert(msg);
         },
+        confirm: function(msg) {
+            return confirm(msg);
+        },
         alertx: function($msg, $title) {
            if ( $title == null ) {
                $title = 'Alert';
@@ -1095,6 +1098,9 @@ var $a = {
                +'   style="font-weight:bold;text-align:center;'
                +'cursor:pointer;" /></p>');
            $('#jqmModal').jqm({modal:true,overlay:75,onHide:jqModalClose,onShow:jqModalOpen}).jqmShow();
+        },
+        confirm: function(msg) {
+            return confirm(msg);
         }
     }, 
     
@@ -1128,6 +1134,7 @@ var $a = {
         callString: '',
         jdata: { },
         data: { dd: {} },
+        hadErrors: false,
         init: function(name,value) {
             this.callString = '';
             if(name!=null) {
@@ -1137,6 +1144,10 @@ var $a = {
         addParm: function(name,value) {
             if(this.callString!='') this.callString+="&";
             this.callString += name + '=' + encodeURIComponent(value);
+        },
+        addValue: function(name,value) {
+            if(this.callString!='') this.callString+="&";
+            this.callString += 'x4c_' + name + '=' + encodeURIComponent(value);
         },
         
         /*
@@ -1168,13 +1179,15 @@ var $a = {
           *
           */
         execute: function(autoProcess) {
+            this.hadErrors = false;
             if(autoProcess==null) autoProcess=false;
             
             // Create an object
             var browser = navigator.appName;
             if(browser == "Microsoft Internet Explorer"){
                 var http = new ActiveXObject("Microsoft.XMLHTTP");
-            }else{
+            }
+            else {
                 var http = new XMLHttpRequest();
             }
             
@@ -1194,6 +1207,7 @@ var $a = {
 
             // If there were server errors, report those
             if(this.jdata.error.length>1) {
+                this.hadErrors = true;
                 $a.dialogs.alert(this.jdata.error.join("\n\n"));
             }
             
@@ -1227,14 +1241,28 @@ var $a = {
         return document.getElementById(id );
     },
 
-    // Retrieve an Andromeda property, creating it if not
+    // Retrieve an object's property, creating it if not
     // there and assigning it the default    
     aProp: function(obj,propname,defvalue) {
-        if(typeof(obj[propname])=='undefined') {
-            if(defvalue==null) defvalue=false;
-            obj[propname]=defvalue;
+        if(typeof(obj)!='object') {
+            return defvalue;
         }
-        return obj[propname];
+        
+        // First try, maybe it is a direct property
+        if(typeof(obj[propname])!='undefined') {
+            return obj[propname];
+        }
+        // Second try, maybe it is an attribute
+        if(obj.getAttribute) {
+            if(obj.getAttribute(propname)!=null) {
+                return obj.getAttribute(propname);
+            }
+        }
+        // Give up, return the defvalue
+        return defvalue;
+    },
+    p: function(obj,propname,defvalue) {
+        return this.aProp(obj,propname,defvalue);
     },
     
     /*
@@ -1275,6 +1303,7 @@ var $a = {
         var x = e.keyCode;
         
         var x4Keys = { };
+        x4Keys['8']  = 'BackSpace';
         x4Keys['9']  = 'Tab';
         x4Keys['13'] = 'Enter';
         x4Keys['16'] = '';   // actually Shift, but prefix will take care of it
@@ -1333,6 +1362,78 @@ var $a = {
         if(charcode >= 48 && charcode <= 57) {
             return numbers[charcode - 48];
         }
+    },
+    
+    /**
+      * A comprehensive function that returns letters, numbers, labels
+      * and so forth, like CtrlPageDown, ShiftR etc.
+      *
+      */
+    label: function(e) {
+        var x = e.keyCode;
+        
+        var x4Keys = { };
+        x4Keys['8']  = 'BackSpace';
+        x4Keys['9']  = 'Tab';
+        x4Keys['13'] = 'Enter';
+        x4Keys['16'] = '';   // actually Shift, but prefix will take care of it
+        x4Keys['17'] = '';   // actually Ctrl,  but prefix will take care of it
+        x4Keys['18'] = '';   // actually Alt,   but prefix will take care of it
+        x4Keys['20'] = 'CapsLock';
+        x4Keys['27'] = 'Esc';
+        x4Keys['33'] = 'PageUp';
+        x4Keys['34'] = 'PageDown';
+        x4Keys['35'] = 'End';
+        x4Keys['36'] = 'Home';
+        x4Keys['37'] = 'LeftArrow';
+        x4Keys['38'] = 'UpArrow';
+        x4Keys['39'] = 'RightArrow';
+        x4Keys['40'] = 'DownArrow';
+        x4Keys['45'] = 'Insert';
+        x4Keys['46'] = 'Delete';
+        x4Keys['112']= 'F1' ;
+        x4Keys['113']= 'F2' ;
+        x4Keys['114']= 'F3' ;
+        x4Keys['115']= 'F4' ;
+        x4Keys['116']= 'F5' ;
+        x4Keys['117']= 'F6' ;
+        x4Keys['118']= 'F7' ;
+        x4Keys['119']= 'F8' ;
+        x4Keys['120']= 'F9' ;
+        x4Keys['121']= 'F10';
+        x4Keys['122']= 'F11';
+        x4Keys['123']= 'F12';
+    
+        // If they did not hit a control key of some sort, look
+        // next for letters
+        var retval = '';
+        if(typeof(x4Keys[x])!='undefined') {
+            retval = x4Keys[x];
+        }
+        else {
+            var letters = 
+                [ 'A', 'B', 'C', 'D', 'E', 'F', 'G',
+                  'H', 'I', 'J', 'K', 'L', 'M', 'N',
+                  'O', 'P', 'Q', 'R', 'S', 'T', 'U',
+                  'V', 'W', 'X', 'Y', 'Z' ];
+            var numbers = [ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ];
+            if(e.charCode >= 65 && e.charCode <= 90) {
+                retval = letters[e.charCode - 65];
+            }
+            else if(e.charCode >= 97 && e.charCode <= 121) {
+                retval = letters[e.charCode - 97];
+            }
+            else if(e.charCode >= 48 && e.charCode <= 57) {
+                retval = numbers[e.charCode - 48];
+            }
+        }
+    
+        // otherwise put on any prefixes and return
+        if(e.ctrlKey)  retval = 'Ctrl'  + retval;
+        if(e.altKey)   retval = 'Alt'   + retval;
+        if(e.shiftKey) retval = 'Shift' + retval;
+        
+        return retval;
     }
 }
 
