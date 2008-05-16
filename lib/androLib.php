@@ -228,6 +228,7 @@ class androHtml {
     var $htype      = '';
     var $classes    = array();
     var $autoFormat = false;
+    var $isParent   = false;
 
     #set
     function setHtml($value) {
@@ -261,8 +262,42 @@ class androHtml {
     function autoFormat($setting=true) {
         $this->autoFormat = $setting;
     }
+    
+    # Add a set of elements to something, with striping option
+    function TbodyRows($rows,$options=array()) {
+        $rowIdPrefix='row_';
+        $stripe = a($options,'stripeCss')=='' ? 0 : 1;
+        $tbody = html('tbody',$this);
+        foreach($rows as $index=>$row) {
+            $tr = html('tr',$tbody);
+            $tr->hp['id'] = $rowIdPrefix.($index+1);
+            # flip the striping variable
+            $stripe*=-1;
+            if($stripe==1) {
+                $tr->addClass($options['stripeCss']);  
+            }
+            
+            foreach($row as $colname=>$colvalue) {
+                html('td',$tr,$colvalue);
+            }
+        }
+    }
 
-
+    # Add one or more cells to a row.  
+    function addItems($tag,$values) {
+        if(!is_array($values)) {
+            $values = explode(',',$values);
+        }
+        foreach($values as $value) {
+            html($tag,$this,$value);
+        }
+    }
+        
+    #  Sets a flag to work as parent
+    function setAsParent() {
+        $this->isParent = true;
+    }
+    
     #  Returns pointer to first child
     function firstChild() {
         if(count($this->children)==0) {
@@ -293,9 +328,23 @@ class androHtml {
     }
 
     # The Render Command
-    function render($indent='') {
+    function render($parentId='') {
+        # Accept a parentId, maybe assign one to
+        if($parentId <> '') {
+            $this->ap['xParentId'] = $parentId;
+        }
+        if($this->isParent) {
+            $parentId = a($this->hp,'id','');
+            if($parentId=='') {
+                echo "Object has no id but wants to be parent";
+                hprint_r($this);
+                exit;
+            }
+        }
+        
         if($this->autoFormat) {
-            echo "$indent\n<!-- ELEMENT ID ".$this->hp['id']." (BEGIN) -->";
+            echo "\n<!-- ELEMENT ID ".$this->hp['id']." (BEGIN) -->";   
+            //echo "$indent\n<!-- ELEMENT ID ".$this->hp['id']." (BEGIN) -->";
         }
         $parms='';
         if(count($this->classes) > 0) {
@@ -309,39 +358,46 @@ class androHtml {
             $this->hp['style']=$style;
         }
         foreach($this->hp as $parmname=>$parmvalue) {
-            $parms.="\n$indent    $parmname=\"$parmvalue\"";
+            $parms.="\n  $parmname=\"$parmvalue\"";
         }
-        if(count($this->ap)>0) {
-            $js = "\nvar x = \$a.byId('".$this->hp['id']."');";
-            foreach($this->ap as $parmname=>$parmvalue) {
-                $js.="\nx.$parmname=\"$parmvalue\"";
-            }
-            x4Script($js);
+        foreach($this->ap as $parmname=>$parmvalue) {
+            $parms.="\n  $parmname=\"$parmvalue\"";
         }
-        echo "\n$indent<".$this->htype.' '.$parms.'>'.$this->innerHtml;
+        echo "\n<".$this->htype.' '.$parms.'>'.$this->innerHtml;
         foreach($this->children as $child) {
             if(is_string($child)) {
                 echo $child;
             }
             else {
-                $child->render($indent.'    ');
+                $child->render($parentId);
             }
         }
-        //if(count($this->children)==0 && $this->innerHtml=='') {
-            echo "</$this->htype>";
-        //}
-        //else {
-        //    echo "\n$indent</".$this->htype.">";
-        //}
+        echo "</$this->htype>";
         if($this->autoFormat) {
-            echo "$indent\n<!-- ELEMENT ID ".$this->hp['id']." (END) -->";
+            echo "\n<!-- ELEMENT ID ".$this->hp['id']." (END) -->";   
+            //echo "$indent\n<!-- ELEMENT ID ".$this->hp['id']." (END) -->";
         }
     }
 }
 
+# Give me a form
+function htmlForm(&$parent,$page='') {
+    if($page=='') $page = gp('x4Page');
+    if($page=='') $page = gp('gp_page');
+    $form = html('form',$parent);
+    $form->hp['method'] = 'POST';
+    $form->hp['action'] = "index.php?x4Page=$page";
+    $form->hp['id'] = 'form1';
+    $form->hp['enctype'] = 'multipart/form-data';
+    $inp = html('input',$form);
+    $inp->hp['type'] = 'hidden';
+    $inp->hp['name'] = 'MAX_FILE_SIZE';
+    $inp->hp['value']= '10000000';
+    return $form;
+}
 
 # Lower level routine to generate an input
-function input($colinfo) {
+function input($colinfo,&$tabLoop = null,$options=array()) {
     $formshort= a($colinfo,'formshort',a($colinfo,'type_id','char'));
     $type_id  = a($colinfo,'type_id');
     $colprec  = a($colinfo,'colprec');
@@ -349,6 +405,37 @@ function input($colinfo) {
     $table_id = a($colinfo,'table_id');
     $column_id= a($colinfo,'column_id');
 
+    # Work out the read-only status for insert and update
+    # Begin with unconditional
+    $xRoIns = '';
+    $xRoUpd = '';
+    if( ($parent = a($options,'parentTable'))<>'') {
+        if($colinfo['table_id_fko']==$parent) {
+            $xRoIns = 'Y';
+            $xRoUpd = 'Y';
+        }
+    }
+    if(!$xRoIns) {
+        $xRoIns = a($colinfo,'uiro','N');
+        $xRoUpd = a($colinfo,'uiro','N');
+        $autos = array('SUM','COUNT','FETCH','DISTRIBUTE','SEQUENCE'
+            ,'TS_INS','TS_UPD','UID_INS','UID_UPD','EXTEND'
+        );
+        if(in_array(a($colinfo,'automation_id','none'),$autos)) {
+            $xRoIns = 'Y';
+            $xRoUpd = 'Y';
+        }
+        if(a($colinfo,'uiro','N')=='Y') {
+            $xRoIns = 'Y';
+            $xRoUpd = 'Y';
+        }
+        if(a($colinfo,'primary_key','N')=='Y') {
+            $xRoUpd = 'Y';
+        }
+    }
+    
+    
+    
     # First decision is to work out what kind of control to make
     if($type_id=='gender') {
         $input = html('select');
@@ -392,21 +479,25 @@ function input($colinfo) {
     elseif(a($colinfo,'table_id_fko')<>'') {
         // First work out which control to use
         $table_id_fko = $colinfo['table_id_fko'];
-        if(a($colinfo,'fkdisplay')=='') {
+        $ddfko = ddTable($table_id_fko);
+        if($ddfko['fkdisplay']=='' && $xRoIns<>'Y') {
             $input = html('select');
             $rows = rowsForSelect($colinfo['table_id_fko']);
             $x = '';
-            foreach($rows as $row) {
+            foreach($rows as $idx=>$row) {
                 $x .="<option value='".$row['_value']."'>"
                     .$row['_display']."</option>";
+                if($idx > 100) break;
             }
             $input->setHtml($x);
         }
         else {
             $input = html('input');
-            $fkparms='gp_dropdown='.$colinfo['table_id_fko'];
-            $input->hp['onkeyup']  ="androSelect_onKeyUp(  this,'$fkparms',event)";
-            $input->hp['onkeydown']='androSelect_onKeyDown(event)';
+            if($ddfko['fkdisplay']<>'none') {
+                $fkparms='gp_dropdown='.$colinfo['table_id_fko'];
+                $input->hp['onkeyup']  ="androSelect_onKeyUp(  this,'$fkparms',event)";
+                $input->hp['onkeydown']='androSelect_onKeyDown(event)';
+            }
         }
 
         // If any columns are supposed to fetch from here,
@@ -427,6 +518,11 @@ function input($colinfo) {
         $input = html('input');
     }
 
+    # Apply the readonly stuff we figured out first
+    $input->ap['xRoIns'] = $xRoIns;
+    $input->ap['xRoUpd'] = $xRoUpd;
+    
+    
     #  If we ended up with an INPUT above, set the size
     if($input->htype=='input') {
         # KFD 4/24/08, makes it easier to make widgets in
@@ -471,26 +567,6 @@ function input($colinfo) {
         $input->style['text-align'] = 'right';
     }
 
-    # Work out the read-only status for insert and update
-    # Begin with unconditional
-    $input->ap['xRoIns'] = a($colinfo,'uiro','N');
-    $input->ap['xRoUpd'] = a($colinfo,'uiro','N');
-    $autos = array('SUM','COUNT','FETCH','DISTRIBUTE','SEQUENCE'
-        ,'TS_INS','TS_UPD','UID_INS','UID_UPD','EXTEND'
-    );
-    if(in_array(a($colinfo,'automation_id','none'),$autos)) {
-        $input->ap['xRoIns'] = 'Y';
-        $input->ap['xRoUpd'] = 'Y';
-    }
-    if(a($colinfo,'uiro','N')=='Y') {
-        $input->ap['xRoIns'] = 'Y';
-        $input->ap['xRoUpd'] = 'Y';
-    }
-    if(a($colinfo,'primary_key','N')=='Y') {
-        $input->ap['xRoUpd'] = 'Y';
-    }
-
-    # Put on special classes that will be used by JQuery
     if($type_id=='date') {
         $input->addClass('jqdate');
     }
@@ -500,8 +576,58 @@ function input($colinfo) {
     $input->ap['xColprec'] = $colprec;
     $input->ap['xColscale'] = $colscale;
 
+    # Optional properties
+    if(a($colinfo,'inputmask','')<>'') {
+        $input->ap['xInputMask'] = $colinfo['inputmask'];
+    }
+    
+    # If the tabloop object has been passed in, add this
+    # input to it
+    if(!is_null($tabLoop)) {
+        $tabLoop[] = &$input;
+    }
+    
     # For now that's all we are going to do.
     return $input;
+}
+
+function inputsTabLoop(&$tabLoop,$options=array()) {
+    if(count($tabLoop)<2) return;
+
+    # Do the first and last manually
+    $last = count($tabLoop)-1;
+    $tabLoop[0    ]->ap['xTabPrev']=$tabLoop[$last  ]->hp['id'];  
+    $tabLoop[0    ]->ap['xTabNext']=$tabLoop[1      ]->hp['id'];
+    $tabLoop[0    ]->hp['tabindex']=1000;
+    $tabLoop[$last]->ap['xTabPrev']=$tabLoop[$last-1]->hp['id'];  
+    $tabLoop[$last]->ap['xTabNext']=$tabLoop[0      ]->hp['id'];
+    $tabLoop[$last]->hp['tabindex']=1000 + count($tabLoop);
+    
+    # Now loop through the others and assign next and last dudes
+    for($x=1; $x< $last; $x++) {
+        $tabLoop[$x]->ap['xTabPrev']=$tabLoop[$x-1]->hp['id'];  
+        $tabLoop[$x]->ap['xTabNext']=$tabLoop[$x+1]->hp['id'];
+        $tabLoop[$x]->hp['tabindex']=1000 + $x;
+    }
+    
+    # Now assign keyboard handlers and anything else
+    $xpId = a($options,'xParentId');
+    for($x=0; $x<= $last; $x++) {
+        $tabLoop[$x]->hp['onkeypress']
+            ='return x4.stdlib.inputKeyPress(event,this)';
+        
+        if($tabLoop[$x]->ap['xTypeId'] == 'date') {
+            $tabLoop[$x]->hp['onkeyup']
+                ='return x4.stdlib.inputKeyUpDate(event,this)';
+        }
+        
+        if($xpId <> '') {
+            $tabLoop[$x]->hp['onfocus']
+                ="\$a.byId('$xpId').zLastFocusId = this.id";
+        }
+                
+    }
+    
 }
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1013,6 +1139,17 @@ function DD_Table($table_id) {
 	include_once("ddtable_".$table_id.".php");
 	return $GLOBALS["AG"]["tables"][$table_id];
 }
+
+function ddNoWrites() {
+   return array(
+      'SEQUENCE'
+      ,'FETCH','DISTRIBUTE'
+      ,'EXTEND'
+      ,'SUM','MIN','MAX','COUNT','LATEST'
+      ,'TS_INS','TS_UPD','UID_INS','UID_UPD'
+   );
+}
+
 
 // FINAL Form of the various "give me the dd" routines.
 //       This version will filter the array based on user
@@ -10155,8 +10292,9 @@ function jsOutput() {
 
     // Loop through each file and either add it to list of
     // files to minify or output it directly
+    $debug = trim(OptionGet('JS_CSS_DEBUG','Y'));
     foreach($ajs as $js) {
-        if(OptionGet('JS_CSS_DEBUG','Y')=='N') {
+        if($debug=='N') {
             $aj[] = $js['file'];
             if($js['comments']<>'') {
                 ?>
@@ -10497,6 +10635,19 @@ function SQL_NUM_ROWS($results) { return SQL_NUMROWS($results); }
 function SQL_NUMROWS($results) {
 	return pg_numrows($results);
 }
+
+
+function sqlFormatRow($tabdd,$row) {
+   $flat  =$tabdd['flat'];
+   $retval=array();
+   foreach($row as $column=>$value) {
+      if(isset($flat[$column])) {
+         $retval[$column] = sql_Format($flat[$column]['type_id'],$value);
+      }
+   }
+   return $retval;
+}
+
 
 /**
 name:SQL_Format
