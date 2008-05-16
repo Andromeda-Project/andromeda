@@ -189,11 +189,12 @@ class androPage {
         else {
             hidden('gp_page',$this->page);
         }
-        
+
         # List of ids for buttons below
         $ids=array('pdf'=>'printNow','onscreen'=>'showOnScreen'
             ,'showSql'=>'showSql'
         );
+
 
         # Create top-level div, x4 library is looking for this
         # and x2 library will ignore it.
@@ -219,6 +220,7 @@ class androPage {
         padding-top: 8px; font-size: 120%";
         $a = html('a-void',$td,"F1:Help");
         $a->hp['onclick'] = "$('#x4AndroPage')[0].help()";
+        $a->addClass('button');
         
         # Make top level container
         $tabtop = html('table',$x4D);
@@ -257,11 +259,12 @@ class androPage {
         $td1->br();
         
         # First button: print
-        $inp = html('button',$td1);
+        $inp = html('a-void',$td1,'<u>P</u>rint Now');
+        $inp->ap['xLabel'] = 'CtrlP';
         $inp->hp['id'] = $ids['pdf'];
-        $inp->setHTML('<u>P</u>rint Now');
+        $inp->addClass('button');
         if(gpExists('x4Page')) {
-            $inp->hp['onclick'] = 'this.xParent.printNow()';
+            $inp->hp['onclick'] = "\$a.byId('x4AndroPage').printNow()";
         }
         else {
             $inp->hp['onclick'] = 'formSubmit();';
@@ -269,11 +272,12 @@ class androPage {
         $td1->br(2);
         
         # Second button: show onscreen
-        $inp = html('button',$td1);
-        $inp->setHTML('Show <u>O</u>nscreen');
+        $inp = html('a-void',$td1,'Show <u>O</u>nscreen');
         $inp->hp['id'] = $ids['onscreen'];
+        $inp->ap['xLabel'] = 'CtrlO';
+        $inp->addClass('button');
         if(gpExists('x4Page')) {
-            $inp->hp['onclick'] = 'this.xParent.showOnScreen()';
+            $inp->hp['onclick'] = "\$a.byId('x4AndroPage').showOnScreen()";
         }
         else {
             $inp->hp['onclick'] = "SetAndPost('gp_post','onscreen')";
@@ -282,12 +286,13 @@ class androPage {
         
         if(SessionGet('ADMIN')==true) {
             $x4D->nbsp(2);
-            $inp = html('button',$td1);
+            $inp = html('a-void',$td1,'Show S<u>Q</u>L');
+            $inp->ap['xLabel'] = 'CtrlQ';
             $inp->hp['id'] = $ids['showSql'];
-            $inp->hp['name'] = 'showsql';
-            $inp->SetHTML('Show S<u>Q</u>L');
+            $inp->hp['name'] = 'showsql';  // For x2
+            $inp->addClass('button');
             if(gpExists('x4Page')) {
-                $inp->hp['onclick'] = 'this.xParent.showSql()';
+                $inp->hp['onclick'] = "\$a.byId('x4AndroPage').showSql()";
             }
             else {
                 $inp->hp['onclick'] = "formSubmit()";

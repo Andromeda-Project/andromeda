@@ -28,7 +28,7 @@ passes execution to this file.
 
 INVENTORY OF framework gp variables:
 
-* gp_page     means page processing, and is the default action
+* gp_page     means "classic" x_table2 page processing; the default action
 * x4Page      page processing through x4 instead of x_table2
 * st2logout   command to logout
 * st2login    command to login
@@ -91,6 +91,7 @@ if(ini_get('magic_quotes_gpc')) {
 
 // >>> 
 // >>> Restore the context (taken from g/p variables)
+// >>> Used only in "classic" x_table2 page handling, not in x4
 // >>> 
 if(!isset($AG['clean']['gpContext'])) {
     $AG['clean']['gpContext']=array();
@@ -277,10 +278,14 @@ if(isset($header_mode)) return;
 // >>> 
 // ==================================================================
 # First redirection is to x4 welcome page, the menu, if they
-# have turned on that flag
+# have turned on that flag.  If the x2 variable was passed with
+# a gp_page variable, that forces it to stay as x2.  This was put
+# in to allow old-fashioned processes.
 #
 if(vgfGet('x4Welcome') && gp('x4Page')=='' && LoggedIn()) {
-    gpSet('x4Page','menu');
+    if( !(gpExists('gp_page') && gpExists('x2')) ) { 
+        gpSet('x4Page','menu');
+    }
 }
 
 // ==================================================================
@@ -368,7 +373,10 @@ function index_hidden_x4Dispatch() {
     //
     $x4Page = gp('x4Page');
     hidden('x4Page',$x4Page);  # makes form submits come back here
-    if(file_exists("application/$x4Page.page.yaml")) {   
+    if(gpExists('db')) {
+        index_hidden_x4DB();
+    }
+    else if(file_exists("application/$x4Page.page.yaml")) {   
        include 'androPage.php';
        $obj_page = new androPage();
        if ($obj_page->flag_buffer) { ob_start(); }
@@ -446,6 +454,39 @@ function index_hidden_x4Dispatch() {
     }
     return;
 }
+// ------------------------------------------------------------------
+// >> X4 Direct database access
+// ------------------------------------------------------------------
+function index_hidden_x4DB() {
+    // For all raw access, there will be an array
+    // of column values, and a table to hit.
+    $row=rowFromGP('x4c_');  // values
+    $whr=rowFromGP('x4w_');  // where clause values
+    $table=gp('x4Page');     // The table name
+    $rr =gp('retrow',0);     // row return command
+    
+    // There are four different database functions, so there
+    // are four library routines we might call.
+    $ra=$r1=false;
+    switch(gp('db')) {
+    #case 'del'   : x4sqlDel($table,$whr);              break;
+    #case 'sel'   : $ra=x4sqlSel($table,$whr);          break;
+    case 'ins'   : $r1=x4sqlIns($table,$row,$rr);      break;
+    #case 'insset': x4sqlInsSet($table);                break;
+    #case 'upd'   : $r1=x4sqlUpd($table,$row,$whr,$rr); break;
+    #case 'bsrch' : searchBrowse($table,$whr);          break;
+    #case 'sql'   : x4sqlQuery(gp('x4xSQL'));           break;
+    }
+}
+
+function x4sqlIns($table,$row,$rowret=0) {
+    $skey = SQLX_Insert($table,$row);
+    if($rowret) {
+        $row = SQL_OneRow("Select * from $table where skey = $skey");
+        x4Data('row',$row);
+    }
+}
+
 // ------------------------------------------------------------------
 // >> Ajax refresh a select that is 2nd column in foreign key
 // ------------------------------------------------------------------
