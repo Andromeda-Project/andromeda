@@ -1206,9 +1206,12 @@ var $a = {
             }
 
             // If there were server errors, report those
-            if(this.jdata.error.length>1) {
+            if(this.jdata.error.length>0) {
                 this.hadErrors = true;
                 $a.dialogs.alert(this.jdata.error.join("\n\n"));
+            }
+            if(this.jdata.notice.length>0) {
+                $a.dialogs.alert(this.jdata.notice.join("\n\n"));
             }
             
             if(autoProcess) {
@@ -1239,6 +1242,9 @@ var $a = {
 
     byId: function(id) {
         return document.getElementById(id );
+    },
+    value: function(id) {
+        return $a.byId(id).value;
     },
 
     // Retrieve an object's property, creating it if not

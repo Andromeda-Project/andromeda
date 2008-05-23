@@ -30,6 +30,7 @@ INVENTORY OF framework gp variables:
 
 * gp_page     means "classic" x_table2 page processing; the default action
 * x4Page      page processing through x4 instead of x_table2
+* x4Action    server-side x4 method to invoke in class x4Page
 * st2logout   command to logout
 * st2login    command to login
 

@@ -616,18 +616,22 @@ function inputsTabLoop(&$tabLoop,$options=array()) {
         $tabLoop[$x]->hp['onkeypress']
             ='return x4.stdlib.inputKeyPress(event,this)';
         
-        if($tabLoop[$x]->ap['xTypeId'] == 'date') {
-            $tabLoop[$x]->hp['onkeyup']
-                ='return x4.stdlib.inputKeyUpDate(event,this)';
-        }
+        $tabLoop[$x] = inputFixupByType($tabLoop[$x]);
         
         if($xpId <> '') {
             $tabLoop[$x]->hp['onfocus']
                 ="\$a.byId('$xpId').zLastFocusId = this.id";
         }
                 
+    }    
+}
+
+function inputFixupByType($input) {
+    if($input->ap['xTypeId'] == 'date') {
+        $input->hp['onkeyup']
+            ='return x4.stdlib.inputKeyUpDate(event,this)';
     }
-    
+    return $input;
 }
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1207,6 +1211,12 @@ function ddTable($table_id) {
             $sing = substr($desc,0,strlen($desc)-1);
         }
         $tabdd['singular'] = $sing;
+    }
+    
+    # If there is a post-processor, execute it now
+    $func = 'ddTable_'.$table_id;
+    if(function_exists($func)) {
+        $tabdd = $func($tabdd);
     }
 
     # --> EARLY RETURN

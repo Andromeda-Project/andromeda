@@ -968,6 +968,14 @@ function SpecLoad_ArrayToTables($arr,$cLoadSuffix,$parent_row=array(),$parent_pr
                $row['group_id']=$parm['APP'].'_'.$row['group_id'];
             }
          }
+         // KFD 5/22/08, support the "auto" keyword for shorter automations
+         if(isset($row['auto'])) {
+             $auto = explode(',',$row['auto']);
+             $row['automation_id'] = strtoupper($auto[0]);
+             if(isset($auto[1])) {
+                 $row['auto_formula'] = $auto[1];
+             }
+         }
          // KFD 4/9/08, support for lowercase automations by uppercasing
          // them on the way in
          if(isset($row['automation_id'])) {
@@ -5257,11 +5265,11 @@ function SpecDDL_Triggers_Histories_One(&$history)  {
         }
         elseif($colassign['retdiff'] != '') {
             $rd = $colassign['retdiff'];
-            $cols[$col]['i'] = 'new.'.$colassign['retdiff'];
-            $cols[$col]['u'] = 'new.'.$colassign['retdiff'] 
-                .' - old.'.$colassign['retdiff'];
-            $cols[$col]['d'] = '-old.'.$colassign['retdiff'];
-            $awhere[]="new.$rd <> old.$rd";
+            $cols[$col]['i'] = 'COALESCE(new.'.$colassign['retdiff'].',0)';
+            $cols[$col]['u'] = 'COALESCE(new.'.$colassign['retdiff'].',0)' 
+                .' - COALESCE(old.'.$colassign['retdiff'].',0)';
+            $cols[$col]['d'] = '-COALESCE(old.'.$colassign['retdiff'].',0)';
+            $awhere[]="COALESCE(new.$rd,0) <> COALESCE(old.$rd,0)";
         }
         elseif($colassign['retold'] != '') {
             $cols[$col]['u'] = 'old.'.$colassign['retold']; 
@@ -5269,7 +5277,7 @@ function SpecDDL_Triggers_Histories_One(&$history)  {
         }
         elseif($colassign['retnew'] != '') {
             $cols[$col]['i'] = 'new.'.$colassign['retnew'];
-            $cols[$col]['u'] = 'new.'.$colassign['retnew']; 
+            $cols[$col]['u'] = 'new.'.$colassign['retnew'];
         }
         elseif($colassign['retcol'] != '') {
             $cols[$col]['i'] = 'new.'.$colassign['retcol'];

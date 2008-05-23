@@ -117,6 +117,7 @@ class androX4 {
         #
         $tabNumber = 2;
         foreach($this->dd['fk_children'] as $table_id=>$info) {
+            if(a($info,'fkdisplay','') == 'none') continue;
             $tabid = 'x4TableTop_'.$table_id;
             $ddChild = ddTable($table_id);
             x4Data('dd.'.$table_id,$ddChild);
@@ -310,12 +311,17 @@ class androX4 {
         
         # create the table that will hold the inputs 
         $table = html('table',$div);
-        
         $table->hp['class'] = 'x4detail';
         $tid   = $dd['table_id'];
+
+        $trx   = html('tr',$table);
+        $tdx   = html('td',$trx);
+        $table = html('table',$tdx);
         $tabLoop = array();
+        $colcount   = 0;
+        $colbreak   = a($dd,'colbreak',17);
+        $breakafter = a($dd,'breakafter',array());
         foreach($dd['flat'] as $column_id=>$colinfo) {
-            // Early exits
             if($colinfo['uino']=='Y'   ) continue;
             if($column_id=='skey'      ) continue;
             if($column_id=='_agg'      ) continue;
@@ -336,6 +342,22 @@ class androX4 {
             $input->addClass('x4input');
             $input->ap['xParentId'] = $div->hp['id'];
             $td->addChild($input);
+
+            # On twelfth column, break and make a new column of fields            
+            $colcount++;
+            if(count($breakafter)>0) {
+                $break = in_array($column_id,$breakafter);
+            }
+            else {
+                $break = $colcount == $colbreak ? true : false;
+            }
+            if($break) {
+                $colcount=0;
+                $tdx = html('td',$trx);
+                $tdx->hp['style'] = 'width: 40px';
+                $tdx = html('td',$trx);
+                $table=html('table',$tdx);
+            }
         }
         inputsTabLoop($tabLoop,array('xParentId'=>$div->hp['id']));
         return $div;
