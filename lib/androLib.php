@@ -151,6 +151,11 @@ function x4Error($parm1) {
 function x4Notice($parm1) {
     $GLOBALS['AG']['x4']['notice'][] = $parm1;
 }
+function x4Print_r($var) {
+    ob_start();
+    print_r($var);
+    x4Notice(ob_get_clean());
+}
 function x4Debug($parm1) {
     $GLOBALS['AG']['x4']['debug'][] = $parm1;
 }
