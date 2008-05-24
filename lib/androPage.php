@@ -181,8 +181,11 @@ class androPage {
             $this->PageSubtitle = $yamlP2['options']['title'];
         }
         
+        # There are few tweaks based on x4/x_table2 version
+        $x4 = gp('x4Page')=='' ? false : true;
+        
         # Hidden variables so posts will come back here
-        if(gpExists('x4Page')) {
+        if($x4) {
             x4Data('return','menu');
             hidden('x4Page',$this->page);
         }
@@ -202,7 +205,7 @@ class androPage {
         $top->hp['id'] = 'x4Top';
         $top->autoFormat(true);
         $x4D = html('div',$top);
-        $x4D->addClass('x4Pane');
+        if($x4) $x4D->addClass('x4Pane');
         $x4D->addClass('x4AndroPage'); # Triggers all browser-side x4 stuff
         $x4D->hp['id'] = 'x4AndroPage';
         $x4D->ap['defaultOutput'] = a($ids, a($yamlP2['options'],'default')); 
@@ -218,9 +221,11 @@ class androPage {
         $td    = html('td',$tabxtr);
         $td->hp['style'] = "text-align: right; vertical-align: top;
         padding-top: 8px; font-size: 120%";
-        $a = html('a-void',$td,"F1:Help");
-        $a->hp['onclick'] = "$('#x4AndroPage')[0].help()";
-        $a->addClass('button');
+        if($x4) {
+            $a = html('a-void',$td,"F1:Help");
+            $a->hp['onclick'] = "$('#x4AndroPage')[0].help()";
+            $a->addClass('button');
+        }
         
         # Make top level container
         $tabtop = html('table',$x4D);
@@ -284,19 +289,20 @@ class androPage {
         }
         $td1->br(2);
         
-        if(SessionGet('ADMIN')==true) {
+        if(SessionGet('ADMIN')==true && $x4) {
             $x4D->nbsp(2);
             $inp = html('a-void',$td1,'Show S<u>Q</u>L');
             $inp->ap['xLabel'] = 'CtrlQ';
             $inp->hp['id'] = $ids['showSql'];
             $inp->hp['name'] = 'showsql';  // For x2
             $inp->addClass('button');
-            if(gpExists('x4Page')) {
-                $inp->hp['onclick'] = "\$a.byId('x4AndroPage').showSql()";
-            }
-            else {
-                $inp->hp['onclick'] = "formSubmit()";
-            }
+            //if(gpExists('x4Page')) {
+            $inp->hp['onclick'] = "\$a.byId('x4AndroPage').showSql()";
+            //}
+            //else {
+            //    hidden('showsql',0);
+            //    $inp->hp['onclick'] = "SetAndPost('showsql',1)";
+            //}
         }
         
         # Put in the spot where we display the SQL
