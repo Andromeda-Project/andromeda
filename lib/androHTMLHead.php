@@ -29,7 +29,7 @@ if(gpExists('x4Page')) {
 # in androLib.php
 if(gpExists('x4Page')) {
     jsInclude('clib/androX4.js');
-    jsInclude('clib/androX4Grid.js');
+    #jsInclude('clib/androX4Grid.js');
 }
 
 // Try out the ui.datepicker for JQuery
