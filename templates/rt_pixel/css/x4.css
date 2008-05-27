@@ -1,0 +1,207 @@
+/* --- The Layer class always contains all content --- */
+#andromeda_main_content {
+    position: relative;
+    min-height: 500px;
+}
+#andromeda_main_content div.x4Pane  ,
+#andromeda_main_content table.x4Pane 
+{
+    position: relative;
+    display: none;
+}
+
+/* +++ ---------------------------------------------- +++ */
+/* +++ The Menu Bar and normal hyperlinks             +++ */
+/* +++ ---------------------------------------------- +++ */
+#andromeda_main_content div.x4MenuBar {
+  text-align: left;
+  font-family: Verdana;
+  padding: 8px;
+  padding-bottom: 4px;
+  padding-top: 6px; /* 4px only needed for firefox, 6 for ie */
+  padding-left: 0px;
+}
+
+#andromeda_main_content div.x4MenuBar A, 
+#andromeda_main_content a.button
+{ 
+   padding-top: 2px; padding-bottom: 2px;
+   padding-left:4px; padding-right: 4px;
+   border: 2px solid gray;
+   
+   /* this is gray, neutral for all styles */
+   background-color: #d8dce3;
+   margin-right: 7px;
+}
+#andromeda_main_content a.disabled
+{ 
+    color: #C0C0C0; 
+    cursor: default;
+}
+
+/* +++ ---------------------------------------------- +++ */
+/* +++ The Row Info Bar                               +++ */
+/* +++ ---------------------------------------------- +++ */
+#x4RowInfo {
+  text-align: left;
+  font-family: Verdana;
+  padding: 8px;
+  padding-bottom: 4px;
+  padding-top: 6px; /* 4px only needed for firefox, 6 for ie */
+  padding-left: 0px;
+  margin: 8px 0;
+}
+
+#x4RowInfo A  { 
+   padding-top: 4px; padding-bottom: 4px;
+   padding-left:8px; padding-right: 8px;
+   border: 2px solid gray;
+   
+   /* this is gray, neutral for all styles */
+   background-color: #d8dce3;
+   margin-right: 15px;
+}
+
+/* +++ ---------------------------------------------- +++ */
+/* +++ The search grid styles                         +++ */
+/* +++ ---------------------------------------------- +++ */
+
+/* +++ The color details are in x4-xxxx.css +++ */
+#andromeda_main_content .mouseover {
+  background-color: #D0D0D0;
+}
+#andromeda_main_content .disabled {
+  background-color: #E0E0E0;
+  color: #808080;
+}
+
+#andromeda_main_content .highlight td.link {
+    background-color: #E0E0E0;
+}
+
+#andromeda_main_content .highlight td.link a {
+    text-decoration: underline;
+}
+
+#andromeda_main_content thead th {
+    font-weight: bolder;
+    padding: 3px;
+    text-align: center;
+}
+
+
+#divOnScreen {
+    max-height: 510px;
+}
+
+/* +++ ---------------------------------------------- +++ */
+/* +++ Display Grid Styles                            +++ */
+/* +++ ---------------------------------------------- +++ */
+#andromeda_main_content table.x4data1 thead th {
+    font-weight: bolder;
+    padding: 3px;
+    text-align: center;
+}
+
+#andromeda_main_content table.x4data1 tbody td {
+    padding: 3px;
+}
+
+#andromeda_main_content table.x4data1 tr.stripe {
+    background-color: #D0D0D0;
+}
+
+
+
+
+/* +++ ---------------------------------------------- +++ */
+/* +++ The Tab Bar                                    +++ */
+/* +++ ---------------------------------------------- +++ */
+#x4TabBar {
+    text-align: left;
+    font-family: Verdana;
+    padding: 8px 4px 4px 0;
+    border-bottom: 2px solid gray;
+    margin: 10px 0 8px;
+}
+
+#x4TabBar a  { 
+   padding-top: 4px; padding-bottom: 4px;
+   padding-left:8px; padding-right: 8px;
+   border: 2px solid gray;
+   
+   /* this is gray, neutral for all styles */
+   background-color: #d8dce3;
+   margin-right: 15px;
+}
+#x4TabBar a.tabSelected  { 
+   /* highlighted tab stands out */
+   background-color: #F0F0F0;
+}
+
+
+/* +++ ---------------------------------------------- +++ */
+/* +++ The content view ports                         +++ */
+/* +++ ---------------------------------------------- +++ */
+/* --- for search grids --- */
+#andromeda_main_content .x4VerticalScroll1 {
+    position: absolute;
+    top: 15px;
+    left: 0;
+}
+/* ---- for tab bars ---- */
+#x4TabContainer {
+    position: absolute;
+    top: 65px;
+    left: 0;
+}
+
+
+
+/* --- Menu operations --- */
+#andromeda_main_content  a {
+    text-decoration: none;
+}
+
+/* --- General boxes and stuff --- */
+table.tab100 {
+    width: 100%
+}
+#andromeda_main_content  .x4box {
+    border: 6px solid #E6E3E6;
+    margin: 5px;
+    padding: 6px;
+}
+
+/* --- Search Boxes ---- */
+#x4browsetbody tr.highlight {
+    background-color: gray;
+    color: white;
+}
+
+/* --- Input controls --- */
+#andromeda_main_content .x4caption {
+    text-align: right;
+    padding-right: 3px;
+    vertical-align: top;
+    padding-top: 2px;
+}
+
+input.x4input, textarea.x4input, select.x4input {
+    margin: 1px;
+    border: 1px solid #B0B0B0;
+    color: #404070;
+}
+input.x4inputReadOnly, textarea.x4inputReadOnly, select.x4inputReadOnly {
+    margin: 1px;
+    border: 1px solid #B0B0B0;
+    background-color: #E0E0E0;
+}
+input.x4Focus, textarea.x4Focus, select.x4Focus {
+    margin: 0px;
+    border: 2px solid black;
+    color: black;
+}
+input.x4Insert, textarea.x4Insert, select.x4Insert {
+    background-color: #EAEC73;
+}

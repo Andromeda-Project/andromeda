@@ -1,0 +1,13 @@
+#andromeda_main_content .highlight {
+  background-color: #C1D58C;
+}
+
+#andromeda_main_content thead th {
+    background-color: #84A631;
+    color: #F0F0F0;
+}
+#andromeda_main_content a.x4MenuOn {
+    background-color: #84A631;
+    color: white;
+}
+
