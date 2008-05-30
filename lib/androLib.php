@@ -9083,7 +9083,7 @@ function jsValuesOne($ahcols,$colname,$ahcol,$name,$row,$h) {
        $oFCKeditor = new FCKeditor($name.$colname);
        $oFCKeditor->BasePath   = 'clib/FCKeditor/';
        $oFCKeditor->ToolbarSet = 'Basic';
-       $oFCKeditor->Width  = '275' ;
+       $oFCKeditor->Width  = '400' ;
        $oFCKeditor->Height = '200' ;
        $oFCKeditor->Value = trim(ArraySafe($row,$colname,''));
        $hx = $oFCKeditor->CreateHtml();
