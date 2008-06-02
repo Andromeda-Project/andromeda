@@ -888,6 +888,7 @@ aSelect.row      = false;
 // the control that "hosts" the androSelect
 function androSelect_onKeyUp(obj,strParms,e) {
     var kc = e.keyCode;
+    if(e.ctrlKey || e.altKey) return;
 
     // If TAB or ENTER, clear the box
     if(kc == 9 || kc == 13) { return true; }
@@ -964,7 +965,7 @@ function androSelect_onKeyUp(obj,strParms,e) {
         // As part of making visible, create an onclick
         // that will trap the event target and lose focus
         // if not the input object or the
-        addEventListener(document   ,'click',androSelect_documentClick);
+        //addEventListener(document   ,'click',androSelect_documentClick);
     }
     
     // Tell it the current control it is working for
@@ -1068,6 +1069,15 @@ var $a = {
      data: { dd: {} },
     
     
+    /*
+     * Window open.  Used to allow javascript to 
+     * subsequently close a window, which you can't
+     * do with <a target="_blank" href="....
+     */
+    openWindow: function(url) {
+        $a.window = window.open(url);
+    },
+     
     /*
      * Dialogs.  Placeholders to use JQuery plugins
      *

@@ -71,6 +71,7 @@ function x4Menu(self) {
                 nextId = this.grid[col][row];
             }
         }
+        /* This code expects numbers across top 
         if(e.keyCode >= 49 && e.keyCode <= 57) {
             if ( (e.keyCode - 48) <= this.grid.length ) { 
                 col = e.keyCode - 49;
@@ -82,6 +83,20 @@ function x4Menu(self) {
         if(e.keyCode >= 65 && e.keyCode <= 90) {
             if ( (e.keyCode - 65) <= (this.grid[col].length-1) ) {
                 nextId = this.grid[col][e.keyCode - 65];
+            }
+        }
+        */
+        if(e.keyCode >= 65 && e.keyCode <= 90) {
+            if ( (e.keyCode - 64) <= this.grid.length ) { 
+                col = e.keyCode - 65;
+                if( row > this.grid[col].length - 1) 
+                    row = this.grid[col].length - 1;
+                nextId = this.grid[col][row];
+            }
+        }
+        if(e.keyCode >= 48 && e.keyCode <= 57) {
+            if ( (e.keyCode - 48) <= (this.grid[col].length-1) ) {
+                nextId = this.grid[col][e.keyCode - 48];
             }
         }
 

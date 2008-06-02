@@ -166,10 +166,10 @@ class androX4 {
         //$mbr = &$menuBar;
         //$mbl = &$menuBar;
         
-        $a = html('a-void',$mbl,'<u>N</u>ew '.$dd['singular']);
+        $a = html('a-void',$mbl,'<u>A</u>dd '.$dd['singular']);
         $a->hp['onclick']="x4.parent(this).keyPress(this.getAttribute('xAction'))";
         $a->hp['id']='button-new';
-        $a->hp['xLabel']='CtrlN';
+        $a->hp['xLabel']='CtrlA';
         $a->hp['xAction'] = 'newRow';
         
         $a = html('a-void',$mbl,'<u>D</u>elete');
@@ -190,17 +190,19 @@ class androX4 {
         $a->hp['xLabel']='CtrlS';
         $a->hp['xAction'] = 'saveRow';
 
-        $a = html('a-void',$mbl,'S<u>a</u>ve &amp; New');
-        $a->hp['onclick']="x4.parent(this).keyPress(this.getAttribute('xAction'))";
-        $a->hp['id']='button-snw';
-        $a->hp['xLabel']='CtrlA';
-        $a->hp['xAction'] = 'saveRowAndNewRow';
+        # Removed by KFD 5/29/08, We want copy to do the same thing
+        #$a = html('a-void',$mbl,'Save &amp; <u>N</u>ew');
+        #$a->hp['onclick']="x4.parent(this).keyPress(this.getAttribute('xAction'))";
+        #$a->hp['id']='button-snw';
+        #$a->hp['xLabel']='CtrlN';
+        #$a->hp['xAction'] = 'saveRowAndNewRow';
         
-        $a = html('a-void',$mbl,'Save &amp; E<u>x</u>it');
-        $a->hp['onclick']="x4.parent(this).keyPress(this.getAttribute('xAction'))";
-        $a->hp['id']='button-sxt';
-        $a->hp['xLabel']='CtrlX';
-        $a->hp['xAction'] = 'saveRowAndExit';
+        # Removed by KFD 5/29/08, Esc will do the same thing.
+        #$a = html('a-void',$mbl,'Save &amp; E<u>x</u>it');
+        #$a->hp['onclick']="x4.parent(this).keyPress(this.getAttribute('xAction'))";
+        #$a->hp['id']='button-sxt';
+        #$a->hp['xLabel']='CtrlX';
+        #$a->hp['xAction'] = 'saveRowAndExit';
         
         
         $a = html('a-void',$mbl,"ESC: Quit");

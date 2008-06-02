@@ -73,9 +73,9 @@ function mosShowListMenu($menutype) {
             else {
                 if(sessionGet('menu_mode')=='x4') {
                     $x->link='?x4Page='.urlencode($page);
-                    if(gp('x4Return')=='menu') {
+                    //if(gp('x4Return')=='menu') {
                         $x->link.='&x4Return=menu';
-                    }
+                    //}
                 }
                 else {
                     $x->link="?x_module=$menuid&gp_page=".urlencode($page);

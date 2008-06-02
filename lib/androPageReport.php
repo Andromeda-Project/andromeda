@@ -116,7 +116,7 @@ class androPageReport extends fpdf {
         $row=array();
         
         // Call the routine that sets up an array of
-        // values to put into the bottom;
+        // values to put into the bottom and break
         $bottom = $this->setupBottom($yamlP2);
         $break  = $this->setupBreak($yamlP2);
         
@@ -134,6 +134,7 @@ class androPageReport extends fpdf {
                     $this->linesForColumns();
                     $this->outFromArray($break);
                     $this->nextLine();
+                    $this->nextLine();
                     $break = $this->SetupBreak($yamlP2);
                 }
             }
@@ -145,6 +146,11 @@ class androPageReport extends fpdf {
             if(count($bottom)>0) {
                 $bottom = $this->processForBottom($yamlP2,$bottom,$row);
             }
+        }
+        if(count($break)>0) {
+            $this->linesForColumns();
+            $this->outFromArray($break);
+            $this->nextLine();
         }
         if(count($bottom)>0) {
             $this->linesForColumns();
@@ -175,10 +181,11 @@ class androPageReport extends fpdf {
         $this->margin_top = 36;
         $this->SetMargins($this->margin_left,$this->margin_top);
 
-        // Set defaults.  As of 1/20/08 they are all hardcoded, but
-        // the idea is to let them be set in the YAML file.
-        $this->fontname = 'Arial';
-        $this->fontsize = 12;
+        // Set defaults.  Font name and size can be pulled
+        // from the YAML definition, the rest are hardcoded 
+        // or derived.
+        $this->fontname = a($yamlP2['options'],'fontname','Arial');
+        $this->fontsize = a($yamlP2['options'],'fontsize',12);
         $this->linespacing = 1;
         $this->cpi = 120/$this->fontsize;
         $this->lineheight = $this->fontsize * $this->linespacing;
@@ -220,7 +227,12 @@ class androPageReport extends fpdf {
                 $suffix = '';
                 if(in_array(trim($type_id),array('money','numb','int'))) {
                     $suffix .= ':R';
-                    $suffix .= ':'.trim($dd['flat'][$colname]['colscale']);
+                    switch($type_id) {
+                    case 'money': $scale=2; break;
+                    case 'numb':$scale=$dd['flat'][$colname]['colscale'];break;
+                    case 'int': $scale = 0;
+                    }
+                    $suffix .= ':'.$scale;
                 }
                 if(trim($type_id)=='money') {
                     $suffix .= ':M';
@@ -296,12 +308,12 @@ class androPageReport extends fpdf {
             foreach($tabinfo['column'] as $colname=>$colinfo) {
                 if(ArraySafe($colinfo,'uino','N')=='Y') continue;
                 $bot=ArraySafe($colinfo,'bottom');
-                if($bot=='SUM' || $bot=='COUNT') {
+                if(strtolower($bot)=='sum' || strtolower($bot)=='count') {
                     $retval[$colname] = 0;
                     $retcount++;
                 }
                 else {
-                    $retval[$colname] = ' ';
+                    $retval[$colname] = $bot=='' ? '_' : $bot;
                 }
             }
         }
@@ -327,13 +339,15 @@ class androPageReport extends fpdf {
         foreach($yamlP2['table'] as $table=>$tabinfo) {
             foreach($tabinfo['column'] as $colname=>$colinfo) {
                 if(ArraySafe($colinfo,'uino','N')=='Y') continue;
-                $bot=ArraySafe($colinfo,'break');
-                if($bot=='SUM' || $bot=='COUNT') {
+                $bot=strtolower(ArraySafe($colinfo,'break'));
+                if($bot=='sum' || $bot=='count') {
+                    # this is the value that will be summed or counted
                     $retval[$colname] = 0;
                     $retcount++;
                 }
                 else {
-                    $retval[$colname] = ' ';
+                    # A magic value 
+                    $retval[$colname] = '_';
                 }
             }
         }
@@ -358,7 +372,7 @@ class androPageReport extends fpdf {
         foreach($yamlP2['table'] as $table=>$tabinfo) {
             foreach($tabinfo['column'] as $colname=>$colinfo) {
                 if(ArraySafe($colinfo,'uino','N')=='Y') continue;
-                $bot=ArraySafe($colinfo,'bottom');
+                $bot=strtoupper(ArraySafe($colinfo,'bottom'));
                 $val=array_shift($row);
                 if($bot=='COUNT') $bottom[$keys[$x]]++;
                 if($bot=='SUM')   $bottom[$keys[$x]]+=$val;
@@ -381,7 +395,7 @@ class androPageReport extends fpdf {
         foreach($yamlP2['table'] as $table=>$tabinfo) {
             foreach($tabinfo['column'] as $colname=>$colinfo) {
                 if(ArraySafe($colinfo,'uino','N')=='Y') continue;
-                $bot=ArraySafe($colinfo,'break');
+                $bot=strtoupper(ArraySafe($colinfo,'break'));
                 $val=array_shift($row);
                 if($bot=='COUNT') $bottom[$keys[$x]]++;
                 if($bot=='SUM')   $bottom[$keys[$x]]+=$val;
@@ -600,6 +614,7 @@ class androPageReport extends fpdf {
        if(isset($alist['skey'])) unset($alist['skey']);
        
        while($value = array_shift($alist)) {
+           if($value=='_') $value='';
            $this->atNextCol($value,$titles);
        }
        $this->nextLine($titles);
@@ -614,10 +629,9 @@ class androPageReport extends fpdf {
      * @param string $text Value to write.  Numerics and dates
      *                     must be formatted into the string
      *                     representation you want.
-     * @param string $ori Orientation (optional)  Overrides default 
-     *                    orientation as established by 
-     *                    prior call to setupColumns()
-     *
+     * @param string $titles This is true when a line of titles
+     *                       is being written.  Suppresses conversion
+     *                       of values like numbers and dates.
      */
    function AtCol($col,$text,$titles=false) {
        if(!isset($this->cols[$col])) {
@@ -664,8 +678,9 @@ class androPageReport extends fpdf {
                    $href.='&gp_source='.$this->source;
                }
                if(gpExists('x4Page')) {
-                   $text="<a href='?x4Page=$link$href'
-                        target=\"_BLANK\">$text</a>";
+                   $ahref = '?x4Page=$link$href&x4Return=exit';
+                   $text="<a href='javascript:\$a.openWindow(\"$ahref\")'
+                        >$text</a>";
                }
                else {
                    $text="<a href='?gp_page=$link$href'>$text</a>";

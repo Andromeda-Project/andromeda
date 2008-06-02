@@ -493,9 +493,9 @@ class androPage {
             foreach($yamlP2['table'] as $table_id=>$tabinfo) {
                 foreach($tabinfo['column'] as $colname=>$colinfo) {
                     if(ArraySafe($colinfo,'group','')=='') {
-                        if(ArraySafe($colinfo,'uino','N')=='N') {
+                        //if(ArraySafe($colinfo,'uino','N')=='N') {
                             $yamlP2['groupby'][]="$table_id.$colname";
-                        }
+                        //}
                     }
                 }
             }
@@ -521,12 +521,18 @@ class androPage {
                 }
 
                 // group by 
-                if(ArraySafe($colinfo,'group','')<>'') {
-                    $coldef = str_replace("as $colname","",$coldef);
-                    $coldef = $colinfo['group'].'('.$coldef.") as $colname";
+                if(a($colinfo,'group','')<>'') {
+                    //$coldef = str_replace("as $colname","",$coldef);
+                    $coldef = $colinfo['group']."($table.$colname) as $colname";
+                }
+                else {
+                    $coldef = "$table.$colname";
                 }
 
                 // If not in output, stop now
+                // KFD 5/31/08, no, keep going and filter out at 
+                //     output.  We need all columns in case they
+                //     are orderby columns
                 if(a($colinfo,'uino','N')=='Y') continue;
                 
                 // if a constant, add the constant and skip the rest
@@ -536,12 +542,12 @@ class androPage {
                         $table_dd['flat'][$colname]['type_id']
                         ,''
                     );
-                    $cval = $constant=='' ? "$table.$colname" : "'$constant'";
+                    $cval = $constant=='' ? $coldef : "'$constant'";
                     $coldef="COALESCE($cval,$z) as $colname";
                 }
                 else {
                     $coldef = $constant=='' 
-                        ? "$table.$colname"
+                        ? $coldef
                         : "'$constant' as $colname";
                 }
                 $SQL_COLSA[] = $coldef;

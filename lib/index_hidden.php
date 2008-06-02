@@ -323,7 +323,7 @@ if(function_exists('app_after_db_connect')) {
 // responsible for returning all headers, HTML or anything
 // else it wants to send back.
 if(    gpExists('gp_command')) index_hidden_command();
-elseif(gp('ajxFETCH')   =='1') index_hidden_ajxFETCH();
+    if(gp('ajxFETCH')   =='1') index_hidden_ajxFETCH();
 elseif(gp('ajxfSELECT')  <>'') index_hidden_ajxfSELECT();
 elseif(gp('ajxc1table')  <>'') index_hidden_ajx1ctable();
 elseif(gp('gp_function') <>'') index_hidden_function();

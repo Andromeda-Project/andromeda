@@ -54,7 +54,7 @@ class x4Menu extends androX4 {
             $td->hp['class'] = 'x4box';
             
             $h3 = html('h3',$td);
-            $h3->setHtml(($col+1).') '.$modinfo['description']);
+            $h3->setHtml(($letters[$col]).') '.$modinfo['description']);
             
             $row = 0;
             foreach($modinfo['items'] as $page=>$info) {
@@ -62,7 +62,7 @@ class x4Menu extends androX4 {
                 $a = html('a',$td);
                 $a->hp['id']='x4menu_'. $page;
                 $a->hp['href']="?x4Return=menu&x4Page=$page";
-                $a->setHTML($letters[$row].') '.$info['description']);
+                $a->setHTML($row.') '.$info['description']);
                 $a->hp['onkeyup']  = "return \$a.byId('x4Menu').x4KeyUp(event,$col,$row)";
                 $a->hp['onkeydown']  = "return false;";
                 $a->hp['onmouseover']= '$(this).focus()';

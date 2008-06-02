@@ -27,7 +27,7 @@
  */
 var x4 =  {
     // Simple setting for behavior
-    fadeSpeed: 'fast',
+    fadeSpeed: 'medium',
     flagDebug: true,
     
     /*
@@ -124,6 +124,9 @@ var x4 =  {
     returnToMenu: function(focus) {
         if($a.aProp($a.data,'return','')=='') {
             window.location="index.php";
+        }
+        else if($a.aProp($a.data,'return','')=='exit') {
+            window.close();
         }
         else {
             getString = '?x4Page=menu';
@@ -496,7 +499,7 @@ function x4Window(self) {
         }
         else if(name=='menuBarLabel') {
             $(this.menuBar).find('a[xAction=newRow]').html(
-                '<u>N</u>ew '+value
+                '<u>A</u>dd '+value
             );
         }
         else if(name!='menuBar') {
@@ -905,6 +908,7 @@ function x4GridSearch(self) {
     self.zTableId    = self.getAttribute('xTableId');
     self.zTableIdPar = self.zParent.pullDown('zTableIdPar');
     self.zRowId      = false;
+    self.zRowCount   = 0;
     self.zActivated  = false;
     self.zSortCol    = false;
     self.zSortAD     = false;
@@ -979,6 +983,8 @@ function x4GridSearch(self) {
             this.zParent.sendUp(
                 'menuBarLabel',x4dd.dd[this.zTableId].singular
             );
+            
+            this.setButtonBar();
             
             if(this.zIsChild) {
                 this.zSkeyPar = x4.parent(this).pullDown('zSkeyPar'); 
@@ -1078,6 +1084,7 @@ function x4GridSearch(self) {
                 
                 // Tell x4Browse how many rows it has
                 this.zRowCount = $a.byId(gridBodyId).rows.length;
+                this.setButtonBar();
 
                 window.temp = this;
                 $('#'+gridBodyId).find('tr').each( function() {
@@ -1117,9 +1124,21 @@ function x4GridSearch(self) {
             this.x_value='';
         });
         this.sendUp('rowInfo','No Records');
+        
+        this.setButtonBar();
     }
     
-
+    self.setButtonBar = function() {
+        if(this.zRowCount > 0) {
+            this.zParent.sendUp('menuBarDisable','');
+        }
+        else {
+             // Disable copy and delete
+             var str='deleteRow,copyRow,saveRow,CtrlPageUp,PageUp,CtrlPageDown,PageDown';
+             this.zParent.sendUp('menuBarDisable',str);
+        }        
+    }
+    
     /* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
      * 
      * Row navigation, up and down
@@ -1193,7 +1212,7 @@ function x4GridSearch(self) {
         this.zParent.sendUp('Esc',this);
         return false;
     }
-    self.keyPress_CtrlN = self.keyPress_newRow;
+    self.keyPress_CtrlA = self.keyPress_newRow;
     self.keyPress_editRow = function() {
         if(this.zRowCount > 0) {
             this.zCmdSkey = this.zSkey;
@@ -1203,9 +1222,11 @@ function x4GridSearch(self) {
         }
     }
     self.keyPress_copyRow = function() {
-        this.zCmdSkey = this.zSkey;
-        this.zCmd     = 'new';
-        this.zParent.sendUp('Esc',this);
+        if(this.zRowCount > 0) {
+            this.zCmdSkey = this.zSkey;
+            this.zCmd     = 'new';
+            this.zParent.sendUp('Esc',this);
+        }
         return false;
     }
     self.keyPress_CtrlP = self.keyPress_copyRow;
@@ -1347,7 +1368,7 @@ function x4Detail(self) {
     self.displayRow = function() {
         var skeys=$a.aProp(this.zGridPane,'skeys',[]);
         var rowNow = $a.aProp(skeys,this.zGridPane.zSkey,'0')+1;
-        var text = 'Row '+rowNow+' of '+this.zGridPane.zRowCount;
+        var text = 'Record '+rowNow+' of '+this.zGridPane.zRowCount;
         $("#x4RowInfoText").html(text);
         
         this.setTitle('');
@@ -1741,6 +1762,7 @@ function x4AndroPage(self) {
         $a.byId('gp_post').value='pdf';
         x4.initPost(this);
         $a.json.windowLocation();
+        return false;
     }
     self.keyPress_CtrlP = self.printNow;
     
@@ -1749,6 +1771,7 @@ function x4AndroPage(self) {
         $a.json.addParm('showsql',1);
         $a.json.execute();
         $a.json.process('divShowSql');
+        return false;
     }
     self.keyPress_CtrlQ = self.showSql;
     
@@ -1782,6 +1805,7 @@ function x4AndroPage(self) {
             
             $(this).find("#divOnScreen table").Scrollable(500,500);
         }
+        return false;
     }
     self.keyPress_CtrlO = self.showOnScreen;
     

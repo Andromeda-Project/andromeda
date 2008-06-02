@@ -3653,7 +3653,12 @@ function SpecDDL_Triggers_FK_PT($ufk,$ptab,$chdlist,$parlist) {
 			foreach ($this->utabs[$ufk["table_id_chd"]]["flat"] as $colname=>$colinfo) {
 				// HARDCODE SKEY HARDCODED SKEY
 				if ($colname=="skey") continue;
-				if ($colname=="skey_quiet") continue; 
+				if ($colname=="_agg") continue;
+				#if ($colname=="skey_quiet") continue; 
+				if ($colname=="ts_ins") continue; 
+				if ($colname=="ts_upd") continue; 
+				if ($colname=="uid_ins") continue; 
+				if ($colname=="uid_upd") continue; 
 				if (isset($this->utabs[$ptab]["flat"][$colname])) {
 					$insArr[$colname] = "new.".$colname;
 				}
@@ -3679,7 +3684,7 @@ function SpecDDL_Triggers_FK_PT($ufk,$ptab,$chdlist,$parlist) {
       foreach($chdlist as $chd) {
          $noMatch .= "\n" 
             ."            ErrorCount = ErrorCount + 1;\n"
-            ."            ErrorList = ErrorList || ##$chd,1006,Please Select Valid Value;##;\n";
+            ."            ErrorList = ErrorList || ##$chd,1006,Please Select Valid Value: ## || new.$chd::varchar || ##;##;\n";
          
       }
 		//$noMatch = 
@@ -5333,6 +5338,7 @@ function SpecDDL_Triggers_Histories_One(&$history)  {
     if(count($updcols)>0) {
         $uc = implode("\n               ,",$updcols);
         $uv = implode("\n               ,",$updvals);
+        if(count($awhere)==0) $awhere[] = '1=1';
         $s1 = "\n"
             ."    -- 9900 History logging \n"
             ."    IF ".implode(' OR ',$awhere)." THEN\n"

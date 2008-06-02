@@ -439,8 +439,6 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
         }
     }
     
-    
-    
     # First decision is to work out what kind of control to make
     if($type_id=='gender') {
         $input = html('select');
@@ -485,6 +483,18 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
         // First work out which control to use
         $table_id_fko = $colinfo['table_id_fko'];
         $ddfko = ddTable($table_id_fko);
+        
+        /* KFD 5/28/08, experimental, always do dynamic */
+        $input = html('input');
+        if($ddfko['fkdisplay']<>'none') {
+            $fkparms='gp_dropdown='.$colinfo['table_id_fko'];
+            if($xRoIns<>'Y') {
+                $input->hp['onkeyup']  ="androSelect_onKeyUp(  this,'$fkparms',event)";
+                $input->hp['onkeydown']='androSelect_onKeyDown(event)';
+                $input->hp['onblur'] = 'androSelect_hide()';
+            }
+        }
+        /*
         if($ddfko['fkdisplay']=='' && $xRoIns<>'Y') {
             $input = html('select');
             $rows = rowsForSelect($colinfo['table_id_fko']);
@@ -504,6 +514,8 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
                 $input->hp['onkeydown']='androSelect_onKeyDown(event)';
             }
         }
+        */
+        /* KFD 5/28/08, experimental, done */
 
         // If any columns are supposed to fetch from here,
         // set an event to go to server looking for fetches
@@ -1417,7 +1429,7 @@ function DD_ColInsertsOK(&$colinfo,$mode='html') {
       $dd=DrillDownTop();
       if(isset($dd['parent'][$colinfo['column_id']])) return false;
    }
-	$aid = strtolower(trim($colinfo["automation_id"]));
+	$aid = strtolower(trim(a($colinfo,"automation_id",'')));
 	return in_array($aid,
       array('seqdefault','fetchdef','default'
           ,'blank','none','','synch'
@@ -7351,6 +7363,8 @@ function ahInputsComprehensive(
    // value, class, enabled/disabled, size and so forth.
    //$tabindex=1;
    foreach($acols as $colname) {
+       # HACK KFD 6/2/08.  
+       if ($colname=='') continue;
       $colinfo = &$table['flat'][$colname];
       $value=ColumnValue($table,$row,$mode,$colname);
 
@@ -7452,6 +7466,8 @@ function ahInputsComprehensive(
    // Decide which kind of control to use for each one, and
    // do any overrides and extra stuff that may be necessary
    foreach($acols as $colname) {
+       # HACK KFD 6/2/08.  
+       if ($colname=='') continue;
       $col=&$ahcols[$colname];
       $colinfo = &$table['flat'][$colname];
       $col['input']='input';
@@ -7624,6 +7640,9 @@ function ahInputsComprehensive(
    // Finally, generate the html for each one, with special
    // cases for checkboxes, readonly, and so forth
    foreach($acols as $colname) {
+       # HACK KFD 6/2/08.  
+       if ($colname=='') continue;
+       
       // Some things, like Images, are completely setup earlier,
       // so just skip them completely
       if($ahcols[$colname]['html']<>'') {
@@ -9484,6 +9503,7 @@ function ahColFromACol(&$acol) {
       $xmax=$acol['value_max'] ? $acol['value_max'] : 1425;
       for ($x=$xmin;$x<=$xmax;$x+=15) {
          $hinner.="\n<option value=\"$x\">".hTime($x)."</option>";
+         echo "<br/>returned ".htime($x);
       }
       if($acol['mode']=='search') {
          $hinner="\n<option value=\"\"></option>".$hinner;
@@ -9549,20 +9569,22 @@ function ahColFromACol(&$acol) {
     // Big deal GLEPH, value_min & value_max
     // ------------------------------------
     if(a($acol,'value_min','')<>'' && a($acol,'value_max','')<>'') {
-        $acol['html_element']='select';
-        $acol['hparms']['size']=1;
-        $hinner='';
-        $xmin = a($acol,'value_min');
-        $xmax = a($acol,'value_max');
-	// DJO 4-18-08 Add empty row during lookup mode
-	if($acol['mode']=='search') {
-		$hinner .= "\n<option value=\"\"></option>";
-	}
-    for ($x=$xmin;$x<=$xmax;$x++) {
-            $hinner.="\n<option value=\"$x\">".$x."</option>";
+        if($acol['type_id'] <> 'time') {
+            $acol['html_element']='select';
+            $acol['hparms']['size']=1;
+            $hinner='';
+            $xmin = a($acol,'value_min');
+            $xmax = a($acol,'value_max');
+            // DJO 4-18-08 Add empty row during lookup mode
+            if($acol['mode']=='search') {
+                $hinner .= "\n<option value=\"\"></option>";
+            }
+            for ($x=$xmin;$x<=$xmax;$x++) {
+                    $hinner.="\n<option value=\"$x\">".$x."</option>";
+            }
+            $acol['html_inner']=$hinner;
+            $acol['hparms']['style'] = 'text-align:left';
         }
-        $acol['html_inner']=$hinner;
-        $acol['hparms']['style'] = 'text-align:left';
     }
 
    // ------------------------------------
@@ -9867,6 +9889,10 @@ function aColInfoFromDDColumns(&$table,&$retval) {
    // ----------------------------------------------
    foreach($table['flat'] as $colname=>$colinfo) {
       if(!isset($colinfo['uino'])) {
+         # KFD 6/2/08, this line is required for some older programs
+         # that SDS wrote that still use this family of routines.
+         # Table constraints appear to be showing up as empty columns!
+         if ($colname=='') continue;
          hprint_r("ERROR IN BUILD, PLEASE CONTACT SECURE DATA SOFTWARE");
          echo "Column $colname";
          hprint_r($colinfo);
@@ -11598,7 +11624,7 @@ function RowsForSelect($table_id,$firstletters='',$matches=array(),$distinct='',
 
    // Add more matches on
    foreach($matches as $matchcol=>$matchval) {
-      $aWhere[] = $matchcol.' = '.SQLFC($matchval);
+       $aWhere[] = $matchcol.' = '.SQLFC($matchval);
    }
 
    // See if there is a hardcoded filter in the program class
@@ -11616,8 +11642,11 @@ function RowsForSelect($table_id,$firstletters='',$matches=array(),$distinct='',
    //             1st column only + second column only
    $SLimit='';
    $xWhere=array();
-   if($firstletters<>'') {
-      $SLimit="Limit 30 ";
+   if($firstletters=='*') {
+       // do nothing, no where clauses
+   }
+   elseif($firstletters<>'') {
+      $SLimit="Limit 40 ";
       if(strpos($firstletters,',')===false) {
          // original code, search all columns
          $implode=' OR ';
