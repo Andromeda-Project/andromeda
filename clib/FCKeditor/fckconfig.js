@@ -109,7 +109,7 @@ FCKConfig.ToolbarSets["Default"] = [
 ] ;
 
 FCKConfig.ToolbarSets["Basic"] = [
-	['Bold','Italic','-','OrderedList','UnorderedList','-','Link','Unlink','-','About'],
+	['Bold','Italic','-','PasteText','-','OrderedList','UnorderedList','-','Link','Unlink','-','About'],
         '/',
         ['FontName','FontSize']
 ] ;
@@ -185,8 +185,8 @@ FCKConfig.CleanWordKeepsStructure = false ;
 // inline when creating the editor instance. In that cases you must set the
 // values of LinkBrowserURL, ImageBrowserURL and so on.
 // Custom implementations should just ignore it.
-var _FileBrowserLanguage	= 'asp' ;	// asp | aspx | cfm | lasso | perl | php | py
-var _QuickUploadLanguage	= 'asp' ;	// asp | aspx | cfm | lasso | php
+var _FileBrowserLanguage	= 'php' ;	// asp | aspx | cfm | lasso | perl | php | py
+var _QuickUploadLanguage	= 'php' ;	// asp | aspx | cfm | lasso | php
 
 
 // Don't care about the following line. It just calculates the correct connector
