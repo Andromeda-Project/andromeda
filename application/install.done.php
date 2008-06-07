@@ -21,7 +21,7 @@ class install extends x_table2 {
             ,"SPEC_LIB"=>"andro_universal"
             ,"SPEC_LIST"=>"andro.dd.yaml"
          );
-         include("AndroBuild.php");
+         include("androBuild.php");
          SessionSet('UID','andro');
          SessionSet('PWD','andro');
          echo  ob_get_clean();

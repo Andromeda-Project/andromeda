@@ -94,7 +94,7 @@ $GLOBALS["parm"] = array(
    ,"SPEC_LIST"=>"'.trim($row_a["appspec"]).'"
 );
    
-include("AndroBuild.php");  
+include("androBuild.php");  
 ?>
    ';
    

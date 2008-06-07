@@ -195,7 +195,7 @@ function appModuleLeft() {
     return false;
 }
 
-// DO 2-22-2008 Moved these out of AndroBuilder as they may be needed in other files 
+// DO 2-22-2008 Moved these out of androBuilder as they may be needed in other files 
 function GetOS() {
    return $_ENV['OS'];
 }

@@ -79,7 +79,7 @@ class a_builder extends x_table2 {
    ,"SPEC_LIB"=>"'.trim($row_a["appspec_lib"]).'"
    ,"SPEC_LIST"=>"'.trim($row_a["appspec"]).'");
 
-	include("AndroBuild.php");  
+	include("androBuild.php");  
 ?>
 ';
         $t=pathinfo(__FILE__);
