@@ -9503,7 +9503,6 @@ function ahColFromACol(&$acol) {
       $xmax=$acol['value_max'] ? $acol['value_max'] : 1425;
       for ($x=$xmin;$x<=$xmax;$x+=15) {
          $hinner.="\n<option value=\"$x\">".hTime($x)."</option>";
-         echo "<br/>returned ".htime($x);
       }
       if($acol['mode']=='search') {
          $hinner="\n<option value=\"\"></option>".$hinner;
