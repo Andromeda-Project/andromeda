@@ -965,7 +965,7 @@ function androSelect_onKeyUp(obj,strParms,e) {
         // As part of making visible, create an onclick
         // that will trap the event target and lose focus
         // if not the input object or the
-        //addEventListener(document   ,'click',androSelect_documentClick);
+        addEventListener(document   ,'click',androSelect_documentClick);
     }
     
     // Tell it the current control it is working for
