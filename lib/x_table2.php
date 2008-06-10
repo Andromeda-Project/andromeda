@@ -602,7 +602,7 @@ class x_table2 {
       foreach($matches as $key=>$value) {
           $ileft  = $key;
           $imatch = SQLFC($value);
-         $pmatch .= $key."='".$value."'";
+          $pmatch .= $key."='".$value."'";
       }
       
       // Do an insert if coming through as ajax
@@ -651,17 +651,32 @@ class x_table2 {
       }
 
 
-      // Pull the source table, the right-hand side
+      # Pull the source table, the right-hand side
+      # KFD 6/9/08, make left hand side sort by description
+      #             if present.
+      $vright = ddTable_idResolve($tright);
+      $vleft  = ddTable_idResolve($tleft);
+      $ob = $dd_right['pks'];
+      $ljoin = '';
+      $lob   = '';
+      if(isset($dd_right['flat']['description'])) {
+          $ob = 'description';
+          $ljoin = " JOIN $vright r ON $vleft.".$dd_right['pks']
+            .'=r.'.$dd_right['pks'];
+          $lob = ' ORDER BY r.description';
+      }
       $sq="SELECT ".$dd_right['pks']." as pk
                  ,description
              FROM ".ddTable_idResolve($tright)."
             WHERE description <> ''
-            ORDER BY ".$dd_right['pks'];
+            ORDER BY $ob";
       $rows_right=sql_allrows($sq,'pk');
 
-      $sq="SELECT ".$dd_right['pks']." as pk,skey
-             FROM ".ddTable_IDResolve($this->table_id)."
-            WHERE $pmatch";
+      # Left side table.
+      $sq="SELECT $vleft.".$dd_right['pks']." as pk,$vleft.skey
+             FROM ".ddTable_IDResolve($this->table_id)
+            .$ljoin.' '
+            ." WHERE $pmatch $lob";
       $rows_left=sql_allrows($sq,'pk');
 
       // Convert the left hand side into options
