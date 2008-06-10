@@ -175,7 +175,7 @@ function x4Data($name,$data) {
 function jsonPrint_r($data) {
     ob_start();
     hprint_r();
-    $GLOBALS['AG']['x4']['html']['*MAIN'].=ob_get_clean();
+    $GLOBALS['AG']['x4']['html']['*MAIN*'].=ob_get_clean();
 }
 function json_encode_safe($data) {
     // Package up the JSON
@@ -544,8 +544,14 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
     if($input->htype=='input') {
         # KFD 4/24/08, makes it easier to make widgets in
         #              in custom code, don't require 'dispsize';
-        if(!isset($colinfo['dispsize'])&&isset($colinfo['colprec'])) {
-            $colinfo['dispsize'] = $colinfo['colprec']+1;
+        # KFD 6/9/08,  refine this to trap dates
+        if(!isset($colinfo['dispsize'])) {
+            if($type_id=='date') {
+                $colinfo['dispsize'] = 11;
+            }
+            else if(isset($colinfo['colprec'])) {
+                $colinfo['dispsize'] = $colinfo['colprec']+1;
+            }
         }
 
         $input->hp['size'] = min(
@@ -11685,10 +11691,12 @@ function RowsForSelect($table_id,$firstletters='',$matches=array(),$distinct='',
    $sDistinct = $distinct<>'' ? ' DISTINCT ' : '';
    $SOB=$aproj[0];
    if($allcols) {
+       # KFD 6/9/08, added in automatic ordering on queuopos column
+       $OB = isset($table['flat']['queuepos']) ? 'queuepos' : '2';
        $sq="SELECT skey,$proj
               FROM $view_id
            $SWhere
-            ORDER BY 2 $SLimit";
+            ORDER BY $OB $SLimit";
    }
    else {
        $sq="SELECT $sDistinct $pk as _value,$collist as _display
