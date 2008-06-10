@@ -119,11 +119,11 @@ class x_builder {
         $retval = $retval && $this->PlanMake();
         $retval = $retval && $this->PlanExecute();
         $retval = $retval && $this->ContentLoad();
-        $retval = $retval && $this->ContentDD();
+        # KFD 6/7/08 removed, will put perms onto zdd. instead
+        #$retval = $retval && $this->ContentDD();  
         $retval = $retval && $this->SecurityNodeManager();
         
         // This is code generation
-        //
         $retval = $retval && $this->CodeGenerate_Info();
         $retval = $retval && $this->CodeGenerate_Tables();
         $retval = $retval && $this->CodeGenerate_Modules();
@@ -332,28 +332,37 @@ DECLARE
 	rowcount integer := 1;
 	lnSeq integer := 1;
 BEGIN
-	UPDATE zdd.tables_c set table_seq = 0;
+	UPDATE zdd.tables set table_seq = 0;
 	
 	DELETE FROM zdd.table_deps;
 	INSERT INTO zdd.table_deps 
 		(table_id_par,table_id_chd)
 		SELECT table_id_par, table_id 
-		   FROM zdd.tabfky_c 
-		   WHERE zdd.tabfky_c.nocolumns <> 'Y'
-			  AND zdd.tabfky_c.table_id <> zdd.tabfky_c.table_id_par;
-	UPDATE zdd.tables_c set table_seq = -1 
+		   FROM zdd.tabfky 
+		   WHERE zdd.tabfky.nocolumns <> 'Y'
+			  AND zdd.tabfky.table_id <> zdd.tabfky.table_id_par;
+    -- Added KFD 6/9/08, row security that depends on another table
+	--INSERT INTO zdd.table_deps 
+--		(table_id_par,table_id_chd)
+--		SELECT DISTINCT table_id_row, table_id 
+--		  FROM zdd.permxtablesrow
+--		 WHERE NOT EXISTS (
+--		     SELECT table_id_par FROM zdd.table_deps
+--		      WHERE table_id_par = zdd.permxtablesrow.table_id_row
+--		        AND table_id_chd = zdd.permxtablesrow.table_id);           
+	UPDATE zdd.tables set table_seq = -1 
 		FROM zdd.table_deps f 
 		WHERE table_id = f.table_id_chd ;
 
 	while rowcount > 0 LOOP
-		UPDATE zdd.tables_c set table_seq = lnSeq
+		UPDATE zdd.tables set table_seq = lnSeq
         	  FROM (SELECT t1.table_id_chd 
                           FROM zdd.table_deps t1 
-                          JOIN zdd.tables_c t2 ON t1.table_id_par = t2.table_id
+                          JOIN zdd.tables t2 ON t1.table_id_par = t2.table_id
                          GROUP BY t1.table_id_chd
                         HAVING MIN(t2.table_seq) >= 0) fins
-	         WHERE zdd.tables_c.table_id = fins.table_id_chd
-        	   AND zdd.tables_c.table_seq = -1;
+	         WHERE zdd.tables.table_id = fins.table_id_chd
+        	   AND zdd.tables.table_seq = -1;
 
 		lnSeq := lnSeq + 1;
 		GET DIAGNOSTICS rowcount = ROW_COUNT;
@@ -434,9 +443,14 @@ function DDRMake() {
 
 	// Load and convert the DD arrays
 	$this->LogStage("Bootstrapping the data dictionary tables");
-   $specboot = $parm["DIR_PUB"]."lib/".$parm["SPEC_BOOT"].".add";
+    $specboot = $parm["DIR_PUB"]."lib/".$parm["SPEC_BOOT"].".add";
       
 	$this->DBB_LoadAddFile($specboot,$this->ddarr);
+    //$this->writeAsYAML(
+    //    $parm["DIR_PUB"]."lib/".$parm["SPEC_BOOT"].'.dd.yaml'
+    //    ,$this->ddarr['data']
+    //);
+    //exit;
    
    // public service detour.  Write out a generated file of the ddarr 
    // array, which is later used by documentation generation stuff
@@ -454,7 +468,7 @@ function DDRMake() {
    
 	
 	$retval = true;
-	$this->DDRMake_Make("_c");
+	$this->DDRMake_Make("");
 	$this->DDRMake_Make("_r");
 	//$this->DDRMake_Make("_t");	// for pulling test results later
 	
@@ -529,7 +543,7 @@ function DDRMake_Make($sSuffix)
 	$this->LogEntry("Creating Build Tables, series ". $sSuffix);
 	$dd = &$this->ddarr["data"];
 	$SQLCommon = ")";
-	if ($sSuffix=="_c") { $SQLCommon = ",skey_hn int,skey_s int)"; }
+	if ($sSuffix=="") { $SQLCommon = ",skey_hn int,skey_s int)"; }
 	if ($sSuffix=="_s") { $SQLCommon = ",skey_s int)"; }
 	
 	$colprops = array("primary_key"=>"N", "type_id"=>"");
@@ -680,7 +694,7 @@ function RealityGet_NSO_Indexes()
 	$results = $this->SQLRead(
 		"Select tablename,indexname,indexdef 
            FROM pg_indexes
-           JOIN zdd.tables_c on pg_indexes.tablename = zdd.tables_c.table_id
+           JOIN zdd.tables on pg_indexes.tablename = zdd.tables.table_id
 		 WHERE schemaname='public'");
 	while ($row=pg_fetch_array($results)) {
 		$object_id = strtolower($row["indexname"]);
@@ -774,24 +788,71 @@ function SpecLoad() {
     global $srcfile;
     
     // Load the data dictionary to itself
-    $sfx="_c";
-    $this->LogStage("Processing bootstrap DD specification into series $sfx");
-    $this->LogEntry("Loading spec to series $sfx");
+    $sfx="";
+    
+    # BIG CHANGE KFD 6/7/08, we don't load androDBB to the
+    #     general description of the database.  We used it to
+    #     build the zdd. schema but we do not want it to
+    #     clutter up the whole database, so we drop it.
+    $this->LogStage("Loading limited bootstrap specification into main series");
+    /*
+    $tables = array_keys($this->ddarr['data']['table']);
+    foreach($tables as $table) {
+        //if($table=='columns') continue;
+        if($table=='groups')  continue;
+        unset($this->ddarr['data']['table'][$table]);
+    }
+    */
+    #hprint_r($this->ddarr);
+    #exit;
     $srcfile='AndroDBB';
     $retval = $retval && $this->SpecLoad_ArrayToTables(
         $this->ddarr["data"]
         ,$sfx
     );
-    $this->LogEntry("Populating reference tables in series $sfx");
+    #
+    # KFD 6/7/08.  Since we do not load androDBB into the main
+    #              tables anymore, we need to move the column
+    #              definitions over to content so they 
+    #              can be used.
+    /*
+    $ddcols = array(
+        array('__type'=>'columns'
+            ,'column_id','srcfile','description'
+            ,'type_id','colprec','colscale'
+            ,'automation_id','auto_formula'
+            ,'uino','alltables'
+        )
+    );
+    foreach($this->ddarr['data']['column'] as $column_id=>$info) {
+        $ddcols[]=array('__type'=>'values'
+            ,'column_id'    =>$column_id
+            ,'srcfile'      =>'AndroDBB'
+            ,'description'  =>$this->a($info,'description')
+            ,'type_id'      =>$this->a($info,'type_id')
+            ,'colprec'      =>$this->a($info,'colprec' ,0)
+            ,'colscale'     =>$this->a($info,'colscale',0)
+            ,'automation_id'=>$this->a($info,'automation_id')
+            ,'auto_formula' =>$this->a($info,'auto_formula')
+            ,'uino'         =>$this->a($info,'uino')
+            ,'alltables'    =>$this->a($info,'alltables')
+        );
+    }   
+    $this->ddarr['content']['columns'] = $ddcols;
+    */
+    $this->LogEntry("Populating reference tables in main series");
+    #hprint_r($this->ddarr);
+    #exit;
     $this->DBB_LoadContent(true,$this->ddarr['content'],"zdd.",$sfx);
     
+    
     // Load any library specification
-    $sfx="_c";
+    $sfx="";
     $spec_lib= $parm["DIR_PUB"]."lib/".$parm["SPEC_LIB"].".add";
-    $this->LogStage("Processing library spec to series $sfx: ");
+    $this->LogStage("Processing library spec to main series");
     $ta = array();
     $this->DBB_LoadAddFile($spec_lib,$ta);
-    $this->LogEntry("Loading spec to series $sfx");
+    $this->LogEntry("Loading spec to main series");
     $srcfile='andro_universal';
     $retval = $retval && $this->SpecLoad_ArrayToTables(
         $ta["data"]
@@ -801,7 +862,7 @@ function SpecLoad() {
     $this->content = array_merge($this->content,$ta['content']);
     
     // Load all other specification files
-    $this->LogStage("Loading new specification into build tables series $sfx");
+    $this->LogStage("Loading new specification into main series");
     $ta = array();
     if ($parm["SPEC_LIST"]<>"") {
         $speclist = explode(",",$parm["SPEC_LIST"]);
@@ -836,7 +897,7 @@ function SpecLoad() {
                     $retval = $this->DBB_LoadYAMLFile($spec,$ta);
                 }
                 if($retval) {
-                    $this->LogEntry("Loading spec to series $sfx");
+                    $this->LogEntry("Loading spec to main series");
                     $retval=$retval && $this->SpecLoad_ArrayToTables(
                         $ta["data"]
                         ,$sfx
@@ -879,6 +940,59 @@ function SpecLoad() {
     }
     return $retval;
 }
+
+#  KFD 6/9/08, if the file we just loaded does not exist in YAML
+#              form, write it out
+#
+function writeAsYAML($outfile,$array) {
+    //if(file_exists($outfile)) return;
+    hprint_r($array);
+    $FILE = fopen($outfile,'w+');
+    $this->writeAsYAMLWalk($FILE,$array,'');
+    exit;
+}
+function writeAsYAMLWalk($FILE,$array,$indent,$parent='') {
+    $parents='table,column,foreign_key,module,group';
+    $apars  = explode(',',$parents);
+    $count = 0;
+    
+    # Reslot as arrays and values;
+    $vals = array();
+    $arrs = array();
+    foreach($array as $key=>$value) {
+        if(is_array($value))
+            $arrs[$key] = $value;
+        else 
+            $vals[$key] = $value;
+    }
+    
+    foreach($vals as $key=>$value) {
+        if($key=='__keystub') continue;
+        if($key=='uicolseq') continue;
+        if($value=='N') $value='"N"';
+        if($value=='Y') $value='"Y"';
+        fwrite($FILE,"$indent$key: $value\n");
+    }
+    if(count($vals)>0 && count($arrs)>0) fwrite($FILE,"\n");
+    
+    foreach($arrs as $key=>$value) {
+        if(!is_array($value)) continue;
+        if(isset($value['table_seq'])) {
+            $value['uisort'] = $value['table_seq'];
+            unset($value['table_seq']);
+        }
+        $i2 = $indent;
+        if(in_array($parent,$apars)) {
+            fwrite($FILE,"$indent$parent $key:\n");
+            $i2 = $indent.'    ';
+        }
+        $this->writeAsYAMLWalk($FILE,$value,$i2,$key);
+        if($indent=='') {
+            fwrite($FILE,"\n");
+        }
+    }
+}
+
 
 //   A walk in the park.  Or perhaps a walk of the tree.
 //
@@ -1052,7 +1166,7 @@ function SpecFlattenValidDD() {
 function SFVDD_One($table_id,$collist) {
     $errors = 0;
     $sq="SELECT count(*) as _cnt,$collist
-           FROM zdd.{$table_id}_c
+           FROM zdd.{$table_id}
           GROUP BY $collist
          HAVING count(*) > 1";
 	$results=$this->SQLRead($sq);
@@ -1072,7 +1186,7 @@ function SpecFlattenValidUser() {
     $this->LogEntry("Checking for Circular Dependencies");
 	$errors = 0;
 	$sql = 
-		"SELECT table_id FROM zdd.tabfky_c ".
+		"SELECT table_id FROM zdd.tabfky ".
 		" WHERE table_id = table_id_par ".
 		"   AND primary_key = 'Y'";
 	$results=$this->SQLRead($sql);
@@ -1101,9 +1215,9 @@ function SpecFlattenValidUser() {
     // RI failures
     $this->LogEntry("Checking for Invalid References");
 	$sql = 
-		"SELECT table_id,module FROM zdd.tables_c 
+		"SELECT table_id,module FROM zdd.tables 
 		 WHERE NOT EXISTS (
-            SELECT module FROM zdd.modules_c WHERE module=zdd.tables_c.module
+            SELECT module FROM zdd.modules WHERE module=zdd.tables.module
          )";
 	$results=$this->SQLRead($sql);
 	while ($row = pg_fetch_array($results)) {
@@ -1113,9 +1227,9 @@ function SpecFlattenValidUser() {
 		$errors++;
 	}
 	$sql = 
-		"SELECT menu_page FROM zdd.uimenu_c 
+		"SELECT menu_page FROM zdd.uimenu 
 		 WHERE NOT EXISTS (
-            SELECT module FROM zdd.modules_c WHERE module=zdd.uimenu_c.module
+            SELECT module FROM zdd.modules WHERE module=zdd.uimenu.module
          )";
 	$results=$this->SQLRead($sql);
 	while ($row = pg_fetch_array($results)) {
@@ -1126,9 +1240,9 @@ function SpecFlattenValidUser() {
 	}
     // permxmodules - > modules
 	$sql = 
-		"SELECT group_id,module FROM zdd.permxmodules_c
+		"SELECT group_id,module FROM zdd.permxmodules
 		 WHERE NOT EXISTS (
-            SELECT module FROM zdd.modules_c WHERE module=zdd.permxmodules_c.module
+            SELECT module FROM zdd.modules WHERE module=zdd.permxmodules.module
          )";
 	$results=$this->SQLRead($sql);
 	while ($row = pg_fetch_array($results)) {
@@ -1139,10 +1253,10 @@ function SpecFlattenValidUser() {
 	}
     // permxmodules - > groups
 	$sql = 
-		"SELECT group_id,module FROM zdd.permxmodules_c
+		"SELECT group_id,module FROM zdd.permxmodules
 		 WHERE NOT EXISTS (
             SELECT group_id
-              FROM zdd.groups_c WHERE group_id=zdd.permxmodules_c.group_id
+              FROM zdd.groups WHERE group_id=zdd.permxmodules.group_id
          )";
 	$results=$this->SQLRead($sql);
 	while ($row = pg_fetch_array($results)) {
@@ -1154,12 +1268,12 @@ function SpecFlattenValidUser() {
     
     // columns -> automations
 	$sql = 
-		"SELECT column_id,automation_id FROM zdd.columns_c
+		"SELECT column_id,automation_id FROM zdd.columns
           WHERE coalesce(automation_id,'') <> ''
 		    AND NOT EXISTS (
             SELECT automation_id
-              FROM zdd.automations_c
-             WHERE automation_id=zdd.columns_c.automation_id
+              FROM zdd.automations
+             WHERE automation_id=zdd.columns.automation_id
          )";
 	$results=$this->SQLRead($sql);
 	while ($row = pg_fetch_array($results)) {
@@ -1170,11 +1284,11 @@ function SpecFlattenValidUser() {
 	}
     // columns -> types
 	$sql = 
-		"SELECT column_id,type_id FROM zdd.columns_c
+		"SELECT column_id,type_id FROM zdd.columns
 		  WHERE NOT EXISTS (
             SELECT type_id
-              FROM zdd.types_c
-             WHERE type_id=zdd.columns_c.type_id
+              FROM zdd.types
+             WHERE type_id=zdd.columns.type_id
          )";
 	$results=$this->SQLRead($sql);
 	while ($row = pg_fetch_array($results)) {
@@ -1185,12 +1299,12 @@ function SpecFlattenValidUser() {
 	}
     // tabcol -> automations
 	$sql = 
-		"SELECT table_id,column_id,automation_id FROM zdd.tabcol_c
+		"SELECT table_id,column_id,automation_id FROM zdd.tabcol
           WHERE coalesce(automation_id,'') <> ''
 		    AND NOT EXISTS (
             SELECT automation_id
-              FROM zdd.automations_c
-             WHERE automation_id=zdd.tabcol_c.automation_id
+              FROM zdd.automations
+             WHERE automation_id=zdd.tabcol.automation_id
          )";
 	$results=$this->SQLRead($sql);
 	while ($row = pg_fetch_array($results)) {
@@ -1203,9 +1317,9 @@ function SpecFlattenValidUser() {
 	}
     // Make sure all column definitions are real  
     $sq='Select table_id,column_id_src
-           FROM zdd.tabcol_c 
-          WHERE NOT EXISTS (select * from zdd.columns_c
-                              WHERE column_id = zdd.tabcol_c.column_id_src)';
+           FROM zdd.tabcol 
+          WHERE NOT EXISTS (select * from zdd.columns
+                              WHERE column_id = zdd.tabcol.column_id_src)';
 	$results=$this->SQLRead($sq);
 	while ($row = pg_fetch_array($results)) {
         $errors++;
@@ -1216,9 +1330,9 @@ function SpecFlattenValidUser() {
     
     // Make sure all foreign key definitions name real tables.  
     $sq='Select table_id,table_id_par 
-           FROM zdd.tabfky_c 
-          WHERE NOT EXISTS (select * from zdd.tables_c
-                              WHERE table_id = zdd.tabfky_c.table_id_par)';
+           FROM zdd.tabfky 
+          WHERE NOT EXISTS (select * from zdd.tables
+                              WHERE table_id = zdd.tabfky.table_id_par)';
 	$results=$this->SQLRead($sq);
 	while ($row = pg_fetch_array($results)) {
         $errors++;
@@ -1228,9 +1342,9 @@ function SpecFlattenValidUser() {
     }
     // Make sure all foreign key definitions name real tables.  
     $sq='Select table_id,table_id_par 
-           FROM zdd.tabfky_c 
-          WHERE NOT EXISTS (select * from zdd.tables_c
-                              WHERE table_id = zdd.tabfky_c.table_id)';
+           FROM zdd.tabfky 
+          WHERE NOT EXISTS (select * from zdd.tables
+                              WHERE table_id = zdd.tabfky.table_id)';
 	$results=$this->SQLRead($sq);
 	while ($row = pg_fetch_array($results)) {
         $errors++;
@@ -1242,11 +1356,11 @@ function SpecFlattenValidUser() {
 
     // Make sure all chain funcopers and compopers are real  
     $sq="Select table_id,column_id,funcoper
-           FROM zdd.colchaintests_c 
+           FROM zdd.colchaintests 
           WHERE coalesce(funcoper,'') <> ''
             AND NOT EXISTS (
-              select * from zdd.funcopers_c
-               WHERE funcoper = zdd.colchaintests_c.funcoper
+              select * from zdd.funcopers
+               WHERE funcoper = zdd.colchaintests.funcoper
             )";
 	$results=$this->SQLRead($sq);
 	while ($row = pg_fetch_array($results)) {
@@ -1259,11 +1373,11 @@ function SpecFlattenValidUser() {
     }
     // Make sure all chain funcopers and compopers are real  
     $sq="Select table_id,column_id,compoper
-           FROM zdd.colchaintests_c 
+           FROM zdd.colchaintests 
           WHERE coalesce(compoper,'') <> ''
             AND NOT EXISTS (
-              select * from zdd.compopers_c
-               WHERE compoper = zdd.colchaintests_c.compoper
+              select * from zdd.compopers
+               WHERE compoper = zdd.colchaintests.compoper
             )";
 	$results=$this->SQLRead($sq);
 	while ($row = pg_fetch_array($results)) {
@@ -1279,8 +1393,8 @@ function SpecFlattenValidUser() {
 	$this->LogEntry("Checking for table-name = module-name");
 	$results = $this->SQLRead(
 		"select table_id 
-         FROM zdd.tables_c  t
-         JOIN zdd.modules_c m ON t.table_id = m.module"
+         FROM zdd.tables  t
+         JOIN zdd.modules m ON t.table_id = m.module"
     );
     $x=0;
     while($row=pg_fetch_array($results)) {
@@ -1308,7 +1422,7 @@ function SpecFlattenValidUser() {
 function SFVUser_One($table_id,$collist,$name) {
     $errors = 0;
     $sq="SELECT count(*) as _cnt,$collist
-           FROM zdd.{$table_id}_c
+           FROM zdd.{$table_id}
           GROUP BY $collist
          HAVING count(*) > 1";
 	$results=$this->SQLRead($sq);
@@ -1350,27 +1464,27 @@ function SpecFlatten_ColumnsAll() {
 	//
 	
 	$this->SQL("
-		insert into zdd.tabcol_c (
+		insert into zdd.tabcol (
             table_id,column_id,column_id_src,prefix,suffix
            ,primary_key,uisearch,uino,uicolseq)
 		select t.table_id,c.column_id,c.column_id,'',''
                ,'N','N',c.uino,'99999'
-		  from zdd.tables_c t, zdd.columns_c c
+		  from zdd.tables t, zdd.columns c
 		 where c.alltables = 'Y'
 		   and not exists 
 		      (select table_id,column_id 
-			      from zdd.tabcol_c
+			      from zdd.tabcol
 			     WHERE table_id = t.table_id 
 				    AND column_id = c.column_id)");
 
                 
 	$this->LogEntry("Indexing every table on skey");
-	$this->SQL("INSERT INTO zdd.tabidx_c (idx_name,idx_unique,table_id) ".
-		"SELECT RTRIM(t.table_id) || '_skey_idx','N',t.table_id FROM zdd.tables_c t ".
-		"WHERE NOT EXISTS (SELECT * FROM zdd.tabidx_c WHERE idx_name = RTRIM(t.table_id) || '_skey')");
-	$this->SQL("INSERT INTO zdd.tabidxcol_c (idx_name,idx_unique,table_id,column_id) ".
-		"SELECT RTRIM(t.table_id) || '_skey_idx','N',t.table_id,'skey' FROM zdd.tables_c t ".
-		"WHERE NOT EXISTS (SELECT * FROM zdd.tabidx_c WHERE idx_name = RTRIM(t.table_id) || '_skey')");
+	$this->SQL("INSERT INTO zdd.tabidx (idx_name,idx_unique,table_id) ".
+		"SELECT RTRIM(t.table_id) || '_skey_idx','N',t.table_id FROM zdd.tables t ".
+		"WHERE NOT EXISTS (SELECT * FROM zdd.tabidx WHERE idx_name = RTRIM(t.table_id) || '_skey')");
+	$this->SQL("INSERT INTO zdd.tabidxcol (idx_name,idx_unique,table_id,column_id) ".
+		"SELECT RTRIM(t.table_id) || '_skey_idx','N',t.table_id,'skey' FROM zdd.tables t ".
+		"WHERE NOT EXISTS (SELECT * FROM zdd.tabidx WHERE idx_name = RTRIM(t.table_id) || '_skey')");
 	return true;
 }
 
@@ -1393,13 +1507,13 @@ function SpecFlatten_ColumnsPre() {
    
    // Generating this shorthand makes things easier                
    $sql 
-      ="update zdd.tabfkyautocols_c "
+      ="update zdd.tabfkyautocols "
       ."set column_id_arg = rtrim(prefix)||rtrim(column_id)||rtrim(suffix)";
    $this->SQL($sql);
 
    // Put columns into parent tables if not there already
    $sql="
-insert into zdd.tabcol_c ( 
+insert into zdd.tabcol ( 
    table_id
   ,column_id,column_id_src
   ,suffix,prefix
@@ -1408,12 +1522,12 @@ insert into zdd.tabcol_c (
 select table_id_par,column_id,column_id
       ,'',''
       ,MAX(uicolseq)
-from zdd.tabfkyautocols_c 
+from zdd.tabfkyautocols 
 where not exists 
   (select table_id,column_id
-     from zdd.tabcol_c
-    WHERE zdd.tabcol_c.table_id  = zdd.tabfkyautocols_c.table_id_par
-      AND zdd.tabcol_c.column_id = zdd.tabfkyautocols_c.column_id
+     from zdd.tabcol
+    WHERE zdd.tabcol.table_id  = zdd.tabfkyautocols.table_id_par
+      AND zdd.tabcol.column_id = zdd.tabfkyautocols.column_id
   )
  GROUP BY table_id_par,column_id
       ";
@@ -1421,14 +1535,14 @@ where not exists
     
    $this->SQL($sql);
    $sql = "
-update zdd.tabcol_c set 
+update zdd.tabcol set 
 	automation_id = UPPER(x.automation_id)
 	,auto_formula = x.table_id||'.'||x.column_id_arg
    ,auto_suffix  = x.suffix
    ,auto_prefix  = x.prefix
-  FROM zdd.tabfkyautocols_c x
- WHERE x.table_id_par = zdd.tabcol_c.table_id
-   AND x.column_id    = zdd.tabcol_c.column_id
+  FROM zdd.tabfkyautocols x
+ WHERE x.table_id_par = zdd.tabcol.table_id
+   AND x.column_id    = zdd.tabcol.column_id
    AND UPPER(x.automation_id) IN ('SUM','COUNT','LATEST')";   
    $this->SQL($sql);
     //h*print_r($sql);
@@ -1436,32 +1550,32 @@ update zdd.tabcol_c set
    
    // Put columns into child tables if not there already                
    $sql="
-insert into zdd.tabcol_c 
+insert into zdd.tabcol 
   (table_id,column_id,column_id_src,suffix,prefix,uicolseq)
 select table_id,column_id_arg,column_id,suffix,prefix,MAX(uicolseq)
-from zdd.tabfkyautocols_c 
+from zdd.tabfkyautocols 
 where not exists 
    (select table_id,column_id
-      from zdd.tabcol_c
-     WHERE zdd.tabcol_c.table_id  = zdd.tabfkyautocols_c.table_id
-       AND zdd.tabcol_c.column_id = zdd.tabfkyautocols_c.column_id_arg
-       AND zdd.tabcol_c.prefix    = zdd.tabfkyautocols_c.prefix        
-       AND zdd.tabcol_c.suffix    = zdd.tabfkyautocols_c.suffix    
+      from zdd.tabcol
+     WHERE zdd.tabcol.table_id  = zdd.tabfkyautocols.table_id
+       AND zdd.tabcol.column_id = zdd.tabfkyautocols.column_id_arg
+       AND zdd.tabcol.prefix    = zdd.tabfkyautocols.prefix        
+       AND zdd.tabcol.suffix    = zdd.tabfkyautocols.suffix    
      )
  GROUP BY table_id,column_id_arg,column_id,suffix,prefix";
    $this->SQL($sql);
     //h*print_r($sql);
    $sql = "
-update zdd.tabcol_c set 
+update zdd.tabcol set 
 	automation_id = UPPER(x.automation_id)
 	,auto_formula = x.table_id_par||'.'||x.column_id
    ,auto_suffix  = x.suffix
    ,auto_prefix  = x.prefix
-  FROM zdd.tabfkyautocols_c x
- WHERE x.table_id      = zdd.tabcol_c.table_id
-   AND x.column_id_arg = zdd.tabcol_c.column_id
-   AND x.suffix        = zdd.tabcol_c.suffix
-   AND x.prefix        = zdd.tabcol_c.prefix
+  FROM zdd.tabfkyautocols x
+ WHERE x.table_id      = zdd.tabcol.table_id
+   AND x.column_id_arg = zdd.tabcol.column_id
+   AND x.suffix        = zdd.tabcol.suffix
+   AND x.prefix        = zdd.tabcol.prefix
    AND UPPER(x.automation_id) IN ('FETCH','FETCHDEF','DISTRIBUTE','SYNCH')";   
    $this->SQL($sql);
     //h*print_r($sql);
@@ -1473,7 +1587,7 @@ update zdd.tabcol_c set
 function SpecFlatten_Runout() {
 	$this->LogEntry("TABLES: Executing server-side table sequencer: Table_Sequencer");
 	$this->SQL("select zdd.table_sequencer();");
-	$results = $this->SQLRead("select table_id FROM zdd.tables_c WHERE table_seq<0");
+	$results = $this->SQLRead("select table_id FROM zdd.tables WHERE table_seq<0");
 	$errors = pg_fetch_all($results);
 	if (false!==$errors) { 
 		$this->LogEntry("There were ".count($errors)." tables that could not be sequenced:");
@@ -1487,7 +1601,7 @@ function SpecFlatten_Runout() {
 	}
 
 	$this->LogEntry("Flattening table definitions");
-	$r1 = $this->SQLRead("Select * FROM zdd.tables_c ORDER BY table_seq");
+	$r1 = $this->SQLRead("Select * FROM zdd.tables ORDER BY table_seq");
     $rows = pg_fetch_all($r1);
     foreach($rows as $row) {
         $table_id = $row['table_id'];
@@ -1498,7 +1612,7 @@ function SpecFlatten_Runout() {
         
         // Insert columns first.  Must do columns first so we
         // can have tables that have fk's to themselves
-        $sq="INSERT INTO zdd.tabflat_c (
+        $sq="INSERT INTO zdd.tabflat (
                  table_id,column_id_src,column_id,suffix,prefix
                 ,primary_key,uisearch
                 ,colprec,colscale,colres,type_id,inputmask
@@ -1526,15 +1640,15 @@ function SpecFlatten_Runout() {
                        then c.uisearch_ignore_dash
                        else t.uisearch_ignore_dash end as uisearch_ignore_dash
                  ,t.formula,t.formshort,t.dispsize
-             FROM zdd.tabcol_c tc
-             JOIN zdd.columns_c   c ON tc.column_id_src = c.column_id
-             JOIN zdd.type_exps_c t ON c.type_id        = t.type_id
+             FROM zdd.tabcol tc
+             JOIN zdd.columns   c ON tc.column_id_src = c.column_id
+             JOIN zdd.type_exps t ON c.type_id        = t.type_id
             WHERE tc.table_id = '$table_id'"; 
         $this->SQL($sq);
 
         // Create flattened column definitions from foreign 
         // keys.  Insert all non-mutable 
-        $sq="INSERT INTO zdd.tabflat_c (
+        $sq="INSERT INTO zdd.tabflat (
                  table_id,column_id_src,column_id,suffix,prefix
                 ,description,descshort
                 ,primary_key,uisearch
@@ -1570,17 +1684,17 @@ function SpecFlatten_Runout() {
                            ,fk.primary_key,fk.uisearch
                            ,fk.table_id_par as table_id_fko
                            ,TRIM(fk.uicolseq) || '.' || TRIM(f.uicolseq) as uicolseq
-                       FROM zdd.tabfky_c  fk
-                       JOIN zdd.tabflat_c f   ON fk.table_id_par = f.table_id
+                       FROM zdd.tabfky  fk
+                       JOIN zdd.tabflat f   ON fk.table_id_par = f.table_id
                       WHERE fk.table_id = '$table_id'
                         AND f.primary_key = 'Y'
                         ) x2
                  GROUP BY column_id,column_id_src,suffix,prefix
                  ) x1
-             JOIN zdd.columns_c   c ON x1.column_id_src = c.column_id
-             JOIN zdd.type_exps_c t ON c.type_id        = t.type_id
+             JOIN zdd.columns   c ON x1.column_id_src = c.column_id
+             JOIN zdd.type_exps t ON c.type_id        = t.type_id
             WHERE NOT EXISTS (
-                SELECT * from zdd.tabflat_c 
+                SELECT * from zdd.tabflat 
                  WHERE table_id = '$table_id'
                    AND column_id = rtrim(x1.prefix) 
                        || rtrim(x1.column_id)
@@ -1592,7 +1706,7 @@ function SpecFlatten_Runout() {
         // picked from columns table, overridden by values from
         // tabcol table.
         //
-        $sq="UPDATE zdd.tabflat_c 
+        $sq="UPDATE zdd.tabflat 
                 SET range_to      = res.range_to
                    ,pk_change     = res.pk_change
                    ,range_from    = res.range_from
@@ -1629,19 +1743,19 @@ function SpecFlatten_Runout() {
                          ,".$this->col3res('auto_formula')."
                          ,".$this->col3res('required')."
                          ,".$this->col3res('uiinline')."
-                     FROM zdd.tabcol_c  tc
-                     JOIN zdd.columns_c c  ON tc.column_id_src = c.column_id
+                     FROM zdd.tabcol  tc
+                     JOIN zdd.columns c  ON tc.column_id_src = c.column_id
                     WHERE tc.table_id = '$table_id'
                ) res 
-             WHERE zdd.tabflat_c.table_id  = '$table_id'
-               AND zdd.tabflat_c.column_id = res.column_id";
+             WHERE zdd.tabflat.table_id  = '$table_id'
+               AND zdd.tabflat.column_id = res.column_id";
         $this->SQL($sq);
         
         // Action 3: Columns created with suffix/prefix need to be
         // put back into tabcol so they are valid if referenced
         // in other tables, automations, etc.
         $SQL = 
-            "insert into zdd.columns_c ( 
+            "insert into zdd.columns ( 
               column_id, description, descshort 
               ,automation_id, auto_table_id, auto_column_id, auto_formula
               ,ins,uiro,uino,required,dispsize,uiwithnext,prefix_table_name
@@ -1655,11 +1769,11 @@ function SpecFlatten_Runout() {
               ,c.value_min,c.value_max
               ,c.type_id,c.colprec,c.colscale,c.colres
               ,c.uiinline,'N' 
-             from zdd.tabflat_c f
-             JOIN zdd.columns_c c ON f.column_id_src = c.column_id
+             from zdd.tabflat f
+             JOIN zdd.columns c ON f.column_id_src = c.column_id
             where f.table_id = '$table_id'
               and f.column_id NOT IN (
-                  SELECT column_id FROM zdd.columns_c
+                  SELECT column_id FROM zdd.columns
                   )";
         $this->SQL($SQL);
     }
@@ -1682,7 +1796,7 @@ function SpecFlatten_FixFKO() {
     // KFD 4/2/08, If you have an FK, and also define the column,
     //      the table_id_fko value is lost.  This puts it back in
     $sql="
-update zdd.tabflat_c 
+update zdd.tabflat 
    SET table_id_fko = x.table_id_par
       ,column_id_fko = x.column_id_fko
   FROM
@@ -1690,13 +1804,13 @@ update zdd.tabflat_c
 select fk.table_id,fk.table_id_par
       ,fk.prefix || tf.column_id || fk.suffix as column_id
       ,tf.column_id as column_id_fko
-  from zdd.tabfky_c  fk
-  JOIN zdd.tabflat_c tf ON fk.table_id_par = tf.table_id
+  from zdd.tabfky  fk
+  JOIN zdd.tabflat tf ON fk.table_id_par = tf.table_id
  WHERE tf.primary_key = 'Y'
 ) x
- WHERE zdd.tabflat_c.table_id = x.table_id
-   AND zdd.tabflat_c.column_id= x.column_id
-   AND zdd.tabflat_c.table_id_fko = ''";
+ WHERE zdd.tabflat.table_id = x.table_id
+   AND zdd.tabflat.column_id= x.column_id
+   AND zdd.tabflat.table_id_fko = ''";
      $this->SQL($sql);
      return true;
 }
@@ -1706,7 +1820,7 @@ function SpecFlatten_Tables()
 	
 	$this->LogEntry("TABLES: Executing server-side table sequencer: Table_Sequencer");
 	$this->SQL("select zdd.table_sequencer();");
-	$results = $this->SQLRead("select table_id FROM zdd.tables_c WHERE table_seq<0");
+	$results = $this->SQLRead("select table_id FROM zdd.tables WHERE table_seq<0");
 	$errors = pg_fetch_all($results);
 	if (false!==$errors) { 
 		$this->LogEntry("There were ".count($errors)." tables that could not be sequenced:");
@@ -1721,7 +1835,7 @@ function SpecFlatten_Tables()
 
 	// Fetch the list of tables and begin (re)building utabs
 	$this->LogEntry("TABLES: Flattening table definitions");
-	$r1 = $this->SQLRead("Select * FROM zdd.tables_c ORDER BY table_seq");
+	$r1 = $this->SQLRead("Select * FROM zdd.tables ORDER BY table_seq");
 	$i=0;
 	$ilimit = pg_num_rows($r1);
 	while ($row = pg_fetch_array($r1,$i,PGSQL_ASSOC)) {
@@ -1739,16 +1853,16 @@ function SpecFlatten_Tables()
 function SpecFlatten_HARDCODE() {
 	$this->LogEntry("HARDCODE: rendering all formulas");
 	$this->SQL(
-		"UPDATE zdd.tabflat_c set formula = ".
+		"UPDATE zdd.tabflat set formula = ".
 		"  REPLACE(REPLACE(formula,'<colprec>',cast(colprec as char(5))), ".
 		"          '<colscale>',cast(colscale as char(5))),".
 		"  dispsize = REPLACE(dispsize,'<colprec>',cast(colprec as char(5)))");
-	$this->SQL("UPDATE zdd.tabflat_c set formula = REPLACE(formula,'#',',')");
+	$this->SQL("UPDATE zdd.tabflat set formula = REPLACE(formula,'#',',')");
 
 
 	$this->LogEntry("HARDCODE: Parsing auto_formula for SUM, FETCH, etc.");
 	$this->SQL("
-update zdd.tabflat_c
+update zdd.tabflat
   SET auto_table_id = SUBSTR(auto_formula,1,POSITION('.' in auto_formula)-1),
       auto_column_id = SUBSTR(auto_formula,POSITION('.' in auto_formula)+1)
  where automation_id IN ('FETCH','FETCHDEF','DISTRIBUTE','SUM','COUNT','MIN','MAX','SYNCH')
@@ -1756,23 +1870,23 @@ update zdd.tabflat_c
 
  	$this->LogEntry("HARDCODE: Adding chain arguments to validation table");
 	$this->SQL("
-Insert into zdd.colchainargsv_c  
+Insert into zdd.colchainargsv  
 	(uicolseq,table_id,column_id )
-select DISTINCT uicolseq,table_id,column_id_arg from zdd.colchainargs_c
+select DISTINCT uicolseq,table_id,column_id_arg from zdd.colchainargs
  WHERE column_id_arg <> ''");
 	$this->SQL("
-Insert into zdd.colchainargsv_c  
+Insert into zdd.colchainargsv  
 	(uicolseq,table_id,column_id )
-select DISTINCT uicolseq,table_id,column_id_arg from zdd.tabchainargs_c
+select DISTINCT uicolseq,table_id,column_id_arg from zdd.tabchainargs
  WHERE column_id_arg <> ''");
  
  	$this->LogEntry("HARDCODE: Setting automation_id of calc'd columns");
 	$this->SQL("
-Update zdd.tabflat_c SET automation_id = 'EXTEND'
-  FROM zdd.colchains_c 
- WHERE zdd.tabflat_c.table_id  = zdd.colchains_c.table_id 
-   AND zdd.tabflat_c.column_id = zdd.colchains_c.column_id
-	AND zdd.colchains_c.chain = 'calc'");
+Update zdd.tabflat SET automation_id = 'EXTEND'
+  FROM zdd.colchains 
+ WHERE zdd.tabflat.table_id  = zdd.colchains.table_id 
+   AND zdd.tabflat.column_id = zdd.colchains.column_id
+	AND zdd.colchains.chain = 'calc'");
 	
 	 return true;
 }
@@ -1795,9 +1909,9 @@ function SpecFlatten_ColumnDeps() {
 		 (table_id,column_id,table_dep,column_dep,automation_id) 
 		SELECT DISTINCT table_id,column_id
                        ,table_id,column_id_arg,'EXTEND' 
-		  FROM zdd.colchainargs_c 
-		 WHERE zdd.colchainargs_c.column_id_arg <> ''
-           AND zdd.colchainargs_c.chain <> 'cons'
+		  FROM zdd.colchainargs 
+		 WHERE zdd.colchainargs.column_id_arg <> ''
+           AND zdd.colchainargs.chain <> 'cons'
          ";
 	$this->SQL($sql);		
 
@@ -1819,7 +1933,7 @@ function SpecFlatten_ColumnDeps() {
 "INSERT INTO zdd.column_deps 
  (table_id,column_id,table_dep,column_dep,automation_id)
  select table_id,'FK:' || table_id_fko,table_id,column_id,'FK' 
-   FROM zdd.tabflat_c 
+   FROM zdd.tabflat 
   WHERE table_id_fko || column_id_fko <> ''");
 	$this->LogEntry("COLUMN DEPENDENCIES: Foreign keys (nocolumns)");
 	$this->SQL(
@@ -1828,8 +1942,8 @@ function SpecFlatten_ColumnDeps() {
 select DISTINCT
        fk.table_id,'FK:' || fk.table_id_par,fk.table_id,
        trim(fk.prefix) || TRIM(f.column_id) || fk.suffix,'FK'
-  FROM zdd.tabfky_c fk
-  JOIN zdd.tabflat_c f ON fk.table_id_par = f.table_id
+  FROM zdd.tabfky fk
+  JOIN zdd.tabflat f ON fk.table_id_par = f.table_id
  WHERE f.primary_key = 'Y'
    AND fk.nocolumns = 'Y'");
 	$this->LogEntry("COLUMN DEPENDENCIES: Foreign keys, Auto-Insert/CopySameCols");
@@ -1838,9 +1952,9 @@ select DISTINCT
  (table_id,column_id,table_dep,column_dep,automation_id)
 SELECT DISTINCT 
        k.table_id,'FK:' || k.table_id_par,k.table_id,f1.column_id,'FK'
-  from zdd.tabfky_c  k
-  JOIN zdd.tabflat_c f1 ON k.table_id     = f1.table_id 
-  JOIN zdd.tabflat_c f2 ON k.table_id_par = f2.table_id 
+  from zdd.tabfky  k
+  JOIN zdd.tabflat f1 ON k.table_id     = f1.table_id 
+  JOIN zdd.tabflat f2 ON k.table_id_par = f2.table_id 
  WHERE k.auto_insert='Y'
    AND k.copysamecols='Y'
    AND f1.column_id = f2.column_id
@@ -1857,7 +1971,7 @@ SELECT DISTINCT
                                              OR automation_id='SYNCH'
              THEN 'FETCH' 
              ELSE automation_id END
-   FROM zdd.tabflat_c
+   FROM zdd.tabflat
   WHERE auto_table_id || auto_column_id <> ''"); 
 
 
@@ -1866,7 +1980,7 @@ $this->SQL(
 "INSERT INTO zdd.column_deps 
  (table_id,column_id,table_dep,column_dep,automation_id) 
  SELECT table_id,column_id,table_id,'FK:'||auto_table_id,'FK(FETCH)'
-   FROM zdd.tabflat_c
+   FROM zdd.tabflat
   WHERE auto_table_id || auto_column_id <> ''"); 
   
   $this->LogEntry("COLUMN DEPENDENCIES: Generating column sequencing");
@@ -1914,7 +2028,7 @@ function SpecFlatten_Security() {
 	// are actually at the highest scope.
 	$this->LogEntry("SECURITY/TABLES: Default table permissions by group-module ");
 	$this->SQL("
-INSERT INTO zdd.perm_tabs_c  
+INSERT INTO zdd.perm_tabs  
   ( group_id,module,table_id,istable
    ,permins,permupd,permdel,permsel
    ,permspec,nomenu
@@ -1926,17 +2040,17 @@ SELECT g.group_id,t.module,t.table_id,'T',
    CASE WHEN g.permsel='Y'  THEN 'Y' ELSE 'N' END,
    'N',
    CASE WHEN t.nomenu ='Y'  THEN 'Y' ELSE 'N' END
- FROM zdd.groups_c g,
+ FROM zdd.groups g,
       (SELECT t1.module,t1.table_id,COALESCE(m.nomenu,'N') as nomenu
-         FROM zdd.tables_c  t1
-         JOIN zdd.modules_c m  ON t1.module=m.module
+         FROM zdd.tables  t1
+         JOIN zdd.modules m  ON t1.module=m.module
       ) t
 WHERE g.grouplist='' OR g.grouplist IS NULL"
       );
       
 	$this->LogEntry("SECURITY/MENUS: Blank permissions by group");
 	$this->SQL("
-INSERT INTO zdd.perm_tabs_c  
+INSERT INTO zdd.perm_tabs  
   ( group_id,module,table_id,istable
    ,permins,permupd,permdel,permsel,permspec
    ,nomenu
@@ -1948,64 +2062,64 @@ SELECT g.group_id,t.module,t.menu_page,'M',
    CASE WHEN g.permsel='Y'  THEN 'Y' ELSE 'N' END,
    'N',
    CASE WHEN t.nomenu ='Y'  THEN 'Y' ELSE 'N' END
- FROM zdd.groups_c g,
+ FROM zdd.groups g,
       (SELECT t1.module,t1.menu_page,COALESCE(m.nomenu,'N') as nomenu
-         FROM zdd.uimenu_c  t1
-         JOIN zdd.modules_c m  ON t1.module=m.module
+         FROM zdd.uimenu  t1
+         JOIN zdd.modules m  ON t1.module=m.module
       ) t
 WHERE g.grouplist='' OR g.grouplist IS NULL"
       );
 
   	$this->LogEntry("SECURITY/TABLES-MENUS: Applying group-module permissions");
 	$this->SQL(
-"UPDATE zdd.perm_tabs_c  
-  SET permins  = CASE WHEN p.permins  =''    THEN zdd.perm_tabs_c.permins
+"UPDATE zdd.perm_tabs  
+  SET permins  = CASE WHEN p.permins  =''    THEN zdd.perm_tabs.permins
                       WHEN p.permins  = 'Y'  THEN  'Y' ELSE 'N' END  
-      ,permupd = CASE WHEN p.permupd  =''    THEN zdd.perm_tabs_c.permupd
+      ,permupd = CASE WHEN p.permupd  =''    THEN zdd.perm_tabs.permupd
                       WHEN p.permupd  = 'Y'  THEN  'Y' ELSE 'N' END 
-      ,permsel = CASE WHEN p.permsel  =''    THEN zdd.perm_tabs_c.permupd
+      ,permsel = CASE WHEN p.permsel  =''    THEN zdd.perm_tabs.permupd
                       WHEN p.permsel  = 'Y'  THEN  'Y' ELSE 'N' END 
-      ,permdel = CASE WHEN p.permdel  =''    THEN zdd.perm_tabs_c.permdel
+      ,permdel = CASE WHEN p.permdel  =''    THEN zdd.perm_tabs.permdel
                       WHEN p.permdel  = 'Y'  THEN  'Y' ELSE 'N' END
-      ,nomenu  = CASE WHEN p.nomenu   =''    THEN zdd.perm_tabs_c.nomenu
+      ,nomenu  = CASE WHEN p.nomenu   =''    THEN zdd.perm_tabs.nomenu
                       WHEN p.nomenu   = 'Y'  THEN  'Y' ELSE 'N' END 
- FROM zdd.permxmodules_c p 
- WHERE p.group_id = zdd.perm_tabs_c.group_id 
-   AND p.module   = zdd.perm_tabs_c.module  ");
+ FROM zdd.permxmodules p 
+ WHERE p.group_id = zdd.perm_tabs.group_id 
+   AND p.module   = zdd.perm_tabs.module  ");
 
    
    $this->LogEntry("SECURITY/TABLES: Applying group-table permissions");
 	$this->SQL(
-		"UPDATE zdd.perm_tabs_c ". 
-"  SET permins  = CASE WHEN p.permins  =''    THEN zdd.perm_tabs_c.permins
+		"UPDATE zdd.perm_tabs ". 
+"  SET permins  = CASE WHEN p.permins  =''    THEN zdd.perm_tabs.permins
                       WHEN p.permins  = 'Y'  THEN  'Y' ELSE 'N' END  
-      ,permupd = CASE WHEN p.permupd  =''    THEN zdd.perm_tabs_c.permupd
+      ,permupd = CASE WHEN p.permupd  =''    THEN zdd.perm_tabs.permupd
                       WHEN p.permupd  = 'Y'  THEN  'Y' ELSE 'N' END 
-      ,permsel = CASE WHEN p.permsel  =''    THEN zdd.perm_tabs_c.permupd
+      ,permsel = CASE WHEN p.permsel  =''    THEN zdd.perm_tabs.permupd
                       WHEN p.permsel  = 'Y'  THEN  'Y' ELSE 'N' END 
-      ,permdel = CASE WHEN p.permdel  =''    THEN zdd.perm_tabs_c.permdel
+      ,permdel = CASE WHEN p.permdel  =''    THEN zdd.perm_tabs.permdel
                       WHEN p.permdel  = 'Y'  THEN  'Y' ELSE 'N' END 
-      ,nomenu  = CASE WHEN p.nomenu   =''    THEN zdd.perm_tabs_c.nomenu
+      ,nomenu  = CASE WHEN p.nomenu   =''    THEN zdd.perm_tabs.nomenu
                       WHEN p.nomenu   = 'Y'  THEN  'Y' ELSE 'N' END ". 
-		"  FROM zdd.permxtables_c p ".
-		" WHERE p.table_id = zdd.perm_tabs_c.table_id ".
-  		"   AND p.group_id = zdd.perm_tabs_c.group_id ");
+		"  FROM zdd.permxtables p ".
+		" WHERE p.table_id = zdd.perm_tabs.table_id ".
+  		"   AND p.group_id = zdd.perm_tabs.group_id ");
    $this->LogEntry("SECURITY/MENUS: Applying menu-level permissions");
 	$this->SQL(
-		"UPDATE zdd.perm_tabs_c ". 
-"  SET permins  = CASE WHEN p.permins  =''    THEN zdd.perm_tabs_c.permins
+		"UPDATE zdd.perm_tabs ". 
+"  SET permins  = CASE WHEN p.permins  =''    THEN zdd.perm_tabs.permins
                       WHEN p.permins  = 'Y'  THEN  'Y' ELSE 'N' END  
-      ,permupd = CASE WHEN p.permupd  =''    THEN zdd.perm_tabs_c.permupd
+      ,permupd = CASE WHEN p.permupd  =''    THEN zdd.perm_tabs.permupd
                       WHEN p.permupd  = 'Y'  THEN  'Y' ELSE 'N' END 
-      ,permsel = CASE WHEN p.permsel  =''    THEN zdd.perm_tabs_c.permupd
+      ,permsel = CASE WHEN p.permsel  =''    THEN zdd.perm_tabs.permupd
                       WHEN p.permsel  = 'Y'  THEN  'Y' ELSE 'N' END 
-      ,permdel = CASE WHEN p.permdel  =''    THEN zdd.perm_tabs_c.permdel
+      ,permdel = CASE WHEN p.permdel  =''    THEN zdd.perm_tabs.permdel
                       WHEN p.permdel  = 'Y'  THEN  'Y' ELSE 'N' END 
-      ,nomenu  = CASE WHEN p.nomenu   =''    THEN zdd.perm_tabs_c.nomenu
+      ,nomenu  = CASE WHEN p.nomenu   =''    THEN zdd.perm_tabs.nomenu
                       WHEN p.nomenu   = 'Y'  THEN  'Y' ELSE 'N' END ". 
-		"  FROM zdd.uimenugroups_c p ".
-		" WHERE p.menu_page = zdd.perm_tabs_c.table_id ".
-  		"   AND p.group_id  = zdd.perm_tabs_c.group_id ");
+		"  FROM zdd.uimenugroups p ".
+		" WHERE p.menu_page = zdd.perm_tabs.table_id ".
+  		"   AND p.group_id  = zdd.perm_tabs.group_id ");
       
       
    // Pull foreign-key column permissions out of fk defs and
@@ -2013,7 +2127,7 @@ WHERE g.grouplist='' OR g.grouplist IS NULL"
    //   pull the 'permrow' flag, that is handled differently
    $this->LogEntry("SECURITY/TABLES: Copying FK col perms to table");
    $sq="
-insert into zdd.perm_cols_c 
+insert into zdd.perm_cols 
    (table_id,group_id,column_id,permupd,permsel,permrow)
 select fkg.table_id
       ,fkg.group_id
@@ -2021,8 +2135,8 @@ select fkg.table_id
       ,fkg.permupd
       ,fkg.permsel
       ,''
-  FROM zdd.tabfkygroups_c fkg
-  JOIN zdd.tabflat_c      flt ON fkg.table_id_par = flt.table_id
+  FROM zdd.tabfkygroups fkg
+  JOIN zdd.tabflat      flt ON fkg.table_id_par = flt.table_id
  WHERE flt.primary_key = 'Y'"; 
    $this->SQL($sq);
       
@@ -2036,18 +2150,18 @@ function specFlattenRowCol() {
    //
    $this->SQL(
       "SELECT group_id,group_id as group_id_eff
-         INTO zdd.groupsx_c
-         FROM zdd.groups_c
+         INTO zdd.groupsx
+         FROM zdd.groups
         WHERE 1=0"
    );
-   $this->SQL("create index gx1 ON zdd.groupsx_c (group_id)");
-   $this->SQL("create index gx2 ON zdd.groupsx_c (group_id_eff)");
-   $this->SQL("create index gx3 ON zdd.groupsx_c (group_id,group_id_eff)");
+   $this->SQL("create index gx1 ON zdd.groupsx (group_id)");
+   $this->SQL("create index gx2 ON zdd.groupsx (group_id_eff)");
+   $this->SQL("create index gx3 ON zdd.groupsx (group_id,group_id_eff)");
    $this->SQL(
       "SELECT cast(group_id as varchar) as group_id_eff
                ,cast('N' as char(1)) as flag_used,grouplist,md5_eff
-         INTO zdd.groups_eff_c
-         FROM zdd.groups_c
+         INTO zdd.groups_eff
+         FROM zdd.groups
         WHERE 1=0"
    );
    
@@ -2057,7 +2171,7 @@ function specFlattenRowCol() {
    global $parm;
    $app=$parm['APP'];
    $dbres=$this->SQLRead(
-      "Select * FROM zdd.groups_c 
+      "Select * FROM zdd.groups 
         WHERE group_id <> '$app'
         ORDER BY group_id"
    );
@@ -2071,48 +2185,48 @@ function specFlattenRowCol() {
    $this->GroupBinary(1,$app,$gkeys,$gnumb);
 
    $this->LogEntry("Flagging tables with row security, pass 1 of 2");
-   $this->SQL("UPDATE zdd.tables_c SET permrow='N',permcol='N'");
+   $this->SQL("UPDATE zdd.tables SET permrow='N',permcol='N'");
    $this->SQL("
-      UPDATE zdd.tables_c
+      UPDATE zdd.tables
          SET permrow = 'Y'
         FROM ( SELECT table_id
-                 FROM zdd.perm_cols_c
+                 FROM zdd.perm_cols
                 WHERE coalesce(permrow,'')      <> ''
                    OR coalesce(table_id_row,'') <> ''
                 GROUP BY table_id
              ) x
-        WHERE zdd.tables_c.table_id = x.table_id"
+        WHERE zdd.tables.table_id = x.table_id"
    );
    $this->LogEntry("Flagging tables with row security, pass 2 of 2");
    $this->SQL("
-      UPDATE zdd.tables_c
+      UPDATE zdd.tables
          SET permrow = 'Y'
         FROM ( SELECT table_id
-                 FROM zdd.permxtablesrow_c
+                 FROM zdd.permxtablesrow
                 GROUP BY table_id
              ) x
-        WHERE zdd.tables_c.table_id = x.table_id"
+        WHERE zdd.tables.table_id = x.table_id"
    );
 
    $this->LogEntry("Flagging tables with column security"); 
    $this->SQL("
-update zdd.tables_c set permcol = 'Y'
+update zdd.tables set permcol = 'Y'
   FROM (select table_id 
-          from zdd.perm_cols_c
+          from zdd.perm_cols
          WHERE coalesce(permsel,'') <> ''
             OR coalesce(permupd,'') <> ''
        ) x
-  WHERE zdd.tables_c.table_id = x.table_id"
+  WHERE zdd.tables.table_id = x.table_id"
    );
    $this->SQL("
 select t.table_id,g.group_id_eff,cast('     ' as char(5)) as view_id
-  INTO zdd.table_views_c
-  from zdd.tables_c t,zdd.groups_eff_c g
+  INTO zdd.table_views
+  from zdd.tables t,zdd.groups_eff g
  where t.permcol = 'Y'
  order by table_id,group_id_eff");
-   $this->SQL("create index tvc1 on zdd.table_views_c (table_id)");
-   $this->SQL("create index tvc2 on zdd.table_views_c (group_id_eff)");
-   $this->SQL("create index tvc3 on zdd.table_views_c (table_id,group_id_eff)");
+   $this->SQL("create index tvc1 on zdd.table_views (table_id)");
+   $this->SQL("create index tvc2 on zdd.table_views (group_id_eff)");
+   $this->SQL("create index tvc3 on zdd.table_views (table_id,group_id_eff)");
    
    return true;      
 
@@ -2150,7 +2264,7 @@ function GroupBinary_Make($gcount,$egroupname,&$gnumb) {
    
    // Insert the row
    $this->SQL(
-      "INSERT INTO zdd.groups_eff_c (group_id_eff,flag_used,md5_eff,grouplist) 
+      "INSERT INTO zdd.groups_eff (group_id_eff,flag_used,md5_eff,grouplist) 
        VALUES ('$gname','N','$md5_eff','$egroupname')"
    );
 
@@ -2158,7 +2272,7 @@ function GroupBinary_Make($gcount,$egroupname,&$gnumb) {
    $groups=explode("+",$egroupname);
    foreach($groups as $group) {
       $this->SQL(
-         "INSERT INTO zdd.groupsx_c (group_id,group_id_eff) 
+         "INSERT INTO zdd.groupsx (group_id,group_id_eff) 
           VALUES ('$group','$gname')"
       );
    }
@@ -2204,7 +2318,7 @@ function SpecHandle_Lists_Flat() {
 		$this->utabs[$table]["flat"]=array();
 		
 		// This is the flat stuff
-      $sql="Select * From zdd.tabflat_c where table_id = '$table'";
+      $sql="Select * From zdd.tabflat where table_id = '$table'";
 		$results = $this->SQLRead($sql);
       
 		$ilimit = pg_num_rows($results);
@@ -2220,10 +2334,16 @@ function SpecHandle_Lists_Flat() {
 }
 
 function SpecHandle_Lists_PK()
-{	
-	foreach ($this->utabs as $utab) {
+{
+	foreach ($this->utabs as $table_id=>$utab) {
+        # KFD 6/7/08.  Eliminate zdd tables from main build
+        #if(count($utab['flat'])==0) {
+        #    unset($this->utabs[$table_id]);
+        #    continue;
+        #}
+        # KFD 6/7/08.  Eliminate zdd tables from main build (END)
 		$results=$this->SQLRead(			
-			"select column_id from zdd.tabflat_c ".
+			"select column_id from zdd.tabflat ".
 			" where table_id = '". $utab["table_id"] . "'".
 			"   and primary_key = 'Y'");
 		$pkarr = $this->SQL_fetch_all_1col($results);
@@ -2238,7 +2358,7 @@ function SpecHandle_Lists_Req()
 {	
 	foreach ($this->utabs as $utab) {
 		$results=$this->SQLRead(			
-			"select column_id from zdd.tabflat_c ".
+			"select column_id from zdd.tabflat ".
 			" where table_id = '". $utab["table_id"] . "'".
 			"   and required = 'Y'");
 		$reqarr = $this->SQL_fetch_all_1col($results);
@@ -2253,7 +2373,7 @@ function SpecHandle_Lists_FK()
 	
     $retval=true;
     $rc=0;
-    $results = $this->SQLRead("Select * FROM zdd.tabfky_c");
+    $results = $this->SQLRead("Select * FROM zdd.tabfky");
     
     while ($row = pg_fetch_array($results)) {
         $suffix = trim($row["suffix"]);
@@ -2337,7 +2457,7 @@ function SpecHandle_Lists_Indexes() {
 
 	$respre=$this->SQLRead("
 select idx_name,table_id,idx_unique
-  from zdd.tabidx_c"); 
+  from zdd.tabidx"); 
 	$results=pg_fetch_all($respre);
 	
 	if (pg_num_rows($respre)>0) {
@@ -2348,7 +2468,7 @@ select idx_name,table_id,idx_unique
 			$cols="";
 			$respre = $this->SQLRead("
 Select column_id 
-  FROM zdd.tabidxcol_c 
+  FROM zdd.tabidxcol 
  where idx_name = '$idx_name'
    and table_id = '$table_id'
  order by uicolseq");
@@ -2363,7 +2483,7 @@ Select column_id
 
 function SpecHandle_Lists_Projections() {
 
-	$respre = $this->SQLRead("Select table_id,projection FROM zdd.tabprojcols_c GROUP BY table_id,projection");
+	$respre = $this->SQLRead("Select table_id,projection FROM zdd.tabprojcols GROUP BY table_id,projection");
 	$restables = pg_fetch_all($respre);
 	foreach ($restables as $restable) {
 		$table_id = trim($restable["table_id"]);
@@ -2373,11 +2493,11 @@ function SpecHandle_Lists_Projections() {
 		$cols = "";
 		$results = $this->SQLRead(
 			"Select p.column_id ". 
-			"  FROM zdd.tabprojcols_c p ".
-			"  JOIN zdd.tabflat_c f ON p.table_id = f.table_id AND p.column_id = f.column_id".
+			"  FROM zdd.tabprojcols p ".
+			"  JOIN zdd.tabflat f ON p.table_id = f.table_id AND p.column_id = f.column_id".
 			" WHERE p.table_id = '$table_id' AND p.projection = '$projection'".
 			" ORDER BY f.uicolseq ");
-		//$results = $this->SQLRead("Select column_id FROM zdd.tabprojcols_c WHERE table_id = '$table_id' AND projection = '$projection'");
+		//$results = $this->SQLRead("Select column_id FROM zdd.tabprojcols WHERE table_id = '$table_id' AND projection = '$projection'");
 		while ($row = pg_fetch_array($results)) {
 			$cols.=$this->AddComma($cols).$row[0];
 		}
@@ -2391,7 +2511,7 @@ function SpecHandle_Lists_ChildTables() {
 
 	$qres = $this->SQLRead(
         "Select table_id,suffix,prefix,table_id_fko
-           FROM zdd.tabflat_c WHERE table_id_fko <> ''
+           FROM zdd.tabflat WHERE table_id_fko <> ''
           GROUP BY table_id,suffix,prefix,table_id_fko"
     );
     while($row=pg_fetch_array($qres)) {
@@ -2435,7 +2555,7 @@ function SpecDDL_Indexes()
 function SpecDDL_Indexes_queuepos() {
 	$this->LogEntry("Generating index definitions for QUEUEPOS columns");
 	$results = $this->SQLREAD(
-		"Select table_id,column_id FROM zdd.tabflat_c".
+		"Select table_id,column_id FROM zdd.tabflat".
 		" WHERE automation_id = 'QUEUEPOS'"
    );
    $qps = pg_fetch_all($results);
@@ -2447,7 +2567,7 @@ function SpecDDL_Indexes_queuepos() {
          $sql = "CREATE INDEX $idx_name ON $t ($c)";
          $def_short = "idx:".strtolower("$t:$c");
          $this->SQL(
-            "Insert into zdd.ns_objects_c ".
+            "Insert into zdd.ns_objects ".
             "(object_id,definition,def_short,sql_create,sql_drop)".
             " values ".
             "('$idx_name','$def_short','$def_short','$sql','')"
@@ -2459,7 +2579,7 @@ function SpecDDL_Indexes_queuepos() {
 function SpecDDL_Indexes_dominant() {
 	$this->LogEntry("Generating index definitions for DOMINANT columns");
 	$results = $this->SQLREAD(
-		"Select table_id,column_id,auto_formula FROM zdd.tabflat_c".
+		"Select table_id,column_id,auto_formula FROM zdd.tabflat".
 		" WHERE automation_id = 'DOMINANT'"
    );
    $qps = pg_fetch_all($results);
@@ -2472,7 +2592,7 @@ function SpecDDL_Indexes_dominant() {
          // If a table is mentioned, index on that
          if($af<>'') {
              $res = $this->SQLREAD(
-                 "Select column_id FROM zdd.tabflat_c
+                 "Select column_id FROM zdd.tabflat
                    WHERE table_id = '$af'
                      AND primary_key = 'Y'
                    ORDER BY uicolseq"
@@ -2485,7 +2605,7 @@ function SpecDDL_Indexes_dominant() {
          $sql = "CREATE INDEX $idx_name ON $t ($c)";
          $def_short = "idx:".strtolower("$t:$c");
          $this->SQL(
-            "Insert into zdd.ns_objects_c ".
+            "Insert into zdd.ns_objects ".
             "(object_id,definition,def_short,sql_create,sql_drop)".
             " values ".
             "('$idx_name','$def_short','$def_short','$sql','')"
@@ -2504,7 +2624,7 @@ function SpecDDL_Indexes_Normal() {
 				" ON ".$utab["table_id"]." (".$index["cols"].")";
 			$def_short = "idx:".strtolower($utab["table_id"]).":".strtolower($index["cols"]);
 			$this->SQL(
-				"Insert into zdd.ns_objects_c ".
+				"Insert into zdd.ns_objects ".
 				"(object_id,definition,def_short,sql_create,sql_drop)".
 				" values ".
 				"('$idx_name','$def_short','$def_short','$sql','')");
@@ -2526,7 +2646,7 @@ function SpecDDL_Indexes_keys() {
 				" ON ".$utab["table_id"]." (".$utab["pk"].")";
 			$def_short = "idx:".strtolower($utab["table_id"]).":".strtolower($utab["pk"]);
 			$this->SQL(
-				"Insert into zdd.ns_objects_c ".
+				"Insert into zdd.ns_objects ".
 				"(object_id,definition,def_short,sql_create,sql_drop)".
 				" values ".
 				"('$index','$def_short','$def_short','$sql','')");
@@ -2539,7 +2659,7 @@ function SpecDDL_Indexes_keys() {
 					$sql = "CREATE INDEX $index on ".$utab["table_id"]." ($key)";
 					$def_short = "idx:".strtolower($utab["table_id"]).":".strtolower($key);
 					$this->SQL(
-						"Insert into zdd.ns_objects_c ".
+						"Insert into zdd.ns_objects ".
 						"(object_id,definition,def_short,sql_create,sql_drop)".
 						" values ".
 						"('$index','$def_short','$def_short','$sql','')");
@@ -2554,7 +2674,7 @@ function SpecDDL_Indexes_keys() {
 			" ON ".$ufk["table_id_chd"]." (".$ufk["cols_chd"].")";
 		$def_short = "idx:".strtolower($ufk["table_id_chd"]).":".strtolower($ufk["cols_chd"]);
 		$this->SQL(
-			"Insert into zdd.ns_objects_c ".
+			"Insert into zdd.ns_objects ".
 			"(object_id,definition,def_short,sql_create,sql_drop)".
 			" values ".
 			"('$index','$def_short','$def_short','$sql','')");
@@ -2565,7 +2685,7 @@ function SpecDDL_Sequences()
 {
 	$this->LogEntry("Building sequence DDL (S)");
 	$this->SQL(
-"Insert into zdd.ns_objects_c 
+"Insert into zdd.ns_objects 
  (object_id,definition,def_short,sql_create)
  SELECT DISTINCT
         'sequence_' ||  
@@ -2580,7 +2700,7 @@ function SpecDDL_Sequences()
         'CREATE SEQUENCE ' ||  
         CASE WHEN auto_formula = '' THEN TRIM(table_id)
 		       ELSE TRIM(auto_formula) END || '_SEQ_' || TRIM(column_id)
-   FROM zdd.tabflat_c
+   FROM zdd.tabflat
   WHERE automation_id IN ('SEQUENCE','SEQDEFAULT')");	
 }
 
@@ -2725,7 +2845,7 @@ function SpecDDL_Triggers_Security() {
         -- Put user into new effective group
         IF AnyInt > 1 THEN
             SELECT INTO new.group_id_eff group_id_eff 
-              FROM zdd.groups_eff_c
+              FROM zdd.groups_eff
              WHERE grouplist=AnyChar;
             if (select count(*) from pg_roles where rolname=cast(new.group_id_eff as name))>0 THEN 
                EXECUTE ##ALTER GROUP ## || new.group_id_eff || ## ADD USER ## || old.user_id;
@@ -2904,7 +3024,7 @@ function SpecDDL_Triggers_Security_New() {
     $freejoins=array();
 
     $qresult = $this->SQLREAD(
-        "Select group_id,freejoin From zdd.groups_c"
+        "Select group_id,freejoin From zdd.groups"
     );
     $groups  = pg_fetch_all($qresult);
     foreach($groups as $group) {
@@ -3035,7 +3155,7 @@ function SpecDDL_Triggers_Defaults() {
 	$this->LogEntry("Building default clauses");
 	$results = 	$this->SQLRead(
 		"SELECT table_id,column_id,automation_id,formshort,auto_formula,type_id". 
-		" FROM zdd.tabflat_c ". 
+		" FROM zdd.tabflat ". 
 		" WHERE automation_id IN ('BLANK','DEFAULT','SEQUENCE','SEQDEFAULT','TS_INS','UID_INS','TS_UPD','UID_UPD','QUEUEPOS','TS_UPD_PG','UID_UPD_PG')"
    ); 
 
@@ -3771,7 +3891,7 @@ function SpecDDL_Triggers_Automated_FetchDistribute() {
 		"SELECT tf.table_id,tf.column_id
              ,tf.auto_prefix,tf.auto_suffix
              ,tf.automation_id,tf.formshort,tf.auto_formula 
-		   FROM zdd.tabflat_c tf 
+		   FROM zdd.tabflat tf 
 		  WHERE tf.automation_id IN ('FETCH','FETCHDEF','DISTRIBUTE','SYNCH') 
 		  ORDER BY tf.table_id,tf.column_id");
     $ddall = array();
@@ -4057,7 +4177,7 @@ function SpecDDL_Triggers_Automated_Aggregate()  {
    // retrieve in order of table, make list of tables 
 	$results = $this->SQLRead(
 		"SELECT tf.table_id,tf.column_id,tf.automation_id,tf.auto_formula" 
-		." FROM zdd.tabflat_c tf " 
+		." FROM zdd.tabflat tf " 
 		." WHERE tf.automation_id IN ('SUM','COUNT','LATEST','MIN','MAX')"
       ." ORDER BY tf.table_id"
    );
@@ -4405,7 +4525,7 @@ function SpecDDL_Triggers_Automated_Aggregate()  {
 function SpecDDL_Triggers_Automated_Queuepos()  {
    // Pull any column with QUEUE POSITION automation
 	$results = $this->SQLREAD(
-		"Select table_id,column_id FROM zdd.tabflat_c".
+		"Select table_id,column_id FROM zdd.tabflat".
 		" WHERE automation_id = 'QUEUEPOS'"
    );
    $qps = pg_fetch_all($results);
@@ -4431,7 +4551,7 @@ function SpecDDL_Triggers_Automated_Dominant()  {
     
     // Pull any column with DOMINANT automation
     $results = $this->SQLREAD(
-        "Select table_id,column_id,auto_formula FROM zdd.tabflat_c".
+        "Select table_id,column_id,auto_formula FROM zdd.tabflat".
         " WHERE automation_id = 'DOMINANT'"
     );
     $qps = pg_fetch_all($results);
@@ -4468,7 +4588,7 @@ function SpecDDL_Triggers_Automated_Dominant_agg()  {
     
     // Pull any column with DOMINANT automation
     $results = $this->SQLREAD(
-        "Select table_id,column_id,auto_formula FROM zdd.tabflat_c".
+        "Select table_id,column_id,auto_formula FROM zdd.tabflat".
         " WHERE automation_id = 'FETCH_DOM'"
     );
     $qps = pg_fetch_all($results);
@@ -4487,7 +4607,7 @@ function SpecDDL_Triggers_Automated_Dominant_agg()  {
     $results = $this->SQLREAD(
             "Select table_id as tab_chd,auto_formula as tab_par
                    ,column_id
-               FROM zdd.tabflat_c
+               FROM zdd.tabflat
               WHERE automation_id = 'DOMINANT'"
     );
     $qps  = pg_fetch_all($results);
@@ -4549,7 +4669,7 @@ function SpecDDL_Triggers_ColConsTypes()  {
 	$this->LogEntry("Building Type-based column constraints");
 	
 	$results = $this->SQLREAD(
-		"Select table_id,column_id,type_id,description FROM zdd.tabflat_c".
+		"Select table_id,column_id,type_id,description FROM zdd.tabflat".
 		" WHERE type_id in ('cbool','gender','time')");
 	while ($row=pg_fetch_array($results)) {
 		$c  = "new.".trim($row["column_id"]);
@@ -4590,7 +4710,7 @@ function SpecDDL_Triggers_ColConsMinMax()  {
 	
 	$results = $this->SQLREAD(
 		"Select table_id,column_id,type_id,value_min,value_max 
-         FROM zdd.tabflat_c
+         FROM zdd.tabflat
 		  WHERE value_min<>'' OR value_max<>''"
    );
 	while ($row=pg_fetch_array($results)) {
@@ -4648,13 +4768,13 @@ function SpecDDL_Triggers_ChainsList() {
 	$sq=
 "Select a.table_id,a.column_id,a.chain,a.uicolseq,a.argtype,a.sequence,
         a.column_id_arg,a.literal_arg,t.funcoper,t.compoper 
-   from zdd.tabchainargs_c  a
-	JOIN zdd.tabchaintests_c t ON a.chain = t.chain AND a.uicolseq=t.uicolseq
+   from zdd.tabchainargs  a
+	JOIN zdd.tabchaintests t ON a.chain = t.chain AND a.uicolseq=t.uicolseq
  UNION ALL
  Select a2.table_id,a2.column_id,a2.chain,a2.uicolseq,a2.argtype,a2.sequence,
         a2.column_id_arg,a2.literal_arg,t2.funcoper,t2.compoper 
-   from zdd.colchainargs_c  a2
-	JOIN zdd.colchaintests_c t2 ON a2.chain = t2.chain AND a2.uicolseq=t2.uicolseq
+   from zdd.colchainargs  a2
+	JOIN zdd.colchaintests t2 ON a2.chain = t2.chain AND a2.uicolseq=t2.uicolseq
  ORDER BY 1,2,3,4,5,6";
    //echo $sq;
 	$results = $this->SQLRead($sq);
@@ -5026,7 +5146,7 @@ function SpecDDL_Triggers_Cascades()  {
 	// Retrieve list of tables and their cascades
 	$table_id = "";
 	$tables   = array();
-	$result = $this->SQLRead("Select * from zdd.tabcas_c ORDER BY uicolseq");
+	$result = $this->SQLRead("Select * from zdd.tabcas ORDER BY uicolseq");
 	while ($row = pg_fetch_array($result)) {
 		if ($table_id <> $row["table_id"]) {
 			$table_id = $row["table_id"];
@@ -5039,11 +5159,11 @@ function SpecDDL_Triggers_Cascades()  {
 	
 	// Now go pull the columns down for each table/cascade,
 	// then pull the matches down for each table/cascade
-	$result = $this->SQLRead("Select * from zdd.tabcascols_c");
+	$result = $this->SQLRead("Select * from zdd.tabcascols");
 	while ($row = pg_fetch_array($result)) {
 		$tables[$row["table_id"]][$row["cascade"]]["_cols"][] = $row;
 	}
-	$result = $this->SQLRead("Select * from zdd.tabcascolsm_c");
+	$result = $this->SQLRead("Select * from zdd.tabcascolsm");
 	while ($row = pg_fetch_array($result)) {
 		$tables[$row["table_id"]][$row["cascade"]]["_matches"][] = $row;
 	}
@@ -5216,7 +5336,7 @@ function SpecDDL_Triggers_Histories()  {
 	// Retrieve list of tables and their cascades
 	$table_id = "";
 	$tables   = array();
-	$result = $this->SQLRead("Select * from zdd.histories_c ORDER BY uicolseq");
+	$result = $this->SQLRead("Select * from zdd.histories ORDER BY uicolseq");
 	while ($row = pg_fetch_array($result)) {
 		if ($table_id <> $row["table_id"]) {
 			$table_id = $row["table_id"];
@@ -5228,7 +5348,7 @@ function SpecDDL_Triggers_Histories()  {
 	
 	// Now go pull the columns down for each table/cascade,
 	// then pull the matches down for each table/cascade
-	$result = $this->SQLRead("Select * from zdd.histcols_c");
+	$result = $this->SQLRead("Select * from zdd.histcols");
 	while ($row = pg_fetch_array($result)) {
 		$tables[$row["table_id"]][$row["history"]]["_cols"][] = $row;
 	}
@@ -5470,7 +5590,7 @@ function SpecDDL_Triggers_Assemble($trgs) {
          .":".$trg["before_after"]
          .":".$trg["statement"]; 
 		$this->SQL(
-			"insert into zdd.ns_objects_c ".
+			"insert into zdd.ns_objects ".
 			"(object_id,definition,def_short,sql_create,sql_drop,sequence)".
 			" values (".
 			"'". strtolower($trg["fname"]) . "',". 
@@ -5496,7 +5616,7 @@ function SpecDDL_Triggers_Assemble($trgs) {
          .":".$trg["before_after"]
          .":".$trg["statement"]; 
 		$this->SQL(
-			"insert into zdd.ns_objects_c ".
+			"insert into zdd.ns_objects ".
 			"(object_id,definition,def_short,sql_create,sql_drop,sequence)".
 			" values (".
 			"'". $trg["tname"] . "',".
@@ -5552,7 +5672,7 @@ function Differences_One($strStub, $dst,$strDesc,$strKeys,$strWhere="")
 		"SELECT ". $strList1 .
 		"       CAST(' ' as char(1)) as XFate ".
 		" INTO zdd.". $dst . "_d ".
-		" FROM zdd.". $strStub . "_c a ".
+		" FROM zdd.". $strStub . " a ".
 		" FULL JOIN zdd.". $strStub . "_r b ".
 		" ON ". $strKeys.
 		$strWhere;
@@ -5573,7 +5693,7 @@ function SpecValidate()
 
     	$this->LogEntry("Looking for primary key on each table");
 	$results = $this->SQLRead(
-		"select table_id from zdd.tabflat_c ".
+		"select table_id from zdd.tabflat ".
 		" group by table_id ".
 		" having sum(case when primary_key='Y' then 1 else 0 end) = 0");
 	while($row=pg_fetch_array($results)) {
@@ -5586,7 +5706,7 @@ function SpecValidate()
     // KFD 4/16/08, there was code in the YAML walking that served
     //              this purpose, but it really belongs here
 	$results = $this->SQLRead(
-		"select table_id from zdd.tabflat_c ".
+		"select table_id from zdd.tabflat ".
 		" group by table_id ".
 		" having sum(case when uisearch='Y' then 1 else 0 end) = 0");
 	while($row=pg_fetch_array($results)) {
@@ -5600,7 +5720,7 @@ function SpecValidate()
 
     
     // Check for no automation Id for some automations
-    $sql="SELECT table_id,column_id from zdd.tabflat_c
+    $sql="SELECT table_id,column_id from zdd.tabflat
           WHERE automation_id in 
              ('FETCH','DISTRIBUTE','SUM','COUNT','MIN','MAX','LATEST')
             AND COALESCE(auto_formula,'') = ''";
@@ -5619,7 +5739,7 @@ function SpecValidate()
 			" FROM zdd.column_deps ".
 			" WHERE automation_id in ('FETCH','DISTRIBUTE','SYNCH') ". 
 			"   AND NOT EXISTS ".
-			"   (SELECT table_id FROM zdd.tabfky_c fk ". 
+			"   (SELECT table_id FROM zdd.tabfky fk ". 
 			"    WHERE fk.table_id     = zdd.column_deps.table_id ".
 			"      AND fk.table_id_par = zdd.column_deps.table_dep)");
 	while ($row=pg_fetch_array($results)) {
@@ -5636,7 +5756,7 @@ function SpecValidate()
 			" FROM zdd.column_deps ".
 			" WHERE automation_id IN ('SUM','COUNT') ". 
 			"   AND NOT EXISTS ".
-			"   (SELECT table_id FROM zdd.tabfky_c fk ". 
+			"   (SELECT table_id FROM zdd.tabfky fk ". 
 			"    WHERE fk.table_id     = zdd.column_deps.table_dep ".
 			"      AND fk.table_id_par = zdd.column_deps.table_id)");
 	while ($row=pg_fetch_array($results)) {
@@ -5651,10 +5771,10 @@ function SpecValidate()
 	$results=$this->SQLRead("
 select table_id,column_id,
        auto_table_id,auto_column_id,automation_id
- from zdd.tabflat_c
- where not exists (select skey from zdd.tabflat_c x
-                    where x.table_id = zdd.tabflat_c.auto_table_id
-                      AND x.column_id= zdd.tabflat_c.auto_column_id)
+ from zdd.tabflat
+ where not exists (select skey from zdd.tabflat x
+                    where x.table_id = zdd.tabflat.auto_table_id
+                      AND x.column_id= zdd.tabflat.auto_column_id)
    AND ( auto_table_id <> '' OR auto_column_id <> '')"
      );
 	while ($row=pg_fetch_array($results)) {
@@ -5678,12 +5798,12 @@ select table_id,column_id,
     
     // Some manual RI checks
     $sq="SELECT h.history,hc.table_id,hc.column_id
-           FROM zdd.histcols_c   hc
-           JOIN zdd.histories_c  h  ON hc.table_id = h.table_id
+           FROM zdd.histcols   hc
+           JOIN zdd.histories  h  ON hc.table_id = h.table_id
                                  AND hc.history  = h.history
           WHERE column_id <> ''
             AND NOT EXISTS (
-                SELECT * from zdd.tabflat_c 
+                SELECT * from zdd.tabflat 
                 WHERE table_id  = h.table_id_dest
                   AND column_id = hc.column_id
                )";
@@ -5704,12 +5824,12 @@ select table_id,column_id,
 
 function SpecValidateRI($table,$col,$description) {
     $errors = 0;
-    $sq="SELECT table_id,{$col} as column_id FROM zdd.{$table}_c
+    $sq="SELECT table_id,{$col} as column_id FROM zdd.{$table}
           WHERE $col <> ''
             AND NOT EXISTS (
-                SELECT * from zdd.tabflat_c 
-                WHERE table_id  = zdd.{$table}_c.table_id
-                AND column_id = zdd.{$table}_c.$col
+                SELECT * from zdd.tabflat 
+                WHERE table_id  = zdd.{$table}.table_id
+                AND column_id = zdd.{$table}.$col
                )";
     $results = $this->SQLRead($sq);
 	while ($row=pg_fetch_array($results)) {
@@ -5729,7 +5849,7 @@ function SpecValidateRI($table,$col,$description) {
 function SpecValidate_Hardcode() {
 	$this->LogEntry("Ensuring all tables have at least one UISearch column");
 	$results = $this->SQLRead(
-		"select table_id from zdd.tabflat_c ".
+		"select table_id from zdd.tabflat ".
 		" group by table_id ".
 		" having sum(case when uisearch='Y' then 1 else 0 end) = 0");
 
@@ -5746,7 +5866,7 @@ function SpecValidate_Hardcode() {
 		" FROM zdd.column_deps ".
 		" WHERE automation_id <> 'FK' ".
 		"   AND NOT EXISTS ".
-		"   (SELECT table_id,column_id FROM zdd.tabflat_c tf ".
+		"   (SELECT table_id,column_id FROM zdd.tabflat tf ".
 		"    WHERE tf.table_id = zdd.column_deps.table_id ".
 		"      AND tf.column_id = zdd.column_deps.column_id)");
 	while ($row=pg_fetch_array($results)) {
@@ -5770,7 +5890,7 @@ function SpecValidate_Hardcode() {
 			" FROM zdd.column_deps ".
 			" WHERE automation_id in ('FETCH','DISTRIBUTE','SYNCH') ". 
 			"   AND NOT EXISTS ".
-			"   (SELECT table_id FROM zdd.tabfky_c fk ". 
+			"   (SELECT table_id FROM zdd.tabfky fk ". 
 			"    WHERE fk.table_id     = zdd.column_deps.table_id ".
 			"      AND fk.table_id_par = zdd.column_deps.table_dep)");
 	while ($row=pg_fetch_array($results)) {
@@ -5786,7 +5906,7 @@ function SpecValidate_Hardcode() {
 			" FROM zdd.column_deps ".
 			" WHERE automation_id IN ('SUM','COUNT') ". 
 			"   AND NOT EXISTS ".
-			"   (SELECT table_id FROM zdd.tabfky_c fk ". 
+			"   (SELECT table_id FROM zdd.tabfky fk ". 
 			"    WHERE fk.table_id     = zdd.column_deps.table_dep ".
 			"      AND fk.table_id_par = zdd.column_deps.table_id)");
 	while ($row=pg_fetch_array($results)) {
@@ -5799,13 +5919,13 @@ function SpecValidate_Hardcode() {
 	// Pulling a sequence from a table/column that is not sequenced!
 	$this->LogEntry("Ensuring out-of-table SEQUENCEs come from SEQUENCE'd tables");
 	$results=$this->SQLRead(
-			"		select table_id,column_id,auto_formula from zdd.tabflat_c ". 
+			"		select table_id,column_id,auto_formula from zdd.tabflat ". 
 			" where automation_id IN ('SEQUENCE','SEQDEFAULT') ".
 			"   AND auto_formula <> '' ".
 			"   AND not exists ( ".
-			"       SELECT column_id FROM zdd.tabflat_c x ". 
-			"        WHERE x.table_id = zdd.tabflat_c.auto_formula ".
-			"          AND x.column_id= zdd.tabflat_c.column_id ".
+			"       SELECT column_id FROM zdd.tabflat x ". 
+			"        WHERE x.table_id = zdd.tabflat.auto_formula ".
+			"          AND x.column_id= zdd.tabflat.column_id ".
 			"          AND x.automation_id IN ('SEQUENCE','SEQDEFAULT')) ");
 	while ($row=pg_fetch_array($results)) {
 		$retval=false;	
@@ -5891,7 +6011,7 @@ function PlanMake() {
     $this->PlanMake_Security();
     
     // 11/27/06, fix all sequences so they are always safe
-    $res=$this->SQLRead("Select table_id,column_id FROM zdd.tabflat_c 
+    $res=$this->SQLRead("Select table_id,column_id FROM zdd.tabflat 
          Where automation_id in ('SEQUENCE','SEQDEFAULT')");
     while ($row=pg_fetch_array($res)) {
         $tid=$row['table_id'];
@@ -5927,7 +6047,7 @@ function PlanMake_TablesNew($table_id)
 	$cols="";
 	$results = $this->SQLRead( 
 		"Select column_id,formula ".
-		" from zdd.tabflat_c ".
+		" from zdd.tabflat ".
 		" where table_id = '". $table_id . "'");
 	while ($row = pg_fetch_array($results)) { 
 		$cols .= $this->AddList($cols,",").$row["column_id"]." ".$row["formula"];
@@ -6038,12 +6158,12 @@ function planMake_ViewsRowSecurity() {
     $this->LogEntry("Creating View commands for row security");
     // Pull out the definitions
     $res=$this->SQLRead("
-       SELECT table_id,column_id,group_id
-              ,coalesce(permrow,'')      as permrow
-              ,coalesce(table_id_row,'') as table_id_row
-         FROM zdd.perm_cols_c  
-        WHERE coalesce(permrow,'')      <> ''
-           OR coalesce(table_id_row,'') <> ''"
+       SELECT p.table_id,p.column_id,p.group_id
+              ,coalesce(p.permrow,'')      as permrow
+              ,coalesce(p.table_id_row,'') as table_id_row
+         FROM zdd.perm_cols p
+        WHERE coalesce(p.permrow,'')      <> ''
+           OR coalesce(p.table_id_row,'') <> ''"
     );
     $defs=pg_fetch_all($res);
     
@@ -6071,7 +6191,7 @@ function planMake_ViewsRowSecurity() {
     // Now Pull out the secondary definitions and slot those
     $res=$this->SQLRead("
        SELECT table_id,table_id_row,column_id,group_id
-         FROM zdd.permxtablesrow_c"
+         FROM zdd.permxtablesrow"
     );
     $d2nd=pg_fetch_all($res);
     // Begin slotting the defs2 array.  We want an array of the
@@ -6163,7 +6283,7 @@ function PlanMake_ViewsColSecurity() {
    select table_id,group_id,column_id
        ,coalesce(permsel,'') as permsel
        ,coalesce(permupd,'') as permupd
- from zdd.perm_cols_c 
+ from zdd.perm_cols 
   where coalesce(permsel,'') <> ''
      OR coalesce(permupd,'') <> ''"
    );
@@ -6267,13 +6387,13 @@ function PlanMake_ViewsColSecurityOne($table_id,$tabinfo,$glist,&$retval) {
    // of primary groups.  We do this with a query of this form:
    //
    //    -- this line gets the group
-   //  SELECT group_id_eff from zdd.groupsx_c
+   //  SELECT group_id_eff from zdd.groupsx
    //     -- this join repeats for each group in the list
    //    JOIN (select * from zdd.groupsx_ where group_id = 'xxx') ax
    //      ON x.group_id_eff = ax.group_id_eff
    //     -- the not-exists make sure there are no OTHER groups
    //   AND NOT EXISTS (
-   //         select * from zdd.gorupsx_c where group_id not in ('''''')
+   //         select * from zdd.gorupsx where group_id not in ('''''')
    //       
    //        )
    //  
@@ -6285,15 +6405,15 @@ function PlanMake_ViewsColSecurityOne($table_id,$tabinfo,$glist,&$retval) {
       $x++;
       $subq='a'.$x;
       $joins.=" 
-    JOIN ( SELECT group_id_eff from zdd.groupsx_c where group_id='$group') $subq
+    JOIN ( SELECT group_id_eff from zdd.groupsx where group_id='$group') $subq
       ON  x.group_id_eff = $subq.group_id_eff";
    }
    $sq="
 select x.group_id_eff
-  from zdd.groupsx_c x
+  from zdd.groupsx x
   $joins
   AND not exists (
-         Select * from zdd.groupsx_c 
+         Select * from zdd.groupsx 
           where group_id NOT IN (".implode(',',$sgroups).")
             and group_id_eff = x.group_id_eff
       )
@@ -6305,7 +6425,7 @@ select x.group_id_eff
    $eno = substr($row['group_id_eff'],-5);
    
    // Update the specific group
-   $sq="update zdd.table_views_c 
+   $sq="update zdd.table_views 
            SET view_id = '$eno'
          WHERE group_id_eff = '$effective'
            AND table_id     = '$table_id'";
@@ -6319,28 +6439,28 @@ select x.group_id_eff
    // effective group that matches all of our groups, but which also
    // has more groups.  We map all of those to the effective group.
    $sq="
-update zdd.table_views_c 
+update zdd.table_views 
    SET view_id = '$eno'
   FROM (   
       select x.group_id_eff
-        from zdd.groupsx_c x
+        from zdd.groupsx x
         $joins
         AND exists (
-               Select * from zdd.groupsx_c 
+               Select * from zdd.groupsx 
                 where group_id NOT IN (".implode(',',$sgroups).")
                   and group_id_eff = x.group_id_eff
             )
        group by x.group_id_eff
        ) x2
- WHERE zdd.table_views_c.group_id_eff = x2.group_id_eff
-   AND zdd.table_views_c.table_id     = '$table_id'
-   AND coalesce(zdd.table_views_c.view_id,'')=''";
+ WHERE zdd.table_views.group_id_eff = x2.group_id_eff
+   AND zdd.table_views.table_id     = '$table_id'
+   AND coalesce(zdd.table_views.view_id,'')=''";
    //h*print_R($sq);
    $this->SQL($sq);
    
    // If all of that works, mark the effective group as being active
    // KFD 7/18/07, removed this finally and for good
-   //$this->SQL("update zdd.groups_eff_c SET flag_used='Y' 
+   //$this->SQL("update zdd.groups_eff SET flag_used='Y' 
    //      where group_id_eff = '$effective'");
    
    // Here we loop through the permission assignments of each group
@@ -6393,9 +6513,10 @@ function ListFactorial($groups,&$list,$current) {
 function planMake_ViewsRowColCombine(&$defsrow,&$defscol) {
    $app=$GLOBALS['parm']['APP'];
    $res=$this->sqlread(
-      "select table_id,permrow,permcol from zdd.tables_c
+      "select table_id,permrow,permcol from zdd.tables
         WHERE coalesce(permrow,'')='Y'
-           OR coalesce(permcol,'')='Y'"
+           OR coalesce(permcol,'')='Y'
+        ORDER BY table_seq desc"
    );
    $tables=pg_fetch_all($res);
    if(!$tables) { return; }
@@ -6603,7 +6724,7 @@ function PlanMake_DDR() {
 		$List2 = "";
 		$StrCmd = 
 			"Select column_id,primary_key ". 
-			" FROM zdd.tabflat_c ".
+			" FROM zdd.tabflat ".
 			" WHERE table_id = '". $OneTab . "'";
 		$results = $this->SQLRead($StrCmd);
 		while ($row=pg_fetch_array($results)) {
@@ -6620,7 +6741,7 @@ function PlanMake_DDR() {
 		$s1 = '
 INSERT INTO public.'. $OneTab .'
  ('. $List1 . ') 
- SELECT '. $List1a . ' FROM zdd.'. $OneTab . '_c a
+ SELECT '. $List1a . ' FROM zdd.'. $OneTab . ' a
  WHERE a.skey_s = 0 OR a.skey_s IS NULL';
 		$this->PlanMakeEntry("5020",$s1);
 
@@ -6649,11 +6770,11 @@ function PlanMake_Security() {
    // This hardcoded entry allows some stuff at login
    // KFD 3/3/08 ouch, these were direct queries instead of plan entries!
    $this->PlanMakeEntry("9000","GRANT ALL  ON SCHEMA zdd TO $app");
-   $this->PlanMakeEntry("9000","GRANT SELECT ON TABLE  zdd.perm_tabs_c TO $app");
-   $this->PlanMakeEntry("9000","GRANT SELECT ON TABLE  zdd.groups_c    TO $app");
+   $this->PlanMakeEntry("9000","GRANT SELECT ON TABLE  zdd.perm_tabs TO $app");
+   $this->PlanMakeEntry("9000","GRANT SELECT ON TABLE  zdd.groups    TO $app");
    //$results = $this->SQLREad("GRANT ALL  ON SCHEMA zdd TO $app");
-   //$results = $this->SQLREad("GRANT SELECT ON TABLE  zdd.perm_tabs_c TO $app");
-   //$results = $this->SQLREad("GRANT SELECT ON TABLE  zdd.groups_c    TO $app");
+   //$results = $this->SQLREad("GRANT SELECT ON TABLE  zdd.perm_tabs TO $app");
+   //$results = $this->SQLREad("GRANT SELECT ON TABLE  zdd.groups    TO $app");
 
    
    // KFD 7/16/07, part of row-column fixup, drop effective groups we dont
@@ -6667,7 +6788,7 @@ select pg.rolname,e.group_id_eff
   from             pg_roles pg
   FULL OUTER JOIN (
          SELECT group_id_eff::name 
-           FROM zdd.groups_eff_c
+           FROM zdd.groups_eff
           WHERE flag_used = 'Y'
        ) e ON pg.rolname = e.group_id_eff::name
   WHERE pg.rolname like '{$app}\_eff\_%'";
@@ -6723,15 +6844,15 @@ select pg.rolname,e.group_id_eff
    //      all tables and all views, and deny access to all of them
    $res=$this->SQLRead(
       "Select group_id_eff as group_id 
-         from zdd.groups_eff_c where flag_used='Y'
+         from zdd.groups_eff where flag_used='Y'
        UNION ALL 
-       SELECT group_id FROm zdd.groups_c");
+       SELECT group_id FROm zdd.groups");
    $groups = pg_fetch_all($res);
    $res=$this->SQLRead(
-      "Select table_id from zdd.tables_c 
+      "Select table_id from zdd.tables 
        UNION ALL 
        (SELECT table_id || '_v_' || view_id
-          FROM zdd.table_views_c
+          FROM zdd.table_views
          GROUP BY table_id || '_v_' || view_id
        )"
    );
@@ -6754,9 +6875,9 @@ select pg.rolname,e.group_id_eff
    //              be useful for setting the permissions.
    //              
    $this->SQL("
-INSERT INTO zdd.table_views_c (table_id,group_id_eff,view_id) 
+INSERT INTO zdd.table_views (table_id,group_id_eff,view_id) 
 select t.table_id,g.group_id_eff,cast('99999' as char(5)) as view_id
-  FROM zdd.tables_c     t,zdd.groups_eff_c g
+  FROM zdd.tables     t,zdd.groups_eff g
  WHERE t.permrow = 'Y'
    AND COALESCE(t.permcol,'')<>'Y'
    ORDER BY t.table_id,g.group_id_eff");
@@ -6765,7 +6886,7 @@ select t.table_id,g.group_id_eff,cast('99999' as char(5)) as view_id
    //               These are easy because they are the same as the
    //               base table.
    // 
-   $sq="insert into zdd.perm_tabs_c
+   $sq="insert into zdd.perm_tabs
              ( permins,permupd,permdel,permsel,nomenu,istable
               ,module,group_id,table_id,permspec)
 select pt.permins,pt.permupd,pt.permdel,pt.permsel,pt.nomenu
@@ -6773,9 +6894,9 @@ select pt.permins,pt.permupd,pt.permdel,pt.permsel,pt.nomenu
       ,pt.module,pt.group_id
       ,trim(pt.table_id) || '_v_' || trim(v.view_id) as table_id
       ,'N' as permspec
-  FROM zdd.perm_tabs_c pt
+  FROM zdd.perm_tabs pt
   JOIN (  SELECT table_id,view_id 
-            FROM zdd.table_views_c
+            FROM zdd.table_views
            WHERE view_id = '99999'
            GROUP BY table_id,view_id
        ) v
@@ -6798,15 +6919,15 @@ select pt.permins,pt.permupd,pt.permdel,pt.permsel,pt.nomenu
 --           pull columns the effective group sees
 --           Only pull if there is a mismatch
 --           If the query is not empty we don't want that combination    
-INSERT INTO zdd.perm_tabs_c 
+INSERT INTO zdd.perm_tabs 
          (table_id,group_id,istable,permsel,permins,permupd,permdel,nomenu)
 select  pc.table_id || '_v_' || tv.view_id as table_id
        ,pc.group_id
        ,'V' as istable
        ,pc.permsel,pc.permins,pc.permupd,pc.permdel,pc.nomenu
-  FROM zdd.perm_tabs_c                    pc
+  FROM zdd.perm_tabs                    pc
   JOIN (SELECT distinct table_id,view_id
-          FROM zdd.table_views_c 
+          FROM zdd.table_views 
        )                                  tv 
     ON pc.table_id = tv.table_id
  WHERE (permsel='Y' OR permins='Y' OR permupd='Y' OR permdel='Y' or nomenu='N')
@@ -6819,14 +6940,14 @@ select e.column_id
       ,case when b.table_id IS NULL THEN 1 ELSE 0 END AS notinbase
       ,b.table_id,b.group_id
   FROM (SELECT pc2.table_id,pc2.column_id
-          FROM zdd.perm_cols_c    pc2
-          JOIN zdd.groupsx_c      gx  ON pc2.group_id = gx.group_id
+          FROM zdd.perm_cols    pc2
+          JOIN zdd.groupsx      gx  ON pc2.group_id = gx.group_id
          WHERE gx.group_id_eff  = '{$app}_eff_' || tv.view_id
            AND pc2.table_id     = pc.table_id                           
            AND pc2.permsel      = 'Y'  )   e
   FULL OUTER JOIN
        (SELECT table_id,column_id,group_id
-          FROM zdd.perm_cols_c
+          FROM zdd.perm_cols
          WHERE group_id = pc.group_id
            AND table_id = pc.table_id
            AND permsel  = 'Y'      )       b
@@ -6845,8 +6966,8 @@ select e.column_id
 SELECT pt.group_id,pt.table_id
       ,pt.permins,pt.permupd,pt.permdel,pt.permsel
       ,pt.istable
-  FROM zdd.perm_tabs_c   pt
-  LEFT JOIN zdd.tables_c  t   ON pt.table_id = t.table_id  
+  FROM zdd.perm_tabs   pt
+  LEFT JOIN zdd.tables  t   ON pt.table_id = t.table_id  
  WHERE istable<>'M'
    AND COALESCE(t.permrow,'N') <> 'Y'
    AND COALESCE(t.permcol,'N') <> 'Y'"
@@ -6883,7 +7004,7 @@ SELECT pt.group_id,pt.table_id
 	}
 
 	//  This is for sequences, we may need them later
-	$results = $this->SQLRead("select def_short FROM zdd.ns_objects_c where def_short like 'sequence:%'");
+	$results = $this->SQLRead("select def_short FROM zdd.ns_objects where def_short like 'sequence:%'");
 	while ($row = pg_fetch_array($results)) {
 		$seq_arr = explode(":",$row["def_short"]);
 		$this->PlanMakeEntry("9110","grant all on ".$seq_arr[1]." to group ".$parm["APP"]); 
@@ -7053,29 +7174,30 @@ function ContentLoad() {
 }
 
 
-// ==========================================================
-// REGION: ContentDD
-// Copy all tables in the dd module 
-// ==========================================================
+# ==========================================================
+# REGION: ContentDD
+# Copy all tables in the dd module
+# KFD 6/7/08, Modified to work only for groups
+# ==========================================================
 function ContentDD() {
-	$this->LogStage("Copying Data Dictionary into public schema");
-   $this->LogEntry("  Each table has its triggers disabled ");
-   $this->LogEntry("  and is completely repopulated.");
-	$sql="SELECT table_id FROM zdd.tables_c WHERE module='datadict'";
-   $res=$this->SQLRead($sql);
-   $tabs=pg_fetch_all($res);
-   foreach($tabs as $tabrow) {
-      $table_id=$tabrow['table_id'];
-      $cs=array_keys($this->utabs[$table_id]['flat']);
-      $cs=implode(',',$cs);
-      $this->LogEntry("Processing $table_id");
-      $this->SQL("ALTER TABLE $table_id DISABLE TRIGGER ALL");
-      $this->SQL("DELETE FROM $table_id");
-      $sq="INSERT INTO $table_id ($cs) SELECT $cs FROM zdd.$table_id"."_c";
-      //hprint_r($sq);
-      $this->SQL($sq);
-   }
-	return true;
+    $this->LogStage("Copying Data Dictionary into public schema");
+    $this->LogEntry("  Each table has its triggers disabled ");
+    $this->LogEntry("  and is completely repopulated.");
+    #$sql="SELECT table_id FROM zdd.tables WHERE module='datadict'";
+    #$res=$this->SQLRead($sql);
+    #$tabs=pg_fetch_all($res);
+    #foreach($tabs as $tabrow) {
+        #$table_id=$tabrow['table_id'];
+        $table_id = 'groups';
+        $cs=array_keys($this->utabs[$table_id]['flat']);
+        $cs=implode(',',$cs);
+        $this->LogEntry("Processing $table_id");
+        $this->SQL("ALTER TABLE $table_id DISABLE TRIGGER ALL");
+        $this->SQL("DELETE FROM $table_id");
+        $sq="INSERT INTO $table_id ($cs) SELECT $cs FROM zdd.$table_id"."";
+        $this->SQL($sq);
+    #}
+    return true;
 }
 
 
@@ -7114,7 +7236,7 @@ function SecurityNodeManager_Normal() {
    $this->LogEntry("Copying group definitions into security area.");
 	$this->SQL(
       "insert into groups (group_id,description) 
-       Select group_id,description FROM zdd.groups_c
+       Select group_id,description FROM zdd.groups
         WHERE group_id NOT IN (
               SELECT group_id from groups
               )"
@@ -7377,7 +7499,7 @@ function DBB_RunOut($tb, $sf) {
 		  JOIN zdd.type_exps$sf  t ON c.type_id = t.type_id 
 		 WHERE tc.table_id = '$tb'
          AND NOT EXISTS (SELECT skey 
-                            FROM zdd.tabflat_c x
+                            FROM zdd.tabflat x
                            WHERE x.table_id      = tc.table_id
                              AND x.column_id_src = tc.column_id
                              AND x.suffix        = tc.suffix
@@ -7390,37 +7512,37 @@ function DBB_RunOut($tb, $sf) {
 
 	// now override any explicit foreign key definitions
 	$SQL = 
-		"update zdd.tabflat_c  
+		"update zdd.tabflat  
 		  set  automation_id = CASE WHEN z.automation_id = '' 
-                             THEN zdd.tabflat_c.automation_id 
+                             THEN zdd.tabflat.automation_id 
                              ELSE z.automation_id END
 		      ,auto_formula  = CASE WHEN z.auto_formula  = '' 
-                             THEN zdd.tabflat_c.auto_formula  
+                             THEN zdd.tabflat.auto_formula  
                              ELSE z.auto_formula  END
-		      ,description   = ".$this->DBB_RunOutOverride('description','z','zdd.tabflat_c')."
-		      ,uino          = ".$this->DBB_RunOutOverride('uino'       ,'z','zdd.tabflat_c')."
-		      ,uiwithnext    = ".$this->DBB_RunOutOverride('uiwithnext' ,'z','zdd.tabflat_c')."
-		  FROM zdd.tabfkycol_c z
-		  WHERE zdd.tabflat_c.table_id  = '$tb'
+		      ,description   = ".$this->DBB_RunOutOverride('description','z','zdd.tabflat')."
+		      ,uino          = ".$this->DBB_RunOutOverride('uino'       ,'z','zdd.tabflat')."
+		      ,uiwithnext    = ".$this->DBB_RunOutOverride('uiwithnext' ,'z','zdd.tabflat')."
+		  FROM zdd.tabfkycol z
+		  WHERE zdd.tabflat.table_id  = '$tb'
 		    AND z.table_id              = '$tb'
-		    AND zdd.tabflat_c.table_id_src  = z.table_id_par
-		    AND zdd.tabflat_c.suffix        = z.suffix
-		    AND zdd.tabflat_c.prefix        = z.prefix
-		    AND zdd.tabflat_c.column_id     = z.column_id";
+		    AND zdd.tabflat.table_id_src  = z.table_id_par
+		    AND zdd.tabflat.suffix        = z.suffix
+		    AND zdd.tabflat.prefix        = z.prefix
+		    AND zdd.tabflat.column_id     = z.column_id";
 	$this->SQL($SQL);
    
     // KEYWORD: TROUBLE
     // KFD 6/1/07.  This correction would not be necessary if we 
     //     eliminated SpecFlatten_Columns1(), or worked the sequence
     //     of it into dbb_runout more properly
-    $SQL="UPDATE zdd.tabflat_c
+    $SQL="UPDATE zdd.tabflat
             SET  table_id_fko = f.table_id
                 ,column_id_fko= f.column_id
   		     FROM zdd.tabfky$sf fk 
 		     JOIN zdd.tabflat$sf f ON fk.table_id_par = f.table_id 
 		    WHERE fk.table_id            = '$tb'
-            AND zdd.tabflat_c.table_id = '$tb'
-            AND zdd.tabflat_c.column_id
+            AND zdd.tabflat.table_id = '$tb'
+            AND zdd.tabflat.column_id
                 = trim(fk.prefix) || trim(f.column_id) || trim(fk.suffix)
 		      AND f.primary_key = 'Y'
 		      AND fk.nocolumns <> 'Y'
@@ -7432,7 +7554,7 @@ function DBB_RunOut($tb, $sf) {
     // be put into tabflat so they can be referenced by other downstream
     // tables.  Only safe to be used in agg, fetch, etc.
     $SQL = 
-		"insert into zdd.columns_c ( 
+		"insert into zdd.columns ( 
           column_id, description ,descshort 
           ,automation_id, auto_table_id, auto_column_id, auto_formula
           ,ins,uiro,uino,required,dispsize,uiwithnext,prefix_table_name
@@ -7446,11 +7568,11 @@ function DBB_RunOut($tb, $sf) {
           ,c.value_min,c.value_max
           ,c.type_id,c.colprec,c.colscale,c.colres
           ,c.uiinline,'N' 
-         from zdd.tabflat_c f
-         JOIN zdd.columns_c c ON f.column_id_src = c.column_id
+         from zdd.tabflat f
+         JOIN zdd.columns c ON f.column_id_src = c.column_id
         where f.table_id = '$tb'
           and f.column_id NOT IN (
-              SELECT column_id FROM zdd.columns_c
+              SELECT column_id FROM zdd.columns
               )";
 	$this->SQL($SQL);
 }
@@ -8089,7 +8211,7 @@ function CodeGenerate_Tables() {
    $app = $GLOBALS['parm']['APP'];
 	
    // Pull from tables, add in whether there are col/row perms
-	$results = $this->SQLRead("Select * from zdd.tables_c");
+	$results = $this->SQLRead("Select * from zdd.tables");
 	$resrows = pg_fetch_all($results);
    
    // Pull a list of columns that *CAUSE* calculations to run,
@@ -8126,7 +8248,7 @@ function CodeGenerate_Tables() {
    
 	
    // We will also need the list of composite groups
-   $results=$this->SQLRead("Select * from zdd.groups_c WHERE grouplist<>''");
+   $results=$this->SQLRead("Select * from zdd.groups WHERE grouplist<>''");
    $groups=pg_fetch_all($results);
    
 	foreach($resrows as $utab) {
@@ -8151,7 +8273,7 @@ function CodeGenerate_Tables() {
       
 		// Now put columns into the array 
 		$table["flat"] = array();
-		$results = $this->SQLRead("Select * from zdd.tabflat_c WHERE table_id = '$table_id' ORDER BY uicolseq");
+		$results = $this->SQLRead("Select * from zdd.tabflat WHERE table_id = '$table_id' ORDER BY uicolseq");
 		while ($row = pg_fetch_array($results)) {
          if(array_key_exists('skey_quiet',$row)) unset($row['skey_quiet']);
          if(array_key_exists('skey'      ,$row)) unset($row['skey']);
@@ -8217,8 +8339,8 @@ function CodeGenerate_Tables() {
 		
 		// Now do projections
 		$results = $this->SQLRead("Select p.projection,p.table_id,p.column_id ".
-			" FROM zdd.tabprojcols_c p ".
-			" JOIN zdd.tabflat_c f ON p.table_id=f.table_id AND p.column_id = f.column_id ".
+			" FROM zdd.tabprojcols p ".
+			" JOIN zdd.tabflat f ON p.table_id=f.table_id AND p.column_id = f.column_id ".
 			" WHERE p.table_id = '$table_id' ".
 			" ORDER BY p.uicolseq ");
 		while ($row = pg_fetch_array($results)) {
@@ -8233,7 +8355,7 @@ function CodeGenerate_Tables() {
       
       $table['tableresolve']=array();
       $res=$this->SQLRead(
-         "select * from zdd.table_views_c where table_id='$table_id'"
+         "select * from zdd.table_views where table_id='$table_id'"
       );
       $tabres=pg_fetch_all($res);
       if($tabres) {
@@ -8275,7 +8397,7 @@ function CodeGenerate_Tables_FK($table_id,$column_id) {
 	// First the basic foreign key	
 	$sql = 
 		"SELECT * ".
-		"  FROM zdd.tabfky_c ".
+		"  FROM zdd.tabfky ".
 		" WHERE ".$column_id ."= '".$table_id."'";
 	$results = $this->SQLRead($sql);
 	if ($resall  = pg_fetch_all($results)) {
@@ -8333,8 +8455,8 @@ SELECT  m.module,m.description as module_text,m.uisort,t.uisort
        ,t.nomenu,'N' as menuins
        ,t.linknew,t.linksearch
        ,'' as menu_parms
-  FROM zdd.modules_c m
-  JOIN zdd.tables_c t ON t.module = m.module
+  FROM zdd.modules m
+  JOIN zdd.tables t ON t.module = m.module
  WHERE t.nomenu <> 'Y'  
  UNION ALL 
  SELECT  m.module,m.description as module_text,m.uisort,u.uisort
@@ -8343,8 +8465,8 @@ SELECT  m.module,m.description as module_text,m.uisort,t.uisort
         ,'N' as nomenu,'N' as menuins
         ,'N' as linknew,'N' as linksearch
         ,u.menu_parms 
- FROM zdd.modules_c m 
- JOIN zdd.uimenu_c u ON m.module = u.module  
+ FROM zdd.modules m 
+ JOIN zdd.uimenu u ON m.module = u.module  
  ORDER BY 3,4,5";
 	$results = $this->SQLRead($sql);
 	
@@ -8868,7 +8990,8 @@ function FS_MKDIR_NoAccess($dir,$noaccess) {
 
 
 function FS_CHECKDIR($dir,$grp,$checkallfiles=false) {
-	$this->LogEntry("Checking permissions on: $dir");
+    # KFD 6/7/08, rem'd this out, got annoying
+	#$this->LogEntry("Checking permissions on: $dir");
 	clearstatcache();	// get latest info 
 
 	$SCRIPT = "";	
@@ -9267,6 +9390,9 @@ function zzArrayAsCode($array,$level=0) {
 }
 
 // Returns the key if it exists, else blank
+function a($arr,$key,$default='') { 
+    return $this->zzArraySafe($arr,$key,$default);
+}
 function zzArraySafe($arr,$key,$default='') {
 	if (isset($arr[$key])) return $arr[$key]; else return $default;
 }

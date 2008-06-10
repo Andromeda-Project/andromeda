@@ -274,7 +274,7 @@ class x_login extends x_table2 {
       if ($root) {
          $results=SQL("
             select group_id 
-              from zdd.groups_c 
+              from zdd.groups 
              where COALESCE(grouplist,'')=''"
          );
       }
@@ -353,7 +353,7 @@ class x_login extends x_table2 {
       
       // Pull distinct modules person has any menu options in.
       $sq="SELECT DISTINCT module
-             FROM zdd.perm_tabs_c 
+             FROM zdd.perm_tabs 
             WHERE nomenu='N'
               AND group_id iN ($groups)";
       $modules=SQL_AllRows($sq,'module');
@@ -368,7 +368,7 @@ class x_login extends x_table2 {
       // for each one, removing the tables that don't exist
       foreach($AGMENU as $module=>$moduleinfo) {
          $sq="SELECT DISTINCT table_id
-                FROM zdd.perm_tabs_c 
+                FROM zdd.perm_tabs 
                WHERE nomenu='N'
                  AND module = '$module'
                  AND group_id iN ($groups)";
@@ -383,7 +383,7 @@ class x_login extends x_table2 {
       
       // KFD 12/18/06.  Put all table permissions into session
       $table_perms=SQL_AllRows(
-         "Select distinct table_id FROM zdd.perm_tabs_c
+         "Select distinct table_id FROM zdd.perm_tabs
            WHERE group_id IN ($groups)
              AND nomenu='N'"
          ,'table_id'
@@ -392,7 +392,7 @@ class x_login extends x_table2 {
       SessionSet('TABLEPERMSMENU',array_keys($table_perms));
       
       $table_perms=SQL_AllRows(
-         "Select distinct table_id FROM zdd.perm_tabs_c
+         "Select distinct table_id FROM zdd.perm_tabs
            WHERE group_id IN ($groups)
              AND permsel='Y'"
          ,'table_id'
@@ -401,7 +401,7 @@ class x_login extends x_table2 {
       SessionSet('TABLEPERMSSEL',array_keys($table_perms));
       
       $table_perms=SQL_AllRows(
-         "Select distinct table_id FROM zdd.perm_tabs_c
+         "Select distinct table_id FROM zdd.perm_tabs
            WHERE group_id IN ($groups)
              AND permins='Y'"
          ,'table_id'
@@ -410,7 +410,7 @@ class x_login extends x_table2 {
       SessionSet('TABLEPERMSINS',array_keys($table_perms));
       
       $table_perms=SQL_AllRows(
-         "Select distinct table_id FROM zdd.perm_tabs_c
+         "Select distinct table_id FROM zdd.perm_tabs
            WHERE group_id IN ($groups)
              AND permupd='Y'"
          ,'table_id'
@@ -419,7 +419,7 @@ class x_login extends x_table2 {
       SessionSet('TABLEPERMSUPD',array_keys($table_perms));
       
       $table_perms=SQL_AllRows(
-         "Select distinct table_id FROM zdd.perm_tabs_c
+         "Select distinct table_id FROM zdd.perm_tabs
            WHERE group_id IN ($groups)
              AND permdel='Y'"
          ,'table_id'
@@ -513,7 +513,7 @@ class x_login extends x_table2 {
 				max(case when p.permupd='Y' then 1 else 0 end) as permupd,
 				max(case when p.permdel='Y' then 1 else 0 end) as permdel,
 				max(case when p.permsel='Y' then 1 else 0 end) as permsel
-				from zdd.perm_tabs_c  P
+				from zdd.perm_tabs  P
 				WHERE group_id in ($groups)
 				GROUP BY p.table_id";
       //echo $sql;
