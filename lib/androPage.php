@@ -241,7 +241,14 @@ class androPage {
         $table = html('table',$td1);
         $filters = ArraySafe($this->yamlP2,'uifilter',array());
         foreach($filters as $id=>$options) {
-            $options['inputId']='ap_'.$id;
+            if(isset($options['table'])) {
+                $dd = ddTable($options['table']);
+                $opt2 = $dd['flat'][$options['column']];
+                $options = array_merge($opt2,$options);
+            }
+            else {
+                $options['inputId']='ap_'.$id;
+            }
             $options['value'] = gp('ap_'.$id);
             $type_id = a($options,'type_id','vchar');
 
@@ -296,20 +303,13 @@ class androPage {
             $inp->hp['id'] = $ids['showSql'];
             $inp->hp['name'] = 'showsql';  // For x2
             $inp->addClass('button');
-            //if(gpExists('x4Page')) {
             $inp->hp['onclick'] = "\$a.byId('x4AndroPage').showSql()";
-            //}
-            //else {
-            //    hidden('showsql',0);
-            //    $inp->hp['onclick'] = "SetAndPost('showsql',1)";
-            //}
         }
         
         # Put in the spot where we display the SQL
         $td1->br(2);
         $showSql = html('div',$td1);
         $showSql->hp['id'] = 'divShowSql';
-        
         
         echo $top->render();
     }
@@ -523,7 +523,7 @@ class androPage {
                 // group by 
                 if(a($colinfo,'group','')<>'') {
                     //$coldef = str_replace("as $colname","",$coldef);
-                    $coldef = $colinfo['group']."($table.$colname) as $colname";
+                    $coldef = $colinfo['group']."($table.$colname)";
                 }
                 else {
                     $coldef = "$table.$colname";
@@ -547,7 +547,7 @@ class androPage {
                 }
                 else {
                     $coldef = $constant=='' 
-                        ? $coldef
+                        ? "$coldef as $colname"
                         : "'$constant' as $colname";
                 }
                 $SQL_COLSA[] = $coldef;
