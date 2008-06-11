@@ -306,12 +306,14 @@ function changeCheck(obj) {
    var x_class_base     = objAttValue(obj,'x_class_base');
    var x_mode           = objAttValue(obj,'x_mode');
    if(x_mode!='ins' && x_mode!='search') {
-      if(obj.value != x_value_original) {
-         obj.attributes.getNamedItem('x_class_base').value='ins';
-      }
-      else {
-         obj.attributes.getNamedItem('x_class_base').value='upd';
-      }
+       if(obj.attributes.getNamedItem('x_class_base')) {
+           if(obj.value != x_value_original) {
+               obj.attributes.getNamedItem('x_class_base').value='ins';
+           }
+           else {
+               obj.attributes.getNamedItem('x_class_base').value='upd';
+           }
+       }
    }
    fieldColor(obj);
 }
