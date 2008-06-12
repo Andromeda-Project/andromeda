@@ -1617,7 +1617,7 @@ function SpecFlatten_Runout() {
                 ,primary_key,uisearch
                 ,colprec,colscale,colres,type_id,inputmask
                 ,table_id_fko
-                ,uicolseq,uisearch_ignore_dash
+                ,uicolseq,uisearch_ignore_dash,uisearchsort
                 ,formula,formshort,dispsize
              )
              SELECT 
@@ -1639,6 +1639,7 @@ function SpecFlatten_Runout() {
                        when c.uisearch_ignore_dash in ('Y','N')
                        then c.uisearch_ignore_dash
                        else t.uisearch_ignore_dash end as uisearch_ignore_dash
+                 ,tc.uisearchsort
                  ,t.formula,t.formshort,t.dispsize
              FROM zdd.tabcol tc
              JOIN zdd.columns   c ON tc.column_id_src = c.column_id
@@ -6611,7 +6612,9 @@ function planMake_ViewsRowColCombine(&$defsrow,&$defscol) {
             foreach($cols as $col=>$throwaway) {
                $x[$col]=isset($colsu[$col]) ? '1' : '0';
             }
-            $this->ViewDefs[$table_id][$app.'_eff_'.$effective]=$x;
+            # KFD 6/12/08, WRONG!  Go by table, not group
+            #$this->ViewDefs[$table_id][$app.'_eff_'.$effective]=$x;
+            $this->ViewDefs[$table_id][$table_id.'_v_'.$effective]=$x;
             
             // Now generate the create view command
             if(count($cols)==0) $cols=array('skey'=>0); 
@@ -8247,71 +8250,79 @@ function CodeGenerate_Tables() {
    }
    
 	
-   // We will also need the list of composite groups
-   $results=$this->SQLRead("Select * from zdd.groups WHERE grouplist<>''");
-   $groups=pg_fetch_all($results);
+    // We will also need the list of composite groups
+    $results=$this->SQLRead("Select * from zdd.groups WHERE grouplist<>''");
+    $groups=pg_fetch_all($results);
    
-	foreach($resrows as $utab) {
-		// First put the table stuff into the array
-		$table_id = $utab["table_id"];
-		$table = $this->zzArrayAssociative($utab);
+    foreach($resrows as $utab) {
+        // First put the table stuff into the array
+        $table_id = $utab["table_id"];
+        $table = $this->zzArrayAssociative($utab);
       
-      // Clean out some clutter.  
-      if(array_key_exists('skey_hn',$table))  unset($table['skey_hn']);
-      if(array_key_exists('skey_s' ,$table))  unset($table['skey_s']);
-      if(isset($table['column_prefix']))      unset($table['column_prefix']);
-      if(isset($table['ins']))                unset($table['ins']);
-      if(isset($table['risimple']))           unset($table['risimple']);
-      if(isset($table['rules']))              unset($table['rules']);
-      if(isset($table['menuins']))            unset($table['menuins']);
-      if(isset($table['uisort']))             unset($table['uisort']);
-      if(isset($table['skey']))               unset($table['skey']);
-      if(isset($table['skey_quiet']))         unset($table['skey_quiet']);
-      if(isset($table['_agg']))               unset($table['_agg']);
-      if(isset($table['skey_hn']))            unset($table['skey_hn']);
-      if(isset($table['skey_s']))             unset($table['skey_s']);
+        // Clean out some clutter.  
+        if(array_key_exists('skey_hn',$table))  unset($table['skey_hn']);
+        if(array_key_exists('skey_s' ,$table))  unset($table['skey_s']);
+        if(isset($table['column_prefix']))      unset($table['column_prefix']);
+        if(isset($table['ins']))                unset($table['ins']);
+        if(isset($table['risimple']))           unset($table['risimple']);
+        if(isset($table['rules']))              unset($table['rules']);
+        if(isset($table['menuins']))            unset($table['menuins']);
+        if(isset($table['uisort']))             unset($table['uisort']);
+        if(isset($table['skey']))               unset($table['skey']);
+        if(isset($table['skey_quiet']))         unset($table['skey_quiet']);
+        if(isset($table['_agg']))               unset($table['_agg']);
+        if(isset($table['skey_hn']))            unset($table['skey_hn']);
+        if(isset($table['skey_s']))             unset($table['skey_s']);
       
 		// Now put columns into the array 
+        $uisearchsort = array();
 		$table["flat"] = array();
 		$results = $this->SQLRead("Select * from zdd.tabflat WHERE table_id = '$table_id' ORDER BY uicolseq");
 		while ($row = pg_fetch_array($results)) {
-         if(array_key_exists('skey_quiet',$row)) unset($row['skey_quiet']);
-         if(array_key_exists('skey'      ,$row)) unset($row['skey']);
-         if(array_key_exists('_agg'      ,$row)) unset($row['_agg']);
-         if(array_key_exists('skey_hn'   ,$row)) unset($row['skey_hn']);
-         if(array_key_exists('skey_s'    ,$row)) unset($row['skey_s']);
-         
-         // If there is a foreign key, grab his fkdisplay setting
-         $row['fkdisplay']='';
-         if($row['table_id_fko']<>'') {
-            //hprint_r($this->utabs[$row['table_id_fko']]);
-            $row['fkdisplay']=$this->utabs[$row['table_id_fko']]['fkdisplay'];
-         }
-
-         $row['uicolseq']=trim($row['uicolseq']);
-			$table["flat"][$row["column_id"]] = $this->zzArrayAssociative($row);
-		}
-      
-      // Put in a list of columns that force recalculations of the row
-      $table['calcs']=array();
-      if(count($this->zzArraySafe($calcs,$table_id,array()))>0) {
-         foreach($calcs[$table_id] as $colid) {
-            $table['calcs'][]=$colid;
-         }
-      }
-      
-      // Add in the ordered list of columns
-      $table['sequenced']=$this->zzArraySafe($seqs,$table_id,array());
-      
-      // If there are chains for the table, run those out
-      if(count($this->zzArraySafe($this->utabs[$table_id],'chains',array()))>0) {
-         $this->LogEntry("Found chains for $table_id");
-         foreach ($this->utabs[$table_id]['chains'] as $chain) {
-            if($chain['chain']=='calc') {
-               $table['flat'][$chain['column_id']]['chaincalc']=$chain;
+            if(array_key_exists('skey_quiet',$row)) unset($row['skey_quiet']);
+            if(array_key_exists('skey'      ,$row)) unset($row['skey']);
+            if(array_key_exists('_agg'      ,$row)) unset($row['_agg']);
+            if(array_key_exists('skey_hn'   ,$row)) unset($row['skey_hn']);
+            if(array_key_exists('skey_s'    ,$row)) unset($row['skey_s']);
+            
+            // If there is a foreign key, grab his fkdisplay setting
+            $row['fkdisplay']='';
+            if($row['table_id_fko']<>'') {
+                $row['fkdisplay']=$this->utabs[$row['table_id_fko']]['fkdisplay'];
             }
-         }
-      }
+            
+            $row['uicolseq']=trim($row['uicolseq']);
+            $table["flat"][$row["column_id"]] = $this->zzArrayAssociative($row);
+            
+            # Capture list of default search ordering columns
+            $uiss = strtoupper($this->zzArraySafe($row,'uisearchsort',''));
+            if($uiss=='A') $uisearchsort[] = "+".$row['column_id'];
+            if($uiss=='D') $uisearchsort[] = "-".$row['column_id'];
+		}
+        
+        # Write out the search order
+        $table['uisearchsort'] = implode(',',$uisearchsort);
+      
+        // Put in a list of columns that force recalculations of the row
+        $table['calcs']=array();
+        if(count($this->zzArraySafe($calcs,$table_id,array()))>0) {
+            foreach($calcs[$table_id] as $colid) {
+                $table['calcs'][]=$colid;
+            }
+        }
+      
+        // Add in the ordered list of columns
+        $table['sequenced']=$this->zzArraySafe($seqs,$table_id,array());
+      
+        // If there are chains for the table, run those out
+        if(count($this->zzArraySafe($this->utabs[$table_id],'chains',array()))>0) {
+            $this->LogEntry("Found chains for $table_id");
+            foreach ($this->utabs[$table_id]['chains'] as $chain) {
+                if($chain['chain']=='calc') {
+                    $table['flat'][$chain['column_id']]['chaincalc']=$chain;
+                }
+            }
+        }
       
       // create blank projections array
       $table['projections']=array();

@@ -660,10 +660,11 @@ table columns {
 // The keyword "column" inside of "table { ... }" goes here
 // The keyword "columns" inside of "table { .... }" goes here
 //
-column primary_key  {  type_id: char;   colprec:  1;  colscale: 0; description: Primary Key; }
-column pk_change    {  type_id: char;   colprec:  1;  colscale: 0; description: Allow PK Change; }
-column uisearch     {  type_id: char;  colprec: 1;  colscale: 0; description: Display in Search Results; }
-column uicolseq     {  type_id: char;  colprec: 30; colscale: 0; description: Column Sequence; }
+column primary_key  { type_id: char;   colprec:  1;  colscale: 0; description: Primary Key; }
+column pk_change    { type_id: char;   colprec:  1;  colscale: 0; description: Allow PK Change; }
+column uisearch     { type_id: char;  colprec: 1;  colscale: 0; description: Display in Search Results; }
+column uicolseq     { type_id: char;  colprec: 30; colscale: 0; description: Column Sequence; }
+column uisearchsort { type_id: char; colprec: 1; description: Default Search Sort; }
 table tabcol {
     module: datadict;
     description: Column Placements;
@@ -672,7 +673,7 @@ table tabcol {
     foreign_key columns { uisearch: Y; suffix: _src; }
     foreign_key tables  {  primary_key: Y; uisearch: Y; }
     column { column_id; suffix; prefix; primary_key: Y; }
-    column { auto_suffix; auto_prefix; inputmask}
+    column { auto_suffix; auto_prefix; inputmask; uisearchsort }
     
     column primary_key { uisearch: Y; }
     column pk_change { uisearch: Y; }
@@ -1311,7 +1312,7 @@ table tabflat {
     column { uirows;    uicols;    }
     
     column { uisearch; uicolseq; uiwithnext       }
-    column { ins;uiro;uino;dispsize;uiinline; }	
+    column { ins;uiro;uino;dispsize;uiinline; uisearchsort}	
     column { type_id;colprec;colscale; colres; formula;formshort }
     column { uicolseq; tooltip }
     column { required; }
