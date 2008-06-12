@@ -35,7 +35,6 @@ INVENTORY OF framework gp variables:
 * st2login    command to login
 
 */
-
 // ==================================================================
 // >>> 
 // >>> Make INI file settings here

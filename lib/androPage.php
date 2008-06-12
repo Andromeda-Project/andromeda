@@ -607,7 +607,7 @@ class androPage {
         // Loop through children looking for which of the
         // parents they can join to
         foreach($tables as $table) {
-            $dd1 = dd_TableRef($table);
+            $dd1 = ddTable($table);
             $table_par = ArraySafe(
                 $yamlP2['table'][$table],'table_par',''
             );
@@ -635,7 +635,7 @@ class androPage {
             }
             else {
                 $tables_done[] = $table;
-                $dd=dd_TableRef($table_par);
+                $dd=ddTable($table_par);
                 $apks=explode(',',$dd['pks']);
                 $apks2=array();
                 foreach($apks as $apk) {
@@ -643,6 +643,7 @@ class androPage {
                 }
                 $SQL_Joins[$table] =array(
                     "expression"=>implode(' AND ',$apks2)
+                    ,'view'=>$dd['viewname']
                     ,'left_join'=>ArraySafe(
                         $yamlP2['table'][$table]['left_join'],'N'
                      )
@@ -651,12 +652,13 @@ class androPage {
         }
 
         // Now join them all up and return
-        $retval = "\n  FROM $SQL_from ";
+        $view_id = ddView($SQL_from);
+        $retval = "\n  FROM $view_id $SQL_from ";
         foreach($SQL_Joins as $table_id=>$SQL_Join) {
-            $view_id = ddTable_idResolve($table_id);
+            $view_id = $SQL_Join['viewname'];
             $expr = $SQL_Join['expression'];
             $left = $SQL_Join['left_join']=='Y' ? 'LEFT ' : '';
-            $retval.="\n  {$left}JOIN $table_id ON $expr";
+            $retval.="\n  {$left}JOIN $view_id $table_id ON $expr";
         }
         return $retval;
     }

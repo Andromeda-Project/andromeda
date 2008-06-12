@@ -61,10 +61,17 @@ class x_login extends x_table2 {
                 return;
             }
         }
+        
       
 		?>	
 
 <!-- LOGIN HTML (BEGIN) -->
+<br/>
+<center>
+<h1><?=$GLOBALS['AG']['app_desc']?></h1>
+</center>
+
+</center>
 <br>
 <br>
 <table align="CENTER">

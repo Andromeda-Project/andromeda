@@ -1252,22 +1252,24 @@ function ddTable($table_id) {
     $group = SessionGet('GROUP_ID_EFF');
 
     # Check for a view assignment
+    $view='';
     if(isset($tabdd['tableresolve'][$group])) {
         $tabdd['viewname'] = $tabdd['tableresolve'][$group];
+        $view = $tabdd['tableresolve'][$group];
     }
 
     # If there is a view for my group, I have to knock out the columns
     # I will not be allowed to deal with on the server
-    if(isset($tabdd['views'][$group])) {
+    if(isset($tabdd['views'][$view])) {
         foreach($tabdd['flat'] as $column_id=>$colinfo) {
             # drop any column not listed
-            if(!isset($tabdd['views'][$group][$column_id])) {
+            if(!isset($tabdd['views'][$view][$column_id])) {
                 unset($tabdd['flat'][$column_id]);
                 continue;
             }
 
             # If there is a "0" instead of a one, set it read-only
-            if($tabdd['views'][$group][$column_id]==0) {
+            if($tabdd['views'][$view][$column_id]==0) {
                 $tabdd['flat'][$column_id]['uiro'] = 'Y';
             }
         }
@@ -4644,11 +4646,11 @@ function fsMakeDirNested($Base_Path,$New_Path) {
    }
 }
 
-function fsFileFromArray($name,$array,$arrayname) {
-   $annoying=$arrayname;
-	$retval = "";
-   $level = 0;
-   $retval=fsFileFromArrayWalk($array,0);
+function fsFileFromArray($name,$array,$arrayname,$dir='') {
+    $annoying=$arrayname;
+    $retval = "";
+    $level = 0;
+    $retval=fsFileFromArrayWalk($array,0);
 
    $retval="<?php
 \$$arrayname = array(
@@ -4656,7 +4658,8 @@ $retval
 );
 ?>";
    global $AG;
-   file_put_contents($AG['dirs']['dynamic'].$name,$retval);
+   $file = fsDirTop().($dir=='' ? 'dynamic' : $dir)."/$name";
+   file_put_contents($file,$retval);
  //  hprint_r($array);
 }
 
@@ -6478,6 +6481,25 @@ function X_UNIX_TO_SQLDATE($dt,$skipquotes=false) {
 // ==================================================================
 // Options out of DD tables
 // ==================================================================
+# ===============================================================
+# Table triggers
+# ===============================================================
+function variables_writeAfter($row) {
+    $rows=SQL_AllRows("select * from variables");
+    $cache=array();
+    foreach($rows as $row) {
+        $line = preg_replace_callback( "/%%(.+?)%%/"
+            ,"getRegexOptionVal"
+            ,$row['variable_value'] );
+        $cache[$row['variable']]=$line;
+    }
+    fsFileFromArray(
+        'table_variables.php'
+        ,$cache
+        ,"GLOBALS['AG']['table_variables']"
+    );
+}
+
 function OptionGet($varname,$default='') {
    return Option_Get($varname,$default);
 }
@@ -6498,37 +6520,38 @@ function getRegexOptionVal( $matches ) {
 }
 
 function Option_Get($varname,$default='') {
+    # KFD 6/12/08, eliminate caching on disk, it is problematic
+    #              in x4 and we want to replace it with memcached
     if($varname=='X') {
         unlink($GLOBALS['AG']['dirs']['dynamic'].'table_variables.php');
         unset($GLOBALS['AG']['table_variables']);
     }
-   if(!file_exists_incpath('table_variables.php')) {
-      // Retrieve the file
-      $rows=SQL_AllRows("select * from variables");
-      $cache=array();
-      foreach($rows as $row) {
+    if(!file_exists_incpath('table_variables.php')) {
+        # if not connected, connect now
+        $dbconnected = SQLConnected();
+        if(!$dbconnected) SQL_ConnPush();
+        variables_writeAfter(array());
+        if(!$dbconnected) SQL_ConnPop();
+        
+        /*
+        // Retrieve the file
+        $rows=SQL_AllRows("select * from variables");
+        $cache=array();
+        foreach($rows as $row) {
          $line = preg_replace_callback( "/%%(.+?)%%/"
              ,"getRegexOptionVal"
              ,$row['variable_value'] );
          $cache[$row['variable']]=$line;
-      }
-      fsFileFromArray(
+        }
+        fsFileFromArray(
          'table_variables.php'
          ,$cache
          ,"GLOBALS['AG']['table_variables']"
-      );
-   }
-   include('table_variables.php');
-   return ArraySafe($GLOBALS['AG']['table_variables'],trim($varname),$default);
-
-   // KFD 6/8/07, retired the old code that queried database on every pull
-   /*
-	$rows = SQL_AllRows(
-      "SELECT variable_value FROM variables WHERE variable = '".$varname."'"
-   );
-	if (count($rows)==0) return $default;
-   else return $rows[0]['variable_value'];
-   */
+        );
+        */
+    }
+    include('table_variables.php');
+    return ArraySafe($GLOBALS['AG']['table_variables'],trim($varname),$default);
 }
 
 
@@ -10435,6 +10458,12 @@ function SQL_ConnPush($role='',$db='') {
    return scDBConn_Push($role,$db);
 }
 
+function SQLConnected() {
+    if(!isset($GLOBALS['dbconn'])) return false;
+    if(is_null($GLOBALS['dbconn'])) return false;
+    return true;    
+}
+
 /* DEPRECATED */
 function scDBConn_Push($role='',$db='') {
    $dbc = isset($GLOBALS['dbconn']) ? $GLOBALS['dbconn'] : null;
@@ -11142,10 +11171,11 @@ but should only be done if it is acceptable to throw away the ends of
 columns.
 */
 function SQLX_Insert($table,$colvals,$rewrite_skey=true,$clip=false) {
-   if(!is_array($table)) $table=DD_TableRef($table);
-   //if (Errors()) return 0;
+    # KFD 6/12/08, use new and improved
+    errorsClear();
+    if(!is_array($table)) $table=DD_TableRef($table);
 	$table_id= $table["table_id"];
-   $view_id = DDTable_IDResolve($table_id);
+    $view_id = $table['viewname'];
  	$tabflat = &$table["flat"];
 
 	$new_cols = "";
@@ -11164,6 +11194,8 @@ function SQLX_Insert($table,$colvals,$rewrite_skey=true,$clip=false) {
 		}
 	}
 	$sql = "INSERT INTO ".$view_id." ($new_cols) VALUES ($new_vals)";
+    x4Debug($sql);
+    x4Debug(SessionGet('UID'));
    //h*print_r($colvals);
    //h*print_r($sql);
 

@@ -271,6 +271,8 @@ class androX4 {
         $tabLoop = array();
         $fakeCI = array('colprec'=>'10');
         foreach($cols as $column) {
+            # KFD 6/12/08, respect columns removed for security
+            if(!isset($dd['flat'][$column])) continue;
             $colinfo = $dd['flat'][$column];
             if($tableIdPar == $colinfo['table_id_fko'] && $tableIdPar<>'') {
                 continue;
@@ -379,6 +381,11 @@ class androX4 {
     function browseFetch() {
         #  This is the list of columns to return 
         $acols = explode(',',$this->dd['projections']['_uisearch']);
+        # KFD 6/12/08, respect columns removed for security
+        foreach($acols as $idx=>$value) {
+            if(!isset($this->dd['flat'][$value])) unset($acols[$idx]);
+        }
+
 
         #  By default the search criteria come from the 
         #  variables, unless it is a child table search
@@ -419,21 +426,38 @@ class androX4 {
         #        
         $ascDesc = gp('sortAD')=='ASC' ? ' ASC' : ' DESC';
         $aorder = array();
-        foreach($acols as $column_id) {
-            // This causes the next column after ordered to be ordered also
-            if(count($aorder)==1) {
-                $aorder[] = $column_id.$ascDesc;
+        $searchsort = trim(a($this->dd,'uisearchsort',''));
+        if($searchsort <> '') {
+            $aocols = explode(",",$searchsort);
+            foreach($aocols as $pmcol) {
+                $char1 = substr($pmcol,0,1);
+                $column_id = substr($pmcol,1);
+                if($char1 == '+') {
+                    $aorder[] = $column_id.' ASC';
+                }
+                else {
+                    $aorder[] = $column_id.' DESC';
+                }
             }
-            if($column_id == gp('sortCol')) {
-                $aorder[] = $column_id.$ascDesc;
-            }
-        }
-        if(count($aorder)==0) {
-            $SQLOrder = " LIMIT 20";
-            #$aorder[] = $acols[0];
+            $SQLOrder = " ORDER BY ".implode(',',$aorder)." Limit 20";
         }
         else {
-            $SQLOrder = " ORDER BY ".implode(',',$aorder)." Limit 20";
+            foreach($acols as $column_id) {
+                // This causes the next column after ordered to be ordered also
+                if(count($aorder)==1) {
+                    $aorder[] = $column_id.$ascDesc;
+                }
+                if($column_id == gp('sortCol')) {
+                    $aorder[] = $column_id.$ascDesc;
+                }
+            }
+            if(count($aorder)==0) {
+                $SQLOrder = " LIMIT 20";
+                #$aorder[] = $acols[0];
+            }
+            else {
+                $SQLOrder = " ORDER BY ".implode(',',$aorder)." Limit 20";
+            }
         }
         
         # just before building the query, drop out
@@ -547,7 +571,7 @@ class androX4 {
       */
     function fetchRow() {
         $skey = SQLFN(gp('x4w_skey'));
-        $row = SQL_OneRow("SELECT * FROM ".$this->table_id." WHERE skey=$skey");
+        $row = SQL_OneRow("SELECT * FROM ".$this->view_id." WHERE skey=$skey");
         x4Data('row',$row);
     }
 
@@ -564,12 +588,24 @@ class androX4 {
         $row = aFromGP('x4v_');
         $skey= 0;
         $table_id = $this->dd['table_id'];
+
+        # KFD 6/12/08, allow functions to modify or prevent a write
+        $tbefore = $table_id."_writeBefore";
+        $tafter  = $table_id."_writeAfter";
+        if(function_exists($tbefore)) {
+            $message = $tbefore($row);
+            if($message<>'') {
+                x4Error($message);
+                return;
+            }
+        }
+        
         if($row['skey']==0 || !isset($row['skey'])) {
             unset($row['skey']);
             $skey = SQLX_Insert($this->dd,$row);
             if(!errors()) {
                 $row=SQL_OneRow(
-                    "Select * FROM $table_id WHERE skey = $skey"
+                    "Select * FROM {$this->view_id} WHERE skey = $skey"
                 );
             }
             x4Data('row',$row);
@@ -579,11 +615,22 @@ class androX4 {
             if(!errors()) {
                 $skey = $row['skey'];
                 $row=SQL_OneRow(
-                    "Select * FROM $table_id WHERE skey = $skey"
+                    "Select * FROM {$this->view_id} WHERE skey = $skey"
                 );
                 x4Data('row',$row);
             }
         }
+        
+        # KFD 6/12/08, allow functions to modify or prevent a write
+        if(Errors()) return;
+        if(function_exists($tafter)) {
+            $message = $tafter($row);
+            if($message<>'') {
+                x4Error($message);
+                return;
+            }
+        }
+        
     }
     
     # ===================================================================
@@ -597,7 +644,7 @@ class androX4 {
       */
     function delete() {
         $skey = SQLFN(gp('skey'));
-        $sq="Delete from ".$this->table_id." where skey = $skey";
+        $sq="Delete from ".$this->view_id." where skey = $skey";
         SQL($sq);
     }
 
