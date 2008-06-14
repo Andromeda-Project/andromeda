@@ -1273,12 +1273,6 @@ function x4Detail(self) {
     else 
         self.zIsChild = self.zTableId == self.zTableIdPar ? false : true;
     
-    // Assign input masks to dates
-    // No Good: Works only for fixed-length, no good for numerics
-    //$(self).find(':input[xInputMask]').each(function() {
-    //    $(this).mask(this.getAttribute('xInputMask'),{placeholder:' '});
-    //});
-    
     /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
      * 
      * Activation Code
@@ -1300,7 +1294,8 @@ function x4Detail(self) {
             'menuBarLabel',x4dd.dd[this.zTableId].singular
         );
         
-        // Before displaying, do possible fetch         
+        // Before displaying, do possible fetch
+        if(typeof(skey) == 'undefined') skey = this.skey;
         if(skey > 0) {
             this.fetchRow(skey);
             this.displayRow();
