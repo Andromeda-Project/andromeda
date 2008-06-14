@@ -1221,6 +1221,7 @@ var $a = {
             if(this.jdata.error.length>0) {
                 this.hadErrors = true;
                 $a.dialogs.alert(this.jdata.error.join("\n\n"));
+                return false;
             }
             if(this.jdata.notice.length>0) {
                 $a.dialogs.alert(this.jdata.notice.join("\n\n"));
