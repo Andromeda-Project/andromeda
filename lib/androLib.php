@@ -11175,7 +11175,7 @@ function SQLX_Insert($table,$colvals,$rewrite_skey=true,$clip=false) {
     errorsClear();
     if(!is_array($table)) $table=DD_TableRef($table);
 	$table_id= $table["table_id"];
-    $view_id = $table['viewname'];
+    $view_id = ddTable_idResolve($table_id);
  	$tabflat = &$table["flat"];
 
 	$new_cols = "";
