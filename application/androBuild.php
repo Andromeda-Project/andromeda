@@ -4949,10 +4949,15 @@ function TrigGen_CRet_Arg($rtid,$retinfo) {
          $arg=substr($retinfo['literal_arg'],1);
       }
       else {
-         $arg =$this->SQLFORMATLITERAL(
-            $retinfo["literal_arg"]
-            ,$rtid,true,true
-         );
+          if($retinfo['literal_arg']=='%NOW') {
+              $arg = 'now()';
+          }
+          else {
+             $arg =$this->SQLFORMATLITERAL(
+                $retinfo["literal_arg"]
+                ,$rtid,true,true
+             );
+          }
       }
    }
    // This lets literal blanks be argument.  Note only one blank, but its
