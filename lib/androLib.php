@@ -127,17 +127,6 @@ function gpToSession() {
    SessionSet('clean',$GLOBALS['AG']['clean']);
 }
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# DOCUMENTATION LINE
-#
-# EVERYTHING ABOVE HERE HAS BEEN DOCUMENTED ON THE NEW 2008
-# DOCUMENTATION SITE
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 # ==============================================================
 #
 # SECTION: JSON RETURNS
@@ -392,7 +381,7 @@ function htmlForm(&$parent,$page='') {
     $form = html('form',$parent);
     $form->hp['method'] = 'POST';
     $form->hp['action'] = "index.php?x4Page=$page";
-    $form->hp['id'] = 'form1';
+    $form->hp['id'] = 'Form1';
     $form->hp['enctype'] = 'multipart/form-data';
     $inp = html('input',$form);
     $inp->hp['type'] = 'hidden';
@@ -655,6 +644,142 @@ function inputFixupByType($input) {
             ='return x4.stdlib.inputKeyUpDate(event,this)';
     }
     return $input;
+}
+
+# ==============================================================
+#
+# SECTION: Get config values
+#
+# ==============================================================
+function configGet($var,$default='',$skip=array()) {
+    # clean up what they passed in
+    $var = strtolower(trim($var));
+    
+    # Define the arrays and then attempt to load them
+    $configuser = $configinst = $configapp = $configfw = array();
+    $alist = array('configfw','configapp','configinst');
+    foreach($alist as $table_id) {
+        $file = fsDirTop()."/dynamic/table_$table_id.php";
+        if(file_exists($file)) {
+            include($file);
+        }
+    }
+    
+    # a special case is the user prefs, look for users's file
+    $uid = SessionGet("UID");
+    $file = fsDirTop()."/dynamic/table_configuser_$uid.php";
+    if(file_exists($file)) {
+        include($file);
+    }
+    
+    # Now proceed to the first value we find
+    if(!in_array('user',$skip)) {
+        if( a($configuser,$var,'*null*')<>'*null*') return $configuser[$var];
+    }
+    if(!in_array('inst',$skip)) {
+        if( a($configinst,$var,'*null*')<>'*null*') return $configinst[$var];
+    }
+    if(!in_array('app',$skip)) {
+        if( a($configapp ,$var,'*null*')<>'*null*') return $configapp[$var];
+    }
+    if( a($configfw  ,$var,'*null*')<>'*null*') return $configfw[$var];
+    return $default;
+}
+
+function configWrite($type) {
+    # DUPLICATE CODE: THIS CODE IS DUPLICATE IN ANDROBUILD.PHP
+    
+    # First work out some differences based on which table
+    if($type=='inst') {
+        $table_id = 'configinst';
+        $file  = fsDirTop().'/dynamic/table_configinst.php';
+    }
+    else {
+        $table_id = 'configuser';
+        $uid = SessionGet('UID');
+        $file  = fsDirTop()."/dynamic/table_configuser_$uid.php";
+    }
+    
+    # Retrieve the data
+    $dd = ddTable($table_id);
+    $data= SQL_OneRow("Select * From ".$dd['viewname']);
+    
+    # Write the array and save it
+    $text ="<?php\n\$$table_id = array("; 
+    $docomma=false;
+    $nocols = array('_agg','skey','skey_quiet','recnum');
+    foreach($data as $column_id=>$value) {
+        if(in_array($column_id,$nocols)) continue;
+        if(is_null($value)) $value='*null*';
+        $text.="\n    ";
+        if($docomma) $text.=",";
+        $docomma = true;
+        $text.="'$column_id'=>'$value'";
+    }
+    $text.="\n);\n?>";
+    file_put_contents($file,$text);
+}
+
+function configLayoutX4($container,$type) {
+    # get row saved on disk
+    if($type=='Framework') {
+        $configfw = array();
+        $file = fsDirTop()."/dynamic/table_configfw.php";
+        if(file_exists($file)) include($file);
+        $row = $configfw;
+    }
+    else {
+        $configapp = array();
+        $file = fsDirTop()."/dynamic/table_configapp.php";
+        if(file_exists($file)) include($file);
+        $row = $configapp;
+    }
+    
+    $top = $container;
+    html('h1',$top,"$type Configuration");
+    
+    $text = "<p>Andromeda configuration settings are defined at four
+    levels:</p> 
+    <ul>
+    <li>Framework - default setting provided by Andromeda, these cannot
+             be directly changed.
+    <li>Application - default setting provided by the programmer, which can
+              override framework settings.
+    <li>Instance - Anything specified at this level overrides the application
+             and framework settings.
+    <li>User - Users can override some configuration settings to 
+               establish their own preferences.  User settings override
+               all other levels.
+    </ul>";
+    html('div',$top,$text);
+    $top->br();
+    
+    # We need the data dictionary for configapp for captions
+    # This will have more columns that the framework table, that's
+    # why use this instead of configfw
+    $dd = ddTable('configapp');
+
+    # set up the table
+    $table = html('table',$top);
+    $table->hp['id'] = 'x2data1';
+    $thead = html('thead',$table);
+    $tr = html('tr',$thead);
+    $td = html('th',$tr,'Setting');
+    $td = html('th',$tr,'Value');
+    
+    # spit out the values
+    $tbody = html('tbody',$table);
+    foreach($dd['flat'] as $column_id=>$colinfo) {
+        $column_id = trim($column_id);
+        if(!isset($dd['flat'][$column_id])) continue;
+        if(!isset($row[$column_id])) continue;
+        
+        $tr = html('tr',$tbody);
+        $td = html('td',$tr,$dd['flat'][$column_id]['description']);
+        $td->hp['style'] = 'text-align: left';
+        
+        $td = html('td',$tr,htmlEntities($row[$column_id]));
+    }
 }
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -11296,6 +11421,7 @@ function SQLX_Update($table,$colvals,$errrow=array()) {
     }
     if ($sql <> '') {
         $sql = "UPDATE ".$view_id." SET ".$sql." WHERE skey = ".$st_skey;
+        x4Debug($sql);
 
         // ERRORROW CHANGE 5/30/07, big change, SQLX_* routines now save
         //  the row for the table if there was an error

@@ -28,6 +28,7 @@
 // ---------------------------------------------------------
 // Revision History:
 //
+// 14-Jun-2008  Added 'flag_carry' as special column for config vars
 // 25-Sep-2007  Added history table definitions
 // 30-Oct-2006  Added "table_id" to perm_cols
 //              Added uisort to tables
@@ -624,7 +625,7 @@ column value_max         {  type_id: vchar; colprec: 50;  colscale: 0; descripti
 column uirows            {  type_id: int  ;                            description: TextArea Rows; }    
 column uicols            {  type_id: int  ;                            description: TextArea Cols; }    
 column tooltip           {  type_id: vchar; colprec: 300; description: UI Tooltip; }
-
+column flagcarry         {  type_id: char;  colprec: 1; description: Used only For Configs; }
 table columns {
     module: datadict;
     description: Column Definitions;
@@ -634,7 +635,7 @@ table columns {
     column column_id   { primary_key: Y; uisearch: Y; }
     column description { uisearch: Y; }
     column { descshort; }
-    column { inputmask; }
+    column { inputmask; flagcarry; }
     
     // all automation stuff
     foreign_key { automations; }
@@ -673,7 +674,7 @@ table tabcol {
     foreign_key columns { uisearch: Y; suffix: _src; }
     foreign_key tables  {  primary_key: Y; uisearch: Y; }
     column { column_id; suffix; prefix; primary_key: Y; }
-    column { auto_suffix; auto_prefix; inputmask; uisearchsort }
+    column { auto_suffix; auto_prefix; inputmask; uisearchsort; flagcarry }
     
     column primary_key { uisearch: Y; }
     column pk_change { uisearch: Y; }
@@ -1293,7 +1294,7 @@ table tabflat {
 	table_seq:5000; // don't change, see note above
 		
 	column { table_id; column_id;	primary_key: Y; uisearch: Y;  }
-	column { description; inputmask; }
+	column { description; inputmask; flagcarry; }
     column { descshort; }
 
 	column primary_key { uisearch: Y; }

@@ -803,8 +803,6 @@ function SpecLoad() {
         unset($this->ddarr['data']['table'][$table]);
     }
     */
-    #hprint_r($this->ddarr);
-    #exit;
     $srcfile='AndroDBB';
     $retval = $retval && $this->SpecLoad_ArrayToTables(
         $this->ddarr["data"]
@@ -841,8 +839,6 @@ function SpecLoad() {
     $this->ddarr['content']['columns'] = $ddcols;
     */
     $this->LogEntry("Populating reference tables in main series");
-    #hprint_r($this->ddarr);
-    #exit;
     $this->DBB_LoadContent(true,$this->ddarr['content'],"zdd.",$sfx);
     
     
@@ -1450,6 +1446,7 @@ function SpecFlatten() {
 	$retval = $retval && $this->SpecFlatten_ColumnsPre();
 	$retval = $retval && $this->SpecFlatten_Runout();
     $retval = $retval && $this->SpecFlatten_FixFKO();
+    $retval = $retval && $this->SpecFlatten_Config();
 	//$retval = $retval && $this->SpecFlatten_Tables();
 	$retval = $retval && $this->SpecFlatten_HARDCODE();
 	$retval = $retval && $this->SpecFlatten_ColumnDeps();
@@ -1616,6 +1613,7 @@ function SpecFlatten_Runout() {
                  table_id,column_id_src,column_id,suffix,prefix
                 ,primary_key,uisearch
                 ,colprec,colscale,colres,type_id,inputmask
+                ,flagcarry
                 ,table_id_fko
                 ,uicolseq,uisearch_ignore_dash,uisearchsort
                 ,formula,formshort,dispsize
@@ -1632,6 +1630,9 @@ function SpecFlatten_Runout() {
                        when t.type_id = 'numb'
                        then lpad(''::text,c.colprec::int,' '::text)||'.'||lpad(''::text,c.colscale::int,' '::text)
                        else '' end
+                 ,case when coalesce(tc.flagcarry,'') <> '' 
+                       then tc.flagcarry 
+                       else c.flagcarry  end
                  ,'' as table_id_fko
                  ,trim(uicolseq)
                  ,case when tc.uisearch_ignore_dash in ('Y','N')
@@ -1816,6 +1817,7 @@ select fk.table_id,fk.table_id_par
      return true;
 }
 
+/*
 function SpecFlatten_Tables()
 {
 	
@@ -1849,6 +1851,67 @@ function SpecFlatten_Tables()
 	}
 
 	return true;
+}
+*/
+
+function specFlatten_Config() {
+	$this->LogEntry("Copying structure of configfw to other tables");
+    
+    # First get structure of tabflat, then build a list of
+    # columns to pull 
+    $cols = $this->SQLReadRows(
+        "Select column_id from zdd.tabflat where table_id = 'tabflat'"
+    );
+    $acolslist = array();
+    foreach($cols as $colrow) {
+        if($colrow['column_id'] == 'table_id') continue;
+        $acolslist[] = $colrow['column_id'];
+    }
+    $colslist = implode(',',$acolslist);
+    
+    #  Define the sql
+    $sq="INSERT INTO zdd.tabflat (table_id,$colslist)
+         SELECT '*TABLEDEST*',$colslist
+           FROM zdd.tabflat
+          WHERE table_id = '*TABLESOURCE*'
+          *WHERE*
+            AND not exists (select skey from zdd.tabflat x
+                            WHERE x.table_id = '*TABLEDEST*'
+                              AND x.column_id= zdd.tabflat.column_id)";
+    
+    # define a list of tables to execute this SQL with                          
+    $tables = array(
+        'configapp'=>'configfw'
+        ,'configinst'=>'configapp'
+        ,'configuser'=>'configinst'
+    );
+    foreach($tables as $tabledest=>$tablesrc) {
+        $this->LogEntry("  -> Copying to $tabledest");
+        $sql = str_replace('*TABLEDEST*'  ,$tabledest,$sq);
+        $sql = str_replace('*TABLESOURCE*',$tablesrc ,$sql);
+        $where = $tabledest<>'configuser'
+            ? ''
+            : " AND COALESCE(flagcarry,'N')='Y'\n";
+        $sql = str_replace('*WHERE*',$where ,$sql);
+        #echo "\n$sql\n";
+        $this->SQL($sql);
+    }
+    
+    # The table configapp_extra, if it exists, will have 
+    # all of its columns copied to configapp.  This is how we
+    # allow an application to expand this table.  
+    $this->LogEntry("  -> Copying configapp_extra (if present) to configapp");
+    $this->SQL("
+         INSERT INTO zdd.tabflat (table_id,$colslist)
+         SELECT 'configapp',$colslist
+           FROM zdd.tabflat
+          WHERE table_id = 'configapp_extra'
+            AND not exists (select skey from zdd.tabflat x
+                            WHERE x.table_id = 'configapp'
+                              AND x.column_id= zdd.tabflat.column_id)"
+    );
+    
+    return true;
 }
 
 function SpecFlatten_HARDCODE() {
@@ -6806,7 +6869,8 @@ select pg.rolname,e.group_id_eff
 	while ($row = pg_fetch_array($res)) {
       if(is_null($row['rolname'])) {
          $this->PlanMakeEntry("9000","CREATE ROLE NOLOGIN ".$row['rolname']);
-         $this->PlanMakeEntry("9000","GRANT $app TO ".$row['rolname']);
+         # KFD 6/16/08, Do not put groups into eponymous group
+         #$this->PlanMakeEntry("9000","GRANT $app TO ".$row['rolname']);
       }
       if(is_null($row['group_id_eff'])) {
          $this->PlanMakeEntry("9000","DROP ROLE ".$row['rolname']);
@@ -6834,12 +6898,14 @@ select pg.rolname,e.group_id_eff
       if(is_null($row['group_id_r'])) {
          //$this->LogEntry("Creating g-role: $gname");
          $this->PlanMakeEntry("9000","CREATE ROLE $gname $cr $extra");
-         $this->PlanMakeEntry("9000","GRANT $app TO $gname");
+         # KFD 6/16/08, Do not put groups into eponymous group
+         #$this->PlanMakeEntry("9000","GRANT $app TO $gname");
       }
       else {
          //$this->LogEntry("Altering g-role: $gname");
          $this->PlanMakeEntry("9000","ALTER ROLE $gname $cr $extra");
-         $this->PlanMakeEntry("9000","GRANT $app TO $gname");
+         # KFD 6/16/08, Do not put groups into eponymous group
+         #$this->PlanMakeEntry("9000","GRANT $app TO $gname");
       }
 	}
    $this->LogElapsedTime($ts);
@@ -7177,7 +7243,50 @@ function PlanExecuteCommand($TheCmd,$FILEOUT,$noreperr=false) {
 // ==========================================================
 function ContentLoad() {
 	$this->LogStage("Loading data to user tables");
+
+    # Before loading, make sure there are rows in the two config tables
+    $alist = array('configfw','configapp','configinst');
+    foreach($alist as $table_id) {
+        $count = $this->SQLReadRows(
+            "Select count(*) as cnt from $table_id"
+        );
+        hprint_r($count);
+        if($count[0]['cnt']==0) {
+            $this->LogEntry("Adding a row to $table_id");
+            $this->SQL("insert into $table_id (skey_quiet) values ('Y')");
+        }
+    }
+
+    # Now run the load
 	$this->DBB_LoadContent(false,$this->content,"","");
+
+    
+    # Finally, write out the two config tables
+    # DUPLICATE CODE: THIS CODE IS DUPLICATE IN ANDROLIB.PHP
+    #                 IN ROUTINE CONFIGWRITE()
+    global $parm;
+    $alist = array('configfw','configapp');
+    $nocols = array('_agg','skey','skey_quiet','recnum');
+    foreach($alist as $table_id) {
+        $this->LogEntry("Writing out table_$table_id.php");
+        $text ="<?php\n\$$table_id = array("; 
+        $data = $this->SQLReadRows("Select * from $table_id");
+        $data = $data[0];  // grab first row 
+        $docomma=false;
+        foreach($data as $column_id=>$value) {
+            if(in_array($column_id,$nocols)) continue;
+            if(is_null($value)) $value='*null*';
+            $text.="\n    ";
+            if($docomma) $text.=",";
+            $docomma = true;
+            $text.="'$column_id'=>'$value'";
+        }
+        $text.="\n);\n?>";
+        file_put_contents(
+            $parm["DIR_PUB"]."/dynamic/table_$table_id.php"
+            ,$text
+        );
+    }
 	return true;
 }
 
@@ -7207,7 +7316,6 @@ function ContentDD() {
     #}
     return true;
 }
-
 
 // ==========================================================
 // REGION: Security Node Manager
@@ -7387,7 +7495,9 @@ function DBB_SequenceName($table_id,$autoform,$column_id) {
 		strtoupper(trim($table_id))."_SEQ_".
 		strtoupper(trim($column_id));
 }
-		
+
+# Rem'd by KFD 6/14/08, this code long since defunct
+/*
 function DBB_RunOut($tb, $sf) {
     // This giant bit of code runs out a single table 
     // pulling column definitions from all possible sources,
@@ -7588,6 +7698,8 @@ function DBB_RunOut($tb, $sf) {
 function DBB_RunOutOverride($column,$src1,$src2) {
 	return "CASE WHEN ".$src1.".".$column." <> '' THEN $src1.$column ELSE ".$src2.".".$column." END";
 }
+*/
+
 // ==========================================================
 // Our own utility functions
 // ==========================================================
@@ -8094,9 +8206,15 @@ function DBB_LoadContentComplex($arr,$prefix,$suffix) {
 				$colvals = $this->array_combine($cols,$onelist);
 
             // Get the PK stuff				
-            $match = "";
-            foreach ($pkarr as $pkcol) {
-               $match .= $this->AddList($match," AND ").$pkcol. " = '".$colvals[$pkcol]."'";
+            # KFD 6/14, special override for config tables
+            if($table_id == 'configfw' || $table_id=='configapp') {
+                $match = ' 1 = 1 ';
+            }
+            else {
+                $match = "";
+                foreach ($pkarr as $pkcol) {
+                   $match .= $this->AddList($match," AND ").$pkcol. " = '".$colvals[$pkcol]."'";
+                }
             }
             $sql = "SELECT * FROM $table_id WHERE $match";
             $result = $this->SQLRead($sql);

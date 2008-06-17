@@ -398,6 +398,96 @@ content variables {
 }
 
 // =================================================================
+// New configuration system
+// Four tables used to generate resolved options
+// =================================================================
+// This table tracks the abilities of each parameter
+group configadmin {
+    description: Configuration Administrators;
+}
+
+column smtpout {
+    type_id: vchar;
+    colprec: 50;
+    description: Mail Relay;
+    flagcarry: N;
+}
+column loginbefore {
+    type_id: text;
+    description: Text at top of Login page;
+    flagcarry: N;
+}
+column loginafter {
+    type_id: text;
+    description: Text at bottom of Login page;
+    flagcarry: N;
+}
+column js_css_debug {
+    type_id: char;
+    colprec: 1;
+    description: Debuggable JS and CSS files;
+    flagcarry: Y;
+}
+
+table configfw {
+    module: system;
+    uisort: 550;
+    description: Configuration - Framework;
+    
+    group $LOGIN { permsel: "Y"; nomenu: "Y"; }
+    
+    column recnum  { primary_key: "Y"; uisearch: "Y"; }
+    column { loginbefore; loginafter; smtpout; js_css_debug; }
+}
+table configapp {
+    module: system;
+    uisort: 551;
+    description: Configuration - Application;
+    
+    group $LOGIN { permsel: "Y"; nomenu: "Y";  }
+    
+    column recnum  { primary_key: "Y"; uisearch: "Y"; }
+    column { smtpout; }
+}
+table configinst {
+    module: system;
+    uisort: 552;
+    description: Configuration - Instance;
+    
+    group $LOGIN { permsel: "Y"; }
+    group configadmin { permupd: "Y"; permsel: "Y"; nomenu: "N"; }
+    
+    column recnum  { primary_key: "Y"; uisearch: "Y"; }
+    column { smtpout; }
+}
+table configuser {
+    module: system;
+    uisort: 553;
+    description: Configuration - User;
+    
+    group $LOGIN { permsel: "Y"; permins: "Y"; nomenu: "N" }
+    
+    column uid_ins {
+        primary_key: "Y";
+        uisearch: "Y";
+        group configadmin {
+            permrow: "N";
+        }
+    }
+}
+menu configconfirm {
+    module: system;
+    uisort: 554;
+    description: Configuration Review;
+}
+content configfw {
+    columns { smtpout; js_css_debug;  }
+    update { localhost; N}
+}
+
+
+
+// =================================================================
 // System administration log events.  Pure client
 // =================================================================
 //  These are some columns that are computer related

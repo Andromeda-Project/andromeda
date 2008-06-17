@@ -387,11 +387,16 @@ function index_hidden_x4Dispatch() {
     }
     else {
         include_once("androX4.php");
-        $file = strtolower($x4Page)=='menu'
-            ? fsDirTop()."lib/androX4Menu.php"
-            : fsDirTop()."application/x4$x4Page.php";
+        # KFD 6/14/08, loosen this to allow lib and application files both
+        #$file = strtolower($x4Page)=='menu'
+        #    ? fsDirTop()."lib/androX4Menu.php"
+        #    : fsDirTop()."application/x4$x4Page.php";
         $class  = 'androX4';
-        if(file_exists($file)) {
+        #if(file_exists($file)) {
+        $file = strtolower($x4Page)=='menu' 
+            ? 'androX4Menu.php' 
+            : "x4$x4Page.php";
+        if(file_exists_incpath($file)) {
             include_once($file);
             $class = 'x4'.$x4Page;
         }
