@@ -1068,7 +1068,10 @@ var $a = {
     /*
      *  For data returned from a json call
      */
-     data: { dd: {} },
+     data: { 
+        dd: {} 
+     },
+     returnto: '',
     
     
     /*

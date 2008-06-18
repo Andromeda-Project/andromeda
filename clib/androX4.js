@@ -387,7 +387,7 @@ var x4 =  {
     },
     debugClose: function(type,jqId) {
         this.debug(type+": "+jqId+" (COMPLETE)",0);
-    },
+    }
 }
 
 /* =====================================================

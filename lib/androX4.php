@@ -48,7 +48,7 @@ class androX4 {
         $this->mainLayout($x4Top);
         x4Html('*MAIN*',$x4Top->bufferedRender());
         x4Data('dd.'.$this->table_id,$this->dd);
-        x4Data('return',gp('x4Return'));
+        x4Data('returnto',gp('x4Return'));
         return;
     }
     
