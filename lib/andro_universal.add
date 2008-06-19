@@ -115,7 +115,7 @@ column date     { description: Date              ; type_id: date; }
 column time     { description: Time              ; type_id: time; }
 column _flag_ok { description: GP Approval Flag  ; type_id: cbool ; colprec:  0; colscale: 0; automation_id:DEFAULT; auto_formula: N; }
 column disabled { description: Disabled Flag     ; type_id: cbool ; colprec:  1; colscale: 0; automation_id: DEFAULT; auto_formula: N; }
-column active   { description: Active            ; type_id: cbool ; colprec:  1; colscale: 0; automation_id: DEFAULT; auto_formula: ; }
+column active   { description: Active            ; type_id: cbool ; colprec:  1; colscale: 0; automation_id: DEFAULT; auto_formula: Y; }
 column phone    { description: Phone             ; type_id: ph12; }
 column phonex   { description: Phone             ; type_id: char ; colprec: 15; colscale:  0; }
 column notes    { description: Notes             ; type_id: text;  }
@@ -423,12 +423,26 @@ column loginafter {
     flagcarry: N;
 }
 column js_css_debug {
-    type_id: char;
-    colprec: 1;
+    type_id: cbool;
     description: Debuggable JS and CSS files;
     flagcarry: Y;
 }
-
+column uisearchdash {
+    type_id: char;
+    colprec: 3;
+    description: Search Range Operator;
+    flagcarry: Y;
+}
+column x4padclassic { 
+    type_id: cbool;
+    description: Put Classic link on menu bar;
+    flagcarry: N;
+}
+column x4padmenu { 
+    type_id: cbool;
+    description: Put direct menu link on x4 menu bar;
+    flagcarry: N;
+}
 table configfw {
     module: system;
     uisort: 550;
@@ -437,7 +451,9 @@ table configfw {
     group $LOGIN { permsel: "Y"; nomenu: "Y"; }
     
     column recnum  { primary_key: "Y"; uisearch: "Y"; }
-    column { loginbefore; loginafter; smtpout; js_css_debug; }
+    column { loginbefore; loginafter; smtpout; }
+    column { uisearchdash; x4padclassic; x4padmenu; }
+    column { js_css_debug;  }
 }
 table configapp {
     module: system;
@@ -481,8 +497,8 @@ menu configconfirm {
     description: Configuration Review;
 }
 content configfw {
-    columns { smtpout; js_css_debug;  }
-    update { localhost; N}
+    columns { smtpout; js_css_debug; uisearchdash; x4padclassic; x4padmenu; }
+    update { localhost; N; --; N; Y;}
 }
 
 

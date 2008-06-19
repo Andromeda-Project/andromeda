@@ -498,6 +498,7 @@ content automations {
     values { QUEUEPOS   ; Enforces unique Queue Position; }
     values { DOMINANT   ; Only one row can have value Y; }
     values { RESOLVE    ; Will hold resolved foreign key table; }
+    values { AGG_DOM    ; Capture value from dominat row; }
     values { FETCH_DOM;    Pull value from Dominant child row; }
     values { UID_UPD_PG ; Update User ignoring postgres }
     values { TS_UPD_PG ; Update Timestamp ignoring postgres }
