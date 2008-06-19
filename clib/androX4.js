@@ -61,6 +61,20 @@ var x4 =  {
         }
     },
     
+    help: function() {
+        var idiv1 = $a.byId('idiv1');
+        idiv1.style.opacity = 0;
+        idiv1.style.display = 'block';
+        $("#idiv1").animate({opacity:.5},'fast',null,function() {
+                $("#idiv2").fadeIn('medium');
+        });
+    },
+    helpClear: function() {
+        $("#idiv2").fadeOut('medium',function() {
+                $("#idiv1").fadeOut('medium');
+        })
+    },
+    
     /*
      * Create default handlers at document level
      *
@@ -122,13 +136,14 @@ var x4 =  {
      *
      */
     returnToMenu: function(focus) {
-        if($a.aProp($a.data,'return','')=='') {
+        if($a.aProp($a.data,'returnto','')=='') {
             window.location="index.php";
         }
-        else if($a.aProp($a.data,'return','')=='exit') {
+        else if($a.aProp($a.data,'returnto','')=='exit') {
             window.close();
         }
         else {
+            // Any non-empty returnto actually goes to menu
             getString = '?x4Page=menu';
             if(focus==null && $("#x4Page").length > 0 ) {
                 focus = $("#x4Page")[0].value;
@@ -458,11 +473,28 @@ function x4Window(self) {
         // Tell menu bar to look alive
         this.menuBar.activate();
 
-        // Initial make visible     
+        // KFD 6/19/08, expanded handling of initial values
+        //              passed in, put these into the search
+        //              boxes, fetch 'em, and if there is only
+        //              one go display it.
         var parm1 =$a.aProp($a.data,'init',null);
-        $(this).children(".x4Pane")[0].makeVisible(parm1);
+        var goDetail = null;  // x4TableTop checks for null, not false
+        if(parm1 != null) {
+            var table = $(this).children(".x4Pane")[0].getAttribute('xTableId');
+            for(var column in parm1) {
+                $a.byId("search_"+table+"_"+column).value=parm1[column];
+            }
+            
+            var grid  = $a.byId("grid_"+table);
+            grid.fetch();
+            if(grid.zRowCount == 1) goDetail = grid.zSkey;
+        }
+        
+        // KFD 6/19/08, expanded handling of initial values,
+        //              pass in the command to go to detail
+        $(this).children(".x4Pane")[0].makeVisible(goDetail);
         $(this).fadeIn(x4.fadeSpeed,function() {
-            $(this).children(".x4Pane")[0].activate(parm1);
+            $(this).children(".x4Pane")[0].activate(goDetail);
         });
         x4.debugClose('ACTIVATE ',this.jqId);
     }
@@ -936,7 +968,6 @@ function x4GridSearch(self) {
             var colNew = this.getAttribute('xColumnId');
             if(colNew != par.zSortCol || par.zSortAD != 'ASC') {
                 par.setOrderBy(this,'ASC');
-                par.fetch(true);
             }
             return false;
         }
@@ -944,17 +975,10 @@ function x4GridSearch(self) {
             var colNew = this.getAttribute('xColumnId');
             if(colNew != par.zSortCol || par.zSortAD != 'DESC') {
                 par.setOrderBy(this,'DESC');
-                par.fetch(true);
             }
             return false;
         }
         
-        // If no sort order is set yet, and this is not empty,
-        // set sort order to this control
-        if(!par.zSortCol && this.value!='') {
-            par.setOrderBy(this,'ASC');
-        }
-
         // Pass control to the fetch program
         x4.parent(this).fetch();
         return;
@@ -1026,17 +1050,35 @@ function x4GridSearch(self) {
      */
 
     self.setOrderBy = function(inputObj,direction) {
-        if(inputObj==null || inputObj==undefined) {
-            var inputObj = $(this).find(":input:first")[0];
-            direction = 'ASC';
-        }
         if(inputObj==null || inputObj==undefined) return;
-        inputCol = inputObj.getAttribute('xColumnId');
-        this.zSortCol = inputCol;
-        this.zSortAD = direction;
+        // KFD 6/18/08, no more assigning default order by
+        //if(inputObj==null || inputObj==undefined) {
+        //    var inputObj = $(this).find(":input:first")[0];
+        //    direction = 'ASC';
+        //}
+        // Save old values, we'll fetch if they changed
+        var oldCol = this.zSortCol;
+        var oldAD  = this.zSortAD;
+        
+        // Simple: set the column
+        x4.debug(oldCol+'  '+this.zSortCol+'  '+oldAD);
+        this.zSortCol =inputObj.getAttribute('xColumnId');
+        
+        // Now various tricks to figure out up or down
+        if     (direction!=null)            this.zSortAD = direction;
+        else if( this.zSortCol != oldCol)   this.zSortAD = 'ASC';
+        // ...from here they are switching on the same column
+        else if(!this.zSortAD)              this.zSortAD = 'ASC';
+        else if( this.zSortAD == 'ASC')     this.zSortAD = 'DESC';
+        else if( this.zSortAD == 'DESC') {
+            this.zSortCol = false;
+            this.zSortAD  = false;
+        }
         x4.debug("sorting on "+this.zSortCol+", "+this.zSortAD);
+        if(oldCol != this.zSortCol || oldAD != this.zSortAD) {
+            this.fetch(true);
+        }
     }
-    //self.setOrderBy();
     
     self.fetch = function(doFetch) {
         if(doFetch==null) doFetch=false;
@@ -1072,8 +1114,10 @@ function x4GridSearch(self) {
                 this.clear();
                 return;
             }
-            $a.json.addParm('sortCol',this.zSortCol);
-            $a.json.addParm('sortAD' ,this.zSortAD);
+            if(this.zSortCol) {
+                $a.json.addParm('sortCol',this.zSortCol);
+                $a.json.addParm('sortAD' ,this.zSortAD);
+            }
             $a.json.addParm('x4Action','browseFetch');
             $a.json.addParm('x4Limit',300);
             if( $a.json.execute()) {
@@ -1118,6 +1162,8 @@ function x4GridSearch(self) {
     self.clear = function() {
         this.zRowId = false;
         this.zRowCount = 0;
+        this.zSortCol = false;
+        this.zSortAD  = false;
         $a.byId(this.getAttribute('xGridBodyId')).innerHTML = '';
         $(this).find(":input").each(function() {
             this.value='';
@@ -1835,35 +1881,6 @@ function x4AndroPage(self) {
                 $("#divOnScreen table tbody").scrollTop(offSet);
             }
         }
-    },
-    
-    /*
-     *
-     * The Help Stuff
-     *
-     */
-    self.help = function() {
-        var $msg='';
-        $msg+="This is the "+$('#x4H1Top').html()+" inquiry screen.";
-        $msg+="\n\n";
-        $msg+="The input boxes accept a very flexible set of values,\n";
-        $msg+="you can enter ranges like a-e or 100-200, you can enter\n";
-        $msg+="comparisons like >x or <500, and you can put multiple\n";
-        $msg+="criteria separated by commas, like <b,d,g-k,>x";
-        $msg+="\n\n";
-        $msg+="Hit CTRL-P to get a printable PDF report, or hit \n";
-        $msg+="CTRL-O to see the results displayed onscreen.";
-        $msg+="\n\n";
-        $msg+="When results are displayed onscreen, use the up and down\n";
-        $msg+="arrow keys to navigate, or the pageUp and pageDown keys.";
-        $msg+="\n\n";
-        $msg+="Sometimes the onscreen results will show hyperlinks to \n";
-        $msg+="other pages.  Hit rightArrow to jump to the link.";
-        $msg+="\n\n";
-        $msg+="Hit ESC to clear results, and ESC to return to menu";
-        
-        alert($msg,"Inquiry Help Screen");
-        $('#'+this.lastFocusId).focus();
     }
 }
 

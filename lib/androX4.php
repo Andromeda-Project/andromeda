@@ -30,9 +30,14 @@ class androX4 {
       * @author: Kenneth Downs
       */
     function main() {
+        # Write out the default help system
+        $this->mainHelp();
+
+        # KFD 6/18/08, replaced, see below        
         # If we see a "gp_pk" variable, they are requesting a certain
         # detail row.  Find out the skey and pass instructions on.
         # Notice the assumption of only a single column.
+        /*
         if( ($gpPk = gp('gp_pk')) <> '') {
             $pkc = $this->dd['pks'];
             $pkv = SQLFC($gpPk);
@@ -41,6 +46,12 @@ class androX4 {
             );
             x4Data('init',$skey);
         }
+        */
+        $apre = aFromGP('pre_');
+        if(count($apre)>0) {
+            x4Data('init',$apre);
+        }
+        
         
         # All top-level elements will go inside of this div 
         $x4Top = html('div');
@@ -50,6 +61,43 @@ class androX4 {
         x4Data('dd.'.$this->table_id,$this->dd);
         x4Data('returnto',gp('x4Return'));
         return;
+    }
+    
+    function mainHelp() {
+        if($this->table_id=='menu') { vgfSet('htmlHelp',false); return; }
+        ob_start();
+        ?>
+        <div style="font-size:125%; line-height: 125%">
+        <h2>Some basic ideas:</h2>
+        <ul>
+<li>When in doubt, keep hitting ESC to you get back to the menu
+<li>The buttons are activated by CTRL- combinations, they have
+underlined letters that show this, so:
+    <ul><li>CTRL-A is equivalent to hitting [Add...]
+        <li>CTRL-S is equivalent to hitting [SAVE]
+        <li>etc.
+    </ul>
+<li>A button is grayed out when it cannot be used
+</ul>
+
+    <h2>The Search Screen</h2>
+    <p>When you are in search mode, there are some advanced search
+    abilities available:
+    <ul><li>Just start typing in any box and see what comes up!
+        <li>Whichever box you type in is automatically the sorted column
+        <li>You can hit Shift-UpArrow or Shift-DownArrow to force sorting
+            on a particular column
+        <li>You can click on the column headers to force a search
+        <li>Searches can contain lists, like "d,g,p" 
+        <li>Searches can contain ranges, like "100--120"
+        <li>Searches can contain comparisons, like "&gt;100" or "&lt;200"
+        <li>Advanced search abilities can be combined, like "d,f--g,>x"
+    </ul>
+    </div>
+        
+        
+        <?php
+        vgfSet('htmlHelp',ob_get_clean());
     }
     
     function mainLayout(&$div) {
@@ -281,10 +329,14 @@ class androX4 {
             $column = trim($column);
             $hx = html('th',$th);
             $hx->innerHtml = $colinfo['description'];
+            $inpid = 'search_'.$table_id.'_'.$column;
+            $hx->hp['onclick'] =
+                "x4.parent(this).setOrderBy(\$a.byId('$inpid'))";
             
             if($inputs=='Y') {
                 $inp= input($fakeCI,$tabLoop);
-                $inp->hp['id'] = 'search_'.$table_id.'_'.$column;
+                $inp->hp['maxlength'] = 500;
+                $inp->hp['id'] = $inpid;
                 $inp->hp['autocomplete'] = 'off';
                 $inp->ap['xValue']='';
                 $inp->ap['xColumnId'] = $column;
@@ -382,9 +434,10 @@ class androX4 {
         #  This is the list of columns to return 
         $acols = explode(',',$this->dd['projections']['_uisearch']);
         # KFD 6/12/08, respect columns removed for security
-        foreach($acols as $idx=>$value) {
-            if(!isset($this->dd['flat'][$value])) unset($acols[$idx]);
-        }
+        # KFD 6/18/08, moved into ddtable where it belongs
+        #foreach($acols as $idx=>$value) {
+        #    if(!isset($this->dd['flat'][$value])) unset($acols[$idx]);
+        #}
 
 
         #  By default the search criteria come from the 
@@ -411,16 +464,18 @@ class androX4 {
             //$tcv  = trim($colvalue);
             $tcv = $colvalue;
             $type = $colinfo['type_id'];
-            if($type=='dtime' || $type=='date') {
-                $tcv=dEnsureTS($tcv);
-            }
+            #if($type=='dtime' || $type=='date') {
+            #    $tcv=dEnsureTS($tcv);
+            #}
             if ($tcv != "") {
                 // trap for a % sign in non-string
-                $awhere[]='('
-                    .$this->searchBrowseOneCol($type,$column_id,$tcv,$exact)
-                    .')';
+                $xwhere = sqlFilter($this->flat[$column_id],$tcv);
+                if($xwhere<>'') $awhere[] = "($xwhere)";
             }
         }
+        
+        # <----- RETURN
+        if(count($awhere) == 0) return;
 
         #  Build the Order by
         #        
@@ -442,18 +497,10 @@ class androX4 {
             $SQLOrder = " ORDER BY ".implode(',',$aorder)." Limit 20";
         }
         else {
-            foreach($acols as $column_id) {
-                // This causes the next column after ordered to be ordered also
-                if(count($aorder)==1) {
-                    $aorder[] = $column_id.$ascDesc;
-                }
-                if($column_id == gp('sortCol')) {
-                    $aorder[] = $column_id.$ascDesc;
-                }
-            }
+            # KFD 6/18/08, new routine that works out sort 
+            $aorder = sqlOrderBy($vals);
             if(count($aorder)==0) {
                 $SQLOrder = " LIMIT 20";
-                #$aorder[] = $acols[0];
             }
             else {
                 $SQLOrder = " ORDER BY ".implode(',',$aorder)." Limit 20";
