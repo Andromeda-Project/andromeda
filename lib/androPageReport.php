@@ -261,10 +261,12 @@ class androPageReport extends fpdf {
                 # have given a page then link unconditionally
                 if( ($tlink= a($colinfo,'linkpage','')) <> '') {
                     $md['linkpage']=$tlink;
+                    $md['linkcolumn']=$colname;
                 }
                 elseif( $dd['flat'][$colname]['primary_key']=='Y') {
                     if( $colname == $dd['pks'] ) {
                         $md['linkpage']=$table;
+                        $md['linkcolumn']=$colname;
                     }
                 }
                 else {
@@ -273,6 +275,7 @@ class androPageReport extends fpdf {
                         $ddpar = ddTable($tfko);
                         if($tfko = $ddpar['pks']) {
                             $md['linkpage']=$tfko;
+                            $md['linkcolumn']=$colname;
                         }
                     }
                 }
@@ -615,7 +618,8 @@ class androPageReport extends fpdf {
        
        while($value = array_shift($alist)) {
            if($value=='_') $value='';
-           $this->atNextCol($value,$titles);
+           $last = count($alist)==0 ? true : false;
+           $this->atNextCol($value,$titles,$last);
        }
        $this->nextLine($titles);
    }
@@ -633,7 +637,7 @@ class androPageReport extends fpdf {
      *                       is being written.  Suppresses conversion
      *                       of values like numbers and dates.
      */
-   function AtCol($col,$text,$titles=false) {
+   function AtCol($col,$text,$titles=false,$last=false) {
        if(!isset($this->cols[$col])) {
            echo "<b>ERROR: Output past last column, did you 
             forget a \$this->nextLine()?";
@@ -664,6 +668,7 @@ class androPageReport extends fpdf {
        # PDF version: output a cell and advance column counter
        if($this->format=='onscreen') {
            $class='';
+           if($last) $text.="&nbsp;&nbsp;&nbsp;";
            if(a($this->md[$col],'linkpage')<>'' && !$titles) {
                $class='class="link"';
                $link = $this->md[$col]['linkpage'];
@@ -672,13 +677,13 @@ class androPageReport extends fpdf {
                    $href = '&gp_skey='.$this->skey;
                }
                else {
-                   $href = '&gp_pk='.$text;
+                   $href = '&pre_'.$this->md[$col]['linkcolumn'].'='.$text;
                }
                if($this->source <>'') {
                    $href.='&gp_source='.$this->source;
                }
                if(gpExists('x4Page')) {
-                   $ahref = '?x4Page=$link$href&x4Return=exit';
+                   $ahref = "?x4Page=$link$href&x4Return=exit";
                    $text="<a href='javascript:\$a.openWindow(\"$ahref\")'
                         >$text</a>";
                }
@@ -710,8 +715,8 @@ class androPageReport extends fpdf {
      *                    prior call to setupColumns()
      *
      */
-   function AtNextCol($text,$titles=false) {
-       $this->AtCol($this->lastCol+1,$text,$titles);
+   function AtNextCol($text,$titles=false,$last=false) {
+       $this->AtCol($this->lastCol+1,$text,$titles,$last);
    }
    
     /**

@@ -65,6 +65,9 @@ class androPage {
         $yamlRaw=Spyc::YAMLLoad($filename);
         $this->yamlP2=$this->YAMLPass2($yamlRaw);
 
+        # Route out to generate help text
+        $this->mainHelp();
+        
         // If there are no sections, take content and make a section,
         // so that downstream code can unconditionally work with sections
 
@@ -124,8 +127,32 @@ class androPage {
         }
         if($runPage) {
             $this->PassPage();
-        }
-        
+        }        
+    }
+    
+    function mainHelp() {
+        ob_start();
+        ?>
+        This is the <?=$this->yamlP2['options']['title']?> inquiry screen
+        <br/><br/>
+        The input boxes accept a very flexible set of values,
+        you can enter ranges like a-e or 100-200, you can enter
+        comparisons like &gt;x or &lt;500, and you can put multiple
+        criteria separated by commas, like &lt;b,d,g-k,$gt;x
+        <br/><br/>
+        Hit CTRL-P to get a printable PDF report, or hit 
+        CTRL-O to see the results displayed onscreen.
+        <br/><br/>
+        When results are displayed onscreen, use the up and down
+        arrow keys to navigate, or the pageUp and pageDown keys.
+        <br/><br/>
+        Sometimes the onscreen results will show hyperlinks to 
+        other pages.  Hit rightArrow to jump to the link.
+        <br/><br/>
+        Hit ESC to clear results, and ESC to return to menu
+        <br/><br/>
+        <?php
+        vgfSet('htmlHelp',ob_get_clean());
     }
 
     /**
@@ -221,11 +248,11 @@ class androPage {
         $td    = html('td',$tabxtr);
         $td->hp['style'] = "text-align: right; vertical-align: top;
         padding-top: 8px; font-size: 120%";
-        if($x4) {
-            $a = html('a-void',$td,"F1:Help");
-            $a->hp['onclick'] = "$('#x4AndroPage')[0].help()";
-            $a->addClass('button');
-        }
+        #if($x4) {
+            #$a = html('a-void',$td,"F1:Help");
+            #$a->hp['onclick'] = "$('#x4AndroPage')[0].help()";
+            #$a->addClass('button');
+        #}
         
         # Make top level container
         $tabtop = html('table',$x4D);
@@ -250,7 +277,7 @@ class androPage {
                 $options['inputId']='ap_'.$id;
             }
             $options['value'] = gp('ap_'.$id);
-            $type_id = a($options,'type_id','vchar');
+            $type_id = a($options,'cotype_id','vchar');
 
             $tr = html('tr',$table);
             $td = html('td',$tr);
@@ -380,8 +407,14 @@ class androPage {
             // for use below in the column list building
             $uifilter=ArraySafe($this->yamlP2,'uifilter',array());
             foreach($uifilter as $colname=>$info) {
-                $this->yamlP2['uifilter'][$colname]['value'] 
-                    = gp('ap_'.$colname);
+                if(gpExists('ap_'.$colname)) {
+                    $this->yamlP2['uifilter'][$colname]['value'] 
+                        = gp('ap_'.$colname);
+                }
+                elseif(isset($info['table'])) {
+                    $gp = 'x4inp_'.$info['table'].'_'.$info['column'];
+                    $this->yamlP2['uifilter'][$colname]['value'] = gp($gp); 
+                }
             }
 
             foreach($this->yamlP2['section'] as $secname=>$info) {
@@ -445,6 +478,8 @@ class androPage {
                 }
                 else {
                     $collist[]="$table_id.$column_id";
+                    # KFD 6/18/08, reroute to new SQLFilter
+                    #$compare = sqlFilter($colinfo,
                     $compare=$this->SQLCompare($table_id,$column_id,$colinfo);
                     if($compare<>'') {
                         $SQL_COLSWHA[] = $compare;
@@ -712,13 +747,21 @@ class androPage {
         // Get the uifilter being used and its value
         // skip the asterisk and the @sign
         $uif_name = substr($colinfo['compare'],2);
-        $uiv_val  = $this->yamlP2['uifilter'][$uif_name]['value'];
+        x4Debug($this->yamlP2['uifilter']);
+        $uiv_val  = a($this->yamlP2['uifilter'][$uif_name],'value');
         if($uiv_val=='') return '';
         
         // Get data dictionary
         $dd = ddTable($table);
         
-        return "(".rff_OneCol($dd['flat'][$colname],$colname,$uiv_val).")";
+        # KFD 6/18/08, route out to the new universal sqlFilter()
+        $rv = sqlFilter($dd['flat'][$colname],$uiv_val,$dd['table_id']);
+        x4Debug($colname);
+        x4Debug($uiv_val);
+        x4Debug($rv);
+        if($rv<>'') return "(".$rv.")";
+        return '';
+        #return "(".rff_OneCol($dd['flat'][$colname],$colname,$uiv_val).")";
     }
     
     /**
