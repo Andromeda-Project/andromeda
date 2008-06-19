@@ -41,7 +41,7 @@ class a_builder extends x_table2 {
         // Get everything we need from the database, use it to build
         // a "do" program.
         // 
-        $GLOBALS["x_password"] = trim(CleanGet("supassword"));
+        $GLOBALS["x_password"] = trim(gp("supassword"));
         
         $tsql = 
             'SELECT * from applications '

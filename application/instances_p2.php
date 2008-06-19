@@ -6,7 +6,7 @@ class instances_p2 extends x_table2 {
    }
    
    function main() {
-      CleanSet('gp_posted','1');
+      gp('gp_posted','1');
 		$this->main_pr_execute();
    }
    
