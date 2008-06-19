@@ -114,6 +114,7 @@ else {
 // >>> 
 // ==================================================================
 include_once('androLib.php');
+include_once('androLibDeprecated.php');
 $x=fsDirTop().'application/applib.php';
 if (file_exists($x)) {
   include_once($x);
@@ -212,7 +213,7 @@ $gp_page = gp('gp_page');
 // KFD 3/6/08 Changed login processing from page x_login to
 //            the st2login command
 if (gp('st2login')==1) {
-    $obj_login = raxTableObject('x_login');
+    $obj_login = dispatchObject('x_login');
     $obj_login->directlogin = $directlogin;
     $obj_login->Login_Process();
     if(LoggedIn()) {
@@ -1053,9 +1054,9 @@ function index_hidden_page() {
    // Notice how we process drillbacks FIRST, allowing a link 
    // to contain both drillback and drilldown, for the super-nifty
    // effect of a "drill-across"
-   regHidden('gp_dd_page');
-   regHidden('gp_dd_skey');
-   regHidden('gp_dd_back');
+   hidden('gp_dd_page');
+   hidden('gp_dd_skey');
+   hidden('gp_dd_back');
    if (intval(gp('gp_dd_back'))>0 && $sessok) {
       // this is drillback
       $dd = ContextGet('drilldown',array());
@@ -1118,12 +1119,12 @@ function index_hidden_page() {
    // Must always have these on the user's form.  These can
    // be retired with x_Table, they are for old drilldown
    //
-   regHidden("dd_page","");
-   regHidden("dd_ddc","");
-   regHidden("dd_ddv","");
-   regHidden("dd_ddback","");
-   regHidden("dd_action","searchexecute");
-   regHidden("dd_skey","");
+   hidden("dd_page","");
+   hidden("dd_ddc","");
+   hidden("dd_ddv","");
+   hidden("dd_ddback","");
+   hidden("dd_action","searchexecute");
+   hidden("dd_skey","");
    
    // Load user preferences just before display
    UserPrefsLoad();

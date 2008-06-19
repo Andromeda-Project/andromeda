@@ -176,6 +176,52 @@ function json_encode_safe($data) {
     }
     return;
 }
+
+# ==============================================================
+# 
+# Page/Object handling
+#
+# ==============================================================
+function DispatchObject($gp_page) {
+	// Get the One True Class loaded.  All table
+	// processing uses it directly or uses a subclass of it
+	//
+	//include_once("x_table.php");   // old version
+	include_once("x_table2.php");  // How can there be two "One True" classes?
+
+	// Always attempt to load a class for the page, and then
+   // look for the named class
+   $obj_page=null;
+	if (FILE_EXISTS_INCPATH($gp_page.".php")) {
+		include_once("$gp_page.php");
+
+      $class_page = "x_table_$gp_page";
+      if(class_exists($class_page)) {
+         // case 1, extension of x_table (original)
+         $obj_page = new $class_page();
+         $obj_page->table_id = $gp_page;
+         $obj_page->x_table_DDLoad();
+      }
+      elseif (class_exists($gp_page)) {
+         // case 2, extension of x_table2 (new way to do it)
+         $obj_page = new $gp_page();
+      }
+	}
+   // if no object found, must make a default
+   if(is_null($obj_page)) {
+      $default=vgaGet('x_table','x_table2');
+      if($default=='x_table') {
+         $obj_page = new x_table();
+         $obj_page->table_id = $gp_page;
+         $obj_page->x_table_DDLoad();
+      }
+      else {
+         $obj_page = new x_table2($gp_page);
+      }
+   }
+	return $obj_page;
+}
+
 # ==============================================================
 #
 # SECTION: HTML RENDERING
@@ -648,6 +694,38 @@ function inputFixupByType($input) {
 
 # ==============================================================
 #
+# SECTION: HTML RENDERING PART 2: Snippets
+#
+# These routines produce little snippet values
+# ==============================================================
+/**
+name:hprint_r
+parm:any Input
+returns:string HTML_Fragment
+
+Invokes the PHP print_r command, but wraps it in HTML PRE tags so
+it is readable in a browser.
+*/
+function hprint_r($anyvalue) {
+	echo "<pre>\n";
+   print_r($anyvalue);
+	echo "</pre>";
+}
+
+/**
+name:hx
+parm:string Anything
+returns:string HTML_Sanitized
+
+This is a shortcut to PHP's function htmlentities.
+*/
+function hx($in) {
+   return htmlentities($in);
+}
+
+
+# ==============================================================
+#
 # SECTION: Get config values
 #
 # ==============================================================
@@ -782,6 +860,671 @@ function configLayoutX4($container,$type) {
     }
 }
 
+# ==============================================================
+#
+# SECTION: All SQL Generation
+#
+# ==============================================================
+
+/**
+name:SQL_Format
+parm:string Type_ID
+parm:any Value
+parm:int Clip_Length
+returns:string
+
+Takes any input value and type and formats it for direct substitution
+into a SQL string.  So for instance character values are escaped for
+quotes and then surrounded by single quotes.  Numerics are returned
+as-is, dates are formatted and so forth.
+
+The optional third parameter specifies a maximum length for character
+and varchar fields.  If it is non-zero, the value will be clipped to
+that length.
+
+If you use this command for every value received from the browser when
+you build SQL queries, then your code will be safe from SQL Injection
+attacks.  All framework commands that build queries use this command for
+all literals provided to them.
+*/
+function SQL_FORMAT($t,$v,$clip=0) {
+	global $AG;
+	switch ($t) {
+    case 'mime-x':
+        return "'".SQL_ESCAPE_BINARY($v)."'";
+        break;
+    case "char":
+    case "vchar":
+    case "text":
+    case "url":
+    case "obj":
+    case "cbool":
+    case 'ssn':
+    case 'ph12':
+    case "gender":
+        if($clip>0 && strlen($v) > $clip) $v = substr($v,0,$clip);
+        // KFD 9/10/07, one of the doctors wants all caps
+        if(OptionGet('ALLCAPS')=='Y') {
+            $v= strtoupper($v);
+        }
+        return "'".SQL_ESCAPE_STRING($v)."'";
+        break;
+    case "mime-h":
+         if($clip>0 && strlen($v) > $clip) $v = substr($v,0,$clip);
+			//return "'".SQL_ESCAPE_BINARY($v)."'";
+			return "'".SQL_ESCAPE_STRING($v)."'";
+			break;
+    case "dtime":
+        if ($v=="") return "null";
+        //else return X_UNIX_TO_SQLTS($v);
+        else return "'".date('r',dEnsureTS($v))."'";
+        break;
+    case "date":
+    case "rdate":
+         // A blank is sent as null to server
+			if($v=="") return "null";
+         if($v=='0') return 'null';
+
+         // Try to detect case like 060507
+         if(   strlen($v)==6
+            && strpos($v,'/')===false
+            && strpos($v,'-')===false) {
+
+            $year=substr($v,4);
+            $year = $year < 20 ? '20'.$year : '19'.$year;
+            $v = substr($v,0,2).'/'.substr($v,2,2).'/'.$year;
+            $v=strtotime($v);
+         }
+         // Try to detect case like 06052007
+         elseif(   strlen($v)==8
+            && strpos($v,'/')===false
+            && strpos($v,'-')===false) {
+
+            if(substr($v,0,2)=='19' || substr($v,0,2)=='20') {
+               $v = substr($v,0,2).'/'.substr($v,2,2).'/'.substr($v,4);
+            }
+            else {
+               $v = substr($v,4,2).'/'.substr($v,6,2).'/'.substr($v,0,4);
+            }
+            $v=strtotime($v);
+         }
+         elseif(!is_numeric($v)) {
+            // A USA prejudice, assume they will always enter m-d-y, and
+            // convert dashes to slashes so they can use dashes if they want
+            $v = str_replace('-','/',$v);
+            $parts=explode('/',$v);
+            if(count($parts)==2) {
+               $parts = array($parts[0],1,$parts[1]);
+            }
+            if(strlen($parts[0])==4) {
+               $parts = array($parts[1],$parts[2],$parts[0]);
+            }
+            elseif(strlen($parts[2])==2) {
+               $parts[2] = $parts[2] < 20 ? '20'.$parts[2] : '19'.$parts[2];
+            }
+            $v = implode('/',$parts);
+            $v=strtotime($v);
+         }
+
+         // Any case not handled above we conclude was a unix timestamp
+         // already.  So by now we are confident we have a unix timestamp
+         return "'".date('Y-m-d',$v)."'";
+			break;
+		case "money":
+		case "numb":
+		case "int":
+			if ($v=="") { return "0"; }
+         else { return SQL_ESCAPE_STRING(trim($v)); }
+		case "rtime":
+		case "time":
+			// Originally we were making users type this in, and here we tried
+			// to convert it.  Now we use time drop-downs, which are nifty because
+			// the display times while having values of numbers, so we don't need
+			// this in some cases.
+			//if (strpos($v,":")===false) {	return $v; }
+         if($v=='') return 'null';
+         return $v;
+			//$arr = explode(":",$v);
+			//return ($arr[0]*60) + $arr[1];
+	}
+}
+
+/**
+name:SQLFC
+parm:string Value
+returns:string SQL_Value
+
+Shortcut to [[SQL_Format]] for string values.
+*/
+function SQLFC($value) { return SQL_Format('char',$value); }
+/**
+name:SQLFN
+parm:numb Value
+returns:string SQL_Value
+
+Shortcut to [[SQL_Format]] for numeric values.
+*/
+function SQLFN($value) { return SQL_Format('numb',$value); }
+/**
+name:SQLFD
+parm:date Value
+returns:string SQL_Value
+
+Shortcut to [[SQL_Format]] for date values.
+*/
+function SQLFD($value) { return SQL_Format('date',$value); }
+/**
+name:SQLFDT
+parm:datetime Value
+returns:string SQL_Value
+
+Shortcut to [[SQL_Format]] for datetime values.
+*/
+function SQLFDT($value) { return SQL_Format('dtime',$value); }
+
+
+function sqlFilter($colinfo,$tcv,$table = '') {
+    $type_id  = $colinfo['type_id'];
+    $column_id= $colinfo['column_id'];
+    $c        = $column_id;
+    if($table<>'') {
+        $c = "$table.$column_id";
+        $table = "$table.";
+    }
+    
+    # If the value is an asterisk, return an unconditional true
+    if($tcv=='*') return '1=1';
+    
+    # Determine if we will use dashes
+    $ignore_dashes = a($colinfo,'uisearch_ignore_dash','N');
+    
+    # Get the dash operator
+    $dash = trim(configGet('uisearchdash','-'));
+    x4Debug("dash is ".$dash);
+    
+    # Step one is to split on commas and handle each
+    # value separately, then at bottom we recombine
+    $values = explode(',',$tcv);
+    $sql_new=array();
+    foreach($values as $tcv) {
+        $new = '';
+        # This switch statement reproduces a lot of code for different
+        # types, with small changes.  I decided to do it this way instead
+        # of generalizing it because it will be easier to add type-specific
+        # details going forward.
+        switch($type_id) {
+        case 'char':
+        case 'vchar':
+        case 'text': 
+            if(substr($tcv,0,1)=='>' || substr($tcv,0,1)=='<') {
+                $tcv = str_replace('%','',$tcv);
+                if(strlen($tcv)>1) {
+                    $new=$c.substr($tcv,0,1).SQLFC(substr($tcv,1));
+                }
+            }
+            elseif(strpos($tcv,$dash)!==false && $ignore_dashes <>'Y' ) {
+                list($beg,$end)=explode($dash,$tcv);
+                if(strlen($beg)>0 && strlen($end)>0) {
+                    $sbeg = SQLFC(trim(str_replace('%','',$beg)));
+                    $send = SQLFC(trim(str_replace('%','',$end)).'z');
+                    # Don't use between.  This allows a-a to still work
+                    $new="$c >= $sbeg AND $c <= $send";
+                }
+            }
+            elseif( strpos($tcv,'%')!==false) {
+                # user has requested wildcard, cannot avoid a like
+                $sval = SQLFC(trim($tcv));
+                $new = "$c LIKE $sval";
+            }
+            else {
+                if(strlen(trim($tcv))>0) {
+                    $sbeg = SQLFC(trim($tcv));
+                    $send = SQLFC(trim($tcv).'z');
+                    # The greater-equal allows us to avoid a like
+                    # and make use of indexes for much faster performance
+                    $new = "($c >= $sbeg AND $c < $send)";
+                }
+            }
+            break;
+        case 'dtime':
+        case 'date':
+            x4Debug($tcv);
+            x4Debug(strtotime($tcv));
+            if(substr($tcv,0,1)=='>' || substr($tcv,0,1)=='<') {
+                $operator = substr($tcv,0,1);
+                $tcv      = substr($tcv,1);
+                if(strtotime($tcv)) {
+                    $tcv = str_replace('%','',$tcv);
+                    $tcv = SQLFD($tcv);
+                    $new = "$c $operator $tcv";
+                }
+            }
+            elseif(strpos($tcv,$dash)!==false && $ignore_dashes <>'Y' ) {
+                list($beg,$end)=explode($dash,$tcv);
+                if(strtotime($beg) && strtotime($end)) {
+                    $sbeg = SQLFD(trim(str_replace('%','',$beg)));
+                    $send = SQLFD(trim(str_replace('%','',$end)));
+                    $new = "$c between $sbeg and $send";
+                }
+            }
+            elseif( strpos($tcv,'%')!==false) {
+                # user has requested wildcard, must do like
+                # Wildcards not supported, we cannot format them correctly
+                #$sval = SQLFD(trim($tcv));
+                #$new = "$column_id LIKE $sval";
+            }
+            else {
+                if(strtotime($tcv)) {
+                    $tcv = str_replace('%','',$tcv);
+                    $tcv = SQLFD($tcv);
+                    $new = "$c = $tcv";
+                }
+            }
+            break;
+        case 'time':
+        case 'int':
+        case 'numb':
+            if(substr($tcv,0,1)=='>' || substr($tcv,0,1)=='<') {
+                $tcv = str_replace('%','',$tcv);
+                if(strlen($tcv)>1) {
+                    $new=$c.substr($tcv,0,1)
+                        .SQLFN(floatval(substr($tcv,1)));
+                }
+            }
+            elseif(strpos($tcv,$dash)!==false && $ignore_dashes <>'Y' ) {
+                list($beg,$end)=explode($dash,$tcv);
+                if(strlen($beg)>0 && strlen($end)>0) {
+                    $sbeg = SQLFN(floatval(str_replace('%','',$beg)));
+                    $send = SQLFN(floatval(str_replace('%','',$end)));
+                    # Don't use between.  This allows a-a to still work
+                    $new="$c >= $sbeg AND $c <= $send";
+                }
+            }
+            elseif( strpos($tcv,'%')!==false) {
+                # user has requested wildcard, cannot avoid a like
+                $sval = SQLFC(floatval($tcv));
+                $new = "$table$column_id::varchar LIKE $sval";
+            }
+            else {
+                if(strlen(trim($tcv))>0) {
+                    $sval = SQLFN(floatval($tcv));
+                    $new = "$c = $sval";
+                }
+            }
+            break;
+        }
+        
+        # now add the new value into the list of clauses
+        if(strlen($new) > 0) {
+            $sql_new[] = $new;
+        }
+    }
+
+    # If there are no search criteria, do nothing.  The
+    # calling program must interpret this and avoid a search.
+    if(count($sql_new)>0) {    
+        return implode("\n        OR ",$sql_new);
+    }
+    else {
+        return '';
+    }
+}
+            
+function sqlOrderBy($vals) {
+    # First see if an explicit sortAD and sortCol were passed
+    if(gpExists('sortCol')) {
+        return array(gp('sortCol').' '.gp('sortAD'));
+    }
+    
+    # If not, order by the columns that were passed in with values
+    $aorder = array();
+    foreach($vals as $column_id=>$val) {
+        if($val<>'') {
+            $aorder[] = "$column_id ASC";
+        }
+    }
+    
+    return $aorder;
+}
+
+// ==================================================================
+// Joomla Compatibility Functions
+// ==================================================================
+/**
+name:Joomla Compatibility
+parent:Framework API Reference
+flag:EXPERIMENTAL
+
+The Joomla Compatibility framework allows 'drop-in' use of Joomla
+templates for an Andromeda Application.
+
+
+To use a Joomla template, you must do the following:
+
+* Call [[JoomlaCompatibility()]] from applib
+* Create a 'templates' directory and put your template files there
+*/
+
+/**
+name:JoomlaCompatibility
+parm:string Template_Name
+parm:string Template_Color
+
+This function generates objects, variables and defines that
+satisfy a Joomla template so that it will execute and serve up
+Andromeda content.
+
+The first parameter is the name of the template to use.  The template
+files should be in a subdirectory of your app's "templates" directory,
+and that subdirectory should have the same name as the template.
+
+The second parameter, which defaults to blank,
+is assigned to $GLOBALS['template_color'].
+
+Other actions of this program are:
+
+* defines constant _VALID_MOS as true
+* defines constant _ISO as empty
+* assigns the application's root directory to global
+  variable $mosConfig_absolute_path.
+* assigns an empty string to global variable $mosConfig_live_site.
+* creates empty global $my object with property 'id' set to false
+* creates empty global $mainframe object, whose getTemplate() method always
+  returns the template name.
+
+The universal dispatcher, [[index_hidden]], looks for the defined constant
+_VALID_MOS, and if found it uses the named Joomla template instead of an
+Andromeda template.  It also exposes the necessary global variables
+that were defined above.
+
+The compatibility layer provides a handful of functions to emulate the
+functions used by Joomla.  The most important function is [[mosMainBody]],
+which calls directly to [[ehStandardContent]].  The other functions tend
+toward being more placeholders.
+
+When you use a Joomla template, there are a handful of tasks that must
+be performed:
+
+* Insert a link to the Andromeda javascript library, raxlib.js into
+  the template.
+* Code up routine appCountModules, which handles calls to Joomla
+  function [[mosCountModules]].
+* Code up routine appShowModules, which handles calls to Joomla
+  function [[mosLoadModules]].
+* Identify the template's CSS classes for menu modules and menu items,
+  and assign them in [[applib]] using [[vgaSet]] to 'MENU_CLASS_MODL' and
+  'MENU_CLASS_ITEM'.
+* Look for any hard-coded configuration parameters that you want to
+  override and REM them out.
+* Copy the x2.css file from andro/clib into the template's CSS
+  directory, and link to it from the template main file.
+
+*/
+function JoomlaCompatibility($template_name,$template_color='') {
+   // Templates won't run unless this is defined.
+   define('_VALID_MOS',true);
+
+   // These are 1.5 definitions
+   define('_JEXEC',true);
+   define('DS','/');
+
+   // We don't know what this is
+   define('_ISO','');
+
+   // Create this fake object with $my->id=false, so templates go to
+   // normal mode
+   $GLOBALS['J']['my'] = new joomla_fake;
+
+   // Joomla templates seem to want this?  This is how they know what
+   // template they are using.
+   $GLOBALS['J']['mainframe'] = new joomla_fake;
+   $GLOBALS['J']['mainframe']->template_name = $template_name;
+
+   // Joomla directory locations
+   $GLOBALS['J']['mC_absolute_path'] = $GLOBALS['AG']['dirs']['root'];
+   if(tmppathInsert()=='') {
+      $GLOBALS['J']['mC_live_site']     = '';
+   }
+   else {
+      // strip off trailing slash for Joomla.  Andromeda functions
+      // expect a trailing slash, but Rockettheme Joomla templates
+      // provide one themselves.  BTW, technically this does not
+      // appear to be necessary, but it is cleaner.
+      $tpi=tmpPathInsert();
+      $tpi=substr($tpi,0,strlen($tpi)-1);
+      $GLOBALS['J']['mC_live_site']     = '/'.$tpi;
+   }
+
+   $GLOBALS['J']['template_color']   = $template_color;
+}
+
+class joomla_fake {
+   var $id=false;
+   var $template_name='';
+   // KFD 2/25/08 added for
+   var $_session = array();
+
+   function getTemplate() {
+      return $this->template_name;
+   }
+}
+
+/**
+name:mosShowHead
+parent:Joomla Compatibility
+
+This is an empty routine that returns an empty string.
+*/
+function mosShowHead() {  return ''; }
+
+/**
+name:mosCountModules
+parent:Joomla Compatibility
+parm:string Module_name
+
+Looks for the function [[appCountModules]] to exist.  If that routine
+exists, it is called and the result is returned.  If that method does not
+exist, always returns false.
+
+Define and code the method [[appCountModules]] in your [[applib.php]] file.
+*/
+function mosCountModules($name) {
+   //$content=vgaGet('JOOMLA_COUNT_'.$name,'');
+   //if($content!=='') return $content;
+   if(function_exists('appCountModules')) {
+      return appCountModules($name);
+   }
+   elseif(function_exists('tmpCountModules')) {
+      return tmpCountModules($name);
+   }
+   else {
+      return true;
+   }
+}
+
+/**
+name:mosLoadModules
+parent:Joomla Compatibility
+parm:string Module_name
+parm:number Unknown
+
+Looks for the function [[appLoadModules]] to exist.  If that routine
+exists, it is called.  That routine is expected to echo its output
+directly.  If that routine does not exist, nothing happens.
+
+Define and code the method [[appLoadModules]] in your [[applib.php]] file.
+
+One handy way to explore a template is to code [[appLoadModules]] so that
+it simply echoes the name of the module, that way the template will appear
+with all of the module areas displaying their names.
+
+*/
+function mosLoadModules($name,$arg1=null) {
+   //$content=vgaGet('JOOMLA_LOAD_'.$name);
+   //if($content<>'') {
+   //   echo $content;
+   //}
+   if(function_exists('appLoadModules')) {
+      appLoadModules($name,$arg1);
+   }
+   elseif(function_exists('tmpLoadModules')) {
+      tmpLoadModules($name,$arg1);
+   }
+   else {
+      echo
+         'Could not find appLoadModules() or tmpLoadModules(). '
+         ." This message sponsored by module '$name'";
+  }
+}
+
+/**
+name:mosPathWay
+parent:Joomla Compatibility
+
+Returns an empty string.
+
+In a joomla site, this would return the navigation hierarchy, which
+Andromeda does not currently provide.
+*/
+function mosPathWay()  {
+   //echo "mosPathway";
+}
+
+/**
+name:mosMainBody
+parent:Joomla Compatibility
+
+echos [[ehStandardContent]].
+*/
+function mosMainBody() {
+  ehStandardContent();
+}
+
+/**
+name:tmpPathInsert
+parent:Joomla Compatibility
+
+This routine makes it possible to use friendly URL's together with
+absolute paths in the special case where your files are stored in
+a user's home directory on a local machine.
+
+The function is only called in templates, and is always called inside
+of links to CSS and JS files.
+
+The function is actually pulling the value "localhost_suffix" from the
+application's web_path.
+*/
+function tmpPathInsert() {
+   return vgfGet("tmpPathInsert");
+}
+
+/**
+name:ampReplace
+parent:Joomla Compatibility
+parm:string URL
+returns:string URL
+
+This routine exists in the Rocket Theme splitmenu code, and is
+presumably a Joomla library routine.
+
+*/
+function ampReplace($input) {
+   return str_replace("&","&amp;",$input);
+}
+
+/**
+name:ampReplace
+parent:Joomla Compatibility
+parm:string URL
+returns:string URL
+
+This routine exists in the Rocket Theme splitmenu code, and is
+presumably a Joomla library routine.
+
+*/
+function sefRelToAbs($input) {
+   return "/".tmpPathInsert().$input;
+}
+
+# Load right-sided menu modules.  This code is coupled to
+# the rt_pixel template.  When we want to use it in another
+# template it should be generalized to only return the links
+# and the individual template should render it into HTML.
+function fwModuleMenuRight() {
+    if(!LoggedIn()) return;
+    $extra = '';
+    # A few x4 options
+    if(gpExists('x4Page')) {
+        # If help text exists, put a link to that
+        if(vgfGet('htmlHelp')<>'') {
+            $extra.='<li><a href="javascript:void(0)" onclick="x4.help()">Help</a></li>';
+        }
+        
+        #  if they asked for a direct link to menu
+        if(ConfigGet('x4padmenu','N')=='Y') {
+            $extra.='<li><a href="?x4Page=menu">Menu</a></li>';
+        }
+    
+        # If the option exists to go to classic mode,
+        if(!vgfGet('x4Welcome',false)) {
+            # ...and this option has not been turned off
+            if(ConfigGet('x4padclassic','N')=='Y') {
+                $extra.= '<li><a href="?index.php">Classic</a>';
+            }
+        }
+    }
+    ?>
+    <ul>
+        <?=$extra?>
+        <li><a href='?st2logout=1'>Logout</a></li>
+    </ul>
+    <?php
+    return false;
+}
+
+
+# ==============================================================
+#
+# SECTION: DEPRECATED BUT IN USE
+#
+# Routines I want to get rid of but the framework is
+# using them.
+# ==============================================================
+/* DEPRECATED */
+function hLinkPostFromArray($class,$caption,$parms,$hExtra='') {
+   $hclass = hTagParm("class",$class);
+   $hparms=http_build_query($parms);
+   return "<a ".$hExtra." $hclass href=\"javascript:formPostString('$hparms');\">"
+      .$caption."</a>";
+}
+
+/* DEPRECATED */
+function ListDelim($input,$suffix=",") {
+	if ($input=="") return ""; else return $suffix;
+}
+
+/* DEPRECATED */
+function hLinkImage($pic,$alt,$var,$val,$enabled) {
+   $hparms=http_build_query(array($var=>$val));
+   if(strpos($pic,'.')===false) {
+      $ext="jpg";
+   }
+   else {
+      list($pic,$ext) = explode(".",$pic);
+   }
+   if ($enabled) {
+      return
+         "<a href=\"javascript:formPostString('".$hparms."')\">"
+         ."<img src=\"images/$pic.$ext\" border=0 alt=\"".$alt."\""
+            ." onmouseover=\"this.src='images/$pic-over.$ext'\" "
+            ." onmouseout=\"this.src='images/$pic.$ext'\"> "
+         ."</a>";
+   }
+   else {
+      return "<img src=\"images/$pic-gray.$ext\">";
+   }
+}
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -797,20 +1540,6 @@ function configLayoutX4($container,$type) {
 
 
 
-
-/**
-name:hprint_r
-parm:any Input
-returns:string HTML_Fragment
-
-Invokes the PHP print_r command, but wraps it in HTML PRE tags so
-it is readable in a browser.
-*/
-function hprint_r($anyvalue) {
-	echo "<pre>\n";
-   print_r($anyvalue);
-	echo "</pre>";
-}
 
 // ------------------------------------------------------------------
 /**
@@ -968,26 +1697,7 @@ These values can be any valid PHP type.
 The framework uses the corresponding functions [[vgfSet]] and
 [[vgfGet]].
 */
-/* DEPRECATED */
-function ValueSet($key,$value) {
-   echo "Calling Valueset $key <br/>";
-   vgfSet($key,$value);
-   if(!isset($GLOBALS['AG']['values'])) $GLOBALS['AG']['values']=array();
-	$GLOBALS["AG"]["values"][$key] = $value;
-}
-/* DEPRECATED */
-function ValueGet($key) {
-   if(!isset($GLOBALS['AG']['values'])) $GLOBALS['AG']['values']=array();
-	if (isset($GLOBALS["AG"]["values"][$key]))
-      return $GLOBALS["AG"]["values"][$key];
-	else
-   	return "";
-}
-/* DEPRECATED */
-function V($key,$value=null) {
-	if (is_null($value)) { return ValueGet($key); }
-	else ValueSet($key,$value);
-}
+
 
 /**
 name:vgaGet
@@ -1315,7 +2025,7 @@ function ddTable($table_id) {
     if(is_array($table_id)) {
         $table_id = $table_id['table_id'];
     }
-    if(isset($GLOBALS['AG']['tables'][$table_id])) {
+    if(isset($GLOBALS['AG']['tables'][$table_id]['viewname'])) {
         $retval = &$GLOBALS['AG']['tables'][$table_id];
         return $retval;
     }
@@ -1399,6 +2109,20 @@ function ddTable($table_id) {
             }
         }
     }
+    
+    # Now modify all projections to knock out columns I cannot see
+    if(isset($tabdd['views'][$view])) {
+        foreach($tabdd['projections'] as $idx=>$list) {
+            $alist = explode(',',$list);
+            $alist2 = array();
+            foreach($alist as $column_id) {
+                if(isset($tabdd['flat'][$column_id])) $alist2[] = $column_id;
+            }
+            $tabdd['projections'][$idx] = implode(',',$alist2);
+        }
+    }
+    
+    
     return $tabdd;
 }
 
@@ -1944,141 +2668,10 @@ function SysLogClose($skey) {
 }
 
 
-// ==================================================================
-// Options Routines
-// ==================================================================
-/* DEPRECATED */
-function raxOptionSet($name,$value) {
-   raxArraySet('options',$name,$value);
-}
-
-/* DEPRECATED */
-function raxOptionGet($name,$default='') {
-   global $rax;
-   return isset($rax['options'][$name]) ? $rax['options'][$name] : $default;
-}
-
-/* DEPRECATED */
-function raxArrayInit($aname) {
-   global $rax;
-   if (!isset($rax[$aname])) {
-      $rax[$aname] = array();
-   }
-}
-
-/* DEPRECATED */
-function raxArraySet($family,$name,$value) {
-   global $rax;
-   raxArrayInit($family);
-   $rax[$family][$name]=$value;
-}
 
 
 
 
-// ==================================================================
-// Headers and other HTTP stuff
-// ==================================================================
-/* DEPRECATED */
-function HTTP_redirect($page,$vars) {
-	Header("Location: ".HTTP_Address($page,$vars));
-}
-
-/* DEPRECATED */
-function HTTP_Address($page,$vars) {
-	$args = "";
-	foreach ($vars as $key=>$value) {
-		$args.=ListDelim($args,"&").trim($key)."=$value";
-	}
-	if ($args) { $args = "&".$args; }
-	return "index.php?gp_page=".$page.$args;
-}
-
-/* DEPRECATED */
-function CleanExists($key) {
-	return isset($GLOBALS["AG"]["clean"][$key]);
-}
-
-/* DEPRECATED */
-function CleanSetArray($arr,$prefix="") {
-	foreach ($arr as $key=>$value) { CleanSet($prefix.$key,$value); }
-}
-
-/* DEPRECATED */
-function CleanSet($key,$value) {
-	$GLOBALS["AG"]["clean"][$key] = $value;
-}
-/* DEPRECATED */
-function CleanSet_Subset($clear_if_unset,$prefix,$arr) {
-	$strlen = strlen($prefix);
-
-	// First clear existing if told to
-	if ($clear_if_unset) {
-		foreach ($GLOBALS["AG"]["clean"] as $colname=>$colvar) {
-			if (substr($colname,0,$strlen)==$prefix) {
-				$GLOBALS["AG"]["clean"][$colname] = "";
-			}
-		}
-	}
-
-	// Then assign the values we were given
-	foreach ($arr as $key=>$value) {
-		$GLOBALS["AG"]["clean"][$prefix.$key] = $value;
-	}
-}
-
-/* DEPRECATED */
-function CleanUnset($key) {
-	if (isset($GLOBALS["AG"]["clean"][$key])) {
-		unset($GLOBALS["AG"]["clean"][$key]);
-	}
-}
-
-/* DEPRECATED */
-function CleanBox($key,$tdefault="",$reportmissing=true) {
-	return CleanGet("txt_".$key,$tdefault,$reportmissing);
-}
-
-/* DEPRECATED */
-function CleanControl($skipempty=false) {  return Clean_Subset("gp_",$skipempty);  }
-/* DEPRECATED */
-function CleanBoxes($skipempty=false)   {  return Clean_Subset("txt_",$skipempty); }
-
-/* DEPRECATED */
-function Clean_Subset($prefix,$skipempty=false) {
-	$strlen = strlen($prefix);
-	$colvars = array();
-	foreach ($GLOBALS["AG"]["clean"] as $colname=>$colvar) {
-		if (substr($colname,0,$strlen)==$prefix) {
-			if ($colvar!="" || !$skipempty) {
-				$colvars[substr($colname,$strlen)] = $colvar;
-			}
-		}
-	}
-	return $colvars;
-}
-
-/* DEPRECATED */
-function CleanGetUnset($key) {
-	$retval = CleanGet($key,"",false);
-	unset ($GLOBALS["AG"]["clean"][$key]);
-	return $retval;
-}
-
-
-/* DEPRECATED */
-function CleanGet($key,$tdefault="",$reportmissing=true) {
-	$post=$GLOBALS["AG"]["clean"];
-	if (!isset($post[$key])) {
-		if ($reportmissing) {
-			ErrorAdd("System Error, Received variable does not exist: ".$key);
-		}
-		return $tdefault;
-	}
-	else {
-		return $post[$key];
-	}
-}
 
 // ==================================================================
 // ==================================================================
@@ -3277,57 +3870,6 @@ function hSimpleNumber($value) {
    }
 }
 
-/* DEPRECATED */
-function HTMLE_IMG($src) {
-	$src = htmlentities(urlencode($src));
-	return "<img src=\"index.php?gp_page=x_object&oname=$src\">";
-}
-
-/* DEPRECATED */
-function HTMLE_IMG_INLINE($src) {
-   if ($src=='') {
-      $srcfile = file_get_contents('rax-blank.jpg',true);
-      $src = base64_encode($srcfile);
-   }
-   $pic = 'xx'.rand(10000,99999);
-   $F=FOPEN($GLOBALS['AG']['dirs']['root'].'/'.$pic,'w');
-   fputs($F,base64_decode($src));
-   fclose($F);
-   return '<span><image src="'.$pic.'"></span>';
-   //return
-   //   '<span><object style="float:left;"'
-   //   .'  type="image/jpeg" data="data:;base64,'.$src.'">'
-   //   .'</object></span>';
-
-      //.'  type="image/jpeg" data="data:;base64,'.$src.'">'
-}
-
-/* DEPRECATED */
-function hImgFromBytes($table_id,$column_id,$skey,$bytes,$decode=true) {
-   $x=$bytes;  //annoying compile error
-   $x=$decode;
-   // First step is to save the image if it is not already
-   // saved in the "dbobj" directory
-   $fname=$table_id.'_'.$column_id.'_'.$skey;
-   $fdir =AddSlash($GLOBALS['AG']['dirs']['root'])."dbobj/";
-   //if(!file_exists($fdir.$fname)) {
-      /*
-      if ($decode) {
-         file_put_contents($fdir.$fname,base64_decode($bytes));
-      }
-      else {
-         file_put_contents($fdir.$fname,$bytes);
-      }
-      */
-   //}
-   // Now return some hypertext that refers to this image
-   //if (strlen($bytes)>0) {
-   //   return '<span><image src="dbobj/'.$fname.'"></span>';
-   //}
-   //else {
-      return '';
-   //}
-}
 
 
 // ==================================================================
@@ -3586,107 +4128,6 @@ function hLInkSetAndPost($caption,$gp_var,$gp_val) {
       ."'".$gp_var."','".$gp_val."')\">".$caption."</a>";
 }
 
-/* DEPRECATED */
-function hLinkPostFromArray($class,$caption,$parms,$hExtra='') {
-   $hclass = hTagParm("class",$class);
-   $hparms=http_build_query($parms);
-   return "<a ".$hExtra." $hclass href=\"javascript:formPostString('$hparms');\">"
-      .$caption."</a>";
-}
-
-/* DEPRECATED */
-/* See: hLinkSetAndPost */
-function hLinkPost($caption,$var,$val) {
-   $js="SetAndPost('".$var."','".$val."')";
-   regHidden($var,'');
-   return '<a href="javascript:'.$js.'">'.$caption.'</a>';
-}
-
-/* DEPRECATED */
-function hLinkArray($caption,$parms,$target='',$class='') {
-   return HTMLE_A_Array($caption,$parms,$target,$class);
-}
-/* DEPRECATED */
-function HTMLE_A_ARRAY($caption,$parms,$target="",$class="") {
-	if ($target) { $target=' target="'.$target.'" '; }
-	if ($class)  { $class =' class="'.$class.'" ';   }
-	$parmlist = "";
-	foreach($parms as $var=>$value) {
-		if ($parmlist<>"") $parmlist.="&";
-		$parmlist .= $var."=".urlencode($value);
-	}
-	return
-		'<a href="index.php?'.htmlentities($parmlist).'"'
-		.$target
-		.$class.'>'
-		.$caption
-		.'</a>';
-}
-
-/* DEPRECATED */
-function HTMLE_A_JSCancel() {
-	return HTMLE_A_JS("ob('Form1').reset()","Cancel Changes");
-}
-/* DEPRECATED */
-function HTMLE_A_JSSubmit() {
-	return HTMLE_A_JS("formSubmit()","Save Changes");
-}
-/* DEPRECATED */
-function HTMLE_A_JS($href,$content,$class="") {
-	if ($href)   { $href='href="javascript:'.$href.'"'; }
-	if ($class)  { $class='class="'.$class.'"'; }
-	return '<a '.$href.' '.$class.'>'.$content.'</a>';
-}
-/* DEPRECATED */
-function HTMLE_A_POPUP($caption,$parms) {
-	$parmlist = "";
-	foreach($parms as $var=>$value) {
-		$parmlist.=ListDelim($parmlist,"&").$var."=".urlencode($value);
-	}
-	return
-		"<a href=\"javascript:Popup('index.php?".htmlentities($parmlist)."',".
-		"'".$caption."')\">".$caption."</a>";
-}
-
-/* DEPRECATED */
-function hLinkImage($pic,$alt,$var,$val,$enabled) {
-   $hparms=http_build_query(array($var=>$val));
-   if(strpos($pic,'.')===false) {
-      $ext="jpg";
-   }
-   else {
-      list($pic,$ext) = explode(".",$pic);
-   }
-   if ($enabled) {
-      return
-         "<a href=\"javascript:formPostString('".$hparms."')\">"
-         ."<img src=\"images/$pic.$ext\" border=0 alt=\"".$alt."\""
-            ." onmouseover=\"this.src='images/$pic-over.$ext'\" "
-            ." onmouseout=\"this.src='images/$pic.$ext'\"> "
-         ."</a>";
-   }
-   else {
-      return "<img src=\"images/$pic-gray.$ext\">";
-   }
-}
-/* DEPRECATED */
-function HTMLE_A_IMG($href,$stub,$alt) {
-	return "
-<a href=\"".$href."\"
-   onmouseout=\"MM_swapImgRestore()\"
-	onmouseover=\"MM_swapImage('$stub','','images/".$stub."over.jpg',0)\">
-	<img src=\"images/".$stub."reg.jpg\" alt=\"".$alt."\" name=\"$stub\"
-	 border=\"0\" id=\"$stub\" />
-</a>
-";
-}
-
-/* DEPRECATED */
-function HTMLE_A_STD($caption,$page,$parms="",$target="") {
-	if ($parms)  { $parms = "&".$parms; }
-	if ($target) { $target = 'target = "'.$target.'"'; }
-	return '<a href="index.php?gp_page='.$page.$parms.'" '.$target.'>'.$caption.'</a>';
-}
 
 /**
 name:hImageFromBytes
@@ -3919,7 +4360,7 @@ function ehHiddenAndData() {
    // be sent out as hidden variables
    $x=vgfGet('gpControls','');
    if(is_array($x)) {
-      regHidden('gpControls',base64_encode(serialize($x)));
+      hidden('gpControls',base64_encode(serialize($x)));
    }
    // Now take the prior request and pass it through
    $x=aFromgp('gp_');
@@ -4570,34 +5011,6 @@ function PushToLogin() {
 
 // ==================================================================
 // ==================================================================
-// Debugging Functions
-// ==================================================================
-// ==================================================================
-/**
-name:_default_
-parent:Debugging Functions
-*/
-
-/**
-name:Debugging Functions
-parent:Framework API Reference
-
-These two functions provide wrappers to the two similar PHP
-functions, so that the output is readable.
-
-*/
-
-/* DEPRECATED */
-function HTML_vardump($array) {
-	echo "<pre>\n";
-	//var_dump(($array));
-   print_r($array);
-	echo "</pre>";
-}
-
-
-// ==================================================================
-// ==================================================================
 // Miscellaneous FUnctions
 // ==================================================================
 // ==================================================================
@@ -4642,62 +5055,6 @@ function objReport($oParent,$orient='P') {
    return $retval;
 }
 
-/* DEPRECATED */
-function scTableObject($gp_page) {
-   return raxTableObject($gp_page);
-}
-
-/* DEPRECATED */
-function raxTableObject($gp_page) {
-   return DispatchObject($gp_page);
-}
-
-/* DEPRECATED */
-function scObject($object_name) {
-   include_once($object_name.'.php');
-   return new $object_name;
-}
-
-/* DEPRECATED */
-function DispatchObject($gp_page) {
-	// Get the One True Class loaded.  All table
-	// processing uses it directly or uses a subclass of it
-	//
-	//include_once("x_table.php");   // old version
-	include_once("x_table2.php");  // How can there be two "One True" classes?
-
-	// Always attempt to load a class for the page, and then
-   // look for the named class
-   $obj_page=null;
-	if (FILE_EXISTS_INCPATH($gp_page.".php")) {
-		include_once("$gp_page.php");
-
-      $class_page = "x_table_$gp_page";
-      if(class_exists($class_page)) {
-         // case 1, extension of x_table (original)
-         $obj_page = new $class_page();
-         $obj_page->table_id = $gp_page;
-         $obj_page->x_table_DDLoad();
-      }
-      elseif (class_exists($gp_page)) {
-         // case 2, extension of x_table2 (new way to do it)
-         $obj_page = new $gp_page();
-      }
-	}
-   // if no object found, must make a default
-   if(is_null($obj_page)) {
-      $default=vgaGet('x_table','x_table2');
-      if($default=='x_table') {
-         $obj_page = new x_table();
-         $obj_page->table_id = $gp_page;
-         $obj_page->x_table_DDLoad();
-      }
-      else {
-         $obj_page = new x_table2($gp_page);
-      }
-   }
-	return $obj_page;
-}
 
 /**
 name:objPageMain
@@ -4847,21 +5204,6 @@ function AddSlash($input,$prefix='') {
 }
 
 
-/* DEPRECATED */
-function regHidden($varname,$val='') {
-   arrDefault($GLOBALS['AG'],'hidden',array());
-   $GLOBALS['AG']['hidden'][$varname]=$val;
-}
-/* DEPRECATED */
-function regHiddenRepeat($varname,$default='') {
-   $val=cleanGet($varname,$default,false);
-   regHidden($varname,$default);
-}
-/* DEPRECATED */
-function regDataValue($varname,$varvalue) {
-   arrDefault($GLOBALS['AG'],'data',array());
-   $GLOBALS['AG']['data'][$varname]=$varvalue;
-}
 
 /**
 name:ehFWDevNotice
@@ -5738,36 +6080,10 @@ These functions all return or output fragments of HTML.
 Some of them output huge amounts of HTML, while others have the
 advantage of avoiding a confusing mix of HTML and PHP.
 */
-
-/* DECPRECATED */
-function HTML_Format_DD($table_id,$colname,$value) {
-   $table=DD_TableRef($table_id);
-   $type = $table['flat'][$colname]['type_id'];
-   return HTML_Format($type,$value);
-}
-
-
-
-/* DEPRECATED */
-// see hSanitize
-function HTML_Sanitize($v) {
-   return htmlentities($v);
-}
-
 function hSanitize($v) {
    return htmlentities($v);
 }
 
-/**
-name:hx
-parm:string Anything
-returns:string HTML_Sanitized
-
-This is a shortcut to PHP's function htmlentities.
-*/
-function hx($in) {
-   return htmlentities($in);
-}
 
 function hFormat($t,$v) {
    return HTML_Format($t,$v);
@@ -5853,28 +6169,11 @@ function HTML_Dropdown($name,$resall,$value="value",$inner="inner") {
 }
 
 
-/* DEPCRECATED */
-function HTML_DATE($date) {
-	return strftime('%b %d, %Y',$date);
-}
 function hDateUSFromSD($sd) {
    return
       intval(substr($sd,4,2)).'/'
       .intval(substr($sd,6,2)).'/'
       .intval(substr($sd,0,4));
-}
-
-/* DEPRECATED */
-function HTML_DATEINPUT($date) {
-	if (!$date) { return ""; }
-	$year = substr($date,0,4);
-	$mnth = substr($date,5,2);
-	$day  = substr($date,8,2);
-	return $mnth."-".$day."-".$year;
-}
-function HTML_TEXTDATE($date) {
-	if (is_null($date)) { $date = time(); }
-	return date('m/d/Y',$date);
 }
 
 // ==================================================================
@@ -5922,70 +6221,6 @@ function hTBodyFromRows($class='',$rows) {
    return $retval;
 }
 
-/* DEPRECATED */
-/* The basic problem with this routine is that we tried to do
-   everything, and it got unwieldy.  Later we figured out the idea
-   was to have a lot of more specific hTable routines, these
-   are named hTable_Method*
- */
-function ehTBodyFromRows(&$rows,$columns=array(),$options=array()) {
-   // For alternating dark/lite
-   $flag_alt=false;
-   if(isset($options['alternate'])) {
-      $flag_alt = true;
-   }
-   $cssRow   = 'dlite';
-
-   // Error check the parameters
-   if(!is_array($rows)) {
-      ErrorAdd("ehTBodyFromRows: 1st parm must be array of rows");
-   }
-   if(!is_array($columns)) {
-      ErrorAdd("ehTBodyFromRows: 2nd parm must be array of columns");
-   }
-   // Create columns if it was not provided.
-   if(count($columns)==0) {
-      $colspre = array_keys($rows[0]);
-      foreach($colspre as $colname) {
-         if(!is_numeric($colname)) {
-            if($colname!='skey') {
-               $columns[$colname]=array();
-            }
-         }
-      }
-   }
-
-   // Now flesh out various defaults, set hidden vars
-   foreach($columns as $colname=>$colopts) {
-      if(isset($colopts['cpage']) && !isset($colopts['ccol'])) {
-         $columns[$colname]['ccol']='skey';
-      }
-      if (isset($columns[$colname]['ccol'])) {
-         hidden('gp_'.$columns[$colname]['ccol'],'');
-      }
-   }
-
-   // Run through the rows and output them
-   $makehidden='';
-   foreach($rows as $row) {
-      echo "<tr>";
-      foreach($columns as $colname=>$colopts) {
-         $value=$row[$colname];
-         if(isset($colopts['cpage'])) {
-            $pg  =$colopts['cpage'];
-            $ccol=$colopts['ccol'];
-            $cval=$row[$ccol];
-            $js = "SetAction('gp_page','$pg','gp_$ccol','$cval')";
-            $value='<a href="javascript:'.$js.'">'.$value.'</a>';
-         }
-         echo hTD($cssRow,$value);
-         if ($flag_alt) {
-            $cssRow = $cssRow=='dlite' ? 'ddark' : 'dlite';
-         }
-      }
-      echo "</tr>";
-   }
-}
 
 /**
 name:hTRFromArray
@@ -6031,7 +6266,7 @@ function hTableSortable($table_id,$cols,$class='dhead') {
    // Since the table will be sortable, make a hidden variable
    // to keep the sort value
    $hid='gp_ob_'.$table_id;
-   regHidden($hid,'');
+   hidden($hid,'');
 
    $retval
       ='<table width="100%" border="0" '
@@ -6247,265 +6482,6 @@ function dYEar() {
    return date('Y',time());
 }
 
-// ==================================================================
-// Joomla Compatibility Functions
-// ==================================================================
-/**
-name:Joomla Compatibility
-parent:Framework API Reference
-flag:EXPERIMENTAL
-
-The Joomla Compatibility framework allows 'drop-in' use of Joomla
-templates for an Andromeda Application.
-
-These features are EXPERIMENTAL.  They have not been used extensively.
-
-To use a Joomla template, you must do the following:
-
-* Call [[JoomlaCompatibility()]] from applib
-* Create a 'templates' directory and put your template files there
-*/
-
-/**
-name:JoomlaCompatibility
-parm:string Template_Name
-parm:string Template_Color
-
-This function generates objects, variables and defines that
-satisfy a Joomla template so that it will execute and serve up
-Andromeda content.
-
-The first parameter is the name of the template to use.  The template
-files should be in a subdirectory of your app's "templates" directory,
-and that subdirectory should have the same name as the template.
-
-The second parameter, which defaults to blank,
-is assigned to $GLOBALS['template_color'].
-
-Other actions of this program are:
-
-* defines constant _VALID_MOS as true
-* defines constant _ISO as empty
-* assigns the application's root directory to global
-  variable $mosConfig_absolute_path.
-* assigns an empty string to global variable $mosConfig_live_site.
-* creates empty global $my object with property 'id' set to false
-* creates empty global $mainframe object, whose getTemplate() method always
-  returns the template name.
-
-The universal dispatcher, [[index_hidden]], looks for the defined constant
-_VALID_MOS, and if found it uses the named Joomla template instead of an
-Andromeda template.  It also exposes the necessary global variables
-that were defined above.
-
-The compatibility layer provides a handful of functions to emulate the
-functions used by Joomla.  The most important function is [[mosMainBody]],
-which calls directly to [[ehStandardContent]].  The other functions tend
-toward being more placeholders.
-
-When you use a Joomla template, there are a handful of tasks that must
-be performed:
-
-* Insert a link to the Andromeda javascript library, raxlib.js into
-  the template.
-* Code up routine appCountModules, which handles calls to Joomla
-  function [[mosCountModules]].
-* Code up routine appShowModules, which handles calls to Joomla
-  function [[mosLoadModules]].
-* Identify the template's CSS classes for menu modules and menu items,
-  and assign them in [[applib]] using [[vgaSet]] to 'MENU_CLASS_MODL' and
-  'MENU_CLASS_ITEM'.
-* Look for any hard-coded configuration parameters that you want to
-  override and REM them out.
-* Copy the x2.css file from andro/clib into the template's CSS
-  directory, and link to it from the template main file.
-
-*/
-function JoomlaCompatibility($template_name,$template_color='') {
-   // Templates won't run unless this is defined.
-   define('_VALID_MOS',true);
-
-   // These are 1.5 definitions
-   define('_JEXEC',true);
-   define('DS','/');
-
-   // We don't know what this is
-   define('_ISO','');
-
-   // Create this fake object with $my->id=false, so templates go to
-   // normal mode
-   $GLOBALS['J']['my'] = new joomla_fake;
-
-   // Joomla templates seem to want this?  This is how they know what
-   // template they are using.
-   $GLOBALS['J']['mainframe'] = new joomla_fake;
-   $GLOBALS['J']['mainframe']->template_name = $template_name;
-
-   // Joomla directory locations
-   $GLOBALS['J']['mC_absolute_path'] = $GLOBALS['AG']['dirs']['root'];
-   if(tmppathInsert()=='') {
-      $GLOBALS['J']['mC_live_site']     = '';
-   }
-   else {
-      // strip off trailing slash for Joomla.  Andromeda functions
-      // expect a trailing slash, but Rockettheme Joomla templates
-      // provide one themselves.  BTW, technically this does not
-      // appear to be necessary, but it is cleaner.
-      $tpi=tmpPathInsert();
-      $tpi=substr($tpi,0,strlen($tpi)-1);
-      $GLOBALS['J']['mC_live_site']     = '/'.$tpi;
-   }
-
-   $GLOBALS['J']['template_color']   = $template_color;
-}
-
-class joomla_fake {
-   var $id=false;
-   var $template_name='';
-   // KFD 2/25/08 added for
-   var $_session = array();
-
-   function getTemplate() {
-      return $this->template_name;
-   }
-}
-
-/**
-name:mosShowHead
-parent:Joomla Compatibility
-
-This is an empty routine that returns an empty string.
-*/
-function mosShowHead() {  return ''; }
-
-/**
-name:mosCountModules
-parent:Joomla Compatibility
-parm:string Module_name
-
-Looks for the function [[appCountModules]] to exist.  If that routine
-exists, it is called and the result is returned.  If that method does not
-exist, always returns false.
-
-Define and code the method [[appCountModules]] in your [[applib.php]] file.
-*/
-function mosCountModules($name) {
-   //$content=vgaGet('JOOMLA_COUNT_'.$name,'');
-   //if($content!=='') return $content;
-   if(function_exists('appCountModules')) {
-      return appCountModules($name);
-   }
-   elseif(function_exists('tmpCountModules')) {
-      return tmpCountModules($name);
-   }
-   else {
-      return true;
-   }
-}
-
-/**
-name:mosLoadModules
-parent:Joomla Compatibility
-parm:string Module_name
-parm:number Unknown
-
-Looks for the function [[appLoadModules]] to exist.  If that routine
-exists, it is called.  That routine is expected to echo its output
-directly.  If that routine does not exist, nothing happens.
-
-Define and code the method [[appLoadModules]] in your [[applib.php]] file.
-
-One handy way to explore a template is to code [[appLoadModules]] so that
-it simply echoes the name of the module, that way the template will appear
-with all of the module areas displaying their names.
-
-*/
-function mosLoadModules($name,$arg1=null) {
-   //$content=vgaGet('JOOMLA_LOAD_'.$name);
-   //if($content<>'') {
-   //   echo $content;
-   //}
-   if(function_exists('appLoadModules')) {
-      appLoadModules($name,$arg1);
-   }
-   elseif(function_exists('tmpLoadModules')) {
-      tmpLoadModules($name,$arg1);
-   }
-   else {
-      echo
-         'Could not find appLoadModules() or tmpLoadModules(). '
-         ." This message sponsored by module '$name'";
-  }
-}
-
-/**
-name:mosPathWay
-parent:Joomla Compatibility
-
-Returns an empty string.
-
-In a joomla site, this would return the navigation hierarchy, which
-Andromeda does not currently provide.
-*/
-function mosPathWay()  {
-   //echo "mosPathway";
-}
-
-/**
-name:mosMainBody
-parent:Joomla Compatibility
-
-echos [[ehStandardContent]].
-*/
-function mosMainBody() {
-  ehStandardContent();
-}
-
-/**
-name:tmpPathInsert
-parent:Joomla Compatibility
-
-This routine makes it possible to use friendly URL's together with
-absolute paths in the special case where your files are stored in
-a user's home directory on a local machine.
-
-The function is only called in templates, and is always called inside
-of links to CSS and JS files.
-
-The function is actually pulling the value "localhost_suffix" from the
-application's web_path.
-*/
-function tmpPathInsert() {
-   return vgfGet("tmpPathInsert");
-}
-
-/**
-name:ampReplace
-parent:Joomla Compatibility
-parm:string URL
-returns:string URL
-
-This routine exists in the Rocket Theme splitmenu code, and is
-presumably a Joomla library routine.
-
-*/
-function ampReplace($input) {
-   return str_replace("&","&amp;",$input);
-}
-
-/**
-name:ampReplace
-parent:Joomla Compatibility
-parm:string URL
-returns:string URL
-
-This routine exists in the Rocket Theme splitmenu code, and is
-presumably a Joomla library routine.
-
-*/
-function sefRelToAbs($input) {
-   return "/".tmpPathInsert().$input;
-}
 
 // ==================================================================
 // File Functions.  Mixed new and old
@@ -7162,7 +7138,7 @@ function rowsFromFilters(&$table,$filters,$cols,$matches=array()) {
          }
          if ($tcv != "") {
             // trap for a % sign in non-string
-            $sw[]='('.rff_OneCol($colinfo,$colname,$tcv).')';
+            $sw[]='('.sqlFilter($colinfo,$tcv).')';
          }
       }
     }
@@ -7225,6 +7201,7 @@ function rowsFromFilters(&$table,$filters,$cols,$matches=array()) {
 
 // KFD 5/17/07, support lists, ranges, and greater/lesser
 //
+/* DEPRECATED.  Copied this to SQLFilter() and am going from there */
 function rff_OneCol($colinfo,$colname,$tcv) {
     $tid = $colinfo['type_id'];
     $uiid= ArraySafe($colinfo,'uisearch_ignore_dash','N');
@@ -8939,134 +8916,6 @@ function TableRowsSetClassAlternate(&$rows,$class1,$class2,$override=false) {
 // All other random deprecated functions
 // ==================================================================
 // ==================================================================
-/* DEPRECATED */
-function HTMLX_Errors() {
-	global $AG;
-	$retval="";
-   if (isset($AG['trx_errors'])) {
-      if (is_array($AG['trx_errors'])) {
-         foreach ($AG["trx_errors"] as $err) {
-            $retval.=ListDelim($retval,"<br><br>").$err."\n";
-         }
-      }
-   }
-	$AG["trx_errors"]=array();
-	if ($retval=="") return "";
-	else return $retval;
-}
-
-/* DEPRECATED */
-/* CODE PURGE CANDIDATE */
-/* this routine is not used by the framework */
-function HTMLX_Notices() {
-	global $AG;
-	$retval="";
-	foreach ($AG["messages"] as $err) {
-		$retval.=ListDelim($retval,"<br><br>").$err."\n";
-	}
-	$AG["messages"]=array();
-	if ($retval=="") return "";
-	else return $retval;
-}
-
-/* DEPRECATED */
-function ADMIN_LOG($code,$session="",$text="") {
-   $code=$session=$text='';
-   return;
-   /*
-	$hostip = $_SERVER["REMOTE_ADDR"];
-
-	global $AG,$admin_cn;
-	if (isset($_SESSION[$AG["application"]."_UID"])) {
-		$uid = $_SESSION[$AG["application"]."_UID"];
-	}
-	else { $uid = "--NONE--"; }
-
-	SQL(
-		"insert into sys_logs (sys_log_type,session,hostip,uid,sys_log_text) ".
-		" values (".$code.",'".$session."','$hostip','$uid','".$text."')");
-   */
-}
-
-
-/* DEPRECATED */
-function ADMIN_SESSIONCLOSE($session_id,$killcode) {
-   $session_id=$killcode;
-   /*
-	$time = time();
-	SQL(
-		"update adm_sessions ".
-		"  set sess_status='".$killcode."',".
-		"  sess_end = ".X_UNIX_TO_SQLTS(time()).
-		" where session = '".$session_id."'");
-	foreach($_SESSION as $key=>$value) {
-		$app = $GLOBALS['AG']['application'].'_';
-		if (substr($key,0,strlen($app))==$app) {
-			unset($_SESSION[$key]);
-		}
-	}
-   */
-}
-
-/* DEPRECATED */
-function ADMIN_SESSIONID($ts) {
-	global $AG;
-	//  Removed REMOTE_ADDR 5/18/05 experimentally to see if
-	//  it was causing problems for a user
-	//
-	//return md5($AG["application"].$ts.$_SERVER["REMOTE_ADDR"]);
-	return md5($AG["application"].$ts);
-}
-
-/* DEPRECATED */
-function G($branch="",$varname=null,$val=null) {
-	$branch = strtolower($branch);
-	if (is_null($val)) {
-		// In this branch we GET the values
-		if (is_null($varname)) return ArraySafe($GLOBALS["AG"],$branch,Array());
-		else return ArraySafe($GLOBALS["AG"][$branch],$varname);
-	}
-	else {
-		// In this branch we SET the values
-		if (is_array($varname)) {
-			foreach ($varname as $key=>$value) {
-				$GLOBALS["AG"]["hidden"][$key] = $value;
-			}
-		}
-		else {
-			$GLOBALS["AG"]["hidden"][$varname] = $val;
-		}
-		return true;
-	}
-}
-
-/* DEPRECATED */
-function ListDelim($input,$suffix=",") {
-	if ($input=="") return ""; else return $suffix;
-}
-
-/* DEPRECATED */
-function Hidden_make($varname) {
-   if (!isset($GLOBALS['AG']['hidden'][$varname]))
-      $GLOBALS['AG']['hidden'][$varname] = '';
-}
-
-/** Fetch and Repeat a Hidden Variable
-  *
-  * This routine returns the value of a hidden variable posted
-  * in and also generates a new hidden variable to go out with
-  * the same value.  Most often used for variable gp_page, but
-  * also useful for any context variable that only has to be
-  * preserved while visiting a single page.  Anything that has
-  * to be preserved across different pages should be made part
-  * of the context.
-  */
-/* DEPRECATED */
-function HiddenRepeat($var,$default='') {
-   $retval = CleanGet($var,$default,false);
-   hidden($var,$retval);
-   return $retval;
-}
 
 function explodeempty($delim,$string) {
    if($string=='') {
@@ -9111,7 +8960,7 @@ function Login($UID,$PWD) {
    gpSet('loginPWD',$PWD);
 
    // Create and run the login object
-   $obj_login = raxTableObject('x_login');
+   $obj_login = DispatchObject('x_login');
    $obj_login->Login_Process();
 
    // If the login worked, disconnect whatever previous connection
@@ -10849,161 +10698,6 @@ function sqlFormatRow($tabdd,$row) {
 }
 
 
-/**
-name:SQL_Format
-parm:string Type_ID
-parm:any Value
-parm:int Clip_Length
-returns:string
-
-Takes any input value and type and formats it for direct substitution
-into a SQL string.  So for instance character values are escaped for
-quotes and then surrounded by single quotes.  Numerics are returned
-as-is, dates are formatted and so forth.
-
-The optional third parameter specifies a maximum length for character
-and varchar fields.  If it is non-zero, the value will be clipped to
-that length.
-
-If you use this command for every value received from the browser when
-you build SQL queries, then your code will be safe from SQL Injection
-attacks.  All framework commands that build queries use this command for
-all literals provided to them.
-*/
-function SQL_FORMAT($t,$v,$clip=0) {
-	global $AG;
-	switch ($t) {
-    case 'mime-x':
-        return "'".SQL_ESCAPE_BINARY($v)."'";
-        break;
-    case "char":
-    case "vchar":
-    case "text":
-    case "url":
-    case "obj":
-    case "cbool":
-    case 'ssn':
-    case 'ph12':
-    case "gender":
-        if($clip>0 && strlen($v) > $clip) $v = substr($v,0,$clip);
-        // KFD 9/10/07, one of the doctors wants all caps
-        if(OptionGet('ALLCAPS')=='Y') {
-            $v= strtoupper($v);
-        }
-        return "'".SQL_ESCAPE_STRING($v)."'";
-        break;
-    case "mime-h":
-         if($clip>0 && strlen($v) > $clip) $v = substr($v,0,$clip);
-			//return "'".SQL_ESCAPE_BINARY($v)."'";
-			return "'".SQL_ESCAPE_STRING($v)."'";
-			break;
-    case "dtime":
-        if ($v=="") return "null";
-        //else return X_UNIX_TO_SQLTS($v);
-        else return "'".date('r',dEnsureTS($v))."'";
-        break;
-    case "date":
-    case "rdate":
-         // A blank is sent as null to server
-			if($v=="") return "null";
-         if($v=='0') return 'null';
-
-         // Try to detect case like 060507
-         if(   strlen($v)==6
-            && strpos($v,'/')===false
-            && strpos($v,'-')===false) {
-
-            $year=substr($v,4);
-            $year = $year < 20 ? '20'.$year : '19'.$year;
-            $v = substr($v,0,2).'/'.substr($v,2,2).'/'.$year;
-            $v=strtotime($v);
-         }
-         // Try to detect case like 06052007
-         elseif(   strlen($v)==8
-            && strpos($v,'/')===false
-            && strpos($v,'-')===false) {
-
-            if(substr($v,0,2)=='19' || substr($v,0,2)=='20') {
-               $v = substr($v,0,2).'/'.substr($v,2,2).'/'.substr($v,4);
-            }
-            else {
-               $v = substr($v,4,2).'/'.substr($v,6,2).'/'.substr($v,0,4);
-            }
-            $v=strtotime($v);
-         }
-         elseif(!is_numeric($v)) {
-            // A USA prejudice, assume they will always enter m-d-y, and
-            // convert dashes to slashes so they can use dashes if they want
-            $v = str_replace('-','/',$v);
-            $parts=explode('/',$v);
-            if(count($parts)==2) {
-               $parts = array($parts[0],1,$parts[1]);
-            }
-            if(strlen($parts[0])==4) {
-               $parts = array($parts[1],$parts[2],$parts[0]);
-            }
-            elseif(strlen($parts[2])==2) {
-               $parts[2] = $parts[2] < 20 ? '20'.$parts[2] : '19'.$parts[2];
-            }
-            $v = implode('/',$parts);
-            $v=strtotime($v);
-         }
-
-         // Any case not handled above we conclude was a unix timestamp
-         // already.  So by now we are confident we have a unix timestamp
-         return "'".date('Y-m-d',$v)."'";
-			break;
-		case "money":
-		case "numb":
-		case "int":
-			if ($v=="") { return "0"; }
-         else { return SQL_ESCAPE_STRING(trim($v)); }
-		case "rtime":
-		case "time":
-			// Originally we were making users type this in, and here we tried
-			// to convert it.  Now we use time drop-downs, which are nifty because
-			// the display times while having values of numbers, so we don't need
-			// this in some cases.
-			//if (strpos($v,":")===false) {	return $v; }
-         if($v=='') return 'null';
-         return $v;
-			//$arr = explode(":",$v);
-			//return ($arr[0]*60) + $arr[1];
-	}
-}
-
-/**
-name:SQLFC
-parm:string Value
-returns:string SQL_Value
-
-Shortcut to [[SQL_Format]] for string values.
-*/
-function SQLFC($value) { return SQL_Format('char',$value); }
-/**
-name:SQLFN
-parm:numb Value
-returns:string SQL_Value
-
-Shortcut to [[SQL_Format]] for numeric values.
-*/
-function SQLFN($value) { return SQL_Format('numb',$value); }
-/**
-name:SQLFD
-parm:date Value
-returns:string SQL_Value
-
-Shortcut to [[SQL_Format]] for date values.
-*/
-function SQLFD($value) { return SQL_Format('date',$value); }
-/**
-name:SQLFDT
-parm:datetime Value
-returns:string SQL_Value
-
-Shortcut to [[SQL_Format]] for datetime values.
-*/
-function SQLFDT($value) { return SQL_Format('dtime',$value); }
 
 
 
@@ -11309,50 +11003,57 @@ function SQLX_Insert($table,$colvals,$rewrite_skey=true,$clip=false) {
 		if (isset($colvals[$colname])) {
          //if($colvals[$colname]<>'') {
             if (DD_ColInsertsOK($colinfo,'db')) {
-               $cliplen = $clip ? $colinfo['colprec'] : 0;
-               $new_cols.=ListDelim($new_cols)." ".$colname;
-               $new_vals
-                  .=ListDelim($new_vals)." "
-                  .SQL_FORMAT($colinfo["type_id"],$colvals[$colname],$cliplen);
+                # KFD 6/18/08, % signs really mess things up
+                if(strpos($colvals[$colname],'%')!==false) {
+                    ErrorAdd("The % sign may not be in a saved value");
+                    vgfSet('ErrorRow_'.$table_id,$colvals);                    
+                    return 0;
+                }
+                $cliplen = $clip ? $colinfo['colprec'] : 0;
+                $new_cols.=ListDelim($new_cols)." ".$colname;
+                $new_vals
+                   .=ListDelim($new_vals)." "
+                   .SQL_FORMAT($colinfo["type_id"],$colvals[$colname],$cliplen);
             }
          //}
 		}
 	}
-	$sql = "INSERT INTO ".$view_id." ($new_cols) VALUES ($new_vals)";
+    if(!Errors()) {
+        $sql = "INSERT INTO ".$view_id." ($new_cols) VALUES ($new_vals)";
+    }
     x4Debug($sql);
     x4Debug(SessionGet('UID'));
-   //h*print_r($colvals);
-   //h*print_r($sql);
+    //h*print_r($colvals);
+    //h*print_r($sql);
 
-   // ERRORROW CHANGE 5/30/07, big change, SQLX_* routines now save
-   //  the row for the table if there was an error
-   $errflag=false;
-	SQL($sql,$errflag);
-   if($errflag) {
-      vgfSet('ErrorRow_'.$table_id,$colvals);
-   }
+    // ERRORROW CHANGE 5/30/07, big change, SQLX_* routines now save
+    //  the row for the table if there was an error
+    $errflag=false;
+    SQL($sql,$errflag);
+    if($errflag) {
+        vgfSet('ErrorRow_'.$table_id,$colvals);
+    }
 
 	$notices = pg_last_notice($GLOBALS["dbconn"]);
-   $retval = 0;
-	//echo "notices: $notices<br>";
+    $retval = 0;
 	$matches = array();
 	preg_match_all("/SKEY(\D*)(\d*);/",$notices,$matches);
 	if(isset($matches[2][0])) {
-      $retval = $matches[2][0];
-      if ($rewrite_skey) {
-         CleanSet("gp_skey",$matches[2][0]);
-         CleanSet("gp_action","edit");
-      }
+        $retval = $matches[2][0];
+        if ($rewrite_skey) {
+            gpSet("gp_skey",$matches[2][0]);
+            gpSet("gp_action","edit");
+        }
 	}
 
-   // Possibly cache the row
-   $cache_pkey0=vgfget('cache_pkey',array());
-   $cache_pkey=array_flip($cache_pkey0);
-   if(isset($cache_pkey[$table_id])) {
-      CacheRowPut($table,$colvals);
-   }
-
-   return $retval;
+    // Possibly cache the row
+    $cache_pkey0=vgfget('cache_pkey',array());
+    $cache_pkey=array_flip($cache_pkey0);
+    if(isset($cache_pkey[$table_id])) {
+        CacheRowPut($table,$colvals);
+    }
+    
+    return $retval;
 }
 
 /**
@@ -11791,7 +11492,7 @@ function RowsForSelect($table_id,$firstletters='',$matches=array(),$distinct='',
    }
 
    // See if there is a hardcoded filter in the program class
-   $obj = raxTableObject($table_id);
+   $obj = dispatchObject($table_id);
    if(method_exists($obj,'aSelect_where')) {
        $aWhere[] = $obj->aSelect_where();
        sysLog(LOG_NOTICE,$obj->aSelect_Where());
