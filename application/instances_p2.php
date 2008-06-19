@@ -6,8 +6,8 @@ class instances_p2 extends x_table2 {
    }
    
    function main() {
-      gp('gp_posted','1');
-		$this->main_pr_execute();
+       gpSet('gp_posted','1');
+       $this->main_pr_execute();
    }
    
    
