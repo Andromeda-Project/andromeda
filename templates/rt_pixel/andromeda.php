@@ -33,7 +33,7 @@ function tmpLoadModules($module_name,$var=null) {
       case 'footer':   tmpModuleFooter();   break;
       case 'top':      tmpModuleTop();      break;
       case 'commands': ehModuleCommands();  break;
-      case 'menuright':tmpModuleMenuRight();break;
+      case 'menuright':fwModuleMenuRight();break;
    }
 }
 
