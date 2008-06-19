@@ -7250,7 +7250,6 @@ function ContentLoad() {
         $count = $this->SQLReadRows(
             "Select count(*) as cnt from $table_id"
         );
-        hprint_r($count);
         if($count[0]['cnt']==0) {
             $this->LogEntry("Adding a row to $table_id");
             $this->SQL("insert into $table_id (skey_quiet) values ('Y')");
@@ -8238,7 +8237,6 @@ function DBB_LoadContentComplex($arr,$prefix,$suffix) {
                            ,false,false);
                   }
                   $sql = "UPDATE $table_id SET $update WHERE $match";
-                  //echo $sql."\n\n";
                   $this->SQL($sql);
                }
             }
