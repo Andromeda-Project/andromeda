@@ -41,7 +41,7 @@ class x_login extends x_table2 {
             hidden('gpz_'.$var,$val);
         }
       
-		$loginUID = CleanGet("loginUID","",false);
+		$loginUID = gp("loginUID","",false);
 		vgfSet("HTML_focus","loginUID");
       
         // EXPERIMENTAL.  DOING THIS FOR ONLY ONE CLIENT RIGHT NOW
@@ -157,7 +157,7 @@ class x_login extends x_table2 {
       $arg2=$this->directlogin==true ? 'direct'  : '';
       
       // only process if user hit "post"
-  		if (CleanGet('gp_posted','',false)=='') return;
+  		if (gp('gp_posted','',false)=='') return;
       vgfSet('LoginAttemptOK',false);
 
       // Error title
@@ -184,7 +184,7 @@ class x_login extends x_table2 {
       $uid = MakeUserID($uid);
       //$uid = str_replace('@','_',$uid);
       //$uid = str_replace('.','_',$uid);
-		$pwd = CleanGet("loginPWD","",false);
+		$pwd = gp("loginPWD","",false);
 		
 		// First check, never allow the database server's superuser
 		// account
@@ -289,8 +289,10 @@ class x_login extends x_table2 {
          $results=SQL("select group_id from usersxgroups WHERE LOWER(user_id)='$uid'");
       }
 		while ($row = SQL_FETCH_ARRAY($results)) {
-			$groups.=ListDelim($groups)."'".trim($row["group_id"])."'";
+            $agroups[]="'".trim($row['group_id'])."'";
+			#$groups.=ListDelim($groups)."'".trim($row["group_id"])."'";
 		}
+        $groups = implode(",",$agroups);
 		//scDBConn_Pop();
 		
       // We have a successful login.  If somebody else was already
@@ -448,6 +450,7 @@ class x_login extends x_table2 {
       //}
       $HTML_Menu="";
       $WML_Menu="";
+      /*
       foreach ($AGMENU as $key=>$module) {
          //if($key=="datadict") continue;
          //if($key=="sysref")   continue;
@@ -482,11 +485,11 @@ class x_login extends x_table2 {
                      );
                   //}
                   break;
-                     /*
-                     $HTML_Module.=
-                        "\n<font class=\"tablename\">- <a href=\"index.php?gp_page=".$itemname."\">".
-                        $item["description"]."</a></font><br />";
-                     */
+                     
+                     #$HTML_Module.=
+                     #   "\n<font class=\"tablename\">- <a href=\"index.php?gp_page=".$itemname."\">".
+                     #   $item["description"]."</a></font><br />";
+                     
                }
          }
          
@@ -501,6 +504,8 @@ class x_login extends x_table2 {
             $WML_Menu.=$WML_Module;
          }
       }
+      */
+      
       
       DynamicSave("menu_".$uid.".php",$HTML_Menu);
       DynamicSave("menu_wml_".$uid.".php",$WML_Menu);

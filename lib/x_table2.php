@@ -546,7 +546,6 @@ class x_table2 {
             //$hlink="SetAndPost('".$name."',".$skey.')';
             $hlink="javascript:SetAndPost('gp_action','del')";
             $onclick=$hlink;
-            //regHidden($name,'');
             break;
          default:
             //$qstring = "gp_mode=".urlencode($action);
@@ -867,7 +866,7 @@ class x_table2 {
       // Get vital stats, work out what the max page is
       $table_id = $this->table['table_id'];
       $var='gp_spage_'.$table_id;
-      regHidden($var,'');
+      hidden($var,'');
       list($spage,$srows,$rppage,$maxpage)=arrPageInfo($table_id);
       
       if ($srows==0) { return ''; }
@@ -1227,7 +1226,7 @@ class x_table2 {
                break;
             case 'upd': {
                $skey=gp('gp_skey');
-               regHidden('gp_skey','');
+               hidden('gp_skey','');
                if(trim($skey)=='') {
                   $row=array();
                }
@@ -1615,7 +1614,7 @@ class x_table2 {
       
       // Always save values of main table's pk values.  Can be
       foreach($pks as $colname=>$colvalue) {
-         reghidden("parent_".$colname,$colvalue);
+         hidden("parent_".$colname,$colvalue);
       }   
       if(isset($this->h['Extra'])) {
          $this->h['Extra'] = array_merge($this->h['Extra'],$retval);
@@ -1665,7 +1664,7 @@ class x_table2 {
       // This will be used to hold skey value of deletions
       $table_id=$this->table['table_id'];
       $skey_delete="gp_delskey_".$this->table['table_id'];
-      regHidden($skey_delete,'');
+      hidden($skey_delete,'');
       
       // Start output with a table and column headers
       ?>
