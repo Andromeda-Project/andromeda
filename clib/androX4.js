@@ -1844,7 +1844,8 @@ function x4AndroPage(self) {
             this.highlightRow('row_0');
             window.temp = null;
             
-            $(this).find("#divOnScreen table").Scrollable(500,500);
+            var x = $(this).find("#divOnScreen table").width();
+            $(this).find("#divOnScreen table").Scrollable(500,x+15);
         }
         return false;
     }

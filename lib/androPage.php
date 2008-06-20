@@ -493,8 +493,11 @@ class androPage {
             }  
             $sql[] = $sq;
         }
-        
-        return implode("\nUNION ALL\n",$sql);
+
+        # Build the sql
+        $sql = implode("\nUNION ALL\n",$sql);        
+        if(gp('gp_post')=='onscreen') $sql.= " LIMIT 300";
+        return $sql;
     }   
    
     /**
@@ -620,6 +623,7 @@ class androPage {
             .$SQL_WHERE
             .$SQL_GROUPBY
             .$SQL_COLSOB;
+        if(gp('gp_post')=='onscreen') $SQ.= " LIMIT 300";
         return $SQ;
     }
 
@@ -720,15 +724,16 @@ class androPage {
         foreach($uifilter as $filtername=>$info) {
             if(strpos($compare,'@'.$filtername)!==false) {
                 $type_id = $table_dd['flat'][$colname]['type_id'];
-                $val = SQL_FORMAT($type_id,$info['value']);
-                if($noempty=='Y' && trim($info['value'])=='') {
-                    $compare='';
-                    break;
+                if(a($info,'value','')<>'') {
+                    $val = SQL_FORMAT($type_id,$info['value']);
+                    if($noempty=='Y' && trim($info['value'])=='') {
+                        $compare='';
+                        break;
+                    }
+                    $compare = str_replace(
+                        '@'.$filtername,$val,$compare
+                    );
                 }
-                $compare = str_replace(
-                    '@'.$filtername,$val,$compare
-                );
-                
             }
         }
         return $compare;
