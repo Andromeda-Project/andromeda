@@ -398,7 +398,12 @@ class androHtml {
             $this->hp['style']=$style;
         }
         foreach($this->hp as $parmname=>$parmvalue) {
-            $parms.="\n  $parmname=\"$parmvalue\"";
+            if(trim($parmname)=='selected') {
+                $parms.= ' SELECTED ';
+            }
+            else {
+                $parms.="\n  $parmname=\"$parmvalue\"";
+            }
         }
         foreach($this->ap as $parmname=>$parmvalue) {
             $parms.="\n  $parmname=\"$parmvalue\"";
@@ -732,6 +737,10 @@ function hx($in) {
 function configGet($var,$default='',$skip=array()) {
     # clean up what they passed in
     $var = strtolower(trim($var));
+    
+    # Allow a programmer to override any option 
+    # by setting an application global
+    if( ($ag=vgaGet($var,''))<>'' ) return $ag;
     
     # Define the arrays and then attempt to load them
     $configuser = $configinst = $configapp = $configfw = array();
@@ -1454,7 +1463,7 @@ function fwModuleMenuRight() {
     if(!LoggedIn()) return;
     $extra = '';
     # A few x4 options
-    if(gpExists('x4Page')) {
+    if(configGet('x4Welcome','N')=='Y') {
         # If help text exists, put a link to that
         if(vgfGet('htmlHelp')<>'') {
             $extra.='<li><a href="javascript:void(0)" onclick="x4.help()">Help</a></li>';
@@ -1463,14 +1472,6 @@ function fwModuleMenuRight() {
         #  if they asked for a direct link to menu
         if(ConfigGet('x4padmenu','N')=='Y') {
             $extra.='<li><a href="?x4Page=menu">Menu</a></li>';
-        }
-    
-        # If the option exists to go to classic mode,
-        if(!vgfGet('x4Welcome',false)) {
-            # ...and this option has not been turned off
-            if(ConfigGet('x4padclassic','N')=='Y') {
-                $extra.= '<li><a href="?index.php">Classic</a>';
-            }
         }
     }
     ?>
@@ -6694,24 +6695,25 @@ function DDProjectionResolve(&$table,$projection='') {
    $table_id=$table['table_id'];
    $view_id =DDTable_IDResolve($table_id);
    if($table_id<>$view_id) {
-      $g2use = $table['tableresolve'][SessionGet('GROUP_ID_EFF')];
-      $geff  = SessionGet('GROUP_ID_EFF');
-      $g2use = substr($geff,0,strlen($geff)-5).substr($g2use,-5);
-      if(substr($g2use,-5)<>'99999') {
-         $cols2keep = &$table['views'][$g2use];
-         foreach($table['flat'] as $colname=>$colinfo) {
-            if(!isset($cols2keep[$colname])) {
-               unset($table['flat'][$colname]);
-            }
-            else {
-               if($cols2keep[$colname]==0) {
-                   $table['flat'][$colname]['securero']='Y';
-                  $table['flat'][$colname]['upd']='N';
-                  $table['flat'][$colname]['ins']='N';
+       $g2use = $table['tableresolve'][SessionGet('GROUP_ID_EFF')];
+       $geff  = SessionGet('GROUP_ID_EFF');
+       //$g2use = substr($geff,0,strlen($geff)-5).substr($g2use,-5);
+       $g2use = $table_id.'_v_'.substr($g2use,-5);
+       if(substr($g2use,-5)<>'99999') {
+           $cols2keep = &$table['views'][$g2use];
+           foreach($table['flat'] as $colname=>$colinfo) {
+               if(!isset($cols2keep[$colname])) {
+                   unset($table['flat'][$colname]);
                }
-            }
-         }
-      }
+               else {
+                   if($cols2keep[$colname]==0) {
+                       $table['flat'][$colname]['securero']='Y';
+                       $table['flat'][$colname]['upd']='N';
+                       $table['flat'][$colname]['ins']='N';
+                   }
+               }
+           }
+       }
    }
 
 
@@ -9768,6 +9770,7 @@ function aColsModeProj(&$table,$mode,$projection='') {
    //
    $colsp=DDProjectionResolve($table,$projection);
 
+   $cols3 = array();
    foreach($colsp as $column_id) {
       $cols3[$column_id] = $cols2[$column_id];
 
