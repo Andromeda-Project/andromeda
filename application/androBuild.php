@@ -450,7 +450,7 @@ function DDRMake() {
     //    $parm["DIR_PUB"]."lib/".$parm["SPEC_BOOT"].'.dd.yaml'
     //    ,$this->ddarr['data']
     //);
-    //exit;
+    //e*xit;
    
    // public service detour.  Write out a generated file of the ddarr 
    // array, which is later used by documentation generation stuff
@@ -900,7 +900,8 @@ function SpecLoad() {
                         );
                     $this->LogEntry("Setting aside content for loading after build");
                     foreach($ta['content'] as $table_id=>$values) {
-                        if(!isset($values[2])) {
+                        # KFD 6/30/08, changed from [2] to [1]
+                        if(!isset($values[1])) {
                             $this->logEntry("");
                             $this->logEntry(">>> ERROR");
                             $this->logEntry(">>> Error in CONTENT for table $table_id");
@@ -914,20 +915,25 @@ function SpecLoad() {
                             $this->logEntry(">>>          - [ val1, val2 ]");
                             return false;
                         }
-                        
-                        
-                        // KFD 3/1/08, major fix to content loading on YAML 
-                        $colnames = $values[1];
-                        $colnames['__type']='columns';
-                        $this->content[$table_id][] = $colnames;
-                        
-                        unset($values[2]['__type']);
-                        foreach($values[2] as $colvalues) {
-                            $this->content[$table_id][]=array_merge(
-                                array('__type'=>'values')
-                                ,$colvalues
-                            );
+                        # KFD 6/30/08
+                        else {
+                            $this->content[$table_id] = $values;
                         }
+                        
+                        // KFD 3/1/08, major fix to content loading on YAML
+                        # KFD 6/30/08, try remming this out
+                        #$colnames = $values[1];
+                        #$colnames['__type']='columns';
+                        #$this->content[$table_id][] = $colnames;
+                        
+                        #unset($values[2]['__type']);
+                        #foreach($values[2] as $colvalues) {
+                        #    $this->content[$table_id][]=array_merge(
+                        #        array('__type'=>'values')
+                        #        ,$colvalues
+                        #    );
+                        #    $this->content[$table_id][]=$colvalues;
+                        #}
                         // KFD 3/1/8 END CHANGES
                     }
                 }
@@ -1653,6 +1659,7 @@ function SpecFlatten_Runout() {
         $sq="INSERT INTO zdd.tabflat (
                  table_id,column_id_src,column_id,suffix,prefix
                 ,description,descshort
+                ,pk_change
                 ,primary_key,uisearch
                 ,colprec,colscale,colres,type_id,inputmask
                 ,table_id_fko
@@ -1664,6 +1671,7 @@ function SpecFlatten_Runout() {
                  ,rtrim(x1.prefix) || rtrim(x1.column_id) || rtrim(x1.suffix)
                  ,x1.suffix,x1.prefix
                  ,x1.description,x1.descshort
+                 ,x1.pk_change
                  ,x1.primary_key,x1.uisearch
                  ,c.colprec,c.colscale,c.colres,c.type_id
                  ,t.inputmask
@@ -1674,6 +1682,7 @@ function SpecFlatten_Runout() {
                  SELECT column_id,column_id_src,suffix,prefix
                        ,MAX(description)                as description
                        ,MAX(descshort)                  as descshort
+                       ,MAX(COALESCE(pk_change   ,'N')) as pk_change
                        ,MAX(COALESCE(primary_key ,'N')) as primary_key
                        ,MAX(COALESCE(uisearch    ,'N')) as uisearch
                        ,MAX(COALESCE(table_id_fko,'' )) as table_id_fko
@@ -1683,6 +1692,7 @@ function SpecFlatten_Runout() {
                      SELECT f.column_id,f.column_id_src
                            ,fk.suffix,fk.prefix
                            ,f.description,f.descshort
+                           ,fk.pk_change
                            ,fk.primary_key,fk.uisearch
                            ,fk.table_id_par as table_id_fko
                            ,TRIM(fk.uicolseq) || '.' || TRIM(f.uicolseq) as uicolseq
@@ -4747,8 +4757,8 @@ function SpecDDL_Triggers_ColConsTypes()  {
 				break;
 			case "gender": 
            $type='6002';
-				$test = " IN (##M##,##F##)"; 
-				$msg .= " can be either M or F";
+				$test = " IN (##M##,##F##,##U##,##H##)"; 
+				$msg .= " can be either M, F, U (unknown), H (Hermaphrodite)";
 				break;
 			case "time"  :
            $type='6003';
@@ -7811,47 +7821,35 @@ function YAMLWalk($source) {
             // KFD 9/26/07, allow $LOGIN group
             if($name=='$LOGIN') $name = $parm['APP'];
             
-            // DO 2/14/08, Check for existance of at least one uisearch set to yes
-            // KFD 4/16/08, Moved to SpecValidate()
-            /*
-            if($type=='table') {
-                $uisearch_found = false;
-                foreach( $item as $key2=>$table ) {
-                    $split2 = preg_split('/\s+/',$key2);
-                    if ( $split2[0] == 'column' || $split2[0] == 'foreign_key' ) {
-                        if ( count( $item[$key2] ) > 0 ) {
-                            foreach( $item[$key2] as $key3=>$prop ) {
-                                if( $key3 == 'uisearch' ) {
-                                    if ( $prop == 'Y' ) {
-                                        $uisearch_found = true;
-                                    }
-                                }
-                            }
-                        }
+            if($type=="content") {
+                # KFD 6/30/08
+                $colnames=array_merge(
+                    array('__type'=>'columns')
+                    ,$item['columns']
+                );
+                unset($item['columns']);
+               
+                $values = array();
+                foreach($item as $key=>$stuff) {
+                    foreach($stuff as $array) {
+                        $values[]=array_merge(array('__type'=>$key),$array);
                     }
                 }
-                if ( !$uisearch_found ) {
-                    $this->YAMLWalkError('uisearch',$item);
-                }
-            }
-            */
-            if($type=="content") {
-               $colnames=array('__type'=>'columns');
-               $values = array();
-               foreach($item as $key=>$stuff) {
-                  if(is_array($stuff)) {
-                     $values[]=array_merge(array('__type'=>'values'),$stuff);
-                  }
-                  else {
-                     $cols=explode(' ',$key);
-                     if(count($cols)<2) {
-                        $this->YAMLWalkError('contentkey',$item);
-                     }
-                     else {
-                        $colnames[] = $cols[1];
-                     }
-                  }
-               }
+                   
+                  #if(is_array($stuff)) {
+                     # KFD 6/21/08, removed hardcode __type of 'value'
+                  #   $values[]=array_merge(array('__type'=>'values'),$stuff);
+                  #}
+                  #else {
+                  #   $cols=explode(' ',$key);
+                  #   if(count($cols)<2) {
+                  #      $this->YAMLWalkError('contentkey',$item);
+                  #   }
+                  #   else {
+                  #      $colnames[] = $cols[1];
+                  #   }
+                  #}
+               #}
                //$this->YAMLContent[$name][]=$colnames;
                $this->YAMLContent[$name]=Array_Merge(array($colnames),$values);
             }
@@ -8198,7 +8196,7 @@ function DBB_LoadContentComplex($arr,$prefix,$suffix) {
 		$pk    = $this->utabs[$table_id]["pk"];
       $flat  = &$this->utabs[$table_id]["flat"];
 		$pkarr = explode(",", $pk );
-		
+
 		foreach ($stuff as $onelist) {
 			if ($onelist["__type"]=="columns") { $cols = $onelist; }
 			else {
@@ -8351,7 +8349,6 @@ function CodeGenerate_Tables() {
         WHERE automation_id IN ('FETCH','FETCHDEF')";
    $results=$this->SQLRead($sq);
    $deps=pg_fetch_all($results);
-   //hprint_r($deps);
    $calcs=array();
    if($deps) {
       foreach($deps as $dep) {
@@ -8587,6 +8584,7 @@ SELECT  m.module,m.description as module_text,m.uisort,t.uisort
        ,t.nomenu,'N' as menuins
        ,t.linknew,t.linksearch
        ,'' as menu_parms
+       ,'N' as uix2
   FROM zdd.modules m
   JOIN zdd.tables t ON t.module = m.module
  WHERE t.nomenu <> 'Y'  
@@ -8596,7 +8594,8 @@ SELECT  m.module,m.description as module_text,m.uisort,t.uisort
         ,u.description as table_text 
         ,'N' as nomenu,'N' as menuins
         ,'N' as linknew,'N' as linksearch
-        ,u.menu_parms 
+        ,u.menu_parms
+        ,u.uix2
  FROM zdd.modules m 
  JOIN zdd.uimenu u ON m.module = u.module  
  ORDER BY 3,4,5";
@@ -8626,6 +8625,7 @@ SELECT  m.module,m.description as module_text,m.uisort,t.uisort
 				"#menu_parms#=>#".$row["menu_parms"]."#,".
 				"#linknew#=>#".$row["linknew"]."#,".
 				"#linksearch#=>#".$row["linksearch"]."#,".
+                '#uix2#=>#'.$row['uix2']."#,".
 				"#mode#=>#normal#);\n";
 
 	}	
