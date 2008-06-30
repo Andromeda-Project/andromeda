@@ -370,7 +370,6 @@ function html($tag,&$parent=null,$innerHTML='') {
         return $retval;
     }
 
-
     $retval = & new androHtml();
     $retval->setHtml($innerHTML);
 
@@ -477,6 +476,34 @@ class androHtml {
     }
 
     /**
+    * Clear any HTML and erase all children.  Does not affect
+    * property assignments.
+    *
+    */
+    function clear() {
+        $this->innerHtml = '';
+        $this->children = array();
+    }
+
+    /**
+    * Clears all HP property assignments such as ID, STYLE, COLSPAN
+    * and so forth.
+    *
+    */
+    function clearHP() {
+        $this->hp = array();
+    }
+
+    /**
+    * Clears all AP property assignments.  AP Properties are those
+    * you make up yourself.
+    *
+    */
+    function clearAP() {
+        $this->ap = array();
+    }
+    
+    /**
     * Add a class attribute named $value to this tag.
     *
     * @param string $value	name of class to add
@@ -502,6 +529,59 @@ class androHtml {
     function addChild($object) {
         $this->children[] = $object;
     }
+    
+    /**
+    * Add an element directly to this element.  
+    *
+    * @param string $tag   The HTML element, such as A, P, DIV, etc.
+    * @param string $innerHTML Optional inner HTML
+    * @param string $class Optional first CSS class for this element.
+    * @return object $html An HTML element. 
+    */
+    function html($tag,$innerHTML='',$class='') {
+        $x = html($tag,$this,$innerHTML);
+        if($class<>'') $x->addClass($class);
+        return $x;
+    }
+
+    /**
+    * Add an element directly to this element.  Shortcut to method "html".
+    *
+    * @param string $tag   The HTML element, such as A, P, DIV, etc.
+    * @param string $innerHTML Optional inner HTML
+    * @param string $class Optional first CSS class for this element.
+    * @return object $html An HTML element. 
+    */
+    function h($tag,$innerHTML='',$class='') {
+        return $this->html($tag,$innerHTML,$class);
+    }
+
+    /**
+    * Add a TD element directly to this element.  Shortcut to method "html"
+    * with first parameter hardcoded to "td".
+    *
+    * @param string $innerHTML Optional inner HTML
+    * @param string $class Optional first CSS class for this element.
+    * @return object $html An HTML TD element 
+    */
+    function td($innerHTML='',$class='') {
+        return $this->html('td',$innerHTML,$class);
+    }
+
+    /**
+    * Add a hyperlink element directly to this element.   
+    *
+    * @param string $innerHTML Inner HTML (displayed value) of hyperlink
+    * @param string $href Hyperlink target
+    * @param string $class Optional CSS class to add.
+    * @return object $html An HTML A element 
+    */
+    function a($innerHTML,$href,$class='') {
+        $a = $this->h('a',$innerHTML,$class);
+        $a->hp['href'] = $href;
+        return $a;
+    }
+    
 
     /**
     * Add $count break tags (<br/>) into this html as a children elements.
@@ -567,6 +647,26 @@ class androHtml {
             foreach($row as $colname=>$colvalue) {
                 html('td',$tr,$colvalue);
             }
+        }
+    }
+    
+    /**
+    * Add a thead and a set of th elements to a table.
+    *
+    * Note: this method does not check to see if "this"
+    * is actually an HTML TABLE element.
+    *
+    * @param mixed $thvalues   a list or array of values
+    */
+    function makeThead($thvalues) {
+        # Make it an array if it is not already
+        if(!is_array($thvalues)) {
+            $thvalues = explode(',',$thvalues);
+        }
+        $thead = html('thead',$this);
+        $tr    = html('tr',$thead);
+        foreach($thvalues as $th) {
+            html('th',$tr,$th);
         }
     }
 
@@ -763,23 +863,27 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
     # First decision is to work out what kind of control to make
     if($type_id=='gender') {
         $input = html('select');
-        $option = html('option',$input);  // this is a blank option
-        $option = html('option',$input);
+        # KFD 6/28/08 No blank option by default, that was
+        #     for x2 lookups and x2 is not using
+        #     this code yet (and probably never will)
+        #$option = html('option',$input);  // this is a blank option
+        $option = html('option',$input,'M');
         $option->hp['value']='M';
-        $option->innerHTML = 'M';
-        $option = html('option',$input);
+        $option = html('option',$input,'F');
         $option->hp['value']='F';
-        $option->innerHTML = 'F';
+        $option = html('option',$input,'U');
+        $option->hp['value']='U';
+        $option = html('option',$input,'H');
+        $option->hp['value']='H';
     }
     elseif($type_id=='cbool') {
         $input = html('select');
-        $option = html('option',$input);  // this is a blank option
-        $option = html('option',$input);
+        # KFD 6/28/08, see the comment above for gender
+        #$option = html('option',$input);  // this is a blank option
+        $option = html('option',$input,'Y');
         $option->hp['value']='Y';
-        $option->setHtml('Y');
-        $option = html('option',$input);
+        $option = html('option',$input,'N');
         $option->hp['value']='N';
-        $option->setHtml('N');
     }
     elseif($type_id=='text' || $type_id=='mime-h') {
         $input = html('textarea');
@@ -931,9 +1035,62 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
         $tabLoop[] = &$input;
     }
     
+    # Look for "on" options
+    $list=array('onchange','onkeyup','onkeydown','onkeypress'
+        ,'onmouseover','onmouseout','onclick'
+    );
+    foreach($options as $key=>$value) {
+        if(in_array($key,$list)) {
+            $input->hp[$key] = $value;
+        }
+    }
+    
+    
     # For now that's all we are going to do.
     return $input;
 }
+
+/**
+* Generate a set of inputs for a given projection on a given table,
+* organized as an HTML TABLE with one row per input, captions on
+* left and inputs on right.
+*
+* @param array $dd	Data Dictionary for table
+* @param string $projection Name of projection, or array of columns,
+*                           or comma-list of columns.
+*/
+function projection($dd,$projection,&$tabLoop,$options=array()) {
+    # Work out what they gave us and make a list of
+    # columns out of it
+    if(is_array($projection)) {
+        # they gave us an array of columns
+        $columns = $projection; 
+    }
+    else {
+        if(isset($dd['projections'][$projection])) {
+            # they named a projection
+            $columns = explode(',',$dd['projections'][$projection]);
+        }
+        else {
+            # assume a comma list of columns
+            $columns = explode(',',$projection);
+        }
+    }
+    
+    # Lay out the projection as a table and return it
+    $table = html('table');
+    $table->addClass('x4Detail');
+    foreach($columns as $column) {
+        $tr = $table->h('tr');
+        $tr->h('td',$dd['flat'][$column]['description'],'x4Caption');
+        
+        $input = input($dd['flat'][$column],$tabLoop,$options);
+        $td = $tr->h('td','','x4Input');
+        $td->addChild($input);
+    }
+    return $table;
+}
+
 
 function inputsTabLoop(&$tabLoop,$options=array()) {
     if(count($tabLoop)<2) return;
