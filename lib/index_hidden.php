@@ -41,7 +41,7 @@ INVENTORY OF framework gp variables:
 // >>> 
 // ==================================================================
 ini_set("allow_url_open",false);
-ini_set("error_reporting",E_ALL);
+ini_set("error_reporting",E_ERROR);
 ini_set("display_errors",true);
 ini_set("log_errors",true);
 ini_set("short_tag_open",true);
@@ -108,6 +108,7 @@ else {
     $AG['clean']['gpContext'] = $t2;
 }
 
+
 // ==================================================================
 // >>> 
 // >>> Load the framework library
@@ -115,10 +116,30 @@ else {
 // ==================================================================
 include_once('androLib.php');
 include_once('androLibDeprecated.php');
+
+
+// ==================================================================
+// >>> 
+// >>> Load configuration options
+//
+// >>> Do this after the framework, so we can use it, but before
+// >>> the applib, which might override these settings
+// ==================================================================
+vgfSet( 'x4welcome', configGet('x4welcome','N')       );
+vgfSet( 'x4menu'   , configGet('x4menu'   ,'N')       );
+vgfSet( 'template' , configGet('template' ,'rt_pixel'));
+
+
+// ==================================================================
+// >>> 
+// >>> Load the application library
+// >>> 
+// ==================================================================
 $x=fsDirTop().'application/applib.php';
 if (file_exists($x)) {
   include_once($x);
 }
+
 
 // ==================================================================
 // >>>
@@ -127,7 +148,6 @@ if (file_exists($x)) {
 // >>>      interactions with external data feeds or APIs
 // >>>
 // ==================================================================
-
 /* DJO 3/24/2008
   This creates a global variable so that the plugin manager
   is accessible throughout the application
@@ -283,9 +303,10 @@ if(isset($header_mode)) return;
 # a gp_page variable, that forces it to stay as x2.  This was put
 # in to allow old-fashioned processes.
 #
-if(vgfGet('x4Welcome') && gp('x4Page')=='' && LoggedIn()) {
+if(vgfGet('x4welcome')=='Y' && gp('x4Page')=='' && LoggedIn()) {
+    # if these two options are set, we don't try to force an x4
     if( !(gpExists('gp_page') && gpExists('x2')) ) { 
-        gpSet('x4Page','menu');
+        gpSet('x4Page',vgaGet('nopage','menu'));
     }
 }
 
@@ -319,11 +340,15 @@ if(function_exists('app_after_db_connect')) {
     app_after_db_connect();
 }
 
+// Entries made in the command box can rewrite get/post 
+// variables and affect downstream processing.  Do those
+// now if required.
+if(    gpExists('gp_command')) index_hidden_command();
+
 // Only one path can be chosen, and each path is completely
 // responsible for returning all headers, HTML or anything
 // else it wants to send back.
-if(    gpExists('gp_command')) index_hidden_command();
-    if(gp('ajxFETCH')   =='1') index_hidden_ajxFETCH();
+if(    gp('ajxFETCH')   =='1') index_hidden_ajxFETCH();
 elseif(gp('ajxfSELECT')  <>'') index_hidden_ajxfSELECT();
 elseif(gp('ajxc1table')  <>'') index_hidden_ajx1ctable();
 elseif(gp('gp_function') <>'') index_hidden_function();
@@ -414,7 +439,7 @@ function index_hidden_x4Dispatch() {
         }
     }
 
-    // Put errors in
+    # Put errors in that were reported by database operations
     if(Errors()) {
         $errs = errorsGet();
         foreach($errs as $err) {
@@ -1221,6 +1246,22 @@ function index_hidden_page() {
 
 function index_hidden_template() {
    global $AG;
+   # Changes by KFD 6/21/08.  An explicit vgfSet('template') overrides
+   # everything.
+   if(vgfGet('template')<>'') {
+       # Assign the template to spots where the legacy code will find it
+       $AG['template'] = vgfGet('template');
+   }
+   else {
+       # After a hardcoded setting, use the configuration system
+       # to find a default template
+       if(($ctemplate = ConfigGet('template'))<>'') {
+           $AG['template'] = $ctemplate;
+       }
+   }
+   # From here we proceed to the original code which still 
+   # functions the same way.
+   
    // First conditional fix contributed by Don Organ 9/07, $AG['template']
    // was getting lost on passes 2+
    if(ArraySafe($AG,'template')<>'') {
