@@ -1172,8 +1172,18 @@ var $a = {
          */
         inputs: function(obj) {
             $(obj).find(":input:not([@readonly])").each( function() {
-                    if(this.value!='') {
-                        $a.json.addParm(this.id,this.value);
+                    if(this.type=='checkbox') {
+                        if(this.checked) {
+                            $a.json.addParm(this.id,'Y');
+                        }
+                        else {
+                            $a.json.addParm(this.id,'N');
+                        }
+                    }
+                    else {
+                        if(this.value!='') {
+                            $a.json.addParm(this.id,this.value);
+                        }
                     }
             });
         },
@@ -1186,6 +1196,10 @@ var $a = {
         windowLocation: function() {
             var entireGet = 'index.php?'+this.callString;
             window.location = entireGet;
+        },
+        newWindow: function() {
+            var entireGet = 'index.php?'+this.callString+'x4Return=exit';
+            $a.openWindow(entireGet);
         },
 
         /**

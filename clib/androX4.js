@@ -27,7 +27,7 @@
  */
 var x4 =  {
     // Simple setting for behavior
-    fadeSpeed: 'medium',
+    fadeSpeed: 'fast',
     flagDebug: true,
     
     /*
@@ -143,8 +143,9 @@ var x4 =  {
             window.close();
         }
         else {
-            // Any non-empty returnto actually goes to menu
-            getString = '?x4Page=menu';
+            // KFD 6/28, respect returnto
+            //getString = '?x4Page=menu';
+            getString = '?x4Page='+$a.data.returnto;
             if(focus==null && $("#x4Page").length > 0 ) {
                 focus = $("#x4Page")[0].value;
             }
@@ -1015,6 +1016,9 @@ function x4GridSearch(self) {
                 this.fetch(true);
             }
             
+            // KFD 6/28/08
+            this.describeRows();
+            
             $a.byId('x4H1Top').setHTML(x4dd.dd[this.zTableId].description);
             
             // Make your entrance
@@ -1040,6 +1044,19 @@ function x4GridSearch(self) {
             this.zActivated = false;
         }
         x4.debugClose("DEACTIVATE ",this.jqId);
+    }
+    
+    self.describeRows = function() {
+        if(this.zRowCount == 0) {
+            text = 'No Records';
+            this.zParent.sendUp('rowInfo','No Records');
+        }
+        else {
+            var skey = $a.byId(this.zRowId).id.slice(6);
+            var rowNow = Number($a.aProp(this.skeys,this.zSkey,'0'))+1;
+            var text = 'Record '+rowNow+' of '+this.zRowCount;
+        }
+        this.zParent.sendUp('rowInfo',text);
     }
 
     /* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -1169,7 +1186,7 @@ function x4GridSearch(self) {
             this.value='';
             this.x_value='';
         });
-        this.sendUp('rowInfo','No Records');
+        this.describeRows();
         
         this.setButtonBar();
     }
@@ -1312,6 +1329,7 @@ function x4Detail(self) {
     self.zTableId    = self.getAttribute('xTableId');
     self.zTableIdPar = self.zParent.pullDown('zTableIdPar');
     self.zGridPane   = self.zParent.pullDown('zGridPane')
+    self.zMode       = false;
     
     // Work out if child
     if(!self.zTableIdPar) 
@@ -1344,7 +1362,6 @@ function x4Detail(self) {
         if(typeof(skey) == 'undefined') skey = this.skey;
         if(skey > 0) {
             this.fetchRow(skey);
-            this.displayRow();
         }
         if(action == 'new' || action=='copy') {
             if(action=='new')
@@ -1404,6 +1421,11 @@ function x4Detail(self) {
                 x4dd.dd[tabChild].flat[pk].auto_formula = row[pk];
             }
         }
+        
+        // If a function exists for after a row is picked
+        // run it now
+        var smfunc = 'displayRow_'+this.zTableId;
+        try { eval(smfunc+"(this)"); } catch(e) { void(0); } 
     },
     
     self.displayRow = function() {
@@ -1411,7 +1433,7 @@ function x4Detail(self) {
         var rowNow = $a.aProp(skeys,this.zGridPane.zSkey,'0')+1;
         var text = 'Record '+rowNow+' of '+this.zGridPane.zRowCount;
         $("#x4RowInfoText").html(text);
-        
+
         this.setTitle('');
         
         var row = $a.data.row;
@@ -1459,6 +1481,7 @@ function x4Detail(self) {
     },
     
     self.setMode= function(mode) {
+        this.zMode = mode;
         // Send up a request to enable/disable tabs
         if(mode=='new') {
             this.zParent.sendUp('tabBarOnlyMe',this);
@@ -1479,6 +1502,13 @@ function x4Detail(self) {
         
         // Title
         this.setTitle(mode);
+        
+        // If a function exists for setting mode for 
+        // this table, execute it
+        var smfunc = 'setMode_'+this.zTableId;
+        try { eval(smfunc+"('"+mode+"',this)"); }
+        catch(e) { // do nothing on error 
+        } 
 
         // Set the read-only and the coloring, and defaults for new
         $(this).find(":input").each( function() {
@@ -1511,15 +1541,22 @@ function x4Detail(self) {
     
     self.setTitle = function(mode) {
         if(mode=='new') {
-            var title = 'New ' + x4dd.dd[this.zTableId].singular;
+            var title = 'Add ' + x4dd.dd[this.zTableId].singular;
             this.zParent.sendUp('rowInfo','New Entry');
         }
         else {
-            var col1  = x4dd.firstPkColumn(this.zTableId);
-            var title = x4dd.dd[this.zTableId].singular 
-                + ": "+ $a.data.row[col1]; 
-            if(x4dd.pkColumnCount(this.zTableId)>1) {
-                title += '...';
+            title = false;
+            var f = 'setTitle_'+this.zTableId;
+            try { title = eval(f+"()"); }
+            catch(e) { // do nothing on error 
+            } 
+            if(!title) {
+                var col1  = x4dd.firstPkColumn(this.zTableId);
+                var title = x4dd.dd[this.zTableId].singular 
+                    + ": "+ $a.data.row[col1]; 
+                if(x4dd.pkColumnCount(this.zTableId)>1) {
+                    title += '...';
+                }
             }
         }
         $a.byId('x4H1Top').setHTML(title);
