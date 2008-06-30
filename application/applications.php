@@ -37,6 +37,7 @@ class applications extends x_table2 {
             ,array(
                "gp_page"=>"a_builder_log"
                ,"gp_out"=>"info"
+               ,'x2'=>1
                ,'txt_application'=>$app
             )
          );

@@ -61,6 +61,7 @@ function hLinkBuild($app,$caption) {
       ,array(
          "gp_page"=>"a_builder"
          ,"gp_out"=>"none"
+         ,'x2'=>1
          ,'txt_application'=>$app
       )
    );
