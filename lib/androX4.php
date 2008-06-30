@@ -14,8 +14,10 @@ class androX4 {
         
         $this->custom_construct();
     }
-    #  Placeholder, to be overridden by subclasses
+    #  Placeholders, to be overridden by subclasses
     function custom_construct() {
+    }
+    function extraScript() {
     }
     
     # ===================================================================
@@ -37,21 +39,16 @@ class androX4 {
         # If we see a "gp_pk" variable, they are requesting a certain
         # detail row.  Find out the skey and pass instructions on.
         # Notice the assumption of only a single column.
-        /*
-        if( ($gpPk = gp('gp_pk')) <> '') {
-            $pkc = $this->dd['pks'];
-            $pkv = SQLFC($gpPk);
-            $skey=SQL_OneValue('skey'
-                ,"Select skey FROM $this->table_id WHERE $pkc = $pkv"
-            );
-            x4Data('init',$skey);
-        }
-        */
         $apre = aFromGP('pre_');
         if(count($apre)>0) {
             x4Data('init',$apre);
         }
         
+        # KFD 6/25/08, if there is extra script, run it
+        ob_start();
+        $this->extraScript();
+        $extra = ob_get_clean();
+        if($extra<>'') x4Script($extra);
         
         # All top-level elements will go inside of this div 
         $x4Top = html('div');
@@ -165,7 +162,7 @@ underlined letters that show this, so:
         #
         $tabNumber = 2;
         foreach($this->dd['fk_children'] as $table_id=>$info) {
-            if(a($info,'fkdisplay','') == 'none') continue;
+            if(trim(strtolower(a($info,'uidisplay',''))) == 'none') continue;
             $tabid = 'x4TableTop_'.$table_id;
             $ddChild = ddTable($table_id);
             x4Data('dd.'.$table_id,$ddChild);
@@ -365,6 +362,14 @@ underlined letters that show this, so:
         $div->addClass('x4Detail');
         $div->setAsParent();
         
+        # KFD 6/25/08, look for a method named after the table,
+        #              if find that invoke that instead
+        $method = $dd['table_id'].'_detail';
+        if(method_exists($this,$method)) {
+            return $this->$method($dd,$div,$parentTable);
+        }
+
+        
         # create the table that will hold the inputs 
         $table = html('table',$div);
         $table->hp['class'] = 'x4detail';
@@ -537,7 +542,12 @@ underlined letters that show this, so:
             $skeys[] = $row['skey']; 
             foreach($row as $idx=>$value) {
                 if($idx=='skey') continue;
-                echo "<td>".$value;
+                if($this->dd['flat'][$idx]['type_id'] == 'dtime') {
+                    echo "<td>".date('m/d/Y h:i a',dEnsureTS($value));
+                }
+                else {
+                    echo "<td>".$value;
+                }
             }
         }
         x4Html('*MAIN*',ob_get_clean());
@@ -547,6 +557,9 @@ underlined letters that show this, so:
         
     }
     
+    # This code was moved out to SQLFilters, so it can be shared
+    # by other places.
+    /*
     function searchBrowseOneCol($type,$colname,$tcv,$exact) {
         $values=explode(',',$tcv);
         $sql_new=array();
@@ -606,6 +619,7 @@ underlined letters that show this, so:
         return $retval;
         
     }
+    */
     
     # ===================================================================
     #
@@ -644,6 +658,24 @@ underlined letters that show this, so:
             if($message<>'') {
                 x4Error($message);
                 return;
+            }
+        }
+        
+        # KFD 6/28/08, a non-empty date must be valid
+        foreach($row as $col => $value) {
+            if(!isset($this->dd['flat'][$col])) {
+                unset($row[$col]);
+                continue;
+            }
+            if($this->dd['flat'][$col]['type_id'] == 'date') {
+                if($value <> '') {
+                    if(!strtotime($value)) {
+                        x4Error("Invalid value for "
+                            .$this->dd['flat'][$col]['description']
+                        );
+                        return;
+                    }
+                }
             }
         }
         
