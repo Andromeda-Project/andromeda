@@ -21,10 +21,13 @@ function mosShowListMenu($menutype) {
       // Cachegrind cost login, cache to session: 2!!!!
       // Cachegrind cost to cache to disk       : 400!
       # KFD 4/17/08, rebuild menu if they switched modes
-      $menu_mode = gpExists('x4Page') 
-        ? (vgfGet('x4menu',false)==true ? 'x4' : 'classic')  
-        : 'classic';
+      # KFD 6/21/08, simplify this by just looking at x4Welcome
+      #$menu_mode = gpExists('x4Page') 
+      #  ? (vgfGet('x4menu',false)==true ? 'x4' : 'classic')  
+      #  : 'classic';
+      $menu_mode = configGet('x4welcome','N')=='Y' ? 'x4' : 'classic';
       vgfSet('menu_mode',$menu_mode);
+      # KFD 6/21/08 (END)
       if($menu_mode <> SessionGet('menu_mode')) {
           sessionSet('menu','');
           sessionSet('menu_mode',$menu_mode);
@@ -66,24 +69,28 @@ function mosShowListMenu($menutype) {
             $x=new joomla_fake;
             $x->type='url';
             $x->id=$page;
-            if(vgfGet('x4')===true) {
-                $pd = $pageinfo['description'];
-                $x->link="javascript:x4Page('$page','$pd')";
-            }
-            else {
+            # KFD 6/26/08, the vgfX(x4) was experimental, get rid of it
+            #if(vgfGet('x4')===true) {
+            #    $pd = $pageinfo['description'];
+            #    $x->link="javascript:x4Page('$page','$pd')";
+            #}
+            #else {
+                # KFD 6/26/08, work out the menu mode first
+                $xmode = 'x2';
                 if(sessionGet('menu_mode')=='x4') {
+                    $xmode =a($pageinfo,'uix2','N')=='Y' ? 'x2' : 'x4'; 
+                }
+                if($xmode == 'x4') {
                     $x->link='?x4Page='.urlencode($page);
-                    //if(gp('x4Return')=='menu') {
-                        $x->link.='&x4Return=menu';
-                    //}
+                    $x->link.=('&x4Return='.vgaGet('nopage','menu'));
                 }
                 else {
-                    $x->link="?x_module=$menuid&gp_page=".urlencode($page);
+                    $x->link="?x_module=$menuid&x2=1&gp_page=".urlencode($page);
                 }
                 if(ArraySafe($pageinfo,'menu_parms')<>'') {
                    $x->link.='&'.urlencode($pageinfo['menu_parms']);  
                 }
-            }
+            #}
             $x->browserNav='';
             $x->name=$pageinfo['description'];
             $children[$menuid][]=$x;
