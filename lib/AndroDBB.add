@@ -1114,6 +1114,7 @@ table permxmodules {
 //
 column menu_page         {  type_id: vchar;  colprec: 50;  colscale: 0; description: Menu Page; }
 column menu_parms  { type_id: vchar; colprec: 50; description: HTML Parameters; }
+column uix2        { type_id: char; colprec: 1; description: Force x2 mode; }
 table uimenu {
 	module: datadict;
 	description: Application Menu Items;
@@ -1121,8 +1122,9 @@ table uimenu {
 	
 	column menu_page { primary_key: Y; uisearch: Y; }
 	column description { uisearch: Y; }
-   column menu_parms  { uisearch: Y; }
-   column { uisort; }
+    column menu_parms  { uisearch: Y; }
+    column { uix2; }
+    column { uisort; }
 
 	foreign_key {  modules; uisearch: Y; }
 	column { skey; skey_quiet; _agg; }

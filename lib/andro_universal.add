@@ -255,8 +255,9 @@ column user_pwexp    { description: PW Exp; type_id: dtime; }
 
 table users { 
 	description: Application Users;
-	risimple: Y;
-	module: usermaint;
+	module: system;
+    uisort: 109;
+    group usermaint { nomenu: N; permsel: Y; permins: Y; permupd: Y; permdel: Y;}
 	
 	column user_id { primary_key: Y; uisearch: Y; }
 	column user_name { uisearch: Y; }
@@ -304,8 +305,9 @@ table users {
 //
 table usersxgroups {
 	description: User - Group Assignments;
-	module: usermaint;
+	module: system;
 	nomenu: Y;
+    group usermaint { permsel: Y;permins: Y;permupd: Y;permdel: Y;}
 	
 	foreign_key { table_id_par: users; primary_key: Y; uisearch: Y; 
 		uidisplay: mover; 
@@ -334,7 +336,7 @@ table users_pwrequests {
 table users_pwverifies {
    description: Password Change Requests;
    nomenu: Y;
-   module: usermaint;
+   module: system;
    
    group $LOGIN { permins: Y; permupd:N;permsel:N;permdel:N; }
    
@@ -351,8 +353,8 @@ table users_pwverifies {
 // Adminstration table. Emails sent
 // =================================================================
 column adm_email     { description: Email No; type_id: int; }
-column email_to      { description: TO;       type_id: char; colprec: 80; }
-column email_subject { description: SUBJECT;  type_id: char; colprec: 80; }
+column email_to      { description: TO;       type_id: char; colprec: 200; }
+column email_subject { description: SUBJECT;  type_id: char; colprec: 200; }
 column email_message { description: MESSAGE;  type_id: text; }
 table adm_emails {
 	description: Emails Sent by System;
@@ -433,9 +435,9 @@ column uisearchdash {
     description: Search Range Operator;
     flagcarry: Y;
 }
-column x4padclassic { 
+column x4welcome {
     type_id: cbool;
-    description: Put Classic link on menu bar;
+    description: Go into x4 mode after Login;
     flagcarry: N;
 }
 column x4padmenu { 
@@ -452,7 +454,8 @@ table configfw {
     
     column recnum  { primary_key: "Y"; uisearch: "Y"; }
     column { loginbefore; loginafter; smtpout; }
-    column { uisearchdash; x4padclassic; x4padmenu; }
+    column { uisearchdash; }
+    column { x4welcome; x4padmenu; }
     column { js_css_debug;  }
 }
 table configapp {
@@ -479,9 +482,9 @@ table configinst {
 table configuser {
     module: system;
     uisort: 553;
-    description: Configuration - User;
+    description: My Configuration;
     
-    group $LOGIN { permsel: "Y"; permins: "Y"; nomenu: "N" }
+    group $LOGIN { permsel: Y; permins: Y; permupd: Y;  nomenu: N; }
     
     column uid_ins {
         primary_key: "Y";
@@ -495,10 +498,13 @@ menu configconfirm {
     module: system;
     uisort: 554;
     description: Configuration Review;
+    group $LOGIN { permsel: Y; permins: Y; nomenu: N }
 }
 content configfw {
-    columns { smtpout; js_css_debug; uisearchdash; x4padclassic; x4padmenu; }
-    update { localhost; N; --; N; Y;}
+    columns { smtpout; js_css_debug; uisearchdash; 
+        x4welcome; x4padmenu; 
+    }
+    update { localhost; N; --; N; N; N; Y;}
 }
 
 

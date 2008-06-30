@@ -14,6 +14,7 @@ class instances extends x_table2 {
             ,$caption
             ,"?gp_page=instances_p"
             ."&gp_app=".urlencode(trim($this->row['application']))
+            .'&x2=1'
             .'&gp_inst='.urlencode(trim($this->row['instance']))
          )
       );
