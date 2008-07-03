@@ -43,6 +43,9 @@ class androX4 {
         if(count($apre)>0) {
             x4Data('init',$apre);
         }
+        # And also add in the mode if it has been delivered, and focus
+        if(gp('x4Mode')<>'') x4Data('x4Mode',gp('x4Mode'));
+        if(gp('x4Focus')<>'')x4Data('x4Focus',gp('x4Focus'));
         
         # KFD 6/25/08, if there is extra script, run it
         ob_start();
@@ -294,8 +297,8 @@ underlined letters that show this, so:
         #$inputs = a($options,'inputs','Y');
         $inputs='Y';
         
-        # Everything goes into this table        
-        $t =  html('table');
+        # Everything goes into this table
+        $t = html('table');
         $t->hp['id'] = 'grid_'.$table_id;
         $t->ap['xTableId'] = $table_id;
         $t->ap['xReturnAll'] = 'N';
@@ -325,6 +328,7 @@ underlined letters that show this, so:
             
             $column = trim($column);
             $hx = html('th',$th);
+            $hx->addClass('light');
             $hx->innerHtml = $colinfo['description'];
             $inpid = 'search_'.$table_id.'_'.$column;
             $hx->hp['onclick'] =
