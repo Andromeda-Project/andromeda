@@ -28,7 +28,7 @@
 var x4 =  {
     // Simple setting for behavior
     fadeSpeed: 'fast',
-    flagDebug: true,
+    flagDebug: false,
     
     /*
      * Code entry point: the server returns a page of HTML that
@@ -478,17 +478,35 @@ function x4Window(self) {
         //              passed in, put these into the search
         //              boxes, fetch 'em, and if there is only
         //              one go display it.
-        var parm1 =$a.aProp($a.data,'init',null);
+        // KFD 7/ 1/08  Further expanded to handle x4Mode, which
+        //              might be "ins" telling us to go directly
+        //              to new entry mode.
+        var parm1 =$a.p($a.data,'init',null);
+        var x4Mode=$a.p($a.data,'x4Mode','');
         var goDetail = null;  // x4TableTop checks for null, not false
         if(parm1 != null) {
-            var table = $(this).children(".x4Pane")[0].getAttribute('xTableId');
-            for(var column in parm1) {
-                $a.byId("search_"+table+"_"+column).value=parm1[column];
+            x4.debug("Have detected non-null $a.data.init");
+            // Assume first child is a table top
+            if(x4Mode=='new') {
+                x4.debug("going into new mode");
+                goDetail = 'new';
+            }
+            else {
+                x4.debug("Simulating a search");
+                var table = $(this)
+                    .children(".x4Pane")[0]
+                    .getAttribute('xTableId');
+                for(var column in parm1) {
+                    x4.debug("Default value for "+column+": "+parm1[column]);
+                    //if($a.byId("search_"+table+" "+column)) {
+                        $a.byId("search_"+table+"_"+column).value=parm1[column];
+                    //}
+                }
+                var grid  = $a.byId("grid_"+table);
+                grid.fetch();
+                if(grid.zRowCount == 1) goDetail = grid.zSkey;
             }
             
-            var grid  = $a.byId("grid_"+table);
-            grid.fetch();
-            if(grid.zRowCount == 1) goDetail = grid.zSkey;
         }
         
         // KFD 6/19/08, expanded handling of initial values,
@@ -622,7 +640,7 @@ function x4MenuBar(self) {
 
 
 /* ========================================================
- * Controller Constructor Funtion For x4TableTop
+ * Controller Constructor Function For x4TableTop
  *
  * Controller for a root object that can have 1 or more child
  * panes that have grids, details, or tab containers.
@@ -666,9 +684,11 @@ function x4TableTop(self) {
     self.activate=function(parm1) {
         x4.debugOpen("ACTIVATE ",this.jqId);
         var parm2 = null;
-        if(parm1!=null) { 
-            parm2 = parm1;
-            parm1 = 'edit';
+        if(parm1!=null) {
+            if(parm1!='new') {
+                parm2 = parm1;
+                parm1 = 'edit';
+            }
         }
         x4.debug("parm 1 and 2 "+parm1 +" "+parm2);
         this.zSKeyPar    = this.zIsChild
@@ -1154,9 +1174,9 @@ function x4GridSearch(self) {
                     this.zParent.keyPress_editRow();
                 }).mouseover( function() {
                     if(this.zParent.zRowId) {
-                        $("#"+this.zParent.zRowId).removeClass('highlight');
+                        $("#"+this.zParent.zRowId).removeClass('light');
                     }
-                    $(this).addClass('highlight');
+                    $(this).addClass('light');
                     this.zParent.zRowId = this.id;
                     this.zParent.zSkey = Number(this.id.slice(6));
                     this.zParent.zParent.zSkey = this.zParent.zSkey;
@@ -1337,6 +1357,13 @@ function x4Detail(self) {
     else 
         self.zIsChild = self.zTableId == self.zTableIdPar ? false : true;
     
+    // Put the "selected" doodad on non-readonly fields
+    $(self).find(":input").focus(function() {
+            $(this).addClass('selected');
+    }).blur(function() {
+        $(this).removeClass('selected');
+    });
+    
     /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
      * 
      * Activation Code
@@ -1472,8 +1499,18 @@ function x4Detail(self) {
                 this.value = x4dd.dd[tab].flat[col].auto_formula;
             }
             else {
-                if(window.temp) {
-                    this.value = '';
+                var init = $a.p($a.data,'init',{ });
+                var pre  = $a.p(init,col,'');
+                if(pre!='') {
+                    this.value = pre;
+                }
+                else {
+                    if(window.temp) {
+                        this.value = '';
+                    }
+                }
+                if($a.p($a.data,'x4Focus','')==col) {
+                    $(this).focus();
                 }
             }
             this.xValue = this.value;
@@ -1562,7 +1599,7 @@ function x4Detail(self) {
         $a.byId('x4H1Top').setHTML(title);
     }
     
-    self.tryToSave = function(force) {
+    self.tryToSave = function(force,silent1,silent2) {
         this.zMustSave = false;
         window.temp = this;
         window.changes = '';
@@ -1585,7 +1622,7 @@ function x4Detail(self) {
         
         if(!this.zMustSave) return true;
         
-        if(force!=true) {
+        if(force!=true && silent1==null) {
             var text ="Would you like to save changes?\n\n"+window.changes;
             if(!$a.dialogs.confirm(text)) {
                 return false;
@@ -1607,9 +1644,11 @@ function x4Detail(self) {
                 }
             }
             else {
-                $a.dialogs.alert("Changes to "
-                    +$a.byId('x4H1Top').innerHTML
-                    +" have been saved.");
+                if(silent2==null) {
+                    $a.dialogs.alert("Changes to "
+                        +$a.byId('x4H1Top').innerHTML
+                        +" have been saved.");
+                }
             }
             return true;
         }

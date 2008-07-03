@@ -1198,7 +1198,7 @@ var $a = {
             window.location = entireGet;
         },
         newWindow: function() {
-            var entireGet = 'index.php?'+this.callString+'x4Return=exit';
+            var entireGet = 'index.php?'+this.callString+'&x4Return=exit';
             $a.openWindow(entireGet);
         },
 
