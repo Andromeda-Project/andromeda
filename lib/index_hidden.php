@@ -41,7 +41,7 @@ INVENTORY OF framework gp variables:
 // >>> 
 // ==================================================================
 ini_set("allow_url_open",false);
-ini_set("error_reporting",E_ERROR);
+ini_set("error_reporting",E_ALL);
 ini_set("display_errors",true);
 ini_set("log_errors",true);
 ini_set("short_tag_open",true);
@@ -118,6 +118,7 @@ include_once('androLib.php');
 include_once('androLibDeprecated.php');
 
 
+
 // ==================================================================
 // >>> 
 // >>> Load configuration options
@@ -125,9 +126,13 @@ include_once('androLibDeprecated.php');
 // >>> Do this after the framework, so we can use it, but before
 // >>> the applib, which might override these settings
 // ==================================================================
-vgfSet( 'x4welcome', configGet('x4welcome','N')       );
-vgfSet( 'x4menu'   , configGet('x4menu'   ,'N')       );
-vgfSet( 'template' , configGet('template' ,'rt_pixel'));
+#  Rem'd by KFD 7/3/08, causing backward-compatibility issues,
+#  will restore when the entire configuration system is cleaned up
+#  for release
+#
+#vgfSet( 'x4welcome', configGet('x4welcome','N')       );
+#vgfSet( 'x4menu'   , configGet('x4menu'   ,'N')       );
+#vgfSet( 'template' , configGet('template' ,'rt_pixel'));
 
 
 // ==================================================================
@@ -155,7 +160,6 @@ if (file_exists($x)) {
 require_once('AndroPluginManager.php');
 require_once('AndroPlugin.php');
 $GLOBALS['AG']['plugins'] = new AndroPluginManager();
-
 
 // ==================================================================
 // >>> 
@@ -1246,8 +1250,11 @@ function index_hidden_page() {
 
 function index_hidden_template() {
    global $AG;
+   # KFD 7/3/08, rem'd out until we have the backward-compatibility
+   #             thing figured out for compatibility.
    # Changes by KFD 6/21/08.  An explicit vgfSet('template') overrides
    # everything.
+   /*
    if(vgfGet('template')<>'') {
        # Assign the template to spots where the legacy code will find it
        $AG['template'] = vgfGet('template');
@@ -1261,6 +1268,7 @@ function index_hidden_template() {
    }
    # From here we proceed to the original code which still 
    # functions the same way.
+   */
    
    // First conditional fix contributed by Don Organ 9/07, $AG['template']
    // was getting lost on passes 2+
