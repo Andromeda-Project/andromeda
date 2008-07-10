@@ -602,11 +602,12 @@ function DDRMake_Make($sSuffix)
 }
 
 function DDRMake_Make_Type($t,$colprec) {
-	if ($t=="numb")  { return "numeric(".$colprec.")"; }
-	if ($t=="vchar") { return "varchar(".$colprec.")"; }
-	if ($t=="char")  { return "char(".$colprec.")"; }
-	if ($t=="int")   { return "int"; }
-	if ($t=="text")  { return "text"; }	
+	if ($t=="numb")     { return "numeric(".$colprec.")"; }
+	if ($t=="vchar")    { return "varchar(".$colprec.")"; }
+	if ($t=="char")     { return "char(".$colprec.")"; }
+	if ($t=="interval") { return "interval"; }
+	if ($t=="int")      { return "int"; }
+	if ($t=="text")     { return "text"; }	
 }
 // ==========================================================
 // REGION: Reality Get
@@ -4453,6 +4454,7 @@ function SpecDDL_Triggers_Automated_Aggregate()  {
                $aexpr[]="to_char(*-*.".$colchd.",##YYYY-MM-DD##)"
                   ." || to_char(*-*.".$colchd.",##YYYY-MM-DD##)";
                break;
+            case 'interval':
             case 'int':
                $colprec = 15;
             default:
@@ -4984,6 +4986,11 @@ function TrigGen_ChainReturn($rtid,$test,$dsiz) {
          }
          return $expr;
          break;
+      case 'EXTRACTEPOCH':
+        echo( 'Donald: ' .$cret );
+        $expr="EXTRACT(epoch from new.$cret)";
+        return $expr;
+        break;
     }  
    
 	foreach ($test["_return"] as $retinfo) {
@@ -8785,6 +8792,9 @@ function SQLFORMATBLANK($type,$fortheplan=false,$doubleplan=false) {
    		case "cbool":
 			return $this->SQLFORMATLITERAL('N',$type,$fortheplan,$doubleplan);
 			break;
+		case "interval":
+		    return $this->SQLFORMATLITERAL('null',$type,$fortheplan,$doubleplan);
+		    break;
       case 'date':
       case 'dtime':
          return 'NULL';
@@ -8809,6 +8819,7 @@ function SQLFORMATLITERAL($val,$type,$fortheplan,$doubleplan=false) {
 			$retval = $q.trim($val).$q;
 			break;
 		case "int":
+		case "interval":
 		case "numb":
 		case "money":
 		case "time":
