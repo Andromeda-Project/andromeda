@@ -4987,7 +4987,6 @@ function TrigGen_ChainReturn($rtid,$test,$dsiz) {
          return $expr;
          break;
       case 'EXTRACTEPOCH':
-        echo( 'Donald: ' .$cret );
         $expr="EXTRACT(epoch from new.$cret)";
         return $expr;
         break;
