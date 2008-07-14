@@ -868,9 +868,55 @@ function  handleResponseOne(one_element,controls) {
 }
 
 // ----------------------------------------------------------------
-// 
+// String Trim stuff 
 // ----------------------------------------------------------------
+String.prototype.trim = function() {
+	return this.replace(/^\s+|\s+$/g,"");
+}
+String.prototype.ltrim = function() {
+	return this.replace(/^\s+/,"");
+}
+String.prototype.rtrim = function() {
+	return this.replace(/\s+$/,"");
+}
 
+// Taken from http://www.sourcesnippets.com/javascript-string-pad.html
+var STR_PAD_LEFT = 1;
+var STR_PAD_RIGHT = 2;
+var STR_PAD_BOTH = 3;
+ 
+String.prototype.strpad = function(str, len, pad, dir) {
+ 
+    str = String(str);
+	if (typeof(len) == "undefined") { var len = 0; }
+	if (typeof(pad) == "undefined") { var pad = ' '; }
+	if (typeof(dir) == "undefined") { var dir = STR_PAD_RIGHT; }
+ 
+	if (len + 1 >= str.length) {
+ 
+		switch (dir){
+ 
+			case STR_PAD_LEFT:
+				str = Array(len + 1 - str.length).join(pad) + str;
+			break;
+ 
+			case STR_PAD_BOTH:
+				var right = Math.ceil((padlen = len - str.length) / 2);
+				var left = padlen - right;
+				str = Array(left+1).join(pad) + str + Array(right+1).join(pad);
+			break;
+ 
+			default:
+				str = str + Array(len + 1 - str.length).join(pad);
+			break;
+ 
+		} // switch
+ 
+	}
+ 
+	return str;
+ 
+}
 
 // ----------------------------------------------------------------
 // ANDROMEDA AJAX-IFIED DROPDOWN LIST
@@ -891,6 +937,27 @@ aSelect.row      = false;
 function androSelect_onKeyUp(obj,strParms,e) {
     var kc = e.keyCode;
     if(e.ctrlKey || e.altKey) return;
+    
+    // KFD 7/11/08.
+    // Prevent popup on shift, ctrl or alt.  Specifically
+    // this is what alerted me to this.  If the user
+    // does the following:
+    //    hold down SHIFT
+    //    hit TAB
+    //    release TAB
+    //    release SHIFT -- that's when this fires, we want
+    //                   to prevent that
+    var klabel = $a.label(e);
+    if(klabel=='Shift') return;
+    if(klabel=='Alt')   return;
+    if(klabel=='Ctrl')  return;
+    
+    // KFD 7/11/08.  If user has cleared the contents of
+    //               the input, kill the box
+    if(obj.value.trim()=='') {
+        androSelect_hide();
+        return;
+    }
 
     // If TAB or ENTER, clear the box
     if(kc == 9 || kc == 13) { return true; }
@@ -1073,6 +1140,19 @@ var $a = {
      },
      returnto: '',
     
+    /*
+    * global variable system, you can "stick" variables
+    * here and "grab" them later.
+    */
+    bb: {
+        vars: { },
+        stick: function(varName,value) {
+            this.vars[varName] = value;
+        },
+        grab: function(varName,defValue) {
+            return $a.p(this.vars,varName,defValue);
+        }
+    },
     
     /*
      * Window open.  Used to allow javascript to 
@@ -1125,16 +1205,19 @@ var $a = {
      *
      */
     forms: {
-        fetch: function(table,column,value) {
+        fetch: function(table,column,value,obj) {
             $a.json.init('x4Action','fetch');
             $a.json.addParm('x4Page',table);
             $a.json.addParm('column',column);
             $a.json.addParm('value',value);
             if($a.json.execute()) {
                 $a.json.process();
-                for(var idx in $a.data.row) {
-                    var retval = $a.data.row[idx];
-                    $(":input[@xColumnId="+idx+"]")[0].value=retval;
+                for(var idx in $a.data.fetch) {
+                    var retval = $a.data.fetch[idx];
+                    var inputs = $(obj).find("[xcolumnid="+idx+"]");
+                    if(inputs.length > 0) {
+                        inputs[0].value = retval;
+                    }
                 }
             }
         }
@@ -1147,10 +1230,15 @@ var $a = {
       */
     json: {
         callString: '',
-        jdata: { },
-        data: { dd: {} },
+        jdata:      { },
+        data:       { dd: {} },
+        requests:   { },
+        x4Page:     '',
+        x4Action:   '',
         hadErrors: false,
         init: function(name,value) {
+            this.x4Page = '';
+            this.x4Action = '';
             this.callString = '';
             if(name!=null) {
                 this.addParm(name,value);
@@ -1159,6 +1247,8 @@ var $a = {
         addParm: function(name,value) {
             if(this.callString!='') this.callString+="&";
             this.callString += name + '=' + encodeURIComponent(value);
+            if(name=='x4Page')   this.x4Page = value;
+            if(name=='x4Action') this.x4Action = value;
         },
         addValue: function(name,value) {
             if(this.callString!='') this.callString+="&";
@@ -1171,6 +1261,9 @@ var $a = {
          *
          */
         inputs: function(obj) {
+            if(obj==null) {
+                obj = $a.byId('x4Top');
+            }
             $(obj).find(":input:not([@readonly])").each( function() {
                     if(this.type=='checkbox') {
                         if(this.checked) {
@@ -1208,6 +1301,9 @@ var $a = {
           *
           */
         execute: function(autoProcess) {
+            //var theDate = Math.random();
+            //console.log(theDate+" BEGIN");
+            
             this.hadErrors = false;
             if(autoProcess==null) autoProcess=false;
             
@@ -1219,6 +1315,17 @@ var $a = {
             else {
                 var http = new XMLHttpRequest();
             }
+            // KFD 7/8/08, When the user is clicking on
+            //             search boxes, they can click faster
+            //             than we can get answers, so if
+            //             we notice we are running an action
+            //             that is already in progress, we
+            //             cancel the earlier action.
+            var key = this.x4Page + this.x4Action;
+            if( typeof(this.requests[key])!='undefined') {
+                this.requests[key].abort();
+            }
+            this.requests[key] = http;
             
             // Execute the call
             var entireGet = 'index.php?json=1&'+this.callString;
@@ -1231,8 +1338,14 @@ var $a = {
             }
             catch(e) { 
                 $a.dialogs.alert("Could not process server response!");
+                x4.debug(http.responseText);
                 return false;
             }
+            
+            // KFD 7/8/08, additional housekeeping, throw away
+            //             references to the object  
+            delete this.requests[key];
+            delete http;
 
             // If there were server errors, report those
             if(this.jdata.error.length>0) {
@@ -1248,6 +1361,7 @@ var $a = {
                 this.process();
             }
             
+            //console.log(theDate+" END");
             return true;
         },
         
@@ -1257,7 +1371,13 @@ var $a = {
                     $('#'+divMain).html(this.jdata.html[x]);
                 }
                 else {
-                    $('#'+x).html(this.jdata.html[x]);
+                    var obj = $a.byId(x);
+                    if (obj.tagName =='INPUT') {
+                        obj.value = this.jdata.html[x];
+                    }
+                    else {
+                        obj.innerHTML = this.jdata.html[x];
+                    }
                 }
             }
             
