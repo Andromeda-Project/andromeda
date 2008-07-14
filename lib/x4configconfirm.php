@@ -1,18 +1,21 @@
 <?php
 class x4configconfirm extends androX4 {
     function mainLayout($container) {
+        # Erase default help message
+        vgfSet('htmlHelp','');
+
         html('h1',$container,'Configuration Review');
         
         $table = html('table',$container);
         $table->hp['id'] = 'x2data1';
         $thead = html('thead',$table);
         $tr    = html('tr',$thead);
-        html('th',$tr,'Setting');
-        html('th',$tr,'Framework');
-        html('th',$tr,'Application');
-        html('th',$tr,'Instance');
-        html('th',$tr,'User');
-        html('th',$tr,'Your Setting');
+        $tr->h('th','Setting'     ,'dark');
+        $tr->h('th','Framework'   ,'dark');
+        $tr->h('th','Application' ,'dark');
+        $tr->h('th','Instance'    ,'dark');
+        $tr->h('th','User'        ,'dark');
+        $tr->h('th','Your Setting','dark');
 
         # Include any of the files that exist        
         $dir = fsDirTop()."/dynamic/table_config";
@@ -33,10 +36,21 @@ class x4configconfirm extends androX4 {
         $dd = ddTable('configapp');
         $askip = array('recnum','skey','skey_quiet','_agg','uid_ins');
         $tbody = html('tbody',$table);
+        $flipper = 0;
         foreach($dd['flat'] as $column_id=>$colinfo) {
             if(in_array($column_id,$askip)) continue;
             
             $tr = html('tr',$tbody);
+            if($flipper>2) {
+                $tr->addClass('lightgray');
+            }
+            else {
+                if($flipper<>2) {
+                    $tr->addClass('lightgraybottom');
+                }
+            }
+            $flipper+=1;
+            if($flipper==6) $flipper=0;
             html('td',$tr,$colinfo['description']);
             
             # The four levels from files

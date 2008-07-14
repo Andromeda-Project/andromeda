@@ -4,7 +4,9 @@ class x4configinst extends androX4 {
     # Area 1: 
     # =================================================================
     function mainLayout($container) {
-        $this->mainScript();
+        # Erase default help message
+        vgfSet('htmlHelp','');
+
         $top = $container;
         
         # Pull the values
@@ -21,10 +23,10 @@ class x4configinst extends androX4 {
         $table->hp['id'] = 'x2data1';
         $thead = html('thead',$table);
         $tr    = html('tr',$thead);
-        $td    = html('th',$tr,'Setting');
-        $td    = html('th',$tr,'Instance Value');
-        $td    = html('th',$tr,'Default Value');
-        $td    = html('th',$tr,'&nbsp;');
+        $tr->h('th','Setting'       ,'dark');
+        $tr->h('th','Default Value' ,'dark');
+        $tr->h('th','&nbsp;'        ,'dark');
+        $tr->h('th','Instance Value','dark');
         
         # Now put out inputs for each one
         $tbody = html('tbody',$table);
@@ -35,19 +37,7 @@ class x4configinst extends androX4 {
             $tr->hp['id'] = 'tr_'.$column_id;
             $tr->SetAsParent();
             $td = html('td',$tr,$colinfo['description']);
-            
-            # the input
-            $input = input($colinfo);
-            if($colinfo['type_id']=='text') 
-                $input->setHTML($row[$column_id]);
-            else
-                $input->hp['value'] = $row[$column_id];
-            $input->hp['onchange'] = 'instaSave(this)';
-            $input->hp['id'] = 'inp_'.$column_id;
-            $input->ap['skey'] = $row['skey'];
-            $td = html('td',$tr);
-            $td->addChild($input);
-            
+
             # The default value
             $td = html('td',$tr
                 ,ConfigGet($column_id,'*null*',array('user','inst'))
@@ -58,6 +48,24 @@ class x4configinst extends androX4 {
             $td = html('td',$tr);
             $button = html('a-void',$td,'Use Default');
             $button->hp['onclick'] = "makeDefault('$column_id')";
+            
+            # the input
+            $input = input($colinfo);
+            $input->hp['id'] = 'inp_'.$column_id;
+            if($colinfo['type_id']=='text') 
+                $input->setHTML($row[$column_id]);
+            else {
+                $input->hp['value'] = $row[$column_id];
+                x4Script(
+                    '$a.byId("'.$input->hp['id'].'").value="'
+                    .$row[$column_id].'"'
+                );
+            }
+            $input->hp['onchange'] = 'instaSave(this)';
+            $input->ap['skey'] = $row['skey'];
+            $td = html('td',$tr);
+            $td->addChild($input);
+            
         }
     }
     
@@ -67,8 +75,7 @@ class x4configinst extends androX4 {
     # library routines.  The class x4configuser calls the
     # same routines
     # =================================================================
-    function mainScript() {
-        ob_start();
+    function extraScript() {
         ?>
         <script>
         window.instaSave = function(obj) {
@@ -97,7 +104,6 @@ class x4configinst extends androX4 {
         }
         </script>
         <?php
-        x4Script(ob_get_clean());
     }
     
     function instaSave() {
