@@ -177,11 +177,21 @@ underlined letters that show this, so:
             $tabx->hp['id'] = $tabid;
             $tabx->ap['xTableId'] = $table_id;
             $tabx->setAsParent();
-            
-            # Add into it the grid and the detail
-            $tabx->addChild( $this->grid($ddChild,$this->table_id) );
-            $tabx->addChild( $this->detailPane($ddChild,$this->table_id) );
-            
+
+
+            # KFD 7/8/08, look for a "mover" box, and do an
+            #             alternate setup
+            $table_id = $this->dd['table_id'];
+            $uidisplay = $ddChild['fk_parents'][$table_id]['uidisplay'];
+            if(trim($uidisplay)=='mover') {
+                $tabx->addChild($this->mover($ddChild,$table_id));
+            }
+            else {
+                # Add into it the grid and the detail
+                $tabx->addChild( $this->grid($ddChild,$this->table_id) );
+                $tabx->addChild( $this->detailPane($ddChild,$this->table_id) );
+            }
+                
             # Make the tab entry
             $span=html('a-void',$tabB,$tabNumber.': '.$ddChild['description']);
             $span->hp['xAction']='Ctrl'.$tabNumber;
@@ -200,19 +210,14 @@ underlined letters that show this, so:
         $menuBar = html('div');
         $menuBar->addClass('x4MenuBar');
         $menuBar->addClass('x4Div');
-        //$menuBar->hp['style']='float:left';
         $id = 'x4MenuBar';
         $menuBar->hp['id'] = $id;
         $menuBar->setAsParent();
         
-        $mbTab=html('table',$menuBar);
-        $mbTab->addClass('tab100');
-        $mbr  =html('tr',$mbTab);
-        $mbl  =html('td',$mbr);
-        $mbr  =html('td',$mbr);
-        $mbr->hp['style'] = 'text-align: right';
-        //$mbr = &$menuBar;
-        //$mbl = &$menuBar;
+        $mbl = $menuBar->h('div');
+        $mbl->hp['style'] = 'float:left;';
+        $mbr = $menuBar->h('div');
+        $mbr->hp['style'] = 'float:right;';
         
         $a = html('a-void',$mbl,'<u>A</u>dd '.$dd['singular']);
         $a->hp['onclick']="x4.parent(this).keyPress(this.getAttribute('xAction'))";
@@ -328,7 +333,7 @@ underlined letters that show this, so:
             
             $column = trim($column);
             $hx = html('th',$th);
-            $hx->addClass('light');
+            $hx->addClass('dark');
             $hx->innerHtml = $colinfo['description'];
             $inpid = 'search_'.$table_id.'_'.$column;
             $hx->hp['onclick'] =
@@ -362,8 +367,7 @@ underlined letters that show this, so:
         $div = html('div');
         $div->hp['id'] = 'detail_'.$dd['table_id'];
         $div->ap['xTableId'] = $dd['table_id'];
-        $div->addClass('x4Pane');
-        $div->addClass('x4Detail');
+        $div->addClass('x4Pane x4Detail');
         $div->setAsParent();
         
         # KFD 6/25/08, look for a method named after the table,
@@ -372,7 +376,6 @@ underlined letters that show this, so:
         if(method_exists($this,$method)) {
             return $this->$method($dd,$div,$parentTable);
         }
-
         
         # create the table that will hold the inputs 
         $table = html('table',$div);
@@ -382,6 +385,7 @@ underlined letters that show this, so:
         $trx   = html('tr',$table);
         $tdx   = html('td',$trx);
         $table = html('table',$tdx);
+        $table->addClass('x4Detail');
         $tabLoop = array();
         $colcount   = 0;
         $colbreak   = a($dd,'colbreak',17);
@@ -396,11 +400,11 @@ underlined letters that show this, so:
             $tr = html('tr',$table);
             $td = html('td',$tr);
             $td->setHtml($colinfo['description']);
-            $td->hp['class'] = 'x4caption';
+            $td->hp['class'] = 'x4Caption';
             
             // The input
             $td = html('td',$tr);
-            $td->hp['class'] = 'x4input';
+            $td->hp['class'] = 'x4Input';
             $input = input($colinfo,$tabLoop
                 ,array('parentTable'=>$parentTable)
             );
@@ -427,7 +431,110 @@ underlined letters that show this, so:
         inputsTabLoop($tabLoop,array('xParentId'=>$div->hp['id']));
         return $div;
     }
+    # ===================================================================
+    #
+    # Major Area 5: A mover box 
+    #
+    # ===================================================================
+    function mover($dd,$parentTable) {
+        $div = html('div');
+        $div->addClass('x4Pane x4Mover');
+        $div->hp['id'] = 'x4Mover_'.$dd['table_id'];
+        $div->ap['xTableId'] = $dd['table_id'];
+        $div->setAsParent();
+        $div->br();
+        $div->h('p','There is no need to click [SAVE] on this page'
+            .', all changes take effect immediately.');
 
+        # Make a note of the left-side parent table pk
+        $col2 = $dd['fk_parents'][$parentTable]['cols_par'];
+        $div->ap['xPk'] = $col2;
+        
+        
+        # Locate the "other" parent, that is what
+        # we are cross-referencing to
+        $tables = array_keys($dd['fk_parents']);
+        unset($tables[$parentTable]);
+        $parentTable = array_pop($tables);
+        
+        # Retrieve the info
+        $colPar = $dd['fk_parents'][$parentTable]['cols_par'];
+        $div->ap['xRetCol'] = $colPar;
+        $vpar   = ddView($parentTable);
+        $sq     = "SELECT $colPar,description
+                   FROM $vpar par
+                  ORDER BY par.description";
+        $rows   = SQL_AllRows($sq);
+            
+        # Build an HTML table that displays the security settings
+        $table = $div->h('table');
+        $thd = $table->h('thead');
+        $tr  = $thd->h('tr');
+        $tr->h('th','Assigned','dark');
+        $tr->h('th','Description','dark');
+        $tr->h('th','Code','dark');
+        
+        # now the body
+        $tbody = $table->h('tbody');
+        foreach($rows as $row) {
+            $tr = $tbody->h('tr');
+            $td = $tr->td();
+            $input = html('input');
+            $input->hp['type']    = 'checkbox';
+            $input->hp['id'] = 'check_'.$row[$colPar];
+            $input->hp['onclick']='x4.parent(this).clickCheck(this)';
+            $input->hp['xcol1'] = $colPar;
+            $input->hp['xvar1'] = $row[$colPar];
+            $input->hp['xcol2'] = $col2;
+            $input->hp['xTableId'] = $dd['table_id'];
+            $td->addChild($input);
+            $tr->h('td',$row['description']);
+            $tr->h('td',$row[$colPar]);
+        }
+            
+        return $div;
+    }
+    
+    # ----------------------------------
+    # Server-side companions
+    # ----------------------------------
+    function moverFetch() {
+        $table=$this->dd['table_id'];
+        $pkcol = gp('pkcol');
+        $pkval = gp('pkval');
+        # We're doing this here instead of using SQLFC, because
+        # SQLFC will go to upper-case if the ALLCAPS option is
+        # on, and we don't have a mechanism to stop that for
+        # user_id values.
+        $pkval = str_replace("'","''",$pkval);
+        $retcol= gp('retcol');
+        $sq = "select $retcol as x from $table where $pkcol = '$pkval'";
+        x4Debug($sq);
+        $rows = sql_allRows($sq);
+        $moverFetch = array();
+        foreach($rows as $row) {
+            $moverFetch[] = $row['x'];
+        }
+        x4Data('moverFetch',$moverFetch);
+    }
+    function moverSS() {
+        $checked = gp('checked')=='Y' ? true : false;
+        $col1 = gp('col1');
+        $var1 = gp('var1');
+        $col2 = gp('col2');
+        $var2 = gp('var2');
+        $table= $this->dd['table_id'];
+        
+        # Either a delete or an insert
+        $row = array($col1=>$var1,$col2=>$var2);
+        if($checked) {
+            SQLX_Insert($table,$row);
+        }
+        else {
+            SQLX_Delete($table,$row);
+        }
+    }
+    
     
     # ===================================================================
     #
@@ -442,12 +549,6 @@ underlined letters that show this, so:
     function browseFetch() {
         #  This is the list of columns to return 
         $acols = explode(',',$this->dd['projections']['_uisearch']);
-        # KFD 6/12/08, respect columns removed for security
-        # KFD 6/18/08, moved into ddtable where it belongs
-        #foreach($acols as $idx=>$value) {
-        #    if(!isset($this->dd['flat'][$value])) unset($acols[$idx]);
-        #}
-
 
         #  By default the search criteria come from the 
         #  variables, unless it is a child table search
@@ -473,10 +574,8 @@ underlined letters that show this, so:
             //$tcv  = trim($colvalue);
             $tcv = $colvalue;
             $type = $colinfo['type_id'];
-            #if($type=='dtime' || $type=='date') {
-            #    $tcv=dEnsureTS($tcv);
-            #}
             if ($tcv != "") {
+                x4Debug("using $tcv for $column_id");
                 // trap for a % sign in non-string
                 $xwhere = sqlFilter($this->flat[$column_id],$tcv);
                 if($xwhere<>'') $awhere[] = "($xwhere)";
@@ -484,13 +583,16 @@ underlined letters that show this, so:
         }
         
         # <----- RETURN
-        if(count($awhere) == 0) return;
+        if(count($awhere) == 0) { x4Debug("returning"); return; }
 
         #  Build the Order by
         #        
         $ascDesc = gp('sortAD')=='ASC' ? ' ASC' : ' DESC';
         $aorder = array();
         $searchsort = trim(a($this->dd,'uisearchsort',''));
+        if(gpExists('sortAD')) {
+            $aorder[] = gp('sortCol').' '.gp('sortAD');
+        }
         if($searchsort <> '') {
             $aocols = explode(",",$searchsort);
             foreach($aocols as $pmcol) {
@@ -503,16 +605,16 @@ underlined letters that show this, so:
                     $aorder[] = $column_id.' DESC';
                 }
             }
-            $SQLOrder = " ORDER BY ".implode(',',$aorder)." Limit 20";
+            $SQLOrder = " ORDER BY ".implode(',',$aorder)." Limit 100";
         }
         else {
             # KFD 6/18/08, new routine that works out sort 
             $aorder = sqlOrderBy($vals);
             if(count($aorder)==0) {
-                $SQLOrder = " LIMIT 20";
+                $SQLOrder = " LIMIT 100";
             }
             else {
-                $SQLOrder = " ORDER BY ".implode(',',$aorder)." Limit 20";
+                $SQLOrder = " ORDER BY ".implode(',',$aorder)." Limit 100";
             }
         }
         
@@ -526,7 +628,6 @@ underlined letters that show this, so:
         }
         
         // Build the where and limit
-        $SLimit = ' LIMIT 20';
         $SWhere = ' WHERE '.implode(' AND ',$awhere);
 
         // Retrieve data
@@ -536,7 +637,11 @@ underlined letters that show this, so:
              .$SQLOrder;
         $answer =SQL_AllRows($SQL);
         x4Debug($SQL);
+        
+        x4Data('browseFetch',$answer);
+        return;
 
+        /*
         // Format as HTML
         ob_start();
         $skeys = array();
@@ -558,6 +663,7 @@ underlined letters that show this, so:
         $skeys = array_flip($skeys);  // want to go by skey, not index
         x4Data('skeys',$skeys);
         x4Data('rowCount',count($skeys));
+        */
         
     }
     
@@ -752,8 +858,7 @@ underlined letters that show this, so:
         $colsc= array();
         $colsp= array();
         foreach($collist as $idx=>$info) {
-            $colcs[] = $info['column_id'];
-            $colsp[] = $info['column_id_par'];
+            $colsp[] = $info['column_id_par'].' as '.$info['column_id'];
         }
         $type_id = $this->dd['flat'][$column_id]['type_id'];
         $value   = SQL_Format($type_id,gp('value'));
@@ -761,7 +866,7 @@ underlined letters that show this, so:
             ."  FROM ".ddTable_idResolve($table_id_fko)
             ." WHERE ".$this->dd['fk_parents'][$table_id_fko]['cols_par']."= $value";
         $answer = SQL_OneRow($sql);
-        x4Data('row',$answer);
+        x4Data('fetch',$answer);
     }    
 }
 ?>
