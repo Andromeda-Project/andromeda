@@ -6904,7 +6904,7 @@ function HTML_Format($t,$v) {
             if($v=='') return '';
             $v=strtotime($v);
          }
-         return date('m/d/Y h:m:s',$v);
+         return date('m/d/Y h:i:s',$v);
 			//if ($v=="") return "";
 			//else return HTML_TIMESTAMP($v);
 			break;
@@ -7107,7 +7107,7 @@ function HTML_UnixTimestamp($val) {
 	return date('Y-m-d h:i:s A',$val);
 }
 
-function HTML_TIMESTAMP($date) {	return date("d-M-Y h:m:s a",$date); }
+function HTML_TIMESTAMP($date) {	return date("d-M-Y h:i:s a",$date); }
 
 function hTime($time) { return html_time($time); }
 function HTML_TIME($time) {
@@ -9924,7 +9924,7 @@ function jsValuesOne($ahcols,$colname,$ahcol,$name,$row,$h) {
     }
     elseif($ahcol['type_id']=='dtime') {
         if(trim($colvalue)<>'') {
-            $colvalue=date('m/d/Y - h:m A',dEnsureTS($colvalue));
+            $colvalue=date('m/d/Y h:i A',dEnsureTS($colvalue));
         }
     }
     if($ahcol['formshort']=='char' ||
