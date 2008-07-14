@@ -131,6 +131,8 @@ class x_builder {
         // Big new thing, 2/6/08, build scripts
         //
         $retval = $retval && $this->BuildScripts();
+        // build scripts may alter configs, so write them out last
+        $retval = $retval && $this->CodeGenerate_config();
         
         $this->DB_Close();
         $this->LogClose($retval,$ts);
@@ -1879,7 +1881,21 @@ function specFlatten_Config() {
         $acolslist[] = $colrow['column_id'];
     }
     $colslist = implode(',',$acolslist);
-    
+
+    # The table configapp_extra, if it exists, will have 
+    # all of its columns copied to configapp.  This is how we
+    # allow an application to expand this table.  
+    $this->LogEntry("  -> Copying configapp_extra (if present) to configapp");
+    $this->SQL("
+         INSERT INTO zdd.tabflat (table_id,$colslist)
+         SELECT 'configapp',$colslist
+           FROM zdd.tabflat
+          WHERE table_id = 'configapp_extra'
+            AND not exists (select skey from zdd.tabflat x
+                            WHERE x.table_id = 'configapp'
+                              AND x.column_id= zdd.tabflat.column_id)"
+    );
+
     #  Define the sql
     $sq="INSERT INTO zdd.tabflat (table_id,$colslist)
          SELECT '*TABLEDEST*',$colslist
@@ -1908,19 +1924,6 @@ function specFlatten_Config() {
         $this->SQL($sql);
     }
     
-    # The table configapp_extra, if it exists, will have 
-    # all of its columns copied to configapp.  This is how we
-    # allow an application to expand this table.  
-    $this->LogEntry("  -> Copying configapp_extra (if present) to configapp");
-    $this->SQL("
-         INSERT INTO zdd.tabflat (table_id,$colslist)
-         SELECT 'configapp',$colslist
-           FROM zdd.tabflat
-          WHERE table_id = 'configapp_extra'
-            AND not exists (select skey from zdd.tabflat x
-                            WHERE x.table_id = 'configapp'
-                              AND x.column_id= zdd.tabflat.column_id)"
-    );
     
     return true;
 }
@@ -7274,35 +7277,7 @@ function ContentLoad() {
 
     # Now run the load
 	$this->DBB_LoadContent(false,$this->content,"","");
-
-    
-    # Finally, write out the two config tables
-    # DUPLICATE CODE: THIS CODE IS DUPLICATE IN ANDROLIB.PHP
-    #                 IN ROUTINE CONFIGWRITE()
-    global $parm;
-    $alist = array('configfw','configapp');
-    $nocols = array('_agg','skey','skey_quiet','recnum');
-    foreach($alist as $table_id) {
-        $this->LogEntry("Writing out table_$table_id.php");
-        $text ="<?php\n\$$table_id = array("; 
-        $data = $this->SQLReadRows("Select * from $table_id");
-        $data = $data[0];  // grab first row 
-        $docomma=false;
-        foreach($data as $column_id=>$value) {
-            if(in_array($column_id,$nocols)) continue;
-            if(is_null($value)) $value='*null*';
-            $text.="\n    ";
-            if($docomma) $text.=",";
-            $docomma = true;
-            $text.="'$column_id'=>'$value'";
-        }
-        $text.="\n);\n?>";
-        file_put_contents(
-            $parm["DIR_PUB"]."/dynamic/table_$table_id.php"
-            ,$text
-        );
-    }
-	return true;
+    return true;
 }
 
 
@@ -8718,6 +8693,39 @@ function checkSuccess($script) {
     
 }
 
+// ==========================================================
+// Database Access Routines
+// ==========================================================
+function codeGenerate_Config() {
+    $this->LogStage("Writing out Configuration Files");
+    # Finally, write out the two config tables
+    # DUPLICATE CODE: THIS CODE IS DUPLICATE IN ANDROLIB.PHP
+    #                 IN ROUTINE CONFIGWRITE()
+    global $parm;
+    $alist = array('configfw','configapp','configinst');
+    $nocols = array('_agg','skey','skey_quiet','recnum');
+    foreach($alist as $table_id) {
+        $this->LogEntry("Writing out table_$table_id.php");
+        $text ="<?php\n\$$table_id = array("; 
+        $data = $this->SQLReadRows("Select * from $table_id");
+        $data = $data[0];  // grab first row 
+        $docomma=false;
+        foreach($data as $column_id=>$value) {
+            if(in_array($column_id,$nocols)) continue;
+            if(is_null($value)) $value='*null*';
+            $text.="\n    ";
+            if($docomma) $text.=",";
+            $docomma = true;
+            $text.="'$column_id'=>'$value'";
+        }
+        $text.="\n);\n?>";
+        file_put_contents(
+            $parm["DIR_PUB"]."/dynamic/table_$table_id.php"
+            ,$text
+        );
+    }
+	return true;
+}
 
 // ==========================================================
 // Database Access Routines
