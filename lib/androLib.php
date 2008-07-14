@@ -384,6 +384,21 @@ function DispatchObject($gp_page) {
 // KFD X4
 
 /**
+* Compute a width by examining the size cookie.  Assumes the
+* baseline is 1024, and returns a string of the form "999px"
+* that is scaled up or down based.
+*
+* @param number size in 1024x768 mode
+*/
+function hSizepx($x1024) {
+    $app  = $GLOBALS['AG']['application'];
+    $size = a($_REQUEST,$app."_size",'1024');
+    $final = intval(($x1024 * $size)/1024);
+    return $final.'px';
+}
+
+
+/**
 * Creates HTML element objects.  This is used to prevent the mixing
 * of HTML and PHP in code.  Clean and organized way to create HTML.
 *
@@ -670,15 +685,28 @@ class androHtml {
     */
     function TbodyRows($rows,$options=array()) {
         $rowIdPrefix='row_';
+        $stripe = $stripe1 = $stripe2 = $stripe3 = 0;
+        if(a($options,'stripe',0)>0) {
+            $stripe1 = $options['stripe'];
+            $stripe2 = $stripe1 - 1;
+            $stripe3 = $stripe1 * 2;
+        }
         $stripe = a($options,'stripeCss')=='' ? 0 : 1;
         $tbody = html('tbody',$this);
         foreach($rows as $index=>$row) {
             $tr = html('tr',$tbody);
             $tr->hp['id'] = $rowIdPrefix.($index+1);
-            # flip the striping variable
-            $stripe*=-1;
-            if($stripe==1) {
-                $tr->addClass($options['stripeCss']);  
+            
+            if($stripe1 > 0) {
+                $i = $index % $stripe3;
+                if($i > $stripe2) {
+                    $tr->addClass('lightgray');
+                }
+                else {
+                    if($i < $stripe2) {
+                        $tr->addClass('lightgraybottom');
+                    }
+                }
             }
             
             foreach($row as $colname=>$colvalue) {
@@ -904,22 +932,22 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
     if($type_id=='gender') {
         $input = html('select');
         $option = html('option',$input);  // this is a blank option
-        $option = html('option',$input);
+        $option = html('option',$input,'M');
         $option->hp['value']='M';
-        $option->innerHTML = 'M';
-        $option = html('option',$input);
+        $option = html('option',$input,'F');
         $option->hp['value']='F';
-        $option->innerHTML = 'F';
+        $option = html('option',$input,'U');
+        $option->hp['value']='U';
+        $option = html('option',$input,'H');
+        $option->hp['value']='H';
     }
     elseif($type_id=='cbool') {
         $input = html('select');
         $option = html('option',$input);  // this is a blank option
-        $option = html('option',$input);
+        $option = html('option',$input,'Y');
         $option->hp['value']='Y';
-        $option->setHtml('Y');
-        $option = html('option',$input);
+        $option = html('option',$input,'N');
         $option->hp['value']='N';
-        $option->setHtml('N');
     }
     elseif($type_id=='text' || $type_id=='mime-h') {
         $input = html('textarea');
@@ -955,29 +983,13 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
                 $input->hp['onblur'] = 'androSelect_hide()';
             }
         }
-        /*
-        if($ddfko['fkdisplay']=='' && $xRoIns<>'Y') {
-            $input = html('select');
-            $rows = rowsForSelect($colinfo['table_id_fko']);
-            $x = '';
-            foreach($rows as $idx=>$row) {
-                $x .="<option value='".$row['_value']."'>"
-                    .$row['_display']."</option>";
-                if($idx > 100) break;
-            }
-            $input->setHtml($x);
+        
+        # Give it a class that jQuery will recognize
+        if( a($options,'noinfo','N')=='N') {
+            $input->addClass('x4Info');
         }
-        else {
-            $input = html('input');
-            if($ddfko['fkdisplay']<>'none') {
-                $fkparms='gp_dropdown='.$colinfo['table_id_fko'];
-                $input->hp['onkeyup']  ="androSelect_onKeyUp(  this,'$fkparms',event)";
-                $input->hp['onkeydown']='androSelect_onKeyDown(event)';
-            }
-        }
-        */
-        /* KFD 5/28/08, experimental, done */
-
+        $input->ap['xTableIdPar'] = $colinfo['table_id_fko'];
+        
         // If any columns are supposed to fetch from here,
         // set an event to go to server looking for fetches
         //
@@ -987,7 +999,7 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
             if(isset($tabdd['FETCHDIST'][$fetchdist])) {
                 $input->hp['onchange']
                     ="\$a.forms.fetch("
-                    ."'$table_id','$column_id',this.value"
+                    ."'$table_id','$column_id',this.value,x4.parent(this)"
                     .")";
             }
         }
@@ -1021,6 +1033,15 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
         );
         $input->hp['maxlength'] = a($colinfo,'dispsize',10);
     }
+    
+    # Add classes that jquery recognizes to
+    # extend out the stuff
+    if($type_id=='time') {
+        $input->addClass('x4Time');
+    }
+    if($type_id=='date') {
+        $input->hp['onkeyup'] = 'x4.stdlib.inputKeyUpDate(event,this)';
+    }
 
     # Establish identifying stuff
     $input->ap['xTableId']  = $table_id;
@@ -1049,10 +1070,6 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
     # Set text alignment
     if($formshort=='numb' || $type_id=='int') {
         $input->style['text-align'] = 'right';
-    }
-
-    if($type_id=='date') {
-        $input->addClass('jqdate');
     }
 
     # These are universal properties that were passed in
@@ -1115,13 +1132,24 @@ function projection($dd,$projection,&$tabLoop,$options=array()) {
     # Lay out the projection as a table and return it
     $table = html('table');
     $table->addClass('x4Detail');
+    $uiwithnext = 'N';
+    $td = false;
     foreach($columns as $column) {
-        $tr = $table->h('tr');
-        $tr->h('td',$dd['flat'][$column]['description'],'x4Caption');
-        
         $input = input($dd['flat'][$column],$tabLoop,$options);
-        $td = $tr->h('td','','x4Input');
-        $td->addChild($input);
+        if($uiwithnext == 'Y') {
+            $td->nbsp(2);
+            $td->h('span',$dd['flat'][$column]['description']);
+            $td->nbsp();
+            $td->addChild($input);
+        }
+        else {
+            $tr = $table->h('tr');
+            $tr->h('td',$dd['flat'][$column]['description'],'x4Caption');
+            
+            $td = $tr->h('td','','x4Input');
+            $td->addChild($input);
+        }
+        $uiwithnext = a($dd['flat'][$column],'uiwithnext','N');
     }
     return $table;
 }
@@ -1166,10 +1194,13 @@ function inputsTabLoop(&$tabLoop,$options=array()) {
 * Adds keyboard input if parameter $input has an additional
 * attribute xTypeId equal to date.
 *
+* REM'D BY KFD and moved up to main input() function 7/8/08
+*
 * @category HTML Rendering
 * @param androHtml $input	input to add keyboard input
 */
 function inputFixupByType($input) {
+    return $input;
     if($input->ap['xTypeId'] == 'date') {
         $input->hp['onkeyup']
             ='return x4.stdlib.inputKeyUpDate(event,this)';
@@ -1244,6 +1275,8 @@ function configGet($var,$default='',$skip=array()) {
             include($file);
         }
     }
+    
+    #hprint_r($configinst);
     
     # a special case is the user prefs, look for users's file
     $uid = SessionGet("UID");
@@ -1406,7 +1439,7 @@ function SQL_FORMAT($t,$v,$clip=0) {
     case "gender":
         if($clip>0 && strlen($v) > $clip) $v = substr($v,0,$clip);
         // KFD 9/10/07, one of the doctors wants all caps
-        if(OptionGet('ALLCAPS')=='Y') {
+        if(configGet('ALLCAPS')=='Y') {
             $v= strtoupper($v);
         }
         return "'".SQL_ESCAPE_STRING($v)."'";
@@ -1479,11 +1512,17 @@ function SQL_FORMAT($t,$v,$clip=0) {
          else { return SQL_ESCAPE_STRING(trim($v)); }
 		case "rtime":
 		case "time":
-			// Originally we were making users type this in, and here we tried
-			// to convert it.  Now we use time drop-downs, which are nifty because
-			// the display times while having values of numbers, so we don't need
-			// this in some cases.
-			//if (strpos($v,":")===false) {	return $v; }
+			# KFD 7/8/08, if they returned a jquery time, 
+            # convert it to minutes since midnight
+            if(strpos($v,'M')!==false) {
+                list($time,$ampm) = explode(" ",$v);
+                list($hours,$mins)= explode(":",$time);
+                if($ampm=='PM' && $hours<>12) $hours+=12;
+                return "'".((($hours-1)*60)+$mins)."'";
+            }
+            else {
+                return "'$v'";
+            }
          if($v=='') return 'null';
          return $v;
 			//$arr = explode(":",$v);
@@ -1527,7 +1566,21 @@ function SQLFD($value) { return SQL_Format('date',$value); }
 */
 function SQLFDT($value) { return SQL_Format('dtime',$value); }
 
-
+/**
+* Generate a WHERE clause for a single column given its 
+* type and the search value.  Generates index-optimized 
+* WHERE clauses to replace LIKE where possible, respects
+* commas to do lists, and double-dashes to do ranges.
+* Respects the partial date values of m/d, m/yyyy, and
+* yyyy.
+*
+* @category SQL Geneation
+* @param array  $colinfo  The data dictionary column information
+* @param string $tcv string version of the value
+* @param string $table (optional) 
+* @return string the where clause surrounded by parentheses,
+*                as in (colname = 'value')
+*/
 function sqlFilter($colinfo,$tcv,$table = '') {
     $type_id  = $colinfo['type_id'];
     $column_id= $colinfo['column_id'];
@@ -1561,6 +1614,9 @@ function sqlFilter($colinfo,$tcv,$table = '') {
         case 'char':
         case 'vchar':
         case 'text': 
+        case 'ph12':
+        case 'ssn':
+        case 'cbool':
             if(substr($tcv,0,1)=='>' || substr($tcv,0,1)=='<') {
                 $tcv = str_replace('%','',$tcv);
                 if(strlen($tcv)>1) {
@@ -1612,14 +1668,29 @@ function sqlFilter($colinfo,$tcv,$table = '') {
                     $new = "$c between $sbeg and $send";
                 }
             }
-            elseif( strpos($tcv,'%')!==false) {
-                # user has requested wildcard, must do like
-                # Wildcards not supported, we cannot format them correctly
-                #$sval = SQLFD(trim($tcv));
-                #$new = "$column_id LIKE $sval";
-            }
             else {
-                if(strtotime($tcv)) {
+                $pieces = explode('/',$tcv);
+                if(count($pieces) == 1) {
+                    if(strlen($pieces[0])==4) {
+                        $new = "EXTRACT(YEAR FROM $c::timestamp)="
+                            .SQLFN($pieces[0]);
+                    }
+                }
+                else if(count($pieces)==2) {
+                    if(strlen($pieces[1])==4) {
+                        $new = "EXTRACT(MONTH FROM $c::timestamp)="
+                            .SQLFN($pieces[0])
+                            ." AND EXTRACT(YEAR FROM $c::timestamp)="
+                            .SQLFN($pieces[1]);
+                    }
+                    else if(strlen($pieces[1])<3 && strlen($pieces[1])>0) {
+                        $new = "EXTRACT(MONTH FROM $c::timestamp)="
+                            .SQLFN($pieces[0])
+                            ." AND EXTRACT(DAY FROM $c::timestamp)="
+                            .SQLFN($pieces[1]);
+                    }
+                }
+                else if(strtotime($tcv)) {
                     $tcv = str_replace('%','',$tcv);
                     $tcv = SQLFD($tcv);
                     $new = "$c = $tcv";
@@ -1964,9 +2035,9 @@ function fwModuleMenuRight() {
         }
     }
     ?>
-    <ul>
+    <ul class='right'>
         <?=$extra?>
-        <li><a href='?st2logout=1'>Logout</a></li>
+        <li><a href='?st2logout=1'>Logout <?=SessionGet('UID')?></a></li>
     </ul>
     <?php
     return false;
@@ -10977,7 +11048,7 @@ function characterData($parser, $data) {
 function cssInclude($file,$force_immediate=false) {
     // This program echos out immediately if not in debug
     // mode, otherwise they all get output as one
-    if(OptionGet('JS_CSS_DEBUG','Y')=='Y' || $force_immediate) {
+    if(configGet('js_css_debug','Y')=='Y' || $force_immediate) {
         ?>
         <link rel='stylesheet' href='/<?=tmpPathInsert().$file?>' />
         <?php
@@ -11005,7 +11076,9 @@ function cssOutput() {
         $string = '';
         foreach($css as $cssone) {
             $string.="\n/* FILE: $cssone */\n";
-            $string.=file_get_contents( fsDirTop().$cssone );
+            if(file_exists(fsDirTop().$cssone)) {
+                $string.=file_get_contents( fsDirTop().$cssone );
+            }
         }
         file_put_contents($file,$string);
     }
@@ -11051,7 +11124,7 @@ function jsOutput() {
 
     // Loop through each file and either add it to list of
     // files to minify or output it directly
-    $debug = trim(OptionGet('JS_CSS_DEBUG','Y'));
+    $debug = trim(ConfigGet('js_css_debug','N'));
     foreach($ajs as $js) {
         if($debug=='N') {
             $aj[] = $js['file'];
@@ -12225,15 +12298,22 @@ function RowsForSelect($table_id,$firstletters='',$matches=array(),$distinct='',
    if($firstletters=='*') {
        // do nothing, no where clauses
    }
+   
    elseif($firstletters<>'') {
       $SLimit="Limit 40 ";
       if(strpos($firstletters,',')===false) {
          // original code, search all columns
          $implode=' OR ';
          foreach($aproj as $aproj1) {
+             $type_id = $table['flat'][$aproj1]['type_id'];
+             $subs = '';
+             if(!in_array($type_id,array('char','vchar','text'))) {
+                 $subs='::varchar';
+             }
+             
             $sl=strlen($firstletters);
             $xWhere[]
-               ="SUBSTRING(LOWER($aproj1) FROM 1 FOR $sl)"
+            ="SUBSTRING(LOWER($aproj1$subs) FROM 1 FOR $sl)"
                ."=".strtolower(SQLFC($firstletters));
          }
       }
@@ -12243,9 +12323,15 @@ function RowsForSelect($table_id,$firstletters='',$matches=array(),$distinct='',
          $implode=' AND ';
          $afl = explode(',',$firstletters);
          foreach($afl as $x=>$fl) {
-            $sl = strlen($fl);
+             $type_id = $table['flat'][$aproj1]['type_id'];
+             $subs = '';
+             if(!in_array($type_id,array('char','vchar','text'))) {
+                 $subs='::varchar';
+             }
+
+             $sl = strlen($fl);
             $xWhere[]
-               ="SUBSTRING(LOWER({$aproj[$x+1]}) FROM 1 FOR $sl)"
+            ="SUBSTRING(LOWER({$aproj[$x+1]}$subs) FROM 1 FOR $sl)"
                ."=".strtolower(SQLFC($fl));
          }
       }
@@ -12285,7 +12371,7 @@ function RowsForSelect($table_id,$firstletters='',$matches=array(),$distinct='',
    syslog(LOG_INFO,$sq);
    closelog();
    */
-   //echo 'echo|'.$sq;
+   syslog(LOG_INFO,$sq);
    $rows=SQL_Allrows($sq);
    return $rows;
 }
