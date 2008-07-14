@@ -126,13 +126,11 @@ include_once('androLibDeprecated.php');
 // >>> Do this after the framework, so we can use it, but before
 // >>> the applib, which might override these settings
 // ==================================================================
-#  Rem'd by KFD 7/3/08, causing backward-compatibility issues,
-#  will restore when the entire configuration system is cleaned up
-#  for release
+#  KFD 7/3/08, Final form here is to pull these two, but not
+#              template, that belongs below in index_hidden_template
 #
-#vgfSet( 'x4welcome', configGet('x4welcome','N')       );
-#vgfSet( 'x4menu'   , configGet('x4menu'   ,'N')       );
-#vgfSet( 'template' , configGet('template' ,'rt_pixel'));
+vgfSet( 'x4welcome', configGet('x4welcome','N')       );
+vgfSet( 'x4menu'   , configGet('x4menu'   ,'N')       );
 
 
 // ==================================================================
@@ -598,6 +596,8 @@ function index_hidden_command() {
       }
    }
    
+   $x4 = configGet('x4welcome','N')=='Y' ? true : false;
+   
    // Can't figure it, have to leave  
    if(!isset($table_id)) {
       vgfSet('command_error','Unknown: '.$table_frag);
@@ -606,8 +606,14 @@ function index_hidden_command() {
 
    // Now decide what to do.
    if($dotcmd=='new'                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         ) {
-      gpSet('gp_mode','ins');
-      gpSet('gp_page',$table_id);
+      if($x4) {
+          gpSet('x4Page',$table_id);
+          gpSet('x4Mode','new');
+      }
+      else {
+          gpSet('gp_mode','ins');
+          gpSet('gp_page',$table_id);
+      }
    }
    else if ($dotcmd<>'') {
       vgfSet('command_error','Unknown Command: '.$table_frag.'.'.$dotcmd);
@@ -619,6 +625,7 @@ function index_hidden_command() {
          // No arguments means go to lookup mode
          gpSet('gp_mode','search');
          gpSet('gp_page' ,$table_id);
+         if($x4) gpSet('x4Page',$table_id);
       }
       else {
          // Clear prior search results
@@ -639,8 +646,17 @@ function index_hidden_command() {
                gpSet('x2t_'.$colname,$args[$i]);
             }
          }
+         
+          if($x4) {
+              gpSet('x4Page',$table_id);
+             foreach($cols as $i=>$colname) {
+                if(isset($args[$i])) {
+                   gpSet('pre_'.$colname,$args[$i]);
+                }
+             }
+          }
       }
-   }
+   }   
 }
 
 // ------------------------------------------------------------------
@@ -1250,25 +1266,12 @@ function index_hidden_page() {
 
 function index_hidden_template() {
    global $AG;
-   # KFD 7/3/08, rem'd out until we have the backward-compatibility
-   #             thing figured out for compatibility.
-   # Changes by KFD 6/21/08.  An explicit vgfSet('template') overrides
-   # everything.
-   /*
+   # KFD 7/3/08.  Have the vgfGet() value override anything else
+   #
    if(vgfGet('template')<>'') {
        # Assign the template to spots where the legacy code will find it
        $AG['template'] = vgfGet('template');
    }
-   else {
-       # After a hardcoded setting, use the configuration system
-       # to find a default template
-       if(($ctemplate = ConfigGet('template'))<>'') {
-           $AG['template'] = $ctemplate;
-       }
-   }
-   # From here we proceed to the original code which still 
-   # functions the same way.
-   */
    
    // First conditional fix contributed by Don Organ 9/07, $AG['template']
    // was getting lost on passes 2+
