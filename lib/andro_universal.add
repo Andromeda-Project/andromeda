@@ -17,7 +17,7 @@
 // along with Andromeda; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // ---------------------------------------------------------
-// This is an Andromeda Specification.
+// This is an Andromeda Specificat ion.
 //
 // This is a specification that is included in all projects;
 // to give some information that is universally helpful.
@@ -171,18 +171,18 @@ column email { description: Email Address; type_id: vchar; colprec: 50; }
 column name  { description: Full Name;     type_id: vchar; colprec: 40; }
 column name_ { description: Name Part;     type_id: vchar; colprec: 25; }
 column mi    { description: Middle Initial;type_id: char;  colprec: 1;  }
-column nam1st{ description: First Name   ; type_id: vchar; colprec: 20; }
-column namlst{ description: Last Name    ; type_id: vchar; colprec: 20; }
+column nam1st{ description: First        ; type_id: vchar; colprec: 20; }
+column namlst{ description: Last         ; type_id: vchar; colprec: 20; }
 column first_name{ description: First Name   ; type_id: vchar; colprec: 25; }
 column last_name { description: Last Name    ; type_id: vchar; colprec: 25; }
 column add   { description: Address      ; type_id: vchar; colprec: 40; }
-column add1  { description: Address 1    ; type_id: vchar; colprec: 40; }
+column add1  { description: Address     ; type_id: vchar; colprec: 40; }
 column add2  { description: Address 2    ; type_id: vchar; colprec: 40; }
-column city  { description: City         ; type_id: vchar; colprec: 22; uiwithnext: Y; }
+column city  { description: City         ; type_id: vchar; colprec: 22; }
 column state { description: State/Province  ; type_id: char;  colprec: 5;  }
 column zip9  { description: Zip+4        ; type_id: char; colprec: 10; }
-column _dob  { description: Date of Birth; type_id: date; prefix_table_name: Y; }
-column dob   { description: Date of Birth; type_id: date; }
+column _dob  { description: Birthdate; type_id: date; prefix_table_name: Y; }
+column dob   { description: Birthdate; type_id: date; }
 column dod   { description: Date of Death; type_id: date; }
 
 //  These column definitions are computer related
@@ -453,7 +453,12 @@ table configfw {
     group $LOGIN { permsel: "Y"; nomenu: "Y"; }
     
     column recnum  { primary_key: "Y"; uisearch: "Y"; }
-    column { loginbefore; loginafter; smtpout; }
+    column { loginbefore; loginafter; }
+    column notes {
+        suffix: footer;
+        description: Page Footer Text;
+    }
+    column { smtpout; }
     column { uisearchdash; }
     column { x4welcome; x4padmenu; }
     column { js_css_debug;  }
@@ -498,7 +503,7 @@ menu configconfirm {
     module: system;
     uisort: 554;
     description: Configuration Review;
-    group $LOGIN { permsel: Y; permins: Y; nomenu: N }
+    group $LOGIN { permsel: Y; permins: Y; nomenu: N; }
 }
 content configfw {
     columns { smtpout; js_css_debug; uisearchdash; 
