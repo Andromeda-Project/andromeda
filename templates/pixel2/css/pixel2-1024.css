@@ -1,0 +1,157 @@
+/* -------------------------------------------------------------- *\
+   -------------------------------------------------------------- 
+   STRUCTURAL ELEMENTS: SIZES,
+   INCLUDING BORDERS, MARGINS
+   AND PADDING
+   -------------------------------------------------------------- 
+\* -------------------------------------------------------------- */
+div.template {
+    width: 990px;
+}
+
+div.sizepicker {
+    left: 720px;
+    top: -56px;
+    height: 16px;
+}
+div.colorpicker {
+    left: 867px;
+    top: -70px;
+    height: 16px;
+}
+div.colorpicker span {
+    width: 18px;
+}
+
+table.template {
+    width: 100%;
+    height: 552px;
+}
+.templateleft {
+    width: 220px;
+}
+div.template {
+    border-width: 0px 6px 6px 6px;
+}
+
+.templateheader,
+.templatemain,
+.templateleft,
+.templatefooter
+{
+    border-width: 6px 6px 0 6px;
+    padding: 3px 6px;
+}
+.style1,.style2 {
+    border-width: 6px;
+    padding: 3px 6px;
+}
+
+
+.templatemenu,.templateshortcuts {
+    border-width: 6px 6px 0 6px;
+    padding: 0px;
+}
+
+/* Button bar and tab bar */
+.x4MenuBar {
+    margin-bottom: 8px;
+    height: 30px;
+}
+.x4TabBar {
+    margin-top: 16px;
+    margin-bottom: 8px;
+    margin-left: 3px;
+    border-bottom-width: 4px;
+}
+.x4MenuBar a, .x4TabBar a {
+    border-width: 2px;
+    border-style: solid;
+    padding: 3px 6px;
+}
+
+
+
+/* -------------------------------------------------------------- *\
+   -------------------------------------------------------------- 
+   DEFAULT FONTS AND SIZES, spacing of
+   lines and other such stuff.
+   -------------------------------------------------------------- 
+\* -------------------------------------------------------------- */
+body, table, div, input, select, textarea {
+    font-size: 13px;
+}
+
+h1,h2,h3,h4 {
+    margin-bottom: 7px; margin-top: 7px;
+}
+
+/* -------------------------------------------------------------- *\
+   -------------------------------------------------------------- 
+   STRUCTURE OF THE MENU SYSTEM AND SHORTCUTS
+   -------------------------------------------------------------- 
+\* -------------------------------------------------------------- */
+.templatemenu,.templateshortcuts {
+    height: 22px;
+    border-width: 6px 6px 0 6px;
+}
+.templateshortcuts {
+    overflow: hidden;
+    padding-top: 2px;
+    padding-left: 10px;
+}
+
+
+.templatemenu span,.templatemenu a { 
+    height:22px;
+    line-height:22px;
+}
+.templatemenu li { 
+    background:transparent none repeat scroll 0%;
+    float:left;
+    height:22px;
+    padding:0pt;
+}
+ul.dropdown {
+    top: 23px;
+    width: 225px;
+}
+ul.dropdown li  {
+    width:225px;
+}
+/* -------------------------------------------------------------- *\
+   -------------------------------------------------------------- 
+   COMMON SETTINGS FOR GRIDS
+   -------------------------------------------------------------- 
+\* -------------------------------------------------------------- */
+table.grid td,table.grid th {
+    padding: 2px 5px;
+}
+
+/* -------------------------------------------------------------- *\
+   -------------------------------------------------------------- 
+   THE POPUP SYSTEM
+   -------------------------------------------------------------- 
+\* -------------------------------------------------------------- */
+.idiv2 {
+     position: absolute;
+          top: 90px;
+         left: 100px;
+       height: 475px;
+        width: 880px;
+}
+.idiv2content {
+    height: 375px;
+}
+
+/* -------------------------------------------------------------- *\
+   -------------------------------------------------------------- 
+   RELATED TO INPUTS
+   -------------------------------------------------------------- 
+\* -------------------------------------------------------------- */
+.x4Caption {
+    padding-top: 1px;
+}
+input,select,textarea {
+    padding-left: 1px;
+}

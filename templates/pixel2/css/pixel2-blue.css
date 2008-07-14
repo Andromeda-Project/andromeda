@@ -1,0 +1,46 @@
+/* -------------------------------------------------------------- *\
+   -------------------------------------------------------------- 
+   COLORS
+   
+   Go by the menu to get colors.  
+   Menu border is     DARK  PRIMARY
+   Menu background is LIGHT PRIMARY
+   -------------------------------------------------------------- 
+\* -------------------------------------------------------------- */
+
+
+/* menus */ 
+div.templatemenu,div.templatemenu  ul {
+    background-color: #488DD3;
+    border-color: #3F7CB9;
+    color: white;
+}
+div.templatemenu ul li span.selected {
+    background-color: #3F7CB9;
+}
+div.templatemenu ul li {
+    /* DARK PRIMARY */
+    border-bottom:1px solid #3F7CB9;
+}
+.templatemenu span, .templatemenu a {
+    border-right:1px solid #3F7CB9;
+}
+.templatemenu ul.right li a {
+    border-left:1px solid #3F7CB9;
+    border-right-width: 0px;
+}
+
+
+
+a { color: #3F7CB9; }
+div.templatemenu ul li a {
+    color: white;
+}
+
+.dark {
+    background-color: #488DD3;
+}
+.light {
+    background-color: #B4CCE7;
+}
+

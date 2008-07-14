@@ -1,0 +1,379 @@
+/* -------------------------------------------------------------- *\
+   -------------------------------------------------------------- 
+   BASIC UNIVERSAL STUFF
+   -------------------------------------------------------------- 
+\* -------------------------------------------------------------- */
+body,html {
+    height: 100%;
+    width: 100%;  
+    padding: 0px;
+    margin: 0px;
+    z-index: 1;
+}
+
+/* These are relative sizes, so they go in the universal */
+
+h1 { font-size: 135%; line-height: 135%; }
+h2 { font-size: 125%; line-height: 125%; }
+h3 { font-size: 115%; line-height: 115%; }
+h4 { font-size: 110%; line-height: 110%; }
+
+h1 {
+    margin-top: 0px;
+}
+
+
+/* -------------------------------------------------------------- *\
+   -------------------------------------------------------------- 
+   HIDDEN AND INVISIBLE ELEMENTS
+   -------------------------------------------------------------- 
+\* -------------------------------------------------------------- */
+div.x4Pane, table.x4Pane {
+    display: none;
+}
+
+/* -------------------------------------------------------------- *\
+   -------------------------------------------------------------- 
+   LINK BEHAVIOR
+   -------------------------------------------------------------- 
+\* -------------------------------------------------------------- */
+a { text-decoration: none; }
+
+/* -------------------------------------------------------------- *\
+   -------------------------------------------------------------- 
+   POSITIONING
+   -------------------------------------------------------------- 
+\* -------------------------------------------------------------- */
+.tab100 { width: 100%; }
+
+
+/* -------------------------------------------------------------- *\
+   -------------------------------------------------------------- 
+   ALL INPUTS PROPERTIES EXCEPT COLOR & SIZE
+   -------------------------------------------------------------- 
+\* -------------------------------------------------------------- */
+.x4Caption {
+    text-align: right;
+    padding: 0 4px 0 0;
+}
+.x4Input {
+    text-align: left;
+    padding: 0;
+}
+.x4Detail {
+    border-spacing: 0;
+}
+
+
+/* -------------------------------------------------------------- *\
+   -------------------------------------------------------------- 
+   STRUCTURAL ELEMENTS: positioning
+   some universal sizes as well
+   -------------------------------------------------------------- 
+\* -------------------------------------------------------------- */
+
+/* header and footer are same for all sizes */
+div.templateheader {
+    height: 70px;
+    padding: 0px;
+}
+div.templateheader-top {
+    height: 20px;
+}
+div.templateheader-top img {
+    margin-top: 8px;
+    margin-left: 24px;
+}
+.templatefooter {
+    height: 18px;
+    padding: 6px;
+}
+
+
+div.sizepicker {
+    position: relative;
+    overflow: hidden;
+}
+div.colorpicker {
+    position: relative;
+    overflow: hidden;
+}
+
+table.template td {
+    vertical-align: top;
+}
+
+div.template {
+    border-style: solid;
+    margin: 0px;
+}
+
+.templatefooter {
+    text-align: center;
+}
+
+
+table.template {
+    border-spacing: 0px;
+}
+div.template {
+    border-style: solid;
+    margin: 0px;
+}
+
+.templateheader,
+.templatemain,
+.templateleft,
+.templatefooter,
+.templateshortcuts,
+.style1
+{
+    border-style: solid;
+    margin: 0px;
+}
+
+.templatemenu {
+    border-style: solid;
+}
+
+/* A trick here is to make this 100px high and overflow hidden,
+   so it will expand to fill its container
+*/
+.templatemessage {
+              float: right; 
+              color: red;
+        font-weight: bolder; 
+              color: red;
+            padding-top: 3px;
+             height: 100px;
+           overflow: hidden;
+    text-decoration: blink;
+   background-color: black;
+         margin-top: -2px;
+    
+}
+
+/* -------------------------------------------------------------- *\
+   -------------------------------------------------------------- 
+   DEFAULT FONTS AND SIZES, spacing of
+   lines and other such stuff.
+   -------------------------------------------------------------- 
+\* -------------------------------------------------------------- */
+body, table, div {
+    font-family: Verdana, Helvetica, Arial, sans;
+}
+
+h1,h2,h3,h4 {
+    margin-bottom: 10px; margin-top: 0px;
+}
+
+/* -------------------------------------------------------------- *\
+   -------------------------------------------------------------- 
+   STRUCTURE OF THE MENU SYSTEM
+   -------------------------------------------------------------- 
+\* -------------------------------------------------------------- */
+.templatemenu ul {
+    margin:0pt;
+    padding:0pt;
+    float:left;
+    list-style-image:none;
+    list-style-position:outside;
+    list-style-type:none;
+}
+.templatemenu ul.right {
+    float: right;
+}
+
+.templatemenu ul li {
+    position:relative;
+}
+.templatemenu li { 
+    background:transparent none repeat scroll 0%;
+    float:left;
+    padding:0pt;
+}
+.templatemenu span,.templatemenu a { 
+    cursor:pointer;
+    display:block;
+    float:left;
+    font-weight:normal;
+    overflow:hidden;
+    padding:0pt 15px;
+    text-decoration:none;
+    border-style: solid;
+    border-width: 0 1px 0 0;
+}
+ul.dropdown {
+    border-width:0pt;
+    font-weight:normal;
+    height:auto;
+    margin:0pt;
+    padding:0pt;
+    position:absolute;
+}
+ul.dropdown li  {
+    float:left;
+    padding:0pt;
+    position:relative;
+}
+ul.dropdown li a {
+    background:transparent none repeat scroll 0%;
+    display:block;
+    text-decoration:none;
+    text-transform:none;
+    width:100%;
+    font-weight:normal;
+    padding:0pt;
+    text-indent:15px;
+    color:#FFFFFF;
+    border:0pt none;
+}
+
+/* -------------------------------------------------------------- *\
+   -------------------------------------------------------------- 
+   THE POPUP SYSTEM
+   -------------------------------------------------------------- 
+\* -------------------------------------------------------------- */
+/* used to cover the screen */
+.idiv1 {
+         position: absolute;
+              top: 0px;
+             left: 0px;
+           height: 100%;
+            width: 100%;
+          opacity: 0;
+ background-color: black;
+          z-index: 9000;
+          display: none;
+}
+/* Actual content goes here */
+.idiv2 {
+         position: absolute;
+ background-color: white;
+           border: 3px solid blue;
+          z-index: 9001;
+          display: none;
+}
+
+
+/* -------------------------------------------------------------- *\
+   -------------------------------------------------------------- 
+   UNIVERSAL COLORS
+   these are shades of gray
+   other colors are in pixel2-<color>.css
+   -------------------------------------------------------------- 
+\* -------------------------------------------------------------- */
+
+/* the main colors */
+a.cp_blue   {  background-color: #488DD3;  }
+a.cp_orange {  background-color: #D96726;  }
+a.cp_green  {  background-color: #81A432;  }
+a.cp_red    {  background-color: #B43616;  }
+a.cp_gs     {  background-color: black;    }
+
+body, table {
+    color: #333333;
+}
+h1, h2, h3, h4 {
+    color: #000000;
+}
+
+div.sizepicker a { color: black; }
+
+body {
+    background-color:  #666666;
+}
+div.template {
+    border-color: #5A5A5A;
+}
+
+/* shortcuts */
+div.templateshortcuts {
+    color: #3A393E;
+    background:#D8DCE3 none repeat scroll 0% 0%;
+    border-color:#BEC1C7; 
+}
+
+
+div.templateheader {
+    background-color: #D8DCE3;
+    border-color: #BEC1C7;
+}
+div.templateheader-top {
+    background-color: #BEC1C7;
+}
+
+/* The dark gray elements from rt_pixel */
+.templateleft, .style2, .x4MenuBar a, .x4TabBar a {
+    background-color: #E9EEF5;
+}
+
+.x4MenuBar a.disabled, .x4TabBar a.disabled {
+    color: gray;
+    cursor: default;
+    border-color: #E9EEF5;
+}
+.x4TabBar a.selected ,a.tabSelected {
+    background-color: #FFF;
+}
+
+/* Things in the main area are light */
+.templatemain,.style1  {
+    border-color: #E0E0E0;
+    background-color: #FFFFFF;
+}
+
+/* Inputs take the colors from light, plus some unique colors */
+/* that are common to all skins                               */
+input,select,textarea {
+    border-color: #E0E0E0;
+    background-color: #E0E0E0;
+}
+input,select,textarea {
+    border-width: 1px;
+    border-style: solid;
+}
+.x4inputReadOnly {
+    background-color: #C0C0C0;
+    border-color: #C0C0C0;
+}
+.x4Insert {
+    background-color: #EFED7D;
+    border-color: #EFED7D;
+}
+input.selected,select.selected,textarea.selected {
+    background-color: white;
+    border-color: gray;
+}
+
+
+.templatefooter {
+    border-color: #A3A8AF;
+    background-color: #BABFC7;
+}
+
+/* highlight classes */
+.dark {
+    color: white;
+    font-weight: bolder;
+}
+.lightgray {
+    background-color: #EEEEEE;
+}
+.lightgraybottom td {
+    border-bottom: 1px solid #EEEEEE;
+}
+.darkgray {
+    background-color: #C0C0C0;
+}
+
+/* The error box */
+div.errorbox {
+    border: 3px solid red;
+    padding: 5px;
+    margin: 5px;
+    background-color: #FFA0A0;
+    font-weight: bolder;
+    text-align: center;
+}
+
