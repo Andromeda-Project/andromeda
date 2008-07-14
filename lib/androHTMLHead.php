@@ -11,12 +11,15 @@ jsInclude('clib/jquery-1.2.3.js','JQuery is distributed under the GPL
 jsInclude('clib/androLib.js');
 
 
-// The x2 css file is loaded 
-cssInclude('templates/'.$mainframe->getTemplate().'/css/x2.css');
+// The x2 css file is loaded, unless there is an x4 page
+if(gp('x4Page')=='' && gp('gp_page')<>'') {
+    cssInclude('templates/'.$mainframe->getTemplate().'/css/x2.css');
+}
 // ..and this (misnamed) holds info for dynamic select
 cssInclude('clib/raxlib.css');
 
-# Flexigrid 
+# Flexigrid.  We may end up abandoning this, it seems simpler just
+# to make a tbody with a fixed height and overflow-y: scroll
 if(gpExists('x4Page')) {
     jsInclude('clib/webtoolkit.jscrollable.js','Scrollable table is
         available at www.webtoolkit.info');
@@ -32,9 +35,18 @@ if(gpExists('x4Page')) {
     #jsInclude('clib/androX4Grid.js');
 }
 
-// Try out the ui.datepicker for JQuery
-cssInclude('clib/ui.datepicker.css');
-jsInclude('clib/ui.datepicker.js');
+# Scrolling - not used at the moment.  I put it in experimentally
+#             for scrollable tables, but am not happy with those yet
+#sInclude('clib/jquery.scrollTo.js');
+
+// Time entry
+cssInclude('clib/jquery.timeentry.css');
+jsInclude('clib/jquery.timeentry.js');
+// Date entry with their over-engineered downloads
+
+# EXPERIMENTAL: Date Manipulation
+#jsInclude('clib/jquery.dates.js');
+
 
 // Another jquery add-on: key  navigation 
 //jsInclude('clib/keynav.js');
