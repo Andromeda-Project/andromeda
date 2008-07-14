@@ -32,8 +32,8 @@ var x4 =  {
     
     /*
      * Code entry point: the server returns a page of HTML that
-     * invokes this function, so browsertab execution
-     * begins here.
+     * invokes this function.  This function does all 
+     * browser-side initialization.
      *
      */
     main: function() {
@@ -46,9 +46,11 @@ var x4 =  {
         // Do things to the document
         this.mainDocument();
         
-        // Find the top object, and begin recursing it
+        // Find the top object
         window.rootObj = $a.byId('x4Top');
-        this.initRecurse(window.rootObj);
+        
+        // Initialize the objects 
+        this.mainInit(window.rootObj);
         
         // The top object is a container only.  The activation
         // system begins with the first child we can find.
@@ -59,20 +61,6 @@ var x4 =  {
         if($(window.rootObj).children('.x4Pane,.x4Div').length > 0) {
             $(window.rootObj).children('.x4Pane,.x4Div')[0].activate();
         }
-    },
-    
-    help: function() {
-        var idiv1 = $a.byId('idiv1');
-        idiv1.style.opacity = 0;
-        idiv1.style.display = 'block';
-        $("#idiv1").animate({opacity:.5},'fast',null,function() {
-                $("#idiv2").fadeIn('medium');
-        });
-    },
-    helpClear: function() {
-        $("#idiv2").fadeOut('medium',function() {
-                $("#idiv1").fadeOut('medium');
-        })
     },
     
     /*
@@ -130,35 +118,9 @@ var x4 =  {
             }
         }        
     },
-    
-    /*
-     * Return function attempts to go back to menu
-     *
-     */
-    returnToMenu: function(focus) {
-        if($a.aProp($a.data,'returnto','')=='') {
-            window.location="index.php";
-        }
-        else if($a.aProp($a.data,'returnto','')=='exit') {
-            window.close();
-        }
-        else {
-            // KFD 6/28, respect returnto
-            //getString = '?x4Page=menu';
-            getString = '?x4Page='+$a.data.returnto;
-            if(focus==null && $("#x4Page").length > 0 ) {
-                focus = $("#x4Page")[0].value;
-            }
-            if(focus!=null) {
-                getString += '&x4Focus='+focus
-            }
-            window.location=getString;
-        }
-    },
-    
 
     /*
-     * x4.initRecurse
+     * x4.mainInit
      *
      * Makes two significant actions.
      *
@@ -169,8 +131,32 @@ var x4 =  {
      * for special-purpose constructors.
      *
      */
-    initRecurse: function(obj) {
-        $(obj).children(".x4Div,.x4Pane").each( function() {
+    mainInit: function(obj) {
+        // First initialize the h1 object
+        $('h1#x4H1Top').each( function() {
+                h1(this);
+        });
+        
+        // Globally initialize all time entry objects
+        if(typeof(window.TIME_INC)=='undefined') {
+            window.TIME_INC = 15;
+        }
+        objParms = { ampmPrefix: ' ', timeSteps: [1, window.TIME_INC ,1] }
+        $('.x4Time').timeEntry(objParms);
+        
+        // Put "info" links next to all foreign keys
+        $('.x4Info:not([xNoInfo=Y])').each(
+            function() {
+                var link = "x4.info('"+this.id+"')";
+                link = '<a href="javascript:'+link+'">Info</a>';
+                $(this).after('&nbsp;'+link);
+            }
+        );
+        
+        // Now do all other objects
+        $('.x4Div,.x4Pane').each(function() {
+        //(obj).find('.x4Div,.x4Pane').each( function() {
+            x4.debug("INITIALIZING: "+this.id); 
             /*
              * Create default event handler that attempts to
              * pass the buck up the chain.  Individual
@@ -228,23 +214,63 @@ var x4 =  {
             for(var x in classes) {
                 var oneClass = classes[x];
                 if(oneClass=='x4Pane') continue;
+                if(oneClass=='x4Div')  continue;
+                x4.debug(" Looking for constructor: "+oneClass);
                 var constructor = false;
                 // This attempts to find a constructor
                 try {
                     constructor = eval(oneClass);
                 }
-                catch(e) { 
+                catch(e) {
                     // do nothing on error 
                 }
                 if(constructor) {
+                    x4.debug(" Constructor Found");
                     this.zType = oneClass; 
                     constructor(this);
                 }
             }
-           
-            /* And of course, do the sub-panes as well */
-            x4.initRecurse(this);
         });
+    },
+    
+    
+    /*
+     * Return function attempts to go back to menu
+     *
+     */
+    returnToMenu: function(focus) {
+        if($a.aProp($a.data,'returnto','')=='') {
+            window.location="index.php";
+        }
+        else if($a.aProp($a.data,'returnto','')=='exit') {
+            window.close();
+        }
+        else {
+            // KFD 6/28, respect returnto
+            //getString = '?x4Page=menu';
+            getString = '?x4Page='+$a.data.returnto;
+            if(focus==null && $("#x4Page").length > 0 ) {
+                focus = $("#x4Page")[0].value;
+            }
+            if(focus!=null) {
+                getString += '&x4Focus='+focus
+            }
+            window.location=getString;
+        }
+    },
+    
+    help: function() {
+        var idiv1 = $a.byId('idiv1');
+        idiv1.style.opacity = 0;
+        idiv1.style.display = 'block';
+        $("#idiv1").animate({opacity:.5},'fast',null,function() {
+                $("#idiv2").fadeIn('medium');
+        });
+    },
+    helpClear: function() {
+        $("#idiv2").fadeOut('medium',function() {
+                $("#idiv1").fadeOut('medium');
+        })
     },
     
     /*
@@ -341,10 +367,36 @@ var x4 =  {
             else {
                 $(obj).find(":input:not([@readonly]):first").focus();
             }
-        }
-
+        },
     },
     
+
+    /* FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+     * 
+     * Formatting 
+     *
+     * FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+     */
+    format: {
+        time: function(minutes) {
+            var hours = Math.round(minutes / 60);
+            var ampm = 'AM';
+            if(hours > 12) {
+                hours-=12;
+                var ampm ='PM';
+            }
+            else if(hours == 12) {
+                var ampm = 'PM';
+            }
+            var mins  = minutes % 60;
+            hours = String.prototype.strpad(hours,2,'0',STR_PAD_LEFT);
+            mins  = String.prototype.strpad(mins ,2,'0',STR_PAD_LEFT);
+            return hours + ":" + mins + ' ' + ampm;                
+        }
+    },
+            
+            
+
     /* UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU
      * 
      * Utilties
@@ -362,6 +414,21 @@ var x4 =  {
         $a.json.inputs();
     },
 
+    info: function(inputId) {
+        var obj = $a.byId(inputId);
+        var table  = $a.p(obj,'xTableIdPar' );
+        var column = $a.p(obj,'xColumnId');
+        var value  = obj.value;
+        if (value!="") {
+            var href="?x4Page="+table+"&x4Return=exit&pre_"+column+"="+value;
+            window.open(href);
+        }
+        else {
+            $a.dialogs.alert("Please select a value first!");
+        }
+    },
+    
+    
     /*
      * Find an objects parent.  Shortcut.
      *
@@ -406,6 +473,62 @@ var x4 =  {
     }
 }
 
+/**
+*
+*  The x4 event listener and dispatcher.  Any item can register itself as
+*  listening for an event.  Any other event can dispatch events.  The 
+*  events object is a sub-object of the master x4 object.
+*
+*/
+x4.events = {
+    subscribers: { },
+    
+    /**
+    * Objects subscribe to events by calling x4.events.subscribe() with
+    * the name of the event and a back reference to themselves.
+    *
+    */
+    subscribe: function(eventName,object) {
+        // First determine if we have any listeners for this
+        // event at all.  If not, make up the empty object
+        if( $a.p(this.subscribers,eventName,null)==null) {
+            this.subscribers[eventName] = { };
+        }
+        var subs = this.subscribers[eventName];
+        
+        // Assign the listener by its ID.  This lets us prevent duplication
+        // if the object is confused and registers itself twice.
+        //
+        var id = object.id;
+        if( $a.p(subs,id,null)==null ) {
+            subs[id] = object;
+        }
+    },
+    
+    /**
+    * An object that fires an event will call x4.events.notify with the
+    * name of the event and a single argument.  If multiple arguments are
+    * required, they should be put into an array or object 
+    * that the receiving objects must understand.
+    *
+    */
+    notify: function(eventName,arguments) {
+        // Find out if anybody is listening for this event
+        var subscribers = $a.p(this.subscribers,eventName,{ });
+        
+        for(var id in subscribers) {
+            var subscriber = subscribers[id];
+            x4.debug(
+                "Dispatching event "+eventName+" to "+id+" with arguments:"
+            );
+            x4.debug(arguments);
+            subscriber.notify(eventName,arguments);
+        }
+    }
+}
+
+
+
 /* =====================================================
  * Data dictionary static object
  *
@@ -430,6 +553,41 @@ var x4dd = {
 }
 
 /* ========================================================
+ * Controller Constructor Funtion For H1 Element
+ *
+ * ========================================================
+ */
+function h1(self) {
+    // Subscribe to events aimed at h1
+    x4.events.subscribe('h1_saveStem' ,self);
+    x4.events.subscribe('h1_clearStem',self);
+    x4.events.subscribe('h1_setHtml'  ,self);
+    self.zStem = '';
+    
+    self.notify = function(eventName,parms) {
+        if(eventName=='h1_saveStem') {
+            this.zStem = this.innerHTML;
+            x4.debug("Saving h1 stem: "+this.zStem);
+        }
+        if(eventName=='h1_clearStem') {
+            this.innerHTML = this.zStem;
+            this.zStem = '';
+            x4.debug("Clearing h1 stem");
+        }
+        if(eventName=='h1_setHtml') {
+            if(this.zStem == '') {
+                this.innerHTML = parms;
+            }
+            else {
+                this.innerHTML = this.zStem + ", " + parms;
+            }
+            x4.debug("Changing h1 to "+this.innerHTML); 
+        }
+        
+    }
+}
+
+/* ========================================================
  * Controller Constructor Funtion For x4Window
  *
  * A window object contains a menu bar and (assuming) at
@@ -441,27 +599,6 @@ var x4dd = {
 function x4Window(self) {
     self.menuBar = $(self).find(".x4MenuBar")[0];
     
-    // Set up the H1 to handle requests
-    var h1 = $a.byId('x4H1Top');
-    h1.zStem = '';
-    h1.saveStem = function() {
-        this.zStem = this.innerHTML;
-        x4.debug("Saving h1 stem: "+this.zStem);
-    }
-    h1.clearStem = function() {
-        this.innerHTML = this.zStem;
-        this.zStem = '';
-        x4.debug("Clearing h1 stem");
-    }
-    h1.setHTML = function(text) {
-        if(h1.zStem == '') {
-            this.innerHTML = text;
-        }
-        else {
-            this.innerHTML = this.zStem + ", " + text;
-        }
-        x4.debug("Changing h1 to "+this.innerHTML); 
-    }
 
     /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
      * 
@@ -525,11 +662,7 @@ function x4Window(self) {
      * /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
      */
     self.sendUp = function(name,value) {
-        if(name=='rowInfo') {
-            $a.byId('x4RowInfoText').innerHTML = value;
-            return this.id;
-        }
-        else if(name=='Esc') {
+        if(name=='Esc') {
             x4.debug("Top level window returning to menu");
             x4.returnToMenu();
         }
@@ -636,6 +769,18 @@ function x4MenuBar(self) {
             return this.obj[method]();
         }
     }
+    
+    /*
+     * Message receiving
+     *
+     */
+    x4.events.subscribe('rowInfo',self);
+    self.notify = function(eventName,arguments) {
+        if(eventName == 'rowInfo') {
+            x4.debug("got this: "+arguments);
+            $(this).find("#x4RowInfoText").html(arguments);
+        }        
+    }
 }
 
 
@@ -694,8 +839,7 @@ function x4TableTop(self) {
         this.zSKeyPar    = this.zIsChild
             ? this.zParent.pullDown('zSkeyPar')
             : 0;
-        var h1 = $a.byId('x4H1Top');
-        if(this.zIsChild) $a.byId('x4H1Top').saveStem();
+        if(this.zIsChild) x4.events.notify('h1_saveStem');
         
         if(!this.zCurrentDisplay) {
             if(parm1 != null) {
@@ -711,7 +855,7 @@ function x4TableTop(self) {
     }
     self.deactivate=function() {
         x4.debugOpen("Deactivating ",this.jqId);
-        if(this.zIsChild) $a.byId('x4H1Top').clearStem();
+        if(this.zIsChild) x4.events.notify('h1_clearStem');
         this.zCurrentDisplay.deactivate();
         this.zCurrentDisplay.style.display='none';
         x4.debugClose("Deactivating ",this.jqId);
@@ -969,6 +1113,11 @@ function x4GridSearch(self) {
     // Work out if a child pane
     self.zIsChild = self.zTableIdPar ? true : false;
     
+    // Register as listener for table events
+    x4.events.subscribe('newRow_'   +self.zTableId,self);
+    x4.events.subscribe('changeRow_'+self.zTableId,self);
+    x4.events.subscribe('deleteRow_'+self.zTableId,self);
+    
     /* 
      * keyUp handler for inputs is for fetching only:
      * detects changed values and changed sort orders.
@@ -998,6 +1147,16 @@ function x4GridSearch(self) {
                 par.setOrderBy(this,'DESC');
             }
             return false;
+        }
+        
+        // KFD 7/11/08.  If we are on a child table,
+        //               only continue if Shift-Uparrow or
+        //               shift downarrow
+        if(x4.parent(this).zIsChild) {
+            if(keyLabel=='ShiftUpArrow' || keyLabel=='ShiftDownArrow') {
+                x4.parent(this).fetch();
+            }
+            return;
         }
         
         // Pass control to the fetch program
@@ -1032,14 +1191,14 @@ function x4GridSearch(self) {
             this.setButtonBar();
             
             if(this.zIsChild) {
-                this.zSkeyPar = x4.parent(this).pullDown('zSkeyPar'); 
+                this.zSkeyPar = $a.bb.grab('skey_'+this.zTableIdPar,0); 
                 this.fetch(true);
             }
             
             // KFD 6/28/08
             this.describeRows();
             
-            $a.byId('x4H1Top').setHTML(x4dd.dd[this.zTableId].description);
+            x4.events.notify('h1_setHtml',x4dd.dd[this.zTableId].description);
             
             // Make your entrance
             $(this).fadeIn(x4.fadeSpeed,function() {
@@ -1068,17 +1227,56 @@ function x4GridSearch(self) {
     
     self.describeRows = function() {
         if(this.zRowCount == 0) {
-            text = 'No Records';
-            this.zParent.sendUp('rowInfo','No Records');
+            x4.events.notify('rowInfo','No Records');
         }
         else {
-            var skey = $a.byId(this.zRowId).id.slice(6);
-            var rowNow = Number($a.aProp(this.skeys,this.zSkey,'0'))+1;
-            var text = 'Record '+rowNow+' of '+this.zRowCount;
+            if(this.zRowId!=null) {
+                var skey = $a.byId(this.zRowId).id.slice(6);
+                var rowNow = $a.byId(this.zRowId).zIndex;
+                var text = 'Record '+rowNow+' of '+this.zRowCount;
+            }
         }
-        this.zParent.sendUp('rowInfo',text);
+        x4.events.notify('rowInfo',text);
     }
 
+    /* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+     * 
+     * Nofitication handling
+     *
+     * <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+     */
+    self.notify = function(eventName,parms) {
+        if(eventName=='newRow_'   +this.zTableId) this.newRow(parms);
+        if(eventName=='changeRow_'+this.zTableId) this.changeRow(parms);
+        if(eventName=='deleteRow_'+this.zTableId) this.deleteRow(parms);
+    }
+    
+    self.newRow = function(parms) {
+        // Construct a row that the makeRow function expects
+        var row = { skey: parms.skey };
+        var dd = x4dd.dd[this.zTableId].projections._uisearch.split(',');
+        for(var x in dd) {
+            row[ dd[x] ] = parms[dd[x]];
+        }
+        x4.debug(row);
+        
+        // Make some html, slip it into the search results and re-index
+        var html = this.makeRow(row);
+        var tbody = $(this).find("tbody:last")[0];
+        tbody.innerHTML = html + tbody.innerHTML;
+        this.indexRows();
+    }
+    
+    self.changeRow = function(parms) {
+    }
+    
+    self.deleteRow = function(parms) {
+        // Locate and remove the row by skey
+        var id = '#x4row_'+parms;
+        $(this).find(id).remove();
+        this.indexRows();
+    }
+    
     /* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
      * 
      * Basic logic for fetching
@@ -1122,7 +1320,7 @@ function x4GridSearch(self) {
         this.doFetch=doFetch;
         this.cntNoBlank = 0;
         
-        // Initialize and then scan 
+        // Initialize and then scan
         $a.json.init('x4Page',this.zTableId);
         $(this).find(":input").each(function() {
             if(typeof(this.zValue)=='undefined') 
@@ -1146,7 +1344,10 @@ function x4GridSearch(self) {
             this.cntNoBlank = 100;
         }
         
+        
         if(this.doFetch) {
+            // Clear the previous results
+            $a.data.browseFetch = { };
             if(this.cntNoBlank==0) {
                 this.clear();
                 return;
@@ -1156,40 +1357,60 @@ function x4GridSearch(self) {
                 $a.json.addParm('sortAD' ,this.zSortAD);
             }
             $a.json.addParm('x4Action','browseFetch');
-            $a.json.addParm('x4Limit',300);
-            if( $a.json.execute()) {
-                var gridBodyId = this.getAttribute('xGridBodyId');
-                $a.json.process( gridBodyId );
-                this.skeys = $a.data.skeys;
-                this.rowCount = $a.data.rowCount;
+            if( $a.json.execute(true)) {
+                // Create and assign the html
+                var html = '';
+                for(var ir in $a.data.browseFetch) {
+                    html+=this.makeRow($a.data.browseFetch[ir]);
+                }
+                var tbody = $(this).find('tbody:last')[0];
+                tbody.innerHTML = html;
                 
-                // Tell x4Browse how many rows it has
-                this.zRowCount = $a.byId(gridBodyId).rows.length;
-                this.setButtonBar();
-
-                window.temp = this;
-                $('#'+gridBodyId).find('tr').each( function() {
-                    this.zParent = window.temp;
-                }).click(function() {
-                    this.zParent.keyPress_editRow();
-                }).mouseover( function() {
-                    if(this.zParent.zRowId) {
-                        $("#"+this.zParent.zRowId).removeClass('light');
-                    }
-                    $(this).addClass('light');
-                    this.zParent.zRowId = this.id;
-                    this.zParent.zSkey = Number(this.id.slice(6));
-                    this.zParent.zParent.zSkey = this.zParent.zSkey;
-                    var rx = Number(this.getAttribute('xIndex'))+1;
-                    this.zParent.sendUp(
-                        'rowInfo','Record '+rx+' of '+this.zParent.zRowCount
-                    );
-                });
-                window.temp=null;
-                
-                $('#'+gridBodyId).find('tr:first').mouseover();
+                // index the rows
+                this.indexRows();
             }
         }
+    }
+    self.makeRow = function(row) {
+        html='<tr id="x4row_'+row.skey+'"'
+            +' xParentId = "'+this.id+'"'
+            +' onclick="x4.parent(this).keyPress_editRow()" '
+            +' onmouseover="x4.parent(this).rowMouseOver(this)" '
+            +'>';
+        for(var ic in row) {
+            if(ic=='skey') continue;
+            html+="<td>";
+            if(row[ic] != null) {
+                if(x4dd.dd[this.zTableId].flat[ic]['type_id']=='time') 
+                    html+=x4.format.time(row[ic]);
+                else
+                    html+=row[ic];
+            }
+        }
+        return html;
+    }
+    self.indexRows = function() {
+        var tbody = $(this).find("tbody:last")[0];
+        this.zRowCount = tbody.rows.length;
+        for(var x=0; x<this.zRowCount; x++) {
+            $(tbody.rows[x])[0].zIndex = Number(x)+Number(1);
+        }
+        $(tbody).find("tr:first").mouseover();
+    }
+    self.rowMouseOver = function(row) {
+        if(this.zRowId) {
+            $(this).find('#'+this.zRowId).removeClass('light');
+        }
+        $(row).addClass('light');
+        this.zRowId = row.id;
+        this.zSkey = Number(row.id.slice(6));
+        this.zParent.zSkeyPar = this.zSkey;
+        if($a.byId('x4TabContainer_'+this.zTableId)) {
+            $a.byId('x4TabContainer_'+this.zTableId).zSkeyPar = this.zSkey;
+        }
+        var rx = row.zIndex;
+        x4.events.notify('rowInfo','Record '+rx+' of '+this.zRowCount);
+        $a.bb.stick('skey_'+this.zTableId,this.zSkey);
     }
     
     /**
@@ -1207,7 +1428,6 @@ function x4GridSearch(self) {
             this.x_value='';
         });
         this.describeRows();
-        
         this.setButtonBar();
     }
     
@@ -1230,9 +1450,10 @@ function x4GridSearch(self) {
      */
     self.keyPress_UpArrow = function() {
         if(!this.zRowId) return false;
-        var x = $a.byId(this.zRowId);
+        var x = this.getRow();
+        //var x = $(this).find('#'+this.zRowId);
         if(x.previousSibling!=null) {
-            $('#'+x.previousSibling.id).mouseover();
+            $(x.previousSibling).mouseover();
         }
         return false; 
     }
@@ -1240,9 +1461,10 @@ function x4GridSearch(self) {
     
     self.keyPress_DownArrow = function() {
         if(!this.zRowId) return false;
-        var x = $a.byId(this.zRowId);
+        var x = this.getRow();
+        //var x = $a.byId(this.zRowId);
         if(x.nextSibling!=null) {
-            $('#'+x.nextSibling.id).mouseover();
+            $(x.nextSibling).mouseover();
         }
         return false; 
     }
@@ -1271,6 +1493,9 @@ function x4GridSearch(self) {
     }
     self.keyPress_CtrlPageDown = self.keyPress_CtrlDownArrow;
 
+    self.getRow = function() {
+        return $(this).find('#'+this.zRowId)[0];
+    }
     
     /* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
      *                   
@@ -1390,6 +1615,7 @@ function x4Detail(self) {
         if(skey > 0) {
             this.fetchRow(skey);
         }
+        
         if(action == 'new' || action=='copy') {
             if(action=='new')
                 this.setDefaults(true);
@@ -1449,17 +1675,15 @@ function x4Detail(self) {
             }
         }
         
-        // If a function exists for after a row is picked
-        // run it now
-        var smfunc = 'displayRow_'+this.zTableId;
-        try { eval(smfunc+"(this)"); } catch(e) { void(0); } 
+        // Notify any listeners
+        x4.events.notify('fetchrow_'+this.zTableId,row);
     },
     
     self.displayRow = function() {
         var skeys=$a.aProp(this.zGridPane,'skeys',[]);
         var rowNow = $a.aProp(skeys,this.zGridPane.zSkey,'0')+1;
         var text = 'Record '+rowNow+' of '+this.zGridPane.zRowCount;
-        $("#x4RowInfoText").html(text);
+        //$("#x4RowInfoText").html(text);
 
         this.setTitle('');
         
@@ -1471,6 +1695,7 @@ function x4Detail(self) {
             var column_id = this.getAttribute('xColumnId');
             var value = $a.aProp(row,column_id,'');
             if(value==null) value='';
+            value = value.trim();
             if(input.getAttribute('xTypeId')=='dtime') {
                 if(value=='') {
                     input.value = '';
@@ -1482,8 +1707,11 @@ function x4Detail(self) {
                     input.value = value;
                 }
             }
+            else if (input.getAttribute('xTypeId')=='time') {
+                input.value = x4.format.time(value);
+            }
             else {
-                input.value   = $a.aProp(row,column_id,'');
+                input.value   = value;
             }
             input.xValue = input.value;
         });
@@ -1496,13 +1724,22 @@ function x4Detail(self) {
             var col = this.getAttribute('xColumnId');
             var autoid = x4dd.dd[tab].flat[col].automation_id;
             if(autoid=='DEFAULT') {
-                this.value = x4dd.dd[tab].flat[col].auto_formula;
+                var val = x4dd.dd[tab].flat[col].auto_formula;
+                if (this.getAttribute('xTypeId')=='time') {
+                    this.value = x4.format.time(val);
+                }
+                else {
+                    this.value = val;
+                }
             }
             else {
                 var init = $a.p($a.data,'init',{ });
                 var pre  = $a.p(init,col,'');
                 if(pre!='') {
-                    this.value = pre;
+                    if (this.getAttribute('xTypeId')=='time') 
+                        this.value = x4.format.time(pre);
+                    else
+                        this.value = pre;
                 }
                 else {
                     if(window.temp) {
@@ -1542,10 +1779,11 @@ function x4Detail(self) {
         
         // If a function exists for setting mode for 
         // this table, execute it
-        var smfunc = 'setMode_'+this.zTableId;
-        try { eval(smfunc+"('"+mode+"',this)"); }
-        catch(e) { // do nothing on error 
-        } 
+        //var smfunc = 'setMode_'+this.zTableId;
+        //try { eval(smfunc+"('"+mode+"',this)"); }
+        //catch(e) { // do nothing on error 
+        //}
+        x4.events.notify('setmode_'+this.zTableId,mode);
 
         // Set the read-only and the coloring, and defaults for new
         $(this).find(":input").each( function() {
@@ -1579,7 +1817,7 @@ function x4Detail(self) {
     self.setTitle = function(mode) {
         if(mode=='new') {
             var title = 'Add ' + x4dd.dd[this.zTableId].singular;
-            this.zParent.sendUp('rowInfo','New Entry');
+            x4.events.notify('rowInfo','New '+title);
         }
         else {
             title = false;
@@ -1596,7 +1834,7 @@ function x4Detail(self) {
                 }
             }
         }
-        $a.byId('x4H1Top').setHTML(title);
+        x4.events.notify('h1_setHtml',title);
     }
     
     self.tryToSave = function(force,silent1,silent2) {
@@ -1638,10 +1876,14 @@ function x4Detail(self) {
                 $a.dialogs.alert("New "+x4dd.dd[this.zTableId].singular
                     +" has been saved.");
                 this.skey = $a.data.row.skey;
-                this.zParent.sendUp('zSkey',this.skey);
-                if(this.zParent.zType = 'x4TabContainer') {
-                    this.zParent.zSkeyPar = this.skey;
-                }
+                //this.zParent.sendUp('zSkey',this.skey);
+                //if(this.zParent.zType = 'x4TabContainer') {
+                //    this.zParent.zSkeyPar = this.skey;
+                //}
+                x4.events.notify(
+                    'newRow_'+this.zTableId
+                    ,$a.data.row
+                );
             }
             else {
                 if(silent2==null) {
@@ -1649,6 +1891,10 @@ function x4Detail(self) {
                         +$a.byId('x4H1Top').innerHTML
                         +" have been saved.");
                 }
+                x4.events.notify(
+                    'changeRow_'+this.zTableId
+                    ,$a.data.row
+                );
             }
             return true;
         }
@@ -1714,6 +1960,10 @@ function x4Detail(self) {
                 if(!$a.json.hadErrors) {
                     $a.dialogs.alert('The selected row was deleted.');
                     this.zCmd = true;
+                    x4.events.notify(
+                        'deleteRow_'+this.zTableId
+                        ,this.skey
+                    );
                     this.zParent.sendUp('Esc',this);
                 }
             }
@@ -1761,6 +2011,49 @@ function x4Detail(self) {
     }
     self.keyPress_CtrlP   = self.keyPress_copyRow;
 }
+/* ========================================================
+ * Constructor Funtion x4Mover
+ *
+ * Handles cross references by displaying check boxes
+ *
+ * ========================================================
+ */
+function x4Mover(self) {
+    self.zTableId = $a.p(self,'xTableId'); 
+    self.zPk      = $a.p(self,'xPk');
+    self.zRetCol  = $a.p(self,'xRetCol');
+    
+    self.activate = function() {
+        $(this).find(":checkbox").each(function() { this.checked = false; });
+        $a.json.init('x4Page',this.zTableId);
+        $a.json.addParm('x4Action','moverFetch');
+        $a.json.addParm('pkcol',this.zPk);
+        $a.json.addParm('pkval',$a.data.row[this.zPk]);
+        $a.json.addParm('retcol',this.zRetCol);
+        if($a.json.execute()) {
+            $a.json.process();
+            for(var x in $a.data.moverFetch) {
+                var col2 = $a.data.moverFetch[x];
+                var iid = 'check_'+col2;
+                $a.byId(iid).checked = true;
+            }
+        }
+        
+        $(this).fadeIn('fast'); 
+    }
+    
+    self.clickCheck = function(obj) {
+        $a.json.init('x4Page',obj.getAttribute('xtableid'));
+        $a.json.addParm('x4Action','moverSS');
+        $a.json.addParm('checked',obj.checked ? 'Y' : 'N');
+        $a.json.addParm('col1',obj.getAttribute('xcol1'));
+        $a.json.addParm('col2',obj.getAttribute('xcol2'));
+        $a.json.addParm('var1',obj.getAttribute('xvar1'));
+        $a.json.addParm('var2',$a.data.row[obj.getAttribute('xcol2')]);
+        $a.json.execute();
+    }
+}     
+
 
 /* ========================================================
  *
