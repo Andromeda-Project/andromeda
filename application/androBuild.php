@@ -8998,22 +8998,33 @@ function FS_PrepareMake() {
             $this->LogEntry(" -> NODE MANAGER build, no copy.");
          }
          else {
-            if($row['flag_lib']=='Y') {
-               $this->LogEntry(" -> Library copy from: $dirl");
-               $this->LogEntry(" ->                to:  $dir_pubx");
-               $this->FSCopyTree($dirl,$dir_pubx,$tgt);
-            }
-            else {
-               if(!isset($parm['IVER'])) {
-                  $this->LogEntry(" -> DEV Instance build, no copy");
-               }
-               else {
-                  $this->LogEntry("Directory $tgt will be copied");
-                  $this->LogEntry(" -> Application copy from: $dira");
-                  $this->LogEntry(" ->                    to:  $dir_pubx");
-                  $this->FSCopyTree($dira,$dir_pubx,$tgt);
-               }
-            }
+             # KFD 7/14/08, hardcode templates to pull from 
+             #              library first, then application
+             if($tgt=='templates') {
+                 $this->LogEntry(" -> Hardcoded handling of templates dir");
+                 $this->LogEntry("    Copy from lib first, then app");
+                 $this->FSCopyTree($dirl,$dir_pubx,$tgt);
+                 $this->FSCopyTree($dira,$dir_pubx,$tgt);
+                   
+             }
+             else {
+                if($row['flag_lib']=='Y') {
+                   $this->LogEntry(" -> Library copy from: $dirl");
+                   $this->LogEntry(" ->                to:  $dir_pubx");
+                   $this->FSCopyTree($dirl,$dir_pubx,$tgt);
+                }
+                else {
+                   if(!isset($parm['IVER'])) {
+                      $this->LogEntry(" -> DEV Instance build, no copy");
+                   }
+                   else {
+                      $this->LogEntry("Directory $tgt will be copied");
+                      $this->LogEntry(" -> Application copy from: $dira");
+                      $this->LogEntry(" ->                    to:  $dir_pubx");
+                      $this->FSCopyTree($dira,$dir_pubx,$tgt);
+                   }
+                }
+             }
          }
       }
       
