@@ -210,11 +210,20 @@ class androPage {
         
         # There are few tweaks based on x4/x_table2 version
         $x4 = gp('x4Page')=='' ? false : true;
+
+        # Create top-level div, x4 library is looking for this
+        # and x2 library will ignore it.
+        $top = html('div');
+        $top->hp['id'] = 'x4Top';
+        $top->autoFormat(true);
         
         # Hidden variables so posts will come back here
         if($x4) {
             x4Data('return','menu');
-            hidden('x4Page',$this->page);
+            $h = $top->h('input');
+            $h->hp['id'] = 'x4Page';
+            $h->hp['type'] = 'hidden';
+            $h->hp['value'] = $this->page;
         }
         else {
             hidden('gp_page',$this->page);
@@ -226,11 +235,6 @@ class androPage {
         );
 
 
-        # Create top-level div, x4 library is looking for this
-        # and x2 library will ignore it.
-        $top = html('div');
-        $top->hp['id'] = 'x4Top';
-        $top->autoFormat(true);
         $x4D = html('div',$top);
         if($x4) $x4D->addClass('x4Pane');
         $x4D->addClass('x4AndroPage'); # Triggers all browser-side x4 stuff
@@ -289,10 +293,13 @@ class androPage {
             $input->hp['autocomplete'] = 'off';
             $td->setHTML($input->bufferedRender());
         }
+        $h = $top->h('input');
+        $h->hp['type'] = 'hidden';
+        $h->hp['id'] = 'gp_post';
         if ( isset( $yamlP2['template'] ) ) {
-                hidden('gp_post','smarty' );
+            $h->hp['value'] = 'smarty';
         } else {
-                hidden('gp_post','pdf');
+            $h->hp['value'] = 'pdf';
         }
         
         $td1->br();
@@ -355,14 +362,14 @@ class androPage {
         // For each section, run the output
         foreach($this->yamlP2['section'] as $secname=>$secinfo) {
             $dbres = SQL($secinfo['sql']);
-            if(gpExists("showsql")) {
+            if(gp("showsql")==1) {
                 hprint_r($secinfo['sql']);
             }
             if(Errors()) {
                 hprint_r($secinfo['sql']);
                 echo hErrors();
             }
-            if(gpExists("showsql")) {
+            if(gp("showsql")==1) {
                 return;
             }
 
