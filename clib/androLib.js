@@ -1301,9 +1301,6 @@ var $a = {
           *
           */
         execute: function(autoProcess) {
-            //var theDate = Math.random();
-            //console.log(theDate+" BEGIN");
-            
             this.hadErrors = false;
             if(autoProcess==null) autoProcess=false;
             
@@ -1361,7 +1358,6 @@ var $a = {
                 this.process();
             }
             
-            //console.log(theDate+" END");
             return true;
         },
         
