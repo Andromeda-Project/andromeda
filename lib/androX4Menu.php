@@ -51,7 +51,7 @@ class x4Menu extends androX4 {
             }
             $first = false;
             $td = html('td',$tr);
-            $td->hp['class'] = 'x4box';
+            $td->hp['class'] = 'style1';
             
             $h3 = html('h3',$td);
             $h3->setHtml(($letters[$col]).') '.$modinfo['description']);
