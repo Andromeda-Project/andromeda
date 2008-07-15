@@ -5006,7 +5006,7 @@ function TrigGen_ChainReturn($rtid,$test,$dsiz) {
          case "BITXOR" :  $fo = " # "; break;
 			case "CON"     :
 				$fo = " || ";
-				$arg = " trim(".$arg.") ";
+				$arg = " trim(".$arg."::varchar) ";
 				break;
 			case "subdyear":
 				$arg = ' EXTRACT(year from '.$arg.') ';
