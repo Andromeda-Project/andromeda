@@ -1232,14 +1232,14 @@ function SpecFlattenValidUser() {
 		$errors++;
 	}
 	$sql = 
-		"SELECT menu_page FROM zdd.uimenu 
+		"SELECT menu_page,module FROM zdd.uimenu 
 		 WHERE NOT EXISTS (
             SELECT module FROM zdd.modules WHERE module=zdd.uimenu.module
          )";
 	$results=$this->SQLRead($sql);
 	while ($row = pg_fetch_array($results)) {
         $this->LogEntry("");
-		$this->LogEntry("ERROR >> Table ".$row["table_id"]." refers to ");
+		$this->LogEntry("ERROR >> Table ".$row["menu_page"]." refers to ");
 		$this->LogEntry("ERROR >>      undefined module: ".$row['module']);
 		$errors++;
 	}
@@ -8578,7 +8578,7 @@ SELECT  m.module,m.description as module_text,m.uisort,t.uisort
        ,t.nomenu,'N' as menuins
        ,t.linknew,t.linksearch
        ,'' as menu_parms
-       ,'N' as uix2
+       ,t.uix2 as uix2
   FROM zdd.modules m
   JOIN zdd.tables t ON t.module = m.module
  WHERE t.nomenu <> 'Y'  
