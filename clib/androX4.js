@@ -223,7 +223,6 @@ var x4 =  {
                 var constructor = false;
                 // This attempts to find a constructor
                 try {
-                    console.log("I am looking for "+oneClass);
                     constructor = eval(oneClass);
                 }
                 catch(e) {
