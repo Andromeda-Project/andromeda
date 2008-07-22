@@ -948,7 +948,7 @@ function androSelect_onKeyUp(obj,strParms,e) {
     //    release SHIFT -- that's when this fires, we want
     //                   to prevent that
     var klabel = $a.label(e);
-    if(klabel=='Shift') return;
+    //if(klabel=='Shift') return;
     if(klabel=='Alt')   return;
     if(klabel=='Ctrl')  return;
     
@@ -1041,8 +1041,22 @@ function androSelect_onKeyUp(obj,strParms,e) {
     aSelect.control = obj;
     aSelect.row = false;
 
+    // KFD 7/21/08, add matches if present
+    var matchurl = '' 
+    var matchcols = $a.p(obj,'xMatches','');
+    if(matchcols!='') {
+        // WARNING!  x4 Assumed!
+        var acols = matchcols.split(',');
+        for(var cidx in acols) {
+            var colname = acols[cidx];
+            var colval  = $('[xcolumnid='+colname+']')[0].value.trim();
+            matchurl+='&match_'+colname+"="+encodeURIComponent(colval);
+        }
+    }
+    
     // Make up the URL and send the command
-    var url = '?'+strParms+'&gpv=2&gp_letters='+obj.value.replace(" ","+");         
+    var url = '?'+strParms+matchurl
+        +'&gpv=2&gp_letters='+obj.value.replace(" ","+");         
     andrax(url,androSelect_handler);
 }
 
@@ -1233,27 +1247,35 @@ var $a = {
         jdata:      { },
         data:       { dd: {} },
         requests:   { },
+        parms:      { },
         x4Page:     '',
         x4Action:   '',
         hadErrors: false,
         init: function(name,value) {
-            this.x4Page = '';
-            this.x4Action = '';
+            this.x4Page     = '';
+            this.x4Action   = '';
             this.callString = '';
+            this.parms      = { };
             if(name!=null) {
                 this.addParm(name,value);
             }
         },
         addParm: function(name,value) {
-            if(this.callString!='') this.callString+="&";
-            this.callString += name + '=' + encodeURIComponent(value);
+            this.parms[name] = value;
             if(name=='x4Page')   this.x4Page = value;
             if(name=='x4Action') this.x4Action = value;
         },
-        addValue: function(name,value) {
-            if(this.callString!='') this.callString+="&";
-            this.callString += 'x4c_' + name + '=' + encodeURIComponent(value);
+        makeString: function() {
+            var list = [ ];
+            for(var x in this.parms) {
+                list[list.length] = x + "=" +encodeURIComponent(this.parms[x]);
+            }
+            return list.join('&');
         },
+        //addValue: function(name,value) {
+        //    if(this.callString!='') this.callString+="&";
+        //    this.callString += 'x4c_' + name + '=' + encodeURIComponent(value);
+        //},
         
         /*
          * Add the value of all inputs to the json request, only
@@ -1264,7 +1286,7 @@ var $a = {
             if(obj==null) {
                 obj = $a.byId('x4Top');
             }
-            $(obj).find(":input:not([@readonly])").each( function() {
+            $(obj).find(':input').each( function() {
                     if(this.type=='checkbox') {
                         if(this.checked) {
                             $a.json.addParm(this.id,'Y');
@@ -1287,11 +1309,11 @@ var $a = {
          *
          */
         windowLocation: function() {
-            var entireGet = 'index.php?'+this.callString;
+            var entireGet = 'index.php?'+this.makeString()
             window.location = entireGet;
         },
         newWindow: function() {
-            var entireGet = 'index.php?'+this.callString+'&x4Return=exit';
+            var entireGet = 'index.php?'+this.makeString()+'&x4Return=exit';
             $a.openWindow(entireGet);
         },
 
@@ -1325,7 +1347,7 @@ var $a = {
             this.requests[key] = http;
             
             // Execute the call
-            var entireGet = 'index.php?json=1&'+this.callString;
+            var entireGet = 'index.php?json=1&'+this.makeString();
             http.open('POST' , entireGet, false);
             http.send(null);
             
@@ -1368,11 +1390,13 @@ var $a = {
                 }
                 else {
                     var obj = $a.byId(x);
-                    if (obj.tagName =='INPUT') {
-                        obj.value = this.jdata.html[x];
-                    }
-                    else {
-                        obj.innerHTML = this.jdata.html[x];
+                    if(obj) {
+                        if (obj.tagName =='INPUT') {
+                            obj.value = this.jdata.html[x];
+                        }
+                        else {
+                            obj.innerHTML = this.jdata.html[x];
+                        }
                     }
                 }
             }
@@ -1449,7 +1473,6 @@ var $a = {
         // TAB LOOP: Put focus on first non-readonly element
         $(jqo).find(':input:not([@readonly]):first').focus();      
     },
-
 
     keyLabel: function(e) {
         var x = e.keyCode;
