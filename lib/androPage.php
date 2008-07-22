@@ -701,7 +701,8 @@ class androPage {
         $view_id = ddView($SQL_from);
         $retval = "\n  FROM $view_id $SQL_from ";
         foreach($SQL_Joins as $table_id=>$SQL_Join) {
-            $view_id = $SQL_Join['viewname'];
+            $view_id = $table_id;
+            #$view_id = $SQL_Join['view'];
             $expr = $SQL_Join['expression'];
             $left = $SQL_Join['left_join']=='Y' ? 'LEFT ' : '';
             $retval.="\n  {$left}JOIN $view_id $table_id ON $expr";
