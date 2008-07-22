@@ -27,8 +27,6 @@ foreach($menus as $menuid=>$menuinfo) {
     foreach($menuinfo['items'] as $page=>$pageinfo) {
         $pd = $pageinfo['description'];
         $li = $ul->h('li');
-        #$li->hp['onmouseover'] = "pixel2ShowMenu('$menuid')";
-        #$li->hp['onmouseout']  = "window.pixel2pad=false;pixel2HideMenu('$menuid')";
         $a  = html('a',$li,$pd);
         if($pageinfo['uix2'] == 'Y') {
             $a->hp['href'] = "?gp_page=$page&x2=1";

@@ -307,6 +307,9 @@ div.templateheader-top {
 .templateleft, .style2, .x4MenuBar a, .x4TabBar a {
     background-color: #E9EEF5;
 }
+.templateleft {
+    border-color:#CED2D6;
+}
 
 .x4MenuBar a.disabled, .x4TabBar a.disabled {
     color: gray;
@@ -377,3 +380,22 @@ div.errorbox {
     text-align: center;
 }
 
+/* -------------------------------------------------------------- *\
+   --------------------------------------------------------------
+   BACKWARD COMPATIBLE, REALLY JUST FOR THE MEDICAL PROGRAM
+   -------------------------------------------------------------- 
+\* -------------------------------------------------------------- */
+.templateleft h3 {
+    background: #CDD1D7 none repeat scroll 0% 0%;
+    color: #666666;
+    font-size: 13px;
+    padding: 5px;
+    text-transform: uppercase;
+    
+}
+
+.templateleft a {
+    display: block;
+    border-bottom:1px solid #CDD1D7;
+    padding: 3px 0 5px 0;
+}
