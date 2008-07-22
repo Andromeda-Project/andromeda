@@ -585,6 +585,7 @@ table tables {
    // Removed KFD 5/24/07, not being used
 	//column { ins;risimple;table_seq;menuins }
    column { capspk; table_seq; nomenu; }
+    column { uix2; }
    // KFD 5/24/07, this can also be removed, but you have to remove some
    //   references in AndroBuild.php
    column { rules; }

@@ -2873,7 +2873,7 @@ function DD_ColumnBrowse(&$col,&$table)
 * @return mixed			value associated with $propery
 */
 function DD_TableProperty($table_id,$property) {
-	$table = DD_Tableref($table_id);
+	$table = &ddTable($table_id);
 	return $table[$property];
 }
 
@@ -5870,6 +5870,20 @@ function objReport($oParent,$orient='P') {
    $retval= new x_fpdf($orient);
    $retval->trackback=$oParent;
    return $retval;
+}
+
+/**
+* Generate a unique number out of microtime(), suitable
+* for use as ID values for HTML elements.
+*
+* @return integer a unique value
+*/
+function uniqueID() {
+    $value = microtime();
+    $value = str_replace('.','',$value);
+    $value = str_replace('_','',$value);
+    $value = str_replace(' ','',$value);
+    return $value;
 }
 
 
