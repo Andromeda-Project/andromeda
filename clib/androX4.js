@@ -171,6 +171,10 @@ var x4 =  {
                 return false;
             }
             
+            // Attach a function that is defined below
+            this.jqInputIds    = jqInputIds;
+            this.jqInputRowIds = jqInputRowIds;
+            
             /*
              * Return variables
              *
@@ -219,6 +223,7 @@ var x4 =  {
                 var constructor = false;
                 // This attempts to find a constructor
                 try {
+                    console.log("I am looking for "+oneClass);
                     constructor = eval(oneClass);
                 }
                 catch(e) {
@@ -367,7 +372,7 @@ var x4 =  {
             else {
                 $(obj).find(":input:not([@readonly]):first").focus();
             }
-        },
+        }
     },
     
 
@@ -413,6 +418,10 @@ var x4 =  {
         $a.json.init('x4Page', $a.byId('x4Page').value);
         $a.json.inputs();
     },
+    serverCall: function(x4Action) {
+        $a.json.init('x4Page', $a.byId('x4Page').value);
+        $a.json.addParm('x4Action',x4Action);
+    },
 
     info: function(inputId) {
         var obj = $a.byId(inputId);
@@ -428,6 +437,35 @@ var x4 =  {
         }
     },
     
+    inputValue: function(table,column) {
+        var obj = $a.byId('x4inp_'+table+'_'+column);
+        if(obj==null) {
+            $a.dialogs.alert("Program error: attempt to read value "
+                +"of nonexistent input.  Please report this error."
+                +" Table and column are "+table+", "+column
+            );
+            return '';
+        }
+        else return obj.value.trim();
+    },
+    inputId: function(table,column) {
+        return 'x4inp_'+table+'_'+column;
+    },
+    input: function(table,column) {
+        return $a.byId('x4inp_'+table+'_'+column);
+    },
+    inputReadable: function(table,column,readable) {
+        if(readable==null) readable=true;
+        var input = x4.input(table,column);
+        if(readable) {
+            input.readOnly = false;
+            $(input).removeClass('x4inputReadOnly');
+        }
+        else {
+            input.readOnly = true;
+            $(input).addClass('x4inputReadOnly');
+        }
+    },
     
     /*
      * Find an objects parent.  Shortcut.
@@ -472,6 +510,76 @@ var x4 =  {
         this.debug(type+": "+jqId+" (COMPLETE)",0);
     }
 }
+
+/* =====================================================
+ *
+ * Functions that are attached to objects
+ *
+ * =====================================================
+ */
+function jqInputIds(columns,table) {
+    if(table==null) {
+        if($a.p(this,'xTableId')!='') table = $a.p(this,'xTableId');
+    }
+    return jqIds(columns,table,'#x4inp_');
+}
+function jqInputRowIds(columns,table) { 
+    if(table==null) {
+        if($a.p(this,'xTableId')!='') table = $a.p(this,'xTableId');
+    }
+    return jqIds(columns,table,'#tr_');
+}
+
+function jqIds(columns,table,prefix){
+    // Initialize the two
+    var acols = columns.split(',');
+    var jqids = [ ];
+    
+    // loop through
+    for(var idx in acols) {
+        acolinfo = acols[idx].split('.');
+        if(acolinfo.length==2) {
+            var tab = acolinfo[0];
+            var col = acolinfo[1];
+        }
+        else {
+            var tab = table;
+            var col = acolinfo[0];
+        }
+        var jqid = prefix+tab+'_'+col;
+        jqids[jqids.length] = jqid;
+    }
+    return jqids.join(',');
+}
+
+/* =====================================================
+ *
+ * x4-specific jQuery extensions
+ *
+ * =====================================================
+ */
+jQuery.fn.x4inputWritable = function(tf) {
+    return this.each(function() {
+        if(tf) {
+            this.readOnly = false;
+            jQuery(this).removeClass('x4inputReadOnly');
+        }
+        else {
+            this.readOnly = true;
+            jQuery(this).addClass('x4inputReadOnly');
+        }
+    });
+};
+
+jQuery.fn.jsonAddParm = function() {
+    return this.each(function() {
+            console.log(this.id);
+            console.log(this.value);
+            $a.json.addParm(this.id,this.value);
+    });
+}
+
+
 
 /**
 *
@@ -2235,7 +2343,7 @@ function x4AndroPage(self) {
         // Turn on the highlighted one if it exists
         $('#'+rowId).each( function() {
                 this.zParent.rowCurrentId = this.id;
-                this.className = 'highlight'
+                this.className = 'light'
         });
 
         // If they came from the keyboard, we need to 
