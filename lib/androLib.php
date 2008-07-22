@@ -263,6 +263,10 @@ function x4Print_r($var) {
 function x4Debug($parm1) {
     $GLOBALS['AG']['x4']['debug'][] = $parm1;
 }
+function x4DebugSQL($parm1) {
+    $parm1 = str_replace("\n","",$parm1);
+    x4Debug($parm1);
+}
 
 /**
 * Saves html for later processing
@@ -272,7 +276,23 @@ function x4Debug($parm1) {
 * @param string $parm2 value
 */
 function x4HTML($parm1,$parm2) {
-    $GLOBALS['AG']['x4']['html'][$parm1] = $parm2;
+    if(!isset($GLOBALS['AG']['x4']['html'][$parm1])) {
+        $GLOBALS['AG']['x4']['html'][$parm1] = '';
+    }
+    $GLOBALS['AG']['x4']['html'][$parm1] .= $parm2;
+}
+
+/**
+* Dumps anything out to the main HTML display.
+* Intended for debugging
+*
+* @category JSON Returns
+* @param string $parm1  variable
+*/
+function x4HtmlDump($parm1) {
+    ob_start();
+    hprint_r($parm1);
+    x4HTML('*MAIN*',ob_get_clean());
 }
 
 /**
@@ -461,6 +481,12 @@ class androHtml {
     */
     var $hp   = array();
 
+    /**
+    * Javascript code references
+    *
+    * @var string
+    */
+    var $code = array();
 
     /**
     * Additional identifying information for the html
@@ -607,6 +633,23 @@ class androHtml {
     function h($tag,$innerHTML='',$class='') {
         return $this->html($tag,$innerHTML,$class);
     }
+    
+    /**
+    * Add a hidden variable to an object
+    *
+    * @param string $name      The name (also ID) of the variable
+    * @param string $value     Optional value (defaults to empty string)
+    * @return object $html     An HTML element. 
+    */
+    function hidden($name,$value = '') {
+        $h = $this->h('input');
+        $h->hp['type'] = 'hidden';
+        $h->hp['id']   = $name;
+        $h->hp['name'] = $name;
+        $h->hp['value']= $value;
+        return $h;
+    }
+    
 
     /**
     * Add a TD element directly to this element.  Shortcut to method "html"
@@ -821,6 +864,22 @@ class androHtml {
             }
         }
         
+        # Before we render, we are going to take the code
+        # snippets and generate top-level functions for them
+        $twoparms = array('click','keypress','keyup','keydown');
+        $snippet_id = a($this->hp,'id');
+        if($snippet_id == '') {
+            $snippet_id = 'snip_'.rand(1,100000);
+        }
+        foreach($this->code as $event=>$snippet) {
+            $fname = $snippet_id.'_'.$event;
+            elementAdd('jqueryDocumentReady',"window.$fname = $snippet");
+            if(in_array($event,$twoparms)) 
+                $this->hp['on'.$event] = "$fname(this,event)";
+            else 
+                $this->hp['on'.$event] = "$fname(this)";
+        }
+        
         if($this->autoFormat) {
             echo "\n<!-- ELEMENT ID ".$this->hp['id']." (BEGIN) -->";   
             //echo "$indent\n<!-- ELEMENT ID ".$this->hp['id']." (BEGIN) -->";
@@ -989,6 +1048,7 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
             $input->addClass('x4Info');
         }
         $input->ap['xTableIdPar'] = $colinfo['table_id_fko'];
+        $input->ap['xMatches']    = a($colinfo,'matches');
         
         // If any columns are supposed to fetch from here,
         // set an event to go to server looking for fetches
@@ -2613,13 +2673,13 @@ function ddNoWrites() {
 * @param mixed $table_id	id of table
 * @return array			data dictionary table with id $table_id
 */
-function ddTable($table_id) {
+function &ddTable($table_id) {
     # Don't repeat all of this work. If this has already
     # been run don't run't it again
     if(is_array($table_id)) {
         $table_id = $table_id['table_id'];
     }
-    if(isset($GLOBALS['AG']['tables'][$table_id]['viewname'])) {
+    if(isset($GLOBALS['AG']['tables'][$table_id])) {
         $retval = &$GLOBALS['AG']['tables'][$table_id];
         return $retval;
     }
@@ -2629,6 +2689,7 @@ function ddTable($table_id) {
         $GLOBALS['AG']['tables'][$table_id] = array(
             'flat'=>array()
             ,'description'=>$table_id
+            ,'viewname'=>''
         );
     }
     else {
@@ -2674,8 +2735,10 @@ function ddTable($table_id) {
     # --> EARLY RETURN
     #     If a root user, or there is no group, no point
     #     in continuing
-    if(SessionGet('ROOT')) return $tabdd;
-    if(SessionGet('GROUP_ID_EFF','')=='') return $tabdd;
+    if(SessionGet('ROOT'))
+        return $GLOBALS['AG']['tables'][$table_id];
+    if(SessionGet('GROUP_ID_EFF','')=='') 
+        return $GLOBALS['AG']['tables'][$table_id];
 
     # Capture the effective group and keep going
     $group = SessionGet('GROUP_ID_EFF');
@@ -2716,8 +2779,7 @@ function ddTable($table_id) {
         }
     }
     
-    
-    return $tabdd;
+    return $GLOBALS['AG']['tables'][$table_id];
 }
 
 /**
@@ -2766,7 +2828,11 @@ function ddUserPerm($table_id,$perm_id) {
       $view_id=DDTable_idresolve($table_id);
       $pm = in_array($table_id,SessionGet('TABLEPERMSMENU',array()));
       $ps = in_array($view_id,SessionGet('TABLEPERMSSEL',array()));
-      return $pm && ($ps || SessionGet("ROOT"));
+      # KFD 7/16/08.  Make this universal OR.  Any of
+      #               these causes it to appear
+      #$retval = $pm && ($ps || SessionGet("ROOT"));
+      $retval = $pm || $ps || SessionGet('ROOT');
+      return $retval;
    }
 
    // These are pretty simple
@@ -5675,6 +5741,68 @@ function LoggedIn() {
    return true;
    // return SessionGet('UID')=='anonymous' ? false : true;
 }
+
+/**
+* Returns true if a the current user is in the 
+* specified group.
+*
+* @category User Maintenance
+* @param string $group  Name of the group
+* @return boolean
+*/
+function inGroup($group) {
+    $agroups = SessionGet('agroups',array());
+    $agroups = array();
+    if(count($agroups) == 0) {
+        $app = $GLOBALS['AG']['application'];
+        $appl= strlen($app);
+        
+        $groups = explode(',',SessionGet('groups'));
+        foreach($groups as $grp) {
+            # For some reason these were saved with single
+            # quotes around them, get rid of them
+            $grp = str_replace("'","",$grp);
+            
+            # Don't include the $LOGIN group
+            if($grp == $app) continue;
+            
+            # The +1 is for the underscore.  A member
+            # of group "admin" in application "example"
+            # will actually be in group "admin_example"
+            $agroups[] = substr($grp,$appl+1);
+        }
+        
+        SessionSet('agroups',$agroups);
+    }
+    return in_array($group,$agroups);
+}
+
+/**
+* Returns true if a the current user is able to
+* do user maintenance.  Shortcut for a call
+* to inGroup('usermaint').
+*
+* @category User Maintenance
+* @return boolean
+*/
+function inUserMaint() {
+    return inGroup('usermaint');
+}
+
+/**
+* Returns true if a the current user is a
+* "root" user on the node.  Shortcut to
+* to SessionGet('ROOT').
+*
+* @category User Maintenance
+* @return boolean
+*/
+function inRoot() {
+    return SessionGet('ROOT');
+}
+
+
+
 
 /**
 * This function pushes the current [[GET-POST Variables]] to the stack
