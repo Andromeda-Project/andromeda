@@ -670,9 +670,14 @@ function index_hidden_dropdown() {
    // Strip a leading slash from the value
    $gpletters=trim(gp('gp_letters'));
    
+   # KFD 7/21/08, experiment
+   $matches = aFromGP('match_');
+   
    // Pull the rows from handy library routine.
    if(gp('gpv')=='2') {
-       $rows=RowsForSelect($table_id_fk,$gpletters,array(),'',true);   
+       # KFD 7/21/08
+       $rows=RowsForSelect($table_id_fk,$gpletters,$matches,'',true);
+       #$rows=RowsForSelect($table_id_fk,$gpletters,array(),'',true);
    }
    else {
        $rows=rowsForSelect($table_id_fk,$gpletters);
@@ -1272,7 +1277,7 @@ function index_hidden_template() {
        # Assign the template to spots where the legacy code will find it
        $AG['template'] = vgfGet('template');
    }
-   
+
    // First conditional fix contributed by Don Organ 9/07, $AG['template']
    // was getting lost on passes 2+
    if(ArraySafe($AG,'template')<>'') {
