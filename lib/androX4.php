@@ -7,8 +7,8 @@ class androX4 {
     # ===================================================================
     function __construct() {
         $this->table_id = gp('x4Page');
-        $this->dd       = ddTable($this->table_id);
-        $this->flat     = $this->dd['flat'];
+        $this->dd       = &ddTable($this->table_id);
+        $this->flat     = &$this->dd['flat'];
         $this->view_id  = $this->dd['viewname'];
         $this->tabindex=1000;
         
@@ -426,6 +426,7 @@ underlined letters that show this, so:
                 $tdx->hp['style'] = 'width: 40px';
                 $tdx = html('td',$trx);
                 $table=html('table',$tdx);
+                $table->addClass('x4Detail');
             }
         }
         inputsTabLoop($tabLoop,array('xParentId'=>$div->hp['id']));
