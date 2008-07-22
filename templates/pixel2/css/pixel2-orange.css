@@ -33,6 +33,8 @@ div.templatemenu ul li {
 
 
 a { color: #BF5A21; }
+a.x4MenuOn { background-color: #BF5A21; color: white; }
+
 div.templatemenu ul li a {
     color: white;
 }

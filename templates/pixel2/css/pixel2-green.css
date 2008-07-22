@@ -40,6 +40,9 @@ div.templatemenu ul li {
 
 
 a { color: #71902C; }
+a.x4MenuOn { background-color: #71902C; color: white; }
+
+
 div.templatemenu ul li a{
     color: white;
 }
