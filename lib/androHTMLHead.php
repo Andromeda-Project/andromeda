@@ -2,7 +2,7 @@
 echo "\n<title>".vgfGet('pageTitle')."</title>\n";
 
 # The jQuery library always comes first
-jsInclude('clib/jquery-1.2.3.js','JQuery is distributed under the GPL
+jsInclude('clib/jquery-1.2.6.js','JQuery is distributed under the GPL
       license, written by a team of programmers, more info at
       http://www.jquery.com'
 );
@@ -45,7 +45,8 @@ jsInclude('clib/jquery.timeentry.js');
 // Date entry with their over-engineered downloads
 
 # EXPERIMENTAL: Date Manipulation
-#jsInclude('clib/jquery.dates.js');
+jsInclude('clib/jquery.date_input.js');
+cssInclude('clib/date_input.css');
 
 
 // Another jquery add-on: key  navigation 
