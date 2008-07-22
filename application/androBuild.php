@@ -1642,7 +1642,7 @@ function SpecFlatten_Runout() {
                  ,case when coalesce(tc.flagcarry,'') <> '' 
                        then tc.flagcarry 
                        else c.flagcarry  end
-                 ,'' as table_id_fko
+                 ,COALESCE(tc.table_id_fko,'') as table_id_fko
                  ,trim(uicolseq)
                  ,case when tc.uisearch_ignore_dash in ('Y','N')
                        then tc.uisearch_ignore_dash
@@ -4602,28 +4602,41 @@ function SpecDDL_Triggers_Automated_Aggregate()  {
 }
 
 function SpecDDL_Triggers_Automated_Queuepos()  {
-   // Pull any column with QUEUE POSITION automation
-	$results = $this->SQLREAD(
-		"Select table_id,column_id FROM zdd.tabflat".
-		" WHERE automation_id = 'QUEUEPOS'"
-   );
-   $qps = pg_fetch_all($results);
+    // Pull any column with QUEUE POSITION automation
+    $results = $this->SQLREAD(
+        "Select table_id,column_id,auto_formula FROM zdd.tabflat".
+        " WHERE automation_id = 'QUEUEPOS'"
+    );
+    $qps = pg_fetch_all($results);
    
-   // Make each one "bump" equal values when this value is set
-   if(is_array($qps)) {
-      foreach($qps as $qp) {
-         $t = $qp['table_id'];
-         $c = $qp['column_id'];
-         $sq="\n"
-            ."    --- 4000 Queue position bumps \n"
-            ."    UPDATE $t SET $c = $c + 1\n"
-            ."     WHERE $c = new.$c \n"
-            ."       AND skey <> new.skey;\n";
-         $this->SpecDDL_TriggerFragment($t,"UPDATE","AFTER","4000",$sq);
-         $this->SpecDDL_TriggerFragment($t,"INSERT","AFTER","4000",$sq);
-      }
-   }
-   return true;
+    // Make each one "bump" equal values when this value is set
+    if(is_array($qps)) {
+        foreach($qps as $qp) {
+            $t = $qp['table_id'];
+            $c = $qp['column_id'];
+         
+            # KFD 7/22/08, allow to filter on a foreign key,
+            #    by specifying the parent table in auto_formula
+            $af= $qp['auto_formula'];
+            $SWhere = '';
+            if($af<>'') {
+                $match = $this->ufks[trim($t).'_'.trim($af).'_']['cols_match'];
+                $match = str_replace('chd.',''    ,$match);
+                $match = str_replace('par.','new.',$match);
+                $SWhere = $SWhere .' AND '.$match;
+            }
+         
+            $sq="\n"
+                ."    --- 4000 Queue position bumps \n"
+                ."    UPDATE $t SET $c = $c + 1\n"
+                ."     WHERE $c = new.$c \n"
+                ."       AND skey <> new.skey\n"
+                ."       $SWhere;\n";                
+                $this->SpecDDL_TriggerFragment($t,"UPDATE","AFTER","4000",$sq);
+                $this->SpecDDL_TriggerFragment($t,"INSERT","AFTER","4000",$sq);
+        }
+    }
+    return true;
 }
 
 function SpecDDL_Triggers_Automated_Dominant()  {
