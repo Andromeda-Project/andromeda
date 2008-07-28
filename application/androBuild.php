@@ -3688,11 +3688,25 @@ function SpecDDL_Triggers_PK_DoOne($table_id,$cols,$pk,$rulestable) {
                     $tkid = trim($ukid['table_id']);
                     $sfx = trim($ukid['suffix']);
                     $pfx = trim($ukid['prefix']);
+
+                    # Major addition 6/28/08, originally missed.
+                    #       we must add the non-changing pk columns
+                    #       to the where clause!
+                    $aWhere = array();
+                    foreach($keys as $key2) {
+                        if($key2 == $key) continue;
+                        $aWhere[] = "$pfx$key2$sfx = old.$key2";
+                    }
+                    $eWhere = count($aWhere)>0
+                        ? "AND ".implode("\n           AND ",$aWhere)
+                        : "";
+                    
                     $s1="\n"
                         ."    -- 3100 PK Change Cascade\n"
                         ."    IF new.$key <> old.$key THEN\n"
                         ."        UPDATE $tkid SET $pfx$key$sfx = new.$key\n"
-                        ."         WHERE $pfx$key$sfx = old.$key;\n" 
+                        ."         WHERE $pfx$key$sfx = old.$key\n"
+                        ."           ".$eWhere.";\n"
                         ."    END IF;\n"
                         ."    -- 3100 END\n";
                     $this->SpecDDL_TriggerFragment(
@@ -7287,7 +7301,7 @@ function ContentLoad() {
             $this->SQL("insert into $table_id (skey_quiet) values ('Y')");
         }
     }
-
+    
     # Now run the load
 	$this->DBB_LoadContent(false,$this->content,"","");
     return true;
