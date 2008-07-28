@@ -350,6 +350,27 @@ function json_encode_safe($data) {
 * Builds a dispatch page object for the page $gp_page
 *
 * @category Page/Object Handling
+* @param string $x4page	page to be dispatched
+* @return object $obj_page	the x4 object that handles that table/page
+*/
+function x4Object($x4Page) {
+    include_once 'androX4.php';
+    $class  = 'androX4';
+    $file = strtolower($x4Page)=='menu' 
+        ? 'androX4Menu.php' 
+        : "x4$x4Page.php";
+    if(file_exists_incpath($file)) {
+        include_once($file);
+        $class = 'x4'.$x4Page;
+    }
+    $object = new $class($x4Page);
+    return $object;
+}
+
+/**
+* Builds a dispatch page object for the page $gp_page
+*
+* @category Page/Object Handling
 * @param string $gp_page	page to be dispatched
 * @return object $obj_page	the object represtenting the dispatched page.
 */
@@ -756,6 +777,7 @@ class androHtml {
                 html('td',$tr,$colvalue);
             }
         }
+        return $tbody;
     }
 
     /**
@@ -776,6 +798,7 @@ class androHtml {
         foreach($thvalues as $th) {
             $tr->h('td',$th,$class);
         }
+        return $thead;
     }
 
     /**
@@ -873,7 +896,7 @@ class androHtml {
         }
         foreach($this->code as $event=>$snippet) {
             $fname = $snippet_id.'_'.$event;
-            elementAdd('jqueryDocumentReady',"window.$fname = $snippet");
+            jqDocReady("window.$fname = $snippet");
             if(in_array($event,$twoparms)) 
                 $this->hp['on'.$event] = "$fname(this,event)";
             else 
@@ -2873,7 +2896,9 @@ function DD_ColumnBrowse(&$col,&$table)
 * @return mixed			value associated with $propery
 */
 function DD_TableProperty($table_id,$property) {
-	$table = &ddTable($table_id);
+	$table = ddTable_ref($table_id);
+    return $table_id[$property];
+    $table = &ddTable($table_id);
 	return $table[$property];
 }
 
@@ -6943,57 +6968,28 @@ function CacheWrite($name,$value) {
    DynamicSave($name,$value);
 }
 
-// ------------------------------------------------------------------
-// General Purpose Element listing, with specialized output
-// ------------------------------------------------------------------
-function ElementAdd($type,$msg) {
-    if($type=='script' || $type=='jqueryDocumentReady') {
-        $msg = preg_replace("/<script>/i",'',$msg);
-        $msg = preg_replace("/<\/script>/i",'',$msg);
-    }
-    $GLOBALS["AG"][$type][]=$msg;
-}
-function ElementInit($type) { $GLOBALS["AG"][$type]=array(); }
-function ElementReturn($type,$default=array()) {
-	global $AG;
-   if(!isset($AG[$type])) return $default;
-   else return $AG[$type];
-}
-function Element($type) {
-	global $AG;
-   if(!isset($AG[$type])) return false;
-	if (count($AG[$type])>0) return true; else return false;
-}
-function ElementImplode($type,$implode="\n") {
-    if(!isset($GLOBALS['AG'][$type])) return '';
-    else return implode($implode,$GLOBALS['AG'][$type]);
-}
-function ElementOut($type,$dohtml=false) {
-	global $AG;
-
-   // Hardcoded row we want in there
-   if($type=='script') {
-      //$calcRow=vgaGet('calcRow');
-      //ElementAdd('script',"\nfunction calcRow() {\n$calcRow\n}");
-
-      $ajaxTM=vgfGet('ajaxTM',0)==1 ? '1' : '0';
-      ElementAdd('script',"\nvar ajaxTM=$ajaxTM  /* Controls AJAX table maintenance */");
-
-      //$clearBoxes=implode("\n",ArraySafe($AG,'clearBoxes',array()));
-      //ElementAdd('script',"\nfunction clearBoxes() {\n$clearBoxes\n}");
-   }
-
-   $array=ArraySafe($AG,$type,array());
-	$retval="";
-	$extra="";
-	if ($dohtml) { $extra="<br/>"; }
-   foreach ($array as $msg) {
-      $retval.=$msg.$extra."\n";
-   }
-	$AG[$type]=array();
-	if (!$dohtml) { return $retval; }
-	if (!$retval) { return ""; }
-	else { return "<div class=\"$type\">$retval</div>"; }
+# ===================================================================
+# 
+# JQUERY FUNCTIONS
+#
+# ===================================================================
+/**
+* Stores a fragment of script to run inside of
+* jquery's documentReady() action.
+*
+* @param string   Script.  May be enclosed in html SCRIPT tags,
+*                 which you may want to do if your editor makes
+*                 it easier to work with it that way.
+*
+* @return false   Always returns false.
+*/
+function jqDocReady($script) {
+    $script = preg_replace("/<script>/i",''  ,$script);
+    $script = preg_replace("/<\/script>/i",'',$script);
+    $jdr = vgfGet('jqDocReady',array());
+    $jdr[] = $script;
+    vgfSet('jqDocReady',$jdr);
+    return false;
 }
 
 
@@ -10100,10 +10096,10 @@ function jsValuesOne($ahcols,$colname,$ahcol,$name,$row,$h) {
     # ) {
     if($setInScript) {
         if(gp('ajxBUFFER')) {
-            ElementAdd('ajax',"_script|ob('$name$colname').value='$colvalue'");
+            #E*lementAdd('ajax',"_script|ob('$name$colname').value='$colvalue'");
         }
         else {
-            ElementAdd('scriptend',"ob('$name$colname').value='$colvalue'");
+            jqDocReady("ob('$name$colname').value='$colvalue'");
         }
     }
 
@@ -10174,8 +10170,8 @@ function jsValuesOne($ahcols,$colname,$ahcol,$name,$row,$h) {
         ."</span>";
      $scr="getNamedItem('x_class_base').value='err'";
      $scr="ob('$name$colname').attributes.".$scr;
-     ElementAdd('ajax',"_script|$scr");
-     ElementAdd('ajax',"_script|ob('$name$colname').className='x3err'");
+     #E*lementAdd('ajax',"_script|$scr");
+     #E*lementAdd('ajax',"_script|ob('$name$colname').className='x3err'");
     }
     $h=str_replace($name.$colname.'--ERROR--',$herr,$h);
 
@@ -10184,7 +10180,8 @@ function jsValuesOne($ahcols,$colname,$ahcol,$name,$row,$h) {
     // Infinity plus one, register the clear
     // ------------------------------------
     $x="ob('$name$colname')";
-    ElementAdd('clearBoxes',"if($x) { $x.value='' }");
+    #
+    #ElementAdd('clearBoxes',"if($x) { $x.value='' }");
    return $h;
 }
 
@@ -11935,11 +11932,11 @@ function SQLX_Insert($table,$colvals,$rewrite_skey=true,$clip=false) {
          //if($colvals[$colname]<>'') {
             if (DD_ColInsertsOK($colinfo,'db')) {
                 # KFD 6/18/08, % signs really mess things up
-                if(strpos($colvals[$colname],'%')!==false) {
-                    ErrorAdd("The % sign may not be in a saved value");
-                    vgfSet('ErrorRow_'.$table_id,$colvals);                    
-                    return 0;
-                }
+                #if(strpos($colvals[$colname],'%')!==false) {
+                #    ErrorAdd("The % sign may not be in a saved value");
+                #    vgfSet('ErrorRow_'.$table_id,$colvals);                    
+                #    return 0;
+                #}
                 $cliplen = $clip ? $colinfo['colprec'] : 0;
                 $new_cols.=ListDelim($new_cols)." ".$colname;
                 $new_vals
