@@ -68,7 +68,7 @@ class x_login extends x_table2 {
 <!-- LOGIN HTML (BEGIN) -->
 <br/>
 <center>
-<h1><?=$GLOBALS['AG']['app_desc']?></h1>
+<h1><?=configGet('loginbefore',$GLOBALS['AG']['app_desc'])?></h1>
 </center>
 
 </center>
