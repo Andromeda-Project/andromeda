@@ -1,16 +1,45 @@
 <?php
-// Output the command to load javascript files
+# =====================================================================
+#
+# Spit out previously registered JS files.
+# The jsOutput() command decides whether to send a 
+# single minified file or to send them individually
+#
+# =====================================================================
 jsOutput();
 
-// Handle the first focus
-//echo vgfGet('HTML_focus');
+# =====================================================================
+#
+# Old-fashioned pre-x4 pre-jquery way to set focus.
+# Don't ever use this!  It will be deprecated
+# sooner or later.
+#
+# =====================================================================
 if(vgfGet('HTML_focus')<>'') {
     $f = vgfGet('HTML_focus');
-    ElementAdd('jqueryDocumentReady','$("#'.$f.'").focus()');
+    jqDocReady('$("#'.$f.'").focus()');
 }
 
 
-// Output any JQuery document ready stuff
+# =====================================================================
+#
+# Old-fashioned pre-x4 pre-jquery way to set focus.
+# Don't ever use this!  It will be deprecated
+# sooner or later.
+#
+# =====================================================================
+$jqdr = vgfGet('jqDocReady',array());
+if(count($jqdr)>0) {
+    ?>
+    <script type="text/javascript">
+    $(document).ready(function() {
+<?=implode("\n",$jqdr)?> 
+    });
+    </script>
+    <?php
+}
+/*  Original way pre 7/25/08, before we deprecated
+             elementadd()
 $jqueryDocumentReady = ElementImplode('jqueryDocumentReady');
 if($jqueryDocumentReady<>'') {
     ?>
@@ -21,14 +50,17 @@ if($jqueryDocumentReady<>'') {
     </script>
     <?php
 }
+*/
 
-$scriptend = ElementImplode('scriptend');
-if($scriptend<>'') {
-    ?>
-    <script type="text/javascript">
-    <?=$scriptend?>
-    </script>
-    <?php
+if(configGet('deprecated','Y')=='Y') {
+    $scriptend = ElementImplode('scriptend');
+    if($scriptend<>'') {
+        ?>
+        <script type="text/javascript">
+        <?=$scriptend?>
+        </script>
+        <?php
+    }
 }
 
 # -------------------------------------------------------------
@@ -51,4 +83,5 @@ if($scriptend<>'') {
     <?=vgfGet('htmlHelp')?>
   </div>
 </div>
-           
+<div id="dialogoverlay" style="display:none"></div>
+<div id="dialogbox"     style="display:none"></div>
