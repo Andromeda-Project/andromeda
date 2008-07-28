@@ -93,8 +93,6 @@ class x_docgen extends x_table2 {
       x_EchoFlush("BEGIN PROCESSING");
       x_EchoFlush("-----------------------------------------");
       x_EchoFlush("Purging generated pages...");
-      //SQL("Delete from cms_hiers where flag_auto='Y'");
-      //SQL("Delete from cms_pages where flag_auto='Y'");
       SQL("Delete from docpages where pagename='Documentation'");
       SQL("Delete from docpages where pagename='Data Dictionary'");
       $m1="Framework API Reference";
@@ -390,10 +388,6 @@ class x_docgen extends x_table2 {
    // ================================================================= \\
    // ================================================================= \\
    function ehProcessData() {
-      // Set the sequence for this main      
-      //$this->PageUpdate('Data Dictionary','','Documentation',990);
-
-      //$this->PageUpdate('Data Dictionary','','Documentation');
       x_EchoFlush("Processing Tables");
       $this->PageUpdate('Tables'    ,'','Data Dictionary');
       x_EchoFlush("Processing Modules");
@@ -413,6 +407,7 @@ class x_docgen extends x_table2 {
       $this->ProcessData_Groups();
       $this->ProcessData_SpecFiles();
       $this->ProcessData_Tables();
+      echo hErrors();
    }
    
    function ProcessData_Top() {
@@ -455,8 +450,9 @@ The information used to build the system came from the
       ob_start();
       ?>
 
-<table class="adocs_table1" cellspacing=0 cellpadding=0>
-<tr>
+<table class="adocs_table1 grid" cellspacing=0 cellpadding=0>
+<thead>
+<tr class="dark">
   <td class="adocs_th">Column Name
   <td class="adocs_th">Description
   <td class="adocs_th">Defined In
@@ -465,11 +461,11 @@ The information used to build the system came from the
   <td class="adocs_th">Present In
 </tr>
       <?php
-      $sq="SELECT * from zdd.columns_c order by column_id";
+      $sq="SELECT * from zdd.columns order by column_id";
       $cols=SQL_AllRows($sq);
       foreach($cols as $row) {
          $tabs=SQL_AllRows(
-            "SELECT table_id,column_id FROM zdd.tabflat_c
+            "SELECT table_id,column_id FROM zdd.tabflat
               WHERE columN_id_src='{$row['column_id']}'"
          );
          $ahtabs=array();
@@ -509,7 +505,7 @@ The information used to build the system came from the
       $this->ehTableHeader();
       $titles = array('Module','Source','Description');
       echo hTRFromArray('adocs_th',$titles);
-      $mods=SQL_AllRows('SELECT * from zdd.modules_c order by module');
+      $mods=SQL_AllRows('SELECT * from zdd.modules order by module');
       foreach($mods as $mod) {
          $display=array(
             $this->pageLink('Module',$mod['module'])
@@ -532,7 +528,7 @@ The information used to build the system came from the
       echo "<br><br>";
       echo "Tables in this module:<br>";
       $tabs=SQL_AllRows(
-         "SELECT table_id from zdd.tables_c
+         "SELECT table_id from zdd.tables
            WHERE module='".$row['module']."'"
       );
       $htabs=array();
@@ -542,7 +538,7 @@ The information used to build the system came from the
       echo implode(',&nbsp; ',$htabs);
       
       $bymods=SQL_AllRows(
-         "SELECT * FROM zdd.permxmodules_c
+         "SELECT * FROM zdd.permxmodules
             WHERE module = '".$row['module']."'
             ORDER BY group_id"
       );
@@ -598,7 +594,7 @@ belong to cannot read from that table.
       <td class="adocs_th">Delete
   </tr>
       <?php
-      $groups=SQL_AllRows("select * from zdd.groups_c order by group_id");
+      $groups=SQL_AllRows("select * from zdd.groups order by group_id");
       foreach($groups as $row) {
          // Don't look at the "effective" groups
          if(!$this->ProcessGroup($row['group_id'])) continue; ;
@@ -636,7 +632,7 @@ belong to cannot read from that table.
       $headers=Array('Module','Select','Insert','Update','Delete');
       echo hTRFromArray('adocs_th',$headers);
       $bymods=SQL_AllRows(
-         "SELECT * FROM zdd.permxmodules_c
+         "SELECT * FROM zdd.permxmodules
             WHERE group_id = '".$row['group_id']."'
             ORDER BY module"
       );
@@ -658,7 +654,7 @@ belong to cannot read from that table.
       $headers=Array('Module','Select','Insert','Update','Delete');
       echo hTRFromArray('adocs_th',$headers);
       $bymods=SQL_AllRows(
-         "SELECT * FROM zdd.perm_tabs_c
+         "SELECT * FROM zdd.perm_tabs
             WHERE group_id = '".$row['group_id']."'
             ORDER BY module"
       );
@@ -689,13 +685,13 @@ belong to cannot read from that table.
       echo "These are the spec files that were used to build this system.";
       
       $specs=SQL_AllRows(
-         "SELECT distinct srcfile FROM zdd.tables_c
+         "SELECT distinct srcfile FROM zdd.tables
           UNION 
-          SELECT distinct srcfile FROM zdd.columns_c
+          SELECT distinct srcfile FROM zdd.columns
           UNION 
-          SELECT distinct srcfile FROM zdd.modules_c
+          SELECT distinct srcfile FROM zdd.modules
           UNION 
-          SELECT distinct srcfile FROM zdd.groups_c"
+          SELECT distinct srcfile FROM zdd.groups"
       );
       foreach ($specs as $spec) {
          if($spec['srcfile']=='') continue; 
@@ -712,7 +708,7 @@ belong to cannot read from that table.
       $x=$specfile;
       
       $groups=SQL_AllRows(
-         "SELECT * from zdd.groups_c WHERE srcfile = '$specfile'
+         "SELECT * from zdd.groups WHERE srcfile = '$specfile'
           ORDER BY group_id"
       );
       echo "Groups defined in this file: <br>";
@@ -724,7 +720,7 @@ belong to cannot read from that table.
       echo "<br><br>";
       
       $groups=SQL_AllRows(
-         "SELECT * from zdd.modules_c WHERE srcfile = '$specfile'
+         "SELECT * from zdd.modules WHERE srcfile = '$specfile'
            ORDER BY module"
       );
       echo "Modules defined in this file: <br>";
@@ -736,7 +732,7 @@ belong to cannot read from that table.
       echo "<br><br>";
 
       $groups=SQL_AllRows(
-         "SELECT * from zdd.tables_c WHERE srcfile = '$specfile'
+         "SELECT * from zdd.tables WHERE srcfile = '$specfile'
            ORDER BY table_id"
       );
       echo "Tables defined in this file: <br>";
@@ -748,7 +744,7 @@ belong to cannot read from that table.
       echo "<br><br>";
 
       $groups=SQL_AllRows(
-         "SELECT * from zdd.columns_c WHERE srcfile = '$specfile'
+         "SELECT * from zdd.columns WHERE srcfile = '$specfile'
            ORDER BY column_id"
       );
       echo "Columns defined in this file: <br>";
@@ -772,26 +768,32 @@ belong to cannot read from that table.
    function ProcessData_Tables() {
       ob_start();
       ?>
-<table class="adocs_table1" cellspacing=0 cellpadding=0>
-  <tr><td class="adocs_th">Table
+<table class="adocs_table1 grid" cellspacing=0 cellpadding=0>
+  <thead>
+  <tr class="dark">
+      <td class="adocs_th">Module
+      <td class="adocs_th">Table
       <td class="adocs_th">Defined In
       <td class="adocs_th">Title
-      <td class="adocs_th">Module
+  </thead>
   </tr>
       <?php 
       $sql = 
-         "SELECT table_id,srcfile,description,module 
-           FROM zdd.tables_c 
-          ORDER BY table_id ";
+         "SELECT t.table_id,t.srcfile,t.description,t.module 
+           FROM zdd.tables t
+           JOIN zdd.modules m
+             ON t.module = m.module
+          WHERE t.module <> 'datadict'
+          ORDER BY m.uisort,t.uisort";
       $results = SQL($sql);
       //echo hErrors();
       while ($row = SQL_FETCH_ARRAY($results)) {
          //hprint_r($row);
          $display=array(
-            $this->PageLink('Table',$row['table_id'])
+            $this->PageLink('Module',$row['module'])
+            ,$this->PageLink('Table',$row['table_id'])
             ,$this->PageLink('Spec file',$row['srcfile'])
             ,$row['description']
-            ,$this->PageLink('Module',$row['module'])
          );
          echo hTRFromArray('',$display);
          $this->ProcessData_OneTable($row);
@@ -802,26 +804,34 @@ belong to cannot read from that table.
    }
 
    function ProcessData_OneTable($table) {
-
       $tab = trim($table["table_id"]);
       ob_start();
-      echo "Module: ".$this->PageLink('Module',$table['module']);
-      echo "<br><br>";
-      echo "Parent Tables:<br>";
+      ?>
+       <table class="adocs_table1 grid" cellspacing=0 cellpadding=0>
+          <thead>
+          <tr class="dark">
+              <td class="adocs_th">Module
+              <td class="adocs_th">Parent Tables
+              <td class="adocs_th">Child Tables
+          </thead>
+          </tr>
+          <tr>
+      <?php
+      echo "<td>".$this->PageLink('Module',$table['module']);
       $pars=SQL_AllRows(
-         "Select table_id_par from zdd.tabfky_c
+         "Select table_id_par from zdd.tabfky
            WHERE table_id = '$tab'"
       );
       $hpars = array();
+      echo "<td>";
       foreach($pars as $par) {
          $hpars[]=$this->pagelink('Table',$par['table_id_par']);
       }
       echo implode(',&nbsp; ',$hpars);
 
-      echo "<br><br>";
-      echo "Child Tables:<br>";
+      echo "<td>";
       $pars=SQL_AllRows(
-         "Select table_id from zdd.tabfky_c
+         "Select table_id from zdd.tabfky
            WHERE table_id_par = '$tab'"
       );
       $hpars = array();
@@ -829,16 +839,17 @@ belong to cannot read from that table.
          $hpars[]=$this->pagelink('Table',$par['table_id']);
       }
       echo implode(',&nbsp; ',$hpars);
+      echo "</table>";
 
       echo "<br><br>";
-      echo "Column Definitions:<Br>";
+      echo "<h3>Column Definitions:</h3><br/>";
       $this->ehTableHeader();
       $titles=array('Column','Caption','PK','Browse'
          ,'Stats','Automation','Parent'
       );
-      echo hTRFromArray('adocs_th',$titles);
+      echo hTRFromArray('adocs_th dark',$titles);
       $cols= SQL_AllRows(
-         "select * from zdd.tabflat_c where table_id = '$tab'
+         "select * from zdd.tabflat where table_id = '$tab'
           ORDER BY uicolseq"
           ,'column_id'
       );
@@ -861,7 +872,7 @@ belong to cannot read from that table.
       
       // Output chain: Calculations and extensions
       $colsCons=SQL_AllRows("
-Select c.* from zdd.colchains_c c
+Select c.* from zdd.colchains c
   JOIN zdd.column_seqs     seq
     ON c.table_id = seq.table_id
    AND c.column_id= seq.column_id
@@ -889,8 +900,8 @@ Select c.* from zdd.colchains_c c
          <?php
          $tests=SQL_AllRows("
 select arg.*,test.funcoper,test.compoper 
-  from zdd.colchainargs_c  arg 
-  JOIN zdd.colchaintests_c test 
+  from zdd.colchainargs  arg 
+  JOIN zdd.colchaintests test 
     ON arg.uicolseq = test.uicolseq
  WHERE arg.table_id = '$tab'
    AND arg.column_id = ".SQLFC($column_id)."
@@ -934,7 +945,7 @@ select arg.*,test.funcoper,test.compoper
       $headers=Array('Group','Select','Insert','Update','Delete');
       echo hTRFromArray('adocs_th',$headers);
       $bymods=SQL_AllRows(
-         "SELECT * FROM zdd.perm_tabs_c
+         "SELECT * FROM zdd.perm_tabs
             WHERE table_id = '$tab'
             ORDER BY group_id"
       );
@@ -1037,7 +1048,7 @@ select arg.*,test.funcoper,test.compoper
    }
    
    function ehTableHeader() {
-      echo "<table cellpadding=0 cellspacing=0 class=\"adocs_table1\">";
+      echo "<table cellpadding=0 cellspacing=0 class=\"adocs_table1 grid\">";
    }
    
    function PermResolve($perm) {

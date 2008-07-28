@@ -219,14 +219,11 @@ class x_docview extends x_table2 {
       // Now the actual output and formatting
       // 
       $this->PageSubtitle=$pn;
-      if(LoggedIn()) {
-         echo '<a href="?gp_page=docpages&gp_pk='.urlencode($pn).'">EDIT THIS PAGE</a>';
-         echo "<br><br>";
-      }
+      echo "<h1>Database Specification</h1>";
       echo $hpars."<br><br>";
       echo $hpn;
       echo "\n<hr>";
-      echo "\n<htitle>".$pn."</htitle>\n";
+      echo "\n<h2>".$pn."</h2>\n";
       echo $html;
       if (count($kids)>0 && $pn=='Data Dictionary') {
          echo "\n<hr>";
@@ -240,11 +237,8 @@ class x_docview extends x_table2 {
       echo $hpn;
       ?>
       <hr>
-      Page last modified <?=date('r',X_SQLTS_TO_UNIX($row['ts_upd']))?> by 
+      Page last modified <?=date('r',dEnsureTS($row['ts_upd']))?> by 
          <?=$row['uid_upd']?><br><br>
-      &copy; Copyright 2004-2006 by Secure Data Software<br>
-      Distributed under the terms of the GNU Free Documentation License
-      <hr>
       <?php
    }
    
