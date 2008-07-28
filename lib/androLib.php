@@ -2896,8 +2896,6 @@ function DD_ColumnBrowse(&$col,&$table)
 * @return mixed			value associated with $propery
 */
 function DD_TableProperty($table_id,$property) {
-	$table = ddTable_ref($table_id);
-    return $table_id[$property];
     $table = &ddTable($table_id);
 	return $table[$property];
 }
