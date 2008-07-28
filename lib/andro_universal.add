@@ -435,14 +435,25 @@ column uisearchdash {
     description: Search Range Operator;
     flagcarry: Y;
 }
-column x4welcome {
+column x4menu {
     type_id: cbool;
-    description: Go into x4 mode after Login;
+    description: Use x4 by Default; 
     flagcarry: N;
 }
 column x4padmenu { 
     type_id: cbool;
     description: Put direct menu link on x4 menu bar;
+    flagcarry: N;
+}
+column cf_template {
+    type_id: vchar;
+    colprec: 40;
+    description: Default Template;
+    flagcarry: N;
+}
+column deprecated {
+    type_id: cbool;
+    description: Load Deprecated Features;
     flagcarry: N;
 }
 table configfw {
@@ -460,8 +471,8 @@ table configfw {
     }
     column { smtpout; }
     column { uisearchdash; }
-    column { x4welcome; x4padmenu; }
-    column { js_css_debug;  }
+    column { x4menu; x4padmenu; }
+    column { js_css_debug; deprecated; }
 }
 table configapp {
     module: system;
@@ -471,7 +482,8 @@ table configapp {
     group $LOGIN { permsel: "Y"; nomenu: "Y";  }
     
     column recnum  { primary_key: "Y"; uisearch: "Y"; }
-    column { smtpout; }
+    column { cf_template; }
+    column { smtpout;     }
 }
 table configinst {
     module: system;
@@ -507,7 +519,7 @@ menu configconfirm {
 }
 content configfw {
     columns { smtpout; js_css_debug; uisearchdash; 
-        x4welcome; x4padmenu; 
+        x4menu; x4padmenu; 
     }
     update { localhost; N; --; N; N; N; Y;}
 }
@@ -3485,11 +3497,15 @@ module docs {
    description: Documentation; 
    uisort: 900;
    nomenu: Y;
+   // KFD 7/24/08, give group configadmin full rights
+   group configadmin {
+       permsel: Y; permins: Y; permupd: Y; permdel: Y; nomenu: N;
+   }
 }
 
 // Library program to generate pages out of database and code
-menu x_docview { description: View Docs; module: docs; uisort: 100; }
-menu x_docgen  { description: Gen Docs;  module: docs; uisort: 200; }
+menu x_docview { description: View Docs; module: docs; uisort: 100; uix2: Y; }
+menu x_docgen  { description: Gen Docs;  module: docs; uisort: 200; uix2: Y; }
 
 column pagename { description: Page Name; type_id: vchar;  colprec: 60; }
 column pagetext { description: Page Text; type_id: text; }
