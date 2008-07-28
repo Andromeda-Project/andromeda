@@ -19,35 +19,87 @@
    or visit http://www.gnu.org/licenses/gpl.html
 \* ================================================================== */
 
-// -----------------------------------------------------
-// SPECIAL NOTE FROM KEN 4/2/08.  This file contains
-//    Code that code that goes way back to day 1,
-//    a lot of it is long since defunct.  This file
-//    could be significantly cut down when we
-//    do the code cleanup
-// -----------------------------------------------------
+/* ---------------------------------------------------- *\
+   STRUCTURE OF THIS FILE
+   
+   This file contains the oldest javascript in 
+   Andromeda.  Some code is required for b/w 
+   compatibility, and other code was used only
+   once or twice and is now dead.  The basic 
+   sections of this file are:
+   
+   1) Required for compatibility with x2 applications
+   2) Javascript prototype extensions
+   3) Jquery Plugins
+   4) Universal utility object, uu, no Andromeda dependencies   
+   5) The Andromeda general utility object, au
+   6) Andromeda utilties not part of au, like androSelect()
+   7) The (old) general utility object, $a (mixed dependencies)
+   8) All other presumed deprecated code.
+      
+\* ---------------------------------------------------- */
+      
 
-// ------------------------------------------------------
-// Top level execution: determine if IE
-// ------------------------------------------------------
-var androIE = false;
-if(    navigator.userAgent.indexOf('MSIE') >=0 
-    && navigator.userAgent.indexOf('Opera')<0) {
-    androIE = true;
+/* ---------------------------------------------------- *\
+   SECTION 1: X2 COMPATIBILITY.  
+   
+   Not deprecated outright, but discouraged. You
+   should be coding x4 pages which have much 
+   nicer functions for everything these functions do.
+\* ---------------------------------------------------- */
+function SetAndPost(varname,varvalue) {
+	ob(varname).value = varvalue;
+	formSubmit();
+}
+function SaveAndPost(varname,varvalue) {
+   ob('gp_save').value=1;
+	ob(varname).value = varvalue;
+	formSubmit();
+}
+var ajaxTM=0;
+function formPostAjax(stringparms) {
+   var ajaxTMold=ajaxTM;
+   ajaxTM=1;
+   formPostString(stringparms);
+   ajaxTM=ajaxTMold;
+}
+function formPostString(stringparms) {
+   // Modified KFD 5/30/07 to switch to AJAX calls.  We now pass
+   //   the string parms to formSubmit, where it uses them to 
+   //   build a post string.
+   //ob('Form1').action="index.php?"+stringparms;
+   //formSubmit();
+   formSubmit(stringparms);
 }
 
-// ------------------------------------------------------
-// Some variable conventions
-//   obj    :  an object reference returned by ob() as passed as 'this'
-//   objname:  name of an object
-//   att    :  an attribute returned by obj.attributes.getNamedItem()
-//   attname:  attribute name
-//   keycode:  the return value from keyCode()
-//
-// ------------------------------------------------------
-// Handy verbosity-reducing routines
-// ------------------------------------------------------
-// Get an object reference
+function SetAction(gp_var,gp_action,varname,varvalue) {
+	ob(gp_var).value = gp_action;
+	SetAndPost(varname,varvalue);
+}
+
+function drillDown(dd_page,ddc,ddv) {
+	drillDownSet(dd_page,ddc,ddv);
+	formSubmit();
+}
+
+function drillDownSet(dd_page,ddc,ddv) {
+	ob("dd_page").value   = dd_page;
+	ob("dd_ddc").value    = ddc;
+	ob("dd_ddv").value    = ddv;
+}
+
+function drillBack(gp_count) { 
+	ob("dd_ddback").value=gp_count;
+	formSubmit(); 
+}
+function serverFunctionCall(name,parms) {
+   function_return_value=false;
+   var str=''
+   str = '?gp_function='+name;
+   str+= '&gp_parms='+parms;
+   andrax(str);
+}
+
 function byId(id) {
    return document.getElementById(id);
 }
@@ -62,6 +114,7 @@ function obv(oname) {
    if(ob(oname)) return ob(oname).value;
    else return '';
 }
+
 // Return keystroke like 'A' or '1'
 function KeyEvent(e) {
    if(window.event)
@@ -70,40 +123,6 @@ function KeyEvent(e) {
    else
       // firefox
       return e.which;
-}
-// return keycode, this is the one you
-// need to catch function keys, arrows keys and 
-// so forth.
-function KeyCode(e) {
-   if(window.event)
-      // IE
-      return window.event.keyCode;  
-   else
-      // firefox
-      return e.keyCode;
-}
-// Return the value of a named attribute, empty
-// string if it does not exist
-function obAttValue(objname,attname) {
-   var obj=ob(objname);
-   return objAttValue(obj,attname);
-}
-
-function objAttValue(obj,attname) {
-   if(!obj) {
-      //alert('Reference to unknown object: '+objname);
-      return '';
-   }
-   else {
-      att = obj.attributes.getNamedItem(attname);
-      if(!att) {  
-         //alert('Reference to unknown attribute: '+objanem+'.'+attname);
-         return '';
-      }
-      else {
-         return att.value;
-      }           
-   }
 }
 // Compatibility
 // Cross-browser implementation of element.addEventListener()
@@ -137,10 +156,6 @@ function eventTarget(e) {
         return e.currentTarget;
 }
 
-
-// ------------------------------------------------------
-// Universal keystroke handling for HTML body element
-// ------------------------------------------------------
 function bodyKeyPress(e) {
    keycode = KeyCode(e);
    
@@ -360,6 +375,134 @@ function fetchSELECT(table,input,col1,col1val,col2,col2val) {
     andrax(getString);
 }
 
+function formSubmit(str) {
+   // This is the branch that just submits
+   if(typeof(ajaxTM)=='undefined') {
+      if(str) {
+         ob('Form1').action="index.php?"+str;
+      }
+      ob("Form1").submit();
+      return;
+   }
+   if(ajaxTM==0) {
+      if(str) {
+         ob('Form1').action="index.php?"+str;
+      }
+      ob("Form1").submit();
+      return;
+   }
+   
+   // this is the ajax branch
+   formSubmitajxBUFFER(str);
+   return;
+}
+   
+function formSubmitajxBUFFER(str) {
+   if(str) {str='&'+str } else { str=''; }
+   var postString= '?ajxBUFFER=1' + str;
+   var f = ob('Form1');
+   for(var no = 0; no < f.elements.length; no++ ) {
+      e=f.elements[no];
+      if(e.type=='hidden') {
+         if(e.value) {
+            postString+="&"+e.name+"=";
+            postString+=encodeURIComponent(e.value);
+         }
+      }
+      else {
+         if(e.attributes.getNamedItem('x_value_original')) {
+            xva = e.attributes.getNamedItem('x_value_original');
+            if(e.tagName=='TEXTAREA') {
+               postString+="&"+e.name+"=";
+               postString+=encodeURIComponent(e.innerHTML);
+            }
+            else {
+               postString+="&"+e.name+"=";
+               postString+=encodeURIComponent(e.value);
+            }
+         }
+         else {
+            postString+="&"+e.name+"="+encodeURIComponent(e.value);
+         }
+      }
+   }
+   andrax(postString);
+}
+
+function fieldsReset() {
+   var f = ob('Form1');
+   //f.reset();
+   var x = 'x'
+   for(var no = 0; no < f.elements.length; no++ ) {
+      if(f.elements[no].type!='hidden') {
+         x=f.elements[no];
+         if(x.attributes.getNamedItem('x_value_original')!=null) {
+             x.value=x.attributes.getNamedItem('x_value_original').value;
+             if(x.attributes.getNamedItem('x_mode').value=='upd') {
+                 changeCheck(x);
+             }
+         }
+      }
+   }
+}
+
+function clearBoxes() {
+   var f = ob('Form1');
+   for(var no = 0; no < f.elements.length; no++ ) {
+      obj=f.elements[no];
+      if(obj.type=='hidden') continue;
+      if(obj.type=='button') continue;
+      //if(obj.attributes.getNamedItem('x_no_clear')) {
+         if(obj.attributes.getNamedItem('x_no_clear').value=='Y') continue;
+      //}
+      f.elements[no].value='';
+   }
+}
+
+// ------------------------------------------------------
+// Popup a window and display something in that.
+// ------------------------------------------------------
+function Popup(url,caption){
+	w = 770;
+	h = 700;
+	mytop = 100;
+	myleft = 100;
+	//settings="width=" + w + ",height=" + h + ",top=" + mytop + ",left=" + myleft + ", " +
+	//	"scrollbars=yes,location=no,directories=no,status=no,resizable=yes";
+	settings="width=" + w + ",height=" + h + ",top=" + mytop + ",left=" + myleft + ", " +
+		"scrollbars=yes,resizable=yes";
+	//win=window.open(url,caption,settings);
+   //alert(5);
+   // KFD 7/19/06, Using the caption fails on IE 6, go figure.
+   //              not pursued at this time....
+   //settings='';
+	win=window.open(url,'Popup',settings);
+   //win=window.open('http://www.novell.com','Testing','');
+	win.focus();
+}
+
+// ------------------------------------------------------
+// Popup a custom-size window and display something in that.
+// ------------------------------------------------------
+function PopupSized(url,caption,w,h,mytop,myleft){
+	//w = 770;
+	//h = 700;
+	//mytop = 100;
+	//myleft = 100;
+	//settings="width=" + w + ",height=" + h + ",top=" + mytop + ",left=" + myleft + ", " +
+	//	"scrollbars=yes,location=no,directories=no,status=no,resizable=yes";
+	settings="width=" + w + ",height=" + h + ",top=" + mytop + ",left=" + myleft + ", " +
+		"status=no,scrollbars=no,resizable=no,toolbars=no";
+	win=window.open(url,caption,settings);
+   //alert(5);
+   // KFD 7/19/06, Using the caption fails on IE 6, go figure.
+   //              not pursued at this time....
+	//win=window.open(url,'Popup',settings);
+   //win=window.open('http://www.novell.com','Testing','');
+	win.focus();
+}
+
+
 
 // ------------------------------------------------------
 // Routines added 4/9/07 for AJAX-ified interface
@@ -454,65 +597,6 @@ function ajaxFetch(
 }
 
 // ------------------------------------------------------
-// Some basic routines to post vars
-// ------------------------------------------------------
-function SetAndPost(varname,varvalue) {
-	ob(varname).value = varvalue;
-	formSubmit();
-}
-function SaveAndPost(varname,varvalue) {
-   ob('gp_save').value=1;
-	ob(varname).value = varvalue;
-	formSubmit();
-}
-var ajaxTM=0;
-function formPostAjax(stringparms) {
-   var ajaxTMold=ajaxTM;
-   ajaxTM=1;
-   formPostString(stringparms);
-   ajaxTM=ajaxTMold;
-}
-function formPostString(stringparms) {
-   // Modified KFD 5/30/07 to switch to AJAX calls.  We now pass
-   //   the string parms to formSubmit, where it uses them to 
-   //   build a post string.
-   //ob('Form1').action="index.php?"+stringparms;
-   //formSubmit();
-   formSubmit(stringparms);
-}
-function u3SS(stringparms) {
-   ob('u3string').value=stringparms;
-   formSubmit();
-}
-
-function SetAction(gp_var,gp_action,varname,varvalue) {
-	ob(gp_var).value = gp_action;
-	SetAndPost(varname,varvalue);
-}
-
-function drillDown(dd_page,ddc,ddv) {
-	drillDownSet(dd_page,ddc,ddv);
-	formSubmit();
-}
-
-function drillDownSet(dd_page,ddc,ddv) {
-	ob("dd_page").value   = dd_page;
-	ob("dd_ddc").value    = ddc;
-	ob("dd_ddv").value    = ddv;
-}
-
-function drillBack(gp_count) { 
-	ob("dd_ddback").value=gp_count;
-	formSubmit(); 
-}
-function serverFunctionCall(name,parms) {
-   function_return_value=false;
-   var str=''
-   str = '?gp_function='+name;
-   str+= '&gp_parms='+parms;
-   andrax(str);
-}
-// ------------------------------------------------------
 // This gives info on a row in a table
 // ------------------------------------------------------
 // Introduced w/x_table2
@@ -556,155 +640,7 @@ function doButtonActions(e,compareto,obtodo,funcs) {
 }
 */
 
-// ------------------------------------------------------
-// Popup a window and display something in that.
-// ------------------------------------------------------
-function Popup(url,caption){
-	w = 770;
-	h = 700;
-	mytop = 100;
-	myleft = 100;
-	//settings="width=" + w + ",height=" + h + ",top=" + mytop + ",left=" + myleft + ", " +
-	//	"scrollbars=yes,location=no,directories=no,status=no,resizable=yes";
-	settings="width=" + w + ",height=" + h + ",top=" + mytop + ",left=" + myleft + ", " +
-		"scrollbars=yes,resizable=yes";
-	//win=window.open(url,caption,settings);
-   //alert(5);
-   // KFD 7/19/06, Using the caption fails on IE 6, go figure.
-   //              not pursued at this time....
-   //settings='';
-	win=window.open(url,'Popup',settings);
-   //win=window.open('http://www.novell.com','Testing','');
-	win.focus();
-}
 
-// ------------------------------------------------------
-// Popup a custom-size window and display something in that.
-// ------------------------------------------------------
-function PopupSized(url,caption,w,h,mytop,myleft){
-	//w = 770;
-	//h = 700;
-	//mytop = 100;
-	//myleft = 100;
-	//settings="width=" + w + ",height=" + h + ",top=" + mytop + ",left=" + myleft + ", " +
-	//	"scrollbars=yes,location=no,directories=no,status=no,resizable=yes";
-	settings="width=" + w + ",height=" + h + ",top=" + mytop + ",left=" + myleft + ", " +
-		"status=no,scrollbars=no,resizable=no,toolbars=no";
-	win=window.open(url,caption,settings);
-   //alert(5);
-   // KFD 7/19/06, Using the caption fails on IE 6, go figure.
-   //              not pursued at this time....
-	//win=window.open(url,'Popup',settings);
-   //win=window.open('http://www.novell.com','Testing','');
-	win.focus();
-}
-
-// ------------------------------------------------------
-// A major rewrite.  formSubmit used to have only one
-// line, "ob('Form1').submit()".  Now it is AJAX-ified,
-// it builds a string and sends back the post, but it is
-// clever enough to only send back the changed values!
-// And it tells the server to send back only main 
-// content, no need for the rest of it.
-// ------------------------------------------------------
-function formSubmit(str) {
-   // This is the branch that just submits
-   if(typeof(ajaxTM)=='undefined') {
-      if(str) {
-         ob('Form1').action="index.php?"+str;
-      }
-      ob("Form1").submit();
-      return;
-   }
-   if(ajaxTM==0) {
-      if(str) {
-         ob('Form1').action="index.php?"+str;
-      }
-      ob("Form1").submit();
-      return;
-   }
-   
-   // this is the ajax branch
-   formSubmitajxBUFFER(str);
-   return;
-}
-   
-function formSubmitajxBUFFER(str) {
-   if(str) {str='&'+str } else { str=''; }
-   var postString= '?ajxBUFFER=1' + str;
-   var f = ob('Form1');
-   for(var no = 0; no < f.elements.length; no++ ) {
-      e=f.elements[no];
-      if(e.type=='hidden') {
-         if(e.value) {
-            postString+="&"+e.name+"=";
-            postString+=encodeURIComponent(e.value);
-         }
-      }
-      else {
-         if(e.attributes.getNamedItem('x_value_original')) {
-            xva = e.attributes.getNamedItem('x_value_original');
-            if(e.tagName=='TEXTAREA') {
-               postString+="&"+e.name+"=";
-               postString+=encodeURIComponent(e.innerHTML);
-            }
-            else {
-               postString+="&"+e.name+"=";
-               postString+=encodeURIComponent(e.value);
-            }
-         }
-         else {
-            postString+="&"+e.name+"="+encodeURIComponent(e.value);
-         }
-      }
-   }
-   andrax(postString);
-}
-
-function fieldsReset() {
-   var f = ob('Form1');
-   //f.reset();
-   var x = 'x'
-   for(var no = 0; no < f.elements.length; no++ ) {
-      if(f.elements[no].type!='hidden') {
-         x=f.elements[no];
-         if(x.attributes.getNamedItem('x_value_original')!=null) {
-             x.value=x.attributes.getNamedItem('x_value_original').value;
-             if(x.attributes.getNamedItem('x_mode').value=='upd') {
-                 changeCheck(x);
-             }
-         }
-      }
-   }
-}
-
-function clearBoxes() {
-   var f = ob('Form1');
-   for(var no = 0; no < f.elements.length; no++ ) {
-      obj=f.elements[no];
-      if(obj.type=='hidden') continue;
-      if(obj.type=='button') continue;
-      //if(obj.attributes.getNamedItem('x_no_clear')) {
-         if(obj.attributes.getNamedItem('x_no_clear').value=='Y') continue;
-      //}
-      f.elements[no].value='';
-   }
-}
-
-// ------------------------------------------------------
-// A simple shortcut
-// ------------------------------------------------------
-function ob(oname) {
-  if (document.getElementById)
-	  return document.getElementById(oname);
-  else if (document.all) 
-	  return document.all[name];
-}
-
-function obv(oname) {
-   if(ob(oname)) return ob(oname).value;
-   else return '';
-}
 
 // ------------------------------------------------------
 // Our super-simple AJAX library.  
@@ -867,9 +803,13 @@ function  handleResponseOne(one_element,controls) {
    return controls;
 }
 
-// ----------------------------------------------------------------
-// String Trim stuff 
-// ----------------------------------------------------------------
+
+/* ---------------------------------------------------- *\
+
+   SECTION 2: javascript prototype extensions  
+   
+\* ---------------------------------------------------- */
+
 String.prototype.trim = function() {
 	return this.replace(/^\s+|\s+$/g,"");
 }
@@ -918,13 +858,346 @@ String.prototype.strpad = function(str, len, pad, dir) {
  
 }
 
-// ----------------------------------------------------------------
-// ANDROMEDA AJAX-IFIED DROPDOWN LIST
-// Honorable mention to www.dhtmlgoodies.com, whose code I
-//    examined while creating this code. --KFD  
-// ----------------------------------------------------------------
-// begin with the public object that 
-// tracks all of the info for the androSelect:
+/* ---------------------------------------------------- *\
+
+   SECTION 3: jQuery plugins  
+   
+\* ---------------------------------------------------- */
+
+ 
+/*
+ * Plugin to track focus
+ */
+jQuery.focusTrack = false;
+jQuery.focusTrackStack = [ ];
+jQuery.focusTrackPop = function() {
+    if(jQuery.focusTrackStack.length > 0) {
+        $( jQuery.focusTrack ).blur();
+        jQuery.focusTrack = jQuery.focusTrackStack.pop(); 
+    }    
+}
+jQuery.focusTrackBlur = function() {
+    if(jQuery.focusTrackStack.length > 0) {
+        $( jQuery.focusTrack ).blur();
+    }    
+}
+jQuery.focusTrackRestore = function() {
+    $(jQuery.focusTrack).focus();
+}
+jQuery.fn.focusTrack = function(newContext) {
+    // If a new context, push the old back a layer     
+    if(newContext) {
+        if(jQuery.focusTrack) {
+            $(jQuery.focusTrack).blur();
+        }
+        jQuery.focusTrackStack[jQuery.focusTrackStack.length]=jQuery.focusTrack;
+        jQuery.focusTrack = false;
+    }
+    return this.each(function() {
+        $(this).focus( function() {
+            jQuery.focusTrack = this;
+        })
+    });
+}
+
+jQuery.getCSS = function( url, media, rel, title ) {
+   jQuery( document.createElement('link') ).attr({
+       href: url,
+       media: media || 'screen',
+       type: 'text/css',
+       title: title || '',
+       rel: rel || 'stylesheet'
+   }).appendTo('head');
+};
+
+var jqModalClose=function(hash) { hash.w.fadeOut(500, function() { hash.o.fadeOut(250);}); };
+var jqModalOpen=function(hash) { hash.w.fadeIn(500);hash.o.fadeIn(500);};
+
+/* ---------------------------------------------------- *\
+
+   SECTION 4: Universal Utility Object   
+   
+   This is *nearly* independent of all Andromeda
+   dependencies, except the following:
+   
+   1) Expects a div at bottom of html w/ID "invisible"
+   2) Assumes Andromeda style sheet (ie "style1")
+   
+\* ---------------------------------------------------- */
+var uu = {
+    /**
+    * Basic utility functions are in the "u" subobject
+    */
+    u: {
+        debugFlag: false,
+        
+        p: function(obj,varName,defValue) {
+            if(typeof(obj)!='object') {
+                return defvalue;
+            }
+            
+            // First try, maybe it is a direct property
+            if(typeof(obj[propname])!='undefined') {
+                return obj[propname];
+            }
+            // Second try, maybe it is an attribute
+            if(obj.getAttribute) {
+                if(obj.getAttribute(propname)!=null) {
+                    return obj.getAttribute(propname);
+                }
+            }
+            // Give up, return the defvalue
+            return defvalue;
+        },
+        
+        // Get an object by ID
+        byId: function(id) {
+            return document.getElementById(id );
+        },
+        
+        // Make a log entry if firebug console is available
+        log: function(message) {
+            if(typeof(console)!='undefined') {
+                console.log(msg);
+            }
+        },
+        // If flagDebug is true, send message to log
+        debug: function(message) {
+            if(this.debugFlag) {
+                this.log(message);
+            }
+        }
+    },
+    
+    /*
+    * bulletin board to simulate safe global variables.  You
+    * can "stick" them here and grab them later
+    */
+    bb: {
+        fwvars: { },
+        appvars: { },
+        vgfSet: function(varName,value) {
+            this.fwvars[varName] = value;
+        },
+        vgfGet: function(varName,defValue) {
+            return uu.u.p(this.fwvars,varName,defValue);
+        },
+        vgaSet: function(varName,value) {
+            this.appvars[varName] = value;
+        },
+        vgaGet: function(varName,defValue) {
+            return uu.u.p(this.appvars,varName,defValue);
+        }
+    },
+    
+    
+    /*
+    * Event listener and dispatcher
+    */
+    events: {
+        subscribers: { },
+        
+        /**
+        * Objects subscribe to events by calling uu.events.subscribe() with
+        * the name of the event and a back reference to themselves.
+        *
+        */
+        subscribe: function(eventName,object) {
+            // First determine if we have any listeners for this
+            // event at all.  If not, make up the empty object
+            if( uu.u.p(this.subscribers,eventName,null)==null) {
+                this.subscribers[eventName] = { };
+            }
+            var subs = this.subscribers[eventName];
+            
+            // Assign the listener by its ID.  This lets us prevent duplication
+            // if the object is confused and registers itself twice.
+            //
+            var id = object.id;
+            if( uu.u.p(subs,id,null)==null ) {
+                subs[id] = object;
+            }
+        },
+        
+        /**
+        * An object that fires an event will call uu.events.notify with the
+        * name of the event and a single argument.  If multiple arguments are
+        * required, they should be put into an array or object 
+        * that the receiving objects must understand.
+        *
+        */
+        notify: function(eventName,arguments) {
+            // Find out if anybody is listening for this event
+            var subscribers = uu.u.p(this.subscribers,eventName,{ });
+            
+            for(var id in subscribers) {
+                var subscriber = subscribers[id];
+                uu.u.debug(
+                    "Dispatching event "+eventName+" to "+id+" with arguments:"
+                );
+                uu.u.debug(arguments);
+                subscriber.notify(eventName,arguments);
+            }
+        }
+    }, 
+
+    /*
+    * Dialogs
+    */
+    dialogs: {
+        answer: null,
+        json: null,
+        
+        clear: function(answer) {
+            this.answer = answer;
+            $('#dialogbox,#dialogoverlay').css('display','none');
+        },
+        
+        prepare: function() {
+            // Get some basic heights and widths
+            var wh = $(window).height();
+            var ww = $(window).width();
+            
+            // Make complete assignment to the overlay
+            $('#dialogoverlay')
+                .css('position','absolute')
+                .css('top',0)
+                .css('left',0)
+                .css('width' ,ww+1000)
+                .css('height',wh+1000)
+                .css('background-color','black')
+                .css('opacity',0)
+                .css('display','')
+                .css('z-index',500);
+
+            // Get height and width of the inner guy and center him
+            var ch = $('#dialogbox').height();
+            $('#dialogbox').css('width',200);
+            cw = 200;
+            
+            // Center and otherwise prepare the box
+            $('#dialogbox')
+                .css('position','absolute')
+                .css('top' , 200)
+                .css('left', (ww - cw)/2)
+                .css('opacity',0)
+                .css('display','')
+                .css('z-index',501)
+                .addClass('dialog');
+
+        },
+        
+        alert: function(msg) {
+            this.prepare();
+
+            // Create the content for the dialog itself
+            var html =
+                "<h1>Message</h1>"
+                +"<p>"+msg+"</p><br/>"
+                +"<center>"
+                +"<a href='javascript:uu.dialogs.clear()'>OK</a>"
+                +"</center>"
+                +"<br/>"
+                +"</div>";
+
+            uu.u.byId('dialogbox').innerHTML=html;
+            
+            // Finally, display the dialog
+            $('#dialogoverlay').css('opacity',0.4);
+            $('#dialogbox').css(    'opacity',1);                
+        },
+        
+        confirm: function(msg,options) {
+            this.prepare();
+
+            // Create the content for the dialog itself
+            var html =
+                "<h1>Message</h1>"
+                +"<p>"+msg+"</p><br/>"
+                +"<center>"
+                +"<a href='javascript:uu.dialogs.clear(true)'>"
+                +"&nbsp;&nbsp;Yes&nbsp;&nbsp;</a>"
+                +"&nbsp;&nbsp;&nbsp;"
+                +"<a href='javascript:uu.dialogs.clear(false)'>"
+                +"&nbsp;&nbsp;No&nbsp;&nbsp;</a>"
+                +"</center>"
+                +"<br/>"
+                +"</div>";
+
+            uu.u.byId('dialogbox').innerHTML=html;
+            
+            // Finally, display the dialog
+            $('#dialogoverlay').css('opacity',0.4);
+            $('#dialogbox').css(    'opacity',1);
+            
+            // For this guy we need to make sure there
+            // is a request object
+            if(this.json!=null) {
+                this.json.abort();
+            }
+            else {
+                var browser = navigator.appName;
+                if(browser == "Microsoft Internet Explorer"){
+                    this.json = new ActiveXObject("Microsoft.XMLHTTP");
+                }else{
+                    this.json = new XMLHttpRequest();
+                }
+            }
+            
+            // The loop sends a request to the server,
+            // which sleeps for 250ms, then comes back.
+            // This gives us pretty good response w/o
+            // chewing up the CPU
+            while(true) {
+                this.answer = null;
+                this.json.open('POST' , 'phpWait.php', false);
+                this.json.send(null);
+                
+                if(this.answer!=null) break;
+            }
+            return this.answer;
+        },
+        
+        pleaseWait: function(msg) {
+            this.prepare();
+
+            // Create the content for the dialog itself
+            var html =
+                "<center><br/>"
+                +"<img src='clib/ajax-loader.gif'>"
+                +"<br/><br/>"
+                +"Please Wait...<br/><br/>"
+                +"</center>";
+
+            uu.u.byId('dialogbox').innerHTML=html;
+            
+            // Finally, display the dialog
+            $('#dialogoverlay').css('opacity',0.4);
+            $('#dialogbox').css(    'opacity',1);
+        }
+    }
+}
+
+/* ---------------------------------------------------- *\
+
+   SECTION 5: Andromeda Utility Object
+
+   Assumes the presence of Andromeda on the server-side   
+   
+\* ---------------------------------------------------- */
+var au = {
+    
+    
+    
+}
+
+
+/* ---------------------------------------------------- *\
+
+   SECTION 6: Andromeda Code not part of au
+
+   
+\* ---------------------------------------------------- */
 var aSelect = new Object();
 aSelect.divWidth = 400;
 aSelect.divHeight= 300;
@@ -1138,6 +1411,18 @@ function androSelect_click(value,suppress_focus) {
     }
 }
 
+
+/* ---------------------------------------------------- *\
+
+   SECTION 7: Old general utility object
+   which had dependencies on Andromeda and was
+   not truly general or universal.
+   
+   Will be phased out as things are moved into
+   uu and au.
+   
+\* ---------------------------------------------------- */
+
 /*
  * This is the General Purpose Library of most basic 
  * Andromeda javascript functions.  It has a long 
@@ -1145,7 +1430,7 @@ function androSelect_click(value,suppress_focus) {
  *            
  */
 
-var $a = {
+window.a = window.$a = {
     /*
      *  For data returned from a json call
      */
@@ -1250,12 +1535,14 @@ var $a = {
         parms:      { },
         x4Page:     '',
         x4Action:   '',
+        explicitParms: '',
         hadErrors: false,
         init: function(name,value) {
             this.x4Page     = '';
             this.x4Action   = '';
             this.callString = '';
             this.parms      = { };
+            this.explicitParms= '';
             if(name!=null) {
                 this.addParm(name,value);
             }
@@ -1266,6 +1553,9 @@ var $a = {
             if(name=='x4Action') this.x4Action = value;
         },
         makeString: function() {
+            if(this.explicitParms!='') {
+                return this.explicitParms;
+            }
             var list = [ ];
             for(var x in this.parms) {
                 list[list.length] = x + "=" +encodeURIComponent(this.parms[x]);
@@ -1612,58 +1902,22 @@ var $a = {
     }
 }
 
-/* - - - - - - - - - - - - - - - - - - - - - - - -
- * 
- * JQuery Plugins and Embellishments
- *
- * - - - - - - - - - - - - - - - - - - - - - - - -  
- */
 
- 
-/*
- * Plugin to track focus
- */
-jQuery.focusTrack = false;
-jQuery.focusTrackStack = [ ];
-jQuery.focusTrackPop = function() {
-    if(jQuery.focusTrackStack.length > 0) {
-        $( jQuery.focusTrack ).blur();
-        jQuery.focusTrack = jQuery.focusTrackStack.pop(); 
-    }    
-}
-jQuery.focusTrackBlur = function() {
-    if(jQuery.focusTrackStack.length > 0) {
-        $( jQuery.focusTrack ).blur();
-    }    
-}
-jQuery.focusTrackRestore = function() {
-    $(jQuery.focusTrack).focus();
-}
-jQuery.fn.focusTrack = function(newContext) {
-    // If a new context, push the old back a layer     
-    if(newContext) {
-        if(jQuery.focusTrack) {
-            $(jQuery.focusTrack).blur();
-        }
-        jQuery.focusTrackStack[jQuery.focusTrackStack.length]=jQuery.focusTrack;
-        jQuery.focusTrack = false;
-    }
-    return this.each(function() {
-        $(this).focus( function() {
-            jQuery.focusTrack = this;
-        })
-    });
+/* ---------------------------------------------------- *\
+   SECTION 8: SUSPECTED DEAD CODE  
+   
+   We want to move everything here
+   to androLibDeprecated.js
+\* ---------------------------------------------------- */
+var androIE = false;
+if(    navigator.userAgent.indexOf('MSIE') >=0 
+    && navigator.userAgent.indexOf('Opera')<0) {
+    androIE = true;
 }
 
-jQuery.getCSS = function( url, media, rel, title ) {
-   jQuery( document.createElement('link') ).attr({
-       href: url,
-       media: media || 'screen',
-       type: 'text/css',
-       title: title || '',
-       rel: rel || 'stylesheet'
-   }).appendTo('head');
-};
 
-var jqModalClose=function(hash) { hash.w.fadeOut(500, function() { hash.o.fadeOut(250);}); };
-var jqModalOpen=function(hash) { hash.w.fadeIn(500);hash.o.fadeIn(500);};
+function u3SS(stringparms) {
+   ob('u3string').value=stringparms;
+   formSubmit();
+}
+
