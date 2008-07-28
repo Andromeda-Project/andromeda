@@ -3,9 +3,6 @@
 #
 # a_pullsvna.php, since 4/14/08, not necessary after we "rationalized"
 #                  the downloads.
-
-
-SessionSet('TEMPLATE','rt_pixel');
 //vgaSet('MENU_TYPE','TABLE');
 global $MPPages;
 $MPPages=array('public_downloads'=>1);
