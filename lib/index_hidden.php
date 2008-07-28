@@ -115,23 +115,9 @@ else {
 // >>> 
 // ==================================================================
 include_once('androLib.php');
-include_once('androLibDeprecated.php');
-
-
-
-// ==================================================================
-// >>> 
-// >>> Load configuration options
-//
-// >>> Do this after the framework, so we can use it, but before
-// >>> the applib, which might override these settings
-// ==================================================================
-#  KFD 7/3/08, Final form here is to pull these two, but not
-#              template, that belongs below in index_hidden_template
-#
-vgfSet( 'x4welcome', configGet('x4welcome','N')       );
-vgfSet( 'x4menu'   , configGet('x4menu'   ,'N')       );
-
+if(configGet('deprecated','Y')=='Y') {
+    include_once('androLibDeprecated.php');
+}
 
 // ==================================================================
 // >>> 
@@ -171,26 +157,6 @@ SessionSet('count',SessionGet('count')+1);
 //                completely after july 08
 //vgfSet('cache_pkey',array('member_profiles'));
 
-
-// ==================================================================
-// >>> 
-// >>> Redirections.  QUESTIONABLE PLACEMENT AND APPROACH
-// >>>                Almost definitely should be moved into
-// >>>                index_hidden_page
-// >>> 
-// ==================================================================
-// The parameter 'gp_pageal' means page to go to after a login.
-// Save it now.  Used originally for project cme.
-if(gpExists('gp_pageal')) {
-  SessionSet('clean',array('gp_page'=>gp('gp_pageal')));
-}
-   
-// The parameter 'gp_aftersave' means go to a page after saving
-// information somewhere else.  The program processPost will look
-// for this after saving and do a gpSet() to this value.
-if(gpExists('gp_aftersave')) {
-  SessionSet('gp_aftersave',gp('gp_aftersave'));
-}
 
 // ==================================================================
 // >>> 
@@ -295,22 +261,40 @@ if(isset($header_mode)) return;
 
 // ==================================================================
 // >>> 
-// >>> Dispatch redirection.  We may convert a conventional
-// >>> "x2" call into an x4 call if force flags have been set
-// >>> set these flags in applib
+// >>> Dispatch redirection.  
 // >>> 
 // ==================================================================
-# First redirection is to x4 welcome page, the menu, if they
-# have turned on that flag.  If the x2 variable was passed with
-# a gp_page variable, that forces it to stay as x2.  This was put
-# in to allow old-fashioned processes.
-#
+
+# OLDER DEFUNCT CODE, REMOVE AFTER BETA GOES OUT
+/*
 if(vgfGet('x4welcome')=='Y' && gp('x4Page')=='' && LoggedIn()) {
     # if these two options are set, we don't try to force an x4
     if( !(gpExists('gp_page') && gpExists('x2')) ) { 
         gpSet('x4Page',vgaGet('nopage','menu'));
     }
 }
+*/
+
+
+#  This code is only for a single app which is running
+#  stable on a very old version of Andromeda.  When SDS
+#  upgrades that application, these functions will be
+#  moved into application code.
+#
+/*
+// The parameter 'gp_pageal' means page to go to after a login.
+// Save it now.  Used originally for project cme.
+if(gpExists('gp_pageal')) {
+  SessionSet('clean',array('gp_page'=>gp('gp_pageal')));
+}
+   
+// The parameter 'gp_aftersave' means go to a page after saving
+// information somewhere else.  The program processPost will look
+// for this after saving and do a gpSet() to this value.
+if(gpExists('gp_aftersave')) {
+  SessionSet('gp_aftersave',gp('gp_aftersave'));
+}
+*/
 
 // ==================================================================
 // >>> 
@@ -341,6 +325,29 @@ scDBConn_Push();
 if(function_exists('app_after_db_connect')) {
     app_after_db_connect();
 }
+
+# KFD 7/23/08
+# If no page was passed in, we have to do default page
+# handling.  For this we must know if we are normally
+# in x4 mode or not.  Note that some other type of request
+# may have come in, such as gp_dropdown, which causes
+# this to be ignored.
+#
+if(gp('x4Page')=='' && gp('gp_page')=='') {
+    if(function_exists('app_nopage')) {
+        app_nopage();
+    }
+    else {
+        # for x4 apps only, if we have no page
+        # set it to the menu
+        $x4menu = configGet('x4menu');
+        if($x4menu=='Y' && LoggedIn()) {
+            gpSet('x4Page','menu');
+        }
+    }
+}
+
+
 
 // Entries made in the command box can rewrite get/post 
 // variables and affect downstream processing.  Do those
@@ -414,21 +421,7 @@ function index_hidden_x4Dispatch() {
        }
     }
     else {
-        include_once("androX4.php");
-        # KFD 6/14/08, loosen this to allow lib and application files both
-        #$file = strtolower($x4Page)=='menu'
-        #    ? fsDirTop()."lib/androX4Menu.php"
-        #    : fsDirTop()."application/x4$x4Page.php";
-        $class  = 'androX4';
-        #if(file_exists($file)) {
-        $file = strtolower($x4Page)=='menu' 
-            ? 'androX4Menu.php' 
-            : "x4$x4Page.php";
-        if(file_exists_incpath($file)) {
-            include_once($file);
-            $class = 'x4'.$x4Page;
-        }
-        $object = new $class();
+        $object = x4Object($x4Page);
         
         # Determine method and invoke it.  Notice any
         # direct output is considered an error
@@ -467,12 +460,12 @@ function index_hidden_x4Dispatch() {
         #  Put things where the template expects to find them
         vgfSet('HTML',$GLOBALS['AG']['x4']['html']['*MAIN*']);
         foreach($GLOBALS['AG']['x4']['script'] as $script) {
-            elementAdd("jqueryDocumentReady",$script);
+            jqDocReady($script);
         }
 
         # DUPLICATE ALERT: This code copied from 
         #                  index_hidden_page() below
-        index_hidden_template();
+        index_hidden_template('x4');
         global $J;
         $mainframe               = $J['mainframe'];
         $my                      = $J['my'];
@@ -1220,7 +1213,7 @@ function index_hidden_page() {
    // no buffering that the output is already done.
    if($obj_page->flag_buffer!=false) {
       // Work out what template we are using
-      index_hidden_template();
+      index_hidden_template('x2');
 
       // KFD 5/30/07, send back only main content if asked 
       if(gp('ajxBUFFER')==1) {
@@ -1269,8 +1262,56 @@ function index_hidden_page() {
 
 
 
-function index_hidden_template() {
-   global $AG;
+function index_hidden_template($mode) {
+    # KFD 7/23/08.  Pull a configuration setting if they
+    #               made one
+    $candidate = configGet('cf_template');
+    
+    # KFD 7/23/08. Give application a chance to 
+    #              play with setting
+    if(function_exists('app_template')) {
+        vgfSet('template',app_template($candidate));
+    }
+    
+    # KFD 7/23/08. If no template has been set by vgfSet,
+    #              and the candidate is not empty, pick it
+    if($candidate!='' && vgfGet('template')=='') {
+        vgfSet('template',$candidate);
+    }
+    
+    # KFD 7/23/08. Finally, if we still don't have something,
+    #              pick according to mode
+    if(vgfGet('template')=='') {
+        if($mode=='x4') {
+            vgfSet('template','pixel2');
+        }
+        else {
+            vgfSet('template','rt_pixel');
+        }
+    }
+
+    # Tell the JOOMLA files that we are legit
+    # Fool them, that is...
+    define("_ANDROMEDA_JOOMLA",1); 
+    define("_JOOMLA_ANDROMEDA",1); 
+      
+    # Activate the template by creating public $J and calling funcs
+    global $J,$AG;
+    $J['TEMPLATE']=vgfGet('template');
+    JoomlaCompatibility($J['TEMPLATE']);
+    $aphp=$AG['dirs']['root'].'/templates/'.$J['TEMPLATE'].'/andromeda.php';
+    if(file_exists($aphp)) {
+        include($aphp);
+    }
+
+    
+    # <----- EARLY RETURN
+    # The rest of this is totally superseded, and can
+    # be removed after we go live with Beta 1
+    return;
+    
+    /*
+    global $AG;
    # KFD 7/3/08.  Have the vgfGet() value override anything else
    #
    if(vgfGet('template')<>'') {
@@ -1348,6 +1389,7 @@ function index_hidden_template() {
          include($aphp);
       }
    }
+   */
    
 }
 
