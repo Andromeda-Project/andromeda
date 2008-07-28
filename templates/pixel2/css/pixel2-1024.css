@@ -70,7 +70,16 @@ div.template {
     padding: 3px 6px;
 }
 
-
+/* Dialog boxes */
+.dialog {
+    border-width: 6px;
+    padding: 0 6px 6px 6px;
+}
+.dialog a {
+    border-width: 2px;
+    padding: 3px;
+    text-align: center;
+}
 
 /* -------------------------------------------------------------- *\
    -------------------------------------------------------------- 

@@ -30,6 +30,12 @@ div.templatemenu ul li {
     border-right-width: 0px;
 }
 
+/* Dialog boxes */
+.dialog {
+    border-color: #3F7CB9; 
+    
+}
+
 a { color: #3F7CB9; }
 a.x4MenuOn { background-color: #3F7CB9; color: white; }
 

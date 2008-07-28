@@ -112,6 +112,14 @@ div.template {
     text-align: center;
 }
 
+.dialog {
+    border-style: solid;
+    background-color: white;
+    opacity: 1;
+}
+.dialog a {
+    border-style: solid;
+}
 
 table.template {
     border-spacing: 0px;
@@ -304,7 +312,7 @@ div.templateheader-top {
 }
 
 /* The dark gray elements from rt_pixel */
-.templateleft, .style2, .x4MenuBar a, .x4TabBar a {
+.templateleft, .style2, .x4MenuBar a, .x4TabBar a,.dialog a {
     background-color: #E9EEF5;
 }
 .templateleft {
