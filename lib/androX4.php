@@ -5,8 +5,9 @@ class androX4 {
     # Major Area 0: In the construction area, load up data dictionary 
     #
     # ===================================================================
-    function __construct() {
-        $this->table_id = gp('x4Page');
+    function __construct($x4Page) {
+        $this->table_id = $x4Page;
+        #$this->table_id = gp('x4Page');
         $this->dd       = &ddTable($this->table_id);
         $this->flat     = &$this->dd['flat'];
         $this->view_id  = $this->dd['viewname'];
@@ -18,6 +19,8 @@ class androX4 {
     function custom_construct() {
     }
     function extraScript() {
+    }
+    function browseFetchModify(&$answer) {
     }
     
     # ===================================================================
@@ -178,6 +181,8 @@ underlined letters that show this, so:
             $tabx->ap['xTableId'] = $table_id;
             $tabx->setAsParent();
 
+            # Create an x4 object
+            $chdobj = x4Object($table_id);
 
             # KFD 7/8/08, look for a "mover" box, and do an
             #             alternate setup
@@ -188,8 +193,8 @@ underlined letters that show this, so:
             }
             else {
                 # Add into it the grid and the detail
-                $tabx->addChild( $this->grid($ddChild,$this->table_id) );
-                $tabx->addChild( $this->detailPane($ddChild,$this->table_id) );
+                $tabx->addChild( $chdobj->grid($this->table_id) );
+                $tabx->addChild( $chdobj->detailPane($this->table_id) );
             }
                 
             # Make the tab entry
@@ -295,7 +300,8 @@ underlined letters that show this, so:
     # Major Area 3: Generate a grid for a table 
     #
     # ===================================================================
-    function grid($dd,$tableIdPar = '') {
+    function grid($tableIdPar = '') {
+        $dd = $this->dd;
         $table_id = $dd['table_id'];
         
         # Generate default options
@@ -363,7 +369,8 @@ underlined letters that show this, so:
     # Major Area 4: Detail Panes 
     #
     # ===================================================================
-    function detailPane($dd,$parentTable=null) {
+    function detailPane($parentTable=null) {
+        $dd  = $this->dd;
         $div = html('div');
         $div->hp['id'] = 'detail_'.$dd['table_id'];
         $div->ap['xTableId'] = $dd['table_id'];
@@ -510,7 +517,6 @@ underlined letters that show this, so:
         $pkval = str_replace("'","''",$pkval);
         $retcol= gp('retcol');
         $sq = "select $retcol as x from $table where $pkcol = '$pkval'";
-        x4Debug($sq);
         $rows = sql_allRows($sq);
         $moverFetch = array();
         foreach($rows as $row) {
@@ -576,7 +582,6 @@ underlined letters that show this, so:
             $tcv = $colvalue;
             $type = $colinfo['type_id'];
             if ($tcv != "") {
-                x4Debug("using $tcv for $column_id");
                 // trap for a % sign in non-string
                 $xwhere = sqlFilter($this->flat[$column_id],$tcv);
                 if($xwhere<>'') $awhere[] = "($xwhere)";
@@ -585,6 +590,15 @@ underlined letters that show this, so:
         
         # <----- RETURN
         if(count($awhere) == 0) { x4Debug("returning"); return; }
+        
+        # Generate the limit
+        $SLimit = ' LIMIT 100';
+        if($tabPar <> '') {
+            if(a($this->dd['fk_parents'][$tabPar],'uiallrows','N')=='Y') {
+                $SLimit = '';
+            }
+        }
+        
 
         #  Build the Order by
         #        
@@ -606,16 +620,16 @@ underlined letters that show this, so:
                     $aorder[] = $column_id.' DESC';
                 }
             }
-            $SQLOrder = " ORDER BY ".implode(',',$aorder)." Limit 100";
+            $SQLOrder = " ORDER BY ".implode(',',$aorder);
         }
         else {
             # KFD 6/18/08, new routine that works out sort 
             $aorder = sqlOrderBy($vals);
             if(count($aorder)==0) {
-                $SQLOrder = " LIMIT 100";
+                $SQLOrder = '';
             }
             else {
-                $SQLOrder = " ORDER BY ".implode(',',$aorder)." Limit 100";
+                $SQLOrder = " ORDER BY ".implode(',',$aorder);
             }
         }
         
@@ -635,102 +649,16 @@ underlined letters that show this, so:
         $SQL ="SELECT skey,".implode(',',$acols)
              ."  FROM ".$this->view_id
              .$SWhere
-             .$SQLOrder;
+             .$SQLOrder
+             .$SLimit;
         $answer =SQL_AllRows($SQL);
-        x4Debug($SQL);
+        
+        $this->browseFetchModify($answer);
         
         x4Data('browseFetch',$answer);
         return;
 
-        /*
-        // Format as HTML
-        ob_start();
-        $skeys = array();
-        foreach($answer as $idx=>$row) {
-            $skey = $row['skey'];
-            echo "<tr xIndex=\"$idx\" id='x4row_$skey' class='x4brrow'>";
-            $skeys[] = $row['skey']; 
-            foreach($row as $idx=>$value) {
-                if($idx=='skey') continue;
-                if($this->dd['flat'][$idx]['type_id'] == 'dtime') {
-                    echo "<td>".date('m/d/Y h:i a',dEnsureTS($value));
-                }
-                else {
-                    echo "<td>".$value;
-                }
-            }
-        }
-        x4Html('*MAIN*',ob_get_clean());
-        $skeys = array_flip($skeys);  // want to go by skey, not index
-        x4Data('skeys',$skeys);
-        x4Data('rowCount',count($skeys));
-        */
-        
     }
-    
-    # This code was moved out to SQLFilters, so it can be shared
-    # by other places.
-    /*
-    function searchBrowseOneCol($type,$colname,$tcv,$exact) {
-        $values=explode(',',$tcv);
-        $sql_new=array();
-        foreach($values as $tcv) {
-            if(trim($tcv)=='') continue;
-            if($tcv=='*') $tcv='%';
-            //$tcv = trim(strtoupper($tcv));
-            $tcv = strtoupper($tcv);
-            if(in_array($type,array('int','numb','date','time'))) {
-                $tcv=preg_replace('/[^0-9]/','',$tcv);
-            }
-            
-            // This is a greater than/less than situation,
-            // we ignore anything else they may have done
-            if(substr($tcv,0,1)=='>' || substr($tcv,0,1)=='<') {
-                $new=$colname.substr($tcv,0,1).sql_Format($type,substr($tcv,1));
-                $sql_new[]="($new)";
-                continue;
-            }
-            
-            if(strpos($tcv,'-')!==false  && $type<>'ph12' && $type<>'ssn') {
-                list($beg,$end)=explode('-',$tcv);
-                if(trim($end)=='') {
-                    $new=" UPPER($colname) like '".strtoupper($beg)."%'";                
-                }
-                else {
-                    $slbeg = strlen($beg);
-                    $slend = strlen($end);
-                    $new="SUBSTR($colname,1,$slbeg) >= ".sql_Format($type,$beg)
-                        .' AND '
-                        ."SUBSTR($colname,1,$slend) <= ".sql_Format($type,$end);
-                }
-                $sql_new[]="($new)";
-                continue;
-            }
-    
-            if($exact) {
-                $tcsql = sql_Format($type,$tcv);
-                $new=$colname."=".$tcsql;
-            }
-            else if(! isset($aStrings[$type]) && strpos($tcv,'%')!==false) {
-                $new="cast($colname as varchar) like '$tcv'";
-            }
-            else {
-                $tcsql = sql_Format($type,$tcv);
-                if(substr($tcsql,0,1)!="'" || $type=='date' || $type=='dtime') {
-                    $new=$colname."=".$tcsql;
-                }
-                else {
-                    $tcsql = str_replace("'","''",$tcv); 
-                    $new=" UPPER($colname) like '%".strtoupper($tcsql)."%'";
-                }
-            }
-            $sql_new[]="($new)";
-        }
-        $retval = implode(" OR ",$sql_new);
-        return $retval;
-        
-    }
-    */
     
     # ===================================================================
     #
