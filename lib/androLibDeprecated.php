@@ -572,4 +572,69 @@ function scObject($object_name) {
    include_once($object_name.'.php');
    return new $object_name;
 }
+
+
+# DEPRECATED BY KFD 7/25/08
+# ElementAdd('script')  no replacement
+# ElementAdd('styles')  use a separate style sheet or put it
+#                       directly into your html
+#
+# ElementAdd('jqueryDocumentReady')
+# ElementAdd('scriptend')    for both of these, use
+#                            jqDocReady('...script...');
+#
+// ------------------------------------------------------------------
+// General Purpose Element listing, with specialized output
+// ------------------------------------------------------------------
+function ElementAdd($type,$msg) {
+    if($type=='script' || $type=='jqueryDocumentReady') {
+        $msg = preg_replace("/<script>/i",'',$msg);
+        $msg = preg_replace("/<\/script>/i",'',$msg);
+    }
+    $GLOBALS["AG"][$type][]=$msg;
+}
+function ElementInit($type) { $GLOBALS["AG"][$type]=array(); }
+function ElementReturn($type,$default=array()) {
+	global $AG;
+   if(!isset($AG[$type])) return $default;
+   else return $AG[$type];
+}
+function Element($type) {
+	global $AG;
+   if(!isset($AG[$type])) return false;
+	if (count($AG[$type])>0) return true; else return false;
+}
+function ElementImplode($type,$implode="\n") {
+    if(!isset($GLOBALS['AG'][$type])) return '';
+    else return implode($implode,$GLOBALS['AG'][$type]);
+}
+function ElementOut($type,$dohtml=false) {
+	global $AG;
+
+   // Hardcoded row we want in there
+   if($type=='script') {
+      //$calcRow=vgaGet('calcRow');
+      //ElementAdd('script',"\nfunction calcRow() {\n$calcRow\n}");
+
+      $ajaxTM=vgfGet('ajaxTM',0)==1 ? '1' : '0';
+      ElementAdd('script',"\nvar ajaxTM=$ajaxTM  /* Controls AJAX table maintenance */");
+
+      //$clearBoxes=implode("\n",ArraySafe($AG,'clearBoxes',array()));
+      //ElementAdd('script',"\nfunction clearBoxes() {\n$clearBoxes\n}");
+   }
+
+   $array=ArraySafe($AG,$type,array());
+	$retval="";
+	$extra="";
+	if ($dohtml) { $extra="<br/>"; }
+   foreach ($array as $msg) {
+      $retval.=$msg.$extra."\n";
+   }
+	$AG[$type]=array();
+	if (!$dohtml) { return $retval; }
+	if (!$retval) { return ""; }
+	else { return "<div class=\"$type\">$retval</div>"; }
+}
+
+
 ?>
