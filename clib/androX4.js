@@ -19,6 +19,9 @@
    or visit http://www.gnu.org/licenses/gpl.html
 \* ================================================================== */
 
+/* Avoid use of $ in js code  */
+jq = $;
+
 /* =====================================================
  * Top level context controller and utility provider
  *
@@ -510,6 +513,27 @@ var x4 =  {
     }
 }
 
+/* =====================================================
+ *
+ * The x4.modals subobject
+ *
+ * =====================================================
+ */
+x4.modals = { }
+x4.modals.display = function() {
+    $('#idiv1').animate({opacity: 0.5},null,null,function() {
+            $('#idiv2').fadeIn('fast');
+    });
+}
+ 
+x4.modals.url = function(url) {
+    $a.json.init();
+    $a.json.explicitParms = url;
+    $a.json.execute();
+    $a.json.process('idiv2content');
+    this.display();
+}
+    
 /* =====================================================
  *
  * Functions that are attached to objects
@@ -1310,9 +1334,13 @@ function x4GridSearch(self) {
             // Make your entrance
             $(this).fadeIn(x4.fadeSpeed,function() {
                 if(!this.zLastFocus) {
-                    this.zLastFocusId=$(this).find(":input:first")[0].id;
+                    //this.zLastFocusId=$(this).find(":input:first")[0].id;
+                    var lastFocus = $(this).find(":input:first");
+                    if (lastFocus.length>0) this.zLastFocusId = lastFocus[0].id;
                 }
-                $('#'+this.zLastFocusId).focus();
+                if(this.zLastFocus) {
+                    $('#'+this.zLastFocusId).focus();
+                }
                 this.zActivated = true;
             });
         }
@@ -1454,7 +1482,8 @@ function x4GridSearch(self) {
         
         if(this.doFetch) {
             // Clear the previous results
-            $a.data.browseFetch = { };
+            $a.data.browseFetch     = { };
+            $a.data.browseFetchHtml = '';
             if(this.cntNoBlank==0) {
                 this.clear();
                 return;
@@ -1464,17 +1493,23 @@ function x4GridSearch(self) {
                 $a.json.addParm('sortAD' ,this.zSortAD);
             }
             $a.json.addParm('x4Action','browseFetch');
-            if( $a.json.execute(true)) {
-                // Create and assign the html
-                var html = '';
-                for(var ir in $a.data.browseFetch) {
-                    html+=this.makeRow($a.data.browseFetch[ir]);
-                }
-                var tbody = $(this).find('tbody:last')[0];
-                tbody.innerHTML = html;
+            if( $a.json.execute()) {
+                $a.json.process();
+                // The standard path is to take data returned
+                // by the server and render it.  This is safe
+                // even if the server does not return anything,
+                // because we initialized to an empty object.
+                if($a.data.browseFetch.length >0) {
+                    var html = '';
+                    for(var ir in $a.data.browseFetch) {
+                        html+=this.makeRow($a.data.browseFetch[ir]);
+                    }
+                    var tbody = $(this).find('tbody:last')[0];
+                    tbody.innerHTML = html;
                 
-                // index the rows
-                this.indexRows();
+                    // index the rows
+                    this.indexRows();
+                }
             }
         }
     }
