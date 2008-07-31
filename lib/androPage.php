@@ -71,14 +71,21 @@ class androPage {
         // If there are no sections, take content and make a section,
         // so that downstream code can unconditionally work with sections
 
+
+        // DO 7/31/2008 uifilter is not set in section, so if section is 
+        // set and uifilter is not set we need to create an empty one
         if(!isset($this->yamlP2['section'])) {
             $this->yamlP2['section'] = array(
                 'default'=>array(
                     'table'=>a($this->yamlP2,'table',array())
                     ,'union'=>a($this->yamlP2,'union',array())
-                    ,'uifilter'=>a($this->yamlP2,'uifilter',array())
+                    ,'uifilter'=>a($this->yamlP2,'uifilter',array())   // DO 7/31/2008 Can probably be removed unless used by non Smarty AndroPages
                 )
             );
+        } else {
+            if ( !isset( $this->yamlP2['uifilter'] ) ) {
+                $this->yamlP2['uifilter'] = array();
+            } 
         }
 
         if (!isset($this->yamlP2['template'] ) ) {
@@ -121,9 +128,15 @@ class androPage {
         if( gp('gp_post')=='onscreen' && gpExists('x4Page'))$runHTML = false;
         $runPage = true;
         if(gp('gp_post')=='') $runPage = false;
+
+        // DO 7/31/2008  If smarty template set && nofilter set just display the page.
+        if ($this->yamlP2['template'] <> '' && $this->yamlP2['options']['nofilter'] == 'Y' ) $runPage = true;
         
-        if($runHTML) {
-            $this->x3HTML();
+        // DO 7/31/2008 do not need form again for Smarty AndroPage
+        if ($this->yamlP2['template'] == '' || gp('gp_post') == '' ) {
+            if($runHTML) {
+                $this->x3HTML();
+            }
         }
         if($runPage) {
             $this->PassPage();
@@ -230,10 +243,13 @@ class androPage {
         }
 
         # List of ids for buttons below
-        $ids=array('pdf'=>'printNow','onscreen'=>'showOnScreen'
-            ,'showSql'=>'showSql'
-        );
-
+        if ( $yamlP2['template'] == '' ) {
+            $ids=array('pdf'=>'printNow','onscreen'=>'showOnScreen'
+                ,'showSql'=>'showSql'
+            );
+        } else {
+            $ids = array( 'smarty'=>'RunReport' );
+        }
 
         $x4D = html('div',$top);
         if($x4) $x4D->addClass('x4Pane');
@@ -305,29 +321,44 @@ class androPage {
         
         $td1->br();
         
-        # First button: print
-        $inp = html('a-void',$td1,'<u>P</u>rint Now');
-        $inp->ap['xLabel'] = 'CtrlP';
-        $inp->hp['id'] = $ids['pdf'];
-        $inp->addClass('button');
-        if(gpExists('x4Page')) {
-            $inp->hp['onclick'] = "\$a.byId('x4AndroPage').printNow()";
-        }
-        else {
-            $inp->hp['onclick'] = 'formSubmit();';
-        }
-        $td1->br(2);
-        
-        # Second button: show onscreen
-        $inp = html('a-void',$td1,'Show <u>O</u>nscreen');
-        $inp->hp['id'] = $ids['onscreen'];
-        $inp->ap['xLabel'] = 'CtrlO';
-        $inp->addClass('button');
-        if(gpExists('x4Page')) {
-            $inp->hp['onclick'] = "\$a.byId('x4AndroPage').showOnScreen()";
-        }
-        else {
-            $inp->hp['onclick'] = "SetAndPost('gp_post','onscreen')";
+        // DO 7/31/2008 Only need a button to run the report for Smarty AndroPage
+        if ( $this->yamlP2['template'] == '' ) {
+            # First button: print
+            $inp = html('a-void',$td1,'<u>P</u>rint Now');
+            $inp->ap['xLabel'] = 'CtrlP';
+            $inp->hp['id'] = $ids['pdf'];
+            $inp->addClass('button');
+            if(gpExists('x4Page')) {
+                $inp->hp['onclick'] = "\$a.byId('x4AndroPage').printNow()";
+            }
+            else {
+                $inp->hp['onclick'] = 'formSubmit();';
+            }
+            $td1->br(2);
+            
+            # Second button: show onscreen
+            $inp = html('a-void',$td1,'Show <u>O</u>nscreen');
+            $inp->hp['id'] = $ids['onscreen'];
+            $inp->ap['xLabel'] = 'CtrlO';
+            $inp->addClass('button');
+            if(gpExists('x4Page')) {
+                $inp->hp['onclick'] = "\$a.byId('x4AndroPage').showOnScreen()";
+            }
+            else {
+                $inp->hp['onclick'] = "SetAndPost('gp_post','onscreen')";
+            }
+        } else {
+             # First button: Run Report
+            $inp = html('a-void',$td1,'<u>R</u>un Report');
+            $inp->ap['xLabel'] = 'CtrlR';
+            $inp->hp['id'] = $ids['smarty'];
+            $inp->addClass('button');
+            if(gpExists('x4Page')) {
+                $inp->hp['onclick'] = "\$a.byId('x4AndroPage').showOnScreen()";
+            }
+            else {
+                $inp->hp['onclick'] = 'formSubmit();';
+            }
         }
         $td1->br(2);
         
