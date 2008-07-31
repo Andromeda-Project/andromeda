@@ -645,6 +645,8 @@ x4.events = {
     */
     notify: function(eventName,arguments) {
         // Find out if anybody is listening for this event
+        x4.debug("x4 event received event "+eventName);
+        x4.debug(arguments);
         var subscribers = $a.p(this.subscribers,eventName,{ });
         
         for(var id in subscribers) {
@@ -766,9 +768,9 @@ function x4Window(self) {
                     .getAttribute('xTableId');
                 for(var column in parm1) {
                     x4.debug("Default value for "+column+": "+parm1[column]);
-                    //if($a.byId("search_"+table+" "+column)) {
+                    if(u.byId("search_"+table+"_"+column)) {
                         $a.byId("search_"+table+"_"+column).value=parm1[column];
-                    //}
+                    }
                 }
                 var grid  = $a.byId("grid_"+table);
                 grid.fetch();
@@ -1338,7 +1340,7 @@ function x4GridSearch(self) {
                     var lastFocus = $(this).find(":input:first");
                     if (lastFocus.length>0) this.zLastFocusId = lastFocus[0].id;
                 }
-                if(this.zLastFocus) {
+                if(this.zLastFocusId) {
                     $('#'+this.zLastFocusId).focus();
                 }
                 this.zActivated = true;
@@ -1818,7 +1820,7 @@ function x4Detail(self) {
         }
         
         // Notify any listeners
-        x4.events.notify('fetchrow_'+this.zTableId,row);
+        x4.events.notify('fetchRow_'+this.zTableId,row);
     },
     
     self.displayRow = function() {
@@ -2088,7 +2090,8 @@ function x4Detail(self) {
                 this.zParent.sendUp('Esc',this);
             }
             else {
-                this.zParent.sendUp('Esc',this);
+                return false;
+                //this.zParent.sendUp('Esc',this);
             }
         }
     }

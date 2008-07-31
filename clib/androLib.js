@@ -31,7 +31,7 @@
    1) Required for compatibility with x2 applications
    2) Javascript prototype extensions
    3) Jquery Plugins
-   4) Universal utility object, uu, no Andromeda dependencies   
+   4) Universal utility object, u, no Andromeda dependencies   
    5) The Andromeda general utility object, au
    6) Andromeda utilties not part of au, like androSelect()
    7) The (old) general utility object, $a (mixed dependencies)
@@ -924,48 +924,46 @@ var jqModalOpen=function(hash) { hash.w.fadeIn(500);hash.o.fadeIn(500);};
    2) Assumes Andromeda style sheet (ie "style1")
    
 \* ---------------------------------------------------- */
-var uu = {
+var u = {
     /**
     * Basic utility functions are in the "u" subobject
     */
-    u: {
-        debugFlag: false,
-        
-        p: function(obj,varName,defValue) {
-            if(typeof(obj)!='object') {
-                return defvalue;
-            }
-            
-            // First try, maybe it is a direct property
-            if(typeof(obj[propname])!='undefined') {
-                return obj[propname];
-            }
-            // Second try, maybe it is an attribute
-            if(obj.getAttribute) {
-                if(obj.getAttribute(propname)!=null) {
-                    return obj.getAttribute(propname);
-                }
-            }
-            // Give up, return the defvalue
+    debugFlag: false,
+    
+    p: function(obj,varName,defValue) {
+        if(typeof(obj)!='object') {
             return defvalue;
-        },
+        }
         
-        // Get an object by ID
-        byId: function(id) {
-            return document.getElementById(id );
-        },
-        
-        // Make a log entry if firebug console is available
-        log: function(message) {
-            if(typeof(console)!='undefined') {
-                console.log(msg);
+        // First try, maybe it is a direct property
+        if(typeof(obj[varName])!='undefined') {
+            return obj[varName];
+        }
+        // Second try, maybe it is an attribute
+        if(obj.getAttribute) {
+            if(obj.getAttribute(varName)!=null) {
+                return obj.getAttribute(varName);
             }
-        },
-        // If flagDebug is true, send message to log
-        debug: function(message) {
-            if(this.debugFlag) {
-                this.log(message);
-            }
+        }
+        // Give up, return the defvalue
+        return defValue;
+    },
+    
+    // Get an object by ID
+    byId: function(id) {
+        return document.getElementById(id );
+    },
+    
+    // Make a log entry if firebug console is available
+    log: function(message) {
+        if(typeof(console)!='undefined') {
+            console.log(msg);
+        }
+    },
+    // If flagDebug is true, send message to log
+    debug: function(message) {
+        if(this.debugFlag) {
+            this.log(message);
         }
     },
     
@@ -980,13 +978,13 @@ var uu = {
             this.fwvars[varName] = value;
         },
         vgfGet: function(varName,defValue) {
-            return uu.u.p(this.fwvars,varName,defValue);
+            return u.p(this.fwvars,varName,defValue);
         },
         vgaSet: function(varName,value) {
             this.appvars[varName] = value;
         },
         vgaGet: function(varName,defValue) {
-            return uu.u.p(this.appvars,varName,defValue);
+            return u.p(this.appvars,varName,defValue);
         }
     },
     
@@ -998,14 +996,14 @@ var uu = {
         subscribers: { },
         
         /**
-        * Objects subscribe to events by calling uu.events.subscribe() with
+        * Objects subscribe to events by calling u.events.subscribe() with
         * the name of the event and a back reference to themselves.
         *
         */
         subscribe: function(eventName,object) {
             // First determine if we have any listeners for this
             // event at all.  If not, make up the empty object
-            if( uu.u.p(this.subscribers,eventName,null)==null) {
+            if( u.p(this.subscribers,eventName,null)==null) {
                 this.subscribers[eventName] = { };
             }
             var subs = this.subscribers[eventName];
@@ -1014,13 +1012,13 @@ var uu = {
             // if the object is confused and registers itself twice.
             //
             var id = object.id;
-            if( uu.u.p(subs,id,null)==null ) {
+            if( u.p(subs,id,null)==null ) {
                 subs[id] = object;
             }
         },
         
         /**
-        * An object that fires an event will call uu.events.notify with the
+        * An object that fires an event will call u.events.notify with the
         * name of the event and a single argument.  If multiple arguments are
         * required, they should be put into an array or object 
         * that the receiving objects must understand.
@@ -1028,14 +1026,14 @@ var uu = {
         */
         notify: function(eventName,arguments) {
             // Find out if anybody is listening for this event
-            var subscribers = uu.u.p(this.subscribers,eventName,{ });
+            var subscribers = u.p(this.subscribers,eventName,{ });
             
             for(var id in subscribers) {
                 var subscriber = subscribers[id];
-                uu.u.debug(
+                u.debug(
                     "Dispatching event "+eventName+" to "+id+" with arguments:"
                 );
-                uu.u.debug(arguments);
+                u.debug(arguments);
                 subscriber.notify(eventName,arguments);
             }
         }
@@ -1063,8 +1061,8 @@ var uu = {
                 .css('position','absolute')
                 .css('top',0)
                 .css('left',0)
-                .css('width' ,ww+1000)
-                .css('height',wh+1000)
+                .css('width' ,ww)
+                .css('height',wh)
                 .css('background-color','black')
                 .css('opacity',0)
                 .css('display','')
@@ -1078,7 +1076,7 @@ var uu = {
             // Center and otherwise prepare the box
             $('#dialogbox')
                 .css('position','absolute')
-                .css('top' , 200)
+                .css('top' , 300)
                 .css('left', (ww - cw)/2)
                 .css('opacity',0)
                 .css('display','')
@@ -1095,12 +1093,12 @@ var uu = {
                 "<h1>Message</h1>"
                 +"<p>"+msg+"</p><br/>"
                 +"<center>"
-                +"<a href='javascript:uu.dialogs.clear()'>OK</a>"
+                +"<a href='javascript:u.dialogs.clear()'>OK</a>"
                 +"</center>"
                 +"<br/>"
                 +"</div>";
 
-            uu.u.byId('dialogbox').innerHTML=html;
+            u.byId('dialogbox').innerHTML=html;
             
             // Finally, display the dialog
             $('#dialogoverlay').css('opacity',0.4);
@@ -1112,19 +1110,19 @@ var uu = {
 
             // Create the content for the dialog itself
             var html =
-                "<h1>Message</h1>"
+                "<h1>Please Confirm:</h1>"
                 +"<p>"+msg+"</p><br/>"
                 +"<center>"
-                +"<a href='javascript:uu.dialogs.clear(true)'>"
+                +"<a href='javascript:u.dialogs.clear(true)'>"
                 +"&nbsp;&nbsp;Yes&nbsp;&nbsp;</a>"
                 +"&nbsp;&nbsp;&nbsp;"
-                +"<a href='javascript:uu.dialogs.clear(false)'>"
+                +"<a href='javascript:u.dialogs.clear(false)'>"
                 +"&nbsp;&nbsp;No&nbsp;&nbsp;</a>"
                 +"</center>"
                 +"<br/>"
                 +"</div>";
 
-            uu.u.byId('dialogbox').innerHTML=html;
+            u.byId('dialogbox').innerHTML=html;
             
             // Finally, display the dialog
             $('#dialogoverlay').css('opacity',0.4);
@@ -1169,7 +1167,7 @@ var uu = {
                 +"Please Wait...<br/><br/>"
                 +"</center>";
 
-            uu.u.byId('dialogbox').innerHTML=html;
+            u.byId('dialogbox').innerHTML=html;
             
             // Finally, display the dialog
             $('#dialogoverlay').css('opacity',0.4);
@@ -1204,6 +1202,7 @@ aSelect.divHeight= 300;
 aSelect.div      = false;
 aSelect.iframe   = false;
 aSelect.row      = false;
+aSelect.hasFocus = false;
 
 // Main routine called when a keystroke is hit on 
 // the control that "hosts" the androSelect
@@ -1284,30 +1283,34 @@ function androSelect_onKeyUp(obj,strParms,e) {
         aSelect.div.style.display  = 'none';
         aSelect.div.style.width    = aSelect.divWidth + "px";
         aSelect.div.style.height   = aSelect.divHeight+ "px";
-        aSelect.div.className = 'androSelect';
+        aSelect.div.style.position = 'absolute';
+        aSelect.div.style.backgroundColor = 'white';
+        aSelect.div.style.overflow = 'scroll';
+        aSelect.div.style.border="1px solid black";
+        //aSelect.div.className = 'androSelect';
         aSelect.div.id = 'androSelect';
         document.body.appendChild(aSelect.div);
         var x = document.createElement('TABLE');
         aSelect.div.appendChild(x);
-			
     }
     // If it is invisible, position it and then make it visible
     if(aSelect.div.style.display=='none') {
-        var postop = obj.offsetTop;
-        var poslft = obj.offsetLeft;
-        var objpar = obj;
-        while((objpar = objpar.offsetParent) != null) {
-            postop += objpar.offsetTop;
-            poslft += objpar.offsetLeft;
-        }
-        aSelect.div.style.top  = (postop + obj.offsetHeight) + "px";
+        var position = $(obj).position();
+        var postop = position.top;
+        var poslft = position.left;
+        //var objpar = obj;
+        //while((objpar = objpar.offsetParent) != null) {
+        //    postop += objpar.offsetTop;
+        //    poslft += objpar.offsetLeft;
+        // }
+        aSelect.div.style.top  = (postop + obj.offsetHeight +1) + "px";
         aSelect.div.style.left = poslft + "px";
         aSelect.div.style.display = 'block';
         
         // As part of making visible, create an onclick
         // that will trap the event target and lose focus
         // if not the input object or the
-        addEventListener(document   ,'click',androSelect_documentClick);
+        //addEventListener(document   ,'click',androSelect_documentClick);
     }
     
     // Tell it the current control it is working for
@@ -1352,8 +1355,6 @@ function androSelect_onKeyDown(e) {
     if(kc == 9 || kc == 13) { 
         if(!androSelect_visible()) return true;
         
-        removeEventListener(document   ,'click',androSelect_documentClick);
-        
         if(aSelect.div.firstChild.rows.length==0) {
             androSelect_hide();
            return true;
@@ -1363,6 +1364,7 @@ function androSelect_onKeyDown(e) {
             var row = byId('as'+aSelect.row);
             var pk  = objAttValue(row,'x_value');
             aSelect.control.value = pk;
+            u.events.notify('assigned_'+aSelect.control.id,pk);
         }
         androSelect_hide();
         return true;
@@ -1378,6 +1380,18 @@ function androSelect_hide() {
         aSelect.div.style.display = 'none';
     }
 }
+
+// Make the div go away.  Actually choosing a value
+// is done elsewhere
+function androSelect_onBlur() {
+    if(aSelect.hasFocus) {
+        return;
+    } 
+    else {
+        androSelect_hide();
+    }
+}
+
 
 function androSelect_visible() {
     if(aSelect.div == false) return false;
@@ -1400,15 +1414,18 @@ function androSelect_mo(tr,skey) {
         byId('as'+aSelect.row).className = '';
     }
     aSelect.row = skey;
-    tr.className = 'hilite';
+    tr.className = 'lightgray';
+    aSelect.hasFocus = true;   
 }
 // User clicked on a row
 function androSelect_click(value,suppress_focus) {
     aSelect.control.value = value;
+    u.events.notify('assigned_'+aSelect.control.id,value);
     androSelect_hide();
     if(suppress_focus==null) {
         aSelect.control.focus();
     }
+    return false;
 }
 
 
@@ -1504,7 +1521,25 @@ window.a = window.$a = {
      *
      */
     forms: {
-        fetch: function(table,column,value,obj) {
+        fetch: function(table,column,value,obj,inp) {
+            // KFD 7/30/08, detect if this value matches
+            //              a "pre" value that was sent in,
+            //              and if so, fire no matter what
+            //              otherwise fire only on change
+            var go = false;
+            var column = u.p(inp,'xColumnId');
+            if(typeof(a.data.init[column])!='undefined') {
+                delete a.data.init[column];
+                go = true;
+            }
+            if(! go) {
+                var valold = u.p(inp,'xValue');
+                console.log(valold + '  '+value);
+                if(value.trim() == valold.trim()) return;
+            }
+            console.log("continuing");
+            inp.xValue = value;
+            
             $a.json.init('x4Action','fetch');
             $a.json.addParm('x4Page',table);
             $a.json.addParm('column',column);
@@ -1608,12 +1643,21 @@ window.a = window.$a = {
         },
 
         /**
+        * Make asychronous call
+        *
+        */
+        executeAsync: function() {
+            this.execute(true,true);
+        },
+        
+        /**
           * Make a synchronous call to the server, expecting
           * to receive a JSON array of stuff back.
           *
           */
-        execute: function(autoProcess) {
+        execute: function(autoProcess,async) {
             this.hadErrors = false;
+            if(async==null) async = false;
             if(autoProcess==null) autoProcess=false;
             
             // Create an object
@@ -1636,11 +1680,28 @@ window.a = window.$a = {
             }
             this.requests[key] = http;
             
+            // If async, we have to do it a little differently
+            if(async) {
+                http.onreadystatechange = function() {
+                    if(this.readyState!=4) return;
+                    $a.json.processPre(this,key,false);
+                    $a.json.process();
+                }
+            }
+            
             // Execute the call
             var entireGet = 'index.php?json=1&'+this.makeString();
-            http.open('POST' , entireGet, false);
+            http.open('POST' , entireGet, async);
             http.send(null);
+
+            // An asynchronous call now exits, but a
+            // synchronous call continues            
+            if (async) return;
+            else return this.processPre(http,key,autoProcess);
             
+        },
+        
+        processPre: function(http,key,autoProcess) {
             // Attempt to evaluate the JSON
             try {
                 eval('this.jdata = '+http.responseText);
