@@ -296,6 +296,7 @@ class androPage {
         $h = $top->h('input');
         $h->hp['type'] = 'hidden';
         $h->hp['id'] = 'gp_post';
+        $h->hp['name'] = 'gp_post';
         if ( isset( $yamlP2['template'] ) ) {
             $h->hp['value'] = 'smarty';
         } else {
