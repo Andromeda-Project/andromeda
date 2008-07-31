@@ -1624,7 +1624,8 @@ function SQL_FORMAT($t,$v,$clip=0) {
                 list($time,$ampm) = explode(" ",$v);
                 list($hours,$mins)= explode(":",$time);
                 if($ampm=='PM' && $hours<>12) $hours+=12;
-                return "'".((($hours-1)*60)+$mins)."'";
+                if($ampm=='AM' && $hours==12) $hours = 0;
+                return "'".(($hours*60)+$mins)."'";
             }
             else {
                 return "'$v'";
