@@ -154,7 +154,7 @@ underlined letters that show this, so:
         #
         $tabid = 'tab_'.$this->dd['table_id'];
         $tabx = html('div',$tabC);
-        $detail = $this->detailPane($this->dd);
+        $detail = $this->detailPane('');
         $detailId = $detail->hp['id'];
         $detail->addClass('x4VerticalScroll2');
         $tabC->addChild( $detail );
@@ -381,7 +381,8 @@ underlined letters that show this, so:
         #              if find that invoke that instead
         $method = $dd['table_id'].'_detail';
         if(method_exists($this,$method)) {
-            return $this->$method($dd,$div,$parentTable);
+            $retval=$this->$method($dd,$div,$parentTable);
+            if($retval!==false) return $retval;
         }
         
         # create the table that will hold the inputs 

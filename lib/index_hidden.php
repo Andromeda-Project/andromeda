@@ -697,6 +697,7 @@ function index_hidden_dropdown() {
                      x_prev='$prev' x_next='$next' x_skey='$s'
                      x_value='$value'
                 onmouseover='androSelect_mo(this,$s)'
+                onmouseout = 'aSelect.hasFocus = false;'
                 onclick=\"androSelect_click('$value')\";                
                 >"
                 .$tds;

@@ -673,6 +673,19 @@ class androHtml {
     
 
     /**
+    * Add a TR element directly to this element.  Slightly
+    * shorter than $object->h('tr')
+    *
+    * @param string $innerHTML Optional inner HTML
+    * @param string $class Optional first CSS class for this element.
+    * @return object $html An HTML TD element 
+    */
+    function tr($innerHTML='',$class='') {
+        return $this->html('tr',$innerHTML,$class);
+    }
+    
+    
+    /**
     * Add a TD element directly to this element.  Shortcut to method "html"
     * with first parameter hardcoded to "td".
     *
@@ -1062,7 +1075,7 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
             if($xRoIns<>'Y') {
                 $input->hp['onkeyup']  ="androSelect_onKeyUp(  this,'$fkparms',event)";
                 $input->hp['onkeydown']='androSelect_onKeyDown(event)';
-                $input->hp['onblur'] = 'androSelect_hide()';
+                $input->hp['onblur'] = 'androSelect_onBlur()';
             }
         }
         
@@ -1080,9 +1093,9 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
             $tabdd = ddTable($table_id);
             $fetchdist = $table_id."_".$table_id_fko."_";
             if(isset($tabdd['FETCHDIST'][$fetchdist])) {
-                $input->hp['onchange']
-                    ="\$a.forms.fetch("
-                    ."'$table_id','$column_id',this.value,x4.parent(this)"
+                $input->hp['onblur']
+                    .=";a.forms.fetch("
+                    ."'$table_id','$column_id',this.value,x4.parent(this),this"
                     .")";
             }
         }
@@ -1194,7 +1207,7 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
 * @param string $projection Name of projection, or array of columns,
 *                           or comma-list of columns.
 */
-function projection($dd,$projection,&$tabLoop,$options=array()) {
+function projection($dd,$projection='',&$tabLoop,$options=array()) {
     # Work out what they gave us and make a list of
     # columns out of it
     if(is_array($projection)) {
@@ -1202,7 +1215,17 @@ function projection($dd,$projection,&$tabLoop,$options=array()) {
         $columns = $projection; 
     }
     else {
-        if(isset($dd['projections'][$projection])) {
+        if($projection == '') {
+            $columns = array();
+            foreach($dd['flat'] as $column_id=>$colinfo) {
+                if($colinfo['uino']=='Y'   ) continue;
+                if($column_id=='skey'      ) continue;
+                if($column_id=='_agg'      ) continue;
+                if($column_id=='skey_quiet') continue;
+                $columns[]=$column_id;
+            }
+        }
+        elseif(isset($dd['projections'][$projection])) {
             # they named a projection
             $columns = explode(',',$dd['projections'][$projection]);
         }
@@ -11234,19 +11257,25 @@ function jqPlugin( $file, $comments='') {
 }
 
 function jsInclude( $file, $comments='',$immediate=false ) {
+    # KFD 7/28/08, immediate does not mean put it out now,
+    #              but uncoditionally output it as a 
+    #              separate file during jsOutput.
+    /*
     if($immediate) {
         ?>
         <script type="text/javascript"
-                 src="/<?=tmpPathInsert().$file?>" >
+                 src="<?=$insert.$file?>" >
         <?=$comments?>
         </script>
         <?php
     }
     else {
+    */
         $ajs = vgfGet('jsIncludes',array());
-        $ajs[]=array('file'=>$file,'comments'=>$comments);
+        $ajs[]=array('file'=>$file,'comments'=>$comments
+            ,'immediate'=>$immediate);
         vgfSet('jsIncludes',$ajs);
-    }
+    #}
 }
 
 function jsOutput() {
@@ -11263,7 +11292,12 @@ function jsOutput() {
     // files to minify or output it directly
     $debug = trim(ConfigGet('js_css_debug','N'));
     foreach($ajs as $js) {
-        if($debug=='N') {
+        $external = false;
+        if(substr($js['file'],0,7)=='http://') {
+            $external = true;
+        }
+        
+        if($debug=='N' && $external == false) {
             $aj[] = $js['file'];
             if($js['comments']<>'') {
                 ?>
@@ -11274,9 +11308,10 @@ function jsOutput() {
             }
         }
         else {
+            $insert = $external ? '' : '/'.tmpPathInsert();
             ?>
             <script type="text/javascript"
-                     src="/<?=tmpPathInsert().$js['file']?>" >
+                     src="<?=$insert.$js['file']?>" >
             <?=$js['comments']?>
             </script>
             <?php
