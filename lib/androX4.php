@@ -702,22 +702,53 @@ underlined letters that show this, so:
         }
         
         # KFD 6/28/08, a non-empty date must be valid
+        $errors = false;
         foreach($row as $col => $value) {
             if(!isset($this->dd['flat'][$col])) {
                 unset($row[$col]);
                 continue;
             }
+            $ermsg = "Invalid date format for "
+                .$this->dd['flat'][$col]['description'];
+            $ermsg2 = "Invalid date value for "
+                .$this->dd['flat'][$col]['description'];
             if($this->dd['flat'][$col]['type_id'] == 'date') {
-                if($value <> '') {
-                    if(!strtotime($value)) {
-                        x4Error("Invalid value for "
-                            .$this->dd['flat'][$col]['description']
-                        );
-                        return;
+                if(trim($value)=='') continue;
+                
+                if(strpos($value,'/')===false && strpos($value,'-')===false) {
+                    x4Error($ermsg);
+                    $errors = true;
+                    continue;
+                }
+                if(strpos($value,'/')!==false) {
+                    $parsed = explode('/',$value);
+                    if(count($parsed)<>3) {
+                        $errors = true;
+                        x4Error($ermsg);
+                        continue;
+                    }
+                    if(!checkdate($parsed[0],$parsed[1],$parsed[2])) {
+                        x4Error($ermsg2);
+                        $errors = true;
+                        continue;
+                    }
+                }
+                if(strpos($value,'-')!==false) {
+                    $parsed = explode('-',$value);
+                    if(count($parsed)<>3) {
+                        $errors = true;
+                        x4Error($ermsg);
+                        continue;
+                    }
+                    if(!checkdate($parsed[1],$parsed[2],$parsed[0])) {
+                        x4Error($ermsg2);
+                        $errors = true;
+                        continue;
                     }
                 }
             }
         }
+        if($errors) return;
         
         if($row['skey']==0 || !isset($row['skey'])) {
             unset($row['skey']);

@@ -27,6 +27,10 @@ jsInclude('clib/jquery-1.2.6.js','JQuery is distributed under the GPL
 #   and have it available for experiments
 jsInclude('clib/jquery-ui-1.5.2.js');
 
+# EXPERIMENTAL.  Added KFD 8/2/08 to scroll inside
+#                of androSelect dropdown.
+jsInclude('clib/jquery.scrollTo.js');
+
 # JQUERY MODALS
 # Status: must keep, at least one commercial customer
 #         using it already.

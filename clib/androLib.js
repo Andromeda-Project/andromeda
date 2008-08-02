@@ -820,6 +820,17 @@ String.prototype.rtrim = function() {
 	return this.replace(/\s+$/,"");
 }
 
+String.prototype.pad = function(size,character,where) {
+    var val = this;
+    while(val.length < size) {
+        if(where == 'L') 
+            val = character + val;
+        else
+            val += character;
+    }
+    return val;
+}
+
 // Taken from http://www.sourcesnippets.com/javascript-string-pad.html
 var STR_PAD_LEFT = 1;
 var STR_PAD_RIGHT = 2;
@@ -1243,6 +1254,7 @@ function androSelect_onKeyUp(obj,strParms,e) {
             var row = aSelect.div.firstChild.rows[0];
             var skey= objAttValue(row,'x_skey');
             androSelect_mo(row,skey);
+            $('#androSelect').scrollTo(row);
             return;
         }
         
@@ -1252,6 +1264,7 @@ function androSelect_onKeyUp(obj,strParms,e) {
             if(prev!='') {
                 var row = byId('as'+prev);
                 androSelect_mo(row,prev);
+                $('#androSelect').scrollTo(row);
             }
         }
         if(kc==40) {
@@ -1259,6 +1272,7 @@ function androSelect_onKeyUp(obj,strParms,e) {
             if(next!='') {
                 var row = byId('as'+next);
                 androSelect_mo(row,next);
+                $('#androSelect').scrollTo(row);
             }
         }
         

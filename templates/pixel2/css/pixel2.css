@@ -407,3 +407,22 @@ div.errorbox {
     border-bottom:1px solid #CDD1D7;
     padding: 3px 0 5px 0;
 }
+
+/* -------------------------------------------------------------- *\
+   --------------------------------------------------------------
+   NEW STUFF FOR X4 BROWSER-SIDE
+   -------------------------------------------------------------- 
+\* -------------------------------------------------------------- */
+.x4UlAsTable {
+    white-space: pre;
+    font-family: monospace;
+    display: block;
+    padding-left: 0px;
+}
+.x4UlAsTable li {
+    display: block;
+    padding: 3px;
+}
+
+
+    

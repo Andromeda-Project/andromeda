@@ -238,6 +238,11 @@ var x4 =  {
                 }
             }
         });
+        
+        // KFD 7/31/08 If a render function exists,
+        //             call it.  There may only be
+        //             on per page
+        if(typeof(x4PageDraw)=='function') x4PageDraw();
     },
     
     
@@ -386,16 +391,19 @@ var x4 =  {
      */
     format: {
         time: function(minutes) {
-            var hours = Math.round(minutes / 60);
+            var mins  = minutes % 60;
+            var hours = (minutes - mins) / 60;
             var ampm = 'AM';
-            if(hours > 12) {
-                hours-=12;
-                var ampm ='PM';
+            if(hours == 0) {
+                hours = 12;
             }
             else if(hours == 12) {
                 var ampm = 'PM';
             }
-            var mins  = minutes % 60;
+            else if(hours > 12) {
+                hours-= 12;
+                var ampm = 'PM'; 
+            }
             hours = String.prototype.strpad(hours,2,'0',STR_PAD_LEFT);
             mins  = String.prototype.strpad(mins ,2,'0',STR_PAD_LEFT);
             return hours + ":" + mins + ' ' + ampm;                
@@ -411,6 +419,7 @@ var x4 =  {
      * UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU
      */
 
+     
     /* 
      * initialize a json request that uses x4Page and
      * all inputs on object
