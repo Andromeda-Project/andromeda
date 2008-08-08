@@ -4704,8 +4704,17 @@ function SpecDDL_Triggers_Automated_Dominant_agg()  {
     $ads = array();
     foreach($qps as $qp) {
         list($tab_chd,$col_chd) = explode('.',$qp['auto_formula']);
+        
+        # KFD 8/7/08, split $col_chd to see if they named
+        #             a dominant column to use
+        $dc = explode(':',$col_chd);
+        $col_chd = $dc[0];
+        $col_dom = count($dc)==2 ? $dc[1] : '';
+        
         $ads[$tab_chd][$qp['table_id']][] = array(
-            'col_chd'=>$col_chd,'col_par'=>$qp['column_id']
+            'col_chd'=>$col_chd
+            ,'col_dom'=>$col_dom
+            ,'col_par'=>$qp['column_id']
         );
     }
 
@@ -4729,42 +4738,57 @@ function SpecDDL_Triggers_Automated_Dominant_agg()  {
         foreach($adss1 as $tab_par=>$adss2) {
             // Now convert the pairs into SQL comparisons
             $compares = '';
+
+            // Fetch the dominant column
+            # KFD 8/7/08, Move this up
+            $col_domdef = $dom[$tab_chd][$tab_par];
+
+            # KFD 8/7/08.  Big change, make one command for each
+            #              fetch_dom.  This is less efficient but
+            #              allows for multiple fetch_dom and falls
+            #              back to only one command for only
+            #              one fetch_dom column
             foreach($adss2 as $adss3) {
+                $pairs = array();
                 $col_chd = $adss3['col_chd'];
                 $col_par = $adss3['col_par'];
+                #  KFD 8/7/08, override dominant if explicitly assigned
+                if($adss3['col_dom']<>'') {
+                    $col_dom = $adss3['col_dom'];
+                }
+                else {
+                    $col_dom = $col_domdef;
+                }
                 $pairs[] = "$col_par = new.$col_chd";
                 $compares[] = "new.$col_chd <> old.$col_chd";
+            
+                // Get the SQL Match
+                $match = $this->ufks[$tab_chd.'_'.$tab_par.'_']['cols_match'];
+                $match = str_replace('chd.','new.'     ,$match);
+                $match = str_replace('par.',"$tab_par.",$match);
+                $SWhere = $match;
+                
+                // Create the insert....
+                $sq="\n"
+                    ."    --- 4001 AGGREGATE DOMINANT upsaves\n"
+                    ."    IF new.$col_dom = ##Y## THEN\n"
+                    ."        UPDATE $tab_par SET ".implode("\n              ,",$pairs)."\n"
+                    ."         WHERE $SWhere; \n"
+                    ."    END IF;\n";
+                $this->SpecDDL_TriggerFragment($tab_chd,"INSERT","AFTER" ,"4002",$sq);
+    
+                // Create the update...
+                $sq="\n"
+                    ."    --- 4001 AGGREGATE DOMINANT upsaves\n"
+                    ."    IF new.$col_dom = ##Y## AND old.$col_dom = ##N## \n"
+                    ."       OR (      new.$col_dom = ##Y## \n"
+                    ."           AND (   (".implode( ")\n             OR (",$compares)." ) "
+                    .")) THEN\n"
+                    ."        UPDATE $tab_par SET ".implode("\n              ,",$pairs)."\n"
+                    ."         WHERE $SWhere; \n"
+                    ."    END IF;\n";
+                $this->SpecDDL_TriggerFragment($tab_chd,"UPDATE","AFTER" ,"4001",$sq);
             }
-            
-            // Get the SQL Match
-            $match = $this->ufks[$tab_chd.'_'.$tab_par.'_']['cols_match'];
-            $match = str_replace('chd.','new.'     ,$match);
-            $match = str_replace('par.',"$tab_par.",$match);
-            $SWhere = $match;
-            
-            // Fetch the dominant column
-            $col_dom = $dom[$tab_chd][$tab_par];
-            
-            // Create the insert....
-            $sq="\n"
-                ."    --- 4001 AGGREGATE DOMINANT upsaves\n"
-                ."    IF new.$col_dom = ##Y## THEN\n"
-                ."        UPDATE $tab_par SET ".implode("\n              ,",$pairs)."\n"
-                ."         WHERE $SWhere; \n"
-                ."    END IF;\n";
-            $this->SpecDDL_TriggerFragment($tab_chd,"INSERT","AFTER" ,"4002",$sq);
-
-            // Create the update...
-            $sq="\n"
-                ."    --- 4001 AGGREGATE DOMINANT upsaves\n"
-                ."    IF new.$col_dom = ##Y## AND old.$col_dom = ##N## \n"
-                ."       OR (      new.$col_dom = ##Y## \n"
-                ."           AND (   (".implode( ")\n             OR (",$compares)." ) "
-                .")) THEN\n"
-                ."        UPDATE $tab_par SET ".implode("\n              ,",$pairs)."\n"
-                ."         WHERE $SWhere; \n"
-                ."    END IF;\n";
-            $this->SpecDDL_TriggerFragment($tab_chd,"UPDATE","AFTER" ,"4001",$sq);
         }
     }
     return true;
