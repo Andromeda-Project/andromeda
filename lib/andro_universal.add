@@ -456,6 +456,14 @@ column deprecated {
     description: Load Deprecated Features;
     flagcarry: N;
 }
+column x4menutitle {
+    type_id: text;
+    description: x4 Menu Title;
+}
+column x4menutext {
+    type_id: text;
+    description: x4 Menu Text;
+}
 table configfw {
     module: system;
     uisort: 550;
@@ -471,7 +479,7 @@ table configfw {
     }
     column { smtpout; }
     column { uisearchdash; }
-    column { x4menu; x4padmenu; }
+    column { x4menu; x4padmenu; x4menutitle; x4menutext }
     column { js_css_debug; deprecated; }
 }
 table configapp {
