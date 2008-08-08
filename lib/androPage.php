@@ -792,7 +792,7 @@ class androPage {
         // Get the uifilter being used and its value
         // skip the asterisk and the @sign
         $uif_name = substr($colinfo['compare'],2);
-        x4Debug($this->yamlP2['uifilter']);
+        #x4Debug($this->yamlP2['uifilter']);
         $uiv_val  = a($this->yamlP2['uifilter'][$uif_name],'value');
         if($uiv_val=='') return '';
         
@@ -801,9 +801,9 @@ class androPage {
         
         # KFD 6/18/08, route out to the new universal sqlFilter()
         $rv = sqlFilter($dd['flat'][$colname],$uiv_val,$dd['table_id']);
-        x4Debug($colname);
-        x4Debug($uiv_val);
-        x4Debug($rv);
+        #x4Debug($colname);
+        #x4Debug($uiv_val);
+        #x4Debug($rv);
         if($rv<>'') return "(".$rv.")";
         return '';
         #return "(".rff_OneCol($dd['flat'][$colname],$colname,$uiv_val).")";
