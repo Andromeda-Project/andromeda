@@ -40,12 +40,6 @@ jsInclude('clib/jqModal.js','jqModal was written by Brice Burgess
 cssInclude('clib/jqModal.css');
 
 
-# SCROLLING TO ANYWHERE ON SCREEN
-# Scrolling - not used at the moment.  I put it in experimentally
-#             for scrollable tables, but am not happy with those yet
-#sInclude('clib/jquery.scrollTo.js');
-
-
 # SCROLLABLE TABLES
 # Status: unknown.  It's kind of ok, but it seems that it might
 #         be simpler just to create table bodies with fixed 
@@ -67,6 +61,11 @@ jsInclude('clib/jquery.timeentry.js');
 #      and library for date manipulation.
 jsInclude('clib/jquery.date_input.js');
 cssInclude('clib/date_input.css');
+
+# Another date library, extremely agile
+# with date manipulation
+jsInclude('clib/jquery.dates.js');
+
 
 # Jquery Tooltip
 #  Don't need dimensions, we have jquery 1.2.6 now
