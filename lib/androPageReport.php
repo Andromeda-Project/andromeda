@@ -616,9 +616,19 @@ class androPageReport extends fpdf {
        if(isset($alist['_source'])) unset($alist['_source']);
        if(isset($alist['skey'])) unset($alist['skey']);
        
+       /*
        while($value = array_shift($alist)) {
            if($value=='_') $value='';
            $last = count($alist)==0 ? true : false;
+           x4debug('--'.$value.'--');
+           $this->atNextCol($value,$titles,$last);
+       }
+       */
+       $keys = array_keys($alist);
+       $keylast = array_pop($keys);
+       foreach($alist as $idx=>$value) {
+           if($value=='_') $value='';
+           $last = $idx == $keylast ? true : false;
            $this->atNextCol($value,$titles,$last);
        }
        $this->nextLine($titles);
