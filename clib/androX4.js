@@ -18,10 +18,6 @@
    Boston, MA  02110-1301  USA 
    or visit http://www.gnu.org/licenses/gpl.html
 \* ================================================================== */
-
-/* Avoid use of $ in js code  */
-jq = $;
-
 /* =====================================================
  * Top level context controller and utility provider
  *
@@ -47,7 +43,8 @@ var x4 =  {
         x4dd.dd = $a.data.dd;
         
         // Do things to the document
-        this.mainDocument();
+        //this.mainDocument();
+        this.mainKeyDispatch();
         
         // Find the top object
         window.rootObj = $a.byId('x4Top');
@@ -66,10 +63,188 @@ var x4 =  {
         }
     },
     
+    /**
+    * Returns a key label for any keyup/keydown/keypress
+    *
+    */
+    keyLabel: function(e) {
+        var x = e.keyCode;
+        
+        var x4Keys = { };
+        x4Keys['8']  = 'BackSpace';
+        x4Keys['9']  = 'Tab';
+        x4Keys['13'] = 'Enter';
+        x4Keys['16'] = 'Shift';
+        x4Keys['17'] = 'Ctrl';
+        x4Keys['18'] = 'Alt';
+        x4Keys['20'] = 'CapsLock';
+        x4Keys['27'] = 'Esc';
+        x4Keys['33'] = 'PageUp';
+        x4Keys['34'] = 'PageDown';
+        x4Keys['35'] = 'End';
+        x4Keys['36'] = 'Home';
+        x4Keys['37'] = 'LeftArrow';
+        x4Keys['38'] = 'UpArrow';
+        x4Keys['39'] = 'RightArrow';
+        x4Keys['40'] = 'DownArrow';
+        x4Keys['45'] = 'Insert';
+        x4Keys['46'] = 'Delete';
+        x4Keys['112']= 'F1' ;
+        x4Keys['113']= 'F2' ;
+        x4Keys['114']= 'F3' ;
+        x4Keys['115']= 'F4' ;
+        x4Keys['116']= 'F5' ;
+        x4Keys['117']= 'F6' ;
+        x4Keys['118']= 'F7' ;
+        x4Keys['119']= 'F8' ;
+        x4Keys['120']= 'F9' ;
+        x4Keys['121']= 'F10';
+        x4Keys['122']= 'F11';
+        x4Keys['123']= 'F12';
+    
+        // If they did not hit a control key of some sort, look
+        // next for letters
+        var retval = '';
+        if(typeof(x4Keys[x])!='undefined') {
+            return x4Keys[x];
+        }
+
+        // If still here, we have a character code,
+        // not a keycode
+        var x = e.keyCode == 0 ? e.charCode : e.keyCode;
+        var letters = 
+            [ 'A', 'B', 'C', 'D', 'E', 'F', 'G',
+              'H', 'I', 'J', 'K', 'L', 'M', 'N',
+              'O', 'P', 'Q', 'R', 'S', 'T', 'U',
+              'V', 'W', 'X', 'Y', 'Z' ];
+        var numbers = [ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ];
+        if(x >= 65 && x <= 90) {
+            retval = letters[x - 65];
+        }
+        else if(x >= 97 && x <= 121) {
+            retval = letters[x - 97];
+        }
+        else if(x >= 48 && x <= 57) {
+            retval = numbers[x - 48];
+        }
+        
+        if(e.ctrlKey) retval = 'Ctrl'+retval;
+    
+        return retval;
+    },
+    
+    
+    /**
+    *  A sub-object which tracks the current keystroke through
+    *  keydown, keypress and keyup, to ensure we can trap
+    *  complete combinations of ALT-F and so forth.
+    */
+    keyStroke: {
+        shiftKey: false,
+        altKey:   false
+    },
+    
+    /**
+    *  Attach handlers to document level to route keyboard
+    *  events to x4.keyDispatch.  Tracks Meta-keys to create
+    *  complete picture of keyPress with Shift+Ctrl+Alt,
+    *  dispatches only meta-events, allows regular events
+    *  to pass unchanged.
+    *  
+    */
+    mainKeyDispatch: function() {
+        // Key down only records if it is a meta-key
+        // and always stops propagation and takes no action
+        $(document).keydown(function(e) {
+            var keyLabel = x4.keyLabel(e);
+            x4.debug("in doc keydown, label is "+keyLabel);
+            
+            // Tag the current keystroke with various 
+            // flags
+            if(keyLabel=='Alt')   x4.keyStroke.altKey   = true; 
+            if(keyLabel=='Shift') x4.keyStroke.shiftKey = true;
+            
+            return true;
+        });
+
+        // Keyup removes record of meta keys
+        $(document).keyup(function(e) {
+            var keyLabel = x4.keyLabel(e);
+            x4.debug("in doc keyup, label is "+keyLabel);
+            
+            // Remove the two tags we are interested in
+            if(keyLabel=='Alt')   x4.keyStroke.altKey   = false; 
+            if(keyLabel=='Shift') x4.keyStroke.shiftKey = false;
+            
+            // Everything else goes through
+            return true;
+        });
+        
+        $(document).keypress(function(e) {
+            var keyLabel = x4.keyLabel(e);
+            
+            // Add Shift and Alt if they are recorded
+            if(x4.keyStroke.shiftKey) keyLabel = 'Shift'+keyLabel;
+            if(x4.keyStroke.altKey)   keyLabel = 'Alt'  +keyLabel;
+            x4.debug("in doc keypress, label is "+keyLabel);
+            
+            // Dispatch base keypress event.  If the dispatcher
+            // returns TRUE, stop all propogation below
+            var stop = u.events.notify('keyPress',keyLabel);
+            x4.debug("doc keypress received response from generic: --"+stop+'-- for keyPress '+keyLabel);
+            
+            // Dispatch precise keyboard event, record 
+            // answer to possibly stop propagation
+            var finalLabel = 'keyPress_'+keyLabel;
+            var stop = u.events.notify(finalLabel) || stop;
+            x4.debug("doc keypress received response from specialized: "+stop);
+            
+            // If no event handler took the event, and it is a
+            // CTRL or ALT key combination, stop propagation
+            if(!stop) {
+                x4.debug("doc keypress checking for ctrl: "+keyLabel);
+                var k = keyLabel;
+                if(k.indexOf('Ctrl')!=-1 || k.indexOf('Alt')!=-1) {
+                    x4.debug("doc keypress stopping ctrl/alt unconditionally");
+                    stop = true;
+                }
+            }
+            // Special case code.  F buttons like F1-F12 must 
+            // be stopped here, this is what prevents their
+            // default actions.
+            if(!stop) {
+                var list = [ 
+                     'F1','F2','F3','F4' ,'F5' ,'F6'
+                    ,'F7','F8','F9','F10','F11','F12'
+                ];
+                if(list.indexOf(keyLabel)>0) {
+                    var k = keyLabel
+                    x4.debug("doc keypress stopping "+k+" unconditionally");
+                    stop = true;
+                }
+            }
+            
+            // Stop all propagation, return false, etc.
+            // This prevents ALT-F from activating menu or
+            // CTRL-N from popping up a new window
+            if(stop) {
+                x4.debug("doc keypress stopping propagation, returning false");
+                e.stopPropagation();
+                return false;
+            }
+
+            // No reason to stop propagation or return false,
+            // so let the browser do its thing.            
+            x4.debug("doc keypress returning true");
+            return true;
+        });
+    },
+    
     /*
      * Create default handlers at document level
      *
      */
+     /*
     mainDocument: function() { 
         document.x4RegkeyPress= [ ];
         document.x4UnRegister = function(eName) {
@@ -117,10 +292,11 @@ var x4 =  {
                 }
             }
             else {
-                $a.dialogs.alert("Bad x4Register attempt: " + eName);
+                u.dialogs.alert("Bad x4Register attempt: " + eName);
             }
-        }        
+        } 
     },
+        */
 
     /*
      * x4.mainInit
@@ -298,6 +474,19 @@ var x4 =  {
      */
     stdlib: {
         inputKeyPress: function(e,self) {
+            /**
+            * HACK ALERT: I could not figure out how to make sure no item
+            *             had focus, so user could still tab around on
+            *             controls.  So I added something to stdlib.keyPress
+            *             that checks for the current dialog and returns
+            *             false if there is any dialog in play.  I ain't
+            *             proud of it, but it works.
+            * FILES AFFECTED: androLib.js 
+            *                 androX4.js (this)
+            * HACK ID: MODAL_KEYPRESS
+            */            
+            if(u.dialogs.currentDialog) return false;
+            
             var prop = false;
             var keyLabel = $a.label(e);
             x4.debug("stdlib.inputKeyPress received: "+keyLabel);
@@ -444,14 +633,14 @@ var x4 =  {
             window.open(href);
         }
         else {
-            $a.dialogs.alert("Please select a value first!");
+            u.dialogs.alert("Please select a value first!");
         }
     },
     
     inputValue: function(table,column) {
         var obj = $a.byId('x4inp_'+table+'_'+column);
         if(obj==null) {
-            $a.dialogs.alert("Program error: attempt to read value "
+            u.dialogs.alert("Program error: attempt to read value "
                 +"of nonexistent input.  Please report this error."
                 +" Table and column are "+table+", "+column
             );
@@ -519,6 +708,28 @@ var x4 =  {
     },
     debugClose: function(type,jqId) {
         this.debug(type+": "+jqId+" (COMPLETE)",0);
+    },
+    error: function(msg,id,level) {
+        if(typeof(console)!='undefined') {
+            if(level==null) {
+                level = 'no level reported, presumed "application"';
+            }
+            console.log(" -- ERROR MESSAGE -- ");
+            console.log(" -- LEVEL: "+level+" -- ");
+            if(id!=null) {
+                console.log('  -- '+id+' -- ');
+            }
+            if(typeof(msg)=='object') {
+                for(var x in msg) {
+                    console.log(msg[x]);
+                }
+            }
+            else  {
+                console.log(msg);
+            }
+            console.log(" -- ERROR MESSAGE (END) -- ");
+            console.log(' ');
+        }
     }
 }
 
@@ -605,8 +816,6 @@ jQuery.fn.x4inputWritable = function(tf) {
 
 jQuery.fn.jsonAddParm = function() {
     return this.each(function() {
-            console.log(this.id);
-            console.log(this.value);
             $a.json.addParm(this.id,this.value);
     });
 }
@@ -620,14 +829,21 @@ jQuery.fn.jsonAddParm = function() {
 *  events object is a sub-object of the master x4 object.
 *
 */
-x4.events = {
-    subscribers: { },
+
+/* BACKWARD COMPATIBILITY.  FIX ANY APPLICATIONS THAT ARE USING
+   x4.events by having them call u.events, then remove this
+ */
+x4.events = u.events;
+
+//x*4.eventsX = {
+    //subscribers: { },
     
     /**
-    * Objects subscribe to events by calling x4.events.subscribe() with
+    * Objects subscribe to events by calling u.events.subscribe() with
     * the name of the event and a back reference to themselves.
     *
     */
+    /*
     subscribe: function(eventName,object) {
         // First determine if we have any listeners for this
         // event at all.  If not, make up the empty object
@@ -644,14 +860,16 @@ x4.events = {
             subs[id] = object;
         }
     },
+    */
     
     /**
-    * An object that fires an event will call x4.events.notify with the
+    * An object that fires an event will call x*4.events.notify with the
     * name of the event and a single argument.  If multiple arguments are
     * required, they should be put into an array or object 
     * that the receiving objects must understand.
     *
     */
+    /*
     notify: function(eventName,arguments) {
         // Find out if anybody is listening for this event
         x4.debug("x4 event received event "+eventName);
@@ -668,7 +886,7 @@ x4.events = {
         }
     }
 }
-
+*/
 
 
 /* =====================================================
@@ -701,9 +919,9 @@ var x4dd = {
  */
 function h1(self) {
     // Subscribe to events aimed at h1
-    x4.events.subscribe('h1_saveStem' ,self);
-    x4.events.subscribe('h1_clearStem',self);
-    x4.events.subscribe('h1_setHtml'  ,self);
+    u.events.subscribe('h1_saveStem' ,self);
+    u.events.subscribe('h1_clearStem',self);
+    u.events.subscribe('h1_setHtml'  ,self);
     self.zStem = '';
     
     self.notify = function(eventName,parms) {
@@ -872,7 +1090,8 @@ function x4MenuBar(self) {
      */
     self.activate = function() {
         x4.debugOpen("ACTIVATE ",this.jqId);
-        document.x4Register('keyPress',this);
+        u.events.subscribe('keyPress',this);
+        //document.x4Register('keyPress',this);
         x4.debugClose("ACTIVATE ",this.jqId);
     }
        
@@ -916,12 +1135,15 @@ function x4MenuBar(self) {
      * Message receiving
      *
      */
-    x4.events.subscribe('rowInfo',self);
+    u.events.subscribe('rowInfo',self);
     self.notify = function(eventName,arguments) {
         if(eventName == 'rowInfo') {
             x4.debug("got this: "+arguments);
             $(this).find("#x4RowInfoText").html(arguments);
-        }        
+        } 
+        //if(eventName== 'keyPress') {
+        //    this.keyPress(arguments);   
+        //}
     }
 }
 
@@ -981,7 +1203,7 @@ function x4TableTop(self) {
         this.zSKeyPar    = this.zIsChild
             ? this.zParent.pullDown('zSkeyPar')
             : 0;
-        if(this.zIsChild) x4.events.notify('h1_saveStem');
+        if(this.zIsChild) u.events.notify('h1_saveStem');
         
         if(!this.zCurrentDisplay) {
             if(parm1 != null) {
@@ -997,7 +1219,7 @@ function x4TableTop(self) {
     }
     self.deactivate=function() {
         x4.debugOpen("Deactivating ",this.jqId);
-        if(this.zIsChild) x4.events.notify('h1_clearStem');
+        if(this.zIsChild) u.events.notify('h1_clearStem');
         this.zCurrentDisplay.deactivate();
         this.zCurrentDisplay.style.display='none';
         x4.debugClose("Deactivating ",this.jqId);
@@ -1199,12 +1421,14 @@ function x4TabBar(self) {
      */
     self.activate=function() {
         x4.debugOpen("ACTIVATE",this.jqId);
-        document.x4Register('keyPress',this);
+        u.events.subscribe('keyPress',this);
+        //document.x4Register('keyPress',this);
         x4.debugClose("ACTIVATE",this.jqId);
     }
     self.deactivate = function() {
         x4.debugOpen("ACTIVATE",this.jqId);
-        document.x4UnRegister('keyPress',this);
+        u.events.unSubscribe('keyPress',this);
+        //document.x4UnRegister('keyPress',this);
         x4.debugClose("ACTIVATE",this.jqId);
     }
     
@@ -1214,6 +1438,10 @@ function x4TabBar(self) {
      *
      * <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
      */
+    self.notify = function(eventName,arguments) {
+         if(eventName=='keyPress') this.keyPress(arguments);
+    }
+     
     self.keyPress = function(label) {
         // Determine if there is an enabled button
         x4.debugOpen("TABBAR KEYPRESS",this.jqId);
@@ -1256,9 +1484,9 @@ function x4GridSearch(self) {
     self.zIsChild = self.zTableIdPar ? true : false;
     
     // Register as listener for table events
-    x4.events.subscribe('newRow_'   +self.zTableId,self);
-    x4.events.subscribe('changeRow_'+self.zTableId,self);
-    x4.events.subscribe('deleteRow_'+self.zTableId,self);
+    u.events.subscribe('newRow_'   +self.zTableId,self);
+    u.events.subscribe('changeRow_'+self.zTableId,self);
+    u.events.subscribe('deleteRow_'+self.zTableId,self);
     
     /* 
      * keyUp handler for inputs is for fetching only:
@@ -1294,12 +1522,16 @@ function x4GridSearch(self) {
         // KFD 7/11/08.  If we are on a child table,
         //               only continue if Shift-Uparrow or
         //               shift downarrow
+        // KFD 8/7/08    Removed this.  As a result, the child
+        //               item search refines the search.
+        /*
         if(x4.parent(this).zIsChild) {
             if(keyLabel=='ShiftUpArrow' || keyLabel=='ShiftDownArrow') {
                 x4.parent(this).fetch();
             }
             return;
         }
+        */
         
         // Pass control to the fetch program
         x4.parent(this).fetch();
@@ -1323,7 +1555,8 @@ function x4GridSearch(self) {
             x4.debug("no action, already activated");
         }
         else {
-            document.x4Register('keyPress',this);
+            u.events.subscribe('keyPress',this);
+            //document.x4Register('keyPress',this);
             this.zParent.sendUp('menuBar',this);
             this.zParent.sendUp('tabBarEverybody');
             this.zParent.sendUp(
@@ -1340,7 +1573,7 @@ function x4GridSearch(self) {
             // KFD 6/28/08
             this.describeRows();
             
-            x4.events.notify('h1_setHtml',x4dd.dd[this.zTableId].description);
+            u.events.notify('h1_setHtml',x4dd.dd[this.zTableId].description);
             
             // Make your entrance
             $(this).fadeIn(x4.fadeSpeed,function() {
@@ -1364,7 +1597,8 @@ function x4GridSearch(self) {
             x4.debug("No action, already deactivated");
         }
         else {
-            document.x4UnRegister('keyPress');
+            u.events.unSubscribe('keyPress',this);
+            //document.x4UnRegister('keyPress');
             $('#'+this.zLastFocusId).blur();
             this.zActivated = false;
         }
@@ -1373,7 +1607,7 @@ function x4GridSearch(self) {
     
     self.describeRows = function() {
         if(this.zRowCount == 0) {
-            x4.events.notify('rowInfo','No Records');
+            u.events.notify('rowInfo','No Records');
         }
         else {
             if(this.zRowId!=null) {
@@ -1382,7 +1616,7 @@ function x4GridSearch(self) {
                 var text = 'Record '+rowNow+' of '+this.zRowCount;
             }
         }
-        x4.events.notify('rowInfo',text);
+        u.events.notify('rowInfo',text);
     }
 
     /* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -1395,6 +1629,9 @@ function x4GridSearch(self) {
         if(eventName=='newRow_'   +this.zTableId) this.newRow(parms);
         if(eventName=='changeRow_'+this.zTableId) this.changeRow(parms);
         if(eventName=='deleteRow_'+this.zTableId) this.deleteRow(parms);
+        if(eventName=='keyPress' && typeof(this.keyPress)=='function')
+            this.keyPress(arguments);
+        
     }
     
     self.newRow = function(parms) {
@@ -1562,7 +1799,7 @@ function x4GridSearch(self) {
             $a.byId('x4TabContainer_'+this.zTableId).zSkeyPar = this.zSkey;
         }
         var rx = row.zIndex;
-        x4.events.notify('rowInfo','Record '+rx+' of '+this.zRowCount);
+        u.events.notify('rowInfo','Record '+rx+' of '+this.zRowCount);
         $a.bb.stick('skey_'+this.zTableId,this.zSkey);
     }
     
@@ -1694,16 +1931,16 @@ function x4GridSearch(self) {
  
     self.keyPress_deleteRow = function() {
         if(!this.zRowId) {
-            $a.dialogs.alert('I cannot delete because there is nothing selected.');
+            u.dialogs.alert('I cannot delete because there is nothing selected.');
         }
         else {
-            if($a.dialogs.confirm("Do you really want to delete?")) {
+            if(u.dialogs.confirm("Do you really want to delete?")) {
                 $a.json.init('x4Page',this.zTableId);
                 $a.json.addParm('x4Action','delete');
                 $a.json.addParm('skey',this.zSkey);
                 if($a.json.execute()) {
                     if(!$a.json.hadErrors) {
-                        $a.dialogs.alert('The selected row was deleted.');
+                        u.dialogs.alert('The selected row was deleted.');
                         this.fetch(true);
                     }
                 }
@@ -1757,7 +1994,8 @@ function x4Detail(self) {
         // Tell the powers that be we want menu bar events
         x4.debugOpen("ACTIVATE ",this.jqId);
         x4.debug("With '"+action+"' and '" +skey+"'");
-        document.x4Register('keyPress',this);
+        u.events.subscribe('keyPress',this);
+        //document.x4Register('keyPress',this);
         this.zParent.sendUp('menuBar',this);
         this.zParent.sendUp(
             'menuBarLabel',x4dd.dd[this.zTableId].singular
@@ -1788,7 +2026,8 @@ function x4Detail(self) {
     
     self.deactivate = function() {
         x4.debug("Deactivating "+this.jqId);
-        document.x4UnRegister('keyPress');
+        u.events.unSubscribe('keyPress',this);
+        //document.x4UnRegister('keyPress');
         $('#'+this.zLastFocusId).blur();
     }
     
@@ -1829,7 +2068,7 @@ function x4Detail(self) {
         }
         
         // Notify any listeners
-        x4.events.notify('fetchRow_'+this.zTableId,row);
+        u.events.notify('fetchRow_'+this.zTableId,row);
     },
     
     self.displayRow = function() {
@@ -1936,7 +2175,7 @@ function x4Detail(self) {
         //try { eval(smfunc+"('"+mode+"',this)"); }
         //catch(e) { // do nothing on error 
         //}
-        x4.events.notify('setmode_'+this.zTableId,mode);
+        u.events.notify('setmode_'+this.zTableId,mode);
 
         // Set the read-only and the coloring, and defaults for new
         $(this).find(":input").each( function() {
@@ -1970,7 +2209,7 @@ function x4Detail(self) {
     self.setTitle = function(mode) {
         if(mode=='new') {
             var title = 'Add ' + x4dd.dd[this.zTableId].singular;
-            x4.events.notify('rowInfo','New '+title);
+            u.events.notify('rowInfo','New '+title);
         }
         else {
             title = false;
@@ -1987,7 +2226,7 @@ function x4Detail(self) {
                 }
             }
         }
-        x4.events.notify('h1_setHtml',title);
+        u.events.notify('h1_setHtml',title);
     }
     
     self.tryToSave = function(force,silent1,silent2) {
@@ -2015,7 +2254,7 @@ function x4Detail(self) {
         
         if(force!=true && silent1==null) {
             var text ="Would you like to save changes?\n\n"+window.changes;
-            if(!$a.dialogs.confirm(text)) {
+            if(!u.dialogs.confirm(text)) {
                 return false;
             }
         }
@@ -2026,25 +2265,25 @@ function x4Detail(self) {
         $a.json.execute(true);
         if(!$a.json.hadErrors) {
             if(this.skey == 0) {
-                $a.dialogs.alert("New "+x4dd.dd[this.zTableId].singular
+                u.dialogs.alert("New "+x4dd.dd[this.zTableId].singular
                     +" has been saved.");
                 this.skey = $a.data.row.skey;
                 //this.zParent.sendUp('zSkey',this.skey);
                 //if(this.zParent.zType = 'x4TabContainer') {
                 //    this.zParent.zSkeyPar = this.skey;
                 //}
-                x4.events.notify(
+                u.events.notify(
                     'newRow_'+this.zTableId
                     ,$a.data.row
                 );
             }
             else {
                 if(silent2==null) {
-                    $a.dialogs.alert("Changes to "
+                    u.dialogs.alert("Changes to "
                         +$a.byId('x4H1Top').innerHTML
                         +" have been saved.");
                 }
-                x4.events.notify(
+                u.events.notify(
                     'changeRow_'+this.zTableId
                     ,$a.data.row
                 );
@@ -2056,6 +2295,11 @@ function x4Detail(self) {
         }
     }
 
+    self.notify = function(eventName,arguments) {
+         if(eventName=='keyPress' && typeof(this.keyPress)=='function')
+             this.keyPress(arguments);
+    }
+    
     /* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
      *                   
      * Record Navigation 
@@ -2095,7 +2339,7 @@ function x4Detail(self) {
             this.zParent.sendUp('Esc',this);
         }
         else {
-            if($a.dialogs.confirm("Abandon changes?")) {
+            if(u.dialogs.confirm("Abandon changes?")) {
                 this.zParent.sendUp('Esc',this);
             }
             else {
@@ -2106,15 +2350,15 @@ function x4Detail(self) {
     }
     
     self.keyPress_deleteRow = function() {
-        if($a.dialogs.confirm("Do you really want to delete?")) {
+        if(u.dialogs.confirm("Do you really want to delete?")) {
             $a.json.init('x4Page',this.zTableId);
             $a.json.addParm('x4Action','delete');
             $a.json.addParm('skey',this.skey);
             if($a.json.execute()) {
                 if(!$a.json.hadErrors) {
-                    $a.dialogs.alert('The selected row was deleted.');
+                    u.dialogs.alert('The selected row was deleted.');
                     this.zCmd = true;
-                    x4.events.notify(
+                    u.events.notify(
                         'deleteRow_'+this.zTableId
                         ,this.skey
                     );
@@ -2223,7 +2467,8 @@ function x4AndroPage(self) {
      * @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
      */
     self.activate = function() {
-        document.x4Register('keyPress',this);
+        u.events.subscribe('keyPress',this);
+        //document.x4Register('keyPress',this);
         
         $(this).fadeIn(x4.fadeSpeed,function() {
             if($(this).find(":input,a").length > 0) {
@@ -2231,6 +2476,17 @@ function x4AndroPage(self) {
             }
         });
     }
+    
+    self.notify = function(eventName,arguments) {
+         if(eventName!='keyPress') return;
+         
+         var method = 'keyPress_'+arguments;
+         if(typeof(this[method])=='function') {
+             this[method]();
+         }
+    }
+    
+    
     
     /* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
      *                   
