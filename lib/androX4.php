@@ -56,6 +56,13 @@ class androX4 {
         $extra = ob_get_clean();
         if($extra<>'') x4Script($extra);
         
+        # KFD 8/7/08.  Grab any "hold" variables and
+        # attach them to the current object.  This was
+        # put in for the wholdist application to carry
+        # context from screen to screen.
+        #
+        $this->hld = aFromGp('hld_');
+        
         # All top-level elements will go inside of this div 
         $x4Top = html('div');
         $x4Top->hp['id']='x4Top';
@@ -63,6 +70,12 @@ class androX4 {
         x4Html('*MAIN*',$x4Top->bufferedRender());
         x4Data('dd.'.$this->table_id,$this->dd);
         x4Data('returnto',gp('x4Return'));
+        
+        # Now send all hold variables out on the container
+        foreach($this->hld as $key=>$value) {
+            $x4Top->hidden($key,$value);
+        }
+        
         return;
     }
     
@@ -315,11 +328,14 @@ underlined letters that show this, so:
         $t->ap['xReturnAll'] = 'N';
         $t->addClass('x4Pane');
         $t->addClass('x4GridSearch');
+        $t->addClass('x4Grid');
         $t->setAsParent();
-        $tb1 = html('tbody',$t);
+        $tb1 = html('thead',$t);
         $th = html('tr',$tb1);
+        $th->addClass('header');
         if($inputs=='Y') {
             $ti = html('tr',$tb1);
+            $ti->addClass('inputs');
         }
         $tbody = html('tbody',$t);
         $tbody->hp['id'] = 'grid_body_'.$table_id;
@@ -339,7 +355,7 @@ underlined letters that show this, so:
             
             $column = trim($column);
             $hx = html('th',$th);
-            $hx->addClass('dark');
+            #$hx->addClass('table-head');
             $hx->innerHtml = $colinfo['description'];
             $inpid = 'search_'.$table_id.'_'.$column;
             $hx->hp['onclick'] =
@@ -392,52 +408,16 @@ underlined letters that show this, so:
 
         $trx   = html('tr',$table);
         $tdx   = html('td',$trx);
-        $table = html('table',$tdx);
-        $table->addClass('x4Detail');
-        $tabLoop = array();
-        $colcount   = 0;
-        $colbreak   = a($dd,'colbreak',17);
-        $breakafter = a($dd,'breakafter',array());
-        foreach($dd['flat'] as $column_id=>$colinfo) {
-            if($colinfo['uino']=='Y'   ) continue;
-            if($column_id=='skey'      ) continue;
-            if($column_id=='_agg'      ) continue;
-            if($column_id=='skey_quiet') continue;
         
-            // The row and the caption
-            $tr = html('tr',$table);
-            $td = html('td',$tr);
-            $td->setHtml($colinfo['description']);
-            $td->hp['class'] = 'x4Caption';
-            
-            // The input
-            $td = html('td',$tr);
-            $td->hp['class'] = 'x4Input';
-            $input = input($colinfo,$tabLoop
-                ,array('parentTable'=>$parentTable)
-            );
-            $input->addClass('x4input');
-            $input->ap['xParentId'] = $div->hp['id'];
-            $td->addChild($input);
-
-            # On twelfth column, break and make a new column of fields            
-            $colcount++;
-            if(count($breakafter)>0) {
-                $break = in_array($column_id,$breakafter);
-            }
-            else {
-                $break = $colcount == $colbreak ? true : false;
-            }
-            if($break) {
-                $colcount=0;
-                $tdx = html('td',$trx);
-                $tdx->hp['style'] = 'width: 40px';
-                $tdx = html('td',$trx);
-                $table=html('table',$tdx);
-                $table->addClass('x4Detail');
-            }
-        }
+        $tabLoop = array();
+        $inputs = projection($this->dd,'',$tabLoop
+            ,array('colbreak'=>a($dd,'colbreak',17)
+                ,'breakafter'=>a($dd,'breakafter',array())
+            )
+        );
+        $tdx->addChild($inputs);
         inputsTabLoop($tabLoop,array('xParentId'=>$div->hp['id']));
+        
         return $div;
     }
     # ===================================================================
