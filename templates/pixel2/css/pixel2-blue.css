@@ -43,6 +43,12 @@ div.templatemenu ul li a {
     color: white;
 }
 
+table.thdark thead th {
+    background-color: #488DD3;
+    color: white;
+    font-weight: bolder;
+}
+
 .dark {
     background-color: #488DD3;
 }

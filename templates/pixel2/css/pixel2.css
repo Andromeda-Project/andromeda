@@ -336,11 +336,11 @@ div.templateheader-top {
 
 /* Inputs take the colors from light, plus some unique colors */
 /* that are common to all skins                               */
-input,select,textarea {
+input,select,textarea :not(table.x4Grid) {
     border-color: #E0E0E0;
     background-color: #E0E0E0;
 }
-input,select,textarea {
+input,select,textarea :not(table.x4Grid) {
     border-width: 1px;
     border-style: solid;
 }
@@ -375,7 +375,7 @@ input.selected,select.selected,textarea.selected {
     border-bottom: 1px solid #EEEEEE;
 }
 .darkgray {
-    background-color: #C0C0C0;
+    background-color: #E0E0E0;
 }
 
 /* The error box */
@@ -424,5 +424,76 @@ div.errorbox {
     padding: 3px;
 }
 
+/* -------------------------------------------------------------- *\
+   --------------------------------------------------------------
+   GRIDS
+   -------------------------------------------------------------- 
+\* -------------------------------------------------------------- */
 
-    
+/* The grid itself */
+table.x4Grid {
+	border-style: solid;
+	border-width: 1px;
+	border-color: #3f7cb9;
+	/* border-collapse: collapse; */ 
+	border-spacing: 0px;
+	table-layout: fixed;
+    padding: 1px;
+}
+
+/* Header cells */
+table.x4Grid thead tr th {
+    height:25px;
+    background:#E0E0E0 none repeat scroll 0 0;
+    border-top: 1px solid white;
+    border-left: 1px solid white;
+    border-bottom: 1px solid #909090;
+    border-right: 1px solid #909090;
+    padding:2px 5px 0 5px;
+    font-weight: bolder;
+}
+
+td.auto {
+    border: 0px;
+    height: auto;
+}
+
+/* Title */
+table.x4Grid thead tr.title th  {
+    height: 30px;
+    background-color:#D1E0F0;
+    color: #3F7CB9;
+    border: 0;
+    font-size: 120%;
+}
+table.x4Grid thead tr.title th div {
+    font-size: 120%;
+}
+table.x4Grid thead tr.title th div a {
+    font-size: 13px;
+}
+
+
+
+/* Regular cells */
+table.x4Grid tbody tr td {
+    height:25px;
+    border-color:#C0C0C0;
+    border-style:dotted;
+    border-width:1px 0px 0px 0px;
+    padding:2px 5px 0 5px;
+}
+
+
+/* Footer cells */
+
+table.x4Grid tfoot tr td {
+    height:25px;
+    background:#E0E0E0 none repeat scroll 0 0;
+    border-top: 1px solid white;
+    border-left: 1px solid white;
+    border-bottom: 1px solid #909090;
+    border-right: 1px solid #909090;
+    padding:2px 5px 0 5px;
+}
+

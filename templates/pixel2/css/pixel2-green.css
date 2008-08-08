@@ -46,6 +46,13 @@ a.x4MenuOn { background-color: #71902C; color: white; }
 div.templatemenu ul li a{
     color: white;
 }
+
+table.thdark thead th {
+    background-color: #81A432;
+    color: white;
+    font-weight: bolder;
+}
+
 .dark {
     background-color: #81A432;
 }
