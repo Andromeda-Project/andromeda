@@ -869,6 +869,40 @@ String.prototype.strpad = function(str, len, pad, dir) {
  
 }
 
+String.prototype.pad = function(len, pad, dir) {
+ 
+    str = this.toString();
+	if (typeof(len) == "undefined") { var len = 0; }
+	if (typeof(pad) == "undefined") { var pad = ' '; }
+	if (typeof(dir) == "undefined") { var dir = STR_PAD_RIGHT; }
+ 
+	if (len + 1 >= str.length) {
+ 
+		switch (dir){
+ 
+			case STR_PAD_LEFT:
+				str = Array(len + 1 - str.length).join(pad) + str;
+			break;
+ 
+			case STR_PAD_BOTH:
+				var right = Math.ceil((padlen = len - str.length) / 2);
+				var left = padlen - right;
+				str = Array(left+1).join(pad) + str + Array(right+1).join(pad);
+			break;
+ 
+			default:
+				str = str + Array(len + 1 - str.length).join(pad);
+			break;
+ 
+		} // switch
+ 
+	}
+ 
+	return str;
+ 
+}
+
+
 /* ---------------------------------------------------- *\
 
    SECTION 3: jQuery plugins  
@@ -943,7 +977,7 @@ var u = {
     
     p: function(obj,varName,defValue) {
         if(typeof(obj)!='object') {
-            return defvalue;
+            return defValue;
         }
         
         // First try, maybe it is a direct property
@@ -978,6 +1012,25 @@ var u = {
         }
     },
     
+    uniqueId: function() {
+        return Math.floor(Math.random()*1000000);
+    },
+    
+    clone: function(obj,level) {
+        if(level==null) level = 1;
+        if(level==10) return { };
+        var retval = { };
+        for (var x in obj) {
+            if(typeof(obj[x])=='object') {
+                retval[x] = u.clone(obj[x],level+1);
+            }
+            else {
+                retval[x] = obj[x];
+            }
+        }
+        return retval;
+    },
+    
     /*
     * bulletin board to simulate safe global variables.  You
     * can "stick" them here and grab them later
@@ -1005,6 +1058,7 @@ var u = {
     */
     events: {
         subscribers: { },
+        subStack: [ ],
         
         /**
         * Objects subscribe to events by calling u.events.subscribe() with
@@ -1023,10 +1077,43 @@ var u = {
             // if the object is confused and registers itself twice.
             //
             var id = object.id;
+            if(id == '' || id==null) {
+                object.id = u.uniqueId(); 
+            }
             if( u.p(subs,id,null)==null ) {
-                subs[id] = object;
+                subs[id] = id;
             }
         },
+        
+        /**
+        * An object can unsubscribe from an event.
+        *
+        */
+        unSubscribe: function(eventName,object) {
+            var id = object.id;
+            if( u.p(this.subscribers[eventName],id,null)!=null ) {
+                delete this.subscribers[eventName][id];
+            }
+        },
+        
+        /**
+        * Two commands to remove all current subscriptions
+        * after saving them to a stack, and command to restore
+        * prior prescriptions from the stack
+        *
+        */
+        suppressByPrefix: function(prefix) {
+            this.subStack.push(u.clone(this.subscribers));
+            for(var x in this.subscribers) {
+                if (x.slice(0,prefix.length)==prefix) {
+                    delete this.subscribers[x];
+                }
+            }
+        },
+        unSuppress: function() {
+            this.subscribers = this.subStack.pop();
+        },
+        
         
         /**
         * An object that fires an event will call u.events.notify with the
@@ -1036,33 +1123,72 @@ var u = {
         *
         */
         notify: function(eventName,arguments) {
+            x4.debug("in u.events.notify, eventname and arguments follow");
+            x4.debug(eventName);
+            x4.debug(arguments);
             // Find out if anybody is listening for this event
             var subscribers = u.p(this.subscribers,eventName,{ });
             
+            this.zStop = false;
             for(var id in subscribers) {
-                var subscriber = subscribers[id];
-                u.debug(
-                    "Dispatching event "+eventName+" to "+id+" with arguments:"
-                );
-                u.debug(arguments);
-                subscriber.notify(eventName,arguments);
+                var subscriber = u.byId(id);
+                if(subscriber==null) {
+                    x4.debug("The subscriber is null!");
+                    continue;
+                }
+                
+                // First possibility is a generic nofity handler
+                if(typeof(subscriber.notify)=='function') {
+                    x4.debug("Dispatching to "+id+" generic NOTIFY method");
+                    var x = subscriber.notify(eventName,arguments);
+                    if(x) this.zStop = true;
+                }
+                // next possibility is a specific handler
+                if(typeof(subscriber[eventName])=='function') {
+                    x4.debug("Dispatching to "+id+" specific method "+eventName);
+                    var x = subscriber[eventName](arguments);
+                    if(x) this.zStop = true;
+                }
             }
+            x4.debug("Returning: =="+this.zStop+"==");
+            return this.zStop;
         }
     }, 
 
     /*
     * Dialogs
+    *
+    * HACK ALERT: I could not figure out how to make sure no item
+    *             had focus, so user could still tab around on
+    *             controls.  So I added something to stdlib.keyPress
+    *             that checks for the current dialog and returns
+    *             false if there is any dialog in play.  I ain't
+    *             proud of it, but it works.
+    * FILES AFFECTED: androLib.js (this)
+    *                 androX4.js
+    * HACK ID: MODAL_KEYPRESS
     */
     dialogs: {
+        id: 'u_dialogs',
         answer: null,
         json: null,
+        currentDialog: false,
         
         clear: function(answer) {
             this.answer = answer;
+            this.currentDialog = false;
+            u.events.unSuppress();
             $('#dialogbox,#dialogoverlay').css('display','none');
         },
         
-        prepare: function() {
+        prepare: function(type) {
+            // Tell the master what we are doing, 
+            // and suppress all keystrokes except ENTER and ESC
+            this.currentDialog = type;
+
+            // Suppress all events 
+            u.events.suppressByPrefix('keyPress');
+
             // Get some basic heights and widths
             var wh = $(window).height();
             var ww = $(window).width();
@@ -1081,8 +1207,8 @@ var u = {
 
             // Get height and width of the inner guy and center him
             var ch = $('#dialogbox').height();
-            $('#dialogbox').css('width',200);
-            cw = 200;
+            $('#dialogbox').css('width',300);
+            cw = 300;
             
             // Center and otherwise prepare the box
             $('#dialogbox')
@@ -1093,11 +1219,35 @@ var u = {
                 .css('display','')
                 .css('z-index',501)
                 .addClass('dialog');
-
+            u.byId('dialogbox').notify = function(eventName,args) {
+                if(u.dialogs.currentDialog == 'alert') {
+                    if(eventName == 'keyPress_Enter') {
+                        u.dialogs.clear();
+                        return true;
+                    }
+                    if(eventName == 'keyPress_Esc')  {
+                        u.dialogs.clear();
+                        return true;
+                    }
+                }
+                if(u.dialogs.currentDialog == 'confirm') {
+                    if(eventName == 'keyPress_Y') {
+                        u.events.zStop = true;
+                        u.dialogs.clear(true);
+                        return true;
+                    }
+                    if(eventName == 'keyPress_N') {
+                        u.events.zStop = true;
+                        u.dialogs.clear(false);
+                        return true;
+                    }
+                }
+                return false;
+            }
         },
         
         alert: function(msg) {
-            this.prepare();
+            this.prepare('alert');
 
             // Create the content for the dialog itself
             var html =
@@ -1108,6 +1258,9 @@ var u = {
                 +"</center>"
                 +"<br/>"
                 +"</div>";
+                
+            u.events.subscribe('keyPress_Enter',u.byId('dialogbox'));
+            u.events.subscribe('keyPress_Esc'  ,u.byId('dialogbox'));
 
             u.byId('dialogbox').innerHTML=html;
             
@@ -1117,7 +1270,10 @@ var u = {
         },
         
         confirm: function(msg,options) {
-            this.prepare();
+            this.prepare('confirm');
+            u.events.subscribe('keyPress_Y'  ,u.byId('dialogbox'));
+            u.events.subscribe('keyPress_N'  ,u.byId('dialogbox'));
+            
 
             // Create the content for the dialog itself
             var html =
@@ -1134,6 +1290,7 @@ var u = {
                 +"</div>";
 
             u.byId('dialogbox').innerHTML=html;
+            
             
             // Finally, display the dialog
             $('#dialogoverlay').css('opacity',0.4);
@@ -1168,8 +1325,8 @@ var u = {
         },
         
         pleaseWait: function(msg) {
-            this.prepare();
-
+            this.prepare('pleaseWait');
+            
             // Create the content for the dialog itself
             var html =
                 "<center><br/>"
@@ -1548,10 +1705,8 @@ window.a = window.$a = {
             }
             if(! go) {
                 var valold = u.p(inp,'xValue');
-                console.log(valold + '  '+value);
                 if(value.trim() == valold.trim()) return;
             }
-            console.log("continuing");
             inp.xValue = value;
             
             $a.json.init('x4Action','fetch');
@@ -1621,25 +1776,47 @@ window.a = window.$a = {
          * if not empty.
          *
          */
-        inputs: function(obj) {
+        inputs: function(obj,direct) {
+            if(direct==null) direct=false;
             if(obj==null) {
                 obj = $a.byId('x4Top');
             }
             $(obj).find(':input').each( function() {
+                    if(direct) 
+                        var id = 'x4c_'+u.p(this,'xColumnId');
+                    else
+                        var id = this.id;
+                        
+                    
                     if(this.type=='checkbox') {
                         if(this.checked) {
-                            $a.json.addParm(this.id,'Y');
+                            $a.json.addParm(id,'Y');
                         }
                         else {
-                            $a.json.addParm(this.id,'N');
+                            $a.json.addParm(id,'N');
                         }
                     }
                     else {
                         if(this.value!='') {
-                            $a.json.addParm(this.id,this.value);
+                            $a.json.addParm(id,this.value);
                         }
                     }
             });
+        },
+        
+        /**
+        * Serialize an array or an object for sending back
+        *
+        */
+        serialize: function(prefix,obj) {
+            for(var x in obj) {
+                if(typeof(obj[x])=='object') {
+                    this.serialize(prefix+'['+x+']',obj[x]);
+                }
+                else {
+                    this.addParm(prefix+'['+x+']',obj[x]);
+                }
+            }
         },
         
         /*
@@ -1754,7 +1931,7 @@ window.a = window.$a = {
                     $('#'+divMain).html(this.jdata.html[x]);
                 }
                 else {
-                    var obj = $a.byId(x);
+                    var obj = u.byId(x);
                     if(obj) {
                         if (obj.tagName =='INPUT') {
                             obj.value = this.jdata.html[x];
@@ -1916,9 +2093,13 @@ window.a = window.$a = {
         x4Keys['8']  = 'BackSpace';
         x4Keys['9']  = 'Tab';
         x4Keys['13'] = 'Enter';
-        x4Keys['16'] = '';   // actually Shift, but prefix will take care of it
-        x4Keys['17'] = '';   // actually Ctrl,  but prefix will take care of it
-        x4Keys['18'] = '';   // actually Alt,   but prefix will take care of it
+        //x4Keys['16'] = '';   // actually Shift, but prefix will take care of it
+        //x4Keys['17'] = '';   // actually Ctrl,  but prefix will take care of it
+        //x4Keys['18'] = '';   // actually Alt,   but prefix will take care of it
+        // KFD Added these three lines, so that keyup/keydown are tracked
+        x4Keys['16'] = 'Shift';
+        x4Keys['17'] = 'Ctrl';
+        x4Keys['18'] = 'Alt';
         x4Keys['20'] = 'CapsLock';
         x4Keys['27'] = 'Esc';
         x4Keys['33'] = 'PageUp';
@@ -1970,6 +2151,7 @@ window.a = window.$a = {
     
         // otherwise put on any prefixes and return
         if(e.ctrlKey)  retval = 'Ctrl'  + retval;
+        // KFD 8/4/08, this never worked, removed.
         if(e.altKey)   retval = 'Alt'   + retval;
         if(e.shiftKey) retval = 'Shift' + retval;
         
