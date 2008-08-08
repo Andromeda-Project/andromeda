@@ -495,13 +495,10 @@ function index_hidden_x4DB() {
     // are four library routines we might call.
     $ra=$r1=false;
     switch(gp('db')) {
-    #case 'del'   : x4sqlDel($table,$whr);              break;
-    #case 'sel'   : $ra=x4sqlSel($table,$whr);          break;
-    case 'ins'   : $r1=x4sqlIns($table,$row,$rr);      break;
-    #case 'insset': x4sqlInsSet($table);                break;
-    #case 'upd'   : $r1=x4sqlUpd($table,$row,$whr,$rr); break;
-    #case 'bsrch' : searchBrowse($table,$whr);          break;
-    #case 'sql'   : x4sqlQuery(gp('x4xSQL'));           break;
+    case 'del'   : x4sqlDel($table,$whr);          break;
+    case 'sel'   : x4sqlSel($table,$whr);          break;
+    case 'ins'   : x4sqlIns($table,$row,$rr);      break;
+    case 'upd'   : x4sqlUpd($table,$row,$whr,$rr); break;
     }
 }
 
@@ -510,6 +507,39 @@ function x4sqlIns($table,$row,$rowret=0) {
     if($rowret) {
         $row = SQL_OneRow("Select * from $table where skey = $skey");
         x4Data('row',$row);
+    }
+}
+function x4sqlDel($table,$whr) {
+    $view = ddView($table);
+    $awhere = array();
+    foreach($whr as $key=>$value) {
+        $awhere[] = "$key = $value";
+    }
+    $swhere = implode(' AND ',$awhere);
+    SQL("Delete from $view WHERE $swhere");
+    if(Errors()) {
+        x4Error(hErrors());
+    }
+}
+
+function x4sqlSel($table,$whr) {
+    $options = array();
+    if(gp('ob')<>'') {
+        $options=array('ob',gp('ob'));
+    }
+    x4Data('rows',SQLX_Select($table,'',$options));
+}
+function x4sqlUpd($table,$row,$whr) {
+    if(!isset($whr['skey'])) {
+        x4Error("The database update cannot be performed because the"
+            ." 'skey' column is not present.  This is very likely a"
+            ." programming error, please contact your programmer."
+        );
+    }
+    else {
+        $view = ddView($table);
+        $row = array_merge($row,$whr);
+        SQLX_Update($table,$row);
     }
 }
 
