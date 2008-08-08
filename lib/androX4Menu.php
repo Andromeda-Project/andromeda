@@ -20,8 +20,8 @@ class x4Menu extends androX4 {
         //vgfSet('show_menu',false);
         
         # Fetch some text
-        $h1 = OptionGet("x4Title","Extended Desktop Menu");
-        $text = OptionGet("x4Text","");
+        $h1 = configGet("x4menutitle","Extended Desktop Menu");
+        $text = configGet("x4menutext","");
         
         ob_start();
         ?>
