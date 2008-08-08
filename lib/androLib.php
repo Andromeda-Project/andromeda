@@ -1145,6 +1145,10 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
     if(a($colinfo,'inputId','') <> '') {
         $input->hp['id'] = $colinfo['inputId'];
     }
+    # KFD 8/7/08, allow options to contain a prefix
+    elseif(a($options,'prefix','')<>'') {
+        $input->hp['id'] = $options['prefix'].$table_id.'_'.$column_id;
+    }
     elseif($table_id<>'') {
         $input->hp['id'] = 'x4inp_'.$table_id.'_'.$column_id;
     }
@@ -1235,11 +1239,20 @@ function projection($dd,$projection='',&$tabLoop,$options=array()) {
         }
     }
     
+    # Create a top level container
+    $ttop  = html('table');
+    $trtop = $ttop->h('tr');
+    
     # Lay out the projection as a table and return it
-    $table = html('table');
+    $tdx   = $trtop->html('td');
+    $table = $tdx->html('table');
     $table->addClass('x4Detail');
     $uiwithnext = 'N';
     $td = false;
+    # KFD 8/7/08, moved all options into the projection system
+    $colcount   = 0;
+    $colbreak   = a($options,'colbreak',17);
+    $breakafter = a($options,'breakafter',array());
     foreach($columns as $column) {
         $input = input($dd['flat'][$column],$tabLoop,$options);
         if($uiwithnext == 'Y') {
@@ -1256,8 +1269,63 @@ function projection($dd,$projection='',&$tabLoop,$options=array()) {
             $td->addChild($input);
         }
         $uiwithnext = a($dd['flat'][$column],'uiwithnext','N');
+        
+        $colcount++;
+        if(count($breakafter)>0) {
+            $break = in_array($column_id,$breakafter);
+        }
+        else {
+            $break = $colcount == $colbreak ? true : false;
+        }
+        if($break) {
+            $colcount=0;
+            $tdx = $trtop->html('td');
+            $tdx->hp['style'] = 'width: 40px';
+            $tdx = $trtop->html('td');
+            $table=$tdx->html('table');
+            $table->hp['style'] = 'margin-left: 30px';
+            $table->addClass('x4Detail');
+        }
+        
     }
-    return $table;
+    return $ttop;
+    
+        /*
+            // The row and the caption
+            $tr = html('tr',$table);
+            $td = html('td',$tr);
+            $td->setHtml($colinfo['description']);
+            $td->hp['class'] = 'x4Caption';
+            
+            // The input
+            $td = html('td',$tr);
+            $td->hp['class'] = 'x4Input';
+            $input = input($colinfo,$tabLoop
+                ,array('parentTable'=>$parentTable)
+            );
+            $input->addClass('x4input');
+            $input->ap['xParentId'] = $div->hp['id'];
+            $td->addChild($input);
+
+            # On twelfth column, break and make a new column of fields            
+            $colcount++;
+            if(count($breakafter)>0) {
+                $break = in_array($column_id,$breakafter);
+            }
+            else {
+                $break = $colcount == $colbreak ? true : false;
+            }
+            if($break) {
+                $colcount=0;
+                $tdx = html('td',$trx);
+                $tdx->hp['style'] = 'width: 40px';
+                $tdx = html('td',$trx);
+                $table=html('table',$tdx);
+                $table->addClass('x4Detail');
+            }
+        }
+        */
+    
 }
 
 
@@ -1290,7 +1358,8 @@ function inputsTabLoop(&$tabLoop,$options=array()) {
         
         if($xpId <> '') {
             $tabLoop[$x]->hp['onfocus']
-                ="\$a.byId('$xpId').zLastFocusId = this.id";
+                ="\$a.byId('$xpId').zLastFocusId = this.id;"
+                ."u.bb.vgfSet('focus',this);";
         }
                 
     }    
@@ -12016,6 +12085,42 @@ function SQLX_Insert($table,$colvals,$rewrite_skey=true,$clip=false) {
     }
     
     return $retval;
+}
+
+/**
+*
+* name: SQLX_Select
+* parm: $tableId  optional  The name or data dictionary
+*
+* Select selected columns and all rows from a 
+* given table.  Automatically uses the correct view
+* if necessary.
+*
+* Optionally, the second parameter can be a "*" or a 
+* comma-separated list of columns or an array of column
+* names.
+* If no column list is provided, all columns are 
+* provided, omitting functional columns like 
+* skey_quiet and _agg are omitted, but including skey.
+*
+*/
+function SQLX_Select($tableId,$columns='',$options=array()) {
+    $dd = ddTable($tableId);
+    $view=$dd['viewname'];
+    
+    if( ($ob = a($options,'ob','')) <> '') {
+        $ob = " ORDER BY $ob";
+    }
+    
+    if(!is_array($columns)) {
+        if($columns=='' || $columns=='*') {
+            $columns = array_keys($dd['flat']);
+            $columns = array_diff($columns,array('skey_quiet','_agg'));
+            $columns = implode(',',$columns);
+        }
+    }
+    
+    return SQL_AllRows("Select $columns from $view $ob"); 
 }
 
 /**
