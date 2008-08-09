@@ -1,0 +1,71 @@
+/****M* /Database-Definitions
+*
+* NAME
+*   Database-Definitions
+*
+* FUNCTION
+*   Database definitions are really cool.
+******
+*/
+
+/****M* /Javascript-API 
+*
+* NAME 
+*   Javascript-API (Javascript API)
+*
+* FUNCTION
+*   The Andromeda Javascript API is a collection of objects,
+*   functions and factory functions (functions that return
+*   an object) that can be called upon by your application's
+*   Javascript code.
+*
+*   The complete collection includes:
+*   * Universal utilities, in the u object
+*   * Andromeda utilities, in the $a object
+*   * Extended Desktop utilities, in the x4 object
+* 
+* PORTABILITY
+*   The u object has no dependencies on external code, though
+*   some of its functions will be inert without firebug.
+*
+*   The $a object assumes the presence of Andromeda data 
+*   structures and an Andromeda web server.
+*
+*   The Extended Desktop utilities (x4 object) expects 
+*   the $a object to be present. 
+* 
+******
+*/
+
+/****M* /PHP-API
+*
+* NAME
+*   PHP-API
+*
+* FUNCTION
+*   Placeholder documentation for the entire PHP-API.
+******
+*/
+
+/****M* /Web-Services-API
+*
+* NAME
+*   Web-Services-API
+*
+* FUNCTION
+*   An Andromeda web server can be used to provide web services,
+*   direct database access and other things.
+*
+******
+*/
+
+/****M* /Database-API
+*
+* NAME
+*   Database-API
+*
+* FUNCTION
+*   Here is what you need to know if you are attempting direct
+*   database access from outside an application.
+******
+*/
