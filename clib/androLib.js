@@ -958,23 +958,80 @@ jQuery.getCSS = function( url, media, rel, title ) {
 var jqModalClose=function(hash) { hash.w.fadeOut(500, function() { hash.o.fadeOut(250);}); };
 var jqModalOpen=function(hash) { hash.w.fadeIn(500);hash.o.fadeIn(500);};
 
-/* ---------------------------------------------------- *\
-
-   SECTION 4: Universal Utility Object   
-   
-   This is *nearly* independent of all Andromeda
-   dependencies, except the following:
-   
-   1) Expects a div at bottom of html w/ID "invisible"
-   2) Assumes Andromeda style sheet (ie "style1")
-   
-\* ---------------------------------------------------- */
+/****O* Javascript-API/u
+* NAME
+*   u (Javascript General Utility Object)
+*
+* FUNCTION
+*   Contains a variety of shortcut methods such as byId,
+*   which makes code smaller and tighter.
+*
+*   Also contains several subobjects with specific areas
+*   of utility.
+*
+* PORTABILITY
+*   Requires no other Andromeda files or libraries, is
+*   completely standalone.
+*
+******
+*/
 var u = {
-    /**
-    * Basic utility functions are in the "u" subobject
+    /****v* u/debugFlag
+    *
+    * NAME
+    *    debugFlat
+    *
+    * FUNCTION 
+    *    If this flag is false, messages sent to u.debug will be
+    *    ignored and that function will return false.
+    *
+    *    If this flag is true, messages sent to u.debug will be 
+    *    sent to console.log, if Firebug is installed and
+    *    enabled.
+    *
+    * SEE ALSO
+    *    u.debug
+    *
+    ******
     */
     debugFlag: false,
     
+    /****m* u/p
+    * NAME
+    *   p (Safe Object Property Access)
+    *
+    * FUNCTION
+    *   The Javascript function u.p retrieves the 
+    *   named property of an HTML or
+    *   Javascript object, and returns a default value if
+    *   the property does not exist.
+    *
+    *   This function resolves the answer by checking
+    *   for the following in this order:
+    *   *  An HTML attribute such as <td colspan="99">
+    *   *  Any non-HTML attribute that may be have previously
+    *      assigned in a command like "obj.zSpecialProperty = 5"
+    *   *  A non-standard HTML attribute such
+    *      as <td xColumnId="customer">
+    *
+    *   If all else fales, the parameter defValue is returned.
+    *
+    * INPUTS
+    *   obj - The object whose property you need to access
+    *   
+    *   propName - The property whose value you are retrieving
+    *   
+    *   defValue - The value to return if the object has no 
+    *   HTML attribute, no javascript-assigned property,
+    *   and no HTML attribute accessible through
+    *   HTMLElement.getAttribute().
+    *
+    * RESULT
+    *   mixed - returns the value of the property, which can
+    *   be any valid Javscript type.
+    *
+    * SOURCE
+    */
     p: function(obj,varName,defValue) {
         if(typeof(obj)!='object') {
             return defValue;
@@ -993,29 +1050,111 @@ var u = {
         // Give up, return the defvalue
         return defValue;
     },
+    /******/
     
-    // Get an object by ID
+    /****m* u/byId
+    * NAME
+    *   u.byId 
+    *
+    * FUNCTION
+    *   The Javascript method u.byId is a
+    *   shortcut for javascript document.getElementById()
+    *
+    * RESULT
+    *   HTMLElement - returns the same result as 
+    *   document.getElementById
+    *
+    * SOURCE 
+    */
     byId: function(id) {
         return document.getElementById(id );
     },
+    /******/
     
-    // Make a log entry if firebug console is available
+    /****m* u/log
+    * NAME
+    *   u.log
+    *
+    * FUNCTION
+    *   Sends a message to console.log
+    *   if it exists.  If firebug is not installed or enabled
+    *   then this function has no effect.  Compare to u.debug.
+    *
+    * RESULT
+    *   message - If firebug is active and the message can
+    *   be sent to the console, then the message itself is
+    *   returned.  Otherwise returns false.
+    *
+    * SOURCE
+    */
     log: function(message) {
         if(typeof(console)!='undefined') {
             console.log(msg);
+            return msg;
         }
+        return false;
     },
-    // If flagDebug is true, send message to log
+    /******/
+
+    /****m* u/debug
+    * NAME
+    *   u.debug
+    *
+    * FUNCTION
+    *   This Javascript method sends a message to console.log()
+    *   if firebug is installed
+    *   and the property u.debugFlag is true.  Compare
+    *   to u.log which does not consider the value of u.debugFlag.
+    *
+    *   You can put commands to u.debug into your Javascript code,
+    *   and then control whether or not they go to the console
+    *   by setting and resetting the u.debugFlag.
+    *
+    * RESULT
+    *   message - If firebug is present and enabled, and the flag
+    *   u.debugFlag is true, returns the message back to the calling
+    *   program.  Otherwise returns false.
+    *
+    * SOURCE
+    */
     debug: function(message) {
         if(this.debugFlag) {
-            this.log(message);
+            return this.log(message);
+        }
+        return false;
+    },
+    /******/
+    
+    /****m* u/uniqueId
+    * NAME
+    *   u.uniqueId
+    *
+    * FUNCTION
+    *   Generates a random number between 1 and 1,000,000 that is
+    *   not being used as the ID for any DOM object.  Useful for
+    *   generating unique and content-free Id's for DOM objects.
+    *
+    * EXAMPLE
+    *   Example usage would be:
+    *
+    *     var x = document.createElement('div');
+    *     x.id = u.uniqueId();
+    *
+    * RESULT
+    *   id - returns the id
+    *
+    * SOURCE
+    */
+    uniqueId: function() {
+        var retval = 0;
+        while( $('#'+retval).length > 1  || retval==0) {
+            var retval=Math.floor(Math.random()*1000000);
         }
     },
+    /******/
     
-    uniqueId: function() {
-        return Math.floor(Math.random()*1000000);
-    },
-    
+    /** NODOC **/
+    /** DELETE **/    
     clone: function(obj,level) {
         if(level==null) level = 1;
         if(level==10) return { };
@@ -1031,39 +1170,246 @@ var u = {
         return retval;
     },
     
-    /*
-    * bulletin board to simulate safe global variables.  You
-    * can "stick" them here and grab them later
+    /****O* u/bb
+    * NAME
+    *   u.bb
+    *
+    * FUNCTION
+    *   "Bulletin Board" object that lets you "stick" values on it
+    *   and "grab" them from elsewhere.
+    *
+    *   u.bb methods should be used instead of global variables
+    *   because they allow you to avoid collisions with framework
+    *   globals.  The framework uses the methods u.bb.vgfGet
+    *   and u.bb.vgfSet, and your application should use u.bb.vgaGet
+    *   and u.bb.vgaSet.
+    *
+    * EXAMPLE:
+    *   Example usage:
+    *      u.bb.vgaSet('myvar','value');
+    *      var myvar = u.bb.vgaGet('myvar','acceptableDefault');
+    *
+    ******
     */
     bb: {
+        /****v* bb/fwvars
+        * NAME
+        *   u.bb.fwvars
+        *
+        * FUNCTION
+        *   Global bulletin board framework variables.  Not intended
+        *   for direct access, manipulate at your own risk!
+        ******
+        */
         fwvars: { },
+        /****v* bb/appvars
+        * NAME
+        *   u.bb.appvars
+        *
+        * FUNCTION
+        *   Global bulletin board application variables.  Not intended
+        *   for direct access, manipulate at your own risk!
+        ******
+        */
         appvars: { },
+        /****m* bb/vgfSet
+        * NAME
+        *   u.bb.vgfSet
+        *
+        * FUNCTION
+        *   Used by the Andromeda framework to save global variables
+        *   for later use.  Application code should never use this,
+        *   or you risk overwriting framework values and disrupting
+        *   normal performance.
+        *
+        * INPUTS
+        *   varName - The name of your variable
+        *   varValue   - The value to store
+        *
+        * SOURCE
+        */
         vgfSet: function(varName,value) {
             this.fwvars[varName] = value;
         },
+        /******/
+        
+        /****m* bb/vgfGet
+        * NAME
+        *   u.bb.vgfGet
+        *
+        * FUNCTION
+        *   Retrieves a variable saved by the framework.
+        *
+        *   Unlike vfgSet, which application code should never call,
+        *   it may be appropriate from time-to-time to call this
+        *   function to find out what the framework is up to.
+        *
+        * INPUTS
+        *   varName - the variable you wish to retrieve
+        *   defValue - the value to return if the variable does not exist.
+        *
+        * SOURCE
+        */
         vgfGet: function(varName,defValue) {
             return u.p(this.fwvars,varName,defValue);
         },
+        /******/
+
+        /****m* bb/vgaSet
+        * NAME
+        *   u.bb.vgaSet
+        *
+        * FUNCTION
+        *   Sets a global variable.  Globals saved with this method
+        *   will not collide with any framework globals.
+        *
+        * INPUTS
+        *   varName - the variable you wish to save
+        *   varValue - the value to save
+        *
+        * SOURCE
+        */
         vgaSet: function(varName,value) {
             this.appvars[varName] = value;
         },
+        /******/
+        
+        
+        /****m* bb/vgaGet
+        * NAME
+        *   u.bb.vgaGet
+        *
+        * FUNCTION
+        *   Retrieves a global variable, or the default value
+        *   if the global has not been set.
+        *
+        * INPUTS
+        *   varName - the variable you wish to save
+        *   defValue - the value to return if the global does
+        *              not exist.
+        *
+        * SOURCE
+        */
         vgaGet: function(varName,defValue) {
             return u.p(this.appvars,varName,defValue);
         }
+        /******/
     },
     
     
-    /*
-    * Event listener and dispatcher
+    /****O* u/events
+    *
+    * NAME
+    *   u.events
+    *
+    * FUNCTION
+    *   The javascript object u.events implements the classic
+    *   event listener and dispatcher pattern.
+    *
+    *   Objects can subscribe to events by name.  Other 
+    *   objects can notify the events object when an event
+    *   occurs, and it will in turn notify all of the subscribers.
+    *
+    * PORTABILITY
+    *   The u.events object and its methods expect other u
+    *   methods to be available, but do not have any other
+    *   dependencies.
+    *
+    ******
     */
     events: {
+        /****iv* events/subscribers
+        *
+        * NAME
+        *   u.events.subscribers
+        *
+        * FUNCTION
+        *   The javascript object u.events.subscribers is an object
+        *   serving as an Associative Array.  Each entry in the array
+        *   has a key that is the name of the event, and a value that
+        *   is an array of object ids for the subscribers.  In JSON
+        *   format the array might look like this:
+        *
+        *       u.events.subscribers = {  // example code only
+        *           keyPress_Enter: { 
+        *              gridEdit_regrules: 'gridEdit_regrules'
+        *           }
+        *           addRow_customers: {
+        *              gridBrowse_customers: 'gridBrowse_customers'
+        *           }
+        *       }
+        *
+        *   This object is documented for completeness only, it is
+        *   not intended for direct manipulation.  Use u.events.subscribe,
+        *   u.events.unSubscribe, u.events.suppressByPrefix and 
+        *   u.events.unSuppress to control event subscriptions.
+        * 
+        ******
+        */
         subscribers: { },
+
+        /****v* events/subStack
+        *
+        * NAME
+        *   u.events.subStack
+        *
+        * FUNCTION
+        *   The javascript object u.events.subStack is used by
+        *   u.events as a stack. See u.events.suppressByPrefix
+        *   and u.events.unSuppress.
+        * 
+        ******
+        */
         subStack: [ ],
         
-        /**
-        * Objects subscribe to events by calling u.events.subscribe() with
-        * the name of the event and a back reference to themselves.
+        /****m* events/subscribe
         *
+        * NAME
+        *   u.events.subscribe
+        *
+        * FUNCTION
+        *   The Javascript method u.events.subscribe allows an
+        *   object to subscribe to a named event.  That object will
+        *   then be notified whenever the event fires.  See the
+        *   method u.events.notify for more information on how
+        *   the notification is handled.
+        *
+        * INPUTS
+        *   eventName - Any string.  There is no validtion of the 
+        *   eventName, so misspellings will result in your object 
+        *   not being notified.
+        *   object - The object itself.
+        *   
+        * NOTES
+        *   The Andromeda framework fires the following events:
+        *   * newRow_<table_name>, whenever any object has added a row
+        *     to a back end table it fires newRow_<table_name>, passing
+        *     the new row as the argument.
+        *   * changeRow_<table_name>, whenever any object has modified
+        *     a row it fires changeRow_<table_name>, passing the new
+        *     version of the row as the argument.
+        *   * deleteRow_<table_name>, whenever any object deletes a 
+        *     row from the database, it fires deleteRow_<table_name>,
+        *     passing in the skey of the deleted row.
+        *   * keyPress, On Extended_Desktop pages all document level
+        *     keystrokes are captured and handed first to the u.events
+        *     object for dispatching.  Each is dispatched twice, the
+        *     first time it is fired as a 'keyPress' event where the 
+        *     x4.keyCode value is the argument.
+        *   * keyPress_<keyCode>, On Extended Desktop pages all document
+        *     level keystrokes are captured and handed first to the
+        *     u.events object for dispatching.  Each is dispatched
+        *     twice, the second time it is fired as a 'keyPress_<keyCode>'
+        *     event with no arguments, such as 'keyPress_Enter' or
+        *     'keyPress_F6'.
+        *
+        * RESULT
+        *   No return value
+        *
+        * SEE ALSO
+        *   u.events.notify
+        *
+        * SOURCE
         */
         subscribe: function(eventName,object) {
             // First determine if we have any listeners for this
@@ -1084,10 +1430,19 @@ var u = {
                 subs[id] = id;
             }
         },
+        /******/
         
-        /**
-        * An object can unsubscribe from an event.
+        /****m* events/unSubscribe
         *
+        * NAME
+        *   u.events.unSubscribe
+        *
+        * FUNCTION
+        *   The Javascript method u.events.unSubscribe allows an
+        *   object to unscribe to an event that it has previously
+        *   subscribed to with u.events.subscribe.
+        *
+        * SOURCE
         */
         unSubscribe: function(eventName,object) {
             var id = object.id;
@@ -1095,32 +1450,157 @@ var u = {
                 delete this.subscribers[eventName][id];
             }
         },
+        /******/
         
-        /**
-        * Two commands to remove all current subscriptions
-        * after saving them to a stack, and command to restore
-        * prior prescriptions from the stack
+        /****m* events/suppressByPrefix
         *
+        * NAME
+        *   u.events.suppressByPrefix
+        *
+        * FUNCTION
+        *   The Javacript method u.event.suppressByPrefix suppresses
+        *   event notification for one or more previously subscribed
+        *   events.
+        *
+        *   The Framework uses this method when it creates a modal
+        *   dialog to suppress all keyPress events, afterwhich it
+        *   re-subscribes  to whatever keyPress events are appropriate
+        *   to the particular dialog.
+        *
+        *   Events are suppressed by giving the event name or the
+        *   beginning of a name.  To suppress all keyPress events
+        *   call this with the argument 'keyPress', to suppress only
+        *   one event you may call with 'keyPress_Enter'.  
+        *
+        * INPUTS
+        *   String - the event name or prefix.
+        *
+        * RESULT
+        *   Number - returns the count of events that were suppressed.
+        *
+        * SEE ALSO
+        *   u.events.unSuppress
+        *   u.events.subscribe (for a list of Framework events)
+        *
+        * SOURCE
         */
         suppressByPrefix: function(prefix) {
             this.subStack.push(u.clone(this.subscribers));
+            var count = 0;
             for(var x in this.subscribers) {
                 if (x.slice(0,prefix.length)==prefix) {
+                    count++;
                     delete this.subscribers[x];
                 }
             }
+            return count;
         },
+        /******/
+
+        /****m* events/unSuppress
+        *
+        * NAME
+        *   u.events.unSuppress
+        *
+        * FUNCTION
+        *   This Javascript method reverses the effect of a previous
+        *   call to u.events.suppressByPrefix, so that previously
+        *   suppressed events are once again active.
+        *
+        *   If u.events.suppresByPrefix is called more than once,
+        *   the u.events.unSuppress method always reverses the most
+        *   recent call.  It is not possible to selectively unsuppress
+        *   events or to unsuppress them in a different order than
+        *   they were suppressed.
+        *
+        * INPUTS
+        *   none
+        *
+        * RESULT
+        *   true - Always returns true.
+        *
+        * SEE ALSO
+        *   u.events.unSuppress
+        *
+        * SOURCE
+        */
         unSuppress: function() {
             this.subscribers = this.subStack.pop();
+            return true;
         },
+        /******/
         
         
-        /**
-        * An object that fires an event will call u.events.notify with the
-        * name of the event and a single argument.  If multiple arguments are
-        * required, they should be put into an array or object 
-        * that the receiving objects must understand.
+        /****m* events/notify
         *
+        * NAME
+        *   u.events.notify
+        *
+        * FUNCTION
+        *   The Javascript method u.events.notify will notify all
+        *   objects that have subscribed to an event by calling
+        *   u.events.subscribe.
+        *
+        *   See below for examples on how to code up object listener
+        *   methods that will receive the events.
+        *
+        *   If you want your application objects to notify other objects
+        *   of its own events, call this function.
+        *
+        * INPUTS
+        *   eventName, the name of the event
+        *   mixed, a single argument.  If multiple arguments are required,
+        *   pass an object that contains property:value assignments.
+        *
+        * RESULTS
+        *   boolen - returns true if any listening object has reported
+        *   that further handling of the event should stop.  This is
+        *   particularly used by the framework to stop propagation of
+        *   keystroke events that have been handled by some listener.
+        *
+        * SEE ALSO
+        *   u.events.subscribe, for a list of Framework Events.
+        *
+        * EXAMPLE
+        *    There are two ways to subscribe to events.  If your
+        *    object has its own notify method, this method will 
+        *    receive all events that the object is subscribed to,
+        *    and it must dispatch them according to eventName.
+        *
+        *    If your object has a method that has the same name
+        *    as the event, that method will be invoked.
+        *
+        *    If you mix both of these approaches you must be careful
+        *    to handle each event in only one way, or it will fire
+        *    twice.
+        *
+        *        var myObject = {
+        *            notify: function(eventName,arguments) {
+        *               // this function receives all events
+        *               // and must dispatch them
+        *               if(eventName=='keyPress_F10') {
+        *                   this.doSomething();
+        *               }
+        *            },
+        * 
+        *            keyPress_Enter: function(arguments) {
+        *                // do something when Enter is hit
+        *                if(whatever) {
+        *                    // tell the dispatcher the event
+        *                    // was not handled
+        *                    return false;
+        *                }
+        *                else {
+        *                    // tell the dispatcher we handled the
+        *                    // event.  Other subscribers will still
+        *                    // get it, but for keystrokes the
+        *                    // default behavior is suppressed.
+        *                    return true;
+        *               }
+        *            }
+        *        }
+        *
+        ******
         */
         notify: function(eventName,arguments) {
             x4.debug("in u.events.notify, eventname and arguments follow");
@@ -1155,31 +1635,95 @@ var u = {
         }
     }, 
 
-    /*
-    * Dialogs
+    /****O* u/dialogs
     *
-    * HACK ALERT: I could not figure out how to make sure no item
-    *             had focus, so user could still tab around on
-    *             controls.  So I added something to stdlib.keyPress
-    *             that checks for the current dialog and returns
-    *             false if there is any dialog in play.  I ain't
-    *             proud of it, but it works.
-    * FILES AFFECTED: androLib.js (this)
-    *                 androX4.js
-    * HACK ID: MODAL_KEYPRESS
+    * NAME
+    *   u.dialogs
+    *
+    * FUNCTION
+    *   The two Javascript dialogs u.dialogs.alert and
+    *   u.dialogs.confirm replace the Javascript native functions
+    *   alert() and confirm().
+    *
+    *   The third dialog, u.dialogs.pleaseWait, puts up a 
+    *   suitable notice if your application must do something that
+    *   will take more than 1-2 seconds.
+    *
+    *   They are all fully modal, respond to appropriate keystrokes
+    *   like 'Y', 'N', 'Enter' and 'Esc', and maintain the same
+    *   style as the rest of the template.
+    *
+    * PORTABILITY
+    *   The u.dialogs object expects your HTML to contain two
+    *   invisible (display:none) divs.  One is called "dialogoverlay"
+    *   and the other is called "dialogbox".  These two divs are 
+    *   provided by default on Andromeda templates.  If you make
+    *   your own template and include androHTMLFoot.php at the bottom
+    *   then your templates will also have these divs.
+    *
+    *   Making a page fully modal is difficult, because if an INPUT
+    *   has focus it will be possible for the user to use the keyboard
+    *   to navigate around.  Therefore the code in x4 checks
+    *   the u.dialogs.currentDialog property, and disallow all activity
+    *   if that property is not false.  If you make your own 
+    *   custom pages that are not Extended Desktop pages, you must have
+    *   your input's onkeyPress methods also check this property.
+    *
+    *   If this object is used outside of Andromeda, you must have
+    *   the file phpWait.php in your public web root, otherwise the
+    *   u.dialogs.confirm function will not work.
+    *
+    ******
     */
     dialogs: {
+        /** NO DOC **/
         id: 'u_dialogs',
         answer: null,
         json: null,
+        
+        /****v* events/currentDialog
+        *
+        * NAME
+        *    u.events.currentDialog   
+        *
+        * FUNCTION
+        *    This Javascript property will hold any of the value of:
+        *    * false, no dialog is active
+        *    * alert, an alert dialog is active
+        *    * confirm, a confirm dialog is active
+        *    * pleaseWait, a "Please Wait" box is being displayed
+        *
+        ******
+        */
         currentDialog: false,
         
+        /****v* events/clear
+        *
+        * NAME
+        *   u.events.clear
+        *
+        * FUNCTION
+        *   The Javascript Method u.events.clear
+        *   clears the current modal dialog.  
+        *
+        *   The two dialogs u.dialogs.alert and u.dialogs.confirm are
+        *   cleared by user action.  But the u.dialogs.pleaseWait 
+        *   dialog will remain on the screen until your application
+        *   Javascript code clears it by calling this method.
+        *
+        * INPUTS
+        *   ignore - This method accepts a paremeter that is useful
+        *   only to the framework when managing a confirm dialog.
+        *
+        * SOURCE
+        */
         clear: function(answer) {
             this.answer = answer;
             this.currentDialog = false;
             u.events.unSuppress();
             $('#dialogbox,#dialogoverlay').css('display','none');
         },
+        /******/
         
         prepare: function(type) {
             // Tell the master what we are doing, 
@@ -1246,6 +1790,34 @@ var u = {
             }
         },
         
+        /****m* dialogs/alert
+        *
+        * NAME
+        *   u.dialogs.alert
+        *
+        * FUNCTION
+        *   The Javascript method u.dialogs.alert replaces the native
+        *   Javascript alert() function with one that is stylistically
+        *   consistent with the rest of the application.
+        *
+        *   Unlike Javascript's native alert() function, execution 
+        *   continues after you call this function.  The user must
+        *   clear it by clicking the OK button, hitting Enter, or
+        *   hitting Esc.
+        *
+        *   When this alert is active, all keyboard events are
+        *   suppressed except Enter and Esc.
+        *
+        * EXAMPLE
+        *   Here is a usage example:
+        *
+        *       u.dialogs.alert("New data has been saved");
+        *       // maybe do some other stuff while 
+        *       // waiting for the user
+        *       u.events.notify('myEventName',objParms);
+        *
+        ******
+        */
         alert: function(msg) {
             this.prepare('alert');
 
@@ -1269,6 +1841,61 @@ var u = {
             $('#dialogbox').css(    'opacity',1);                
         },
         
+        /****m* dialogs/confirm
+        *
+        * NAME
+        *   u.dialogs.confirm
+        *
+        * FUNCTION
+        *   The Javascript method u.dialogs.confirm replaces the native
+        *   Javascript confirm() function with one that is stylistically
+        *   consistent with the rest of the application.
+        *
+        *   Like Javascript's native confirm() function, execution 
+        *   *stops* until the user answers the question.  This makes
+        *   coding far easier because you do not have to code
+        *   anonymous callback functions.
+        *
+        *   When this alert is active, all keyboard events are
+        *   suppressed except 'Y' and 'N'.
+        *
+        * EXAMPLE
+        *   Here is a usage example:
+        *
+        *       if(u.dialogs.confirm("Do you really want to delete?")) {
+        *           // code to delete
+        *       }
+        *       else {
+        *           u.events.debug("user chose not to delete");
+        *       }
+        *
+        * PORTABILITY
+        *    Javascript does not natively support an elegant way to
+        *    pause execution.  For instance, it does not have a 
+        *    "sleep" function that would allow a low-CPU idefinite
+        *    loop to be executing while waiting for user input.
+        *
+        *    We could solve this by throwing caution to the wind and
+        *    doing an indefinite loop anyway, which checks over and over
+        *    to see if the user has responded, but this spikes CPU usage
+        *    and is very bad form.
+        *
+        *    The technique used by u.dialogs.confirm is unusual, but it
+        *    has the benefit of being extremely low on CPU power and
+        *    extremely low on network bandwidth.  The approach contains
+        *    an indefinite loop that makes a call to the program
+        *    phpWait.php, which does a sleep for 1/4 second and returns.
+        *    Even at four calls per second, the overall CPU and network
+        *    bandwidth is practically zero.
+        *
+        *    Therefore, u.dialogs.confirm has a dependency that the
+        *    php file phpWait.php be present in the web server's public
+        *    root.  This is handled automatically by Andromeda, but you
+        *    must provide such a file if you use this object in 
+        *    a non-Andromeda application.
+        *
+        ******
+        */
         confirm: function(msg,options) {
             this.prepare('confirm');
             u.events.subscribe('keyPress_Y'  ,u.byId('dialogbox'));
@@ -1324,6 +1951,39 @@ var u = {
             return this.answer;
         },
         
+        /****m* dialogs/pleaseWait
+        *
+        * NAME
+        *   u.dialogs.pleaseWait
+        *
+        * FUNCTION
+        *   The Javascript method u.dialogs.pleaseWait is not,
+        *   strictly speaking, a dialog, because it does not require
+        *   any user feedback, and in fact does not even allow it.
+        *
+        *   When you call u.dialogs.pleaseWait, a modal box pops up
+        *   that is stylistically consistent with the overall template
+        *   and which has an animated gif and the message "Please Wait".
+        *
+        *   Use this method when you are executing a long-running
+        *   (greater than 2-3 seconds) process and you must let the
+        *   user know the program is working on something.
+        *
+        *   The user cannot clear this display.  You must clear it
+        *   yourself when work has been completed by calling
+        *   u.dialogs.clear().
+        *
+        *  EXAMPLE
+        *    Here is a usage example:
+        *
+        *         u.dialogs.pleaseWait();
+        *         for(var x in rowsToSave()) {
+        *            // some actions to save to server
+        *         }
+        *         u.dialogs.clear();
+        *  
+        ******
+        */
         pleaseWait: function(msg) {
             this.prepare('pleaseWait');
             
@@ -1342,19 +2002,6 @@ var u = {
             $('#dialogbox').css(    'opacity',1);
         }
     }
-}
-
-/* ---------------------------------------------------- *\
-
-   SECTION 5: Andromeda Utility Object
-
-   Assumes the presence of Andromeda on the server-side   
-   
-\* ---------------------------------------------------- */
-var au = {
-    
-    
-    
 }
 
 
