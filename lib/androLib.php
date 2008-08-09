@@ -23,24 +23,54 @@
 
 # ==============================================================
 #
-# SECTION: GP VARIABLES
+# SECTION: Get-Post Variables  
+#
+# Prefix: gp
 #
 # ==============================================================
-
-/**
-* Used to access the Get/Post parameters.  Returns
-* the value associated with the key $key.  If there is no value
-* associated with the key, returns $vardefault.
+/****M* PHP-API/GET-POST-Variables
 *
-* @param string $key	name of the key
-* @param string $vardefault	default value for key
-* @return string	value associated with $key
+* NAME
+*   GET-POST-Variables
+*
+* FUNCTION
+*   The Get-Post Variables functions allow you to retrieve
+*   HTTP Request parameters.  
+*
+*   Andromeda has a special system for obtaining Get-Post
+*   variables.  When you request a variable, it checks first
+*   in the $_GET superglobal and next in the $_POST superglobal.
+*   This frees the programmer from having to track these two
+*   superglobals independently.  
+*   
+******
+*/
+
+/****f* Get-Post-Variables/gp
+*
+* NAME
+*    vgaGet
+*
+* FUNCTION
+*    This is a PHP function that returns the specific
+*
+* INPUTS 
+*    string - the request variable name
+*    default - value to return if the variable does not exist
+*
+* RETURNS
+*    mixed - either the value of the variable if it was passed
+*    to the browser, or the default value if provided, or
+*    an empty string.
+*
+* SOURCE
 */
 function gp($key,$vardefault='') {
 	$post=$GLOBALS["AG"]["clean"];
 	if (!isset($post[$key])) return $vardefault;
 	else return $post[$key];
 }
+/******/
 
 /**
 * Check to see if $key is held in the Get/Post parameters
@@ -2408,76 +2438,61 @@ function SessionUnSet_Prefix($prefix) {
 		}
 	}
 }
-// ==================================================================
-// ==================================================================
-// Global Variables
-// ==================================================================
-// ==================================================================
-/**
-name:_default_
-parent:Global Variables
-*/
-// ------------------------------------------------------------------
-/**
-name:Global Variables
-parent:Framework API Reference
-
-Andromeda provides some wrapper functions for getting and setting
-framework variables.  The main purpose of these is to allow your
-application to create variables without worrying about name collisions
-with framework global variables.
-
-A global variable is one that exists from the beginning to the end of
-a server request.  Once the HTML has been delivered to the browser, the
-globals are all gone.  If you need to store variables that are
-persistent from request to request, consider using [[Context Variables]].
-
-You can set a Global Variable with [[vgaSet]] and
-retrieve it with [[vgaGet]].
-
-These values can be any valid PHP type.
-
-The framework uses the corresponding functions [[vgfSet]] and
-[[vgfGet]].
-*/
-
-
-/**
-* This function returns a [[Global Variable]].  The second parameter
-* names a [[Standard Default Value]] that will be returned if the
-* requested variable does not eixst.
+# ==================================================================
+#
+# SECTION: GLOBAL VARIABLES
+#
+# ==================================================================
+/****M* PHP-API/Global_Variables
 *
-* You can use [[vgaGet]] and [[vgaSet]] to store and retrieve global
-* variables without worrying about naming collisions with the framework.
+* NAME
+*    Global_Variables
 *
-* @category Global Variables
-* @param string $key	key of value in globals
-* @param string $default	defaukt value for key
-* @return mixed		value for key
+* FUNCTION
+*  Andromeda provides some wrapper that allow you to set and 
+*  retrieve PHP global variables without risking a collission with
+*  framework global variables.
+*
+*  Use PHP-API/vgaSet to set a variable, and PHP-API/vgaGet
+*  to retrieve a variable.
+*
+*  The framework uses the corresponding functions PHP-API/vgfSet
+*  and PHP-API/vgfGet.
+******
 */
+
+
 function vgaGet($key,$default='') {
    return isset($GLOBALS['appdata'][$key])
       ? $GLOBALS['appdata'][$key]
       : $default;
 }
-/**
-* This function sets the value of a global variable.
-* The variable will exist during the current request and can be
-* accessed from any scope with the [[vgaGet]] function.
+
+/****f* Global_Variables/vgaSet
 *
-* You can use [[vgaGet]] and [[vgaSet]] to store and retrieve global
-* variables without worrying about naming collisions with the framework.
+* NAME
+*    vgaSet
 *
-* @category Global Variables
-* @param string $key
-* @param mixed $value
+* FUNCTION
+*    The PHP function vgaSet() sets the value of a global variable.
+*    The variable will exist during the current request and can be
+*    accessed from any scope with the vgaGet function.
+*
+*    Use vgaGet and vgaSet to store and retrieve global
+*    variables without worrying about naming collisions with the framework.
+*
+* INPUTS
+*   string - the Variable Name
+*   mixed - output
+*
+* SOURCE
 */
 function vgaSet($key,$value='') {
    $GLOBALS['appdata'][$key]=$value;
 }
+/******/
 
-
-/**
+/****
 * This function returns a [[Global Variable]].  The second parameter
 * names a [[Standard Default Value]] that will be returned if the
 * requested variable does not eixst.
