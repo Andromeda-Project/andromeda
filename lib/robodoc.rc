@@ -1,0 +1,19 @@
+headertypes:
+    X   "Database Definition Constants"  robo_database_definition_constants
+	Y	"Database Definitions"	         robo_definition
+    Z   "Database Definition Properties" robo_dictionary_property
+    O   "Javascript Objects"             robo_javascript_object
+    F   "Javascript Factories"           robo_javascript_classes
+accept files:
+	*.php
+	*.js
+    *.robodoc
+options:
+	--html
+	--nopre
+	--multidoc
+	--toc
+	--sections 
+	--sectionnameonly 
+	--index
+       
