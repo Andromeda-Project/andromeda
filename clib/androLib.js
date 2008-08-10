@@ -25,17 +25,12 @@
    This file contains the oldest javascript in 
    Andromeda.  Some code is required for b/w 
    compatibility, and other code was used only
-   once or twice and is now dead.  The basic 
-   sections of this file are:
+   once or twice and is now dead.  
    
-   1) Required for compatibility with x2 applications
-   2) Javascript prototype extensions
-   3) Jquery Plugins
-   4) Universal utility object, u, no Andromeda dependencies   
-   5) The Andromeda general utility object, au
-   6) Andromeda utilties not part of au, like androSelect()
-   7) The (old) general utility object, $a (mixed dependencies)
-   8) All other presumed deprecated code.
+   Generally, anything that is documented with ROBODOC
+   blocks is part of the permanent API, and anything
+   not commented is deprecated and should not be
+   used.
       
 \* ---------------------------------------------------- */
       
@@ -804,22 +799,110 @@ function  handleResponseOne(one_element,controls) {
 }
 
 
-/* ---------------------------------------------------- *\
+/****M* Javascript-API/String-Extensions
+*
+* NAME
+*   String-Extensions
+*
+* FUNCTION
+*   Javascript lacks a handful of useful string functions, 
+*   such as padding and trimming, which we have added
+*   to our standard library.
+*
+******
+*/
 
-   SECTION 2: javascript prototype extensions  
-   
-\* ---------------------------------------------------- */
 
+/****m* String-Extensions/trim
+*
+* NAME
+*   String.trim
+*
+* FUNCTION
+*   The Javascript function trim removes leading and trailing
+*   spaces from a string.
+*
+* EXAMPLE
+*   Example usage:
+*     var x = '  abc  ';
+*     var y = x.trim();  // returns 'abc'
+*
+SOURCE
+*/
 String.prototype.trim = function() {
 	return this.replace(/^\s+|\s+$/g,"");
 }
+/******/
+
+/****m* String-Extensions/ltrim
+*
+* NAME
+*   String.ltrim
+*
+* FUNCTION
+*   The Javascript function ltrim removes leading spaces
+*   from a string (spaces on the left side).
+*
+* EXAMPLE
+*   Example usage:
+*     var x = '  abc  ';
+*     var y = x.ltrim();  // returns 'abc  '
+*
+SOURCE
+*/
 String.prototype.ltrim = function() {
 	return this.replace(/^\s+/,"");
 }
+/******/
+
+/****m* String-Extensions/rtrim
+*
+* NAME
+*   String.rtrim
+*
+* FUNCTION
+*   The Javascript function rtrim removes trailing spaces
+*   from a string (spaces on the right side).
+*
+* EXAMPLE
+*   Example usage:
+*     var x = '  abc  ';
+*     var y = x.ltrim();  // returns '  abc'
+*
+SOURCE
+*/
 String.prototype.rtrim = function() {
 	return this.replace(/\s+$/,"");
 }
+/******/
 
+/****m* String-Extensions/pad
+*
+* NAME
+*   String.pad
+*
+* FUNCTION
+*   The Javascript function pad pads out a string to a given
+*   length on either left or right with any character.
+*
+* INPUTS
+*   int - the size of the resulting string
+*
+*   string - the string that should be added.  You can provide
+*   a string of more than one character.  The resulting string
+*   will be clipped to ensure it is returned at the requested
+*   size.
+*
+*   character - either an 'L' or left padding or an 'R' for
+*   right padding.
+*
+* EXAMPLE
+*   Example usage:
+*     var x = 'abc';
+*     var y = x.pad(6,'0','L');  // returns '000abc';
+*
+SOURCE
+*/
 String.prototype.pad = function(size,character,where) {
     var val = this;
     while(val.length < size) {
@@ -827,9 +910,14 @@ String.prototype.pad = function(size,character,where) {
             val = character + val;
         else
             val += character;
+        if(val.length > size) {
+            val = val.slice(0,size);
+        }
     }
     return val;
 }
+/******/
+
 
 // Taken from http://www.sourcesnippets.com/javascript-string-pad.html
 var STR_PAD_LEFT = 1;
@@ -968,6 +1056,10 @@ var jqModalOpen=function(hash) { hash.w.fadeIn(500);hash.o.fadeIn(500);};
 *
 *   Also contains several subobjects with specific areas
 *   of utility.
+*
+*   The Javascript u object is present on all Andromeda
+*   pages, you can access it from Javascript code on any
+*   custom page you write.
 *
 * PORTABILITY
 *   Requires no other Andromeda files or libraries, is
@@ -2247,37 +2339,96 @@ function androSelect_click(value,suppress_focus) {
 }
 
 
-/* ---------------------------------------------------- *\
 
-   SECTION 7: Old general utility object
-   which had dependencies on Andromeda and was
-   not truly general or universal.
-   
-   Will be phased out as things are moved into
-   uu and au.
-   
-\* ---------------------------------------------------- */
-
-/*
- * This is the General Purpose Library of most basic 
- * Andromeda javascript functions.  It has a long 
- * complex name: $a
- *            
- */
-
+/****O* Javascript-API/$a
+*
+* NAME
+*   $a
+*
+* FUNCTION
+*   The Javascript $a object provides Andromeda-specific 
+*   utilities.  This object is used to communicate with the
+*   web server, and it also contains parsed results that
+*   have been received from the server.
+*
+*   Compare $a to the Javascript u object, which
+*   contains general purpose utilities that do not depend
+*   upon or expect other Andromeda objects to be present.
+*
+*   The Javascript $a object is present on all HTML sent to
+*   the browser and can be used on any custom page you write.
+*
+* PORTABILITY
+*   The Javascript $a object is not meant to be used outside
+*   of Andromeda.  Specifically it is hardcoded to expect
+*   an Andromeda web-server.  
+*
+*   The $a object also depends on the u object, and it expects
+*   jQuery to be available.
+******
+*/
 window.a = window.$a = {
-    /*
-     *  For data returned from a json call
-     */
-     data: { 
-        dd: {} 
-     },
-     returnto: '',
-    
-    /*
-    * global variable system, you can "stick" variables
-    * here and "grab" them later.
+    /****v* $a/data
+    *
+    * NAME
+    *   $a.data
+    *
+    * FUNCTION
+    *   The javascript object $a.data contains data that has been
+    *   sent to the browser by the web server.  Such data can
+    *   be sent in a normal HTML page or in a JSON call.
+    *
+    *   The data that is sent by PHP is JSON encoded, so it can 
+    *   conceivably contain numeric arrays, associative arrays, objects,
+    *   and even objects with javascript code.
+    *
+    * NOTES
+    *   The Andromeda framework uses this mechanism in its own code,
+    *   so your application code should not send data with the
+    *   following names:
+    *
+    *   * row - used by the Framework for sending back individual rows
+    *   * dd.* - used by the Framework for sending data dictionaries
+    *   * fetch - used to return FETCH values when the user changes
+    *     a foreign key during editing.
+    *   * init
+    *   * x4Mode - reserved for b/w compatibility
+    *   * x4Focus - reserved for b/w compatiblity
+    *   * returnto - specifies where the page should go when the user
+    *     exits.  No value means go back to menu, "exit" means close
+    *     the tab.
+    *
+    * EXAMPLE
+    *   If you have PHP code that must return a set of rows
+    *   the the browser, you can use this command:
+    *
+    *       <?php
+    *       $sql = "Select * from states";
+    *       $rows = sql_allRows($sql);
+    *       x4Data('states',$rows);
+    *       ?>
+    *
+    *   And then in script you will find this data here:
+    *
+    *       <script>
+    *       var states = $a.data.states;
+    *       for(var idx in states) {
+    *           .....
+    *       }
+    *       </script>
+    *******
     */
+    data: { 
+       dd: {} 
+    },
+     
+    /** NO DOC **/
+    /** DEPRECATED **/
+    returnto: '',
+    
+    /** NO DOC **/
+    /** DEPRECATED **/
+    /** Was moved to u, because it is independent of Andromeda **/
     bb: {
         vars: { },
         stick: function(varName,value) {
@@ -2288,19 +2439,15 @@ window.a = window.$a = {
         }
     },
     
-    /*
-     * Window open.  Used to allow javascript to 
-     * subsequently close a window, which you can't
-     * do with <a target="_blank" href="....
-     */
+    /** NO DOC **/
+    /** DEPRECATED **/
     openWindow: function(url) {
         $a.window = window.open(url);
     },
      
-    /*
-     * Dialogs.  Placeholders to use JQuery plugins
-     *
-     */
+    /** NO DOC **/
+    /** DEPRECATED **/
+    /** Was moved to u, because it is independent of Andromeda **/
     dialogs: {
         alert: function(msg) {
             alert(msg);
@@ -2373,11 +2520,142 @@ window.a = window.$a = {
         }
     },
 
-    /**
-      * Sub object for making calls to the server to retrieve
-      * stuff in JSON format
-      *
-      */
+    /****M* Javascript-API/AJAX
+    *
+    * NAME
+    *   AJAX
+    *
+    * FUNCTION
+    *   In Andromeda, all Ajax requests are handled by the
+    *   $a.json object.  We do not use the term AJAX because
+    *   it is not a correct technical description.  We use
+    *   term "JSON", as in 'make a JSON call to the server'.
+    *
+    *   Specifically, Andromeda PHP pages return JSON data
+    *   instead of XML (hence no "X" in AJA"X"), and many calls
+    *   are actually synchronous (hence no "A"synchronous
+    *   in AJAX).
+    *
+    *   For a complete reference, see $a.json.
+    ******
+    */
+    
+    /****O* $a/json
+    *
+    * NAME
+    *   $a.json
+    *
+    * FUNCTION
+    *   The Javascript object $a.json is used to send any request
+    *   to the web server, either for a new complete page or for
+    *   data and HTML fragments.
+    *   Examples include requesting a single row from a table,
+    *   requesting search results, fetching HTML fragments, or
+    *   popping up a new window.
+    *
+    *   Andromeda uses the term JSON instead of AJAX because 
+    *   the term AJAX does not describe how Andromeda works.
+    *   Specifically, Andromeda PHP pages return JSON data
+    *   instead of XML (hence no "X" in AJA"X"), and many calls
+    *   are actually synchronous (hence no "A" in "A"JAX).
+    *
+    *   The $a.json object is always present on all pages, and
+    *   you can use it in Javascript code on any custom page.
+    *
+    * NOTES
+    *   Andromeda handles all of the values returned in the
+    *   request automatically.  On custom pages you do not have
+    *   to code a response handler because Andromeda handles
+    *   the response for you.
+    *
+    *   The PHP code that handles a JSON request sends data back
+    *   by using the routines x4Debug, x4Data, x4HTML, x4Script,
+    *   x4Error.  While the complete PHP-API documentation on
+    *   those functions will give you most of what you need, we
+    *   must note here how the returned data is handled:
+    *   * x4Debug - ignored, but you can examine the results in
+    *     firebug.
+    *   * x4Error - any errors sent back by this function are reported
+    *     to the user and $a.json.execute returns false.
+    *   * x4HTML - calls to this function in PHP code provide an 
+    *     element Id and a fragment of HTML.  The HTML replaces the
+    *     innerHTML of the specific item.
+    *   * x4Data - calls to this function in PHP code provide a name
+    *     and some data value (including arrays and objects).  The
+    *     result can be examined when the call completes in $a.data.<name>.
+    *   * x4Script - provides script that should execute on the browser
+    *     when the call returns.
+    *
+    * EXAMPLE
+    *
+    *   The basic usage of $a.json is to initialize a call 
+    *   with $a.json.init, and then to add parameters with
+    *   $a.json.addParm, and finally to execute and process the
+    *   call with $a.json.execute and $a.json.process.
+    *
+    *   There are also special-purpose methods like $a.json.inputs
+    *   that will take all of the inputs inside of an object and
+    *   add them to the request.
+    *
+    *   You can also use the function $a.json.windowLocation to
+    *   execute the call as a new page request, and $a.json.newWindow
+    *   to execute the call as a new page request in a tab.
+    *  
+    *      <script>
+    *      // Initialize the call
+    *      $a.json.init('x4Page','myCustomPage'); 
+    *      // Name the server-side PHP method to call
+    *      $a.json.addParm('x4Action','getSomething'); 
+    *      // Add some parms
+    *      $a.json.addParm('parm1','value');
+    *      $a.json.addParm('parm2','value');
+    *      // Execute and process in one step.  Note that this
+    *      // is synchronous, there is no need for a callback
+    *      // function.
+    *      $a.json.execute(true);
+    *     
+    *      for(var x in $a.data.returnedStuff) {
+    *        ....
+    *      }
+    *      </script>
+    *
+    *  This call requires an Extended-Desktop page to be defined
+    *  in PHP that will service the request.  A super-simple example
+    *  is here, more information is provided in the
+    *  Extended-Desktop documentation.
+    *
+    *      <?php
+    *      # This is file application/x4MyCustomPage.php
+    *      class x4MyCustomPage extends androX4 {
+    *          # this function handles the call given above
+    *          function getSomething() {
+    *               $parm1 = gp('parm1');
+    *               $parm2 = gp('parm2');
+    *               $sql = "Select blah blah blah";
+    *               $rows = SQL_AllRows($sql);
+    *               x4Data('returnedStuff',$rows
+    *          }
+    *      }
+    *      ?>
+    *
+    *   Sometimes you make a call that returns replacement HTML
+    *   for a single object.  In this case your PHP code supplies
+    *   the HTML by calling x4HTML with the value of '*MAIN*' for
+    *   the first parameter, as in x4HTML('*MAIN*',$html);
+    *   Such a call is handled this way in script:
+    *
+    *      <script>
+    *      $a.json.init('x4Page','myCustomPage');
+    *
+    *      // We need the conditional in case the server returns
+    *      // an error and we should not replace the html
+    *      if($a.json.execute()) {
+    *         $a.json.process('nameofItemToReplace');
+    *      }
+    *      </script>
+    *
+    ******
+    */
     json: {
         callString: '',
         jdata:      { },
@@ -2388,6 +2666,38 @@ window.a = window.$a = {
         x4Action:   '',
         explicitParms: '',
         hadErrors: false,
+        
+        /****m* json/init
+        *
+        * NAME
+        *   $a.json.init
+        *
+        * FUNCTION
+        *   The Javascript method $a.json.init initiates a new 
+        *   JSON request.
+        *
+        *   Optionally you can pass two inputs and eliminate one
+        *   call to $a.json.addParm.
+        *
+        * INPUTS
+        *   string - if provided, a parameter name
+        *   mixed - if provided, the value for the parameter
+        *
+        * EXAMPLE
+        *   Here are two examples for initiating a JSON request
+        *
+        *      <script>
+        *      // The short way
+        *      $a.json.init('x4Page','myCustomPage');
+        * 
+        *      // Passing w/o parameters requires at least one
+        *      // call to $a.json.addParm.
+        *      $a.json.init();
+        *      $a.json.addParm('x4Page','myCustomPage');
+        *      </script>
+        *
+        * SOURCE
+        */
         init: function(name,value) {
             this.x4Page     = '';
             this.x4Action   = '';
@@ -2398,11 +2708,41 @@ window.a = window.$a = {
                 this.addParm(name,value);
             }
         },
+        /******/
+
+        /****m* json/addParm
+        *
+        * NAME
+        *   $a.json.addParm
+        *
+        * FUNCTION
+        *   The Javascript method $a.json.addParm adds one parameter
+        *   to a JSON call previously initiated with $a.json.init.
+        *
+        * INPUTS
+        *   string - required, a parameter name
+        *   mixed - required, the value for the parameter
+        *
+        * EXAMPLE
+        *   Here are two examples for initiating a JSON request
+        *
+        *      <script>
+        *      $a.json.init();
+        *      // Name the server-side page to call
+        *      $a.json.addParm('x4Page','myCustomPage');
+        *      // Name the server-side method to call
+        *      $a.json.addParm('x4Action','fetchSomething');
+        *      </script>
+        *
+        * SOURCE
+        */
         addParm: function(name,value) {
             this.parms[name] = value;
             if(name=='x4Page')   this.x4Page = value;
             if(name=='x4Action') this.x4Action = value;
         },
+        /******/
+        
         makeString: function() {
             if(this.explicitParms!='') {
                 return this.explicitParms;
@@ -2418,11 +2758,49 @@ window.a = window.$a = {
         //    this.callString += 'x4c_' + name + '=' + encodeURIComponent(value);
         //},
         
-        /*
-         * Add the value of all inputs to the json request, only
-         * if not empty.
-         *
-         */
+        /****m* json/inputs
+        *
+        * NAME
+        *   $a.json.inputs
+        *
+        * FUNCTION
+        *   The Javascript method $a.json.inputs adds inputs to
+        *   a JSON call previously initiated with $a.json.init.
+        *
+        *   This method accepts an object as its parameter, and
+        *   will add every input that is a child (at any level)
+        *   of that object.
+        *
+        *   This method uses the "id" property of the input to
+        *   name the parameter, not the "name" property.  Andromeda
+        *   makes no use of the "name" property.
+        *
+        *   This method is equivalent to use $a.json.addParm
+        *   for each of the desired inputs.
+        *
+        *   Checkboxes receive special treatment.  If the box is 
+        *   checked a value of 'Y' is sent, and if the box is not
+        *   checked a value of 'N' is sent.
+        *
+        *   The name of each parameter is normally the Id of the
+        *   input.  If the inputs were generated by Andromeda
+        *   on an Extended-Desktop page, they will have the names
+        *   'x4inp_<tableId>_<columnId>.  
+        *
+        * INPUTS
+        *   object - optional, the object to recurse.  You must
+        *   pass the object itself, not its Id.  If no object is
+        *   passed the Extended-Desktop top-level object x4Top
+        *   is used, which means you get every input on the page,
+        *   whether or not it is visible or
+        *
+        *   direct - a special flag that says to name the parameters
+        *   'x4c_<columnId>'.  This is required when you are sending
+        *   Direct-Database-Access calls.
+        *
+        *
+        * SOURCE
+        */
         inputs: function(obj,direct) {
             if(direct==null) direct=false;
             if(obj==null) {
@@ -2450,10 +2828,69 @@ window.a = window.$a = {
                     }
             });
         },
+        /******/
         
-        /**
-        * Serialize an array or an object for sending back
+        /****m* json/serialize
         *
+        * NAME
+        *   $a.json.serialize
+        *
+        * FUNCTION
+        *   The Javascript method $a.json.serialize takes a
+        *   Javascript Object or Array and serializes it and
+        *   adds the values to a JSON request previously
+        *   initialized with $a.json.init.
+        *
+        *   This method accepts an object as its parameter.
+        *
+        *   When you call this function, the parameters sent
+        *   back take the form of an associative array.
+        *
+        * INPUTS
+        *   prefix - The base name of the parameter
+        *
+        *   object - the object to serialize.
+        *
+        * EXAMPLE
+        *   Consider the following object that is serialized
+        *
+        *      <script>
+        *      var x = {
+        *         parm1: [ 1, 2, 3],
+        *         parm2: 'hello',
+        *         parm3: {
+        *             x: 5,
+        *             y: 10,
+        *         }
+        *      $a.json.init('x4Page','myCustomPage');
+        *      $a.json.addParm('x4Action','serialHandler');
+        *      $a.json.serialize('example',x);
+        *      <script>
+        *
+        *   Then on the server, you can grab the "example" parameter
+        *   and you will get the following associative array:
+        *
+        *      <?php
+        *      # this is file x4myCustomPage.php
+        *      class x4myCustomPage extends androX4 {
+        * 
+        *          # this handles the 'x4Action' specified above
+        *          function serialHandler() {
+        *              $example = gp('example');
+        *            
+        *              # ...the following code shows how 
+        *              #    the values that are in x4
+        *              $example['parm1'][0] = 1;
+        *              $example['parm1'][1] = 2;
+        *              $example['parm1'][2] = 3;
+        *              $example['parm2'] = 'hello';
+        *              $example['parm3']['x'] = 5;
+        *              $example['parm3']['y'] = 10;
+        *          }
+        *      }
+        *      ?>
+        *
+        * SOURCE
         */
         serialize: function(prefix,obj) {
             for(var x in obj) {
@@ -2465,34 +2902,111 @@ window.a = window.$a = {
                 }
             }
         },
+        /******/
         
-        /*
-         * Take what was supposed to be a JSON call and execute
-         * it as if it were a regular hyperlink
-         *
-         */
+        /****m* json/windowLocation
+        *
+        * NAME
+        *   $a.json.windowLocation
+        *
+        * FUNCTION
+        *   The Javascript method $a.json.windowLocation takes a
+        *   JSON request and executes it as a page request.
+        *
+        * EXAMPLE
+        *   The following example loads a new page
+        *
+        *      <script>
+        *      $a.json.init('x4Page','calendar');
+        *      $a.json.windowLocation();
+        *      </script>
+        *
+        * SOURCE
+        */
         windowLocation: function() {
             var entireGet = 'index.php?'+this.makeString()
             window.location = entireGet;
         },
+        /******/
+        
+        /****m* json/newWindow
+        *
+        * NAME
+        *   $a.json.newWindow
+        *
+        * FUNCTION
+        *   The Javascript method $a.json.newWindow takes a
+        *   JSON request and executes it as a page request, popping
+        *   the result up in a new tab or window.
+        *
+        *   When the user exits the resulting tab or window, it
+        *   will close.  
+        *
+        * EXAMPLE
+        *   The following example loads a new page
+        *
+        *      <script>
+        *      $a.json.init('x4Page','calendar');
+        *      $a.json.newWindow();
+        *      </script>
+        *
+        * SOURCE
+        */
         newWindow: function() {
             var entireGet = 'index.php?'+this.makeString()+'&x4Return=exit';
             $a.openWindow(entireGet);
         },
+        /******/
 
-        /**
-        * Make asychronous call
+        /****m* json/executeAsync
         *
+        * NAME
+        *   $a.json.executeAsync
+        *
+        * FUNCTION
+        *   By default Andromeda sends JSON requests synchronously,
+        *   which is more appropriate for business database applications
+        *   than asynchronous requests.
+        *
+        *   There are however some times when you do not want the user
+        *   to wait, and so you can make asynchronous calls. 
+        *
+        *   Andromeda does not make use of response handlers, see the
+        *   above section on $a.json for more details.
+        *
+        * SOURCE
         */
         executeAsync: function() {
             this.execute(true,true);
         },
+        /******/
         
-        /**
-          * Make a synchronous call to the server, expecting
-          * to receive a JSON array of stuff back.
-          *
-          */
+        /****m* json/execute
+        *
+        * NAME
+        *   $a.json.execute
+        *
+        * FUNCTION
+        *   The Javascript method $a.json.execute sends a request to
+        *   the server that has been initialized with $a.json.init
+        *   and has received parameters with any of $a.json.addParm,
+        *   $a.json.inputs and $a.json.serialize.
+        *
+        *   In normal usage, you call this routine and check for
+        *   a return value of true.  If the routine returns true
+        *   you call $a.json.process to process the returned
+        *   results.
+        *
+        * RESULTS
+        *   This routine returns true if the server reports no 
+        *   errors.
+        *
+        *   If the server reports errors, they are displayed to the
+        *   user using u.dialogs.alert, and this routine returns
+        *   false.
+        *
+        *******
+        */
         execute: function(autoProcess,async) {
             this.hadErrors = false;
             if(async==null) async = false;
@@ -2572,6 +3086,52 @@ window.a = window.$a = {
             return true;
         },
         
+        /****m* json/process
+        *
+        * NAME
+        *   $a.json.process
+        *
+        * FUNCTION
+        *   The Javascript method $a.json.execute is the final
+        *   step in sending and receiving JSON requests.  This
+        *   routine does the following:
+        *   * Any HTML sent back via PHP x4HTML replaces the 
+        *     innerHTML of the named items (actually item Ids are used).
+        *   * Any script sent back via PHP x4Script is executed.
+        *   * Any data sent back via PHP x4Data is placed into
+        *     $a.data.
+        *
+        * EXAMPLE
+        *   This example shows how you can retrieve table data and
+        *   then process it:
+        *
+        *      <script>
+        *      $a.json.init('x4Page','myCustomPage');
+        *      $a.json.addParm('x4Action','getStates');
+        *      // $a.json.execute will return false on errors
+        *      if($a.json.execute()) {
+        *         // $a.json.process puts everything in its place...
+        *         $a.json.process();
+        *         // ...so that we can handle the returned data
+        *         for (var idx in $a.data.states) {
+        *            // do something
+        *         }
+        *      }
+        *      <script>
+        *
+        *   This code requires the following PHP code on the server:
+        *
+        *      <?php
+        *      # this is file application/x4myCustomPage.php
+        *      class x4myCustomPage extends androX4 {
+        *          function getStates() {
+        *              $states = SQL("Select * from states");
+        *              x4Data('states',$states);
+        *          }
+        *      }
+        *
+        *******
+        */
         process: function(divMain) {
             for(var x in this.jdata.html) {
                 if(x=='*MAIN*') {
@@ -2599,6 +3159,9 @@ window.a = window.$a = {
         }
     },
 
+    /** NO DOC **/
+    /** DEPRECATED **/
+    /** Moved into u **/
     byId: function(id) {
         return document.getElementById(id );
     },
@@ -2606,6 +3169,9 @@ window.a = window.$a = {
         return $a.byId(id).value;
     },
 
+    /** NO DOC **/
+    /** DEPRECATED **/
+    /** Moved into u **/
     // Retrieve an object's property, creating it if not
     // there and assigning it the default    
     aProp: function(obj,propname,defvalue) {
@@ -2626,6 +3192,9 @@ window.a = window.$a = {
         // Give up, return the defvalue
         return defvalue;
     },
+    /** NO DOC **/
+    /** DEPRECATED **/
+    /** Moved into u **/
     p: function(obj,propname,defvalue) {
         return this.aProp(obj,propname,defvalue);
     },
