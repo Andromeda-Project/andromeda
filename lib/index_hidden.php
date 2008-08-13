@@ -326,6 +326,18 @@ if(function_exists('app_after_db_connect')) {
     app_after_db_connect();
 }
 
+# KFD 8/13/08 Hardcoded insurance that the config pages
+#             always come up as x4 pages, since that is
+#             how they were coded.  Must also set a flag
+#             to keep menu in x2 mode.
+$x4Required = array(
+    'configfw','configapp','configinst','configuser','configconfirm'
+);
+if(in_array(gp('gp_page'),$x4Required)) {
+    gpSet('x4Page',gp('gp_page'));
+}
+
+
 # KFD 7/23/08
 # If no page was passed in, we have to do default page
 # handling.  For this we must know if we are normally
