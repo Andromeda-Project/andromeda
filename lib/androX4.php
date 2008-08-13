@@ -1,4 +1,76 @@
 <?php
+/****c* PHP-API/androX4
+*
+* NAME
+*   androX4
+*
+* FUNCTION
+*   The PHP class androX4 is the base class for all Andromeda
+*   pages.  It is used by the framework for "free" Table-Maintenance
+*   screens and is also the basis of custom screens.
+*
+*   Making a subclass of androX4 begins with the Page-Name, and
+*   is formed as "x4".Page-Name.  The file name is also 
+*   "x4".Page-Name.".php".  
+*
+*   When calling a page, use the parameter x4Page, as in:
+*
+*          <a href="index.php?x4Page=example">
+*
+*   A subclass of androX4 can also contain routines that can be
+*   called by Javascript code on the browser.  These can have
+*   any name that is not reserved.  The reserved methods are:
+*   * __construct
+*   * main
+*   * menuBar
+*   * grid
+*   * detailPane
+*   * mover
+*   * moverFetch
+*   * moverSS
+*   * browseFetch
+*   * fetch
+*   * fetchRow
+*   * update
+*   * delete
+*
+*   The following methods exist so that you can override them on
+*   a page-by-page method:
+*   * custom_construct - called at the end of __construct
+*   * mainLayout - called to override default layout
+*
+* EXAMPLE
+*   A basic custom page normally has three sections, and 
+*   looks basically like this:
+*
+*     <?php
+*     # this is file x4example.php
+*     class x4example extends androX4 {
+*         # The first major area is layout of the 
+*         # page as it will be sent to the browser
+*         function mainLayout($container) { 
+*             $container->h('h1','This is H1 Title');
+*             return;
+*         }
+*
+*         # The second major area is extra Script to send
+*         # to the browser
+*         function extraScript() {
+*              ?>
+*              <script>
+*              // javascript goes here
+*              </script>
+*              <?php
+* 
+*         # The third major area is routines that can be called
+*         # from the browser
+*         function routine1() { }
+*         function routine2() { }
+*     }
+*     ?>
+* 
+******
+*/
 class androX4 {
     # ===================================================================
     #
