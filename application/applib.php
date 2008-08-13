@@ -11,6 +11,8 @@ vgfSet('ajaxTM',0);
 vgfSet('loglogins',true);
 vgfSet('buttons_in_commands',true);
 
+vgfSet('template','rt_pixel');
+
 function AppDir($app) {
    $app=trim($app);
    $wp=SQL_OneValue('dir_pub',
