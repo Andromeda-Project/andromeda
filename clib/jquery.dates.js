@@ -976,7 +976,7 @@ var o2s = {
       
       //apply the event handlers
       this.calendarEvents(data);
-    },
+    }
 
 };
 
