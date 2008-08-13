@@ -14,7 +14,7 @@ class x_welcome extends x_table2 {
             $htmlVersions = '';
         }
         else {
-            $htmlVersions = file_get_contents($andro['svn_url']);
+            $htmlVersions = @file_get_contents($andro['svn_url']);
         }
         $matches =array();
         preg_match_all(
