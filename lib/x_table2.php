@@ -318,7 +318,7 @@ class x_table2 {
          foreach($controls as $key=>$info) {
             $hScript.="\nob('x2t_$key').value='';";
          }
-         jqDocReady("window.function clearBoxes() { \n".$hScript."}\n\n");
+         jqDocReady("function clearBoxes() { \n".$hScript."}\n\n");
       }
       
       // Again, if this is a child table in a 1:M, capture the output and
