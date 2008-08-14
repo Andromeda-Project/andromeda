@@ -1242,6 +1242,7 @@ var u = {
         while( $('#'+retval).length > 1  || retval==0) {
             var retval=Math.floor(Math.random()*1000000);
         }
+        return retval;
     },
     /******/
     
@@ -1517,6 +1518,7 @@ var u = {
             var id = object.id;
             if(id == '' || id==null) {
                 object.id = u.uniqueId(); 
+                id = object.id;
             }
             if( u.p(subs,id,null)==null ) {
                 subs[id] = id;
