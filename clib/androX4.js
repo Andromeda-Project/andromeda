@@ -196,12 +196,15 @@ var x4 =  {
             // Dispatch precise keyboard event, record 
             // answer to possibly stop propagation
             var finalLabel = 'keyPress_'+keyLabel;
-            var stop = u.events.notify(finalLabel) || stop;
+            //var stop = u.events.notify(finalLabel) || stop;
+            
             x4.debug("doc keypress received response from specialized: "+stop);
             
             // If no event handler took the event, and it is a
             // CTRL or ALT key combination, stop propagation
-            if(!stop) {
+            //if(!stop) {
+            var stop = false;
+            if(true) {
                 x4.debug("doc keypress checking for ctrl: "+keyLabel);
                 var k = keyLabel;
                 if(k.indexOf('Ctrl')!=-1 || k.indexOf('Alt')!=-1) {
@@ -367,9 +370,11 @@ var x4 =  {
                     return this[name];
                 }
                 else {
-                    if(x4.parent(this)) {
-                        x4.debug(this.id+" requesting "+name+" from parent");
-                        return x4.parent(this).pullDown(name);
+                    if(x4.parent(this)!=null) {
+                        if(typeof(x4.parent(this).pulldown)=='function') {
+                            x4.debug(this," requesting "+name+" from parent");
+                            return x4.parent(this).pullDown(name);
+                        }
                     }
                     return false;
                 }
@@ -1626,12 +1631,12 @@ function x4GridSearch(self) {
      * <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
      */
     self.notify = function(eventName,parms) {
-        if(eventName=='newRow_'   +this.zTableId) this.newRow(parms);
-        if(eventName=='changeRow_'+this.zTableId) this.changeRow(parms);
-        if(eventName=='deleteRow_'+this.zTableId) this.deleteRow(parms);
+        if(eventName=='newRow_'   +this.zTableId) return this.newRow(parms);
+        if(eventName=='changeRow_'+this.zTableId) return this.changeRow(parms);
+        if(eventName=='deleteRow_'+this.zTableId) return this.deleteRow(parms);
         if(eventName=='keyPress' && typeof(this.keyPress)=='function')
-            this.keyPress(arguments);
-        
+            return this.keyPress(arguments);
+        return null;
     }
     
     self.newRow = function(parms) {
