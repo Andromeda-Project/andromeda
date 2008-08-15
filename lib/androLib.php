@@ -28,10 +28,10 @@
 # Prefix: gp
 #
 # ==============================================================
-/****M* PHP-API/GET-POST-Variables
+/****h* PHP-API/Get-Post-Variables
 *
 * NAME
-*   GET-POST-Variables
+*   Get-Post-Variables
 *
 * FUNCTION
 *   The Get-Post Variables functions allow you to retrieve
@@ -49,14 +49,16 @@
 /****f* Get-Post-Variables/gp
 *
 * NAME
-*    vgaGet
+*    gp
 *
 * FUNCTION
-*    This is a PHP function that returns the specific
+*    The function gp retrieves the Get/Post value associated with the variable
+*    name provided.  A user can provide a default value that should be returned
+*    in case the requested variable does not exist.
 *
 * INPUTS 
-*    string - the request variable name
-*    default - value to return if the variable does not exist
+*    string $key	- Requested variable name
+*    string $vardefault - value to return if the variable does not exist
 *
 * RETURNS
 *    mixed - either the value of the variable if it was passed
@@ -72,48 +74,96 @@ function gp($key,$vardefault='') {
 }
 /******/
 
-/**
-* Check to see if $key is held in the Get/Post parameters
-* 
-* @category Get/Post Parameters
-* @param string $key	name of the key
-* @return boolean
+/****f* Get-Post-Variables/gpExists
+*
+* NAME
+*    gpExists
+*
+* FUNCTION
+*    The function gpExists checks to see if the requested variable is inside
+*    the Get/Post parameters.
+*
+* INPUTS 
+*    string $key	- Requested variable name
+*
+* RETURNS
+*    boolean	- returns true if the variable exists, false if it does not.
+*
+* SOURCE
 */
 function gpExists($key) {
 	return isset($GLOBALS["AG"]["clean"][$key]);
 }
+/******/
 
-/**
-* Get html encoded value associated with $key
-* in the Get/Post parameters
+/****f* Get-Post-Variables/hgp
 *
-* @category Get/Post Parameters 
-* @param string $key	name of the key
-* @return string
+* NAME
+*    hgp
+*
+* FUNCTION
+*	The function hgp retrieves the Get/Post value associated with the
+*	variable name provided.  However, this function html encodes the value
+*	before it is returned to the user.  A user can provide a default value 
+*	that should be returned in case the requested variable does not exist.
+*
+* INPUTS 
+*    string $key	- Requested variable name
+*    string $vardefault - value to return if the variable does not exist
+*
+* RETURNS
+*    mixed - either the value of the variable if it was passed
+*    to the browser, or the default value if provided, or
+*    an empty string.  Return is html encoded.
+*
+* SOURCE
 */
 function hgp($key,$default='') {
    $temp=gp($key,$default);
    return htmlentities($temp);
 }
+/******/
 
-/**
-* Wrapper function for aFromgp($prefix).  Returns an array of
-* string values from the GET/POST paramters that have the prefix
-* $prefix.
+/****f* Get-Post-Variables/rowFromgp
 *
-* @category Get/Post Parameters 
-* @param string $prefix	prefix you are searching for
-* @return array
+* NAME
+*    rowFromgp
+*
+* FUNCTION
+*	The function rowFromgp fetches all values from the Get/Post variables
+*	that have names that begin with the provided prefix.
+*
+* INPUTS 
+*    string $prefix	- Prefix of the Get/Post variables
+*
+* RETURNS
+*    mixed - either the value of the variable if it was passed
+*    to the browser, or the default value if provided, or
+*    an empty string.  Return is html encoded.
+*
+* SOURCE
 */
 function rowFromgp($prefix) {
    return aFromgp($prefix);
 }
+/******/
 
-/**
-* Removes extra "\n" codes at the end of $input.
+/****f* Get-Post-Variables/removetrailingnewlines
 *
-* @param string $input	string you want to remove \n from
-* @return string
+* NAME
+*    removetrailingnewlines
+*
+* FUNCTION
+*	The function removetrailingnewlines returns a new array with the new
+*	line characters filtered out from the end of the provided input.
+*
+* INPUTS 
+*    string $input	- input to filter
+*
+* RETURNS
+*    string - Input provided without the trailing newline characters
+*
+* SOURCE
 */
 function removetrailingnewlines($input) {
    while(substr($input,-1,1)=="\n") {
@@ -121,13 +171,17 @@ function removetrailingnewlines($input) {
    }
    return $input;
 }
+/******/
 
-/** 
-* DEPRECATED  (it was named wrong, should have been rowFromGP 
-* 
-* @category Get/Post Parameters
-* @deprecated
-*/
+/****f* Get-Post-Variables/aFromgp
+*
+* NAME
+*    aFromgp
+*
+* FUNCTION
+*	Deprecated - function was named wrong
+*
+******/
 function aFromgp($prefix) {
 	$strlen = strlen($prefix);
 	$row = array();
@@ -139,48 +193,87 @@ function aFromgp($prefix) {
 	return $row;
 }
 
-/**
-* Sets the key in the Get/Post parameters to the given value.
+/****f* Get-Post-Variables/gpSet
 *
-* @category Get/Post Parameters
-* @param string $key	key whose value you want to change
-* @param string $value	new value for given key
+* NAME
+*    gpSet
+*
+* FUNCTION
+*	The function gpSet assigns the value provied to the variable in the
+*	Get/Post parameters that has the provided name.  If the variable doesn't
+*	exist, this function creates a new variable with the provided name
+*	and value.
+*
+* INPUTS 
+*	string $key	- Name of variable
+*	mixed $value	- Value to assign
+*
+* SOURCE
 */
 function gpSet($key,$value='') {
 	$GLOBALS["AG"]["clean"][$key] = $value;
 }
+/******/
 
-/**
-* Adds the given array $array into the Get/Post parameters.  
-* Adds the prefix $prefix before each key that is added.
+/****f* Get-Post-Variables/gpSetFromArray
 *
-* @category Get/Post Parameters
-* @param string $prefix	prefix of the keys
-* @param array $array	array of keys with values
+* NAME
+*    gpSetFromArray
+*
+* FUNCTION
+*	The function gpSetFromArray adds all variables in the provided array
+*	into the Get/Post variables.  In the array, the keys are the names of
+*	the variables, while the values are the values for the variables.  If
+*	a prefix is provided, the prefix will be appended to the beginning of
+*	every variable name that is added.
+*
+* INPUTS 
+*	string $prefix	- Prefix to add at the beginning of each variable name
+*	array $array	- Variables and their values to add into the Get/Post
+*			  parameters.
+* SOURCE
 */
 function gpSetFromArray($prefix,$array) {
    foreach($array as $key=>$value) {
       gpSet($prefix.$key,$value);
    }
 }
+/******/
 
-/**
-* Removes the given key $key from the Get/Post parameters.
+/****f* Get-Post-Variables/gpUnSet
 *
-* @category Get/Post Parameters
-* @param string $key	key to remove
+* NAME
+*    gpUnSet
+*
+* FUNCTION
+*	The function gpUnSet removes the variable with the provided name from
+*	the Get/Post parameters.
+*
+* INPUTS 
+*	string $key	- Variables' name
+*
+* SOURCE
 */
 function gpUnSet($key) {
 	if (isset($GLOBALS["AG"]["clean"][$key])) {
       unset($GLOBALS["AG"]["clean"][$key]);
    }
 }
+/******/
 
-/**
-* Removes all keys from the Get/Post parameters that have the given prefix $prefix
+/****f* Get-Post-Variables/gpUnsetPrefix
 *
-* @category Get/Post Parameters
-* @param string $prefix	prefix of keys to be removed
+* NAME
+*    gpUnsetPrefix
+*
+* FUNCTION
+*	The function gpUnsetPrefix removes all variables from the Get/Post
+*	parameters with names that begin with the provided prefix.
+*
+* INPUTS 
+*    string $prefix	- Prefix of the variables to remove
+*
+* SOURCE
 */
 function gpUnsetPrefix($prefix) {
    foreach($GLOBALS['AG']['clean'] as $key=>$value) {
@@ -189,29 +282,44 @@ function gpUnsetPrefix($prefix) {
       }
    }
 }
+/******/
 
-/**
-* Returns the Get/Post controls
+/****f* Get-Post-Variables/gpControls
 *
-* @category Get/Post Parameters
+* NAME
+*    gpControls
+*
+* FUNCTION
+*	The function gpControls retrieves the current Get/Post parameter
+*	controls.
+*
+* RETURNS
+*    The Get/Post parameter controls.
+*
+* SOURCE
 */
 function gpControls() {
    return unserialize(base64_decode(gp('gpControls')));
 }
+/******/
 
-
-/**
-* @category Get/Post Parameters
-* @deprecated
-*/
+/****f* Get-Post-Variables/rowFromgpInputs
+*
+* NAME
+*	rowFromgpInputs
+*
+* FUNCTION
+*	Deprecated
+*
+******/
 function rowFromgpInputs() {
    return afromgp('txt_');
 }
 
+
 /**
-* @category Get/Post Parameters
+* INPUTS
 * @deprecated
-*/
 /*
 function rowFromgp($table_id) {
    // First look for gp_skey
@@ -238,11 +346,24 @@ function rowFromgp($table_id) {
 /**
 * Puts the current Get/Post parameters into the current session.
 *
-* @category Get/Post Parameters
+* INPUTS
+*/
+
+/****f* Get-Post-Variables/gpToSession
+*
+* NAME
+*    gpToSession
+*
+* FUNCTION
+*	The function gpToSession takes all of the current Get/Post parameters
+*	and dumps them into the current session parameters.
+*
+* SOURCE
 */
 function gpToSession() {
    SessionSet('clean',$GLOBALS['AG']['clean']);
 }
+/******/
 
 # ==============================================================
 #
@@ -251,59 +372,112 @@ function gpToSession() {
 # Add elements to the JSON RETURN ARRAY
 # ==============================================================
 // KFD X4
-/**
-* Saves error for later processing
+/****h* PHP-API/JSON-Returns
 *
-* @category JSON Returns
-* @param string $parm1	the error
+* NAME
+*	JSON-Returns
+*
+* FUNCTION
+*	JSON-Return functions are used to save certain variables for later processing.  Usually these
+*	variables are used to display information to the user.  The variables that get returned are usually
+*	sent to the user via ajax.
+*
+******/
+
+/****f* JSON-Returns/x4Error
+*
+* NAME
+*	x4Error
+*
+* FUNCTION
+*	Saves an error for later processing
+*
+* INPUTS
+*	string $parm1 - the error to save
+*
+* SOURCE
 */
 function x4Error($parm1) {
     $GLOBALS['AG']['x4']['error'][] = $parm1;
 }
+/******/
 
-/**
-* Saves notice for later processing
+/****f* JSON-Returns/x4Notice
 *
-* @category JSON Returns
-* @param string $parm1	notice to add
+* NAME
+*	x4Notice
+*
+* FUNCTION
+*	Saves a notice for later processing
+*
+* INPUTS
+*	string $parm1 - the notice to save
+*
+* SOURCE
 */
 function x4Notice($parm1) {
     $GLOBALS['AG']['x4']['notice'][] = $parm1;
 }
+/******/
 
-
-/**
-* Dump $var and save as a notice for later processing
+/****f* JSON-Returns/x4Print_r
 *
-* @category JSON Returns
-* @param mixed $var
+* NAME
+*	x4Print_r
+*
+* FUNCTION
+*	The function x4Print_r dumps the provided variable and saves the output as a notice
+*	for later processing.
+*
+* INPUTS
+*	mixed $var - the variable to dump
+*
+* SOURCE
 */
 function x4Print_r($var) {
     ob_start();
     print_r($var);
     x4Notice(ob_get_clean());
 }
+/******/
 
-/**
-* Saves debug information for later processing
+/****f* JSON-Returns/x4Debug
 *
-* @category JSON Returns
-* @param string $parm1	debug
+* NAME
+*	x4Debug
+*
+* FUNCTION
+*	The function x4Debug saves debug information for later processing
+*
+* INPUTS
+*	string $parm1 - the debug info to save
+*
+* SOURCE
 */
 function x4Debug($parm1) {
     $GLOBALS['AG']['x4']['debug'][] = $parm1;
 }
+/******/
+
+
 function x4DebugSQL($parm1) {
     $parm1 = str_replace("\n","",$parm1);
     x4Debug($parm1);
 }
 
-/**
-* Saves html for later processing
+/****f* JSON-Returns/x4HTML
 *
-* @category JSON Returns
-* @param string $parm1	key
-* @param string $parm2 value
+* NAME
+*	x4HTML
+*
+* FUNCTION
+*	The function x4HTML is used to save the provided html for later processing.
+*
+* INPUTS
+*	string $parm1 - the html tag
+*	string $parm2 - the html value
+*
+* SOURCE
 */
 function x4HTML($parm1,$parm2) {
     if(!isset($GLOBALS['AG']['x4']['html'][$parm1])) {
@@ -311,38 +485,91 @@ function x4HTML($parm1,$parm2) {
     }
     $GLOBALS['AG']['x4']['html'][$parm1] .= $parm2;
 }
+/******/
 
 /**
 * Dumps anything out to the main HTML display.
 * Intended for debugging
 *
-* @category JSON Returns
-* @param string $parm1  variable
+* INPUTS
+*	string $parm1  variable
+*/
+
+/****f* JSON-Returns/x4HtmlDump
+*
+* NAME
+*	x4HtmlDump
+*
+* FUNCTION
+*	The function x4HtmlDump dumps anything out to themain HTML display.  It is intended for
+*	debugging.
+*
+* INPUTS
+*	string $parm1 - var to dump
+*
+* SOURCE
 */
 function x4HtmlDump($parm1) {
     ob_start();
     hprint_r($parm1);
     x4HTML('*MAIN*',ob_get_clean());
 }
+/******/
 
 /**
-* Strip the <script> and </script> tags from $parm1 and
-* save the script for later processing.  Can pass parameter
-* either with <script> tags or without: function is flexible.
 *
-* @category JSON Returns
-* @param string $parm1	script to store
+*
+* INPUTS
+*	string $parm1	script to store
+*/
+
+/****f* JSON-Returns/x4SCRIPT
+*
+* NAME
+*	x4SCRIPT
+*
+* FUNCTION
+*	The function x4SCRIPT  strips the <script> and </script> tags from $parm1 and
+*	save the script for later processing.  Can pass parameter
+*	either with <script> tags or without: function is flexible.
+*
+* INPUTS
+*	string $parm1 - var to dump
+*
+* SOURCE
 */
 function x4SCRIPT($parm1) {
     $parm1 = preg_replace("/<script>/i",'',$parm1);
     $parm1 = preg_replace("/<\/script>/i",'',$parm1);
     $GLOBALS['AG']['x4']['script'][] = $parm1;
 }
+/******/
 
+/**
+* JSON encodes the data to be saved as javascript for later processing.
+*
+*	mixed $data
+*/
+
+/****f* JSON-Returns/x4Data
+*
+* NAME
+*	x4Data
+*
+* FUNCTION
+*	The function x4Data JSON encodes the data to be saved as javascript for later processing.
+*
+* INPUTS
+*	string $name - name of data
+*	string $data - the data itself
+*
+* SOURCE
+*/
 function x4Data($name,$data) {
     $script = "\n\$a.data.$name = ".json_encode_safe($data).";";
     x4Script($script);
 }
+/******/
 
 function jsonPrint_r($data) {
     ob_start();
@@ -356,9 +583,27 @@ function jsonPrint_r($data) {
 * error.  Safe way to use json_encode because not all PHP setups
 * have JSON functions.
 *
-* @category JSON Returns
-* @param mixed $data	data to be encoded
-* @return string	json encoded string
+* INPUTS
+*	mixed $data	data to be encoded
+* RETURN
+*	string	json encoded string
+*/
+
+/****f* JSON-Returns/json_encode_safe
+*
+* NAME
+*	json_encode_safe
+*
+* FUNCTION
+*	The function json_encode_safe checks to see if current php version contains JSON functions.
+*	If it does, then encodes the data.  Otherwise it outputs an
+*	error.  Safe way to use json_encode because not all PHP setups
+*	have JSON functions.
+*
+* INPUTS
+*	string $data - the data to encode
+*
+* SOURCE
 */
 function json_encode_safe($data) {
     // Package up the JSON
@@ -370,6 +615,7 @@ function json_encode_safe($data) {
     }
     return;
 }
+/******/
 
 # ==============================================================
 # 
@@ -379,9 +625,10 @@ function json_encode_safe($data) {
 /**
 * Builds a dispatch page object for the page $gp_page
 *
-* @category Page/Object Handling
-* @param string $x4page	page to be dispatched
-* @return object $obj_page	the x4 object that handles that table/page
+* INPUTS
+*	string $x4page	page to be dispatched
+* RETURN
+*	object $obj_page	the x4 object that handles that table/page
 */
 function x4Object($x4Page) {
     include_once 'androX4.php';
@@ -400,9 +647,10 @@ function x4Object($x4Page) {
 /**
 * Builds a dispatch page object for the page $gp_page
 *
-* @category Page/Object Handling
-* @param string $gp_page	page to be dispatched
-* @return object $obj_page	the object represtenting the dispatched page.
+* INPUTS
+*	string $gp_page	page to be dispatched
+* RETURN
+*	object $obj_page	the object representing the dispatched page.
 */
 function DispatchObject($gp_page) {
 	// Get the One True Class loaded.  All table
@@ -454,12 +702,38 @@ function DispatchObject($gp_page) {
 # ==============================================================
 // KFD X4
 
-/**
-* Compute a width by examining the size cookie.  Assumes the
-* baseline is 1024, and returns a string of the form "999px"
-* that is scaled up or down based.
+/****h* PHP-API/HTML-Generation
 *
-* @param number size in 1024x768 mode
+* NAME
+*	HTML-Generation
+*
+* FUNCTION
+*	Andromeda uses an object oriented html system in order to prevent the mix of php and html code
+*	in andromeda pages.
+*
+*	To make HTML in andromeda, you use the html function, which builds an html element as an
+*	androHtml object.  The object allows you to modify the element in any way you would normally
+*	in html.  It is very flexible.
+*
+*	In order to display your object oriented html, you must render it.  Call the render function on your
+*	androHtml parent object to render the whole page.
+*
+******/
+
+/****f* HTML-Generation/hSizepx
+*
+* NAME
+*    hSizepx
+*
+* FUNCTION
+*	The function hSizepx computes a width by examining the size cookie.
+*	It assumes that the baseline is 1024, and returns a string of the form
+*	"999px" that is scaled up or down based.
+*
+* INPUTS 
+*    number $x1024	- Size in 1024x768 mode
+*
+* SOURCE
 */
 function hSizepx($x1024) {
     $app  = $GLOBALS['AG']['application'];
@@ -467,17 +741,31 @@ function hSizepx($x1024) {
     $final = intval(($x1024 * $size)/1024);
     return $final.'px';
 }
+/******/
 
-
-/**
-* Creates HTML element objects.  This is used to prevent the mixing
-* of HTML and PHP in code.  Clean and organized way to create HTML.
+/****f* HTML-Generation/html
 *
-* @category HTML Rendering
-* @param string $tag	html tag
-* @param reference &$parent	reference to parent tag
-* @param string $innerHTML	html inside this tag
-* @return androHtml	object oriented HTML
+* NAME
+*    html
+*
+* FUNCTION
+*	The function html acts as a factory function which creates HTML element
+*	objects based on the parameters passed.  HTML element objects are used
+*	to prevent the mixing of html and php code.
+*
+*	You can provide inner html information, and parent elements.  This function
+*	will automatically add the created child html element to the provided parent
+*	element.  
+*
+* INPUTS 
+*	string $tag	- HTML tag
+*	reference $parent - Reference to parent element
+*	mixed $innerHTML - Inner html in this element
+*
+* RETURN VALUE
+*	androHtml object built specifically for the provided parameters.
+
+******
 */
 function html($tag,&$parent=null,$innerHTML='') {
     // Branch off if an array and return an array
@@ -507,98 +795,175 @@ function html($tag,&$parent=null,$innerHTML='') {
     return $retval;
 }
 
-/**
-* Represents an HTML element object.  An HTML object can have
-* other child elements.
+ /****c* HTML-Generation/androHtml
 *
-* @category HTML Rendering
+* NAME
+*    androHtml
+*
+* FUNCTION
+*	The class androHtml is used to build object oriented html hierarchies  in order to prevent
+*	the mixing of html and php code in andromeda.  Each androHtml object can have attributes,
+*	custom parameters, children elements, styles, and inner html.  Essentially everything a typical
+*	html element can have.
+*
+*	androHtml elements are build exclusively through the factory function html, which handles
+*	html children and parents.
+*
+* SEE ALSO
+*	html
+*
+******
 */
+
 class androHtml {
-    /**
-    * HTML elements held within this HTML element.  For example,
-    * with the definition <div><b>test</b></div>, <b> would be a
-    * child to the <div> tag.
-    *
-    * @var array
-    */
+    
+/****v* androHtml/children
+*
+* NAME
+*    children
+*
+* FUNCTION
+*	The variable children is an array that holds all of the androHtml elements held within this current
+*	androHtml element.
+*
+******
+*/
     var $children = array();
 
-    /**
-    * Attributes for the HTML element.  For example,
-    * you can set hp['href'] for an <a> tag to some
-    * value.  You would do this by $instance->hp['href'] = "some hyperlink";
-    *
-    * @var array
-    */
+/****v* androHtml/hp
+*
+* NAME
+*    hp
+*
+* FUNCTION
+*	The variable hp is an array that holds all of this androHtml element's html properties.  These are
+*	properties that would show up in the html code on the page.  For instace, the property "href" is an
+*	html property for the "a" element.
+*
+******
+*/
     var $hp   = array();
-
-    /**
-    * Javascript code references
-    *
-    * @var string
-    */
+    
+/****v* androHtml/code
+*
+* NAME
+*    code
+*
+* FUNCTION
+*	The variable code is an array that holds all of this androHtml element's javascript code references.
+*
+******
+*/
     var $code = array();
 
-    /**
-    * Additional identifying information for the html
-    * element.
-    *
-    * @var array
-    */
+/****v* androHtml/ap
+*
+* NAME
+*    ap
+*
+* FUNCTION
+*	The variable ap is an array that holds all of this androHtml element's additional properties.  These
+*	are self created properties for the object that do not show up in the html source code.
+*
+******
+*/
     var $ap   = array();
 
-    /**
-    * Styles for the HTML element.  For example,
-    * you can set style['text-align'] for an element to 
-    * set the alignment of the text.
-    *
-    * @var array
-    */
+/****v* androHtml/styles
+*
+* NAME
+*    styles
+*
+* FUNCTION
+*	The variable styles is an associative array that holds all of this androHtml element's css style
+*	properties.  If you want to set a style property, you name the property as a key in the array, and
+*	you set the value for the css property as the value for the key.
+*
+* EXAMPLE
+*	$htmlObject->style['float'] = 'right';
+*
+******
+*/
     var $style= array();
 
-    /**
-    * The HTML held within this element
-    *
-    * @var string
-    */
+/****v* androHtml/innerHtml
+*
+* NAME
+*    innerHtml
+*
+* FUNCTION
+*	The variable innerHtml is a string that contains all of the code and text held within this androHtml
+*	element.
+*
+******
+*/
     var $innerHtml  = '';
-
-    /**
-    * The name of this type of element
-    *
-    * @var string
-    */
+    
+/****v* androHtml/htype
+*
+* NAME
+*    htype
+*
+* FUNCTION
+*	The variable htype is a string that contains the name of the type of html tag that this androHtml
+*	object is representing.  For example, if this androHtml element is representing a div element, htype
+*	would be equal to 'div';
+*
+******
+*/
     var $htype      = '';
 
-    /**
-    * The css classes for this element.  For example a div element defined
-    * <div class='left top'> will have values 'left' and 'top' in
-    * the classes array.
-    *
-    * @var array
-    */
+/****v* androHtml/classes
+*
+* NAME
+*    classes
+*
+* FUNCTION
+*	The variable classes is an array that holds all of this androHtml element's css classes.
+*
+******
+*/
     var $classes    = array();
 
-    /**
-    * Whether the html is to be autoformatted or not
-    *
-    * @var boolean
-    */
+/****v* androHtml/autoFormat
+*
+* NAME
+*    autoFormat
+*
+* FUNCTION
+*	The variable autoFormat is a boolean value which states whether this androHtml element is
+*	autoformatted or not.
+*
+******
+*/
     var $autoFormat = false;
 
-    /**
-    * Whether this is the parent html tag or not
-    * 
-    * @var boolean
-    */
+/****v* androHtml/isParent
+*
+* NAME
+*    isParent
+*
+* FUNCTION
+*	The variable isParent is a boolean value which states whether this androHtml element is a parent
+*	element or not.
+*
+******
+*/
     var $isParent   = false;
-
-    /**
-    * Set the inner html for this element to the passed parameter
-    * $value.
-    *
-    * @param string $value	the inner html for this tag 
-    */
+    
+/****m* androHtml/setHtml
+*
+* NAME
+*    setHtml
+*
+* FUNCTION
+*	The method setHtml sets this androHtml element's innerHtml to the provided string.
+*
+* INPUTS
+*	string $value - New innerHtml
+*
+******
+*/
     function setHtml($value) {
         $this->innerHtml = $value;
     }
@@ -608,90 +973,163 @@ class androHtml {
     * property assignments.
     *
     */
+/****m* androHtml/clear
+*
+* NAME
+*    clear
+*
+* FUNCTION
+*	The method clear removes all child elements and innerHtml from this androHtml element.
+*
+* SOURCE
+*/
     function clear() {
         $this->innerHtml = '';
         $this->children = array();
     }
-
-    /**
-    * Clears all HP property assignments such as ID, STYLE, COLSPAN
-    * and so forth.
-    *
-    */
+/******/
+    
+/****m* androHtml/clearHP
+*
+* NAME
+*    clearHP
+*
+* FUNCTION
+*	The method clearHP removes all Html properties from this androHtml element.
+*
+* SOURCE
+*/
     function clearHP() {
         $this->hp = array();
     }
-
-    /**
-    * Clears all AP property assignments.  AP Properties are those
-    * you make up yourself.
-    *
-    */
+/******/
+    
+/****m* androHtml/clearAP
+*
+* NAME
+*    clearAP
+*
+* FUNCTION
+*	The method clearAP removes all additional properties from this androHtml element.
+*
+* SOURCE
+*/
     function clearAP() {
         $this->ap = array();
     }
+/******/
     
-
-    /**
-    * Add a class named $value to this element.
-    *
-    * @param string $value	name of class to add
-    */
+/****m* androHtml/addClass
+*
+* NAME
+*    addClass
+*
+* FUNCTION
+*	The method addClass adds the provided css class to this androHtml object.
+*
+* INPUTS
+*	string $value - Css class to add
+*
+* SOURCE
+*/
     function addClass($value) {
         $this->classes[] = $value;
     }
-
-    /**
-    * Remove the class named $value from this html element.
-    *
-    * @param string $value	name of class to remove
-    */
+/******/
+    
+/****m* androHtml/removeClass
+*
+* NAME
+*    removeClass
+*
+* FUNCTION
+*	The method removeClass removes the provided css class from this androHtml object.
+*
+* INPUTS
+*	string $value - Css class to remove from this object
+*
+* SOURCE
+*/
     function removeClass($value) {
         $index = array_search($value,$this->classes);
         if($index) unset($this->classes[$index]);
     }
-
-    /**
-    * Add a child html element to this html element.
-    *
-    */
+/******/
+    
+/****m* androHtml/addChild
+*
+* NAME
+*    addChild
+*
+* FUNCTION
+*	The method addChild adds a child html element to this androHtml object.
+*
+* INPUTS
+*	object $object - androHtml element to add to this object as a child element
+*
+* SOURCE
+*/
     function addChild($object) {
         $this->children[] = $object;
     }
-
-    /**
-    * Add an element directly to this element.  
-    *
-    * @param string $tag   The HTML element, such as A, P, DIV, etc.
-    * @param string $innerHTML Optional inner HTML
-    * @param string $class Optional first CSS class for this element.
-    * @return object $html An HTML element. 
-    */
+/******/
+    
+/****m* androHtml/html
+*
+* NAME
+*    html
+*
+* FUNCTION
+*	The method html acts a lot like the library function html, however it adds the created html element
+*	directly to this androHtml element, specifying that this androHtml element is the parent element.
+*
+* INPUTS
+*	string $tag - Name of html tag.
+*	mixed $innerHml - Innerhtml for the created html element.
+*	string $class - Css class for the html element.
+* SOURCE
+*/
     function html($tag,$innerHTML='',$class='') {
         $x = html($tag,$this,$innerHTML);
         if($class<>'') $x->addClass($class);
         return $x;
     }
-
-    /**
-    * Add an element directly to this element.  Shortcut to method "html".
-    *
-    * @param string $tag   The HTML element, such as A, P, DIV, etc.
-    * @param string $innerHTML Optional inner HTML
-    * @param string $class Optional first CSS class for this element.
-    * @return object $html An HTML element. 
-    */
+/******/
+    
+/****m* androHtml/h
+*
+* NAME
+*    h
+*
+* FUNCTION
+*	The method h is a shortcut for the method html.
+*
+* SEE ALSO
+*	html
+*
+* SOURCE
+*/
     function h($tag,$innerHTML='',$class='') {
         return $this->html($tag,$innerHTML,$class);
     }
-    
-    /**
-    * Add a hidden variable to an object
-    *
-    * @param string $name      The name (also ID) of the variable
-    * @param string $value     Optional value (defaults to empty string)
-    * @return object $html     An HTML element. 
-    */
+/******/
+ 
+/****m* androHtml/hidden
+*
+* NAME
+*    hidden
+*
+* FUNCTION
+*	The method hidden adds a hidden value to this androHtml object.  A hidden variable is stored in
+*	an input html element that has the html property 'type' set to 'hidden'.  This enables the passing
+*	of variables back and forth from the server to the client browser after refreshes.
+*
+* INPUTS
+*	string $name - Name of the hidden variable
+*	string $value - Value for the hidden variable
+*
+* SOURCE
+*/
     function hidden($name,$value = '') {
         $h = $this->h('input');
         $h->hp['type'] = 'hidden';
@@ -700,96 +1138,164 @@ class androHtml {
         $h->hp['value']= $value;
         return $h;
     }
+/******/  
     
-
-    /**
-    * Add a TR element directly to this element.  Slightly
-    * shorter than $object->h('tr')
-    *
-    * @param string $innerHTML Optional inner HTML
-    * @param string $class Optional first CSS class for this element.
-    * @return object $html An HTML TD element 
-    */
+/****m* androHtml/tr
+*
+* NAME
+*    tr
+*
+* FUNCTION
+*	The method tr adds a table row html element to this androHtml element.  Slightly shorter than
+*	using the html method.
+*
+* INPUTS
+*		mixed $innerHTML - inner html
+*		string $class - Css class
+*
+* SOURCE
+*/
     function tr($innerHTML='',$class='') {
         return $this->html('tr',$innerHTML,$class);
     }
+/******/
     
-    
-    /**
-    * Add a TD element directly to this element.  Shortcut to method "html"
-    * with first parameter hardcoded to "td".
-    *
-    * @param string $innerHTML Optional inner HTML
-    * @param string $class Optional first CSS class for this element.
-    * @return object $html An HTML TD element 
-    */
+/****m* androHtml/td
+*
+* NAME
+*    td
+*
+* FUNCTION
+*	The method td adds a table colunn element to this androHtml object.
+*
+* INPUTS
+*	mixed $innerHTML - inner html for the td element
+*	string $class - Css class for this td element
+*
+* SOURCE
+*/
     function td($innerHTML='',$class='') {
         return $this->html('td',$innerHTML,$class);
     }
+/******/
 
-    /**
-    * Add a hyperlink element directly to this element.   
-    *
-    * @param string $innerHTML Inner HTML (displayed value) of hyperlink
-    * @param string $href Hyperlink target
-    * @param string $class Optional CSS class to add.
-    * @return object $html An HTML A element 
-    */
+/****m* androHtml/a
+*
+* NAME
+*    a
+*
+* FUNCTION
+*	The method a adds a hyperlink to his androHtml object.
+*
+* INPUTS
+*	mixed $innerHTML - inner html for the 'a' tag
+*	string $href - Hypertext reference
+*	string $class - Css class for the element
+*
+* SOURCE
+*/
     function a($innerHTML,$href,$class='') {
         $a = $this->h('a',$innerHTML,$class);
         $a->hp['href'] = $href;
         return $a;
     }
-    
-    
-    /**
-    * Add $count break elements (<br/>) into this html element as children elements.
-    *
-    * @param int $count	number of break tags to add
-    */
+/******/  
+
+/****m* androHtml/br
+*
+* NAME
+*    br
+*
+* FUNCTION
+*	The method br adds the provided amount of break elements to this androHtml object as children
+*	elements.
+*
+* INPUTS
+*	number $count - Number of break elements to add
+*
+* SOURCE
+*/
     function br($count=1) {
         for($x=1;$x<=$count;$x++) {
             $this->children[] = '<br/>';
         }
     }
+/******/
 
-    /**
-    * Add $count horizontal rule elements (<hr/>) to this html element as children elements.
-    *
-    * @param int $count	number of horizontal rule tags to add
-    */
+/****m* androHtml/hr
+*
+* NAME
+*    hr
+*
+* FUNCTION
+*	The method hr adds the provided number of horizontal rule elements to this androHtml object
+*	as children elements.
+*
+* INPUTS
+*	number $count - Number of horizontal rule elements to add
+*
+* SOURCE
+*/
     function hr($count=1) {
         for($x=1;$x<=$count;$x++) {
             $this->children[] = '<hr/>';
         }
     }
+/******/
 
-    /**
-    * Add $count non-breaking spaces to this html element as children elements.
-    *
-    * @param int $count	number of non-breaking spaces to add
-    */
+/****m* androHtml/nbsp
+*
+* NAME
+*    nbsp
+*
+* FUNCTION
+*	The method nbsp adds the provided number of non-breaking spaces to this androHtml object as
+*	children elements.
+*
+* INPUTS
+*	number $count - Number of non-breaking spaces to add.
+*
+* SOURCE
+*/
     function nbsp($count=1) {
         for($x=1;$x<=$count;$x++) {
             $this->children[] = '&nbsp;';
         }
     }
+/******/
 
-    /**
-    * Sets autoformat to boolean $setting.
-    *
-    * @param boolean $setting	Whether it is autoformatted or not
-    */
+/****m* androHtml/autoFormatF
+*
+* NAME
+*    autoFormat
+*
+* FUNCTION
+*	The method autoFormat sets whether this androHtml element is autoFormatted or not.  The default
+*	input for this function is true.
+*
+* INPUTS
+*	boolean $setting - True for autoFormatting, false for none.
+*
+* SOURCE
+*/
     function autoFormat($setting=true) {
         $this->autoFormat = $setting;
     }
-    
-    /**
-    * Add a set of elements to something with striping option.
-    *
-    * @param array $rows	rows of elements to add
-    * @param array $options	striping options
-    */
+/******/
+
+/****m* androHtml/TbodyRows
+*
+* NAME
+*    TbodyRows
+*
+* FUNCTION
+*	The method TbodyRows adds a set of elements to something with striping option.
+*
+* INPUTS
+*	array $rows - rows of elements to add
+*	array $options - striping options
+*
+******/
     function TbodyRows($rows,$options=array()) {
         $rowIdPrefix='row_';
         $stripe = $stripe1 = $stripe2 = $stripe3 = 0;
@@ -823,14 +1329,21 @@ class androHtml {
         return $tbody;
     }
 
-    /**
-    * Add a thead and a set of th elements to a table.
-    *
-    * Note: this method does not check to see if "this"
-    * is actually an HTML TABLE element.
-    *
-    * @param mixed $thvalues   a list or array of values
-    */
+/****m* androHtml/makeThead
+*
+* NAME
+*    makeThead
+*
+* FUNCTION
+*	The method makeThead adds a thead and a set of th elements to a table.
+*
+* NOTE
+*	This method does not check to see if "this" is actually an HTML Table element.
+*
+* INPUTS
+*	mixed $thvalues - a list or array of thead values
+*	string $class - Css class for the thead element
+******/
     function makeThead($thvalues,$class='dark') {
         # Make it an array if it is not already
         if(!is_array($thvalues)) {
@@ -843,13 +1356,20 @@ class androHtml {
         }
         return $thead;
     }
-
-    /**
-    * Add one or more cells to a row
-    *
-    * @param string $tag	tag of items to add
-    * @param mixed $values	values of cells to add
-    */
+    
+/****m* androHtml/addItems
+*
+* NAME
+*    addItems
+*
+* FUNCTION
+*	The method addItems adds one or more cells to a row.
+*
+* INPUTS
+*	string $tag - tag of items to add
+*	mixed $values - values of cells to add
+*
+******/
     function addItems($tag,$values) {
         if(!is_array($values)) {
             $values = explode(',',$values);
@@ -859,19 +1379,34 @@ class androHtml {
         }
     }
         
-    /**
-    * Sets a flag to work as parent
-    *
-    */
+/****m* androHtml/setAsParent
+*
+* NAME
+*    setAsParent
+*
+* FUNCTION
+*	The method setAsParent sets a flag for this androHtml element to work as parent.
+*
+* SOURCE
+*/
     function setAsParent() {
         $this->isParent = true;
     }
+/******/
     
-    /**
-    * Returns reference to first child html element
-    *
-    * @return reference		reference to first child
-    */
+/****m* androHtml/firstChild
+*
+* NAME
+*    firstChild
+*
+* FUNCTION
+*	The method firstChild returns a reference to the first child html element in this androHtml object.
+*
+* RETURN VALUE
+*	reference - reference to first child element
+*
+* SOURCE
+*/
     function firstChild() {
         if(count($this->children)==0) {
             return null;
@@ -881,12 +1416,21 @@ class androHtml {
             return $retval;
         }
     }
-
-    /**
-    * Returns reference to last child html element
-    * 
-    * @return reference		reference to last child
-    */
+/******/
+    
+/****m* androHtml/lastChild
+*
+* NAME
+*    lastChild
+*
+* FUNCTION
+*	The method lastChild returns a reference to the last child element in this androHtml object.
+*
+* RETURN VALUE
+*	reference - reference to last child
+*
+* SOURCE
+*/
     function lastChild() {
         if(count($this->children)==0) {
             return null;
@@ -896,26 +1440,39 @@ class androHtml {
             return $retval;
         }
     }
+/******/
 
-    /**
-    * Render this html object using a buffer
-    *
-    * @return buffer rendered object
-    */
+/****m* androHtml/bufferedRender
+*
+* NAME
+*    bufferedRender
+*
+* FUNCTION
+*	The method bufferedRender rendered this androHtml object in a buffer, instead of directly outputing
+*	it to the browser.
+*
+* SOURCE
+*/
     function bufferedRender() {
         ob_start();
         $this->render();
         return ob_get_clean();
     }
+/******/
 
-    /**
-    * Render this html.  Start with the parent element.  For
-    * each element set up the attributes for the element, then
-    * display the element.  Afterwards, render each child.
-    * Echos out all the HTML of this object.
-    *
-    * @param string $parentId  the parent id
-    */
+/****m* androHtml/render
+*
+* NAME
+*    render
+*
+* FUNCTION
+*	The method render renders this androHtml object.  It builds all of the html code based on the objects
+*	attributes, children elements, parent elements, etc.  Render directly outputs all html out to the
+*	browser.  User bufferedRender to get the html as a string instead of outputting to the browser.
+*
+* INPUTS
+*	string $parentId - parent id for this androHtml object
+******/
     function render($parentId='') {
         # Accept a parentId, maybe assign one to
         if($parentId <> '') {
@@ -987,10 +1544,26 @@ class androHtml {
 /**
 * Create a form with parent html element $parent.
 *
-* @category HTML Rendering
-* @param reference &$parent	parent html element to form
-* @param string $page	page of form (used to create action attribute)
+* INPUTS
+*	reference &$parent	parent html element to form
+*	string $page	page of form (used to create action attribute)
 */
+
+/****f* HTML-Generation/htmlForm
+*
+* NAME
+*    htmlForm
+*
+* FUNCTION
+*	The function htmlForm creates an html form element with the provided parent element.
+*
+* INPUTS
+*	reference $parent - Reference to the parent element for this form
+*	string $page - action page for this form
+*
+* RETURN VALUE
+*	androHtml - Generated form
+******/
 function htmlForm(&$parent,$page='') {
     if($page=='') $page = gp('x4Page');
     if($page=='') $page = gp('gp_page');
@@ -1010,12 +1583,31 @@ function htmlForm(&$parent,$page='') {
 * Lower level routine to generate an input html element.  Place type
 * of input into $colinfo array as 'type_id'.
 *
-* @category HTML Rendering
-* @param array $colinfo	column info
-* @param reference &$tabLoop
-* @param array $options	options
-* @return androHtml	object oriented input html
+* INPUTS
+*	array $colinfo	column info
+*	reference &$tabLoop
+*	array $options	options
+* RETURN
+*	androHtml	object oriented input html
 */
+
+/****f* HTML-Generation/input
+*
+* NAME
+*    input
+*
+* FUNCTION
+*	The function input is a lower level routine that generates an input html element.
+*
+* INPUTS
+*	array $colinfo - column info
+*	reference $tabLoop - tab loop
+*	array $options - option elements
+*
+* RETURN VALUE
+*	androHtml - generated input element
+*
+******/
 function input($colinfo,&$tabLoop = null,$options=array()) {
     $formshort= a($colinfo,'formshort',a($colinfo,'type_id','char'));
     $type_id  = a($colinfo,'type_id');
@@ -1237,10 +1829,30 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
 * organized as an HTML TABLE with one row per input, captions on
 * left and inputs on right.
 *
-* @param array $dd	Data Dictionary for table
-* @param string $projection Name of projection, or array of columns,
+*	array $dd	Data Dictionary for table
+*	string $projection Name of projection, or array of columns,
 *                           or comma-list of columns.
 */
+
+/****f* HTML-Generation/projection
+*
+* NAME
+*    projection
+*
+* FUNCTION
+*	The function projection generates a set of inputs for a given projection on a given table, organized
+*	as an HTML TABLE with one row per input, captions on left and inputs on right.
+*
+* INPUTS
+*	array $dd - Data Dictionary for table
+*	mixed $projection - name of proection, or array of columns, or comma-list of columns
+*	reference $tabLoop - Tab loop
+*	array $options - Options for the projection
+*
+* RETURN VALUE
+*	androHtml - generated projection (html table)
+*
+******/
 function projection($dd,$projection='',&$tabLoop,$options=array()) {
     # Work out what they gave us and make a list of
     # columns out of it
@@ -1358,7 +1970,19 @@ function projection($dd,$projection='',&$tabLoop,$options=array()) {
     
 }
 
-
+/****f* HTML-Generation/inputsTabLoop
+*
+* NAME
+*    inputsTabLoop
+*
+* FUNCTION
+*	The function inputsTabLoop adds keybindings and inputs to the provided tabloop.
+*
+* INPUTS
+*	reference $tabLoop - tab loops
+*	array $options - Options for the input.
+*
+******/
 function inputsTabLoop(&$tabLoop,$options=array()) {
     if(count($tabLoop)<2) return;
 
@@ -1395,15 +2019,24 @@ function inputsTabLoop(&$tabLoop,$options=array()) {
     }    
 }
 
-/**
-* Adds keyboard input if parameter $input has an additional
-* attribute xTypeId equal to date.
+/****f* HTML-Generation/inputFixupByType
 *
-* REM'D BY KFD and moved up to main input() function 7/8/08
+* NAME
+*    inputFixupByType
 *
-* @category HTML Rendering
-* @param androHtml $input	input to add keyboard input
-*/
+* FUNCTION
+*	The function inputFixupByType adds keyboard input if provided input has an additional attribute
+*	xTypeId equal to date.
+*
+* NOTE
+*	Moved to main input function
+*
+* INPUTS
+*	androHtml - Input element
+*
+* RETURN VALUE
+*	androHtml - Modified input element
+******/
 function inputFixupByType($input) {
     return $input;
     if($input->ap['xTypeId'] == 'date') {
@@ -1419,30 +2052,50 @@ function inputFixupByType($input) {
 #
 # These routines produce little snippet values
 # ==============================================================
-/**
-* Dumps the variable $anyvalue, but wraps it in HTML PRE tags so
-* it is readable in a browser.
+/****f* HTML-Generation/hprint_r
 *
-* @category HTML Rendering
-* @param:any Input
-* @return string	HTML_Fragment
+* NAME
+*	hprint_r
+*
+* FUNCTION
+*	Dumps the variable $anyvalue, but wraps it in HTML PRE tags so
+*	it is readable in a browser.
+*
+* INPUTS
+*	mixed $anyvalue - variable to dump
+*
+* RETURN
+*	string	HTML_Fragment
+*
+* SOURCE
 */
 function hprint_r($anyvalue) {
 	echo "<pre>\n";
    print_r($anyvalue);
 	echo "</pre>";
 }
+/******/
 
-/**
-* Shortcut to PHP's htmlentities function
+/****f* HTML-Generation/hx
 *
-* @category HTML Rendering
-* @param string $in	string to be sanitized
-* @return string	sanitized string
+* NAME
+*	hx
+*
+* FUNCTION
+*	Shortcut to PHP's htmlentities function
+*
+* INPUTS
+*	string $in	string to be sanitized
+*
+* RETURN
+*	string	sanitized string
+*
+* SOURCE
 */
 function hx($in) {
    return htmlentities($in);
 }
+/******/
 
 
 # ==============================================================
@@ -1457,11 +2110,12 @@ function hx($in) {
 * is the application level, then the inst level and finally the user level. Each
 * level overrides the previous' variables.
 *
-* @category Configuration Values
-* @param string $var	value to get config data for
-* @param string $default	default value for $var
-* @param array $skip	values to skip in configuration
-* @return string	config value for $var
+* INPUTS
+*	string $var	value to get config data for
+*	string $default	default value for $var
+*	array $skip	values to skip in configuration
+* RETURN
+*	string	config value for $var
 */
 function configGet($var,$default='',$skip=array()) {
     # clean up what they passed in
@@ -1605,28 +2259,48 @@ function configLayoutX4($container,$type) {
 # SECTION: All SQL Generation
 #
 # ==============================================================
-
-/**
-* Takes any input value and type and formats it for direct substitution
-* into a SQL string.  So for instance character values are escaped for
-* quotes and then surrounded by single quotes.  Numerics are returned
-* as-is, dates are formatted and so forth.
+/****h* PHP-API/SQL-Generation
 *
-* The optional third parameter specifies a maximum length for character
-* and varchar fields.  If it is non-zero, the value will be clipped to
-* that length.
+* NAME
+*	SQL Generation
 *
-* If you use this command for every value received from the browser when
-* you build SQL queries, then your code will be safe from SQL Injection
-* attacks.  All framework commands that build queries use this command for
-* all literals provided to them.
+* FUNCTION
+*	The SQL Generation functions create and sanitize SQL code for use in
+*	SQL queries.
 *
-* @category SQL Generation
-* @param string $t	Type_ID
-* @param mixed $v	any Value
-* @param int $clip	Clip_Length
-* @return string	SQL formatted string
+******
 */
+
+
+/****f* SQL-Generation/SQL_FORMAT
+*
+* NAME
+*    SQL_FORMAT
+*
+* FUNCTION
+*	The function SQL_FORMAT Takes any input value and type and formats it for direct substitution
+* 	into a SQL string.  So for instance character values are escaped for
+* 	quotes and then surrounded by single quotes.  Numerics are returned
+* 	as-is, dates are formatted and so forth.
+*
+*	 The optional third parameter specifies a maximum length for character
+* 	and varchar fields.  If it is non-zero, the value will be clipped to
+* 	that length.
+*
+* 	If you use this command for every value received from the browser when
+* 	you build SQL queries, then your code will be safe from SQL Injection
+* 	attacks.  All framework commands that build queries use this command for
+* 	all literals provided to them.
+*
+* INPUTS
+*	string $t - Type_ID
+*	mixed $v - any value
+*	int $clip - clip length
+*
+* RETURN VALUE
+*	string - sql formatted string
+*
+******/
 function SQL_FORMAT($t,$v,$clip=0) {
 	global $AG;
 	switch ($t) {
@@ -1736,57 +2410,104 @@ function SQL_FORMAT($t,$v,$clip=0) {
 	}
 }
 
-/**
-* Shortcut to [[SQL_Format]] for string values.
+/****f* SQL-Generation/SQLFC
 *
-* @category SQL Generation
-* @param string $value	string value to sanitize
-* @return string	sanitized string
+* NAME
+*    SQLFC
+*
+* FUNCTION
+*	The function SQLFC is a shortcut to SQL_FORMAT for string values.
+*
+* INPUTS
+*	string $value - string to be sanitized
+*
+* RETURN VALUE
+*	string - sanitized string
+*
+* SOURCE
 */
 function SQLFC($value) { return SQL_Format('char',$value); }
+/******/
 
-/**
-* Shortcut to [[SQL_Format]] for numeric values.
+/****f* SQL-Generation/SQLFN
 *
-* @category SQL Generation
-* @param mixed $value	any numeric value to be sanitized
-* @return string	sanitized output
+* NAME
+*    SQLFN
+*
+* FUNCTION
+*	The function SQLFN is a shortcut to SQL_FORMAT for numeric values.
+*
+* INPUTS
+*	mixed $value - value to be sanitized
+*
+* RETURN VALUE
+*	string - sanitized string
+*
+* SOURCE
 */
 function SQLFN($value) { return SQL_Format('numb',$value); }
+/******/
 
-/**
-* Shortcut to [[SQL_Format]] for date values.
+/****f* SQL-Generation/SQLFD
 *
-* @category SQL Generation
-* @param string $value	date value to be sanitized
-* @return string 	sanitized date
+* NAME
+*    SQLFD
+*
+* FUNCTION
+*	The function SQLFD is a shortcut to SQL_FORMAT for date values.
+*
+* INPUTS
+*	mixed $value - value to be sanitized
+*
+* RETURN VALUE
+*	string - sanitized string
+*
+* SOURCE
 */
 function SQLFD($value) { return SQL_Format('date',$value); }
+/******/
 
-/**
-* Shortcut to [[SQL_Format]] for datetime values.
+/****f* SQL-Generation/SQLFDT
 *
-* @category SQL Generation
-* @param string $value	datetime value to be sanitized
-* @return string	sanitized datetime value
+* NAME
+*    SQLFDT
+*
+* FUNCTION
+*	The function SQLFDT is a shortcut to SQL_FORMAT for datetime values.
+*
+* INPUTS
+*	mixed $value - value to be sanitized
+*
+* RETURN VALUE
+*	string - sanitized string
+*
+* SOURCE
 */
 function SQLFDT($value) { return SQL_Format('dtime',$value); }
+/******/
 
-/**
-* Generate a WHERE clause for a single column given its 
-* type and the search value.  Generates index-optimized 
-* WHERE clauses to replace LIKE where possible, respects
-* commas to do lists, and double-dashes to do ranges.
-* Respects the partial date values of m/d, m/yyyy, and
-* yyyy.
+/****f* SQL-Generation/sqlFilter
 *
-* @category SQL Geneation
-* @param array  $colinfo  The data dictionary column information
-* @param string $tcv string version of the value
-* @param string $table (optional) 
-* @return string the where clause surrounded by parentheses,
-*                as in (colname = 'value')
-*/
+* NAME
+*    sqlFilter
+*
+* FUNCTION
+*	The function sqlFilter generates a WHERE clause for a single column given its 
+* 	type and the search value.  Generates index-optimized 
+*	WHERE clauses to replace LIKE where possible, respects
+*	commas to do lists, and double-dashes to do ranges.
+* 	Respects the partial date values of m/d, m/yyyy, and
+*	yyyy.
+*
+* INPUTS
+*	array $colinfo - data dictionary column information
+*	string $tvc - version of the value
+*	string $table - Table Id for data dictionary
+*
+* RETURN VALUE
+*	string - WHERE clause
+*
+******/
 function sqlFilter($colinfo,$tcv,$table = '') {
     $type_id  = $colinfo['type_id'];
     $column_id= $colinfo['column_id'];
@@ -1952,6 +2673,22 @@ function sqlFilter($colinfo,$tcv,$table = '') {
     }
 }
 
+/****f* SQL-Generation/sqlOrderBy
+*
+* NAME
+*    sqlOrderBy
+*
+* FUNCTION
+*	The function sqlOrderBy builds the orderby part of an sql query.  If the Get/Post parameters have the
+*	type of sort, it uses the type of sort passed.  Otherwise, it orders the columns in ascending order.
+*
+* INPUTS
+*	array $vals - columns
+*
+* RETURN VALUE
+*	string - ORDER BY clause
+*
+******/
 function sqlOrderBy($vals) {
     # First see if an explicit sortAD and sortCol were passed
     if(gpExists('sortCol')) {
@@ -1972,76 +2709,84 @@ function sqlOrderBy($vals) {
 // ==================================================================
 // Joomla Compatibility Functions
 // ==================================================================
-/**
-name:Joomla Compatibility
-parent:Framework API Reference
-flag:EXPERIMENTAL
-
-The Joomla Compatibility framework allows 'drop-in' use of Joomla
-templates for an Andromeda Application.
-
-
-To use a Joomla template, you must do the following:
-
-* Call [[JoomlaCompatibility()]] from applib
-* Create a 'templates' directory and put your template files there
+/****h* PHP-API/Joomla-Compatibility
+*
+* NAME
+*	Joomla Compatibility
+*
+* FUNCTION
+*	The Joomla Compatibility framework allows 'drop-in' use of Joomla
+*	templates for an Andromeda Application.
+*	
+*	
+*	To use a Joomla template, you must do the following:
+*
+* 	Call [[JoomlaCompatibility()]] from applib
+*	Create a 'templates' directory and put your template files there
+*
+******
 */
 
-/**
-name:JoomlaCompatibility
-parm:string Template_Name
-parm:string Template_Color
-
-This function generates objects, variables and defines that
-satisfy a Joomla template so that it will execute and serve up
-Andromeda content.
-
-The first parameter is the name of the template to use.  The template
-files should be in a subdirectory of your app's "templates" directory,
-and that subdirectory should have the same name as the template.
-
-The second parameter, which defaults to blank,
-is assigned to $GLOBALS['template_color'].
-
-Other actions of this program are:
-
-* defines constant _VALID_MOS as true
-* defines constant _ISO as empty
-* assigns the application's root directory to global
-  variable $mosConfig_absolute_path.
-* assigns an empty string to global variable $mosConfig_live_site.
-* creates empty global $my object with property 'id' set to false
-* creates empty global $mainframe object, whose getTemplate() method always
-  returns the template name.
-
-The universal dispatcher, [[index_hidden]], looks for the defined constant
-_VALID_MOS, and if found it uses the named Joomla template instead of an
-Andromeda template.  It also exposes the necessary global variables
-that were defined above.
-
-The compatibility layer provides a handful of functions to emulate the
-functions used by Joomla.  The most important function is [[mosMainBody]],
-which calls directly to [[ehStandardContent]].  The other functions tend
-toward being more placeholders.
-
-When you use a Joomla template, there are a handful of tasks that must
-be performed:
-
-* Insert a link to the Andromeda javascript library, raxlib.js into
-  the template.
-* Code up routine appCountModules, which handles calls to Joomla
-  function [[mosCountModules]].
-* Code up routine appShowModules, which handles calls to Joomla
-  function [[mosLoadModules]].
-* Identify the template's CSS classes for menu modules and menu items,
-  and assign them in [[applib]] using [[vgaSet]] to 'MENU_CLASS_MODL' and
-  'MENU_CLASS_ITEM'.
-* Look for any hard-coded configuration parameters that you want to
-  override and REM them out.
-* Copy the x2.css file from andro/clib into the template's CSS
-  directory, and link to it from the template main file.
+/****f* Joomla-Compatibility/JoomlaCompatibility
 *
-* @category Joomla Compatibility
+* NAME
+*	JoomlaCompatibility
+*
+* FUNCTION
+*	This function generates objects, variables and defines that
+*	satisfy a Joomla template so that it will execute and serve up
+*	Andromeda content.
+*	
+*	The first parameter is the name of the template to use.  The template
+*	files should be in a subdirectory of your app's "templates" directory,
+*	and that subdirectory should have the same name as the template.
+*	
+*	The second parameter, which defaults to blank,
+*	is assigned to $GLOBALS['template_color'].
+*	
+*	Other actions of this program are:
+*	
+*	- defines constant _VALID_MOS as true
+*	- defines constant _ISO as empty
+*	- assigns the application's root directory to global
+*	  variable $mosConfig_absolute_path.
+*	- assigns an empty string to global variable $mosConfig_live_site.
+*	- creates empty global $my object with property 'id' set to false
+*	- creates empty global $mainframe object, whose getTemplate() method always
+*	  returns the template name.
+*	
+*	The universal dispatcher, [[index_hidden]], looks for the defined constant
+*	_VALID_MOS, and if found it uses the named Joomla template instead of an
+*	Andromeda template.  It also exposes the necessary global variables
+*	that were defined above.
+*	
+*	The compatibility layer provides a handful of functions to emulate the
+*	functions used by Joomla.  The most important function is [[mosMainBody]],
+*	which calls directly to [[ehStandardContent]].  The other functions tend
+*	toward being more placeholders.
+*	
+*	When you use a Joomla template, there are a handful of tasks that must
+*	be performed:
+*	
+*	- Insert a link to the Andromeda javascript library, raxlib.js into
+*	  the template.
+*	- Code up routine appCountModules, which handles calls to Joomla
+*	  function [[mosCountModules]].
+*	- Code up routine appShowModules, which handles calls to Joomla
+*	  function [[mosLoadModules]].
+*	- Identify the template's CSS classes for menu modules and menu items,
+*	  and assign them in [[applib]] using [[vgaSet]] to 'MENU_CLASS_MODL' and
+*	  'MENU_CLASS_ITEM'.
+*	- Look for any hard-coded configuration parameters that you want to
+*	  override and REM them out.
+*	- Copy the x2.css file from andro/clib into the template's CSS
+*	  directory, and link to it from the template main file.
+*
+* INPUTS
+*	string Template_Name
+*	string Template_Color
+*
+******
 */
 function JoomlaCompatibility($template_name,$template_color='') {
    // Templates won't run unless this is defined.
@@ -2081,11 +2826,16 @@ function JoomlaCompatibility($template_name,$template_color='') {
    $GLOBALS['J']['template_color']   = $template_color;
 }
 
-/**
-* Class needed by Joomla templates so they go into
-* normal mode.
+/****c* Joomla-Compatibility/joomla_fake
 *
-* @category Joomla Compatibility
+* NAME
+*	joomla_fake
+*
+* FUNCTION
+*	Class needed by Joomla templates so they go into
+*	normal mode.
+*
+* SOURCE
 */
 class joomla_fake {
    var $id=false;
@@ -2097,24 +2847,34 @@ class joomla_fake {
       return $this->template_name;
    }
 }
+/******/
 
 /**
 * This is an empty routine that returns an empty string.
 *
-* @category Joomla Compatibility
+* INPUTS
 */
 function mosShowHead() {  return ''; }
 
-/**
-* Looks for the function [[appCountModules]] to exist.  If that routine
-* exists, it is called and the result is returned.  If that method does not
-* exist, always returns false.
-* Define and code the method [[appCountModules]] in your [[applib.php]] file.
+/****f* Joomla-Compatibility/mosCountModules
 *
-* @category Joomla Compatibility
-* @param string $name	parameter to pass to the appCountModules if it exists
-* @return mixed		returns result from appCountmodules if it exists.  If not, checks for
-			tmpCountModules.  If that doesn't exist also, returns true.
+* NAME
+*	mosCountModules
+*
+* FUNCTION
+*	Looks for the function [[appCountModules]] to exist.  If that routine
+* 	exists, it is called and the result is returned.  If that method does not
+*	exist, always returns false.
+*	Define and code the method [[appCountModules]] in your [[applib.php]] file.
+*
+* INPUTS
+*	string $name	parameter to pass to the appCountModules if it exists
+*
+* RETURN
+*	mixed		returns result from appCountmodules if it exists.  If not, checks for
+*			tmpCountModules.  If that doesn't exist also, returns true.
+*
+******
 */
 function mosCountModules($name) {
    //$content=vgaGet('JOOMLA_COUNT_'.$name,'');
@@ -2130,19 +2890,26 @@ function mosCountModules($name) {
    }
 }
 
-/**
-* Looks for the function [[appLoadModules]] to exist.  If that routine
-* exists, it is called.  That routine is expected to echo its output
-* directly.  If that routine does not exist, nothing happens.
-* Define and code the method [[appLoadModules]] in your [[applib.php]] file.
+/****f* Joomla-Compatibility/mosLoadModules
 *
-* One handy way to explore a template is to code [[appLoadModules]] so that
-* it simply echoes the name of the module, that way the template will appear
-* with all of the module areas displaying their names.
+* NAME
+*	mosLoadModules
 *
-* @category Joomla Compatibility
-* @param string $name	name to pass to mosLoadModules
-* @param number $arg1	argument to pass to mosLoadModules
+* FUNCTION
+*	Looks for the function [[appLoadModules]] to exist.  If that routine
+*	exists, it is called.  That routine is expected to echo its output
+*	directly.  If that routine does not exist, nothing happens.
+*	Define and code the method [[appLoadModules]] in your [[applib.php]] file.
+*
+*	One handy way to explore a template is to code [[appLoadModules]] so that
+*	it simply echoes the name of the module, that way the template will appear
+*	with all of the module areas displaying their names.
+*
+* INPUTS
+*	string $name	name to pass to mosLoadModules
+*	number $arg1	argument to pass to mosLoadModules
+*
+*******
 */
 function mosLoadModules($name,$arg1=null) {
    //$content=vgaGet('JOOMLA_LOAD_'.$name);
@@ -2162,68 +2929,116 @@ function mosLoadModules($name,$arg1=null) {
   }
 }
 
-/**
+/****f* Joomla-Compatibility/mosPathWay
 *
-* Returns an empty string.
+* NAME
+*	mosPathWay
 *
-* In a joomla site, this would return the navigation hierarchy, which
-* Andromeda does not currently provide.
+* FUNCTION
+*	Returns an empty string.
 *
-* @category Joomla Compatibility
-* @return string	empty string
+*	In a joomla site, this would return the navigation hierarchy, which
+*	Andromeda does not currently provide.
+
+* RETURN
+*	string	empty string
+*
+******
 */
 function mosPathWay()  {
    //echo "mosPathway";
 }
 
-/**
-* echos [[ehStandardContent]].
+/****f* Joomla-Compatibility/mosMainBody
 *
-* @category Joomla Compatibility
+* NAME
+*	mosMainBody
+*
+* FUNCTION
+*	echos [[ehStandardContent]].
+*
+*******
 */
 function mosMainBody() {
   ehStandardContent();
 }
 
-/**
-* This routine makes it possible to use friendly URL's together with
-* absolute paths in the special case where your files are stored in
-* a user's home directory on a local machine.
+/****f* Joomla-Compatibility/tmpPathInsert
 *
-* The function is only called in templates, and is always called inside
-* of links to CSS and JS files.
+* NAME
+*	tmpPathInsert
 *
-* The function is actually pulling the value "localhost_suffix" from the
-* application's web_path.
+* FUNCTION
+*	This routine makes it possible to use friendly URL's together with
+*	absolute paths in the special case where your files are stored in
+*	a user's home directory on a local machine.
 *
-* @category Joomla Compatibility
+*	The function is only called in templates, and is always called inside
+*	of links to CSS and JS files.
+*
+*	The function is actually pulling the value "localhost_suffix" from the
+*	application's web_path.
+*
+******
 */
 function tmpPathInsert() {
    return vgfGet("tmpPathInsert");
 }
 
-/**
-* This routine exists in the Rocket Theme splitmenu code, and is
-* presumably a Joomla library routine.
+/****f* Joomla-Compatibility/ampReplace
 *
-* @category Joomla Compatibility
-* @param string $input	url
-* @return string URL	url without &
+* NAME
+*	ampReplace
+*
+* FUNCTION
+*	This routine exists in the Rocket Theme splitmenu code, and is
+*	presumably a Joomla library routine.
+*
+* INPUTS
+*	string $input	url
+*
+* RETURN
+*	string URL	url without &
+******
 */
 function ampReplace($input) {
    return str_replace("&","&amp;",$input);
 }
 
+/****f* Joomla-Compatibility/sefRelToAbs
+*
+* NAME
+*	sefRelToAbs
+*
+* FUNCTION
+*	The function sefRelToAbs takes a SEF url and converts to an an absolute
+*	path.
+*
+* INPUTS
+*	string $input - SEF url
+*
+* RETURN VALUE
+*	string - absolute path
+*
+* SOURCE
+*/
 function sefRelToAbs($input) {
    return "/".tmpPathInsert().$input;
 }
+/******/
 
-/** Load right-sided menu modules.  This code is coupled to
-* the rt_pixel template.  When we want to use it in another
-* template it should be generalized to only return the links
-* and the individual template should render it into HTML.
+/****f* Joomla-Compatibility/fwModuleMenuRight
 *
-* @category Joomla Compatibility
+* NAME
+*	fwModuleMenuRight
+*
+* FUNCTION
+*	Load right-sided menu modules.  This code is coupled to
+*	the rt_pixel template.  When we want to use it in another
+*	template it should be generalized to only return the links
+*	and the individual template should render it into HTML.
+*
+******
 */
 function fwModuleMenuRight() {
     if(!LoggedIn()) return;
@@ -2315,52 +3130,63 @@ function hLinkImage($pic,$alt,$var,$val,$enabled) {
 
 
 // ------------------------------------------------------------------
-/**
-name:Session Variables
-parent:Framework API Reference
-
-Andromeda provides wrappers for accessing session variables.  The
-PHP superglobal $_SESSION should not be directly accessed, instead
-an Andromeda program should use [[SessionGet]] and [[SessionSet]].
-
-Do not use session variables for storing information across different
-requests, such as storing user replies going page-to-page through
-a wizard.  Use [[Context Functions]] or [[Hidden Variables]]
-for these instead, they are much more flexible and robust.
-
-It may happen that you have multiple Andromeda applications on a server,
-and that a browser is connected to more than one of them in multiple
-tabls.  This would result in a collision if you were access $_SESSION
-directly, because each app would overwrite the variables of the others.
-Andromeda prevents these collisions automatically whenever
-[[SessionGet]] and [[SessionSet]] are used.
-
-Andromeda also prevents collissions between session variables used by
-the framework and those you may put into your application.  All of the
-Session variables accept an optional last parameter (not documented in
-the individual functions)  The default value of this parameter is
-'app', but some framework functions call it with a value of 'fw' to keep
-these variables separate from application variables.  It should be noted
-that sometimes the framework uses application session variables, so that
-the application can find them if necessary.  Examples of this are session
-variables UID (current user_id) and PWD (password of current user).
-
-*/
-
-/**
-* This program returns a session variable.  The second parameter
-* is a [[Standard Default Value]] and will be returned if the
-* Session variable Var_Name does not exist.
+/****h* PHP-API/Session-Handling
 *
-* The framework itself tracks only 2 session variables.  These are UID, which
-* is user_id, and PWD, which is user password.  An application must be
-* careful not to overwrite those values, as the framework will make no
-* provision to prevent such an accident.
+* NAME
+*	Session-Handling
 *
-* @category Session Handling
-* @param string $key	key for the value to receive from $_SESSION
-* @param mixed $default	default value for key
-* @return mixed		value associated with $key
+* FUNCTION
+*	Andromeda provides wrappers for accessing session variables.  The
+*	PHP superglobal $_SESSION should not be directly accessed, instead
+*	an Andromeda program should use [[SessionGet]] and [[SessionSet]].
+*	
+*	Do not use session variables for storing information across different
+*	requests, such as storing user replies going page-to-page through
+*	a wizard.  Use [[Context Functions]] or [[Hidden Variables]]
+*	for these instead, they are much more flexible and robust.
+*	
+*	It may happen that you have multiple Andromeda applications on a server,
+*	and that a browser is connected to more than one of them in multiple
+*	tabls.  This would result in a collision if you were access $_SESSION
+*	directly, because each app would overwrite the variables of the others.
+*	Andromeda prevents these collisions automatically whenever
+*	[[SessionGet]] and [[SessionSet]] are used.
+*	
+*	Andromeda also prevents collissions between session variables used by
+*	the framework and those you may put into your application.  All of the
+*	Session variables accept an optional last parameter (not documented in
+*	the individual functions)  The default value of this parameter is
+*	'app', but some framework functions call it with a value of 'fw' to keep
+*	these variables separate from application variables.  It should be noted
+*	that sometimes the framework uses application session variables, so that
+*	the application can find them if necessary.  Examples of this are session
+*	variables UID (current user_id) and PWD (password of current user).
+*
+******/
+
+/****f* Session-Handling/SessionGet
+*
+* NAME
+*	SessionGet
+*
+* FUNCTION
+* 	The function Session get returns a session variable.  The second parameter
+* 	is a Standard Default Value and will be returned if the
+* 	Session variable Var_Name does not exist.
+*
+* 	The framework itself tracks only 2 session variables.  These are UID, which
+* 	is user_id, and PWD, which is user password.  An application must be
+* 	careful not to overwrite those values, as the framework will make no
+* 	provision to prevent such an accident.
+*
+* INPUTS
+*	string $key	key for the value to receive from $_SESSION
+*	mixed $default	default value for key
+*
+* RETURN VALUE
+*	mixed		value associated with $key
+*
+* SOURCE
 */
 function SessionGet($key,$default="",$sfx='app') {
    $xkey=$GLOBALS["AG"]["application"]."_".$sfx."_".$key;
@@ -2369,53 +3195,74 @@ function SessionGet($key,$default="",$sfx='app') {
 	}
 	else return $default;
 }
+/******/
 
-/**
-* This program sets a session variable.  The variable will exist
-* as long as the PHP session is alive.
-
-* The framework tracks only 2 session variables.  These are UID, which
-* is user_id, and PWD, which is user password.  An application must be
-* careful not to overwrite those values, as the framework will make no
-* provision to prevent such an accident.
+/****f* SessionHandling/SessionSet
 *
-* @category Session Handling
-* @param string $key	key to set
-* @param mixed $value	value to set to $key
+* NAME
+*	SessionSet
+*
+* FUNCTION
+*	This program sets a session variable.  The variable will exist
+*	as long as the PHP session is alive.
+
+*	The framework tracks only 2 session variables.  These are UID, which
+*	is user_id, and PWD, which is user password.  An application must be
+*	careful not to overwrite those values, as the framework will make no
+*	provision to prevent such an accident.
+*
+* INPUTS
+*	string $key - key to set
+*	mixed $value -	value to set to $key
+*
+* SOURCE
 */
 function SessionSet($key,$value,$sfx='app') {
    $xkey=$GLOBALS["AG"]["application"]."_".$sfx."_".$key;
 	$_SESSION[$xkey] = $value;
 }
+/******/
 
-/**
-* Destroys the named session variable.
+
+/****f* Session-Handling/SessionUnSet
 *
-* The framework tracks only 2 session variables.  These are UID, which
-* is user_id, and PWD, which is user password.  An application should
-* never call SessionUnSet on these variables.
+* NAME
+*	SessionUnSet
 *
-* @category Session Handling
-* @param string $key	variable to destroy 
+* FUNCTION
+*	Destroys the named session variable.
+*
+*	The framework tracks only 2 session variables.  These are UID, which
+*	is user_id, and PWD, which is user password.  An application should
+*	never call SessionUnSet on these variables.
+*
+* INPUTS
+*	string $key - variable to destroy
+*
+* SOURCE
 */
 function SessionUnSet($key,$context='app',$sfx='app') {
    $x=$context;
    $xkey=$GLOBALS["AG"]["application"]."_".$sfx."_".$key;
 	unset($_SESSION[$xkey]);
 }
+/******/
 
-/**
-* Destroys all session variables for the current application.  We use this
-* instead of PHP session_destroy because it allows a user to be logged in
-* to several apps at once, because the framework makes effective sessions
-* for each separate application.
+/****f* Session-Handling/SessionReset
 *
-* Note that this function destroys both application and framework session
-* variables, there is more information on what these are on the
-* [[Session Variables]] page.
+* NAME
+*	SessionReset
 *
-* @category Session Handling
-*/
+* FUNCTION
+*	Destroys all session variables for the current application.  We use this
+*	instead of PHP session_destroy because it allows a user to be logged in
+*	to several apps at once, because the framework makes effective sessions
+*	for each separate application.
+*
+*	Note that this function destroys both application and framework session
+*	variables, there is more information on what these are on the
+*	[[Session Variables]] page.
+******/
 function SessionReset() {
    global $AG;
    foreach($_SESSION as $key=>$value) {
@@ -2426,10 +3273,14 @@ function SessionReset() {
    }
 }
 
-/**
-* @deprecated
-* @category Session Handling
-*/
+/****f* Session-Handling/SessionUnSet_Prefix
+*
+* NAME
+*	SessionUnSet_Prefix
+*
+* FUNCTION
+*	DEPRECATED
+******/
 function SessionUnSet_Prefix($prefix) {
 	$prefix = $GLOBALS["AG"]["application"]."_".$prefix;
 	foreach ($_SESSION as $key=>$value) {
@@ -2443,7 +3294,7 @@ function SessionUnSet_Prefix($prefix) {
 # SECTION: GLOBAL VARIABLES
 #
 # ==================================================================
-/****M* PHP-API/Global_Variables
+/****h* PHP-API/Global-Variables
 *
 * NAME
 *    Global_Variables
@@ -2458,23 +3309,43 @@ function SessionUnSet_Prefix($prefix) {
 *
 *  The framework uses the corresponding functions PHP-API/vgfSet
 *  and PHP-API/vgfGet.
+*
 ******
 */
 
-
+/****f* Global-Variables/vgaGet
+*
+* NAME
+*	vgaGet
+*
+* FUNCTION
+*	The function vgaGet is a wrapper for getting PHP global variables.  You call vgaGet in order
+*	to receive global variables set without conflicting with the framework.  You can also provide
+*	a default value to return in the case that the global variable isn't found or isn't set.
+*
+* INPUTS
+*	string $key - name of variable
+*	mixed $default - default variable for variable
+*
+* RETURN VALUE
+*	mixed - value for variable
+*
+* SOURCE
+*/
 function vgaGet($key,$default='') {
    return isset($GLOBALS['appdata'][$key])
       ? $GLOBALS['appdata'][$key]
       : $default;
 }
+/******/
 
-/****f* Global_Variables/vgaSet
+/****f* Global-Variables/vgaSet
 *
 * NAME
 *    vgaSet
 *
 * FUNCTION
-*    The PHP function vgaSet() sets the value of a global variable.
+*    The function vgaSet sets the value of a global variable.
 *    The variable will exist during the current request and can be
 *    accessed from any scope with the vgaGet function.
 *
@@ -2492,18 +3363,26 @@ function vgaSet($key,$value='') {
 }
 /******/
 
-/****
-* This function returns a [[Global Variable]].  The second parameter
-* names a [[Standard Default Value]] that will be returned if the
-* requested variable does not eixst.
+/****f* Global-Variables/vgfGet
 *
-* The framework uses [[vgfGet]] and [[vgfSet]] to store and retrieve global
-* variables without worrying about naming collisions with an application.
+* NAME
+*	vgfGet
 *
-* @category Global Variables
-* @param string $key	key for the value you want to receive from the global variables
-* @param string $default	default value for the key
-* @return mixed		value for the key
+* FUNCTION
+*	The function vgfGet returns a [[Global Variable]].  The second parameter
+*	names a [[Standard Default Value]] that will be returned if the
+*	requested variable does not eixst.
+*
+*	The framework uses [[vgfGet]] and [[vgfSet]] to store and retrieve global
+*	variables without worrying about naming collisions with an application.
+*
+* INPUTS
+*	string $key	- key for the value you want to receive from the global variables
+*	string $default - default value for the key
+*
+* RETURN VALUE
+*	mixed - value for the key
+******
 */
 function vgfGet($key,$default='') {
    // hardcopy routines.  Some framework variables are actually
@@ -2544,17 +3423,24 @@ function vgfGetHC($key,$default='') {
    }
 }
 
-/**
-* This function sets the value of a global variable.
-* The variable will exist during the current request and can be
-* accessed from any scope with the [[vgfGet]] function.
+/****f* Global-Variables/vgfSet
 *
-* The framework uses [[vgfGet]] and [[vgfSet]] to store and retrieve global
-* variables without worrying about naming collisions with the framework.
+* NAME
+*	vgfSet
 *
-* @category Global Variables
-* @param string $key	key to set into globals
-* @param mixed $value	value for the key
+* FUNCTION
+*	The function vgfSet sets the value of a global variable.
+*	The variable will exist during the current request and can be
+*	accessed from any scope with the [[vgfGet]] function.
+*
+*	The framework uses [[vgfGet]] and [[vgfSet]] to store and retrieve global
+*	variables without worrying about naming collisions with the framework.
+*
+* INPUTS
+*	string $key - key to set into globals
+*	mixed $value - value for the key
+*
+* SOURCE
 */
 function vgfSet($key,$value='') {
     //echo $key." - ".$value;
@@ -2563,6 +3449,7 @@ function vgfSet($key,$value='') {
     //echo $key." - ".$value."<br/><br/>";
    $GLOBALS['fwdata'][$key]=$value;
 }
+/******/
 // ==================================================================
 // ==================================================================
 // Library Routines: Post/Get processing
@@ -2676,9 +3563,34 @@ The following are [[deprecated]] form variable conventions:
   *
   * Initializes a stack for {@link scStackPush} and {@link scStackPop}
   *
-  * @category miscellaneous utility
-  * @param $stackname string
+  * INPUTS
+  *	$stackname string
   */
+  
+/****h* PHP-API/Stack-Functions
+*
+* NAME
+*	Stack-Functions
+*
+* FUNCTION
+*	Stack functions are used to handle stacks in andromeda.
+*
+******
+*/
+
+/****f* Stack-Functions/_scStackInit
+*
+* NAME
+*	_scStackInit
+* 
+* FUNCTION
+*	The function _scStackInit initializes a stack for scStackPush and scStackPop.
+*
+* INPUTS
+*	string $stackname - name for the stack
+*
+* SOURCE
+*/
 function _scStackInit($stackname) {
    if (!isset($GLOBALS['STACK'])) {
       $GLOBALS['STACK']=array();
@@ -2687,52 +3599,165 @@ function _scStackInit($stackname) {
       $GLOBALS['STACK'][$stackname]=array();
    }
 }
-/** Push a value to a named stack
-  *
-  * Pushes $value to the stack named by $stackname.  The value
-  * can be retrieved with scStackPop.
-  * 
-  * @category miscellaneous utility
-  * @param string $stackname	name of stack
-  * @param mixed $value		value to push onto the stack
-  */
+/******/
+  
+/****f* Stack-Functions/scStackPush
+*
+* NAME
+*	scStackPush
+*
+* FUNCTION
+*	The function scStackPush is used to push a provided value onto the stack with the provided name.
+*
+* INPUTS
+*	string $stackname - name of stack
+*	mixed $value - value to push onto stack
+*
+* SOURCE
+*/
 function scStackPush($stackname,$value) {
    _scStackInit($stackname);
    $GLOBALS['STACK'][$stackname][] = $value;
 }
-/** Pops a value from a named stack
-  *
-  * Pops the last-added value from a named stack.  Returns
-  * null if the stack is empty, an empty stack does not
-  * throw an error.
-  *
-  * @category miscellaneous utility
-  * @param string $stackname	name of stack
-  * @return mixed	value on top of the stack
-  */
+/******/
+
+/****f* Stack-Functions/scStackPop
+*
+* NAME
+*	scStackPop
+*
+* FUNCTION
+*	The function scStackPop pops the last-added value from a named stack.  Returns null if the stack
+*	is empty, an empty stack does not throw an error.
+*
+* INPUTS
+*	string $stackname - name of stack
+*
+* RETURN
+*	mixed - value ontop of the stack
+*
+* SOURCE
+*/
 function scStackPop($stackname) {
    _scStackInit($stackname);
    return array_pop($GLOBALS['STACK'][$stackname]);
 }
+/******/
 // ------------------------------------------------------------------
 // Routines to assemble return values
 // ------------------------------------------------------------------
+/****h* PHP-API/Ajax-Return-Assembly
+*
+* NAME
+*	Ajax-Return-Assembly
+*
+* FUNCTION
+*	The Ajax-Return-Assembly functions all manage the return data that gets
+*	sent back to the browser after an ajax call.  A return is structured by
+*	separating elements and their values with '|' characters.  Each return
+*	is separated by the '|-|' character.
+*
+******
+*/
+
+/****f* Ajax-Return-Assembly/return_value_add
+*
+* NAME
+*	return_value_add
+*
+* FUNCTION
+*	The function return_value_add adds the provided element and its value
+*	to the ajax return values.
+*
+* INPUTS
+*	string $element - element name
+*	mixed $value - value for element
+*
+* SOURCE
+*/
 function return_value_add($element,$value) {
    global $AG;
    $retvals=ArraySafe($AG,'retvals',array());
    $retvals[$element]=$value;
    $GLOBALS['AG']['retvals']=$retvals;
 }
+/******/
+
+/**
+* Adds a new return command
+* 
+*	string $command
+*	string $element
+*	mixed $value
+*/
+
+/****f* Ajax-Return-Assembly/retCmd
+*
+* NAME
+*	retCmd
+*
+* FUNCTION
+*	Adds a new return command with the provided command, element, and value.
+*	Shortcut for return_command_add.
+*
+* INPUTS
+*	string $command - command
+*	string $element - element name
+*	mixed $value - value for element
+*
+******
+*/
 function retCmd($command,$element,$value) {
    return_command_add($command,$element,$value);
 }
+
+/**
+* Adds a new return command.
+*
+*	string $command command
+*	string $element element to add
+*	mixed $value value of element
+*/
+
+/****f* Ajax-Return-Assembly/return_command_add
+*
+* NAME
+*	return_command_add
+*
+* FUNCTION
+*	The function return_command_add 
+*	adds a new return command with the provided command, element, and value.
+*
+* INPUTS
+*	string $command - command
+*	string $element - element name
+*	mixed $value - value for element
+*
+* SOURCE
+*/
 function return_command_add($command,$element,$value) {
    global $AG;
    $retcommands=ArraySafe($AG,'retcommands',array());
    $retcommands[$command][$element]=$value;
    $GLOBALS['AG']['retcommands']=$retcommands;
 }
+/******/
 
+/**
+* Sends returns to the browser using ajax
+*
+*/
+
+/****f* Ajax-Return-Assembly/return_as_ajax
+*
+* NAME
+*	return_as_ajax
+*
+* FUNCTION
+*	The function return_as_ajax sends the returns to the browser using ajax
+*
+******
+*/
 function returns_as_ajax() {
    global $AG;
    $retvals=ArraySafe($AG,'retvals',array());
@@ -2754,32 +3779,68 @@ function returns_as_ajax() {
 // ------------------------------------------------------------------
 // Data Dictionary Routines
 // ------------------------------------------------------------------
-/**
-* Checks to see if reference &$unknown is a reference to
-* a data dictionary table and if it is returns it.  If it
-* isn't, it returns the reference
-* assuming that $unknow is the name of the table.
+/****h* PHP-API/Data-Dictionary-Routines
 *
-* @category Data Dictionary Routines
-* @param reference &$unknown	possible reference to data dictionary
+* NAME
+*	Data-Dictionary-Routines
+*
+* FUNCTION
+*	Data dictionaries are one of the most important aspects of andromeda.  Following the philosophy that
+*	data is the most important part of the application, a data dictionary allows for andromeda to
+*	generate screens and minimize the amount of code.
+*
+*	These data dictionary routines are used to handle data dicitonaries in andromeda.  Data dictionaries
+*	are stored in separate php files, and are represented by php associative arrays.
+*
+******/
+
+/****f* Data-Dictionary-Routines/DD_EnsureREf
+*
+* NAME
+*	DD_EnsureREf
+*
+* FUNCTION
+*	The function DD_EnsureREf checks to see if the provided reference is a reference to a data dictionary
+*	table.  If it is, the function returns the data dictionary because it is valid.  If it isn't, the function
+*	only returns the reference.
+*
+* INPUTS
+*	reference $unknown - Reference to a possible data dictionary
+*
+* RETURN VALUE
+*	mixed - Two possibilites.  One, the reference provided is to a data dictionary, so the data dictionary
+*			is returns.  Two, the reference is not to a data dictionary, so the reference is returned.
+*
+* SOURCE
 */
 function DD_EnsureREf(&$unknown) {
    if(is_array($unknown)) return $unknown;
    else return dd_TableRef($unknown);
 }
+/******/
 
-/**
-* Loads the data dictionary table with table id $table_id and returns
-* the table instead of a reference.
+/****f* Data-Dictionary-Routines/DD_Table
 *
-* @category Data Dictionary Routines
-* @param string $table_id	id for the table
-* @return array			data dictionary table
+* NAME
+*	DD_Table
+*
+* FUNCTION
+*	The function DD_Table loads the data dictionary table with the provided table id, and returns
+*	the table instead of a reference.
+*
+* INPUTS
+*	string $table_id - Id of the table to load
+*
+* RETURN VALUE
+*	array - The requested data dictionary table
+*
+* SOURCE
 */
 function DD_Table($table_id) {
 	include_once("ddtable_".$table_id.".php");
 	return $GLOBALS["AG"]["tables"][$table_id];
 }
+/******/
 
 function ddNoWrites() {
    return array(
@@ -2791,18 +3852,24 @@ function ddNoWrites() {
    );
 }
 
-
-/** 
-* FINAL Form of the various "give me the dd" routines.
-* This version will filter the array based on user
-* credentials.  This means that this is the only
-* call you need, the array it gives you is completely
-* appropriate for the user.
-* KFD X4
+/****f* Data-Dictionary-Routines/ddTable
 *
-* @category Data Dictionary Routines
-* @param mixed $table_id	id of table
-* @return array			data dictionary table with id $table_id
+* NAME
+*	ddTable
+*
+* FUNCTION
+*	The function ddTable is the final form of the various "give me the dd" routines.  This version will
+*	filter the array based on the user credentials.  This means that this is the only call you need, the
+*	array it gives you is completely appropriate for the user.  It returns a reference to the data
+*	dictionary table.
+*
+* INPUTS
+*	string $table_id - Id for the data dictionary table you want to receive
+*
+* RETURN VALUE
+*	reference - Returns a reference to the requested data dictionary table
+*
+******
 */
 function &ddTable($table_id) {
     # Don't repeat all of this work. If this has already
@@ -2913,14 +3980,23 @@ function &ddTable($table_id) {
     return $GLOBALS['AG']['tables'][$table_id];
 }
 
-/**
-* Fetches the viewname for the data dictionary table $tabx.  If $tabx is
-* not an array, function assumes that it is the name of the table and then
-* fetches the table using ddTable($table_id).
-* 
-* @category Data Dictionary Routines
-* @param mixed $tabx	data dictionary table OR table name
-* @return string	viewname for the table
+/****f* Data-Dictionary-Routines/ddView
+*
+* NAME
+*	ddView
+*
+* FUNCTION
+*	The function ddView fetches the viewname for the data dicitonary table provided.  If the table
+*	is not an array, the function asumes that it is the name of the table and then fetches the table using
+*	ddTable.
+*
+* INPUTS
+*	array $tabx - Data Dictionary table
+*
+* RETURN VALUE
+*	string - the view name of the table
+*
+******
 */
 function ddView($tabx) {
     # If not given an array, assume we were given the name of
@@ -2933,22 +4009,31 @@ function ddView($tabx) {
     return $tabx['viewname'];
 }
 
-/**
-* This function will tell you if the user is granted a particular permission
-* on a particular table.
+/****f* Data-Dictionary-Routines/ddUserPerm
 *
-* The permissions you can request are:
-* sel: May the user select?
-* ins: May the user Insert?
-* upd: May the user Update?
-* del: May the user Delete?
-* menu: Does this person see this on the menu?  To return a true for this
-* permission, the user must have menu permission and SELECT permission.
+* NAME
+*	ddUserPerm
 *
-* @category Data Dictionary Routines
-* @param string $table_id
-* @param string $perm_id
-* @return boolean
+* FUNCTION
+*	The function ddUserPerm will tell you if the user is granted a particular permission on a particular
+*	table.
+*
+*	The permissions you can request are:
+*		sel: May the user select?
+*		ins: May the user insert?
+*		upd: May the user update?
+*		del: May the user delete?
+*		menu: Does this person see this on the menu?  To return a true for this permission, the user
+*			      must have menu permission and SELECT permission.
+*
+* INPUTS
+*	string $table_id - Id for the data dictionary table
+*	string $perm_id - Id for the permission (sel, ins, upd, del, menu)
+*
+* RETURN VALUE
+*	boolean - if the user has the permission
+*
+******
 */
 function ddUserPerm($table_id,$perm_id) {
    // Menu is done a little differently than the rest
@@ -2994,14 +4079,23 @@ function DD_ColumnBrowse(&$col,&$table)
    return false;
 }
 
-/**
-* Fetches the value associated with $property in a table with
-* table id $table_id.
+/****f* Data-Dictionary-Routines/DD_TableProperty
 *
-* @category Data Dictionary Routines
-* @param string $table_id	id for the table
-* @param string $property	property to look for
-* @return mixed			value associated with $propery
+* NAME
+*	DD_TableProperty
+*
+* FUNCTION
+*	The function DD_TableProperty fetches the value associated with the provided
+*	property in a table with the provided table id.
+*
+* INPUTS
+*	string $table_id - id for the table
+*	string $property - property to look for
+*
+* RETURN VALUE
+*	 mixed - value associated with $propery
+*
+******
 */
 function DD_TableProperty($table_id,$property) {
     $table = &ddTable($table_id);
@@ -3023,21 +4117,30 @@ function DD_TableDropdown($table_id) {
 	return explode(",",$ret);
 }
 
-/**
-* Accepts the name of a table and returns the appropriate view to
-* access based on the user's effective group.
+/****f* Data-Dictionary-Routines/DDTable_IDResolve
 *
-* The name of a view is only returned if there is some reason to redirect
-* the user to a view.  In very many cases, oftentimes in all cases, the
-* function returns the base table name itself, such as:
+* NAME
+*	DDTable_IDResolve
 *
-* - If no column or row security is on the table
-* - If the user is a root user
-* - If the user is the anonymous (login) user
+* FUNCTION
+*	The function DDTable_IDResolve accepts the name of a table and returns the appropriate view to
+*	access based on the user's effective group.
 *
-* @category Data Dictionary Routines
-* @param string $table_id	id for the table
-* @return string	appropriate view
+*	The name of a view is only returned if there is some reason to redirect
+*	the user to a view.  In very many cases, oftentimes in all cases, the
+*	function returns the base table name itself, such as:
+*
+*	- If no column or row security is on the table
+*	- If the user is a root user
+*	- If the user is the anonymous (login) user
+*
+* INPUTS
+*	string $table_id - id for the table
+*
+* RETURN VALUE
+*	string - the appropriate view
+*
+******
 */
 function DDTable_IDResolve($table_id) {
     // Both super user and nobody get original table
@@ -3074,20 +4177,29 @@ function DDTable_IDResolve($table_id) {
         }
 }
 
-/**
-* Accepts an array of dictionary information about a column and
-* then works out if inserts are allowed to that column.  Useful for
-* disabling HTML controls.
+/****f* Data-Dictionary-Routines/DD_ColInsertsOK
 *
-* The optional 2nd parameter defaults to "html" but can also be "db".
-* If it is "html" it tells you if the user should be allowed to
-* specify a value, while the value of "db" determines if a SQL Insert
-* should be allowed to specify a value for this column.
+* NAME
+*	DD_ColInsertsOK
 *
-* @category Data Dictionary Routines
-* @param $colinfo
-* @param $mode='html'
-* @return boolean
+* FUNCTION
+*	The function DD_ColInsertsOK accepts an array of dictionary information about a column and
+*	then works out if inserts are allowed to that column.  Useful for
+*	disabling HTML controls.
+*
+*	The optional 2nd parameter defaults to "html" but can also be "db".
+*	If it is "html" it tells you if the user should be allowed to
+*	specify a value, while the value of "db" determines if a SQL Insert
+*	should be allowed to specify a value for this column.
+*
+* INPUTS
+*	reference $colinfo - column info
+*	string $mode - inserts mode
+*
+* RETURN VALUE
+*	boolean - is inserts allowed in column
+*
+******
 */
 function DD_ColInsertsOK(&$colinfo,$mode='html') {
    // If in a drilldown, any parent column is read-only
@@ -3104,13 +4216,6 @@ function DD_ColInsertsOK(&$colinfo,$mode='html') {
    );
 }
 
-/**
-* Returns true if the column with $colinfo can be updated.
-*
-* @category Data Dictionary Routines
-* @param reference &$colinfo	column info
-* @return boolean	it can/can't be updated
-*/
 function DD_ColUpdatesOK(&$colinfo) {
     // KFD 10/22/07, allow changes to primary key
     if($colinfo['primary_key']=='Y') {
@@ -3132,12 +4237,23 @@ function DD_ColUpdatesOK(&$colinfo) {
     return in_array($aid,$automations);
 }
 
-/**
-* Returns true if column with $colinfo is writable
+/****f* Data-Dictionary-Routines/DDColumnWritable
 *
-* @category Data Dictionary Routines
-* @param reference &$colinfo	reference to column info
-* @param string $gpmode
+* NAME
+*	DDColumnWritable
+*
+* FUNCTION
+*	The function DColumnWritable returns true if the provided column info says that the column
+*	is writable.
+*
+* INPUTS
+*	reference $colinfo - column info
+*	string $gpmode - get/post mode
+*
+* RETURN VALUE
+*	boolean - is the column writable
+*
+******
 */
 function DDColumnWritable(&$colinfo,$gpmode,$value) {
    $NEVERUSED=$value;
@@ -3153,12 +4269,21 @@ function DDColumnWritable(&$colinfo,$gpmode,$value) {
    else return DD_ColUpdatesOK($colinfo);
 }
 
-/**
-* Loads the data dictionary for a given table and returns a reference.
+/****f* Data-Dicitonary-Routines/DD_TableRef
 *
-* @category Data Dictionary Routines
-* @param string $table_id	id for table
-* @return array 	Table_data_dictionary
+* NAME
+*	DD_TableRef
+*
+* FUNCTION
+*	The function DD_TableRef loads the data dictionary for a given table and returns a reference.
+*
+* INPUTS
+*	string $table_id - table id
+*
+* RETURN VALUE
+*	reference - reference to data dictionary table
+*
+******
 */
 function DD_TableRef($table_id) {
 	if (!isset($GLOBALS["AG"]["tables"][$table_id])) {
@@ -3186,8 +4311,9 @@ function DD_TableRef($table_id) {
 *
 * The return value already contains a trailing slash.
 *
-* @category File System Functions
-* @return string	Directory Path
+* INPUTS
+* RETURN
+*	string	Directory Path
 */
 function fsDirTop() {
    return $GLOBALS['AG']['dirs']['root'];
@@ -3200,24 +4326,26 @@ function fsDirTop() {
 * Allows you to safely retrieve the value of an array by index value,
 * returning a [[Standard Default Value]] if the key does not exist.
 *
-* @category miscellaneous utility
-* @param array &$arr	candidate array
-* @param string $key	array key
-* @param mixed $value	default value
-* @return mixed		value associated with $key in $arr.  
+* INPUTS
+*	array &$arr	candidate array
+*	string $key	array key
+*	mixed $value	default value
+* RETURN
+*	mixed		value associated with $key in $arr.  
 */
 function ArraySafe(&$arr,$key,$value="") {
 	if(isset($arr[$key])) return $arr[$key]; else return $value;
 }
 
 /**
-* Wrapper for function @link ArraySafe.
+* Wrapper for function {@link ArraySafe}.
 *
-* @category miscellaneous utility
-* @param array &$arr	candidate array
-* @param string $key	array key
-* @param mixed $value	default value
-* @return mixed		value associated with $key in $arr.  
+* INPUTS
+*	array &$arr	candidate array
+*	string $key	array key
+*	mixed $value	default value
+* RETURN
+*	mixed		value associated with $key in $arr.  
 */
 function a(&$a,$key,$value='') {
     return ArraySafe($a,$key,$value);
@@ -3226,6 +4354,11 @@ function a(&$a,$key,$value='') {
 // ------------------------------------------------------------------
 // PHP functions that mimic Javascript DOM functions
 // ------------------------------------------------------------------
+/**
+* Creates an element object of type $type.  Uses {@link androHElement}.
+*
+*	string $type type of element
+*/
 function createElement($type) {
 	return new androHElement($type);
 }
@@ -3352,12 +4485,12 @@ undefined or blank.
 /**
 * Creates a log entry.  Used by the Andromeda framework.
 *
-* @category Log Functions
-* @param string $code	log code
-* @param string $desc	log description
-* @param string $arg1	extra argument
-* @param string $arg2	extra argument
-* @param string $arg3	extra argument
+* INPUTS
+*	string $code	log code
+*	string $desc	log description
+*	string $arg1	extra argument
+*	string $arg2	extra argument
+*	string $arg3	extra argument
 */
 function fwLogEntry($code,$desc,$arg1='',$arg2='',$arg3='') {
    xLogEntry('Y',$code,$desc,$arg1,$arg2,$arg3);
@@ -3366,12 +4499,12 @@ function fwLogEntry($code,$desc,$arg1='',$arg2='',$arg3='') {
 /**
 * Creates a log entry.  Used by applications.
 *
-* @category Log Functions
-* @param string $code	log code
-* @param string $desc	log description
-* @param string $arg1	extra argument
-* @param string $arg2	extra argument
-* @param string $arg3	extra argument
+* INPUTS
+*	string $code	log code
+*	string $desc	log description
+*	string $arg1	extra argument
+*	string $arg2	extra argument
+*	string $arg3	extra argument
 */
 function appLogEntry($code,$desc,$arg1='',$arg2='',$arg3='') {
    xLogEntry('N',$code,$desc,$arg1,$arg2,$arg3);
@@ -3380,13 +4513,13 @@ function appLogEntry($code,$desc,$arg1='',$arg2='',$arg3='') {
 /**
 * Creates a log entry
 *
-* @category Log Functions
-* @param string $fw	log flag
-* @param string $code	log code
-* @param string $desc	log description
-* @param string $arg1	extra argument
-* @param string $arg2	extra argument
-* @param string $arg3	extra argument
+* INPUTS
+*	string $fw	log flag
+*	string $code	log code
+*	string $desc	log description
+*	string $arg1	extra argument
+*	string $arg2	extra argument
+*	string $arg3	extra argument
 */
 function xLogEntry($fw,$code,$desc,$arg1='',$arg2='',$arg3='') {
 
@@ -3429,39 +4562,50 @@ name:_default_
 parent:System Log Functions
 */
 // ------------------------------------------------------------------
-/**
-name:System Log Functions
-parent:Framework API Reference
-
-System Log functions are used when you must be certain that a log
-entry will be written, even if the current transaction rolls back.
-These kinds of logs are intended for use in debugging or tracking
-invisible processes, such as a Paypal IPN transaction.
-
-A log can be opened with [[SysLogOpen]], which returns a handle to
-the log.  Log entries are made with [[SysLogEntry]] and the log is
-eventually closed with [[SysLogClose]].
-
-The logs are stored in tables [[syslogs]] and [[syslogs_e]].
-
-The guarantee that the log entry will always be written comes at the
-price of a separate connection to the database for each log.  In a
-debugging situation you can open as many of them as you need, but in
-a production system they should only be used in highest need.
-
-
+/****h* PHP-API/System-Log-Functions
+*
+* NAME
+*	System Log Functions
+*
+* FUNCTION
+*	System Log functions are used when you must be certain that a log
+*	entry will be written, even if the current transaction rolls back.
+*	These kinds of logs are intended for use in debugging or tracking
+*	invisible processes, such as a Paypal IPN transaction.
+*	
+*	A log can be opened with [[SysLogOpen]], which returns a handle to
+*	the log.  Log entries are made with [[SysLogEntry]] and the log is
+*	eventually closed with [[SysLogClose]].
+*	
+*	The logs are stored in tables [[syslogs]] and [[syslogs_e]].
+*	
+*	The guarantee that the log entry will always be written comes at the
+*	price of a separate connection to the database for each log.  In a
+*	debugging situation you can open as many of them as you need, but in
+*	a production system they should only be used in highest need.
+*
+******
 */
 
-/**
-* Use this function to open a system log.  Returns a LogNumber, which
-* is used for subsequent calls to [[SysLogEntry]].  When the log is
-* finished, close it with [[SysLogClose]].
+/****f* System-Log-Functions/SysLogOpen
 *
-* Any number of system logs can be open at a time.
+* NAME
+*	SysLogOpen
 *
-* @category System Log Functions
-* @param string $name
-* @return int	log number
+* FUNCTION
+*	Use this function to open a system log.  Returns a LogNumber, which
+*	is used for subsequent calls to [[SysLogEntry]].  When the log is
+*	finished, close it with [[SysLogClose]].
+*
+*	Any number of system logs can be open at a time.
+*
+* INPUTS
+*	string $name - name of log
+*
+* RETURN
+*	int - log number
+*
+******
 */
 function SysLogOpen($name) {
    if(!isset($GLOBALS['AG']['logs'])) {
@@ -3491,14 +4635,21 @@ function SysLogOpen($name) {
    return $syslog;
 }
 
-/**
-* Writes an entry to a log opened with [[SysLogOpen]].  The value
-* of LogNumber is returned from [[SysLogOpen]].  The value of
-* EntryText is written to the log.
+/****f* System-Log-Functions/SysLogEntry
 *
-* @category System Log Functions
-* @param int $syslog	log number
-* @param string $text	log text
+* NAME
+*	SysLogEntry
+*
+* FUNCTION
+*	Writes an entry to a log opened with [[SysLogOpen]].  The value
+*	of LogNumber is returned from [[SysLogOpen]].  The value of
+*	EntryText is written to the log.
+*
+* INPUTS
+*	int $syslog - log number
+*	string $text - log text
+*
+******
 */
 function SysLogEntry($syslog,$text) {
    if(!is_null($syslog)) {
@@ -3511,12 +4662,19 @@ function SysLogEntry($syslog,$text) {
    }
 }
 
-/**
-* Closes a system log, and closes the database connection that
-* was opened just for that log.
+/****f* System-Log-Functions/SysLogClose
 *
-* @category System Log Functions 
-* @param int $skey	log number
+* NAME
+*	SysLogClose
+*
+* FUNCTION
+*	Closes a system log, and closes the database connection that
+*	was opened just for that log.
+*
+* INPUTS
+*	int $skey - log number
+*
+******
 */
 function SysLogClose($skey) {
    SysLogEntry($skey,'Log Close Command Received');
@@ -3550,17 +4708,21 @@ name:_default_
 parent:Hidden Variables
 */
 // ------------------------------------------------------------------
-/**
-name:Hidden Variables
-parent:Framework API Reference
-
-Hidden variables are the simplest and most time-honoured way to
-send data to the browser that will come back on the next form post.
-
-Andromeda allows you to "register" hidden variables at any time
-using the function [[Hidden]].  The framework function
-[[ehHiddenAndData]] then outputs them when the HTML is being
-generated.
+/****h* PHP-API/Hidden-Variables
+*
+* NAME
+*	Hidden-Variables
+*
+* FUNCTION
+*	Hidden variables are the simplest and most time-honoured way to
+*	send data to the browser that will come back on the next form post.
+*
+*	Andromeda allows you to "register" hidden variables at any time
+*	using the function [[Hidden]].  The framework function
+*	[[ehHiddenAndData]] then outputs them when the HTML is being
+*	generated.
+*
+******
 */
 
 /**
@@ -3569,14 +4731,31 @@ generated.
 *
 * The values get written by the framework function [[ehHiddenAndData]].
 *
-* @category Hidden Variables
-* @param string $varname	Variable name
-* @param string $val		Variable value
+* INPUTS
+*	string $varname	Variable name
+*	string $val		Variable value
+*/
+
+/****f* Hidden-Variables/Hidden
+*
+* NAME
+*	Hidden
+*
+* FUNCTION
+*	The function Hidden registers a variable and its value that should be 
+*	output as a hidden variable.
+*
+* INPUTS
+*	string $varname - name of variable
+*	mixed $val - value for variable
+*
+* SOURCE
 */
 function Hidden($varname=null,$val=null) {
    arrDefault($GLOBALS['AG'],'hidden',array());
    $GLOBALS['AG']['hidden'][$varname]=$val;
 }
+/******/
 
 /**
 * Generates one hidden variable for each column in Table_id.  The name
@@ -3597,9 +4776,29 @@ function Hidden($varname=null,$val=null) {
 * !<
 * !<
 *
-* @category Hidden Variables
-* @param string $table_id	table id
-* @param array $row
+* INPUTS
+*	string $table_id	table id
+*	array $row
+*/
+
+/****f* Hidden-Variables/hiddenFromTable
+*
+* NAME
+*	hiddenFromTable
+*
+* FUNCTION
+*	The function hiddenFromTable generates one hidden variable for each column in Table_id.  The name
+*	of the variables is formed as $table_id."_".$column_id.
+*
+*	If the second parameter, a [[Row Array]], is passed, the hidden
+*	variables will be populated with values from that array, otherwise
+*	they will be blank.
+*
+* INPUTS
+*	string $table_id - id for table
+*	array $row - hidden variable values
+*
+* SOURCE
 */
 function hiddenFromTable($table_id,$row=array()) {
    $table_id=trim($table_id);
@@ -3609,6 +4808,7 @@ function hiddenFromTable($table_id,$row=array()) {
       hidden($table_id."_".$col,ArraySafe($row,$col));
    }
 }
+/******/
 
 
 // ==================================================================
@@ -3621,73 +4821,95 @@ name:_default_
 parent:Context Variables
 */
 // ------------------------------------------------------------------
-/**
-name:Context Variables
-parent:Framework API Reference
-
-Andromeda provides Context Functions as a more robust and flexible
-alternative to [[Session Variables]].
-
-A "context" is all of the state that is specific to a particular
-browser tab.  If a user opens three browser windows
-to your app, and three tabs in each browser, each of the nine tabs will
-have its own context.
-
-The context is returned to the server only when the user navigates by
-POST.  If you need to use context, make sure you are using SUBMITs and
-not hyperlinks.
-
-[[Session Variables]] are stored on the server, but Context Variables
-are sent out to the browser and then returned with each round trip.
-This means that care must be taken only to add the most essential
-information to context.
-
-The Andromeda framework sometimes writes its own context variables.  You
-can avoid collisions with these variables by always using the functions
-whose names begin with "app".
+/****h* PHP-API/Context-Variables
+*
+* NAME
+*	Context Variables
+*
+* FUNCTION
+*	Andromeda provides Context Functions as a more robust and flexible
+*	alternative to [[Session Variables]].
+*
+*	A "context" is all of the state that is specific to a particular
+*	browser tab.  If a user opens three browser windows
+*	to your app, and three tabs in each browser, each of the nine tabs will
+*	have its own context.
+*
+*	The context is returned to the server only when the user navigates by
+*	POST.  If you need to use context, make sure you are using SUBMITs and
+*	not hyperlinks.
+*
+*	[[Session Variables]] are stored on the server, but Context Variables
+*	are sent out to the browser and then returned with each round trip.
+*	This means that care must be taken only to add the most essential
+*	information to context.
+*
+*	The Andromeda framework sometimes writes its own context variables.  You
+*	can avoid collisions with these variables by always using the functions
+*	whose names begin with "app".
+*
+******
 */
 
 
-/**
-* Returns a context variable.  A context variable is completely
-* specified by three levels, a Category, a Name, and a Key.
+/****f* Context-Variables/appconget
 *
-* Context variables are specific to each window the user has open,
-* and remain alive as long as the user navigates with form POSTs.  When
-* the user navigates with an HTML hyperlink the context is lost.
+* NAME
+*	appconget
 *
-* Use this routine instead of [[ConGet]] to ensure your variables do not
-* collide with framework context variables.
+* FUNCTION
+*	Returns a context variable.  A context variable is completely
+*	specified by three levels, a Category, a Name, and a Key.
 *
-* The fourth parameter is a [[Standard Default Value]], which is returned
-* if the variable cannot be found.
+*	Context variables are specific to each window the user has open,
+*	and remain alive as long as the user navigates with form POSTs.  When
+*	the user navigates with an HTML hyperlink the context is lost.
 *
-* @category Context Variables
-* @param string $category
-* @param string $name
-* @param string $key
-* @param mixed $default
-* @return mixed		context variable
+*	Use this routine instead of [[ConGet]] to ensure your variables do not
+*	collide with framework context variables.
+*
+*	The fourth parameter is a [[Standard Default Value]], which is returned
+*	if the variable cannot be found.
+*
+* INPUTS
+*	string $category
+*	string $name
+*	string $key
+*	mixed $default
+*
+* RETURN VALUE
+*	mixed - context variable
+*
+******
 */
 function appconget($category,$name,$key,$default='') {
    return ContextGet('app_'.$category.'_'.$name.'_'.$key,$default);
 }
 
-/**
-* Returns a context variable.  A context variable is completely
-* specified by at three levels, a Category, a Name, and a Key.
+/****f* Context-Variables/conget
 *
-* This function is used exclusively by the framework, your applications
-* should use [[appConGet]].
+* NAME
+*	conget
 *
-* The fourth parameter is a [[Standard Default Value]].
+* FUNCTION
+*	The function conget returns a context variable.  A context variable is completely
+*	specified by at three levels, a Category, a Name, and a Key.
 *
-* @category Context Variables
-* @param string $category
-* @param string $name
-* @param string $key
-* @param mixed $default
-* @return mixed		context variable
+*	This function is used exclusively by the framework, your applications
+*	should use [[appConGet]].
+*
+*	The fourth parameter is a [[Standard Default Value]].
+*
+* INPUTS
+*	string $category
+*	string $name
+*	string $key
+*	mixed $default
+*
+* RETURN VALUE
+*	mixed - context variable
+*
+******
 */
 function conget($category,$name,$key,$default='') {
    return ContextGet('fw_'.$category.'_'.$name.'_'.$key,$default);
@@ -3700,10 +4922,32 @@ function conget($category,$name,$key,$default='') {
 * Applications should not use this routine, they should use [[appConGet]].
 * Framework library code uses [[ConGet]].
 *
-* @category Context Variables
-* @param string $name
-* @param mixed $default
-* @return mixed
+* INPUTS
+*	string $name
+*	mixed $default
+* RETURN
+*	mixed
+*/
+
+/****f* Context-Variables/ContextGet
+*
+* NAME
+*	ContextGet
+*
+* FUNCTION
+*	The function ContextGet is the lowest-level routine that returns context variables.
+*
+*	Applications should not use this routine, they should use [[appConGet]].
+*	Framework library code uses [[ConGet]].
+*
+* INPUTS
+*	string $name
+*	mixed $default
+*
+* RETURN VALUE
+*	mixed - context variable
+*
+* SOURCE
 */
 function ContextGet($name,$default='') {
    $sc=&$GLOBALS['AG']['clean']['gpContext'];
@@ -3711,147 +4955,207 @@ function ContextGet($name,$default='') {
       ? $sc[$name]
       : $default;
 }
+/******/
 
-
-/**
-* Sets a context variable.  A context variable is completely
-* specified by at three levels, a Category, a Name, and a Key.
+/****f* Context-Variables/appConSet
 *
-* Application code should use this routine to avoid naming collisions
-* with context variables set by the framework.
+* NAME
+*	appConSet
 *
-* @category Context Variables
-* @param string $category
-* @param string $name
-* @param string $key
-* @param mixed $default
-* @return mixed
+* FUNCTION
+*	The function appConSet sets a context variable.  A context variable is completely
+*	specified by at three levels, a Category, a Name, and a Key.
+*
+*	Application code should use this routine to avoid naming collisions
+*	with context variables set by the framework.
+*
+* INPUTS
+*	string $category
+*	string $name
+*	string $key
+*	mixed $value
+*
+* SOURCE
 */
 function appConSet($category,$name,$key,$value='') {
    return ContextSet('app_'.$category.'_'.$name.'_'.$key,$value);
 }
+/******/
 
-/**
-* Sets a context variable.  A context variable is completely
-* specified by at three levels, a Category, a Name, and a Key.
+/****f* Context-Variables/conSet
 *
-* This routine is reserved for use by the framework.
-* Application code should use [[appConSet]].
+* NAME
+*	conSet
 *
-* @category Context Variables
-* @param string $category
-* @param string $name
-* @param string $key
-* @param mixed $default
-* @return mixed
+* FUNCTION
+*	The function conSet sets a context variable.  A context variable is completely
+*	specified by at three levels, a Category, a Name, and a Key.
+*
+*	This routine is reserved for use by the framework.
+*	Application code should use [[appConSet]].
+*
+* INPUTS
+*	string $category
+*	string $name
+*	string $key
+*	mixed $value
+* RETURN VALUE
+*	mixed
+*
+* SOURCE
 */
 function conSet($category,$name,$key,$value='') {
    return ContextSet('fw_'.$category.'_'.$name.'_'.$key,$value);
 }
+/******/
 
 
-/**
-* This is the lowest-level routine that sets context variables.
+/****f* Context-Variables/ContextSet
 *
-* Applications should not use this routine, they should use [[appConSet]].
-* Framework library code uses [[ConSet]].
+* NAME
+*	ContextSet
 *
-* @category Context Variables
-* @param string $name
-* @param mixed $default
-* @return mixed
+* FUNCTION
+*	The function ContextSet is the lowest-level routine that sets context variables.
+*
+*	Applications should not use this routine, they should use [[appConSet]].
+*	Framework library code uses [[ConSet]].
+*
+* INPUTS
+*	string $name
+*	mixed $default
+*
+* SOURCE
 */
 function ContextSet($name,$value='') {
    $sc=&$GLOBALS['AG']['clean']['gpContext'];
    $sc[$name]=$value;
 }
+/******/
 
 
-/**
-* Destroys a context variable.  A context variable is completely
-* specified by at three levels, a Category, a Name, and a Key.
+/****f* Context-Variables/appConUnSet
 *
-* Application code should use this routine to avoid naming collisions
-* with context variables set by the framework.
+* NAME
+*	appConUnSet
 *
-* @category Context Variables
-* @param string $category
-* @param string $name
-* @param string $key
-* @param mixed $default
-* @return mixed
+* FUNCTION
+*	Destroys a context variable.  A context variable is completely
+*	specified by at three levels, a Category, a Name, and a Key.
+*
+*	Application code should use this routine to avoid naming collisions
+*	with context variables set by the framework.
+*
+* INPUTS
+*	string $category
+*	string $name
+*	string $key
+*	mixed $default
+*
+* SOURCE
 */
 function appConUnSet($category,$name,$key) {
    return ContextUnSet('app_'.$category.'_'.$name.'_'.$key);
 }
+/******/
 
-/**
-* Destroys a framework context variable.  A context variable is completely
-* specified by at three levels, a Category, a Name, and a Key.
+/****f* Context-Variables/conUnSet
 *
-* This routine is reserved for use by the framework.
-* Application code should use [[appConUnSet]].
+* NAME
+*	conUnSet
 *
-* @category Context Variables
-* @param string $category
-* @param string $name
-* @param string $key
-* @param mixed $default
-* @return mixed
+* FUNCTION
+*	Destroys a framework context variable.  A context variable is completely
+*	specified by at three levels, a Category, a Name, and a Key.
+*
+*	This routine is reserved for use by the framework.
+*	Application code should use [[appConUnSet]].
+*
+* INPUTS
+*	string $category
+*	string $name
+*	string $key
+*
+* RETURN VALUE
+*	mixed
+*
+******
 */
 function conUnSet($category,$name,$key) {
    return ContextUnSet('fw_'.$category.'_'.$name.'_'.$key);
 }
 
 
-/**
-* This is the lowest-level routine that destroys context variables.
+/****f* Context-Variables/ContextUnSet
 *
-* Applications should not use this routine, they should use
-* [[appConUnSet]].  Framework library code should use [[ConUnSet]].
+* NAME
+*	ContextUnSet
 *
-* @category Context Variables
-* @param string $name
-* @return mixed
+* FUNCTION
+*	This is the lowest-level routine that destroys context variables.
+*
+*	Applications should not use this routine, they should use
+*	[[appConUnSet]].  Framework library code should use [[ConUnSet]].
+*
+* INPUTS
+*	string $name
+*
+* SOURCE
 */
 function ContextUnSet($name) {
    if (isset($GLOBALS['gpContext'][$name]))
       unset($GLOBALS['gpContext'][$name]);
 }
+/******/
 
 
-/**
-* Destroys all context variables.
+/****f* Context-Variables/appConClear
 *
-* Application code should use this routine to avoid naming collisions
-* with context variables set by the framework.
+* NAME
+*	appConClear
 *
-* @category Context Variables
+* FUNCTION
+*	Destroys all context variables.
+*
+*	Application code should use this routine to avoid naming collisions
+*	with context variables set by the framework.
+*
+******
 */
 function appConClear() {
    return ContextClear('app');
 }
 
 
-/**
-* Destroys all framework context variables.
+/****f* Context-Variables/ConClear
 *
-* This routine is reserved for use by the framework.
-* Application code should use [[appConClear]].
+* NAME
+*	ConClear
 *
-* @category Context Variables
+* FUNCTION
+*	Destroys all framework context variables.
+*
+*	This routine is reserved for use by the framework.
+*	Application code should use [[appConClear]].
+*
+******
 */
 function ConClear() {
    return ContextClear('fw');
 }
 
-/**
-* This is the lowest-level routine that destroys all context variables.
+/****f* Context-Variables/ContextClear
 *
-* Applications should not use this routine, they should use
-* [[appConClear]].  Framework library code uses [[ConClear]].
+* NAME
+*	ContextClear
 *
-* @category Context Variables
+* FUNCTION
+*	This is the lowest-level routine that destroys all context variables.
+*
+*	Applications should not use this routine, they should use
+*	[[appConClear]].  Framework library code uses [[ConClear]].
+*
+******
 */
 function ContextClear($prefix='') {
    if($prefix=='') {
@@ -3908,8 +5212,8 @@ provision to report errors and notices.
 /**
 * Adds a notice to the list of notices to report to the user.
 *
-* @category Notices and Errors
-* @param string $notice		notice text
+* INPUTS
+*	string $notice		notice text
 */
 /* CODE PURGE CANDIDATE */
 /* this routine is not used by the framework */
@@ -3920,8 +5224,9 @@ function NoticeAdd($notice) {
 /**
 * Returns true if any notices have been registered with [[NoticeAdd]].
 *
-* @category Notices and Errors
-* @return boolean
+* INPUTS
+* RETURN
+*	boolean
 */
 function Notices() {
 	if (count($GLOBALS["AG"]["messages"])>0) return true; else return false;
@@ -3930,8 +5235,9 @@ function Notices() {
 /**
 * Returns an array of the currently reported notices.
 *
-* @category Notices and Errors
-* @return array		notices texts
+* INPUTS
+* RETURN
+*	array		notices texts
 */
 /* CODE PURGE CANDIDATE */
 /* this routine is not used by the framework */
@@ -3947,8 +5253,8 @@ function NoticesGet() {
 /**
 * Adds an error to the list of errors to report to the user.
 *
-* @category Notices and Errors
-* @param string $error	Error Text
+* INPUTS
+*	string $error	Error Text
 */
 function ErrorAdd($error) {
    $error=preg_replace('/^[Ee][Rr][Rr][Oo][Rr]:\w*(.*)/','$1',$error);
@@ -3958,8 +5264,8 @@ function ErrorAdd($error) {
 /**
 * Adds a list of errors to the the list of errors to report to the user.
 *
-* @category Notices and Errors
-* @param array $semilist	list of errors to add
+* INPUTS
+*	array $semilist	list of errors to add
 */
 function ErrorsAdd($semilist) {
 	$arr = explode(";",$semilist);
@@ -3971,7 +5277,7 @@ function ErrorsAdd($semilist) {
 /**
 * Clears the list of previously registered errors.
 *
-* @category Notices and Errors
+* INPUTS
 */
 function ErrorsClear() {
    $GLOBALS['AG']['trx_errors']=array();
@@ -3980,13 +5286,14 @@ function ErrorsClear() {
 /**
 * Returns true if any errors have been registered
 *
-* @category Notices and Errors
-* @return boolean
+* INPUTS
+* RETURN
+*	boolean
 */
 function Errors($prefix='') { return ErrorsExist($prefix); }
 
 /**
-* @category Notices and Errors
+* INPUTS
 * @deprecated
 */
 function ErrorsExist($prefix='') {
@@ -4006,9 +5313,10 @@ function ErrorsExist($prefix='') {
 /**
 * Returns an array of the currently reported errors.
 *
-* @category Notices and Errors
-* @param boolean $errorsclear
-* @return array		Error's Texts
+* INPUTS
+*	boolean $errorsclear
+* RETURN
+*	array		Error's Texts
 */
 function ErrorsGet($errorsclear=false) {
    $retval= isset($GLOBALS['AG']['trx_errors'])
@@ -4019,7 +5327,7 @@ function ErrorsGet($errorsclear=false) {
 }
 
 /**
-* @category Notices and Errors
+* INPUTS
 * @deprecated
 */
 function aErrorsClean() {
@@ -4034,7 +5342,7 @@ function aErrorsClean() {
 }
 
 /**
-* @category Notices and Errors
+* INPUTS
 * @deprecated
 */
 function aNoticesClean() {
@@ -4066,9 +5374,10 @@ function aNoticesClean() {
 * }
 * </div>
 *
-* @category Notices and Errors
-* @param string $class		css class
-* @return string HTML_Fragment
+* INPUTS
+*	string $class		css class
+* RETURN
+*	string HTML_Fragment
 */
 function hErrors($class='errorbox') {
     $retval="";
@@ -4089,8 +5398,9 @@ function hErrors($class='errorbox') {
 /**
 * Returns all reported errors as a string with each error separated by a new line.
 *
-* @category Notices and Errors
-* @return string	errors string
+* INPUTS
+* RETURN
+*	string	errors string
 */
 function asErrors() {
 	global $AG;
@@ -4120,9 +5430,10 @@ function asErrors() {
 * }
 * </div>
 *
-* @category Notices and Errors
-* @param string $class	class for notices
-* @return string	html notices
+* INPUTS
+*	string $class	class for notices
+* RETURN
+*	string	html notices
 */
 function hNotices($class='noticebox') {
 	global $AG;
@@ -4167,9 +5478,9 @@ parent:User Preferences
 *
 * Note that this is experimental and has been set up only for one client.
 *
-* @category User Preferences
-* @param string $key	key for preference
-* @param mixed $default	default value for preference
+* INPUTS
+*	string $key	key for preference
+*	mixed $default	default value for preference
 */
 function userPref($key,$default) {
    $array=vgfGet('this_user_prefs');
@@ -4258,10 +5569,11 @@ case no class assignment is made.
 * This allows for safe unconditional placement of $class into an HTML
 * element definition.
 *
-* @category Simple HTML Generation
-* @param string $parmname
-* @param string $parmval
-* @return string	HTML Tag Property
+* INPUTS
+*	string $parmname
+*	string $parmval
+* RETURN
+*	string	HTML Tag Property
 */
 function hTagParm($parmname,$parmval) {
    return $parmval==''
@@ -4277,11 +5589,12 @@ function hTagParm($parmname,$parmval) {
 *
 * The first parameter, CSS_Class, can be an empty string.
 *
-* @category Simple HTML Generation
-* @param string $class	CSS Class
-* @param string $element	HTML Element
-* @param string $innerHTML	Inner HTML in Element
-* @return string	HTML Generated
+* INPUTS
+*	string $class	CSS Class
+*	string $element	HTML Element
+*	string $innerHTML	Inner HTML in Element
+* RETURN
+*	string	HTML Generated
 */
 function hElement($class,$element,$innerHTML) {
    $hclass = hTagParm("class",$class);
@@ -4295,11 +5608,12 @@ function hElement($class,$element,$innerHTML) {
 *
 * The first parameter is the [[Optional CSS Class]].
 *
-* @category Simple HTML Generation
-* @param string $class CSS Class
-* @param string $value HTML inside the element
-* @param string $extra Extra properties
-* @return string	Generated HTML
+* INPUTS
+*	string $class CSS Class
+*	string $value HTML inside the element
+*	string $extra Extra properties
+* RETURN
+*	string	Generated HTML
 */
 function hTD($class,$value,$extra='') {
    $class=hTagParm('class',$class);
@@ -4311,11 +5625,12 @@ function hTD($class,$value,$extra='') {
 *
 * The first parameter is the [[Optional CSS Class]].
 *
-* @category Simple HTML Generation
-* @param string $class	CSS Class
-* @param string $value	HTML inside element
-* @param string $extra	Extra properties
-* @return string	Generated HTML
+* INPUTS
+*	string $class	CSS Class
+*	string $value	HTML inside element
+*	string $extra	Extra properties
+* RETURN
+*	string	Generated HTML
 */
 function hSpan($class,$value,$extra='') {
    $class=hTagParm('class',$class);
@@ -4330,10 +5645,11 @@ function hSpan($class,$value,$extra='') {
 * The first parameter is the [[Optional CSS Class]].  This class is
 * assigned to the TR and to each of the TD elements.
 *
-* @category Simple HTML Generation
-* @param string $class	CSS Class
-* @param array $row
-* @return string	Generated HTML
+* INPUTS
+*	string $class	CSS Class
+*	array $row
+* RETURN
+*	string	Generated HTML
 */
 function hTRFromRow($class,$row) {
    $hclass=hTagParm('class',$class);
@@ -4350,10 +5666,11 @@ function hTRFromRow($class,$row) {
 *
 * The second parameter is an optional COLSPAN setting for the TD element.
 *
-* @category Simple HTML Generation
-* @param int $height	Height for each TD element
-* @param int $colspan	Colspan for each TD element
-* @return string	Generated HTML
+* INPUTS
+*	int $height	Height for each TD element
+*	int $colspan	Colspan for each TD element
+* RETURN
+*	string	Generated HTML
 */
 function hTRFiller($height,$colspan='') {
    $colspan=hTagParm('colspan',$colspan);
@@ -4361,7 +5678,7 @@ function hTRFiller($height,$colspan='') {
 }
 
 /**
-* @category Simple HTML Generation
+* INPUTS
 * @deprecated
 */
 function hTable($width=0,$height=0) {
@@ -4375,11 +5692,12 @@ function hTable($width=0,$height=0) {
 * Takes a number between 0 and 1 and returns a formatted string between
 * 0 and 100, with an optional trailing % sign.
 *
-* @category Simple HTML Generation
-* @param mixed $inputval Number between 0 and 1
-* @param mixed $decimals Number of trailing decimals
-* @param bool $trailing_pct True if it has a trailing % sign
-* @return string	Generated HTML
+* INPUTS
+*	mixed $inputval Number between 0 and 1
+*	mixed $decimals Number of trailing decimals
+*	bool $trailing_pct True if it has a trailing % sign
+* RETURN
+*	string	Generated HTML
 */
 function hPct($inputval,$decimals=1,$trailing_pct=false) {
    $retval=number_format($inputval*100,$decimals);
@@ -4446,10 +5764,11 @@ function hPct($inputval,$decimals=1,$trailing_pct=false) {
 * yy: 2-digit year. date('y')
 * yyyy: 4-digit year. date('Y')
 *
-* @category Simple HTML Generation
-* @param mixed $date	Date to be formated
-* @param string $format	Date format (optional)
-* @return string	Generated HTML
+* INPUTS
+*	mixed $date	Date to be formated
+*	string $format	Date format (optional)
+* RETURN
+*	string	Generated HTML
 */
 function hDate($date,$format='') {
    $date=dEnsureTS($date);
@@ -4487,7 +5806,7 @@ function hDate($date,$format='') {
 * Helper function for hDate.  Not meant to be used by anything other than
 * hDate.
 *
-* @category Simple HTML Generation
+* INPUTS
 */
 function hDateHelper($date,$haystack,$needle,$datearg,$extra='') {
    if(is_array($haystack)) {
@@ -4526,7 +5845,7 @@ function hDateHelper($date,$haystack,$needle,$datearg,$extra='') {
 * Builds the final form of the date.  Meant to be used by the
 * hDate function, and only by that function.
 *
-* @category Simple HTML Generation
+* INPUTS
 */
 function hDateBuild($item) {
    // End of a chain
@@ -4545,8 +5864,9 @@ function hDateBuild($item) {
 * Equivalent to calling the PHP function date('l, F j, Y',unix_ts), which
 * returns a date as "Weekday, Month x, YYYY".
 *
-* @param $unixts
-* @return string	Date with format "Weekday, Month x, YYYY".
+*	$unixts
+* RETURN
+*	string	Date with format "Weekday, Month x, YYYY".
 */
 function hDateWords($unixts) {
    return date('l, F j, Y',$unixts);
@@ -4561,10 +5881,11 @@ function hDateWords($unixts) {
 * Typical values for second parameter might
 * be "-0-" or "n/a" or just plain "0".
 *
-* @category Simple HTML Generation
-* @param mixed $value	Number
-* @param mixed $zero	Return when $value == 0
-* @return string	Generated HTML
+* INPUTS
+*	mixed $value	Number
+*	mixed $zero	Return when $value == 0
+* RETURN
+*	string	Generated HTML
 */
 function hNumber($value,$zero='') {
    if ($value==0) return $zero;
@@ -4595,11 +5916,12 @@ function hNumber($value,$zero='') {
 * Returns a number formatted with commas and decimal, padded to the
 * left.  Useful for generated tables in fixed-width fonts or on reports.
 *
-* @category Simple HTML Generation
-* @param mixed $value	number to format
-* @param int $width	width (optional, default set to length)
-* @param int $decimals number of decimals(optional, default zero)
-* @return string 	Generated HTML
+* INPUTS
+*	mixed $value	number to format
+*	int $width	width (optional, default set to length)
+*	int $decimals number of decimals(optional, default zero)
+* RETURN
+*	string 	Generated HTML
 */
 function hNumFormat($value,$width=0,$decimals=0) {
    $retval=number_format($value,$decimals);
@@ -4624,11 +5946,12 @@ function hNumFormat($value,$width=0,$decimals=0) {
 * .png, or .gif.  The routine returns an IMG tag pointing to the first
 * such image it finds.
 *
-* @category Simple HTML Generation
-* @param string $table_id	Table with picture to look for
-* @param string $value		Value for table primary key
-* @param string $column 	Column to look in (optional)
-* @return string		Generated HTML
+* INPUTS
+*	string $table_id	Table with picture to look for
+*	string $value		Value for table primary key
+*	string $column 	Column to look in (optional)
+* RETURN
+*	string		Generated HTML
 */
 function hImg($table_id,$value,$column='') {
    $afiles=aImg($table_id,$value,$column);
@@ -4641,7 +5964,7 @@ function hImg($table_id,$value,$column='') {
 }
 
 /**
-* @category Simple HTML Generation
+* INPUTS
 * @deprecated
 */
 function hImgAppPub($filename,$column='') {
@@ -4655,11 +5978,12 @@ function hImgAppPub($filename,$column='') {
 * an array of images tags if more than one result is found, and it
 * returns an empty array if none are found.
 *
-* @category Simple HTML Generation
-* @param string $table_id	table id
-* @param string $value	table primary key
-* @param string $column 	column to look in(optional)
-* @return array			Images with HTML
+* INPUTS
+*	string $table_id	table id
+*	string $value	table primary key
+*	string $column 	column to look in(optional)
+* RETURN
+*	array			Images with HTML
 */
 function ahImg($table_id,$value,$column='') {
    $afiles=aImg($table_id,$value,$column);
@@ -4673,11 +5997,12 @@ function ahImg($table_id,$value,$column='') {
 /**
 * Returns an array of image names in apppub
 *
-* @category Simple HTML Generation
-* @param string $table_id	table id
-* @param string $value		table primary key
-* @param string $column		column to look in (optional)
-* @return array			image names
+* INPUTS
+*	string $table_id	table id
+*	string $value		table primary key
+*	string $column		column to look in (optional)
+* RETURN
+*	array			image names
 */
 function aImg($table_id,$value,$column='') {
    $NEVERUSED=$value;
@@ -4704,10 +6029,11 @@ function aImg($table_id,$value,$column='') {
 * First passes number through [[hNumber]], then prefixes either a
 * '+' or '-' sign if positive or negative.  Adds nothing if the value is zero.
 *
-* @category Simple HTML Generation
-* @param mixed $value	number to format
-* @param mixed $zero
-* @return string	Generated HTML
+* INPUTS
+*	mixed $value	number to format
+*	mixed $zero
+* RETURN
+*	string	Generated HTML
 */
 function hNumberPlus($value,$zero='') {
    if($value==0) return $zero;
@@ -4718,9 +6044,10 @@ function hNumberPlus($value,$zero='') {
 /**
 * Equivalent of number_format($input,2).
 *
-* @category Simple HTML Generation
-* @param mixed $input	number to format
-* @return string	Generated HTML
+* INPUTS
+*	mixed $input	number to format
+* RETURN
+*	string	Generated HTML
 */
 function hMoney($input) {
    return number_format($input,2);
@@ -4731,9 +6058,10 @@ function hMoney($input) {
 * there is no dash there already.  Allows you to have zip code columns
 * that do not contain a dash, or that may or may not contain a dash.
 *
-* @category Simple HTML Generation
-* @param string $input	zip code
-* @return string 	Generated HTML
+* INPUTS
+*	string $input	zip code
+* RETURN
+*	string 	Generated HTML
 */
 function hZip9($input='') {
    if(strlen($input)<6) return $input;
@@ -4743,7 +6071,7 @@ function hZip9($input='') {
 
 
 /**
-* @category Simple HTML Generation
+* INPUTS
 * @deprecated
 */
 function hSimpleNumber($value) {
@@ -4804,11 +6132,12 @@ assignment.
 * !<
 * !<
 *
-* @category HTML Hyperlinks
-* @param string $class	CSS Class
-* @param string $caption Text inside <a> element
-* @param string $href	Hypertext reference
-* @return string	Generated HTML
+* INPUTS
+*	string $class	CSS Class
+*	string $caption Text inside <a> element
+*	string $href	Hypertext reference
+* RETURN
+*	string	Generated HTML
 */
 function hLink($class,$caption,$href,$extra='') {
    $class=hTagParm('class',$class);
@@ -4839,10 +6168,11 @@ function hLink($class,$caption,$href,$extra='') {
 * !<
 * !<
 *
-* @category HTML Hyperlinks
-* @param string $class	CSS Class
-* @param string $page_id	Page ID
-* @return string Generated HTML
+* INPUTS
+*	string $class	CSS Class
+*	string $page_id	Page ID
+* RETURN
+*	string Generated HTML
 */
 function hLinkPage($class,$page_id) {
    // Load the list of pages.
@@ -4863,9 +6193,9 @@ function hLinkPage($class,$page_id) {
 * at this time.  It is expected that the hyperlink will get its styles
 * defined in descendant selectors.
 *
-* @category HTML Hyperlinks
-* @param string $caption	Text inside <a> element
-* @param string $href		Hypertext Reference
+* INPUTS
+*	string $caption	Text inside <a> element
+*	string $href		Hypertext Reference
 */
 function hjxCheckFirst($caption,$href) {
    //if (substr($href,0,1)<>'?') $href='?'.$href;
@@ -4897,9 +6227,10 @@ function hjxCheckFirst($caption,$href) {
 * !<
 * !<
 *
-* @category HTML Hyperlinks
-* @param mixed $params
-* @return string Generated HTML
+* INPUTS
+*	mixed $params
+* RETURN
+*	string Generated HTML
 */
 function hpHref($parms) {
    if(is_array($parms)) $parms=http_build_query($parms);
@@ -4912,8 +6243,9 @@ function hpHref($parms) {
 * the [[files]] directory by [[index_hidden.php]] and the information about
 * the file can be retrieved with [[vgfGet]]('files').
 *
-* @category HTML Hyperlinks
-* @return string Generated HTML
+* INPUTS
+* RETURN
+*	string Generated HTML
 */
 function hFileUpload() {
    ?>
@@ -4932,12 +6264,13 @@ function hFileUpload() {
 * "page" is assigned to "gp_page" and the parameter "Column_Value" is assigned
 * to "gp_colval".
 *
-* @category HTML Hyperlinks
-* @param string $class CSS Class
-* @param string $caption Text within the <a> element
-* @param string $page Page
-* @param int $colval Column Value
-* @return string Generated HTML
+* INPUTS
+*	string $class CSS Class
+*	string $caption Text within the <a> element
+*	string $page Page
+*	int $colval Column Value
+* RETURN
+*	string Generated HTML
 */
 function hLinkPageRow($class,$caption,$page,$colval) {
    $class=hTagParm('class',$class);
@@ -4960,10 +6293,10 @@ function hLinkPageRow($class,$caption,$page,$colval) {
 * This routine strips a leading '&' or '?' from the HREF passed in, and
 * then prepends an appropriate '&' or '?'.
 *
-* @category HTML Hyperlinks
-* @param string $class CSS Class
-* @param string $caption Text within <a> element
-* @param string $href Hypertext reference
+* INPUTS
+*	string $class CSS Class
+*	string $caption Text within <a> element
+*	string $href Hypertext reference
 */
 function hLinkFromStub($class,$caption,$href) {
    $hStub=vgaGet('hLinkStub');
@@ -4977,11 +6310,12 @@ function hLinkFromStub($class,$caption,$href) {
 /**
 * Similar to [[hLink]], but the link will activate a popup form.
 *
-* @category HTML Hyperlinks
-* @param string $class CSS Class
-* @param string $caption Text within the <a> element
-* @param array $parms Parameters for page
-* @return string Generated HTML
+* INPUTS
+*	string $class CSS Class
+*	string $caption Text within the <a> element
+*	array $parms Parameters for page
+* RETURN
+*	string Generated HTML
 */
 function hLinkPopup($class,$caption,$parms) {
    $class=hTagParm('class',$class);
@@ -4999,11 +6333,12 @@ function hLinkPopup($class,$caption,$parms) {
 * These links are handy for having a button that sets the value of a form
 * variable and then posts the form.
 *
-* @category HTML Hyperlinks
-* @param string $caption Text within <a> element
-* @param string $gp_var Get/Post Variable Name
-* @param string $gp_val Get/Post Variable Value
-* @return string Generated HTML
+* INPUTS
+*	string $caption Text within <a> element
+*	string $gp_var Get/Post Variable Name
+*	string $gp_val Get/Post Variable Value
+* RETURN
+*	string Generated HTML
 */
 function hLInkSetAndPost($caption,$gp_var,$gp_val) {
    return
@@ -5018,12 +6353,13 @@ function hLInkSetAndPost($caption,$gp_var,$gp_val) {
 * a save of the image to a dynamic file named Table_ID-Column_ID-PK_Value,
 * and returns an HTML IMG element pointing to the file.
 *
-* @category HTML Hyperlinks
-* @param string $table_id Table Id
-* @param string $colname Name of Column
-* @param string $pkval PK Values
-* @param string $bytes Image Bytes
-* @return string Generated HTML
+* INPUTS
+*	string $table_id Table Id
+*	string $colname Name of Column
+*	string $pkval PK Values
+*	string $bytes Image Bytes
+* RETURN
+*	string Generated HTML
 */
 function hImageFromBytes(
    $table_id
@@ -5041,7 +6377,7 @@ function hImageFromBytes(
 /**
 * Needs the CSS Class setting, and an option for checked
 * 
-* @category HTML Hyperlinks
+* INPUTS
 * @deprecated
 */
 function hCheckBox($name,$value) {
@@ -5051,7 +6387,7 @@ function hCheckBox($name,$value) {
 /** 
 * Needs the CSS Class setting, and an option for checked 
 *
-* @category HTML Hyperlinks
+* INPUTS
 * @deprecated
 */
 function hCheckBoxFromCBool($name,$cbool='N',$caption) {
@@ -5066,7 +6402,7 @@ function hCheckBoxFromCBool($name,$cbool='N',$caption) {
 
 
 /**
-* @category HTML Hyperlinks
+* INPUTS
 * @deprecated
 */
 function hDateVerbose($time) {
@@ -5074,7 +6410,7 @@ function hDateVerbose($time) {
 }
 
 /**
-* @category HTML Hyperlinks
+* INPUTS
 * @deprecated
 */
 function hFlagLogin($caption) {
@@ -5089,9 +6425,10 @@ function hFlagLogin($caption) {
 *
 * Returns empty string if month is not between 1 and 12.
 *
-* @category HTML Hyperlinks
-* @param mixed $month Month
-* @return string Name of month
+* INPUTS
+*	mixed $month Month
+* RETURN
+*	string Name of month
 */
 function hMonthWords($month) {
    $m=array('January','February','March','April','May'
@@ -5112,31 +6449,42 @@ name:_default_
 parent:Template Level HTML
 */
 // ------------------------------------------------------------------
-/**
-name:Template Level HTML
-parent:Framework API Reference
-
-These are functions that are only used at the very end of processing,
-usually inside of your html_main template.  Each one outputs a
-significant and very important part of the page.
-
-If you make your own template, you will need to know about these.
+/****h* PHP-API/Template-Level-HTML
+*
+* NAME
+*	Template-Level-HTML
+*
+* FUNCTION
+*	These are functions that are only used at the very end of processing,
+*	usually inside of your html_main template.  Each one outputs a
+*	significant and very important part of the page.
+*
+*	If you make your own template, you will need to know about these.
+*
+******
 */
 
 
-/**
-* This is the grand-daddy function that must be in every template.
+/****f* Template-Level-HTML/ehStandardContent
 *
-* During normal processing, control always passes to some instance of
-* [[x_table2]].  That object always echos HTML directly.  However, that
-* HTML is being buffered and is captured and saved.  This function
-* re-echos that HTML directly, plus it outputs all hidden variables
-* and various other essential goodies.
+* NAME
+*	ehStandardContent
 *
-* Invoke this command in the main content area of your template.
+* FUNCTION
+*	This is the grand-daddy function that must be in every template.
 *
-* @category Template HTML
-* @param boolean $dotitle True if has title
+*	During normal processing, control always passes to some instance of
+*	[[x_table2]].  That object always echos HTML directly.  However, that
+*	HTML is being buffered and is captured and saved.  This function
+*	re-echos that HTML directly, plus it outputs all hidden variables
+*	and various other essential goodies.
+*
+*	Invoke this command in the main content area of your template.
+*
+* INPUTS
+*	boolean $dotitle True if has title
+*
+******
 */
 function ehStandardContent($dotitle=false) {
    $NEVERUSED=$dotitle;
@@ -5184,27 +6532,34 @@ function ehStandardContent($dotitle=false) {
 
 }
 
-/**
-* This function outputs a standard HTML FORM open tag that will POST
-* results back to [[index.php]].  You will need to close the form manually
-* at then end of your content.  The name of the form should not be 'Form1',
-* as that will collide with the name of the standard form that is on all
-* pages.
+/****f* Template-Level-HTML/ehStandardOpen
 *
-* For all normal Andromeda pages you never need to output an HTML FORM, all
-* of your main output is always automatically wrapped in a form, and so you
-* would not normally need this function.
+* NAME
+*	ehStandardOpen
 *
-* You may need this function in cases where you have other forms on the page
-* that are outside of the main content, such as a login form that is always
-* sitting off on the left or something similar.
+* FUNCTION
+*	This function outputs a standard HTML FORM open tag that will POST
+*	results back to [[index.php]].  You will need to close the form manually
+*	at then end of your content.  The name of the form should not be 'Form1',
+*	as that will collide with the name of the standard form that is on all
+*	pages.
 *
-* This function is not meant to save a lot of typing, its purpose is to give
-* you an HTML FORM that is framework-consistent.  It also helps to avoid
-* the eternal problem of [[Messy HTML and PHP]].
+*	For all normal Andromeda pages you never need to output an HTML FORM, all
+*	of your main output is always automatically wrapped in a form, and so you
+*	would not normally need this function.
 *
-* @category Template HTML
-* @param string $id	Form name (default "Form1")
+*	You may need this function in cases where you have other forms on the page
+*	that are outside of the main content, such as a login form that is always
+*	sitting off on the left or something similar.
+*
+*	This function is not meant to save a lot of typing, its purpose is to give
+*	you an HTML FORM that is framework-consistent.  It also helps to avoid
+*	the eternal problem of [[Messy HTML and PHP]].
+*
+* INPUTS
+*	string $id	Form name (default "Form1")
+*
+******
 */
 function ehStandardFormOpen($id='Form1') {
    $x=$id; //annoying jedit compiler warning
@@ -5216,7 +6571,7 @@ function ehStandardFormOpen($id='Form1') {
 }
 
 /**
-* @category Template HTML
+* INPUTS
 * @deprecated use hErrors()
 */
 function ehErrors() {
@@ -5245,11 +6600,16 @@ function ehErrors() {
    }
 }
 
-/**
-* Echos directly all hidden variables.  Not necessary if you
-* use [[ehStandardContent]].
+/****f* Template-Level-HTML/ehHiddenAndData
+*
+* NAME
+*	ehHiddenAndData
+*
+* FUNCTION
+*	Echos directly all hidden variables.  Not necessary if you
+*	use [[ehStandardContent]].
 * 
-* @category Template HTML
+******
 */
 function ehHiddenAndData() {
    // Some parts of the framework create data that should
@@ -5283,11 +6643,16 @@ function ehHiddenAndData() {
    echo "\n<!-- Hidden and Data value assignments  (END)-->\n";
 }
 
-/**
-* Echos directly the current user's menu.  Intended to be used with
-* the "plain vanilla" Andromeda template.
+/****f* Template-Level-HTML/ehStandardMenu
 *
-* @category Template HTML
+* NAME
+*	ehStandardMenu
+*
+* FUNCTION
+*	Echos directly the current user's menu.  Intended to be used with
+*	the "plain vanilla" Andromeda template.
+*
+******
 */
 function ehStandardMenu() {
    $menufile = 'menu_'.SessionGet('UID').'.php';
@@ -5298,29 +6663,36 @@ function ehStandardMenu() {
 
 
 // Either display login boxes or say "logged in as"
-/**
-* Provides a login/logout box on the screen.
+/****f* Template-Level-HTML/ehLogin
 *
-* This routine outputs one of two things.  If a user is logged in,
-* it says, "Welcome -Username-!" and gives a logout button.  If nobody
-* is logged in, it presents a login box and a password box.
+* NAME
+*	ehLogin
 *
-* The output is inside of a table.  The items are stacked on top of
-* each other, so the first row says "Username:" and the second row has
-* a textbox, the third row says "Password:" and the fourth row has
-* another textbox, and finally the fifth row has a submit button.
+* FUNCTION
+*	Provides a login/logout box on the screen.
 *
-* If CSS_Class is provided, the TABLE and TD elements will both get
-* that class asignment.  If the DOM_ID element is provided, the TABLE
-* and TD elements will all get that ID assignment.
+*	This routine outputs one of two things.  If a user is logged in,
+*	it says, "Welcome -Username-!" and gives a logout button.  If nobody
+*	is logged in, it presents a login box and a password box.
 *
-* If the third parameter, Username, is provided, that will be the default
-* entry in the UserID box.
+*	The output is inside of a table.  The items are stacked on top of
+*	each other, so the first row says "Username:" and the second row has
+*	a textbox, the third row says "Password:" and the fourth row has
+* 	another textbox, and finally the fifth row has a submit button.
 *
-* @category Template HTML
-* @param string $class CSS Class
-* @param string $id DOM ID
-* @param string $username Username
+*	If CSS_Class is provided, the TABLE and TD elements will both get
+*	that class asignment.  If the DOM_ID element is provided, the TABLE
+*	and TD elements will all get that ID assignment.
+*
+*	If the third parameter, Username, is provided, that will be the default
+*	entry in the UserID box.
+*
+* INPUTS
+*	string $class CSS Class
+*	string $id DOM ID
+*	string $username Username
+*
+******
 */
 function ehLogin($class='login',$id='',$username='') {
    ehFWLogin($class,$id,$username);
@@ -5379,14 +6751,19 @@ function ehFWLogin($class='login',$id='',$username='') {
    }
 }
 
-/**
-* Echos a conventional UserID/Password form running horizontally, with
-* no class definitions, the objects should receive the styles of their
-* parents.
+/****f* Template-Level-HTML/ehLoginHorizontal
 *
-* If the user is logged in, a logout button is also displayed.
+* NAME
+*	ehLoginHorizontal
 *
-* @category Template HTML
+* FUNCTION
+*	Echos a conventional UserID/Password form running horizontally, with
+*	no class definitions, the objects should receive the styles of their
+*	parents.
+*
+*	If the user is logged in, a logout button is also displayed.
+*
+******
 */
 function ehLoginHorizontal() {
    if(!LoggedIn()) {
@@ -5404,16 +6781,21 @@ function ehLoginHorizontal() {
    <?php
 }
 
-/**
-* Echos a command window.  In the default Andromeda template there is a module
-* named "commands".  If this module is activated, it contains the content
-* generated by the ehCommands routine.  When an alternate template is used
-* and you want a command window, all you need is a wide bar.
+/****f* Template-Level-HTML/ehModuleCommands
 *
-* At this writing we are contemplating moving the button bars up into
-* the command window.
+* NAME
+*	ehModuleCommands
 *
-* @category Template HTML
+* FUNCTION
+*	Echos a command window.  In the default Andromeda template there is a module
+*	named "commands".  If this module is activated, it contains the content
+* 	generated by the ehCommands routine.  When an alternate template is used
+*	and you want a command window, all you need is a wide bar.
+*
+*	At this writing we are contemplating moving the button bars up into
+*	the command window.
+*
+******
 */
 function ehModuleCommands() {
    ?>
@@ -5482,34 +6864,41 @@ function ehModuleCommands() {
 // HTTP Functions
 // ==================================================================
 // ==================================================================
-/**
-name:_default_
-parent:HTTP Functions
-*/
-/**
-name:HTTP Functions
-parent:Framework API Reference
-
-These functions make it easier to find things like the current
-website's address, without having to go through the $_SERVER superglobal.
-
-Knowing the website's address is especially useful when you have
-multiple instances of an application, such as when you have a test/live
-setup or when you are hosting it for more than one customer.  These
-functions let you write code that can build complete links back to the
-site without hardcoding any addresses.
-*/
-
-/**
-* This function returns the complete URL of the current page, as taken from
-* $_SERVER['HTTP_HOST'] and dirname($_SERVER['REQUEST_URI']), giving
-* results such as http://www.example.com/path/to/page.
+/****h* PHP-API/HTTP-Functions
 *
-* This program will strip off the framework-supported 'fake' paths
-* of "rpath" and "pages".
+* NAME
+*	HTTP-Functions
 *
-* @category HTTP Functions
-* @return string Web Address
+* FUNCTION
+*	These functions make it easier to find things like the current
+*	website's address, without having to go through the $_SERVER superglobal.
+*	
+*	Knowing the website's address is especially useful when you have
+*	multiple instances of an application, such as when you have a test/live
+*	setup or when you are hosting it for more than one customer.  These
+*	functions let you write code that can build complete links back to the
+*	site without hardcoding any addresses.
+*
+******
+*/
+
+/****h* HTTP-Functions/httpWebPagePath
+*
+* NAME
+*	httpWebPagePath
+*
+* FUNCTION
+*	This function returns the complete URL of the current page, as taken from
+*	$_SERVER['HTTP_HOST'] and dirname($_SERVER['REQUEST_URI']), giving
+*	results such as http://www.example.com/path/to/page.
+*
+*	This program will strip off the framework-supported 'fake' paths
+*	of "rpath" and "pages".
+*
+* RETURN
+*	string - Web Address
+*
+******
 */
 function httpWebPagePath() {
    $x=$_SERVER['REQUEST_URI'];
@@ -5527,68 +6916,76 @@ function httpWebPagePath() {
       .$x;
 }
 
-/**
-* This function returns the URL of the current page without the path, as
-* taken from $_SERVER['HTTP_HOST'].
+/****f* HTTP-Functions/httpWebSite
 *
-* @category HTTP Functions
-* @return string Web Address
+* NAME
+*	httpWebSite
+*
+* FUNCTION
+*	This function returns the URL of the current page without the path, as
+*	taken from $_SERVER['HTTP_HOST'].
+*
+* RETURN
+*	string - Web Address
+*
+******
 */
 function httpWebSite() {
    return 'http://'.$_SERVER['HTTP_HOST'];
 }
 
-/**
-* testtypes:char,bool
-* test:*,true
+/****f* HTTP-Functions/httpHeadersForDownload
 *
-* This function sends out headers that are appropriate for sending a
-* file as a download.  The routine does not necessarily support all
-* headers, to see which ones are supported, send a "*" as the first
-* parameter and the program will dump supported values out onto
-* the screen.
+* NAME
+*	httpHeadersForDownload
 *
-* By default the content is sent as in-line content.  If the second
-* parameter is true, a header will be sent indicating the file is being
-* sent as an attachment.
+* FUNCTION
+*	This function sends out headers that are appropriate for sending a
+*	file as a download.  The routine does not necessarily support all
+*	headers, to see which ones are supported, send a "*" as the first
+*	parameter and the program will dump supported values out onto
+*	the screen.
 *
-* When using this function, you need to have the [[flag_buffer]] property
-* of your class set to false, and this must be set in the [[custom_construct]]
-* method, as in the example below.
+*	By default the content is sent as in-line content.  If the second
+*	parameter is true, a header will be sent indicating the file is being
+*	sent as an attachment.
 *
-* <code>
-* <?php
-* class sendfile extends x_table2 {
-*    function custom_construct() {
-*       $this->flag_buffer=false;
-*    }
+*	When using this function, you need to have the [[flag_buffer]] property
+*	of your class set to false, and this must be set in the [[custom_construct]]
+*	method, as in the example below.
 *
-*    function main() {
-*       $filename='/path/to/myfile.mp3';
-*       httpHeadersForDownload($filename);
-*       readfile($filename);
-*       exit; // Exit is required to avoid extraneous output
-*    }
-* }
-* ?>
-* </code>
+*	<?php
+*	class sendfile extends x_table2 {
+*		function custom_construct() {
+*		$this->flag_buffer=false;
+*	}
 *
-* You can add new extensions by declaring an array [[httpMimeTypes]] at
-* the top of your [[applib.php]] file.
+*		function main() {
+*			$filename='/path/to/myfile.mp3';
+*			httpHeadersForDownload($filename);
+*			readfile($filename);
+*			exit; // Exit is required to avoid extraneous output
+*		}
+*	}
+*	?>
 *
-* !>example:Adding your own types
-* <code>
-* <?php
-* // file: applib.php
-* $httpMimeTypes=array(
-*    'xyz'=>'application/xyz-handler'
-* );
-* ?>
-* </code>
+*	You can add new extensions by declaring an array [[httpMimeTypes]] at
+*	the top of your [[applib.php]] file.
 *
-* @category HTTP Functions
-* @param  string $filespec (dir + file)
-* @param  boolean $attachment True if attatchment (default false)
+*	Example: Adding your own types
+*
+*	<?php
+*		// file: applib.php
+*		$httpMimeTypes=array(
+*   		'xyz'=>'application/xyz-handler'
+*		);
+*	?>
+*
+* INPUTS
+*	string $filespec - (dir + file)
+*	boolean $attachment - True if attatchment (default false)
+*
+******
 */
 function httpHeadersForDownload($filespec,$attachment=false) {
    $headers=array(
@@ -5809,12 +7206,13 @@ These routines are for creating users from inside of applications.
 * Any errors are registred with [[ErrorAdd]].  Check for success by
 * calling [[Errors]].  If it returns true the command failed.
 *
-* @category User Maintenance
-* @param string $UID User Id
-* @param string $PWD Password (Default '')
-* @param string $email Email (Default '')
-* @param string $user_active Start as active user? (Y=yes, N=no) (Default 'Y')
-* @return boolean True if success, False if failure
+* INPUTS
+*	string $UID User Id
+*	string $PWD Password (Default '')
+*	string $email Email (Default '')
+*	string $user_active Start as active user? (Y=yes, N=no) (Default 'Y')
+* RETURN
+*	boolean True if success, False if failure
 */
 function UserAdd($UID,$PWD='',$email='',$user_active='Y') {
    $NEVERUSED=$user_active;
@@ -5839,9 +7237,10 @@ function UserAdd($UID,$PWD='',$email='',$user_active='Y') {
 * Converts an email address into a string that will be accepted by
 * Postgres as a valid USER_ID.
 *
-* @category User Maintenance
-* @param string $UID Email address to be converted
-* @return string Converted User Id
+* INPUTS
+*	string $UID Email address to be converted
+* RETURN
+*	string Converted User Id
 */
 function MakeUserID($UID) {
    $UID=str_replace('@','_',$UID);
@@ -5859,8 +7258,9 @@ function MakeUserID($UID) {
 * Returns true if a user has successfully logged in on the current
 * session, otherwise returns false.
 *
-* @category User Maintenance
-* @return boolean
+* INPUTS
+* RETURN
+*	boolean
 */
 function LoggedIn() {
    // Technically this should never happen.  An empty UID should
@@ -5877,9 +7277,10 @@ function LoggedIn() {
 * Returns true if a the current user is in the 
 * specified group.
 *
-* @category User Maintenance
-* @param string $group  Name of the group
-* @return boolean
+* INPUTS
+*	string $group  Name of the group
+* RETURN
+*	boolean
 */
 function inGroup($group) {
     $agroups = SessionGet('agroups',array());
@@ -5913,8 +7314,9 @@ function inGroup($group) {
 * do user maintenance.  Shortcut for a call
 * to inGroup('usermaint').
 *
-* @category User Maintenance
-* @return boolean
+* INPUTS
+* RETURN
+*	boolean
 */
 function inUserMaint() {
     return inGroup('usermaint');
@@ -5925,8 +7327,9 @@ function inUserMaint() {
 * "root" user on the node.  Shortcut to
 * to SessionGet('ROOT').
 *
-* @category User Maintenance
-* @return boolean
+* INPUTS
+* RETURN
+*	boolean
 */
 function inRoot() {
     return SessionGet('ROOT');
@@ -5948,7 +7351,7 @@ function inRoot() {
 * This routine cannot clear out HTML that has already been sent out, so
 * it should be called at the beginning of processing.
 *
-* @category User Maintenance
+* INPUTS
 */
 function PushToLogin() {
    gpToSession();
@@ -5988,14 +7391,25 @@ with the rest of the functions.
 * If there is no table named Page_Name, an uninitialized instance of
 * [[x_table2]] is returned.
 *
-* @category Miscellaneous Functions
-* @param string $gp_page Page Name
-* @return object Dispatch Page Object
+* INPUTS
+*	string $gp_page Page Name
+* RETURN
+*	object Dispatch Page Object
 */
 function objPage($gp_page) {
    return DispatchObject($gp_page);
 }
 
+/**
+* Builds a business report object with orientation $orient and 
+* parent $parent.  Parent gets set as the trackback for the
+* report.
+*
+*	mixed $oParent
+*	string $orient
+* RETURN
+*	object x_fpdf
+*/
 function objReport($oParent,$orient='P') {
    include_once('x_fpdf.php');
    $retval= new x_fpdf($orient);
@@ -6007,7 +7421,8 @@ function objReport($oParent,$orient='P') {
 * Generate a unique number out of microtime(), suitable
 * for use as ID values for HTML elements.
 *
-* @return integer a unique value
+* RETURN
+*	integer a unique value
 */
 function uniqueID() {
     $value = microtime();
@@ -6037,8 +7452,8 @@ function uniqueID() {
 * is called.  To avoid the HTML from one page appearing on the next,
 * be sure to call this routine before HTML has been generated.
 *
-* @category Miscellaneous Functions
-* @param string $class Class Name
+* INPUTS
+*	string $class Class Name
 */
 function objPageMain($class) {
    $obj=objPage($class);
@@ -6048,9 +7463,10 @@ function objPageMain($class) {
 /**
 * Returns true if the named file exists in the include path.
 *
-* @category Miscellaneous Functions
-* @param string $file Filename
-* @return boolean True if file exists in include path
+* INPUTS
+*	string $file Filename
+* RETURN
+*	boolean True if file exists in include path
 */
 function FILE_EXISTS_INCPATH($file) {
     $paths = explode(PATH_SEPARATOR, get_include_path());
@@ -6076,9 +7492,9 @@ function FILE_EXISTS_INCPATH($file) {
 * commands until the complete path
 * "/var/www/localhost/htdocs/app/level1/level2/level3" exists.
 *
-* @category Miscellaneous Functions
-* @param string $Base_Path Base Path
-* @param string $New_Path Path inside Base Path
+* INPUTS
+*	string $Base_Path Base Path
+*	string $New_Path Path inside Base Path
 */
 function fsMakeDirNested($Base_Path,$New_Path) {
    $adirs=explode('/',$New_Path);
@@ -6090,6 +7506,17 @@ function fsMakeDirNested($Base_Path,$New_Path) {
    }
 }
 
+/**
+* Writes the php code required to create array $array to the file
+* in directory $dir with filename $name.  Uses $arrayname as the 
+* variable name storing the array.
+*
+* INPUTS
+*	string $name name of file
+*	array $array array to write
+*	string $arrayname name of array variable
+*	string $dir directory of file (default = '')
+*/
 function fsFileFromArray($name,$array,$arrayname,$dir='') {
     $annoying=$arrayname;
     $retval = "";
@@ -6107,6 +7534,17 @@ $retval
  //  hprint_r($array);
 }
 
+/**
+* Helper recursive function for fsFileFromArray.  Used to build the
+* php array code as a string.  Handles nested arrays and tabs every
+* printed key=> element association by $level tabs.
+* 
+* INPUTS
+*	array $array
+*	int $level
+* RETURN
+*	string
+*/
 function fsFileFromArrayWalk($array,$level) {
    $retval='';
 	foreach ($array as $key=>$value) {
@@ -6130,9 +7568,10 @@ function fsFileFromArrayWalk($array,$level) {
 * LF characters, so it can be split in array or otherwise handled w/o
 * worries about Unix/Mac/Windows compatibility or stray characters.
 *
-* @category Miscellaneous Functions
-* @param resource $FILE File Handle
-* @return string line
+* INPUTS
+*	resource $FILE File Handle
+* RETURN
+*	string line
 */
 function fsGets($FILE) {
    $line=fgets($FILE,5000);
@@ -6145,10 +7584,11 @@ function fsGets($FILE) {
 /**
 * Adds a slash to the end of a directory if not already present.
 *
-* @category Miscellaneous Functions
-* @param string $input directory string
-* @param string $prefix prefix (optional, default '')
-* @return string directory with added slash
+* INPUTS
+*	string $input directory string
+*	string $prefix prefix (optional, default '')
+* RETURN
+*	string directory with added slash
 */
 function AddSlash($input,$prefix='') {
 	// Justin Dearing 12/26/07, detects windows
@@ -6178,7 +7618,7 @@ function AddSlash($input,$prefix='') {
 * The notice is put into a DIV block of class "devnotice".  That class
 * is defined in the appropriate CSS skin file (default: [[skin_tc.css]]).
 *
-* @category Miscellaneous Functions
+* INPUTS
 */
 function ehFWDevNotice() {
    ?>
@@ -6191,9 +7631,10 @@ function ehFWDevNotice() {
 * passed in, returns the first day of that month, else the first day of
 * the current month.
 *
-* @category Date/Time Functions
-* @param $dx date input
-* @return string Unix Timestamp
+* INPUTS
+*	$dx date input
+* RETURN
+*	string Unix Timestamp
 */
 function UTSFirstOfMonth($dx=null) {
    if(is_null($dx)) $dx=time();
@@ -6210,9 +7651,10 @@ function UTSFirstOfMonth($dx=null) {
 * passed in, returns the first day of that month, else the first day of
 * the current year.
 *
-* @category Date/Time Functions
-* @param string Date Input
-* @return string Unix Timestamp
+* INPUTS
+*	string Date Input
+* RETURN
+*	string Unix Timestamp
 */
 function UTSFirstOfYear($dx=null) {
    if(is_null($dx)) $dx=time();
@@ -6220,7 +7662,13 @@ function UTSFirstOfYear($dx=null) {
    return strtotime('01/01/'.substr($date,4,2));
 }
 
-
+/**
+* Builds a unix timestamp from a string date.
+*
+*	string string date
+* RETURN
+*	string unix timestamp
+*/
 function unixtsFromSD($sd) {
     return strtotime(
       substr($sd,4,2).'/'
@@ -6233,8 +7681,8 @@ function unixtsFromSD($sd) {
 * Call this function to simulate a successful payment on paypal.  More
 * information is available at our [[Paypal]] page.
 *
-* @category Miscellaneous Functions
-* @param array $paypall Paypall information
+* INPUTS
+*	array $paypall Paypall information
 */
 function Paypal_SimulatePaid($paypal) {
    gpSet('invoice',$paypal['invoice']);
@@ -6293,7 +7741,7 @@ tables, and point to [[Rows Array]]s.
 */
 
 /**
-* @category Array and List
+* INPUTS
 * @deprecated
 */
 function ArrayDefault(&$arr,$key,$value) {
@@ -6316,10 +7764,11 @@ function ArrayKeyAndValue(&$arr,$colkey,$colvalue) {
 * Returns a number-indexed array of values from the
 * numbered "column" in an rows array
 *
-* @category Array and List
-* @param array $arr Array to iterate through
-* @param int $index Index of column (default 0)
-* @return array
+* INPUTS
+*	array $arr Array to iterate through
+*	int $index Index of column (default 0)
+* RETURN
+*	array
 */
 function arrFromColumn($arr,$index=0) {
     $retval = array();
@@ -6330,12 +7779,13 @@ function arrFromColumn($arr,$index=0) {
 }
 
 /**
-* Generates an associative array of keys pointint to empty arrays. The
+* Generates an associative array of keys pointing to empty arrays. The
 * keys are taken from the input.
 *
-* @category Array and List
-* @param array $keys keys of associative array
-* @return array Associative array with $keys pointing to empty arrays
+* INPUTS
+*	array $keys keys of associative array
+* RETURN
+*	array Associative array with $keys pointing to empty arrays
 */
 function arrOfArrays($keys) {
    $retval=array();
@@ -6355,11 +7805,12 @@ function arrOfArrays($keys) {
 * If the third parameter is true, the return array contains an empty
 * element for the missing value.
 *
-* @category Array and List
-* @param array &$haystack Haystack
-* @param array $needles Needles
-* @param boolean $fullpop True if fully populate
-* @return array
+* INPUTS
+*	array &$haystack Haystack
+*	array $needles Needles
+*	boolean $fullpop True if fully populate
+* RETURN
+*	array
 */
 function asliceFromKeys(&$haystack,$needles,$fullpop=false) {
    if(!is_array($needles)) $needles=explode(',',$needles);
@@ -6384,11 +7835,12 @@ function asliceFromKeys(&$haystack,$needles,$fullpop=false) {
 * array or a string as &$source.  If it is a string, each key
 * should be seperated by a comma(,).
 *
-* @category Array and List
-* @param array &$source Array to pull values from
-* @param mixed $keyvaltopull Value to pull
-* @param array $keylist List of keys
-* @return array
+* INPUTS
+*	array &$source Array to pull values from
+*	mixed $keyvaltopull Value to pull
+*	array $keylist List of keys
+* RETURN
+*	array
 */
 function asliceValsFromKeys(&$source,$keyvaltopull,$keylist) {
    if(!is_array($keylist)) $keylist=explode(',',$keylist);
@@ -6406,10 +7858,11 @@ function asliceValsFromKeys(&$source,$keyvaltopull,$keylist) {
 * Recursive version of built-in function array_Change_key_Case.
 * Change case in $array to $case.
 *
-* @category Array and List
-* @param array $array Array to change case
-* @param int $case case to change to (default CASE_LOWER)
-* @return array
+* INPUTS
+*	array $array Array to change case
+*	int $case case to change to (default CASE_LOWER)
+* RETURN
+*	array
 */
 function raxarr_Change_Key_Case($array,$case=CASE_LOWER) {
    $retval = array_Change_key_Case($array,$case);
@@ -6427,10 +7880,10 @@ function raxarr_Change_Key_Case($array,$case=CASE_LOWER) {
 * If it does not, assigns $value to $key in the array.  Useful if you do
 * not want to overwrite a key if it does exists, but want to add a value.
 *
-* @category Array and List
-* @param array &$array
-* @param mixed $key key to check
-* @param mixed $value value to assign
+* INPUTS
+*	array &$array
+*	mixed $key key to check
+*	mixed $value value to assign
 */
 function arrDefault(&$array,$key,$value) {
    if(!isset($array[$key])) $array[$key]=$value;
@@ -6439,7 +7892,7 @@ function arrDefault(&$array,$key,$value) {
 /**
 * Processes an array an unsets any numeric indexes.
 *
-* @category Array and List
+* INPUTS
 * @parm array &$array input
 */
 function arrayStripNumericIndexes(&$array) {
@@ -6457,12 +7910,13 @@ function arrayStripNumericIndexes(&$array) {
 * associated with a key is an array, and you allow recursion, you include
 * that array's keys with prefixes into the return value also.
 *
-* @category Array and List
-* @param array $array
-* @param string $prefix prefix to add to keys
-* @param boolean $recurse true if recursion through multidimensional array
-* @param boolean $lower true if keys go to lowercase
-* @return array array with keys from $array with prefix added
+* INPUTS
+*	array $array
+*	string $prefix prefix to add to keys
+*	boolean $recurse true if recursion through multidimensional array
+*	boolean $lower true if keys go to lowercase
+* RETURN
+*	array array with keys from $array with prefix added
 */
 function raxarr_PrefixAdd($array,$prefix,$recurse=true,$lower=false) {
    $retval = array();
@@ -6515,11 +7969,12 @@ function asrFromMixed(&$array) {
 * to generate the key values and the other column is used to assign
 * values to the array elements.
 *
-* @category Array and List
-* @param array $rows the rows array
-* @param string $colkey key column
-* @param string $colval value column
-* @return array associative array
+* INPUTS
+*	array $rows the rows array
+*	string $colkey key column
+*	string $colval value column
+* RETURN
+*	array associative array
 */
 function AAFromRows($rows,$colkey,$colval) {
    $aa = array();
@@ -6536,10 +7991,11 @@ function AAFromRows($rows,$colkey,$colval) {
 * key value in the resulting array.  The individual rows are the same
 * in both input and output, only the key is different.
 *
-* @category Array and List
-* @param array $rows rows array
-* @param string $colkey key column
-* @return array
+* INPUTS
+*	array $rows rows array
+*	string $colkey key column
+* RETURN
+*	array
 */
 function KeyRowsFromRows($rows,$colkey) {
    $aa = array();
@@ -6629,9 +8085,9 @@ pages and which displays the actual output of a report.
 * long document with a header at top and a footer at bottom and the content
 * in a scrollable div in the middle.
 *
-* @category Reporting System
-* @param string $report_id report id
-* @param string $display display type (HTML or PDF)
+* INPUTS
+*	string $report_id report id
+*	string $display display type (HTML or PDF)
 */
 function ehReport($report_id,$display) {
    include_once('x_report.php');
@@ -6674,11 +8130,12 @@ Most of the wiki processing is in [[x_docview.php]].
 * The wiki functionality is stored in the class [[x_wiki]].  This function
 * instantiates x_wiki and hands processing to that class.
 *
-* @category Wiki Functions
-* @param string $table_id wiki table
-* @param string $pagename wiki page
-* @param boolean $flag_title true to use name as title
-* @return string
+* INPUTS
+*	string $table_id wiki table
+*	string $pagename wiki page
+*	boolean $flag_title true to use name as title
+* RETURN
+*	string
 */
 function hWiki($table_id,$pagename,$flag_title=true) {
    include_once('x_wiki.php');
@@ -6689,9 +8146,10 @@ function hWiki($table_id,$pagename,$flag_title=true) {
 * Takes wiki-formatted text and returns html.  See hWiki().
 *
 * @see hWiki()
-* @category Wiki Functions
-* @param $text
-* @return string
+* INPUTS
+*	$text
+* RETURN
+*	string
 */
 function hWikiFromText($text) {
    $table_id='NEVERUSED';
@@ -6707,11 +8165,11 @@ function hWikiFromText($text) {
 * For an example of its use, see the source code for the Andromeda
 * documentation.
 *
-* @category Wiki Functions
-* @param string $pageroot
-* @param string $pn current page
-* @param array $parents (default array())
-* @param array $peers (default array())
+* INPUTS
+*	string $pageroot
+*	string $pn current page
+*	array $parents (default array())
+*	array $peers (default array())
 */
 // CODE PURGE, almost certainly can lose this
 function adocs_makeMenu($pageroot,$pn,$parents=array(),$peers=array()) {
@@ -6749,10 +8207,11 @@ function adocs_makeMenu($pageroot,$pn,$parents=array(),$peers=array()) {
 * Accepts a wiki page name, such as "PHP Framework" and generates a
 * link to that page, using itself as the caption.
 *
-* @category Wiki Functions
-* @param string $pagename
-* @param string $class (optional, default '')
-* @return string link to wiki page
+* INPUTS
+*	string $pagename
+*	string $class (optional, default '')
+* RETURN
+*	string link to wiki page
 */
 function adocs_MenuLink($pagename,$class='') {
    return
@@ -6788,9 +8247,10 @@ PHP that have no replacement as simple or useful as the original.
 * There can be no meaningful explanation for why something so simple and
 * useful was removed and replaced with something much more complicated.
 *
-* @category Language Extensions
-* @param string $filename
-* @return string
+* INPUTS
+*	string $filename
+* RETURN
+*	string
 */
 if(!function_exists('mime_content_type')) {
    function mime_content_type($filename) {
@@ -6828,10 +8288,11 @@ if(!function_exists('mime_content_type')) {
 * Returns an array with the smallest element being in the first
 * index and the largest element being the last.
 *
-* @category Miscellaneous Functions
-* @param mixed $val1
-* @param mixed $val2
-* @return array
+* INPUTS
+*	mixed $val1
+*	mixed $val2
+* RETURN
+*	array
 */
 function minmax($val1,$val2) {
    return array(min($val1,$val2),max($val1,$val2));
@@ -6842,10 +8303,11 @@ function minmax($val1,$val2) {
 * from $skey in the context data.  If $skey == 0 or if it
 * is not found in context data, an array(0,0) is returned.
 * 
-* @category Miscellaneous Functions
-* @param string $table_id
-* @param int $skey
-* @return array
+* INPUTS
+*	string $table_id
+*	int $skey
+* RETURN
+*	array
 */
 function aNextPrevFromContext($table_id,$skey=0) {
    // early abort
@@ -6909,6 +8371,11 @@ function sqlOBFromContext($table_id) {
 // ------------------------------------------------------------------
 // Drilldown routines.
 // ------------------------------------------------------------------
+/**
+* Resets the Drilldown storage
+* 
+* INPUTS
+*/
 function DrilldownReset() {
 	//$keys = array_keys($_SESSION);
    $keys = array_keys($GLOBALS['gpContext']);
@@ -6920,13 +8387,27 @@ function DrilldownReset() {
 	ContextSet("drilldown_level",0);
 }
 
+/**
+* Gets the current drill down level.  If there is none,
+* the level is 0.
+*
+* RETURN
+*	int
+*/
 function DrilldownLevel() {
 	return ContextGet('drilldown_level',0);
 }
 
+/**
+* Fetches the drilldown variable at level $level
+*/
 function DrilldownGet($level) {
 	return ContextGet("drilldown_".$level);
 }
+
+/**
+* Gets the topmost drilldown variable
+*/
 function DrillDownTop() {
    $dd=ContextGet("drilldown");
    return array_pop($dd);
@@ -6941,8 +8422,9 @@ function DrilldownValues($nesting=0) {
 * Returns a [[Row Array]] specifying the columns to match to produce
 * a drilldown resultset in a child table.
 *
-* @category Drilldown Routines
-* @return array
+* INPUTS
+* RETURN
+*	array
 */
 function DrillDownMatches() {
    $dd = ContextGet('drilldown',array());
@@ -6961,7 +8443,7 @@ function DrillDownMatches() {
 /**
 * Wrapper for DynamicSave.
 *
-* @category File Handling
+* INPUTS
 * @see DynamicSave()
 */
 function DynFromh($filename,$contents) {
@@ -6972,9 +8454,9 @@ function DynFromh($filename,$contents) {
 * Saves $contents to $filename, assuming that $filename is a dyamic
 * file.
 *
-* @category File Handling
-* @param string $filename name of file
-* @param string $contents information to save
+* INPUTS
+*	string $filename name of file
+*	string $contents information to save
 */
 function DynamicSave($filename,$contents) {
 	$FILE=fopen($GLOBALS["AG"]["dirs"]["dynamic"]."/".$filename,"w");
@@ -6987,9 +8469,10 @@ function DynamicSave($filename,$contents) {
 * that file with $filename is a dynamic file.  If file doesn't exist,
 * an empty string is returned.
 *
-* @category File Handling
-* @param string $filename name of file
-* @return string data held in file
+* INPUTS
+*	string $filename name of file
+* RETURN
+*	string data held in file
 */
 function DynamicLoad($filename) {
 	$file = $GLOBALS["AG"]["dirs"]["dynamic"]."/".$filename;
@@ -6998,11 +8481,27 @@ function DynamicLoad($filename) {
 	else
 		return "";
 }
+
+/**
+* Clears file with filename $filename.  Assumes that
+* file is a dynamic file (inside the dynamic directory).
+* 
+* INPUTS
+*	string $filename name of file
+*/
 function DynamicClear($filename) {
 	$file = $GLOBALS["AG"]["dirs"]["dynamic"]."/".$filename;
 	if (file_exists($file)) unlink($file);
 }
 
+/**
+* Returns data held in file with $filename.  Wrapper function for
+* DynamicLoad().
+*
+*	string $filename
+* RETURN
+*	string data in file
+*/
 function hFromDyn($filename) {
    return DynamicLoad($filename);
 }
@@ -7022,22 +8521,24 @@ function CacheMember_Profiles() {
 * Expects the element to be an array.  Saving a scalar value and then
 * using this function to retrieve it produces undefined results.
 *
-* @category File Handling
-* @param string $filename key
-* @return array
+* INPUTS
+*	string $filename key
+* RETURN
+*	array
 */
 function aFromDyn($filename) {
    $serialized=DynamicLoad($filename);
    if(empty($serialized)) return array();
    else return unserialize($serialized);
 }
+
 /**
 * Caches an array for later retrieval by [[aFromDyn]].  The cache is
 * visible to all users in all sessions.
 *
-* @category File Handling
-* @param string $filename the key
-* @param array $contents
+* INPUTS
+*	string $filename the key
+*	array $contents
 */
 function DynFromA($filename,$contents) {
    DynamicSave($filename,serialize($contents));
@@ -7056,6 +8557,8 @@ function CellGet($table_id,$val,$col) {
    }
    return $retval;
 }
+
+
 function rowsFromCache($name,$sq) {
    $ser=CacheRead($name);
    if($ser=='') {
@@ -7067,13 +8570,48 @@ function rowsFromCache($name,$sq) {
    }
    return $rs;
 }
+
+/**
+* Returns the contents of a dynamic file with name
+* $name.
+*
+*	string $name filename
+*/
 function CacheRead($name) {
    return DynamicLoad($name);
 }
+
+/**
+* Writes $value to dynamic file with name $name.
+*
+*	string $name filename
+*	string $value data
+*/
 function CacheWrite($name,$value) {
    DynamicSave($name,$value);
 }
 
+<<<<<<< .mine
+// ------------------------------------------------------------------
+// General Purpose Element listing, with specialized output
+// ------------------------------------------------------------------
+
+/**
+* Adds element for later processing.  If it is a script element,
+* the function strips the <script> tags.  It can be passed to the
+* function with or without these tags.
+*
+* INPUTS
+*	string $type type of element
+*	string $msg input
+*/
+function ElementAdd($type,$msg) {
+    if($type=='script' || $type=='jqueryDocumentReady') {
+        $msg = preg_replace("/<script>/i",'',$msg);
+        $msg = preg_replace("/<\/script>/i",'',$msg);
+    }
+    $GLOBALS["AG"][$type][]=$msg;
+=======
 # ===================================================================
 # 
 # JQUERY FUNCTIONS
@@ -7083,11 +8621,12 @@ function CacheWrite($name,$value) {
 * Stores a fragment of script to run inside of
 * jquery's documentReady() action.
 *
-* @param string   Script.  May be enclosed in html SCRIPT tags,
+*	string   Script.  May be enclosed in html SCRIPT tags,
 *                 which you may want to do if your editor makes
 *                 it easier to work with it that way.
 *
-* @return false   Always returns false.
+* RETURN
+*	false   Always returns false.
 */
 function jqDocReady($script) {
     $script = preg_replace("/<script>/i",''  ,$script);
@@ -7096,7 +8635,85 @@ function jqDocReady($script) {
     $jdr[] = $script;
     vgfSet('jqDocReady',$jdr);
     return false;
+>>>>>>> .r521
 }
+<<<<<<< .mine
+/**
+* Initializes an element with type $type.  Initializes
+* the element with an empty array.  If the element exists,
+* it competely erases all data stored to that element.
+*
+* INPUTS
+*	string $type type of element
+*/
+function ElementInit($type) { $GLOBALS["AG"][$type]=array(); }
+
+/**
+* Get all the stored elements with type $type.  If the element
+* type doesn't exist yet, it returns the default value
+* $default.
+*
+* INPUTS
+*	string $type type of element
+*	mixed $default default value for element type (default = array())
+* RETURN
+*	mixed elements in array or default value
+*/
+function ElementReturn($type,$default=array()) {
+	global $AG;
+   if(!isset($AG[$type])) return $default;
+   else return $AG[$type];
+}
+
+/**
+* Returns true if there are any elements stored with type
+* $type.
+*
+* INPUTS
+*	string $type type of element
+* RETURN
+*	boolean
+*/
+function Element($type) {
+	global $AG;
+   if(!isset($AG[$type])) return false;
+	if (count($AG[$type])>0) return true; else return false;
+}
+
+/**
+* Returns a string of all the stored elements of type $type
+* and separates them by $implode.  By default, the elements are
+* separated by new line characters "\n".  Pass your own $implode
+* argument to add a different separator.
+*
+* INPUTS
+*	string $type type of element
+*	string $implode separator between each element
+* RETURN
+*	string
+*/
+function ElementImplode($type,$implode="\n") {
+    if(!isset($GLOBALS['AG'][$type])) return '';
+    else return implode($implode,$GLOBALS['AG'][$type]);
+}
+
+/**
+* Dumps all elements of type $type by removing them
+* from storage and returning them.  If you want the elements
+* to be listed with HTML, set $dohtml to true.  If the type
+* of element is script, there will always be an element returned
+* in the array that controls AJAX table maintenance.
+*
+* INPUTS
+*	string $type type of element
+*	boolean $dohtml (default=false)
+* RETURN
+*	string list of elements
+*/
+function ElementOut($type,$dohtml=false) {
+	global $AG;
+=======
+>>>>>>> .r521
 
 
 // ------------------------------------------------------------------
@@ -7110,21 +8727,39 @@ These functions all return or output fragments of HTML.
 Some of them output huge amounts of HTML, while others have the
 advantage of avoiding a confusing mix of HTML and PHP.
 */
+
+/**
+* Sanitizes the html input $v.  Is a wrapper function for the
+* php function htmlentities().
+*
+* INPUTS
+*	string $v html to sanitize
+* RETURN
+*	string sanitized html
+*/
 function hSanitize($v) {
    return htmlentities($v);
 }
 
-
+/**
+* Wrapper function for HTML_Format().
+*
+* INPUTS
+* @see HTML_Format
+*	string $t Type_id
+*	mixed $v value
+*/
 function hFormat($t,$v) {
    return HTML_Format($t,$v);
 }
 
 /**
-name:hFormat
-parm:string Type_id
-parm:mixed value
-
-Returns the value in generic format suitable for the type.
+* Returns the value in generic format suitable for the type.
+*
+*	string $t type id
+*	mixed $v value
+* RETURN
+*	formatted value
 */
 
 function HTML_Format($t,$v) {
@@ -7178,9 +8813,17 @@ function HTML_Format($t,$v) {
 
 // ELIMINATE: Nothing should reference this code,
 //            these routines should be eliminated
+/**
+* INPUTS
+* @deprecated Elimination imminent
+*/
 function hHidden($key,$value) {
    return html_hidden($key,$value);
 }
+/**
+* INPUTS
+* @deprecated Elimination imminent
+*/
 function HTML_Hidden($key,$value) {
 	return
 		'<input type="hidden" '.
@@ -7188,6 +8831,17 @@ function HTML_Hidden($key,$value) {
 		' value="'.$value."\"/>\n";
 }
 
+/**
+* Creates an HTML Dropdown box element (select element).
+*
+* INPUTS
+*	string $name name of selection
+*	array $resall properties for the options
+*	string $value key for value for options
+*	string $inner key for inner text for options  
+* RETURN
+*	string Generated HTML
+*/
 function HTML_Dropdown($name,$resall,$value="value",$inner="inner") {
 	$retval = "<select id=".$name." name=$name>";
 	foreach ($resall as $row) {
@@ -7210,6 +8864,15 @@ function hDateUSFromSD($sd) {
 // HTML Element Generation
 // ==================================================================
 
+/**
+* Builds URL parameters from an associative array of keys and
+* values.  Builds URL parameters like so: http://url.com?key=value&key=value&etc=.
+*
+*	array $array associative array
+*	string $prefix prefix for keys
+* RETURN
+*	string
+*/
 function urlParmsFromArray($array,$prefix='') {
    $retval = '';
    foreach($array as $key=>$value) {
@@ -7227,21 +8890,22 @@ function ehTBodyFromSQL($sq) {
 }
 
 /**
-name:hTbodyFromRows
-returns: string HTML
-parm:string CSS_class
-parm:array Rows
-
-accepts an [[Array of Rows]] and returns a list of HTML TR elements,
-where each row is a TR, and each element of each array becomes an HTML
-TD element.
-
-Note that the keys of the [[Row Array]]s are not used, so they
-can actually be [[List Array]]s.
-
-Each table element is of class "CSS_class", or no class if the first
-parameter is blank.  The first parameter may be blank, but it must
-be provided.
+* accepts an [[Array of Rows]] and returns a list of HTML TR elements,
+* where each row is a TR, and each element of each array becomes an HTML
+* TD element.
+*
+* Note that the keys of the [[Row Array]]s are not used, so they
+* can actually be [[List Array]]s.
+*
+* Each table element is of class "CSS_class", or no class if the first
+* parameter is blank.  The first parameter may be blank, but it must
+* be provided.
+*
+* INPUTS
+*	string $class CSS Class (default = '')
+*	array $rows Array of Rows
+* RETURN
+*	string Generated HTML
 */
 function hTBodyFromRows($class='',$rows) {
    $retval='';
@@ -7253,15 +8917,15 @@ function hTBodyFromRows($class='',$rows) {
 
 
 /**
-name:hTRFromArray
-returns:string HTML
-parm:string CSS_Class
-parm:array Row
-group:HTML Tables
-
-Returns a complete TR row, with each element of the Row array
-becoming an HTML TD element.  Each TD is assigned the CSS class name
-of CSS_Class unless the first parameter is an empty string.
+* Returns a complete TR row, with each element of the Row array
+* becoming an HTML TD element.  Each TD is assigned the CSS class name
+* of CSS_Class unless the first parameter is an empty string.
+*
+* INPUTS
+*	string $class CSS Class
+*	array $array Array of Rows
+* RETURN
+*	string Generated HTML
 */
 function hTRFromArray($class,$array) {
    $retval="\n<tr>";
@@ -7272,16 +8936,17 @@ function hTRFromArray($class,$array) {
 }
 
 /**
-hTDsFromArray
-name:hTDsFromArray
-group:HTML Tables
-
-html string = <b>hTDsFromArray</b>($class,$array)
-
-Returns one or more TD elements row, with each element of the Row array
-becoming an HTML TD element.  Each TD is assigned the CSS class name
-of CSS_Class unless the first parameter is an empty string.
-
+* html string = <b>hTDsFromArray</b>($class,$array)
+*
+* Returns one or more TD elements row, with each element of the Row array
+* becoming an HTML TD element.  Each TD is assigned the CSS class name
+* of CSS_Class unless the first parameter is an empty string.
+*
+* INPUTS
+*	string $class CSS Class
+*	array $array
+* RETURN
+*	string Generated HTML
 */
 function hTDSFromArray($class,$array) {
    $retval='';
@@ -7291,7 +8956,17 @@ function hTDSFromArray($class,$array) {
    return $retval;
 }
 
-
+/**
+* Creates a sortable table using $cols as each column.  $cols should
+* be an associative array where the column name is the key and the inner
+* html the value.  Hidden variables are used to keep the sort value.
+*
+*	string $table_id table name
+*	array $cols columns
+*	string $class CSS Class (default = 'dhead')
+* RETURN
+*	string Generated Table
+*/
 function hTableSortable($table_id,$cols,$class='dhead') {
    // Since the table will be sortable, make a hidden variable
    // to keep the sort value
@@ -7315,23 +8990,23 @@ function hTableSortable($table_id,$cols,$class='dhead') {
 }
 
 /**
-name:hTable_methodAlternate
-returns:string HTML
-parm:array Rows
-parm:string CSS_Class1
-parm:string CSS_Class2
-group:HTML Tables
-
-Generates and returns one or more TR elements, where the rows alternate
-between CSS_Class1 and CSS_Class2.  If the two classes have different
-background colors, this produces alternating colored rows for the table,
-which some people find easier to read.
-
-The first parameter is an [[Array of Rows]].  Each [[Row Array]] becomes
-a complete HTML TR element.  The individual elements of each Row become
-HTML TD elements.
-
-The class assignments are made to the TD elements.
+* Generates and returns one or more TR elements, where the rows alternate
+* between CSS_Class1 and CSS_Class2.  If the two classes have different
+* background colors, this produces alternating colored rows for the table,
+* which some people find easier to read.
+*
+* The first parameter is an [[Array of Rows]].  Each [[Row Array]] becomes
+* a complete HTML TR element.  The individual elements of each Row become
+* HTML TD elements.
+*
+* The class assignments are made to the TD elements.
+*
+* INPUTS
+*	array $rows Rows Array
+*	string $class1 CSS Class 1
+*	string $class2 CSS Class 2
+* RETURN
+*	string Generated HTML
 */
 function hTable_MethodAlternate($rows,$class1,$class2) {
    $class=$class1;
@@ -7343,15 +9018,34 @@ function hTable_MethodAlternate($rows,$class1,$class2) {
    return $retval;
 }
 
-
+/**
+* Creates an HTML SQL formatted timestamp from SQL Timestamp $val
+*
+*	string $val
+* RETURN
+*	string SLQ HTML Timestamp
+*/
 function HTML_SQLTimestamp($val) {
 	return date('Y-m-d h:i:s A',X_SQLTS_TO_UNIX($val));
 }
+
+/**
+* Creates an HTML Unix Timestamp from the unix timestamp $val
+*
+*	string $val unix timestamp
+* RETURN
+*	string HTML Unix Timestamp
+*/
 function HTML_UnixTimestamp($val) {
 	return date('Y-m-d h:i:s A',$val);
 }
 
+<<<<<<< .mine
+
+function HTML_TIMESTAMP($date) {	return date("d-M-Y h:m:s a",$date); }
+=======
 function HTML_TIMESTAMP($date) {	return date("d-M-Y h:i:s a",$date); }
+>>>>>>> .r521
 
 function hTime($time) { return html_time($time); }
 function HTML_TIME($time) {
@@ -7383,24 +9077,25 @@ function HTML_TIMESLOT($slot) {
 }
 
 /**
-name:FindAccessKey
-parm:string HTML_Caption
-returns:array (HTML_Caption,HTML_Parm_Accesskey)
-
-Allows you to specify HMTL "Accesskey" for a hyperlink by putting a
-backslash into the caption, so that "\Example" returns "<u>E</u>xample"
-and 'accesskey="E"'.
-
-Accepts a string, examines the string for a backslash character.  If
-one is found, it removes the backslash and underlines the character
-immediately after.
-
-Returns the an array of two elements, first is the modified caption and
-the next is an HTML fragment 'accesskey="X"' where 'X' is whatever character
-was right after the backslash.
-
-If there is no backslash in the caption, then the caption is returned
-unchanged and the accesskey is empty.
+* Allows you to specify HMTL "Accesskey" for a hyperlink by putting a
+* backslash into the caption, so that "\Example" returns "<u>E</u>xample"
+* and 'accesskey="E"'.
+*
+* Accepts a string, examines the string for a backslash character.  If
+* one is found, it removes the backslash and underlines the character
+* immediately after.
+*
+* Returns the an array of two elements, first is the modified caption and
+* the next is an HTML fragment 'accesskey="X"' where 'X' is whatever character
+* was right after the backslash.
+*
+* If there is no backslash in the caption, then the caption is returned
+* unchanged and the accesskey is empty.
+*
+* INPUTS
+*	string $caption caption for <a> element
+* RETURN
+*	array (HTML_Caption,HTML_Parm_Accesskey)
 */
 function FindAccessKey($caption) {
    $akey='';
@@ -7433,11 +9128,12 @@ parent:Partial Date Functions
 */
 
 /**
-name:dMonFromNum
-parm:numb Month_Number
-returns:string Month_Name_3_Letter
-
-Returns a the three-letter name of the month, capitalized.
+* Returns a the three-letter name of the month, capitalized.
+*
+* INPUTS
+*	int $xmonth Month Number (1-12)
+* RETURN
+*	string Month Name 3 Letter
 */
 function dMonFromNum($xmonth) {
    $arr=array(''
@@ -7448,19 +9144,20 @@ function dMonFromNum($xmonth) {
 }
 
 /**
-name:dMonthEnd
-parm:unix_ts/String Start Date
-parm:int Months
-returns:unix_ts End Date
-
-Accepts a given date, and returns the last day of the month that
-includes "Months" number of months.  Passing in '1/1/2007' and '1'
-returns '1/31/2007'.  Passing in '6/1/2007' and 3 returns '8/31/2007'.
-
-Useful for building SQL queries that include ranges of dates.
-
-The first parameter can either be a unix ts or a string that will
-successfully convert to a unix ts, such as '1/1/2007' or '2007-01-01'.
+* Accepts a given date, and returns the last day of the month that
+* includes "Months" number of months.  Passing in '1/1/2007' and '1'
+* returns '1/31/2007'.  Passing in '6/1/2007' and 3 returns '8/31/2007'.
+*
+* Useful for building SQL queries that include ranges of dates.
+*
+* The first parameter can either be a unix ts or a string that will
+* successfully convert to a unix ts, such as '1/1/2007' or '2007-01-01'.
+*
+* INPUTS
+*	string $datein unix_ts/String Start Date
+*	int $months months
+* RETURN
+*	string unix_ts End Date
 */
 function dMonthEnd($datein,$months) {
    $dateout=dEnsureTS($datein);
@@ -7470,16 +9167,17 @@ function dMonthEnd($datein,$months) {
 }
 
 /**
-name:dEnsureTS
-parm:unix_ts/string date
-returns:unix_ts
-
-Accepts a variable and returns a unix timestamp.  If the value passed in
-is a number, the number is returned unchanged.  If the value is a string,
-it is converted via strtotime.
-
-Useful for writing resilient code when input values are not reliably
-one or the other.
+* Accepts a variable and returns a unix timestamp.  If the value passed in
+* is a number, the number is returned unchanged.  If the value is a string,
+* it is converted via strtotime.
+*
+* Useful for writing resilient code when input values are not reliably
+* one or the other.
+*
+* INPUTS
+*	string $datein unix_ts/string date
+* RETURN
+*	string unix_ts
 */
 function dEnsureTS($datein) {
    if(is_integer($datein)) return $datein;
@@ -7488,11 +9186,12 @@ function dEnsureTS($datein) {
 
 
 /**
-name:dMonthFromNum
-parm:numb Month_Number
-returns:string Month_Name
-
-Returns the full name of a month, capitalized.
+* Returns the full name of a month, capitalized.
+*
+* INPUTS
+*	int $xmonth Month Number
+* RETURN
+*	string Month Name
 */
 function dMonthFromNum($xmonth) {
    $x=array(''
@@ -7503,10 +9202,11 @@ function dMonthFromNum($xmonth) {
 }
 
 /**
-name:dYear
-returns:numb Current_Year
-
-Simple shorthand for php date function, date('Y',time());
+* Simple shorthand for php date function, date('Y',time());
+*
+* INPUTS
+* RETURN
+*	int year
 */
 function dYEar() {
    return date('Y',time());
@@ -7516,6 +9216,15 @@ function dYEar() {
 // ==================================================================
 // File Functions.  Mixed new and old
 // ==================================================================
+
+/**
+* Gets the filename for the path $filespec
+*
+* INPUTS
+*	string $filespec path
+* RETURN
+*	string filename
+*/
 function scFileName($filespec) {
    $pathinfo=pathinfo($filespec);
    if (isset($pathinfo['basename'])) {
@@ -7526,6 +9235,7 @@ function scFileName($filespec) {
    }
 }
 
+
 function scBaseName($filespec) {
     $filename = scFileName($filespec);
     $list = explode(".",$filename);
@@ -7535,6 +9245,15 @@ function scBaseName($filespec) {
     return implode(".",$list);
 }
 
+/**
+* Gets the extension to the path $filespec.  If no extension found,
+* returns ''.
+*
+* INPUTS
+*	string $filespec path
+* RETURN
+*	string extension to $filespec
+*/
 function scFileExt($filespec) {
    $pathinfo=pathinfo($filespec);
    if (isset($pathinfo['extension'])) {
@@ -7551,10 +9270,11 @@ function scFileExt($filespec) {
   *  one there already.  Good to make sure directory paths
   *  can always be safely used.
   *
-  *  @category files
+  *  INPUTS
   *  @example  $complete = scAddSlash($dir).$filename;
-  *  @param    $path string
-  *  @return   string
+  * 	   string	$path
+  *  RETURN
+*	  string
   */
 function raxAddSlash($path) {
    $path = trim($path);
@@ -7565,6 +9285,18 @@ function scAddSlash($path) { return raxAddSlash($path); }
 // ==================================================================
 // String clipping functions
 // ==================================================================
+
+/**
+* Clips off the string $item off of the beginning of the 
+* string $input.  If $item does not exist at the beginning of the string,
+* it returns the string as it was.
+*
+* INPUTS
+*	string $input input string
+*	string $item string to remove from beginning of $input
+* RETURN
+*	string original string or string with $item removed from the beginning
+*/
 function scClipStart($input,$item) {
    $len = strlen($item);
    if (substr($input,0,$len)==$item) {
@@ -7572,6 +9304,19 @@ function scClipStart($input,$item) {
    }
    return $input;
 }
+
+/**
+* Clips off the string $item out of the string and returns 
+* everything from the string until that point.  If the $item
+* is not at the very end of the string, you will lose the rest of
+* the string after the $item, including the $item.
+*
+* INPUTS
+*	string $input string input
+*	string $item item to clip
+* RETURN
+*	string string without $item at the end
+*/
 function scClipAfter($input,$item) {
    if (strpos($input,$item)!==false) {
       $input = substr($input,0,strpos($input,$item));
@@ -7582,8 +9327,16 @@ function scClipAfter($input,$item) {
 // ==================================================================
 // Type conversion functions
 // ==================================================================
+/**
+* Converts an SQL timestamp taken from the database to a 
+* unix timestamp and returns it.
+*
+* INPUTS
+*	string $dttm2timestamp_in database timestamp
+* RETURN
+*	string Unix Timestamp
+*/
 function X_SQLTS_TO_UNIX($dttm2timestamp_in){
-	//    returns unix timestamp for a given date time string that comes from DB
 	$date_time = explode(" ", $dttm2timestamp_in);
 	$date = explode("-",$date_time[0]);
 	if (!isset($date_time[1])) { $date_time[] = "00:00:00"; }
@@ -7597,11 +9350,31 @@ function X_SQLTS_TO_UNIX($dttm2timestamp_in){
 	return mktime(intval($hour), intval($minute), intval($second), intval($month), intval($day), intval($year));
 }
 
-
+/**
+* Converts a Unix timestamp to an SQL database timestamp and returns
+* it.  Has the option to skip quotes or not.
+* 
+* INPUTS
+*	string $dt timestamp
+*	boolean $skipquotes
+* RETURN
+*	string sql timestamp
+*/
 function X_UNIX_TO_SQLTS($dt,$skipquotes=false) {
 	if ($skipquotes) { $q=""; } else { $q="'"; }
 	return $q.date("Y-m-d h:i:s a",$dt).$q;
 }
+
+/**
+* Converts a unix timestamp to an sql date.  Has
+* option to skip quotes.
+*
+* INPUTS
+*	string $dt unix timestamp
+*	boolean $skipquotes
+* RETURN
+*	string sql date
+*/
 function X_UNIX_TO_SQLDATE($dt,$skipquotes=false) {
 	if ($skipquotes) { $q=""; } else { $q="'"; }
 	return $q.date("Y-m-d",$dt).$q;
@@ -7615,6 +9388,7 @@ function X_UNIX_TO_SQLDATE($dt,$skipquotes=false) {
 # ===============================================================
 # Table triggers
 # ===============================================================
+
 function variables_writeAfter($row) {
     $rows=SQL_AllRows("select * from variables");
     $cache=array();
@@ -7695,6 +9469,11 @@ function Option_Get($varname,$default='') {
   * dictionary entry as "x_<table_id>" so that you can
   * make inputs, read inputs, and so forth.  Originally
   * created to flesh out uses of the "fullpop" flag
+  *
+  * INPUTS
+  *	string $table_id table name
+  *	string $colcoldesc column with values
+  *	string $colinfo column with data
   */
 function DD_RowsAsTable($table_id,$colcolname,$colcoldesc,$colinfo) {
 	$table = DD_Table($table_id);
@@ -7773,22 +9552,34 @@ function DDProjectionResolve(&$table,$projection='') {
 // ==================================================================
 // Validation Stuff
 // ==================================================================
+/**
+* Checks to see if date $input is valid.  It is only valid if
+* it has 3 sections (month, day, year), and if the dates exists(no feb
+* 33).
+*
+* INPUTS
+*	string $input date input
+* RETURN
+*	boolean is it valid?
+*/
 function CheckTextDate($input) {
 	$arr = explode("/",$input);
 	if (Count($arr)!=3) { return false; }
 	else { return checkdate($arr[0],intval($arr[1]),intval($arr[2])); }
 }
 
-// ==================================================================
-// The subroutine that eats like a meal.  Does everything with
-// the data-oriented posted variables, independent of what page
-// we are on or going to.  Stores search criteria, does updates,
-// deletes, inserts.
-// ==================================================================
-// This is original name of routine
+/**
+* The subroutine that eats like a meal.  Does everything with
+* the data-oriented posted variables, independent of what page
+* we are on or going to.  Stores search criteria, does updates,
+* deletes, inserts.
+*
+* INPUTS
+*/
 function databaseFromPost() {
    return processPost();
 }
+
 
 function processPost() {
    // If they are doing a dupe check, convert it into a
@@ -8232,7 +10023,11 @@ function rowsFromFilters(&$table,$filters,$cols,$matches=array()) {
 
 // KFD 5/17/07, support lists, ranges, and greater/lesser
 //
-/* DEPRECATED.  Copied this to SQLFilter() and am going from there */
+/**
+*  DEPRECATED.  Copied this to SQLFilter() and am going from there
+* INPUTS
+* @deprecated Copied to SQLFilter()
+*/
 function rff_OneCol($colinfo,$colname,$tcv) {
     $tid = $colinfo['type_id'];
     $uiid= ArraySafe($colinfo,'uisearch_ignore_dash','N');
@@ -8282,18 +10077,19 @@ function rff_OneCol($colinfo,$colname,$tcv) {
 //
 
 /**
-name:AddControl
-parm:string Table_id
-parm:int skey
-parm:string Column_id
-parm:any Column_Value
-returns:string Control_Name
-
-Use this routine to register a form control and its value.  The information
-about the control is saved in the [[Context]].
-
-Returns the name of the control.  Use this as the HTML name property when
-putting the control onto the form.
+* Use this routine to register a form control and its value.  The information
+* about the control is saved in the [[Context]].
+*
+* Returns the name of the control.  Use this as the HTML name property when
+* putting the control onto the form.
+*
+* INPUTS
+*	string $table_id
+*	int $skey
+*	string $colname
+*	mixed $colvalue
+* RETURN
+*	string Control Name
 */
 function AddControl($table_id,$skey,$colname,$colvalue) {
    $controls=vgfGet('gpControls',array());
@@ -8345,20 +10141,21 @@ function ahFromRows(&$rows,$inputs,$table_id=null) {
 
 
 /**
-name:hWidget
-parm:string type_id
-parm:string name
-parm:string value (optional)
-
-This function is new as of 3/9/07, and not yet fully populated.  At the
-time of its creation, all widget generation is in [[ahInputsComprehensive]],
-with no ability to generate individual widgets as needed.  This will be
-added to as needed to supply the various types.
-
-If the type_id is cbool, then the HTML "value" property is always Y, and
-the third parameter is taken to be the caption.
-
-
+* This function is new as of 3/9/07, and not yet fully populated.  At the
+* time of its creation, all widget generation is in [[ahInputsComprehensive]],
+* with no ability to generate individual widgets as needed.  This will be
+* added to as needed to supply the various types.
+*
+* If the type_id is cbool, then the HTML "value" property is always Y, and
+* the third parameter is taken to be the caption.
+*
+* INPUTS
+*	string $type_id
+*	string $name
+*	string $value (optional, default = '')
+*	array $opts (optional, default = array())
+* RETURN
+*	string
 */
 function hWidget($type_id,$name,$value='',$opts=array()) {
    // Establish an array.  This uses the same basic structure
@@ -8452,6 +10249,9 @@ THESE NEW ROUTINES PROVIDE FAR SUPERIOR SEPARATION AND SEQUENCING
 OF THE WORK, WHICH HAS MADE THE ADDITION OF NEW FEATURES MUCH
 EASIER.
 
+*/
+/**
+* @deprecated
 */
 function ahInputsComprehensive(
       &$table,$mode,$row=array(),$projection='',$opts=array()
@@ -8933,6 +10733,9 @@ function ajsFromDD($table,$prefix) {
 
 
 # DEPRECATED, could probably lose this.
+/**
+* @deprecated
+*/
 function ahInputsFromProjection($table_id,$colnames) {
    $retval=array();
    if(is_null($table_id)) {
@@ -9024,6 +10827,14 @@ function CacheRowGet($table_id,$pkval) {
 // ==================================================================
 // Wrappers to normal functions or simple combos
 // ==================================================================
+/**
+* Displays message and wraps it in header tags with level
+* $level if a level is passed.  Then flushes the buffer.
+*
+* INPUTS
+*	string $message
+*	string $level
+*/
 function x_EchoFlush($message,$level=null) {
    $eopen = $eclose = "";
    if ($level) {
@@ -9047,6 +10858,9 @@ function x_EchoFlush($message,$level=null) {
   *
   * For some reason the fputs() does not put out a newline,
   * so this routine does it for you.
+  *
+  *	resource $FILE
+  *	string $text
   */
 function raxFLn($FILE,$text) {
    fputs($FILE,$text."\n");
@@ -9060,6 +10874,9 @@ function raxFLn($FILE,$text) {
   *
   * This routine allows you to pull array elements that
   * may not exist without tripping a notice.
+  * 
+  *	reference &$array
+  *	string $key
   */
 function raxArray(&$array,$key) {
    return isset($array[$key]) ? $array[$key] : '';
@@ -9069,6 +10886,17 @@ function raxArray(&$array,$key) {
 // Function Email Send.  NOT STUB
 // DOES NOT LOG.  Requires from and to
 // ==================================================================
+/**
+* Sends an email.  Warning: Does not log the email, and it is not a stub!
+* Will not work without $from or $to.
+*
+* INPUTS
+*	string $from
+*	string $to
+*	string $subject
+*	string $body
+*	string $headers
+*/
 function Email_Exp($from,$to,$subject,$body,$headers) {
    if (is_array($to))   { $to  =implode(",",$to);   }
 
@@ -9116,6 +10944,14 @@ function Email_Exp($from,$to,$subject,$body,$headers) {
 // and put up some HTML allowing the user to enter values manually,
 // which makes for a great interactive testing system.
 // ==================================================================
+/**
+* Sends an email to $to, with subject $subject and message
+* $message.
+*
+*	string $to
+*	string $subject
+*	string $message
+*/
 function EmailSend($to,$subject,$message) {
 	include_once("ddtable_adm_emails.php");
 	include_once("x_email.php");
@@ -9136,6 +10972,13 @@ function XML_RPC($callcode,$arr_inputs) {
 	include("x_xmlrpc.php");
 }
 
+/**
+* Generates an editor textarea with name $name
+* and inner text $value.
+* 
+*	string $name
+*	reference &$value
+*/
 function ehFCKEditor($name,&$value) {
    $x=$name;$x=$value; //annoying jedit compile warning
    ?>
@@ -9154,6 +10997,18 @@ function ehFCKEditor($name,&$value) {
    //$oFCKeditor->Create() ;
 }
 
+/**
+* Builds a string of HTML option elements from an array
+* $rows.  After return, string is ready to be placed
+* inside <select> elements.
+* 
+*	array $rows array
+*	mixed $current currently selected option
+*	int $colval column with values
+*	mixed $coldis columns with display
+* RETURN
+*	string Generated Option Elements
+*/
 function  hOptions($rows,$current,$colval,$coldis) {
    if (!is_array($coldis)) {
       $coldis = explode(',',$coldis);
@@ -9178,6 +11033,19 @@ function  hOptions($rows,$current,$colval,$coldis) {
    return $retval;
 }
 
+/**
+* Builds a string of option elements from a data dictionary
+* table.  String is ready to be inserted into a <select> element
+* upon return.
+*
+*	string $table_id
+*	string $curval
+*	string $firstletters
+*	array $matches
+*	string $distinct
+* RETURN
+*	string Generated HTML option element string
+*/
 function hOptionsFromTable(
     $table_id,$curval=''
     ,$firstletters='',$matches=array()
@@ -9218,15 +11086,14 @@ function hOptionsFromTable(
 
 
 /**
-name:hValueForSelect
-parm:string table_id
-parm:string PK_Value
-returns:string Display_Value
-
-Looks up a table's "dropdown" projection definition, then finds the row
-for the given PK_Value, and displays the columns named in the dropdown
-projection.
-
+* Looks up a table's "dropdown" projection definition, then finds the row
+* for the given PK_Value, and displays the columns named in the dropdown
+* projection.
+*
+*	string $table_id
+*	string $pkval
+* RETURN
+*	string
 */
 function hValueForSelect($table_id,$pkval) {
    $table=DD_TableRef($table_id);
@@ -9249,15 +11116,15 @@ function hValueForSelect($table_id,$pkval) {
 
 
 /**
-name:hpTabIndexNext
-returns:int
-
-Maintains a counter of TABINDEX values and returns the next one to
-be used.
-
-Used by [[ahInputsComprehensive]].  Can be used whenever inputs are
-being generated and you want them to have a precise tab order.
-
+* Maintains a counter of TABINDEX values and returns the next one to
+* be used.
+*
+* Used by [[ahInputsComprehensive]].  Can be used whenever inputs are
+* being generated and you want them to have a precise tab order.
+*
+*	int $offset (default 0)
+* RETURN
+*	int
 */
 function hpTabIndexNext($offset=0) {
    $tabindex=vgfGet('tabindex',0)+1;
@@ -9267,19 +11134,19 @@ function hpTabIndexNext($offset=0) {
 
 
 /**
-name:hOptionsFromRows
-parm:array Rows
-parm:string Column_value
-parm:string Column_innerHTML
-returns:string HTML_Fragment
-
-Generates a string of HTML OPTION elements out of a [[Rows Array]], suitable
-for inclusion into an HTML SELECT element.
-
-The first paremeter is a [[Rows Array]].  The second parameter names the
-column that is used to set the value properties of each OPTION element,
-the second parameter names the column used to set the innerHTML of each
-OPTION element.
+* Generates a string of HTML OPTION elements out of a [[Rows Array]], suitable
+* for inclusion into an HTML SELECT element.
+*
+* The first paremeter is a [[Rows Array]].  The second parameter names the
+* column that is used to set the value properties of each OPTION element,
+* the second parameter names the column used to set the innerHTML of each
+* OPTION element.
+*
+*	array $rows
+*	string $col_value value for option element
+*	string $col_inner Inner HTML
+* RETURN
+*	string Generated HTML
 */
 function hOptionsFromRows($rows,$col_value,$col_inner) {
    $retval='';
@@ -9292,7 +11159,9 @@ function hOptionsFromRows($rows,$col_value,$col_inner) {
    return $retval;
 }
 
+/**
 
+*/
 function H_SELECT_OPTS($dbrows,$skey,$table,$colsdsp,$init=false) {
    // If table dd was not passed, get it now
    if(!is_array($table)) {
@@ -9322,16 +11191,44 @@ function H_SELECT_OPTS($dbrows,$skey,$table,$colsdsp,$init=false) {
    return $retval;
 }
 
+/**
+* Creates a selection element here multiple options are able to be
+* selected at once.  Accepts a rows array as option data storage.
+*
+*	string $name
+*	array $rows
+*	string $colkey
+*	mixed $colval
+*	string $selected
+*	string $extra
+* RETURN
+*	string Generated HTML selection element
+*/
 function hSelectMultiFromRows($name,$rows,$colkey,$colval,$selected='',$extra='') {
    $aa = AAFromRows($rows,$colkey,$colval);
    return hSelectMultiFromAA($aa,$name,$selected,$extra);
 }
 
+/**
+* Creates a selection element out of rows array $rows.
+*
+*	string $name
+*	array $rows
+*	string $colkey
+*	mixed $colval
+*	string $selected
+*	string $extra
+* RETURN
+*	string Generated HTML selection element
+*/
 function hSelectFromRows($name,$rows,$colkey,$colval,$selected='',$extra='') {
    $aa = AAFromRows($rows,$colkey,$colval);
    return hSelectFromAA($aa,$name,$selected,$extra);
 }
 
+/**
+
+*/
 function hSelectFiltered($table_id,$columns,$name='',$selected='',$extra='',$failsafe=array()) {
    // Make an empty select to return on failure
    // Get the correct table_id
@@ -9378,6 +11275,21 @@ function hSelectFiltered($table_id,$columns,$name='',$selected='',$extra='',$fai
    exit;
 }
 
+/**
+* Creates a <select> block by building option values from the
+* associative array and then passing the option elements
+* to hSelect in order to make a full <select> element.
+*
+* Associative array should be in a format with the "value" of the
+* option as the key, and the inner text as the value.
+*
+*	array $aa associative array
+*	string $name
+*	string $selected
+*	string $extra
+* RETURN
+*	string Generated <select> block
+*/
 function hSelectFromAA($aa,$name,$selected='',$extra='') {
    $hOpts = '';
    foreach($aa as $value=>$caption) {
@@ -9390,6 +11302,21 @@ function hSelectFromAA($aa,$name,$selected='',$extra='') {
    return hSelect($name,$selected,$hOpts,$extra);
 }
 
+/**
+* Builds a select block where multiple options can be selected
+* at once.  The select block is build from the associative array
+* $aa.
+*
+* Associative array should be in a format with the "value" of the
+* option as the key, and the inner text as the value.
+*
+*	array $aa associative array
+*	string $name name of the select block
+*	string $selected selected option value
+*	string $extra extra properties for the select element
+* RETURN
+*	string Generated HTML Select element
+*/
 function hSelectMultiFromAA($aa,$name,$selected='',$extra='') {
    $hOpts = '';
    foreach($aa as $value=>$caption) {
@@ -9402,6 +11329,17 @@ function hSelectMultiFromAA($aa,$name,$selected='',$extra='') {
    return hSelectMulti($name,$selected,$hOpts,$extra);
 }
 
+/**
+* Builds a select block with $inner as the inner
+* option elements.
+*
+*	string $name
+*	string $value
+*	string $inner
+*	string $extra
+* RETURN
+*	string Generated Select Element
+*/
 function  hSELECT($name,$value,$inner,$extra='') {
    $inner = str_replace(
       'value"'.$value.'"'
@@ -9415,6 +11353,18 @@ function  hSELECT($name,$value,$inner,$extra='') {
       ."</SELECT>";
 }
 
+/**
+* Builds a select element where more than one option
+* can be selected at one time.  It uses $inner as the
+* inner option elements.
+*
+*	string $name
+*	string $value
+*	string $inner
+*	string $extra
+* RETURN
+*	string Generated select element
+*/
 function  hSelectMulti($name,$value,$inner,$extra='') {
    $x=$extra;
    return
@@ -9423,6 +11373,7 @@ function  hSelectMulti($name,$value,$inner,$extra='') {
       .$inner
       .'</SELECT>';
 }
+
 
 function rHE_IMG_Inline($src) {
    if ($src=='') {
@@ -9445,6 +11396,17 @@ function rHE_IMG_Inline($src) {
 
 }
 
+/**
+* Builds a hypertext link to the get/post page $page
+* with $caption as the inner html of the <a> element.
+* Passes $skey as a $_GET variable
+*
+*	string $page pagename
+*	string $caption inner <a> html
+*	string $skey
+* RETURN
+*	string Generated HTML
+*/
 function HLINK_Page($page,$caption,$skey) {
    return
       '<a href="index.php?gp_page='.$page.'&gp_skey='.$skey.'">'
@@ -9463,6 +11425,18 @@ function rH_Concat($listvals,$row) {
 
 
 //---------------------------------------------------------------------
+
+/**
+* Returns the row in the associative array $arr where the keyname
+* is equal to $keyname and the value associated with that key is
+* equal to $keyvalue.  Returns false if it cannot find the row.
+*
+*	reference &$arr
+*	string $keyname
+*	string $keyvalue
+* RETURN
+*	mixed
+*/
 function raxarr_FindRow(&$arr,$keyname,$keyvalue) {
    $keys = array_keys($arr);
    foreach ($keys as $key) {
@@ -9473,12 +11447,29 @@ function raxarr_FindRow(&$arr,$keyname,$keyvalue) {
    return false;
 }
 
+/**
+* Includes an array that was written to a file.  $filename is the
+* name of the file.  Returns an empty array if the file is not found.
+*
+*	string $filename name of file
+* RETURN
+*	array
+*/
 function raxIncludeArray($filename) {
    $temp=array();
    @include($filename);
    return $temp;
 }
 
+/**
+* Returns the first non-null, non-empty string value in the
+* array $args.  If there is no such value found, function returns
+* an empty string ''.
+*
+*	array $args
+* RETURN
+*	mixed first non-null non-emptystring value
+*/
 function raxCoalesce($args) {
    foreach ($args as $arg) {
       if (!is_null($arg)) {
@@ -9488,6 +11479,15 @@ function raxCoalesce($args) {
    return '';
 }
 
+/**
+* Returns the first non-null value starting with the
+* gp_skey, and then onto the txt_skey.  If niether are
+* non-null, then function returns the default value $default.
+*
+*	int $default default value
+* RETURN
+*	mixed first non null value
+*/
 function CleanCoalesceSkey($default=0) {
    return raxCoalesce(
       array(
@@ -9498,6 +11498,15 @@ function CleanCoalesceSkey($default=0) {
    );
 }
 
+/**
+* Explodes the string $string using delimeter $delim.  Returns an associative array
+* where each value from the explode of $string is both a key and a value.
+*
+*	string $delim delimeter to use
+*	string $string string to explode
+* RETURN
+*	array
+*/
 function raxExplodeToKeys($delim,$string) {
    $retval = array();
    $arr1 = explode($delim,$string);
@@ -9507,7 +11516,18 @@ function raxExplodeToKeys($delim,$string) {
    return $retval;
 }
 
-
+/**
+* Builds an HTML Table from an array of rows.  Can be used for database
+* rows, or any other kind of rows array.  Handles both explicit list
+* of columns, and suppressed ones.  Columns should be passed in the $args
+* parameter.  If title isn't held in the column array in $args, then the
+* function takes the column's name as the title.
+*
+*	reference &$dbrows
+*	array $args
+* RETURN
+*	string Generated HTML Table
+*/
 function HTMLE_Table(&$dbrows,$args=array()) {
    // Set up list of columns.  If An explicit list is passed,
    // use that.  If not, use all columns except the suppressed ones
@@ -9556,10 +11576,27 @@ function HTMLE_Table(&$dbrows,$args=array()) {
    return $retval."</table>";
 }
 
+/**
+* A wrapper function for raxFGETS().  It runs fgets() on the passed
+* file $F, but then removes all newline and return characters from it.
+*
+* @see raxFGETS()
+*	resource $F file pointer
+* RETURN
+*	string
+*/
 function lFGets($F) {
    return raxFGETS($F);
 }
 
+/**
+* It runs fgets() on the passed file $F, but then removes all newline and
+* return characters (\n or \r) from it.
+* 
+*	resource $F file pointer
+* RETURN
+*	string
+*/
 function raxFGETS($F) {
    $retval= fgets($F);
    $retval= str_replace("\n","",$retval);
@@ -9567,14 +11604,38 @@ function raxFGETS($F) {
    return $retval;
 }
 
+/**
+* Returns a link with $_GET parameters gp_page set to $page
+* and gp_skey as $skey.
+*
+*	string $page
+*	string $skey
+* RETURN
+*	string
+*/
 function raxLinkBySkey($page,$skey) {
    return 'index.php?gp_page='.$page.'&gp_skey='.$skey;
 }
 
+/**
+* Removes ".0" from anywhere inside the string $string.
+*
+*	string $string
+* RETURN
+*	string
+*/
 function raxNoDotZero($string) {
    return str_replace('.0','',$string);
 }
 
+/**
+* Adds the total of the $dest array and $source array for each value
+* and stores the total in $dest.  All previous data in $dest gets
+* erased and replaced with the total values.
+*
+*	reference &$dest
+*	reference &$source
+*/
 function raxArrayTotals(&$dest,&$source) {
    foreach ($source as $key=>$value) {
       $old = isset($dest[$key]) ? $dest[$key] : 0;
@@ -9638,6 +11699,7 @@ function ehXMLDoc($feed_id,$atts,$xmlresult) {
    ehXMLData($xmlresult);
 }
 
+
 function genXMLdoctype(&$node,&$aelements) {
    // Each "node" is a collection of element names to process
    // and each element contains one or more rows to output
@@ -9664,6 +11726,7 @@ function genXMLdoctype(&$node,&$aelements) {
    }
 }
 
+
 function ehXMLData(&$node) {
    // Each "node" is a collection of element names to process
    // and each element contains one or more rows to output
@@ -9689,35 +11752,54 @@ function ehXMLData(&$node) {
 //---------------------------------------------------------------------
 
 /**
-name:sdFromUnixTS
-parm:Unix_TS
-returns:string string_date
-group:Date/Time Functions
-
-returns a string in the form YYYYMMDD from a Unix timestamp.
-This type of string has the advantage of being sortable.
-
-The term 'sd' means "string date" from
-an old dbase/Foxpro function StringDate().
-
+* returns a string in the form YYYYMMDD from a Unix timestamp.
+* This type of string has the advantage of being sortable.
+*
+* The term 'sd' means "string date" from
+* an old dbase/Foxpro function StringDate().
+*
+*	$unix Unix Timestamp
+* RETURN
+*	string string date
 */
 function sdFromUnixTS($unix_ts=null) {
    if(is_null($unix_ts)) $unix_ts=time();
    return date('Ymd',$unix_ts);
 }
 
-
+/**
+* Removes all zeroes from $value
+*
+*	string $value
+* RETURN
+*	string no zeroes
+*/
 function NoZeroes($value) {
    if(intval($value)==0) return '';
    else return str_replace('.0','',$value);
 }
 
+/**
+* Checks if $file is in the include path.  If it is,
+* then includes the file.
+* 
+*	string $file
+*/
 function include_incpath($file) {
    if(file_exists_incpath($file)) {
       include($file);
    }
 }
 
+/**
+* Checks to see if $value is valid.  Value is valid if it only includes
+* letters a-z lowercase, and digits 0-9 and underscore.  Returns false
+* if invalid.
+*
+*	string $value
+* RETURN
+*	boolean
+*/
 function isValidName($value) {
    $value=trim($value);
    if(strlen($value)==0) return false;
@@ -9730,22 +11812,50 @@ function isValidName($value) {
 }
 
 
-
+/**
+* Stores the current time
+*/
 function eTimeBegin() {
    if (!isset($GLOBALS['AG']['etimes'])) $GLOBALS['AG']['etimes']=array();
    $GLOBALS['AG']['etimes'][] = time();
 }
+
+/**
+* Returns the difference between the current time and the most
+* recently stored time.  If the stored times has not been
+* initialized, then the function returns -1.  If there are no stored
+* times, then it returns -2.
+*/
 function eTimeEnd() {
    if (!isset($GLOBALS['AG']['etimes'])) return -1;
    if (count($GLOBALS['AG']['etimes'])==0)  return -2;
    return time() - array_pop($GLOBALS['AG']['etimes']);
 }
 
+/**
+* Gets the first match between $pattern and $subject.  If there is
+* no match, returns an empty string ''.
+*
+*	string $pattern regular expression pattern
+*	string $subject string to search
+* RETURN
+*	string matched value
+*/
 function strFrompreg_match($pattern,$subject) {
    $matches=array();
    preg_match($pattern,$subject,$matches);
    return ArraySafe($matches,0,'');
 }
+
+/**
+* Gets the second match between $subject and $pattern.  If there was no second
+* match, returns an empty string ''.
+*
+*	string $pattern regular expression pattern
+*	string $subject string to look for matches
+* RETURN
+*	string matched value
+*/
 function substrFrompreg_match($pattern,$subject) {
    $matches=array();
    preg_match($pattern,$subject,$matches);
@@ -9777,12 +11887,12 @@ parent:TableRows
 
 
 /**
-name:hTableRowsRender
-parm:array TableRows
-returns:string HTML_Fragment
-
-Accepts an array of [[TableRows]] and returns the HTML ready to go to
-the screen.
+* Accepts an array of [[TableRows]] and returns the HTML ready to go to
+* the screen.
+*
+*	reference &$array
+* RETURN
+*	string Generated HTML
 */
 function hTableRowsRender(&$array) {
    ob_start();
@@ -9799,19 +11909,19 @@ function hTableRowsRender(&$array) {
 }
 
 /**
-name:TableRowsFromRows
-parm:array Rows
-returns:array TableRows
-
-Accepts a [[Rows Array]] and returns a [[TableRows]] array.  None of the
-cells of the [[TableRows]] array will have a class assignment.  This is
-very important, as some routines such as [[TableRowsClassAlternate]] will
-not override an existing class assignment.  Because of those routines that
-do not override an existing class assignment, this routine makes no class
-assignment.
-
-This routine is normally used for body data, not for the row of header
-cells.
+* Accepts a [[Rows Array]] and returns a [[TableRows]] array.  None of the
+* cells of the [[TableRows]] array will have a class assignment.  This is
+* very important, as some routines such as [[TableRowsClassAlternate]] will
+* not override an existing class assignment.  Because of those routines that
+* do not override an existing class assignment, this routine makes no class
+* assignment.
+*
+* This routine is normally used for body data, not for the row of header
+* cells.
+*
+*	array $rows
+* RETURN
+*	array Table Rows array
 */
 function TableRowsFromRows($rows) {
    $retval=array();
@@ -9826,16 +11936,15 @@ function TableRowsFromRows($rows) {
 }
 
 /**
-name:TableRowFromArray
-parm:array Input
-returns:array TableRows
-
-Accepts a numerically indexed array a [[TableRows]] array containing one
-inner row.
-
-This routine is normally used for header cells, so that they can be
-output using [[hTableRowsRender]].
-
+* Accepts a numerically indexed array a [[TableRows]] array containing one
+* inner row.
+*
+* This routine is normally used for header cells, so that they can be
+* output using [[hTableRowsRender]].
+*
+*	array $array
+* RETURN
+*	array
 */
 function TableRowFromArray($array) {
    $retval=array();
@@ -9847,15 +11956,13 @@ function TableRowFromArray($array) {
 
 
 /**
-name:TableRowsSetClass
-parm:array TableRows
-parm:string CSS_Class
-parm:bool override
-
-Accepts a [[TableRows]] array by reference, and applies a single class
-to all cells.  If the third parameter is true, it will override any
-existing class assignments, else it will leave them alone.
-
+* Accepts a [[TableRows]] array by reference, and applies a single class
+* to all cells.  If the third parameter is true, it will override any
+* existing class assignments, else it will leave them alone.
+*
+*	reference &$rows
+*	string $class css class
+*	boolean $override (default = false)
 */
 function TableRowsSetClass(&$rows,$class,$override=false) {
    $rowkeys=array_keys($rows);
@@ -9875,17 +11982,15 @@ function TableRowsSetClass(&$rows,$class,$override=false) {
 }
 
 /**
-name:TableRowsSetColumnClass
-parm:array TableRows
-parm:string Column_Name
-parm:string CSS_Class
-parm:bool override
-
-Accepts a [[TableRows]] array by reference, and applies a single class
-to one column for all rows.  If the third parameter is true,
-it will override any
-existing class assignments, else it will leave them alone.
-
+* Accepts a [[TableRows]] array by reference, and applies a single class
+* to one column for all rows.  If the third parameter is true,
+* it will override any
+* existing class assignments, else it will leave them alone.
+*
+*	reference &$rows
+*	string $colkey
+*	string $class css class
+*	boolean $override (default = false)
 */
 function TableRowsSetColumnClass(&$rows,$colkey,$class,$override=false) {
    $rowkeys=array_keys($rows);
@@ -9902,18 +12007,16 @@ function TableRowsSetColumnClass(&$rows,$colkey,$class,$override=false) {
 }
 
 /**
-name:TableRowsSetClassAlternate
-parm:array TableRows
-parm:string CSS_Class1
-parm:string CSS_Class2
-parm:bool override
-
-Accepts a [[TableRows]] array by reference, and applies alternating CSS
-classes CSS_Class1 and CSS_Class2 to the rows.
-
-If the third parameter is true, it will override any
-existing class assignments, else it will leave them alone.
-
+* Accepts a [[TableRows]] array by reference, and applies alternating CSS
+* classes CSS_Class1 and CSS_Class2 to the rows.
+*
+* If the third parameter is true, it will override any
+* existing class assignments, else it will leave them alone.
+*
+*	reference &$rows
+*	string $class1 css class 1
+*	string $class2 css class 2
+*	boolean $override (default = false)
 */
 function TableRowsSetClassAlternate(&$rows,$class1,$class2,$override=false) {
    $rowkeys=array_keys($rows);
@@ -9948,6 +12051,9 @@ function TableRowsSetClassAlternate(&$rows,$class1,$class2,$override=false) {
 // ==================================================================
 // ==================================================================
 
+/**
+* @deprecated
+*/
 function explodeempty($delim,$string) {
    if($string=='') {
       return array();
@@ -9972,17 +12078,15 @@ the framework.
 
 
 /**
-name:login
-parent:Security Functions
-parm:string USER_ID
-parm:string PASSWORD
-
-This is an experimental routine.
-
-This routine is used by public websites that accept user registration
-information.  The idea is that after you create their account you call
-this routine to log them in, saving them the annoyance of having to
-re-type their username/password at a login screen.
+* This is an experimental routine.
+*
+* This routine is used by public websites that accept user registration
+* information.  The idea is that after you create their account you call
+* this routine to log them in, saving them the annoyance of having to
+* re-type their username/password at a login screen.
+*
+*	string $UID User ID
+*	string $PWD Password
 */
 function Login($UID,$PWD) {
    // Make it look like the UID and PWD were passed in on the
@@ -10004,14 +12108,11 @@ function Login($UID,$PWD) {
 }
 
 /**
-name:POSClear
-
-When this is called on a system using Point-of-Sale [[Security]], any
-further action will require a user to authenticate again.  This is
-usually done after a sales order is saved, or a credit memo made, or
-any other type of transaction is completed and the terminal is expected
-to be left open for the next user.
-
+* When this is called on a system using Point-of-Sale [[Security]], any
+* further action will require a user to authenticate again.  This is
+* usually done after a sales order is saved, or a credit memo made, or
+* any other type of transaction is completed and the terminal is expected
+* to be left open for the next user.
 */
 function POSClear() {
    SessionSet("POS_PAGE","",'FW');
@@ -10078,6 +12179,9 @@ TODO:
 */
 
 // KFD 2/29/08 Return complete set of generated widgets
+/**
+* @deprecated
+*/
 function aWidgets(&$table,$row=array(),$mode='upd',$projection='') {
 
     // Do the two basics
@@ -10120,13 +12224,18 @@ function aWidgets(&$table,$row=array(),$mode='upd',$projection='') {
 
 
 // This routine generates the value assignments
+/**
+* @deprecated
+*/
 function jsValues($ahcols,$name,$row,$h) {
    foreach($ahcols as $colname=>$ahcol) {
        $h = jsValuesOne($ahcols,$colname,$ahcol,$name,$row,$h);
    }
    return $h;
 }
-
+/**
+* @deprecated
+*/
 function jsValuesOne($ahcols,$colname,$ahcol,$name,$row,$h) {
     // KFD 9/7/07, slip this in for mime-h columns, they are
     //             much simpler.
@@ -10291,7 +12400,9 @@ function jsValuesOne($ahcols,$colname,$ahcol,$name,$row,$h) {
    return $h;
 }
 
-
+/**
+* @deprecated
+*/
 function hDetailFromAHCols($ahcols,$name,$tabindex,$display='') {
    // Apply the names
    ahColsNames($ahcols,$name,$tabindex);
@@ -10343,7 +12454,9 @@ function hDetailFromAHCols($ahcols,$name,$tabindex,$display='') {
    return ob_get_clean();
 }
 
-
+/**
+* @deprecated
+*/
 function WidgetFromAHCols(&$ahcols,$colname,$prefix,$value,$tabindex) {
    // First clear up the names
    ahcolNames($ahcols,$colname,$prefix,$tabindex);
@@ -10359,13 +12472,18 @@ function WidgetFromAHCols(&$ahcols,$colname,$prefix,$value,$tabindex) {
    return $h;
 }
 
-
+/**
+* @deprecated
+*/
 function AHColsNames(&$ahcols,$name,$tabindex) {
    foreach($ahcols as $colname=>$ahcol) {
       AHColNamesOne($ahcols,$colname,$name,$tabindex);
    }
 }
 
+/**
+* @deprecated
+*/
 function AHColNamesOne(&$ahcols,$colname,$name,$tabindex) {
    $cname=$name.$colname;
    $ahcol=$ahcols[$colname];
@@ -10393,6 +12511,9 @@ function AHColNamesOne(&$ahcols,$colname,$name,$tabindex) {
 // else because all of this code is now superseded by the html()
 // class and related functions.
 //
+/**
+* @deprecated
+*/
 function AHColNames(&$ahcols,$colname,$name,$tabindex) {
    $cname=$name.$colname;
    $ahcol=$ahcols[$colname];
@@ -10421,6 +12542,9 @@ function AHColNames(&$ahcols,$colname,$name,$tabindex) {
 // all HTML decisions.  Generates all snippets.  Main body
 // is just a loop that goes through each column.
 //
+/**
+* @deprecated
+*/
 function ahColsFromaCols($acols,$matches=array()) {
    // Here we "inject" the drilldown values into the
    // array of information for future reference.  Then
@@ -10455,7 +12579,9 @@ function ahColsFromaCols($acols,$matches=array()) {
    }
    return $acols;
 }
-
+/**
+* @deprecated
+*/
 function ahColFromACol(&$acol) {
    // Link to the subarray and assign any defaults
    $acol['html_element']='input';
@@ -10773,7 +12899,9 @@ function ahColFromACol(&$acol) {
 }
 
 
-
+/**
+* @deprecated
+*/
 function aColsModeProj(&$table,$mode,$projection='') {
    if(!Is_array($table)) $table = dd_tableref($table);
    // begin with the info from the data dictionary
@@ -10846,6 +12974,9 @@ function aColsModeProj(&$table,$mode,$projection='') {
 // it generates end-stage code that just needs --NAME-PREFIX
 // replaced.
 //
+/**
+* @deprecated
+*/
 function aColsModeProjcalcRow(&$table,&$acols) {
    $retval=array();
    foreach($table['sequenced'] as $colname) {
@@ -10857,6 +12988,9 @@ function aColsModeProjcalcRow(&$table,&$acols) {
    }
    vgaset('calcRow',implode("\n",$retval));
 }
+/**
+* @deprecated
+*/
 function aColsModeProjCalcRowColumn(&$chaincalc) {
    // Extremely limited, we return the value of the first test
    // unconditionally
@@ -10895,6 +13029,9 @@ This is a framework function, you would not normally call this in code.
 
 
 */
+/**
+* @deprecated
+*/
 function aColInfoFromDD($table) {
    $retval = array();
 
@@ -10915,7 +13052,9 @@ function aColInfoFromDD($table) {
 
    return $retval;
 }
-
+/**
+* @deprecated
+*/
 function aColInfoFromDDColumns(&$table,&$retval) {
    $perm_upd = DDUserPerm($table['table_id'],'upd');
    // ----------------------------------------------
@@ -11076,6 +13215,9 @@ function aColInfoFromDDColumns(&$table,&$retval) {
    return $retval;
 }
 
+/**
+* @deprecated
+*/
 function aColInfoFromDDTable(&$table,&$retval) {
    // ----------------------------------------------
    // BIG DEAL 2: Table-level stuff assigned to
@@ -11133,7 +13275,9 @@ function aColInfoFromDDTable(&$table,&$retval) {
       }
    }
 }
-
+/**
+* @deprecated
+*/
 function acolBlank($type_id,$colprec=0,$colscale=0) {
    return array(
       'description'=>''
@@ -11158,7 +13302,9 @@ function acolBlank($type_id,$colprec=0,$colscale=0) {
 }
 
 
-
+/**
+* @deprecated
+*/
 class XMLTree {
     function XMLTree() {
         $this->stack=array(0);
@@ -11236,7 +13382,9 @@ class XMLTree {
     }
 }
 
-
+/**
+* @deprecated
+*/
 function androloadXML($file) {
     $depth  = array();
     global $tree;
@@ -11262,7 +13410,9 @@ function androloadXML($file) {
     return $tree;
 }
 
-
+/**
+* @deprecated
+*/
 function startElement($parser, $name, $attrs)
 {
    // Our stuff.  Make a new node
@@ -11275,13 +13425,17 @@ function startElement($parser, $name, $attrs)
    global $tree;
    $tree->openChild($newnode);
 }
-
+/**
+* @deprecated
+*/
 function endElement($parser, $name)
 {
    global $tree;
    $tree->closeChild();
 }
-
+/**
+* @deprecated
+*/
 function characterData($parser, $data) {
     global $tree;
 
@@ -11289,7 +13443,9 @@ function characterData($parser, $data) {
     $tree->AddData($data);
     endElement($parser,null);
 }
-
+/**
+* @deprecated
+*/
 function cssInclude($file,$force_immediate=false) {
     // This program echos out immediately if not in debug
     // mode, otherwise they all get output as one
@@ -11304,7 +13460,9 @@ function cssInclude($file,$force_immediate=false) {
         vgfSet('cssIncludes',$css);
     }
 }
-
+/**
+* @deprecated
+*/
 function cssOutput() {
     // Get the array of files to output and combine
     $css = vgfGet('cssIncludes',array());
@@ -11334,13 +13492,17 @@ function cssOutput() {
          href='/<?=tmpPathInsert()."clib/css-min-$md5.css"?>' />
     <?php
 }
-
+/**
+* @deprecated
+*/
 function jqPlugin( $file, $comments='') {
     $jqp = vgfGet('jqPlugins',array());
     $jqp[] = array('file'=>$file,'comments'=>$comments);
     vgfSet('jqPlugins',$jqp);
 }
-
+/**
+* @deprecated
+*/
 function jsInclude( $file, $comments='',$immediate=false ) {
     # KFD 7/28/08, immediate does not mean put it out now,
     #              but uncoditionally output it as a 
@@ -11362,7 +13524,9 @@ function jsInclude( $file, $comments='',$immediate=false ) {
         vgfSet('jsIncludes',$ajs);
     #}
 }
-
+/**
+* @deprecated
+*/
 function jsOutput() {
     // Get the array and see if there is anything to do
     $ajs = vgfGet('jsIncludes',array());
@@ -11847,19 +14011,20 @@ function SQL_OneRow($sql) {
 }
 
 /**
-name:SQL_AllRows
-parm:string SQL_Command
-parm:string Column_id
-
-Executes a SQL command and retrieves all rows into a [[Rows Array]].
-
-If the second parameter is provided, then the values of the named
-column are made into the keys for the rows in the result.
-
-Extreme care should be taken with this command.  Experience has shown
-that PHP's performance drops dramatically with the size of the result
-set, so much so that anything over 100 rows or so should probably not
-be contemplated for this command.
+* Executes a SQL command and retrieves all rows into a [[Rows Array]].
+*
+* If the second parameter is provided, then the values of the named
+* column are made into the keys for the rows in the result.
+*
+* Extreme care should be taken with this command.  Experience has shown
+* that PHP's performance drops dramatically with the size of the result
+* set, so much so that anything over 100 rows or so should probably not
+* be contemplated for this command.
+*
+*	string $sql command
+*	string $colname column id (default = '')
+* RETURN
+*	array
 */
 function SQL_AllRows($sql,$colname='') {
    $results = SQL($sql);
@@ -12661,7 +14826,8 @@ function RowsForSelect($table_id,$firstletters='',$matches=array(),$distinct='',
    /*
    openlog(false,LOG_NDELAY,LOG_USER);
    syslog(LOG_INFO,$table['projections']['dropdown']);
-   syslog(LOG_INFO,$sq);
+   syslogbodyRows
+   (LOG_INFO,$sq);
    closelog();
    */
    syslog(LOG_INFO,$sq);
