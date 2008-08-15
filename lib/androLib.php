@@ -9769,7 +9769,7 @@ function processPost_Textboxes($row) {
 // Closely related routine, depends
 // entirely upon the context
 // - - - - - - - - - - - - - - - - -  -
-function rowsFromUserSearch(&$table,$lcols=null,$matches=array()) {
+function rowsFromUserSearch(&$table,$lcols=null,$matches=array(),$child=false) {
     $table_id=$table['table_id'];
     $view_id =DDTable_IDResolve($table_id);
     // If search has not been performed, do it now
@@ -9781,7 +9781,15 @@ function rowsFromUserSearch(&$table,$lcols=null,$matches=array()) {
     // Now go in and retrieve the rows for the skey values
     // that we want
     $gp_spage = ConGet('table',$table_id,'spage',1);
-    $gp_rpp   = ConGet('table',$table_id,'rppage',25);
+    
+    /* DJO 8-15-2008 Added to allow config override of rows 
+     * returned for a child table displayed with parent
+     */
+    if ( $child ) {
+        $gp_rpp   = configGet( 'sql_limit', ConGet('table',$table_id,'rppage',25) );
+    } else {
+        $gp_rpp   = ConGet('table',$table_id,'rppage',25);
+    }
     $colob = ConGet('table',$table_id,'orderby');
     //$gp_ob
     //    ="Order By ".$colob
@@ -9794,8 +9802,15 @@ function rowsFromUserSearch(&$table,$lcols=null,$matches=array()) {
     //    $colob2=$table_opts[$table_id]['sortnext'][$colob];
     //    $gp_ob.=', '.$colob2.' '.ConGet('table',$table_id,'orderasc');
     //}
-
-    $skeysl =array_slice($skeys,($gp_spage-1)*$gp_rpp,$gp_rpp);
+    
+    /* DJO 8-15-2008 Added to allow config override of rows 
+     * returned for a child table displayed with parent
+     */
+    if ( $gp_rpp == 0 ) {
+        $skeysl = $skeys;
+    } else {
+        $skeysl = array_slice($skeys,($gp_spage-1)*$gp_rpp,$gp_rpp);
+    }
     $skeysl =implode(',',$skeysl);
     if($skeysl=='') return array();  // Early return
 
@@ -9906,7 +9921,11 @@ function rowsFromFilters(&$table,$filters,$cols,$matches=array()) {
 
     // Retrieve the limit as a vgaget, defaulting to 300
     // DJO 4-8-2008 Allow for system variable override, 0 would be all records
-    $SQL_Limit = OptionGet( 'SQL_LIMIT', vgaGet( 'SQL_Limit', 300 ) );
+    /**
+    * DJO 8-15-2008 No longer needed because of the Config System
+    */
+    //$SQL_Limit = OptionGet( 'SQL_LIMIT', vgaGet( 'SQL_Limit', 300 ) );
+    $SQL_Limit = configGet('sql_limit',300);
 
     // Execute the sql, pull down the skey values
     $skeys=array();

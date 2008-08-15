@@ -1033,7 +1033,7 @@ class x_table2 {
          //$filters=ConSet('table',$this->table_id,'search',$filters);
          processPost_TableSearchResultsClear($this->table_id);
       }
-      $rows=rowsFromUserSearch($this->table,$this->projections['_uisearch'],$filters);
+      $rows=rowsFromUserSearch($this->table,$this->projections['_uisearch'],$filters,true);
 
       $early_return=$this->hDisplayOnscreenOverride($rows,$filters,$parent_row);
       if($early_return<>'') return $early_return;

@@ -464,6 +464,10 @@ column x4menutext {
     type_id: text;
     description: x4 Menu Text;
 }
+column sql_limit {
+   type_id: int;
+   description: SQL Limit
+}
 table configfw {
     module: system;
     uisort: 550;
@@ -480,7 +484,7 @@ table configfw {
     column { smtpout; }
     column { uisearchdash; }
     column { x4menu; x4padmenu; x4menutitle; x4menutext }
-    column { js_css_debug; deprecated; }
+    column { js_css_debug; deprecated; sql_limit }
 }
 table configapp {
     module: system;
@@ -527,9 +531,9 @@ menu configconfirm {
 }
 content configfw {
     columns { smtpout; js_css_debug; uisearchdash; 
-        x4menu; x4padmenu; 
+        x4menu; x4padmenu; sql_limit; 
     }
-    update { localhost; N; --; N; N; N; Y;}
+    update { localhost; N; --; N; N; N; Y; 300}
 }
 
 
