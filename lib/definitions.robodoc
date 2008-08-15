@@ -1,0 +1,1354 @@
+<?php
+/****h* Data-Dictionary-Docs/Data-Dictionary-Definitions
+*
+* NAME
+*	Data Dictionary Definitions
+*
+* FUNCTION
+*	Andromeda uses data dictionaries to define applications.  It uses these
+*	data dictionaries in order to build applications, build the database,
+*	and create the GUI, with minimum coding required from the applcation
+*	developer.
+*
+******
+*/
+
+/****h* Data-Dictionary-Definitions/misc
+*
+* NAME
+*	misc
+*
+* FUNCTION
+*	This holds all of the miscellaneous properties that can be assigned
+*	to all different types of defintions
+*
+******
+*/
+
+/****Y* Data-Dictionary-Definitions/module
+*
+* NAME
+*	module
+*
+* FUNCTION
+*	The module definition is used to define a module, which holds tables
+*	in andromeda specifications.  A module can have a description, which
+*	describes the group of tables.
+*
+* EXAMPLE
+*	module example:
+*		description: Examples
+*
+******
+*/
+
+/****Z* misc/description
+*
+* NAME
+*	description
+*
+* FUNCTION
+*	The definition description is usually found nested inside other
+*	definitions.  It used to describe the definition it is nested under.
+*
+* EXAMPLE
+*	module example:
+*		uisort: 0
+*		description: Example module
+*		group admin:
+*			nomenu: "N"
+*
+******
+*/
+
+/****Y* Data-Dictionary-Definitions/table
+*
+* NAME
+*	table
+* 
+* FUNCTION
+*	The table definition represents a table in the andromeda specification.
+*	In this definition you can define its description, columns, module,
+*	or groups.  A table has to have at least one column(primary_key), one
+*	group, and one module.
+*
+* EXAMPLE
+*	table  contacts:
+*	    module: example
+*	    description: Super Simple Contacts
+*	    
+*	    # a predefined column
+*	    column first_name: 
+*		primary_key: “Y”    
+*		uisearch:   “Y” 
+*				
+*	
+*	    group $LOGIN:       
+*		permsel: “Y”        
+*		permins: “Y”         
+*		permupd: “Y”        
+*		permdel: “Y”
+*
+******
+*/
+
+/****Y* Data-Dictionary-Definitions/column
+*
+* NAME
+*	column
+*
+* FUNCTION
+*	The definition column is used to define a column in the andromeda
+*	specification.  A column definition can be defined outside of a table
+*	for use in several different tables.  When you want to use the column
+*	inside of a table,  you can simply define it inside without having to
+*	provide all of the specifications again.
+*
+* EXAMPLE
+*	column application:
+*	    type_id: char
+*	    colprec: 10
+*	    description: Application
+*
+*	table applications: 
+*	    description: Applications
+*	    module: apps
+*	    uisort: 100
+*		
+*	    column application:
+*		primary_key: "Y"
+*		uisearch: "Y"
+*
+******
+*/
+
+/****Z* column/type_id
+*
+* NAME
+*	type_id
+*
+* FUNCTION
+*	The property type_id is used to define the type of data the column
+*	holds.  For instance, we have a column called username.  That column
+*	could have a type_id of vchar, representing a character varying field.
+*
+*	Here is a list showing all of the possible type_id's with their associated
+*	meaning:
+*		- char: character
+*		- vchar: character varying
+*		- numb: decimal number
+*		- money: money
+*		- dtime: datetime
+*		- int: integer
+*		- text: unlimited text length
+*		- date: date (no time)
+*		- time: time (no date)
+*		- interval: time interval
+*		- cbool: character boolean
+*		- gender: gender
+*		- url: url or website
+*		- obj: object (such as sound file)
+*		- ph12: US 12 digit phone number (special formatting)
+*		- ssn: social security number (special formatting)
+*		- mime-h: HTML fragments
+*		- mime-x: MIME b64 encoded
+*		- mime-b: MIME raw binary
+*		- mime-f: MIME on filesystem
+*
+* EXAMPLE
+*	column appspec:
+*	    description: Specification File
+*	    type_id: vchar
+*	    colprec: 30
+*
+*	column example:
+*		description: example
+*		type_id: text
+*
+******
+*/
+
+/****Z* column/colprec
+*
+* NAME
+*	colprec
+*
+* FUNCTION
+*	The property colprec specifies a column length for the column the
+*	definition is nested under.
+*
+* EXAMPLE
+*	column example:
+*		description: example column
+*		type_id: vchar
+*		colprec: 20
+*
+******
+*/
+
+/****Z* column/primary_key
+*
+* NAME
+*	primary_key
+*
+* FUNCTION
+*	The property primary_key sets whether the column it is nested under
+*	is a primary key column or not.  Set the definition to "Y" if it is a
+*	primary key column.  There is no need to set the primary key to "N" if
+*	the column isn't a primary key because "N" is the default for all columns.
+*
+* EXAMPLE
+*	column hasprimekey:
+*		primary_key: "Y"
+*		type_id: text
+*
+*	column noprimekey:
+*		type_id: text
+*
+******
+*/
+
+/****Z* table/nomenu
+*
+* NAME
+*	nomenu
+*
+* FUNCTION
+*	The property nomenu is used to specify whether a menu can be displayed
+*	for the entity it is nested under.  For example, if nomenu is set to "N"
+*	in a table, the table will always display a menu in the browser.
+*
+*	nomenu is also often used for permissions.  You can set nomenu under
+*	group definitions to establish whether or not a menu will show to that
+*	particular user/group.
+*
+*	The following example shows how to use nomenu to allow the admin
+*	to always view a menu.
+*
+* EXAMPLES
+*	group admin:
+*		nomenu: "N"
+*
+******
+*/
+
+/****Z* foreign_key/suffix
+*
+* NAME
+*	suffix
+*
+* FUNCTION
+*	The property suffix, if specified, causes all of the columns taken from the 
+*	parent table to have the suffix appended to their name. 
+*
+******
+*/
+
+/****Z* foreign_key/prefix
+*
+* NAME
+*	prefix
+*
+* FUNCTION
+*	The property prefix, if specified, causes all of the columns taken from the 
+*	parent table to have the prefix appended to their name. 
+*
+******
+*/
+
+/****Z* misc/uisearch
+*
+* NAME
+*	uisearch
+*
+* FUNCTION
+*	The property uisearch is used to specify whether a column can show up
+*	in search results or not.  You set the value of uisearch to either "Y"
+*	for yes, or "N" for no.  uisearch must be nested within a column
+*	definition.
+*
+*	The following example shows how to set up uisearch on a column.
+*
+* EXAMPLE
+*	column example:
+*		type_id: vchar
+*		colprec: 30
+*		uisearch: "Y"
+*
+******
+*/
+
+/****Z* column/uiro
+*
+* NAME
+*	uiro
+*
+* FUNCTION
+*	The property uiro is used to specify whether a column is read-only
+*	in the client user interface.  Use the value "Y" for yes and "N" for no
+*	when assigning this definition.
+*
+*	The following example shows how to set up a column to be read-only.
+*
+* NOTES
+*	Do not use this property as a security measure, as it is subvertile by an attacker. 
+*
+* EXAMPLE
+*	column example_readonly:
+*		type_id: vchar
+*		colprec: 30
+*		primary_key: "Y"
+*		uiro: "Y"
+*
+******
+*/
+
+/****Z* column/automation_id
+*
+* NAME
+*	automation_id
+*
+* FUNCTION
+*	The property automation_id is used to set up an automation on a column.
+*	The possible automation_id's are as follows:
+*
+*		- NONE: None
+*		- BLANK: Default to blank value
+*		- DEFAULT: Literal default
+*		- TS_INS: Insert timestamp
+*		- TS_UPD: Update timestamp
+*		- UID_INS: Insert user
+*		- UID_UPD: Update user
+*		- SEQUENCE: Auto-sequencing
+*		- SEQDEFAULT: Sequence - overrideable
+*		- FETCH: Pull from parent table
+*		- FETCHEDEF: Pull from parent, overwritable
+*		- DISTRIBUTE: Push from parent table
+*		- EXTEND: Calculate directly
+*		- SUM: Sum from child table
+*		- MIN: Min from child table
+*		- MAX: Max from child table
+*		- COUNT: count from child table
+*		- LATEST: Latest child insert or update
+*		- XML_RPC: Provided by remote system
+*		- SYNCH: Synchronize Parent/Child
+*		- QUEUEPOS: Enforces unique Queue position
+*		- DOMINANT: Only one row can have value Y
+*		- RESOLVE: Will hold resolved foreign key table
+*		- AGG_DOM: Capture value from dominant row
+*		- FETCH_DOM: Pull value from dominant child row
+*		- UID_UPD_PG: Update user ignoring postgres
+*		- TS_UPD_PG: Update timestamp ignoring postgres
+*
+******
+*/
+
+/****Y* Data-Dictionary-Definitions/group
+*
+* NAME
+*	group
+*
+* FUNCTION
+*	The definition group is used to set permissions for different groups
+*	of users.  You can define group in many ways.
+*
+*	First you can use group within a module.  By doing that you can define
+*	a group of users and their permissions for that specific module.  You
+*	can also declare specific attributes for the module based on the user
+*	that is viewing/using it.  See the first example for this useage.
+*
+*	Group also can be used outside any nesting whatsoever.  You can define
+*	the group and its permissions outside, and nest module names inside the
+*	group definition and declare permissions for those modules.  You should
+*	use this to define an important user, such as admin, which would have
+*	permissions for all sorts of tables.  See the second example for this
+*	useage.
+*
+* EXAMPLE
+*	module group_example:
+*		group $LOGIN:
+*			nomenu: "N"
+*
+*	group example_2:
+*		permsel: "Y"
+*		permins: "Y"
+*		permupd: "Y"
+*		permdel: "N"
+*		nomenu: "N"
+*		
+*		module example:
+*			permsel: "N"
+*			permins: "N"
+*			permupd: "N"
+*			permdel: "N"
+*			nomenu: "Y"
+*
+******
+*/
+
+/****Z* group/permsel
+*
+* NAME
+*	permsel
+*
+* FUNCTION
+*	The property permsel is used to set SELECT permissios for groups.
+*	permsel takes two attributes: either "Y" for allowing select for allowing
+*	select permissions or "N" for not allowing select permissions.
+*
+*	The following example sets a module that does not allow regular users
+*	to select out of the module.
+*
+* EXAMPLE
+*	module permsel_example:
+*		group $LOGIN:
+*			permsel: "N"
+*
+******
+*/
+
+/****Z* group/permins
+*
+* NAME
+*	permins
+*
+* FUNCTION
+*	The property permins is used to set up INSERT permissions for groups.
+*	permins takes two attributes: either "Y" for allowing INSERT permissios
+*	or "N" for not allowing the permission.
+*
+*	The following example sets a module that does not allow regular users
+*	to insert into the module.
+*
+* EXAMPLE
+*	module permins_example:
+*		group $LOGIN:
+*			permins: "N"
+*
+******
+*/
+
+/****Z* group/permupd
+*
+* NAME
+*	permupd
+*
+* FUNCTION
+*	The property permupd is used to set up UPDATE permissions for groups.
+*	permupd takes two attributes: either "Y" for allowing UPDATE permissions
+*	or "N" for not allowing the permissions.
+*
+*	The following example creates a module that does not allow regular users
+*	to update in the module.
+*
+* EXAMPLE
+*	module permupd_example:
+*		group $LOGIN:
+*			permupd: "N"
+*
+******
+*/
+
+/****Z* group/permdel
+*
+* NAME
+*	permdel
+*
+* FUNCTION
+*	The property permdel is used to set up DELETE permissions for groups.
+*	permdel takes two attributes: either "Y" for allowing DELETE permissions
+*	or "N" for not allowing the permissions.
+*
+*	The following example creates a module that does not allow regular users
+*	to delete anything in the module.
+*
+* EXAMPLE
+*	module permdel_example:
+*		group $LOGIN:
+*			permdel: "N"
+*
+******
+*/
+
+/****Z* misc/tooltip
+*
+* NAME
+*	tooltip
+*
+* FUNCTION
+*	The property tooltip sets a tooltip for the definition it is nested
+*	under.  The tooltip will show up in the user interface when it gets
+*	generated by andromeda.
+*
+*	The following example displays how to set a tooltip for a column.
+*
+* EXAMPLE
+*	column users:
+*		tooltip: this is the users column
+*		type_id: vchar
+*		colprec: 30
+*
+******
+*/
+
+/****Y* Data-Dictionary-Definitions/content
+*
+* NAME
+*	content
+*
+* FUNCTION
+*	The definition content is used to define content for tables.  It is
+*	never nested inside another definition.  Content is used to populate
+*	tables with some values.  You define the columns you want to add to,
+*	then you define the values for those columns.  You can add as many
+*	rows as you want in a content definition.
+*
+*	The following example shows the usage of content by populating a simple
+*	table with usernames and ages.
+*
+* EXAMPLE
+*	table users:
+*		description: User Information
+*		module: example_module
+*		nomenu: "N"
+*		
+*		column username:
+*			type_id: vchar
+*			colprec: 20
+*		column age:
+*			type_id: int
+*		
+*	content users:
+*		columns: [ username, age ]
+*		values:
+*			- [ Josh, 16 ]
+*			- [ Jake, 17 ]
+*			- [ Andy, 24 ]
+*			- [ John, 32 ]
+*
+******
+*/
+
+/****Z* column/value_min
+*
+* NAME
+*	value_min
+*
+* FUNCTION
+*	The property value_min specifies the minimum value for a field in the
+*	column
+*
+******
+*/
+
+/****Z* column/value_max
+*
+* NAME
+*	value_max
+*
+* FUNCTION
+*	The property value_max specifies the maximum value for a field in the
+*	column.
+*
+******
+*/
+
+/****Z* column/uino
+*
+* NAME
+*	uino
+*
+* FUNCTION
+*	The property uino is used to specify if a column should be completely
+*	removed from the UI.  Set "Y" for yes and "N" for no.
+*
+* NOTES
+*	Do not use this property as a security measure, as it is subvertile
+*	by an attacker.
+*
+******
+*/
+
+/****Z* column/uicols
+*
+* NAME
+*	uicols
+*
+* FUNCTION
+*	A column with type_id: text gets displayed in the user interface as a
+*	html text area element.  The property uicols sets the number of columns
+*	accross the text area element spans.  uirows has a very similar purpose.
+*
+* SEE ALSO
+*	uirows
+*
+******
+*/
+
+/****Z* column/uirows
+*
+* NAME
+*	uirows
+*
+* FUNCTION
+*	A column with type_id: text gets displayed in the user interface as a
+*	html text area element.  The property uirows sets the number of rows
+*	from top to bottom the text area element spans.  uicols has a very
+*	similar purpose.
+*
+* SEE ALSO
+*	uicols
+*
+******
+*/
+
+/****Z* column/required
+*
+* NAME
+*	required
+*
+* FUNCTION
+*	The property required is a Y/N flag indicating if a non-empty value
+*	is required.
+*
+******
+*/
+
+/****Z* column/dispsize
+*
+* NAME
+*	dispsize
+*
+* FUNCTION
+*	The property dispsize specifies the display size in characters for a
+*	text field that gets generated by andromeda.
+*
+* NOTES
+*	Andromeda automatically sets the text size based on the size of the column
+*	in the database.  Only use this property if you want to specify a custom
+*	size.
+*
+******
+*/
+
+/****Z* column/uiwithnext
+*
+* NAME
+*	uiwithnext
+*
+* FUNCTION
+*	The property uiwithnext is a Y/N flag which specifies if this column
+*	should be rendered in the same line accross as the next column.  Normally
+*	columns are rendered one after the other vertically.  This property
+*	changes that.
+*
+******
+*/
+
+/****Z* group/permrole
+*
+* NAME
+*	permrole
+*
+* FUNCTION
+*	The property permrole is a Y/N flag used to set up permissions in creating
+*	users, roles, and privledges.
+*
+******
+*/
+
+/****Z* group/solo
+*
+* NAME
+*	solo
+*
+* FUNCTION
+*	The property solo is a Y/N flag whichs states if memebers of the group
+*	can be in any other groups.  If solo is set to yes(Y), then members may
+*	not be in other groups.  If set to no(N), members can be in different
+*	groups.
+*
+******
+*/
+
+/****Z* column/pk_change
+*
+* NAME
+*	pk_change
+*
+* FUNCTION
+*	The property pk_change is a Y/N flag which states if the columns primary
+*	key can be changed.  This default value for this is set to N, so if you
+*	do not want the primary key to be able to change, you do not have to
+*	specify it.
+*
+******
+*/
+
+/****Z* column/range_from
+*
+* NAME
+*	range_from
+*
+* FUNCTION
+*	Andromeda allows you to specify that a primary key can cover a range of values. 
+*	Consider the case where you need to define billing rates for your customers. 
+*	The rates change from time to time, but do not follow predictable patterns like 
+*	always falling exactly into a year or a month. So you must specify that customer
+*	X is billed at rate Y from 4/15/07 to 6/1/08, and at rate Z from 6/2/08 to 
+*	12/31/08. The ranges may not overlap. This is done with the 'range_from' and 
+*	'range_to' properties.
+*
+* SEE ALSO
+*	range_to
+*
+* EXAMPLE
+*	table rates:
+*	   foreign_key customers:  # make customers part of primary key
+*	      primary_key: "Y"
+*	   column date_begin:
+*	      suffix: _begin
+*	      primary_key: "Y"
+*	      range_to: date_end
+*	   column date_end:
+*	      suffix: _end   
+*	      primary_key: "Y"
+*	      range_from: date_begin
+*
+******
+*/
+
+/****Z* column/range_to
+*
+* NAME
+*	range_to
+*
+* FUNCTION
+*	See range_from
+*
+* SEE ALSO
+*	range_from
+*
+******
+*/
+
+/****Y* table/foreign_key
+*
+* NAME
+*	foreign_key
+*
+* FUNCTION
+*	Andromeda deal with foreign keys differently than most frameworks.  When
+*	you place a foreign key into an Andromeda table, several things happen:
+*		
+*		- Andromeda identifies the column(s) that make the primary key
+*			of the parent table.
+*		- Andromeda places these same columns into the child table.
+*		- Andromeda puts a referential integrity constraints onto both
+*			tables (explained below).
+*
+*	When we use the SQL CREATE TABLE command to establish a foreign key, we
+*	must specify the column type, precision, and scale, and then declare the
+*	reference to the parent.  In Andromeda all you have to do is name the parent
+*	table, the rest is automatic.
+*
+* EXAMPLE
+*	table table_id:
+*		#...various table property assignments go here
+*		foreign_key parent_table_id:
+*			#...any optional foreign key properties
+*
+******
+*/
+
+/****Z* foreign_key/delete_cascade
+*
+* NAME
+*	delete_cascade
+*
+* FUNCTION
+*	The property delete_cascade is a Y/N flag that causes all child table
+*	entries to delete when a parent table is deleted.  This overrides the
+*	default behavior where a table cannot be deleted if it has children
+*	tables.
+*
+******
+*/
+
+/****Z* foreign_key/allow_orphans
+*
+* NAME
+*	allow_orphans
+*
+* FUNCTION
+*	The property allow_orphans is a Y/N flag which completely disables
+*	reference checking, but still defines the columns.
+*
+******
+*/
+
+/****Z* foreign_key/allow_empty
+*
+* NAME
+*	allow_empty
+*
+* FUNCTION
+*	The property allow_empty is a Y/N flag that allows the foreign key to
+*	be empty(or null).
+*
+******
+*/
+
+/****Z* foreign_key/nocolumns
+*
+* NAME
+*	nocolumns
+*
+* FUNCTION
+*	The property nocolumns is a Y/N flag that stops the normal behavior
+*	of adding columns to the child table.  This is required if more than
+*	one foreign key definitions would end up placing the same column into
+*	the child table.
+*
+******
+*/
+
+/****Z* foreign_key/uisearch
+*
+* NAME
+*	uisearch
+*
+* FUNCTION
+*	The property uisearch is a Y/N flag that causes all of the foreign_key
+*	columns to show up in search results.
+*
+******
+*/
+
+/****Z* foreign_key/primary_key
+*
+* NAME
+*	primary_key
+*
+* FUNCTION
+*	The property primary_key is a Y/N flag that causes all of the foreign
+*	key columns to be in the primary key.
+*
+******
+*/
+
+/****Y* table/upsave
+*
+* NAME
+*	upsave
+*
+* FUNCTION
+*	An upsave is a very flexible way to write values from a child table
+*	to a parent table. Unlike automations such as SUM and COUNT, an upsave
+*	writes to columns that users can overwrite, and an upsave can be made 
+*	conditional.
+*
+*	An upsave is one of the most flexible ways that Andromeda has to 
+*	write values from one table to another, with lots of options for 
+*	specifying when and how the operation occurs.
+*
+******
+*/
+
+/****Z* upsave/table_id_dest
+*
+* NAME
+*	table_id_dest
+*
+* FUNCTION
+*	The property table_id_dest names the parent table.  The upsave definition
+*	is always made in the child table, and the child table must always
+*	contain a foreign_key to the destination table.
+*
+******
+*/
+
+/****Z* upsave/cascade_action
+*
+* NAME
+*	cascade_action
+*
+* FUNCTION
+*	The property cascade_action is a required property in upsave.  It must
+*	always take the value of UPDATE.  This necessity will be removed in later
+*	versions of andromeda.
+*
+******
+*/
+
+/****Z* upsave/afterins
+*
+* NAME
+*	afterins
+*
+* FUNCTION
+*	The property afterins is a Y/N flag which specifies if the upsave is
+*	run after an INSERT command.  Both afterins and afterupd can be set,
+*	but at least one of them must be set.
+*
+* SEE ALSO
+*	afterupd
+*
+******
+*/
+
+/****Z* upsave/afterupd
+*
+* NAME
+*	afterupd
+*
+* FUNCTION
+*	The property afterupd is a Y/N flag which specifies if the upsave is
+*	run after an UPDATE command.  Both afterins and afterupd can be set,
+*	but at least one of them must be set.
+*
+* SEE ALSO
+*	afterins
+*
+******
+*/
+
+/****Z* upsave/copysamecols
+*
+* NAME
+*	copysamecols
+*
+* FUNCTION
+*	The property copysamecols is a Y/N flag which, if Y, causes the upsave
+*	to copy columns from parent to child for all columns that have the same
+*	name
+*
+******
+*/
+
+/****Z* upsave/column_id_flag
+*
+* NAME
+*	column_id_flag
+*
+* FUNCTION
+*	The property column_id_flag is an optional property which names a column
+*	in the child table.  The column must be of type cbool.  If such a column
+*	is named, the upsave will only trigger if the named column is "Y".
+*
+******
+*/
+
+/****Z* upsave/flag_reset
+*
+* NAME
+*	flag_reset
+*
+* FUNCTION
+*	The property flag_reset is a Y/N flag where, if the flag reset is set
+*	to yes, after the upsave fires the column set with the column_id_flag
+*	is reset to N.
+*
+******
+*/
+
+/****Z* upsave/onlychanged
+*
+* NAME
+*	onlychanged
+*
+* FUNCTION
+*	The property onlychanged is a Y/N flag where if yes only changed values
+*	will be written to the parent table.  This has no effect on inserts.
+*
+******
+*/
+
+/****Y* table/history
+*
+* NAME
+*	history
+*
+* FUNCTION
+*	The definition history is a very flexible way to record changes made to
+*	a table.  A history definition specifies which columns in the history
+*	table receive which values from the source table.
+*
+*	The best practice is to deny all access to the history table for normal
+*	users, and grant read-only access to those who must run reports, and
+*	delete access to those who will purge or roll-up the history tables.
+*	
+*	Histories are written an all three actions: insert, update, and delete.
+*	You can specify that any particular column will receive a constant
+*	value, a difference between old and new, always the new, always the old
+*	, or always a value.
+*
+* EXAMPLE
+*	table table_id:
+*		#Journal all changes to dollar amounts, record as well
+*		#if user changed the date.
+*		history track_the_money:
+*			#these two properties are required
+*			table_id_dest: journal
+*			column column_id:
+*				recol: column_id
+*			column column_id:
+*				retnew: column_source
+*			column column_id:
+*				retold: column_source
+*			column column_id:
+*				retdiff: column_source
+*
+******
+*/
+
+/****Z* history/table_id_dest
+*
+* NAME
+*	table_id_dest
+*
+* FUNCTION
+*	The property table_id_dest names the destination table.  A history
+*	definition is created inside the source table, the destination table
+*	must be defined separately.
+*
+******
+*/
+
+/****Z* history/retcol
+*
+* NAME
+*	retcol
+*
+* FUNCTION
+*	The property retcol allows you to explicitly name a column in the destination
+*	table and have it get the value from a column in the child table.  It
+*	gets the NEW values on INSERT, and the OLD value on UPDATE and DELETE.
+*
+* NOTES
+*	In this documentation, this property is listed as a property of history,
+*	while in fact it is actually a property for a column that is nested under
+*	history.
+*
+******
+*/
+
+/****Z* history/retval
+*
+* NAME
+*	retval
+*
+* FUNCTION
+*	The property retval allows you to explicitly write a literal value toa a
+*	column in the destination table.
+*
+* NOTES
+*	In this documentation, this property is listed as a property of history,
+*	while in fact it is actually a property for a column that is nested under
+*	history.
+*
+******
+*/
+
+/****Z* history/retold
+*
+* NAME
+*	retold
+*
+* FUNCTION
+*	The property retold copies the old value to the destination table.  Copies
+*	a NULL on insert.
+*
+* NOTES
+*	In this documentation, this property is listed as a property of history,
+*	while in fact it is actually a property for a column that is nested under
+*	history.
+*
+******
+*/
+
+/****Z* history/retnew
+*
+* NAME
+*	retnew
+*
+* FUNCTION
+*	The property retnew copies the old value to the destination table.  Copies
+*	a NULL on delete.
+*
+* NOTES
+*	In this documentation, this property is listed as a property of history,
+*	while in fact it is actually a property for a column that is nested under
+*	history.
+*
+******
+*/
+
+/****Z* history/retdiff
+*
+* NAME
+*	retdiff
+*
+* FUNCTION
+*	The property retdiff copies the difference of values to the destination
+*	table.  Copies the NEW value on INSERT, the negative OLD on delete, and
+*	NEW - OLD on update.
+*
+* NOTES
+*	In this documentation, this property is listed as a property of history,
+*	while in fact it is actually a property for a column that is nested under
+*	history.
+*
+******
+*/
+
+/****Y* table/projection
+*
+* NAME
+*	projection
+* 
+* FUNCTION
+*	A projection is nothing but a named list of columns, which you can make
+*	use of in your application.  Projections have no impact on business rules
+*	, they are purely for the use of the user interface.
+*
+*	If you create a projection named "dropdown", then the framework will display
+*	that list of columns whenever this table is used as a lookup list with an
+*	HTML SELECT or our Ajax dynamic list.
+*
+*	The framework will also support in the future the use of a projection named
+*	"new", which specifies which columns a user should see when they are entering
+*	a new row.  Right now this feature does not exist yet, so a user always
+*	sees the same detail in insert mode, lookup mode, and update mode.
+*
+*	A projection is an ordered list.  When you access the columns they will always
+*	be in the same order as they were defined.
+*
+* EXAMPLE
+*	table employees:	#an employees table with some projections
+*	   column employee_id:
+*	      primary_key: "Y"
+*	      uisearch: "Y"
+*	   column first_name:
+*	      uisearch: "Y"
+*	   column last_name:
+*	      uisearch: "Y"
+*
+*	# Here is an example of using the dropdown projection
+*	projection dropdown:
+*	   column employee_id:
+*	   column first_name:
+*	   column last_name:
+*
+******
+*/
+
+/****Y* table/index
+*
+* NAME
+*	index
+*
+* FUNCTION
+*	A index definition is used to explicitly create indexes and unique constraints
+*	on a table.
+*
+*	Andromeda by default builds indexes on all primary keys and foreign keys.
+*	A primary key is also a unique constraint.  You can use the index
+*	definition to create additional indexes on frequently-referenced columns
+*	or column combinations
+*
+******
+*/
+
+/****Z* index/idx_unique
+*
+* NAME
+*	idx_unique
+*	
+* FUNCTION
+*	The property idx_unique is a Y/N flag where, when set to Y, the index
+*	will also become a unique constraint.
+*
+******
+*/
+
+/****Y* Data-Dictionary-Definitions/menu
+*
+* NAME
+*	menu
+*
+* FUNCTION
+*	The definition menu creates a security assignment to a menu entry
+*	for a specific group.  Overrides any module-level security.
+*
+* EXAMPLE
+*	menu menu_id:
+*		# ...menu property/value assignments go here
+*		# Here is the group security assignment
+*		group group_id:
+*			nomenu: "N" #put it on menu!
+*
+******
+*/
+
+/****Y* column/chain
+*
+* NAME
+*	chain
+*
+* FUNCTION
+*	A chain is used for two distinct purposes.  It can be used to put
+*	constraints onto a column, and it can be used to generate calculated
+*	values for a column that are based on other columns in the same row.
+*
+*	A constraint chain goes through one or more tests.  If the chain returns
+*	a value, the constraint is considered to have failed, and the value
+*	is taken to be the error message.  If the chain gest to the end without
+*	returning a value, it will return an empty string and be considered to have
+*	succeeded.
+*
+*	A calculation chain goes through one ore more tests looking for a match.
+*	If it finds a match it returns the Chain Return Expression.  If no match
+*	is found, it returns a type-appropriate blank value, which is zero for all
+*	numbers, empty string for all characer/text types, or null for dates and
+*	date-times.
+*
+* EXAMPLE
+*	table table_id:
+*		column column_id:
+*			chain chain_id:
+*				#condition check
+*				test 00:
+*					compare: Chain comparison expression
+*					return: Chain return expression
+*				test 01:
+*					compare: Chain comparison expression
+*					return: Chain return expressions
+*				#the unconditional default return value
+*				test 02:
+*					return: Chain return expression
+*
+*	#calculated and constraint value
+*
+*	table customers:
+*	   # a credit limit, user-entered
+*	   column amt_crlimit:
+*	      suffix: _crlimit
+*	   # the sum of the user's orders
+*	   column amt_orders:
+*	      suffix: _orders
+*	      automation_id: SUM
+*	      auto_formula: orders.amt_final
+*	   # the sum of the user's invoices
+*	   column amt_invoices:
+*	      suffix: _invoices
+*	      automation_id: SUM
+*	      auto_formula: invoices.amt_open
+*	   # put the two together and put a constraint on the result
+*	   column amt_exposure:
+*	      suffix: _exposure
+*	      chain calc:
+*		 # unconditional return
+*		 test 00:
+*		    return: @amt_orders + @amt_invoices
+*	      chain cons:
+*		 # only one test.  If it does not match, chain returns 
+*		 # empty string and the constraint passes.
+*		 test 00:
+*		    compare: @amt_exposure > @amt_crlimit
+*		    return: Credit Limit Exceeded 
+*
+******
+*/
+
+/****Y* chain/test
+*
+* NAME
+*	test
+*
+* FUNCTION
+*	A chain consists or one ore more tests.  Each test must be given a unique
+*	name.  The name can be anything, but keep in mind that they will be
+*	evaluated in their sort order.  The best practice is to name tests '00',
+*	'01', and so on.
+*
+******
+*/
+
+/****Z* test/compare
+*
+* NAME
+*	compare
+*
+* FUNCTION
+*	The property compare sets a chain comparison expression for this chain.
+*
+*	A chain comparison expression is a column name, exactly one space, an
+*	operator, exactly one space, and an optional column or literal value to
+*	compare to.
+*
+*	Column names must be prefixed with an '@' symbol, anything else is taken
+*	to be a literal value.
+*
+*	No quotes are required for string or date literal values.  Andromeada
+*	knows when type of the column being compared to and will build the
+*	apropriate SQL.
+*
+*	Chain syntax rules are not very flexible.  Columns and operators must
+*	be separated by exactly one space, never two or more.  Also, the builder
+*	cannot detect if you leave an @ sign off, it will not make any friendly
+*	suggestions like, "hey that looks like a column name, did you forget
+*	the @sign?"
+*
+*	The operators available are as follows:
+*		-EMPTY: no second parameter.  Returns true if the first value
+*			is type-appripriate empty, meaning 0 for numbers, empty
+*			string for all character/text types, and null for dates
+*			and datetimes.
+*		-!EMPTY: reverse of EMPTY
+*		-BETWEEN: Three parameters, as in '@column_id BETWEEN x y'.
+*				Notice that the second and third parameters are listed
+*				one after the other and are separated by a space.
+*		-!BETWEEN: reverse of BETWEEN
+*		-NULL: Value is null, as in '@column_id NULL'
+*		-!NULL: reverse of NULL
+*		-IN: Returns true if the first value is present in the second,
+*			where the second is a comma-separated list of values,
+*			as in '@column_id in a,b,c,d'.
+*		-!IN: reverse of IN
+*		->=: greater than or equal to
+*		->: greater than
+*		-<=: less than or equal to
+*		-<: less than
+*		-=: equal
+*		-<>: not equal
+*
+* EXAMPLE
+*	table table_id:
+*	   column order_status:
+*	      chain calc:
+*		 test 00:
+*		    compare: @flag_cancelled = Y 
+*		    return: CANCELLED
+*		 test 01:
+*		    compare: @date_invoice ISNULL
+*		    return: OPEN
+*		 test 03:
+*		    return: INVOICED
+*
+******
+*/
+
+/****Z* test/return
+*
+* NAME
+*	return
+*
+* FUNCTION
+*	A chain return expression
+*
+******
+*/
+
+
+?>
