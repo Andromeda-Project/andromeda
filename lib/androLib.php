@@ -8591,25 +8591,6 @@ function CacheWrite($name,$value) {
    DynamicSave($name,$value);
 }
 
-// ------------------------------------------------------------------
-// General Purpose Element listing, with specialized output
-// ------------------------------------------------------------------
-
-/**
-* Adds element for later processing.  If it is a script element,
-* the function strips the <script> tags.  It can be passed to the
-* function with or without these tags.
-*
-* INPUTS
-*	string $type type of element
-*	string $msg input
-*/
-function ElementAdd($type,$msg) {
-    if($type=='script' || $type=='jqueryDocumentReady') {
-        $msg = preg_replace("/<script>/i",'',$msg);
-        $msg = preg_replace("/<\/script>/i",'',$msg);
-    }
-    $GLOBALS["AG"][$type][]=$msg;
 # ===================================================================
 # 
 # JQUERY FUNCTIONS
@@ -8633,81 +8614,6 @@ function jqDocReady($script) {
     $jdr[] = $script;
     vgfSet('jqDocReady',$jdr);
     return false;
-}
-/**
-* Initializes an element with type $type.  Initializes
-* the element with an empty array.  If the element exists,
-* it competely erases all data stored to that element.
-*
-* INPUTS
-*	string $type type of element
-*/
-function ElementInit($type) { $GLOBALS["AG"][$type]=array(); }
-
-/**
-* Get all the stored elements with type $type.  If the element
-* type doesn't exist yet, it returns the default value
-* $default.
-*
-* INPUTS
-*	string $type type of element
-*	mixed $default default value for element type (default = array())
-* RETURN
-*	mixed elements in array or default value
-*/
-function ElementReturn($type,$default=array()) {
-	global $AG;
-   if(!isset($AG[$type])) return $default;
-   else return $AG[$type];
-}
-
-/**
-* Returns true if there are any elements stored with type
-* $type.
-*
-* INPUTS
-*	string $type type of element
-* RETURN
-*	boolean
-*/
-function Element($type) {
-	global $AG;
-   if(!isset($AG[$type])) return false;
-	if (count($AG[$type])>0) return true; else return false;
-}
-
-/**
-* Returns a string of all the stored elements of type $type
-* and separates them by $implode.  By default, the elements are
-* separated by new line characters "\n".  Pass your own $implode
-* argument to add a different separator.
-*
-* INPUTS
-*	string $type type of element
-*	string $implode separator between each element
-* RETURN
-*	string
-*/
-function ElementImplode($type,$implode="\n") {
-    if(!isset($GLOBALS['AG'][$type])) return '';
-    else return implode($implode,$GLOBALS['AG'][$type]);
-}
-
-/**
-* Dumps all elements of type $type by removing them
-* from storage and returning them.  If you want the elements
-* to be listed with HTML, set $dohtml to true.  If the type
-* of element is script, there will always be an element returned
-* in the array that controls AJAX table maintenance.
-*
-* INPUTS
-*	string $type type of element
-*	boolean $dohtml (default=false)
-* RETURN
-*	string list of elements
-*/
-function ElementOut($type,$dohtml=false) {
-	global $AG;
 }
 
 // ------------------------------------------------------------------
