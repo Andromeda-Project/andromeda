@@ -8591,7 +8591,6 @@ function CacheWrite($name,$value) {
    DynamicSave($name,$value);
 }
 
-<<<<<<< .mine
 // ------------------------------------------------------------------
 // General Purpose Element listing, with specialized output
 // ------------------------------------------------------------------
@@ -8611,7 +8610,6 @@ function ElementAdd($type,$msg) {
         $msg = preg_replace("/<\/script>/i",'',$msg);
     }
     $GLOBALS["AG"][$type][]=$msg;
-=======
 # ===================================================================
 # 
 # JQUERY FUNCTIONS
@@ -8635,9 +8633,7 @@ function jqDocReady($script) {
     $jdr[] = $script;
     vgfSet('jqDocReady',$jdr);
     return false;
->>>>>>> .r521
 }
-<<<<<<< .mine
 /**
 * Initializes an element with type $type.  Initializes
 * the element with an empty array.  If the element exists,
@@ -8712,9 +8708,7 @@ function ElementImplode($type,$implode="\n") {
 */
 function ElementOut($type,$dohtml=false) {
 	global $AG;
-=======
->>>>>>> .r521
-
+}
 
 // ------------------------------------------------------------------
 // UNDOCUMENTED HTML FUNCTIONS
@@ -9040,12 +9034,8 @@ function HTML_UnixTimestamp($val) {
 	return date('Y-m-d h:i:s A',$val);
 }
 
-<<<<<<< .mine
 
-function HTML_TIMESTAMP($date) {	return date("d-M-Y h:m:s a",$date); }
-=======
 function HTML_TIMESTAMP($date) {	return date("d-M-Y h:i:s a",$date); }
->>>>>>> .r521
 
 function hTime($time) { return html_time($time); }
 function HTML_TIME($time) {
