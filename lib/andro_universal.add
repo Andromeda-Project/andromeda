@@ -466,7 +466,7 @@ column x4menutext {
 }
 column sql_limit {
    type_id: int;
-   description: SQL Limit
+   description: SQL Limit;
 }
 table configfw {
     module: system;
@@ -533,7 +533,7 @@ content configfw {
     columns { smtpout; js_css_debug; uisearchdash; 
         x4menu; x4padmenu; sql_limit; 
     }
-    update { localhost; N; --; N; N; N; Y; 300; }
+    update { localhost; N; --; N; N; 300; }
 }
 
 
