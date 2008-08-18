@@ -82,7 +82,7 @@ class androX4 {
         #$this->table_id = gp('x4Page');
         $this->dd       = &ddTable($this->table_id);
         $this->flat     = &$this->dd['flat'];
-        $this->view_id  = $this->dd['viewname'];
+        $this->view_id  = a($this->dd,'viewname',$this->table_id);
         $this->tabindex=1000;
         
         $this->custom_construct();
