@@ -1674,6 +1674,7 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
         $cols = $cols == 0 ? 50 : $cols;
         $input->hp['rows'] = $rows;
         $input->hp['cols'] = $cols;
+        $input->ap['xNoEnter'] = 'Y';
     }
     elseif(a($colinfo,'value_max','')<>'' && a($colinfo,'value_min','')<>'') {
         $input = html('select');
