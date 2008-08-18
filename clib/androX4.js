@@ -208,8 +208,14 @@ var x4 =  {
                 x4.debug("doc keypress checking for ctrl: "+keyLabel);
                 var k = keyLabel;
                 if(k.indexOf('Ctrl')!=-1 || k.indexOf('Alt')!=-1) {
-                    x4.debug("doc keypress stopping ctrl/alt unconditionally");
-                    stop = true;
+                    var ok = [ 'CtrlX', 'CtrlC', 'CtrlV' ];
+                    if(ok.indexOf(k)!=-1) {
+                        x4.debug("Allowing text key: "+k);
+                    }
+                    else {
+                        x4.debug("doc keypress stopping ctrl/alt.");
+                        stop = true;
+                    }
                 }
             }
             // Special case code.  F buttons like F1-F12 must 
