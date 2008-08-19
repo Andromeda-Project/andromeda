@@ -197,6 +197,7 @@ var x4 =  {
             // answer to possibly stop propagation
             var finalLabel = 'keyPress_'+keyLabel;
             //var stop = u.events.notify(finalLabel) || stop;
+            u.events.notify(finalLabel);
             
             x4.debug("doc keypress received response from specialized: "+stop);
             
