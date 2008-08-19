@@ -79,7 +79,6 @@ class androX4 {
     # ===================================================================
     function __construct($x4Page) {
         $this->table_id = $x4Page;
-        #$this->table_id = gp('x4Page');
         $this->dd       = &ddTable($this->table_id);
         $this->flat     = &$this->dd['flat'];
         $this->view_id  = a($this->dd,'viewname',$this->table_id);
