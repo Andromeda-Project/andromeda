@@ -401,6 +401,19 @@ function index_hidden_x4Dispatch() {
         ,'script'=>array()
     );
     
+    # EXPERIMENTAL. 
+    # KFD 8/18/08.  Having any gp vars might be screwing things
+    #               up, remove them.  Specifically it is screwing
+    #               up the gp_command
+#hprint_r($GLOBALS['AG']['clean']);
+    gpUnsetPrefix('gpx');
+    gpUnsetPrefix('gp_');
+    gpUnsetPrefix('x2t_');
+    gpUnset('gpContext');
+#hprint_r($GLOBALS['AG']['clean']);
+##echo ob_get_clean();
+#exit;
+    
     # If they are not logged in, or have timed out,
     # send a redirection command to the login page
     #
@@ -672,7 +685,11 @@ function index_hidden_command() {
          gpSet('gpx_page',$table_id);
          gpSet('gp_mode' ,'browse');
          gpSet('gpx_mode','search');
-         $dd=dd_tableRef($table_id);
+         # KFD 8/18/08 MAJOR CHANGE.  Loading this up w/old code caused
+         #             things like viewname not to exist
+         #$dd=dd_tableRef($table_id);
+         $dd = ddTable($table_id);
+         # KFD 8/18/08 
          $cols = explode(',',$dd['projections']['_uisearch']);
          array_shift($cols);    // pop off the first one, assume it is the pk/code
          gpUnsetPrefix('x2t_'); // clear troublesome values 
