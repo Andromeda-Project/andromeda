@@ -277,8 +277,9 @@ function gpUnSet($key) {
 */
 function gpUnsetPrefix($prefix) {
    foreach($GLOBALS['AG']['clean'] as $key=>$value) {
-      if(substr($key,0,strlen($prefix))==$prefix) {
-         gpUnset($key);
+       $len = substr($key,0,strlen($prefix));
+       if($len==$prefix) {
+           gpUnset($key);
       }
    }
 }
@@ -3895,6 +3896,8 @@ function &ddTable($table_id) {
         include_once("ddtable_".$table_id.".php");
     }
     $tabdd = &$GLOBALS['AG']['tables'][$table_id];
+    #echo "Here is first load:";
+    #hprint_r($tabdd);
 
     # First action, assign the permissions from the session so
     # they are handy
@@ -3912,6 +3915,8 @@ function &ddTable($table_id) {
     # By default assume the appropriate view is the table name itself,
     # which may change below
     $tabdd['viewname'] = $table_id;
+    #echo "Here is second load:";
+    #hprint_r($tabdd);
 
     #  Work out the singular form of the description
     if(a($tabdd,'singular')=='') {
