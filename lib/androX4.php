@@ -252,9 +252,18 @@ underlined letters that show this, so:
         #
         $tabNumber = 2;
         foreach($this->dd['fk_children'] as $table_id=>$info) {
-            if(trim(strtolower(a($info,'uidisplay',''))) == 'none') continue;
-            $tabid = 'x4TableTop_'.$table_id;
+            #  First break: uidisplay set to none
+            if(trim(strtolower(a($info,'uidisplay',''))) == 'none') {
+                continue;
+            }
+            
+            # Second skip: user not allowed
             $ddChild = ddTable($table_id);
+            if($ddchild['perms']['sel']==false) {
+                continue;
+            }
+            
+            $tabid = 'x4TableTop_'.$table_id;
             x4Data('dd.'.$table_id,$ddChild);
             
             # Make a tableTop container

@@ -1838,8 +1838,11 @@ function x4GridSearch(self) {
             this.zParent.sendUp('menuBarDisable','');
         }
         else {
-             // Disable copy and delete
-             var str='deleteRow,copyRow,saveRow,CtrlPageUp,PageUp,CtrlPageDown,PageDown';
+             // Disable copy and delete, maybe more
+             var str='deleteRow,copyRow,saveRow,CtrlPageUp,PageUp,'
+                +'CtrlPageDown,PageDown';
+             var dd = x4dd.dd[this.zTableId];
+             if(dd.perms.ins==false) str+=',newRow';
              this.zParent.sendUp('menuBarDisable',str);
         }        
     }
@@ -2175,7 +2178,19 @@ function x4Detail(self) {
             this.zParent.sendUp('menuBarDisable',str);
         }
         else {
-            this.zParent.sendUp('menuBarDisable','');
+            var dd = x4dd.dd[this.zTableId];
+            var arrDis = [ ];
+            if(dd.perms.ins==false) {
+                arrDis.push('newRow');
+                arrDis.push('copyRow');
+            }
+            if(dd.perms.del==false) {
+                arrDis.push('deleteRow');
+            }
+            if(dd.perms.upd==false || dd.perms.ins==false) {
+                arrDis.push('saveRow');
+            }
+            this.zParent.sendUp('menuBarDisable',arrDis.join(','));
         }
         
         // Title
