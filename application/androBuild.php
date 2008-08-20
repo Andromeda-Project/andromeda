@@ -82,8 +82,10 @@ class x_builder {
         $retval = $retval && $this->DB_Connect();
         $retval = $retval && $this->FS_Prepare();
 
-        // If we can read files, minify        
-        $retval = $retval && $this->JSMinify();
+        // If we can read files, minify.  Turn this back on if
+        // we get a more foolproof minify/pack program that
+        // always reduces.        
+        #$retval = $retval && $this->JSMinify();
         
         // If we passed most basic, we prepare the database
         // by loading stored procedures and making the zdd
