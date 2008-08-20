@@ -2460,7 +2460,9 @@ function x4Mover(self) {
             for(var x in $a.data.moverFetch) {
                 var col2 = $a.data.moverFetch[x];
                 var iid = 'check_'+col2;
-                $a.byId(iid).checked = true;
+                if(iid) {
+                    $a.byId(iid).checked = true;
+                }
             }
         }
         
