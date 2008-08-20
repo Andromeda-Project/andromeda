@@ -259,9 +259,7 @@ underlined letters that show this, so:
             
             # Second skip: user not allowed
             $ddChild = ddTable($table_id);
-            if($ddchild['perms']['sel']==false) {
-                continue;
-            }
+            if(a($ddchild['perms'],'sel',0)===0) continue;
             
             $tabid = 'x4TableTop_'.$table_id;
             x4Data('dd.'.$table_id,$ddChild);
