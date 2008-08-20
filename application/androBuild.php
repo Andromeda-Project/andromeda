@@ -81,7 +81,9 @@ class x_builder {
         $retval = $retval && $this->LogStart();
         $retval = $retval && $this->DB_Connect();
         $retval = $retval && $this->FS_Prepare();
-        
+
+        // If we can read files, minify        
+        $retval = $retval && $this->JSMinify();
         
         // If we passed most basic, we prepare the database
         // by loading stored procedures and making the zdd
@@ -133,6 +135,7 @@ class x_builder {
         $retval = $retval && $this->BuildScripts();
         // build scripts may alter configs, so write them out last
         $retval = $retval && $this->CodeGenerate_config();
+        
         
         $this->DB_Close();
         $this->LogClose($retval,$ts);
@@ -8777,6 +8780,72 @@ function codeGenerate_Config() {
     }
 	return true;
 }
+
+// ==========================================================
+// Pre-minify JS Routines
+// ==========================================================
+function jsMinify() {
+    $this->logStage("Minifying JS Files in clib");
+
+    require 'jsmin-1.1.0.php';
+    require 'class.JavaScriptPacker.php';
+
+    #$dirTop = $GLOBALS['parm']['DIR_PUB'].$GLOBALS['parm']['DIR_PUBLIC_APP'];
+    $dirTop = $GLOBALS['parm']['DIR_PUB'];
+    $dirCLib= $dirTop.'clib/';
+    $dirALib= $dirTop.'appclib/';
+    
+    $this->jsMinifyDir($dirCLib);
+    $this->jsMinifyDir($dirALib);
+}
+
+function jsMinifyDir($dir) {
+    $this->logEntry("Examining ".$dir);
+    $files = scandir($dir);
+    foreach($files as $file) {
+        if(substr($file,-3)<>'.js') continue;
+        $this->logEntry("Examining File: ");
+        $this->logEntry("     ".$dir.$file);
+    
+        $md5 = md5(file_get_contents($dir.$file));
+        $fMarker = $dir.$file.".$md5.mjs";
+        $fMin    = $dir.$file.".mjs";
+        if(file_exists($fMarker) && file_exists($fMin)) {
+            $this->logEntry('  -- Minified File and Marker exist, no action');
+        }
+        else {
+            $this->logEntry("  -- Will create marker:");
+            $this->logEntry("     ".$fMarker);
+            
+            # Remove all markers
+            foreach($files as $filedel) {
+                if(substr($filedel,0,strlen($file))==$file) {
+                    if(substr($filedel,-4)=='.mjs') {
+                        $this->logEntry("  -- Removing previous marker: ");
+                        $this->logEntry("     ".$dir.$filedel); 
+                        unlink($dir.$filedel);
+                    }
+                }
+            }
+            # Create the new marker
+            file_put_contents($fMarker,'marker');
+            
+            
+            $this->logEntry("  -- Will create file  ");
+            $this->logEntry("     ".$dir.$fMin);
+
+            # Now minify the file
+            $script = file_get_contents($dir.$file);
+            #$packer = new JavaScriptPacker($script, 'Normal', true, false);
+            #$packed = $packer->pack();
+            #$packed.=JSMin::minify($script);
+            #file_put_contents($fMin, $packed);
+            copy($dir.$file,$fMin);
+    
+        }
+    }
+}
+
 
 // ==========================================================
 // Database Access Routines
