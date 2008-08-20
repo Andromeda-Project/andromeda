@@ -1075,27 +1075,27 @@ class androHtml {
     }
 /******/
     
-/****m* androHtml/html
-*
-* NAME
-*    html
-*
-* FUNCTION
-*	The method html acts a lot like the library function html, however it adds the created html element
-*	directly to this androHtml element, specifying that this androHtml element is the parent element.
-*
-* INPUTS
-*	string $tag - Name of html tag.
-*	mixed $innerHml - Innerhtml for the created html element.
-*	string $class - Css class for the html element.
-* SOURCE
-*/
+    /****m* androHtml/html
+    *
+    * NAME
+    *    html
+    *
+    * FUNCTION
+    *	The method html acts a lot like the library function html, however it adds the created html element
+    *	directly to this androHtml element, specifying that this androHtml element is the parent element.
+    *
+    * INPUTS
+    *	string $tag - Name of html tag.
+    *	mixed $innerHml - Innerhtml for the created html element.
+    *	string $class - Css class for the html element.
+    * SOURCE
+    */
     function html($tag,$innerHTML='',$class='') {
         $x = html($tag,$this,$innerHTML);
         if($class<>'') $x->addClass($class);
         return $x;
     }
-/******/
+    /******/
     
 /****m* androHtml/h
 *
@@ -1265,38 +1265,38 @@ class androHtml {
     }
 /******/
 
-/****m* androHtml/autoFormatF
-*
-* NAME
-*    autoFormat
-*
-* FUNCTION
-*	The method autoFormat sets whether this androHtml element is autoFormatted or not.  The default
-*	input for this function is true.
-*
-* INPUTS
-*	boolean $setting - True for autoFormatting, false for none.
-*
-* SOURCE
-*/
+    /****m* androHtml/autoFormatF
+    *
+    * NAME
+    *    autoFormat
+    *
+    * FUNCTION
+    *	The method autoFormat sets whether this androHtml element is autoFormatted or not.  The default
+    *	input for this function is true.
+    *
+    * INPUTS
+    *	boolean $setting - True for autoFormatting, false for none.
+    *
+    * SOURCE
+    */
     function autoFormat($setting=true) {
         $this->autoFormat = $setting;
     }
-/******/
+    /******/
 
-/****m* androHtml/TbodyRows
-*
-* NAME
-*    TbodyRows
-*
-* FUNCTION
-*	The method TbodyRows adds a set of elements to something with striping option.
-*
-* INPUTS
-*	array $rows - rows of elements to add
-*	array $options - striping options
-*
-******/
+    /****m* androHtml/TbodyRows
+    *
+    * NAME
+    *    TbodyRows
+    *
+    * FUNCTION
+    *	The method TbodyRows adds a set of elements to something with striping option.
+    *
+    * INPUTS
+    *	array $rows - rows of elements to add
+    *	array $options - striping options
+    *
+    ******/
     function TbodyRows($rows,$options=array()) {
         $rowIdPrefix='row_';
         $stripe = $stripe1 = $stripe2 = $stripe3 = 0;
@@ -1358,19 +1358,19 @@ class androHtml {
         return $thead;
     }
     
-/****m* androHtml/addItems
-*
-* NAME
-*    addItems
-*
-* FUNCTION
-*	The method addItems adds one or more cells to a row.
-*
-* INPUTS
-*	string $tag - tag of items to add
-*	mixed $values - values of cells to add
-*
-******/
+    /****m* androHtml/addItems
+    *
+    * NAME
+    *    addItems
+    *
+    * FUNCTION
+    *	The method addItems adds one or more cells to a row.
+    *
+    * INPUTS
+    *	string $tag - tag of items to add
+    *	mixed $values - values of cells to add
+    *
+    ******/
     function addItems($tag,$values) {
         if(!is_array($values)) {
             $values = explode(',',$values);
@@ -1379,6 +1379,34 @@ class androHtml {
             html($tag,$this,$value);
         }
     }
+    
+
+    /****m* androHtml/addOptions
+    *
+    * NAME
+    *    addOptions
+    *
+    * FUNCTION
+    *	The PHP Method addOptions takes an array of rows and
+    *   creates on HTML OPTION object for each row.  These
+    *   are added to the parent object, which is assumed to be
+    *   an HTML SELECT object.
+    *
+    * INPUTS
+    *	array - an array of rows
+    *	string - name of column to use as value
+    *   string - name of column to use as display
+    *
+    * SOURCE 
+    */
+    function addOptions($rows,$value,$desc) {
+        foreach($rows as $row) {
+            $opt = $this->h('option',$row[$desc]);
+            $opt->hp['value'] = $row[$value];
+        }
+    }
+    /******/
+    
         
 /****m* androHtml/setAsParent
 *
@@ -4356,6 +4384,33 @@ function ArraySafe(&$arr,$key,$value="") {
 function a(&$a,$key,$value='') {
     return ArraySafe($a,$key,$value);
 }
+
+/****f* Array-Functions/array_copy
+*
+* FUNCTION
+*   Returns a complete copy of an array instead of a reference
+*   to the array.
+*
+* INPUTS
+*	array $arr	candidate array
+*
+* RESULT
+*	array - copy of the array  
+*/
+function array_copy($source) {
+    $retval = array();
+    foreach($source as $key=>$value) {
+        if(is_array($value)) {
+            $retval[$key] = array_copy($value);
+        }
+        else {
+            $retval[$key] = $value;
+        }
+    }
+    return $retval;
+}
+
+
 
 // ------------------------------------------------------------------
 // PHP functions that mimic Javascript DOM functions
