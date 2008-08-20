@@ -13547,6 +13547,9 @@ function jsOutput() {
     // what that file will be, maybe generate it, and create
     // a link to it
     //
+    # KFD 8/20/08, Now minifying files during the build, so we
+    #              grab that file if we can find it.  See below
+    /*
     if(count($aj)==0) return;
     $list = implode('|',$aj);
     $md5  = substr(md5($list),0,15);
@@ -13558,6 +13561,24 @@ function jsOutput() {
         foreach($aj as $ajone) {
             $f = fsDirTop().$ajone;
             $string.=JSMin::minify(file_get_contents($f));
+        }
+        file_put_contents($file,$string);
+    }
+    */
+    if(count($aj)==0) return;
+    $list = implode('|',$aj);
+    $md5  = substr(md5($list),0,15);
+    $file = fsDirTop()."/clib/js-min-$md5.js";
+
+    if(!file_exists($file)) {
+        $string = '';
+        foreach($aj as $ajone) {
+            if(file_exists($ajone.'.mjs')) {
+                $string.= file_get_contents(fsDirTop().$ajone.'.mjs');
+            }
+            else {
+                $string.= file_get_contents(fsDirTop().$ajone);
+            }
         }
         file_put_contents($file,$string);
     }
