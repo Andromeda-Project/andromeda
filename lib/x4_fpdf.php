@@ -151,10 +151,12 @@ class x4_fpdf extends fpdf {
             if(count($colstuff)>0) {
                 $align = array_shift($colstuff);
             }
+            $money = count($colstuff)>0 ? true : false;
             $this->cols[] = array(
                 'xpos'=>$posx
                 ,'width'=>$onestop * 72
                 ,'align'=>$align
+                ,'money'=>$money
             );
             $posx += ($gutter+$onestop) * 72;
         }
@@ -265,6 +267,11 @@ class x4_fpdf extends fpdf {
            echo "<b>ERROR: Output past last column, did you 
             forget a \$this->nextLine()?";
            exit;
+       }
+       
+       # Figure out if we need to reformat as money
+       if($this->cols[$col]['money']) {
+           $text = hmoney($text);
        }
        
        // work out the x position in points, don't mess with y
