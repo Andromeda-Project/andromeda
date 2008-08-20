@@ -2207,7 +2207,7 @@ function androSelect_onKeyUp(obj,strParms,e) {
     }
     // If it is invisible, position it and then make it visible
     if(aSelect.div.style.display=='none') {
-        var position = $(obj).position();
+        var position = $(obj).offset();
         var postop = position.top;
         var poslft = position.left;
         //var objpar = obj;
@@ -2369,7 +2369,7 @@ function androSelect_click(value,suppress_focus) {
 *   jQuery to be available.
 ******
 */
-window.a = window.$a = {
+window.a = window.ua = window.$a = {
     /****v* $a/data
     *
     * NAME
