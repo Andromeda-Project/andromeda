@@ -14622,6 +14622,7 @@ function SQLX_Cleanup(&$mixedrows) {
          $colnames=array_keys($row);
          foreach ($colnames as $colname) {
             if (isset($table['flat'][$colname])) {
+
                switch($table['flat'][$colname]['type_id']) {
                   case 'int':
                      $row[$colname] = intval($row[$colname]);
@@ -14631,8 +14632,13 @@ function SQLX_Cleanup(&$mixedrows) {
                      $row[$colname] = floatval($row[$colname]);
                      break;
                   case 'cbool':
+                    $row[$colname] = str_replace( '0', 'N', $row[$colname] );
+                    $row[$colname] = str_replace( '1', 'Y', $row[$colname] );
+                    $row[$colname] = substr($row[$colname],0,1);
+                    break;
                   case 'gender':
                      $row[$colname] = substr($row[$colname],0,1);
+                     break;
                   case 'char':
                   case 'varchar':
                      $len = $table['flat'][$colname]['colprec'];
