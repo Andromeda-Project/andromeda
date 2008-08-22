@@ -52,7 +52,7 @@
 *    gp
 *
 * FUNCTION
-*    The function gp retrieves the Get/Post value associated with the variable
+*    The PHP function gp retrieves the Get/Post value associated with the variable
 *    name provided.  A user can provide a default value that should be returned
 *    in case the requested variable does not exist.
 *
@@ -80,7 +80,7 @@ function gp($key,$vardefault='') {
 *    gpExists
 *
 * FUNCTION
-*    The function gpExists checks to see if the requested variable is inside
+*    The PHP function gpExists checks to see if the requested variable is inside
 *    the Get/Post parameters.
 *
 * INPUTS 
@@ -96,13 +96,13 @@ function gpExists($key) {
 }
 /******/
 
-/****f* Get-Post-Variables/hgp
+/*---f* Get-Post-Variables/hgp
 *
 * NAME
 *    hgp
 *
 * FUNCTION
-*	The function hgp retrieves the Get/Post value associated with the
+*	The PHP function hgp retrieves the Get/Post value associated with the
 *	variable name provided.  However, this function html encodes the value
 *	before it is returned to the user.  A user can provide a default value 
 *	that should be returned in case the requested variable does not exist.
@@ -122,15 +122,15 @@ function hgp($key,$default='') {
    $temp=gp($key,$default);
    return htmlentities($temp);
 }
-/******/
+/*---**/
 
-/****f* Get-Post-Variables/rowFromgp
+/*---f* Get-Post-Variables/rowFromgp
 *
 * NAME
 *    rowFromgp
 *
 * FUNCTION
-*	The function rowFromgp fetches all values from the Get/Post variables
+*	The PHP function rowFromgp fetches all values from the Get/Post variables
 *	that have names that begin with the provided prefix.
 *
 * INPUTS 
@@ -146,15 +146,15 @@ function hgp($key,$default='') {
 function rowFromgp($prefix) {
    return aFromgp($prefix);
 }
-/******/
+/*---**/
 
-/****f* Get-Post-Variables/removetrailingnewlines
+/*---f* Get-Post-Variables/removetrailingnewlines
 *
 * NAME
 *    removetrailingnewlines
 *
 * FUNCTION
-*	The function removetrailingnewlines returns a new array with the new
+*	The PHP function removetrailingnewlines returns a new array with the new
 *	line characters filtered out from the end of the provided input.
 *
 * INPUTS 
@@ -171,7 +171,7 @@ function removetrailingnewlines($input) {
    }
    return $input;
 }
-/******/
+/*---**/
 
 /****f* Get-Post-Variables/aFromgp
 *
@@ -199,7 +199,7 @@ function aFromgp($prefix) {
 *    gpSet
 *
 * FUNCTION
-*	The function gpSet assigns the value provied to the variable in the
+*	The PHP function gpSet assigns the value provied to the variable in the
 *	Get/Post parameters that has the provided name.  If the variable doesn't
 *	exist, this function creates a new variable with the provided name
 *	and value.
@@ -221,7 +221,7 @@ function gpSet($key,$value='') {
 *    gpSetFromArray
 *
 * FUNCTION
-*	The function gpSetFromArray adds all variables in the provided array
+*	The PHP function gpSetFromArray adds all variables in the provided array
 *	into the Get/Post variables.  In the array, the keys are the names of
 *	the variables, while the values are the values for the variables.  If
 *	a prefix is provided, the prefix will be appended to the beginning of
@@ -240,13 +240,13 @@ function gpSetFromArray($prefix,$array) {
 }
 /******/
 
-/****f* Get-Post-Variables/gpUnSet
+/*---f* Get-Post-Variables/gpUnSet
 *
 * NAME
 *    gpUnSet
 *
 * FUNCTION
-*	The function gpUnSet removes the variable with the provided name from
+*	The PHP function gpUnSet removes the variable with the provided name from
 *	the Get/Post parameters.
 *
 * INPUTS 
@@ -259,15 +259,15 @@ function gpUnSet($key) {
       unset($GLOBALS["AG"]["clean"][$key]);
    }
 }
-/******/
+/*---**/
 
-/****f* Get-Post-Variables/gpUnsetPrefix
+/*---f* Get-Post-Variables/gpUnsetPrefix
 *
 * NAME
 *    gpUnsetPrefix
 *
 * FUNCTION
-*	The function gpUnsetPrefix removes all variables from the Get/Post
+*	The PHP function gpUnsetPrefix removes all variables from the Get/Post
 *	parameters with names that begin with the provided prefix.
 *
 * INPUTS 
@@ -283,15 +283,15 @@ function gpUnsetPrefix($prefix) {
       }
    }
 }
-/******/
+/*---**/
 
-/****f* Get-Post-Variables/gpControls
+/*---f* Get-Post-Variables/gpControls
 *
 * NAME
 *    gpControls
 *
 * FUNCTION
-*	The function gpControls retrieves the current Get/Post parameter
+*	The PHP function gpControls retrieves the current Get/Post parameter
 *	controls.
 *
 * RETURNS
@@ -302,9 +302,9 @@ function gpUnsetPrefix($prefix) {
 function gpControls() {
    return unserialize(base64_decode(gp('gpControls')));
 }
-/******/
+/*---**/
 
-/****f* Get-Post-Variables/rowFromgpInputs
+/*---f* Get-Post-Variables/rowFromgpInputs
 *
 * NAME
 *	rowFromgpInputs
@@ -312,7 +312,7 @@ function gpControls() {
 * FUNCTION
 *	Deprecated
 *
-******/
+*---**/
 function rowFromgpInputs() {
    return afromgp('txt_');
 }
@@ -350,13 +350,13 @@ function rowFromgp($table_id) {
 * INPUTS
 */
 
-/****f* Get-Post-Variables/gpToSession
+/*---f* Get-Post-Variables/gpToSession
 *
 * NAME
 *    gpToSession
 *
 * FUNCTION
-*	The function gpToSession takes all of the current Get/Post parameters
+*	The PHP function gpToSession takes all of the current Get/Post parameters
 *	and dumps them into the current session parameters.
 *
 * SOURCE
@@ -364,7 +364,7 @@ function rowFromgp($table_id) {
 function gpToSession() {
    SessionSet('clean',$GLOBALS['AG']['clean']);
 }
-/******/
+/*---**/
 
 # ==============================================================
 #
@@ -403,7 +403,7 @@ function x4Error($parm1) {
 }
 /******/
 
-/****f* JSON-Returns/x4Notice
+/*---f* JSON-Returns/x4Notice
 *
 * NAME
 *	x4Notice
@@ -419,15 +419,15 @@ function x4Error($parm1) {
 function x4Notice($parm1) {
     $GLOBALS['AG']['x4']['notice'][] = $parm1;
 }
-/******/
+/*---**/
 
-/****f* JSON-Returns/x4Print_r
+/*---f* JSON-Returns/x4Print_r
 *
 * NAME
 *	x4Print_r
 *
 * FUNCTION
-*	The function x4Print_r dumps the provided variable and saves the output as a notice
+*	The PHP function x4Print_r dumps the provided variable and saves the output as a notice
 *	for later processing.
 *
 * INPUTS
@@ -440,7 +440,7 @@ function x4Print_r($var) {
     print_r($var);
     x4Notice(ob_get_clean());
 }
-/******/
+/*---**/
 
 /****f* JSON-Returns/x4Debug
 *
@@ -448,7 +448,7 @@ function x4Print_r($var) {
 *	x4Debug
 *
 * FUNCTION
-*	The function x4Debug saves debug information for later processing
+*	The PHP function x4Debug saves debug information for later processing
 *
 * INPUTS
 *	string $parm1 - the debug info to save
@@ -472,7 +472,7 @@ function x4DebugSQL($parm1) {
 *	x4HTML
 *
 * FUNCTION
-*	The function x4HTML is used to save the provided html for later processing.
+*	The PHP function x4HTML is used to save the provided html for later processing.
 *
 * INPUTS
 *	string $parm1 - the html tag
@@ -502,7 +502,7 @@ function x4HTML($parm1,$parm2) {
 *	x4HtmlDump
 *
 * FUNCTION
-*	The function x4HtmlDump dumps anything out to themain HTML display.  It is intended for
+*	The PHP function x4HtmlDump dumps anything out to themain HTML display.  It is intended for
 *	debugging.
 *
 * INPUTS
@@ -524,13 +524,13 @@ function x4HtmlDump($parm1) {
 *	string $parm1	script to store
 */
 
-/****f* JSON-Returns/x4SCRIPT
+/****f* JSON-Returns/x4Script
 *
 * NAME
-*	x4SCRIPT
+*	x4Script
 *
 * FUNCTION
-*	The function x4SCRIPT  strips the <script> and </script> tags from $parm1 and
+*	The PHP function x4Script strips the <script> and </script> tags from $parm1 and
 *	save the script for later processing.  Can pass parameter
 *	either with <script> tags or without: function is flexible.
 *
@@ -558,7 +558,7 @@ function x4SCRIPT($parm1) {
 *	x4Data
 *
 * FUNCTION
-*	The function x4Data JSON encodes the data to be saved as javascript for later processing.
+*	The PHP function x4Data JSON encodes the data to be saved as javascript for later processing.
 *
 * INPUTS
 *	string $name - name of data
@@ -596,7 +596,7 @@ function jsonPrint_r($data) {
 *	json_encode_safe
 *
 * FUNCTION
-*	The function json_encode_safe checks to see if current php version contains JSON functions.
+*	The PHP function json_encode_safe checks to see if current php version contains JSON functions.
 *	If it does, then encodes the data.  Otherwise it outputs an
 *	error.  Safe way to use json_encode because not all PHP setups
 *	have JSON functions.
@@ -727,7 +727,7 @@ function DispatchObject($gp_page) {
 *    hSizepx
 *
 * FUNCTION
-*	The function hSizepx computes a width by examining the size cookie.
+*	The PHP function hSizepx computes a width by examining the size cookie.
 *	It assumes that the baseline is 1024, and returns a string of the form
 *	"999px" that is scaled up or down based.
 *
@@ -750,7 +750,7 @@ function hSizepx($x1024) {
 *    html
 *
 * FUNCTION
-*	The function html acts as a factory function which creates HTML element
+*	The PHP function html acts as a factory function which creates HTML element
 *	objects based on the parameters passed.  HTML element objects are used
 *	to prevent the mixing of html and php code.
 *
@@ -1584,7 +1584,7 @@ class androHtml {
 *    htmlForm
 *
 * FUNCTION
-*	The function htmlForm creates an html form element with the provided parent element.
+*	The PHP function htmlForm creates an html form element with the provided parent element.
 *
 * INPUTS
 *	reference $parent - Reference to the parent element for this form
@@ -1626,7 +1626,7 @@ function htmlForm(&$parent,$page='') {
 *    input
 *
 * FUNCTION
-*	The function input is a lower level routine that generates an input html element.
+*	The PHP function input is a lower level routine that generates an input html element.
 *
 * INPUTS
 *	array $colinfo - column info
@@ -1870,7 +1870,7 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
 *    projection
 *
 * FUNCTION
-*	The function projection generates a set of inputs for a given projection on a given table, organized
+*	The PHP function projection generates a set of inputs for a given projection on a given table, organized
 *	as an HTML TABLE with one row per input, captions on left and inputs on right.
 *
 * INPUTS
@@ -2006,7 +2006,7 @@ function projection($dd,$projection='',&$tabLoop,$options=array()) {
 *    inputsTabLoop
 *
 * FUNCTION
-*	The function inputsTabLoop adds keybindings and inputs to the provided tabloop.
+*	The PHP function inputsTabLoop adds keybindings and inputs to the provided tabloop.
 *
 * INPUTS
 *	reference $tabLoop - tab loops
@@ -2055,7 +2055,7 @@ function inputsTabLoop(&$tabLoop,$options=array()) {
 *    inputFixupByType
 *
 * FUNCTION
-*	The function inputFixupByType adds keyboard input if provided input has an additional attribute
+*	The PHP function inputFixupByType adds keyboard input if provided input has an additional attribute
 *	xTypeId equal to date.
 *
 * NOTE
@@ -2308,7 +2308,7 @@ function configLayoutX4($container,$type) {
 *    SQL_FORMAT
 *
 * FUNCTION
-*	The function SQL_FORMAT Takes any input value and type and formats it for direct substitution
+*	The PHP function SQL_FORMAT Takes any input value and type and formats it for direct substitution
 * 	into a SQL string.  So for instance character values are escaped for
 * 	quotes and then surrounded by single quotes.  Numerics are returned
 * 	as-is, dates are formatted and so forth.
@@ -2446,7 +2446,7 @@ function SQL_FORMAT($t,$v,$clip=0) {
 *    SQLFC
 *
 * FUNCTION
-*	The function SQLFC is a shortcut to SQL_FORMAT for string values.
+*	The PHP function SQLFC is a shortcut to SQL_FORMAT for string values.
 *
 * INPUTS
 *	string $value - string to be sanitized
@@ -2465,7 +2465,7 @@ function SQLFC($value) { return SQL_Format('char',$value); }
 *    SQLFN
 *
 * FUNCTION
-*	The function SQLFN is a shortcut to SQL_FORMAT for numeric values.
+*	The PHP function SQLFN is a shortcut to SQL_FORMAT for numeric values.
 *
 * INPUTS
 *	mixed $value - value to be sanitized
@@ -2484,7 +2484,7 @@ function SQLFN($value) { return SQL_Format('numb',$value); }
 *    SQLFD
 *
 * FUNCTION
-*	The function SQLFD is a shortcut to SQL_FORMAT for date values.
+*	The PHP function SQLFD is a shortcut to SQL_FORMAT for date values.
 *
 * INPUTS
 *	mixed $value - value to be sanitized
@@ -2503,7 +2503,7 @@ function SQLFD($value) { return SQL_Format('date',$value); }
 *    SQLFDT
 *
 * FUNCTION
-*	The function SQLFDT is a shortcut to SQL_FORMAT for datetime values.
+*	The PHP function SQLFDT is a shortcut to SQL_FORMAT for datetime values.
 *
 * INPUTS
 *	mixed $value - value to be sanitized
@@ -2522,7 +2522,7 @@ function SQLFDT($value) { return SQL_Format('dtime',$value); }
 *    sqlFilter
 *
 * FUNCTION
-*	The function sqlFilter generates a WHERE clause for a single column given its 
+*	The PHP function sqlFilter generates a WHERE clause for a single column given its 
 * 	type and the search value.  Generates index-optimized 
 *	WHERE clauses to replace LIKE where possible, respects
 *	commas to do lists, and double-dashes to do ranges.
@@ -2709,7 +2709,7 @@ function sqlFilter($colinfo,$tcv,$table = '') {
 *    sqlOrderBy
 *
 * FUNCTION
-*	The function sqlOrderBy builds the orderby part of an sql query.  If the Get/Post parameters have the
+*	The PHP function sqlOrderBy builds the orderby part of an sql query.  If the Get/Post parameters have the
 *	type of sort, it uses the type of sort passed.  Otherwise, it orders the columns in ascending order.
 *
 * INPUTS
@@ -2999,7 +2999,8 @@ function mosMainBody() {
 *	tmpPathInsert
 *
 * FUNCTION
-*	This routine makes it possible to use friendly URL's together with
+*	The PHP function tmpPathInsert
+*	makes it possible to use friendly URL's together with
 *	absolute paths in the special case where your files are stored in
 *	a user's home directory on a local machine.
 *
@@ -3041,7 +3042,7 @@ function ampReplace($input) {
 *	sefRelToAbs
 *
 * FUNCTION
-*	The function sefRelToAbs takes a SEF url and converts to an an absolute
+*	The PHP function sefRelToAbs takes a SEF url and converts to an an absolute
 *	path.
 *
 * INPUTS
@@ -3200,7 +3201,7 @@ function hLinkImage($pic,$alt,$var,$val,$enabled) {
 *	SessionGet
 *
 * FUNCTION
-* 	The function Session get returns a session variable.  The second parameter
+* 	The PHP function Session get returns a session variable.  The second parameter
 * 	is a Standard Default Value and will be returned if the
 * 	Session variable Var_Name does not exist.
 *
@@ -3227,7 +3228,7 @@ function SessionGet($key,$default="",$sfx='app') {
 }
 /******/
 
-/****f* SessionHandling/SessionSet
+/****f* Session-Handling/SessionSet
 *
 * NAME
 *	SessionSet
@@ -3349,7 +3350,7 @@ function SessionUnSet_Prefix($prefix) {
 *	vgaGet
 *
 * FUNCTION
-*	The function vgaGet is a wrapper for getting PHP global variables.  You call vgaGet in order
+*	The PHP function vgaGet is a wrapper for getting PHP global variables.  You call vgaGet in order
 *	to receive global variables set without conflicting with the framework.  You can also provide
 *	a default value to return in the case that the global variable isn't found or isn't set.
 *
@@ -3375,7 +3376,7 @@ function vgaGet($key,$default='') {
 *    vgaSet
 *
 * FUNCTION
-*    The function vgaSet sets the value of a global variable.
+*    The PHP function vgaSet sets the value of a global variable.
 *    The variable will exist during the current request and can be
 *    accessed from any scope with the vgaGet function.
 *
@@ -3399,7 +3400,7 @@ function vgaSet($key,$value='') {
 *	vgfGet
 *
 * FUNCTION
-*	The function vgfGet returns a [[Global Variable]].  The second parameter
+*	The PHP function vgfGet returns a [[Global Variable]].  The second parameter
 *	names a [[Standard Default Value]] that will be returned if the
 *	requested variable does not eixst.
 *
@@ -3459,7 +3460,7 @@ function vgfGetHC($key,$default='') {
 *	vgfSet
 *
 * FUNCTION
-*	The function vgfSet sets the value of a global variable.
+*	The PHP function vgfSet sets the value of a global variable.
 *	The variable will exist during the current request and can be
 *	accessed from any scope with the [[vgfGet]] function.
 *
@@ -3597,7 +3598,7 @@ The following are [[deprecated]] form variable conventions:
   *	$stackname string
   */
   
-/****h* PHP-API/Stack-Functions
+/*---h* PHP-API/Stack-Functions
 *
 * NAME
 *	Stack-Functions
@@ -3605,16 +3606,16 @@ The following are [[deprecated]] form variable conventions:
 * FUNCTION
 *	Stack functions are used to handle stacks in andromeda.
 *
-******
+*---**
 */
 
-/****f* Stack-Functions/_scStackInit
+/*---f* Stack-Functions/_scStackInit
 *
 * NAME
 *	_scStackInit
 * 
 * FUNCTION
-*	The function _scStackInit initializes a stack for scStackPush and scStackPop.
+*	The PHP function _scStackInit initializes a stack for scStackPush and scStackPop.
 *
 * INPUTS
 *	string $stackname - name for the stack
@@ -3629,15 +3630,15 @@ function _scStackInit($stackname) {
       $GLOBALS['STACK'][$stackname]=array();
    }
 }
-/******/
+/*---**/
   
-/****f* Stack-Functions/scStackPush
+/*---f* Stack-Functions/scStackPush
 *
 * NAME
 *	scStackPush
 *
 * FUNCTION
-*	The function scStackPush is used to push a provided value onto the stack with the provided name.
+*	The PHP function scStackPush is used to push a provided value onto the stack with the provided name.
 *
 * INPUTS
 *	string $stackname - name of stack
@@ -3649,15 +3650,15 @@ function scStackPush($stackname,$value) {
    _scStackInit($stackname);
    $GLOBALS['STACK'][$stackname][] = $value;
 }
-/******/
+/*---**/
 
-/****f* Stack-Functions/scStackPop
+/*---f* Stack-Functions/scStackPop
 *
 * NAME
 *	scStackPop
 *
 * FUNCTION
-*	The function scStackPop pops the last-added value from a named stack.  Returns null if the stack
+*	The PHP function scStackPop pops the last-added value from a named stack.  Returns null if the stack
 *	is empty, an empty stack does not throw an error.
 *
 * INPUTS
@@ -3672,11 +3673,11 @@ function scStackPop($stackname) {
    _scStackInit($stackname);
    return array_pop($GLOBALS['STACK'][$stackname]);
 }
-/******/
+/*---**/
 // ------------------------------------------------------------------
 // Routines to assemble return values
 // ------------------------------------------------------------------
-/****h* PHP-API/Ajax-Return-Assembly
+/*---h* PHP-API/Ajax-Return-Assembly
 *
 * NAME
 *	Ajax-Return-Assembly
@@ -3687,16 +3688,16 @@ function scStackPop($stackname) {
 *	separating elements and their values with '|' characters.  Each return
 *	is separated by the '|-|' character.
 *
-******
+***---
 */
 
-/****f* Ajax-Return-Assembly/return_value_add
+/*---f* Ajax-Return-Assembly/return_value_add
 *
 * NAME
 *	return_value_add
 *
 * FUNCTION
-*	The function return_value_add adds the provided element and its value
+*	The PHP function return_value_add adds the provided element and its value
 *	to the ajax return values.
 *
 * INPUTS
@@ -3711,7 +3712,7 @@ function return_value_add($element,$value) {
    $retvals[$element]=$value;
    $GLOBALS['AG']['retvals']=$retvals;
 }
-/******/
+/*---**/
 
 /**
 * Adds a new return command
@@ -3721,7 +3722,7 @@ function return_value_add($element,$value) {
 *	mixed $value
 */
 
-/****f* Ajax-Return-Assembly/retCmd
+/*---f* Ajax-Return-Assembly/retCmd
 *
 * NAME
 *	retCmd
@@ -3735,7 +3736,7 @@ function return_value_add($element,$value) {
 *	string $element - element name
 *	mixed $value - value for element
 *
-******
+*---**
 */
 function retCmd($command,$element,$value) {
    return_command_add($command,$element,$value);
@@ -3749,13 +3750,13 @@ function retCmd($command,$element,$value) {
 *	mixed $value value of element
 */
 
-/****f* Ajax-Return-Assembly/return_command_add
+/*---f* Ajax-Return-Assembly/return_command_add
 *
 * NAME
 *	return_command_add
 *
 * FUNCTION
-*	The function return_command_add 
+*	The PHP function return_command_add 
 *	adds a new return command with the provided command, element, and value.
 *
 * INPUTS
@@ -3771,22 +3772,22 @@ function return_command_add($command,$element,$value) {
    $retcommands[$command][$element]=$value;
    $GLOBALS['AG']['retcommands']=$retcommands;
 }
-/******/
+/*---**/
 
 /**
 * Sends returns to the browser using ajax
 *
 */
 
-/****f* Ajax-Return-Assembly/return_as_ajax
+/*---f* Ajax-Return-Assembly/return_as_ajax
 *
 * NAME
 *	return_as_ajax
 *
 * FUNCTION
-*	The function return_as_ajax sends the returns to the browser using ajax
+*	The PHP function return_as_ajax sends the returns to the browser using ajax
 *
-******
+*---**
 */
 function returns_as_ajax() {
    global $AG;
@@ -3824,13 +3825,13 @@ function returns_as_ajax() {
 *
 ******/
 
-/****f* Data-Dictionary-Routines/DD_EnsureREf
+/*---f* Data-Dictionary-Routines/DD_EnsureREf
 *
 * NAME
 *	DD_EnsureREf
 *
 * FUNCTION
-*	The function DD_EnsureREf checks to see if the provided reference is a reference to a data dictionary
+*	The PHP function DD_EnsureREf checks to see if the provided reference is a reference to a data dictionary
 *	table.  If it is, the function returns the data dictionary because it is valid.  If it isn't, the function
 *	only returns the reference.
 *
@@ -3847,15 +3848,15 @@ function DD_EnsureREf(&$unknown) {
    if(is_array($unknown)) return $unknown;
    else return dd_TableRef($unknown);
 }
-/******/
+/*---**/
 
-/****f* Data-Dictionary-Routines/DD_Table
+/*---f* Data-Dictionary-Routines/DD_Table
 *
 * NAME
 *	DD_Table
 *
 * FUNCTION
-*	The function DD_Table loads the data dictionary table with the provided table id, and returns
+*	The PHP function DD_Table loads the data dictionary table with the provided table id, and returns
 *	the table instead of a reference.
 *
 * INPUTS
@@ -3870,7 +3871,7 @@ function DD_Table($table_id) {
 	include_once("ddtable_".$table_id.".php");
 	return $GLOBALS["AG"]["tables"][$table_id];
 }
-/******/
+/*---**/
 
 function ddNoWrites() {
    return array(
@@ -3888,7 +3889,7 @@ function ddNoWrites() {
 *	ddTable
 *
 * FUNCTION
-*	The function ddTable is the final form of the various "give me the dd" routines.  This version will
+*	The PHP function ddTable is the final form of the various "give me the dd" routines.  This version will
 *	filter the array based on the user credentials.  This means that this is the only call you need, the
 *	array it gives you is completely appropriate for the user.  It returns a reference to the data
 *	dictionary table.
@@ -4020,7 +4021,7 @@ function &ddTable($table_id) {
 *	ddView
 *
 * FUNCTION
-*	The function ddView fetches the viewname for the data dicitonary table provided.  If the table
+*	The PHP function ddView fetches the viewname for the data dicitonary table provided.  If the table
 *	is not an array, the function asumes that it is the name of the table and then fetches the table using
 *	ddTable.
 *
@@ -4049,7 +4050,7 @@ function ddView($tabx) {
 *	ddUserPerm
 *
 * FUNCTION
-*	The function ddUserPerm will tell you if the user is granted a particular permission on a particular
+*	The PHP function ddUserPerm will tell you if the user is granted a particular permission on a particular
 *	table.
 *
 *	The permissions you can request are:
@@ -4113,13 +4114,13 @@ function DD_ColumnBrowse(&$col,&$table)
    return false;
 }
 
-/****f* Data-Dictionary-Routines/DD_TableProperty
+/*---f* Data-Dictionary-Routines/DD_TableProperty
 *
 * NAME
 *	DD_TableProperty
 *
 * FUNCTION
-*	The function DD_TableProperty fetches the value associated with the provided
+*	The PHP function DD_TableProperty fetches the value associated with the provided
 *	property in a table with the provided table id.
 *
 * INPUTS
@@ -4129,7 +4130,7 @@ function DD_ColumnBrowse(&$col,&$table)
 * RETURN VALUE
 *	 mixed - value associated with $propery
 *
-******
+*---**
 */
 function DD_TableProperty($table_id,$property) {
     $table = &ddTable($table_id);
@@ -4151,13 +4152,13 @@ function DD_TableDropdown($table_id) {
 	return explode(",",$ret);
 }
 
-/****f* Data-Dictionary-Routines/DDTable_IDResolve
+/*---f* Data-Dictionary-Routines/DDTable_IDResolve
 *
 * NAME
 *	DDTable_IDResolve
 *
 * FUNCTION
-*	The function DDTable_IDResolve accepts the name of a table and returns the appropriate view to
+*	The PHP function DDTable_IDResolve accepts the name of a table and returns the appropriate view to
 *	access based on the user's effective group.
 *
 *	The name of a view is only returned if there is some reason to redirect
@@ -4174,7 +4175,7 @@ function DD_TableDropdown($table_id) {
 * RETURN VALUE
 *	string - the appropriate view
 *
-******
+*---**
 */
 function DDTable_IDResolve($table_id) {
     // Both super user and nobody get original table
@@ -4211,13 +4212,13 @@ function DDTable_IDResolve($table_id) {
         }
 }
 
-/****f* Data-Dictionary-Routines/DD_ColInsertsOK
+/*---f* Data-Dictionary-Routines/DD_ColInsertsOK
 *
 * NAME
 *	DD_ColInsertsOK
 *
 * FUNCTION
-*	The function DD_ColInsertsOK accepts an array of dictionary information about a column and
+*	The PHP function DD_ColInsertsOK accepts an array of dictionary information about a column and
 *	then works out if inserts are allowed to that column.  Useful for
 *	disabling HTML controls.
 *
@@ -4233,7 +4234,7 @@ function DDTable_IDResolve($table_id) {
 * RETURN VALUE
 *	boolean - is inserts allowed in column
 *
-******
+*---**
 */
 function DD_ColInsertsOK(&$colinfo,$mode='html') {
    // If in a drilldown, any parent column is read-only
@@ -4271,13 +4272,13 @@ function DD_ColUpdatesOK(&$colinfo) {
     return in_array($aid,$automations);
 }
 
-/****f* Data-Dictionary-Routines/DDColumnWritable
+/*---f* Data-Dictionary-Routines/DDColumnWritable
 *
 * NAME
 *	DDColumnWritable
 *
 * FUNCTION
-*	The function DColumnWritable returns true if the provided column info says that the column
+*	The PHP function DColumnWritable returns true if the provided column info says that the column
 *	is writable.
 *
 * INPUTS
@@ -4287,7 +4288,7 @@ function DD_ColUpdatesOK(&$colinfo) {
 * RETURN VALUE
 *	boolean - is the column writable
 *
-******
+*---**
 */
 function DDColumnWritable(&$colinfo,$gpmode,$value) {
    $NEVERUSED=$value;
@@ -4303,13 +4304,13 @@ function DDColumnWritable(&$colinfo,$gpmode,$value) {
    else return DD_ColUpdatesOK($colinfo);
 }
 
-/****f* Data-Dicitonary-Routines/DD_TableRef
+/*---f* Data-Dicitonary-Routines/DD_TableRef
 *
 * NAME
 *	DD_TableRef
 *
 * FUNCTION
-*	The function DD_TableRef loads the data dictionary for a given table and returns a reference.
+*	The PHP function DD_TableRef loads the data dictionary for a given table and returns a reference.
 *
 * INPUTS
 *	string $table_id - table id
@@ -4317,7 +4318,7 @@ function DDColumnWritable(&$colinfo,$gpmode,$value) {
 * RETURN VALUE
 *	reference - reference to data dictionary table
 *
-******
+*---**
 */
 function DD_TableRef($table_id) {
 	if (!isset($GLOBALS["AG"]["tables"][$table_id])) {
@@ -4803,7 +4804,7 @@ parent:Hidden Variables
 *	Hidden
 *
 * FUNCTION
-*	The function Hidden registers a variable and its value that should be 
+*	The PHP function Hidden registers a variable and its value that should be 
 *	output as a hidden variable.
 *
 * INPUTS
@@ -4848,7 +4849,7 @@ function Hidden($varname=null,$val=null) {
 *	hiddenFromTable
 *
 * FUNCTION
-*	The function hiddenFromTable generates one hidden variable for each column in Table_id.  The name
+*	The PHP function hiddenFromTable generates one hidden variable for each column in Table_id.  The name
 *	of the variables is formed as $table_id."_".$column_id.
 *
 *	If the second parameter, a [[Row Array]], is passed, the hidden
@@ -4882,7 +4883,7 @@ name:_default_
 parent:Context Variables
 */
 // ------------------------------------------------------------------
-/****h* PHP-API/Context-Variables
+/*---h* PHP-API/Context-Variables
 *
 * NAME
 *	Context Variables
@@ -4909,11 +4910,11 @@ parent:Context Variables
 *	can avoid collisions with these variables by always using the functions
 *	whose names begin with "app".
 *
-******
+*---**
 */
 
 
-/****f* Context-Variables/appconget
+/*---f* Context-Variables/appconget
 *
 * NAME
 *	appconget
@@ -4941,19 +4942,19 @@ parent:Context Variables
 * RETURN VALUE
 *	mixed - context variable
 *
-******
+*---**
 */
 function appconget($category,$name,$key,$default='') {
    return ContextGet('app_'.$category.'_'.$name.'_'.$key,$default);
 }
 
-/****f* Context-Variables/conget
+/*---f* Context-Variables/conget
 *
 * NAME
 *	conget
 *
 * FUNCTION
-*	The function conget returns a context variable.  A context variable is completely
+*	The PHP function conget returns a context variable.  A context variable is completely
 *	specified by at three levels, a Category, a Name, and a Key.
 *
 *	This function is used exclusively by the framework, your applications
@@ -4970,7 +4971,7 @@ function appconget($category,$name,$key,$default='') {
 * RETURN VALUE
 *	mixed - context variable
 *
-******
+*---**
 */
 function conget($category,$name,$key,$default='') {
    return ContextGet('fw_'.$category.'_'.$name.'_'.$key,$default);
@@ -4990,13 +4991,13 @@ function conget($category,$name,$key,$default='') {
 *	mixed
 */
 
-/****f* Context-Variables/ContextGet
+/*---f* Context-Variables/ContextGet
 *
 * NAME
 *	ContextGet
 *
 * FUNCTION
-*	The function ContextGet is the lowest-level routine that returns context variables.
+*	The PHP function ContextGet is the lowest-level routine that returns context variables.
 *
 *	Applications should not use this routine, they should use [[appConGet]].
 *	Framework library code uses [[ConGet]].
@@ -5016,15 +5017,15 @@ function ContextGet($name,$default='') {
       ? $sc[$name]
       : $default;
 }
-/******/
+/*---**/
 
-/****f* Context-Variables/appConSet
+/*---f* Context-Variables/appConSet
 *
 * NAME
 *	appConSet
 *
 * FUNCTION
-*	The function appConSet sets a context variable.  A context variable is completely
+*	The PHP function appConSet sets a context variable.  A context variable is completely
 *	specified by at three levels, a Category, a Name, and a Key.
 *
 *	Application code should use this routine to avoid naming collisions
@@ -5041,15 +5042,15 @@ function ContextGet($name,$default='') {
 function appConSet($category,$name,$key,$value='') {
    return ContextSet('app_'.$category.'_'.$name.'_'.$key,$value);
 }
-/******/
+/*---**/
 
-/****f* Context-Variables/conSet
+/*---f* Context-Variables/conSet
 *
 * NAME
 *	conSet
 *
 * FUNCTION
-*	The function conSet sets a context variable.  A context variable is completely
+*	The PHP function conSet sets a context variable.  A context variable is completely
 *	specified by at three levels, a Category, a Name, and a Key.
 *
 *	This routine is reserved for use by the framework.
@@ -5068,16 +5069,16 @@ function appConSet($category,$name,$key,$value='') {
 function conSet($category,$name,$key,$value='') {
    return ContextSet('fw_'.$category.'_'.$name.'_'.$key,$value);
 }
-/******/
+/*---**/
 
 
-/****f* Context-Variables/ContextSet
+/*---f* Context-Variables/ContextSet
 *
 * NAME
 *	ContextSet
 *
 * FUNCTION
-*	The function ContextSet is the lowest-level routine that sets context variables.
+*	The PHP function ContextSet is the lowest-level routine that sets context variables.
 *
 *	Applications should not use this routine, they should use [[appConSet]].
 *	Framework library code uses [[ConSet]].
@@ -5092,10 +5093,10 @@ function ContextSet($name,$value='') {
    $sc=&$GLOBALS['AG']['clean']['gpContext'];
    $sc[$name]=$value;
 }
-/******/
+/*---**/
 
 
-/****f* Context-Variables/appConUnSet
+/*---f* Context-Variables/appConUnSet
 *
 * NAME
 *	appConUnSet
@@ -5118,9 +5119,9 @@ function ContextSet($name,$value='') {
 function appConUnSet($category,$name,$key) {
    return ContextUnSet('app_'.$category.'_'.$name.'_'.$key);
 }
-/******/
+/*---**/
 
-/****f* Context-Variables/conUnSet
+/*---f* Context-Variables/conUnSet
 *
 * NAME
 *	conUnSet
@@ -5140,14 +5141,14 @@ function appConUnSet($category,$name,$key) {
 * RETURN VALUE
 *	mixed
 *
-******
+*---**
 */
 function conUnSet($category,$name,$key) {
    return ContextUnSet('fw_'.$category.'_'.$name.'_'.$key);
 }
 
 
-/****f* Context-Variables/ContextUnSet
+/*---f* Context-Variables/ContextUnSet
 *
 * NAME
 *	ContextUnSet
@@ -5167,10 +5168,10 @@ function ContextUnSet($name) {
    if (isset($GLOBALS['gpContext'][$name]))
       unset($GLOBALS['gpContext'][$name]);
 }
-/******/
+/*---**/
 
 
-/****f* Context-Variables/appConClear
+/*---f* Context-Variables/appConClear
 *
 * NAME
 *	appConClear
@@ -5181,14 +5182,14 @@ function ContextUnSet($name) {
 *	Application code should use this routine to avoid naming collisions
 *	with context variables set by the framework.
 *
-******
+*---**
 */
 function appConClear() {
    return ContextClear('app');
 }
 
 
-/****f* Context-Variables/ConClear
+/*---f* Context-Variables/ConClear
 *
 * NAME
 *	ConClear
@@ -5199,13 +5200,13 @@ function appConClear() {
 *	This routine is reserved for use by the framework.
 *	Application code should use [[appConClear]].
 *
-******
+*---**
 */
 function ConClear() {
    return ContextClear('fw');
 }
 
-/****f* Context-Variables/ContextClear
+/*---f* Context-Variables/ContextClear
 *
 * NAME
 *	ContextClear
@@ -5216,7 +5217,7 @@ function ConClear() {
 *	Applications should not use this routine, they should use
 *	[[appConClear]].  Framework library code uses [[ConClear]].
 *
-******
+*---**
 */
 function ContextClear($prefix='') {
    if($prefix=='') {
