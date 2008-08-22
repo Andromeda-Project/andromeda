@@ -9153,7 +9153,7 @@ function dEnsureTS($datein) {
 function dMonthFromNum($xmonth) {
    $x=array(''
       ,'January','February','March','April','May','June'
-      ,'July','August','Septempter','October','November','December'
+      ,'July','August','September','October','November','December'
    );
    return $x[$xmonth];
 }
@@ -13522,7 +13522,8 @@ function jsOutput() {
             $external = true;
         }
         
-        if($debug=='N' && $external == false) {
+        #if($debug=='N' && $external == false) {
+        if(false) {
             $aj[] = $js['file'];
             if($js['comments']<>'') {
                 ?>
