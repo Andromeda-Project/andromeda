@@ -233,6 +233,10 @@ var x4 =  {
                     stop = true;
                 }
             }
+            // Escape key should always stop propagation, it turns
+            // off things like returning to menu, stops scripts and 
+            // loads and other nasty things
+            if(!stop && keyLabel == 'Esc') stop = true;
             
             // Stop all propagation, return false, etc.
             // This prevents ALT-F from activating menu or
@@ -2103,6 +2107,8 @@ function x4Detail(self) {
             var value = $a.aProp(row,column_id,'');
             if(value==null) value='';
             value = value.trim();
+            if(false) {
+            /*
             if(input.getAttribute('xTypeId')=='dtime') {
                 if(value=='') {
                     input.value = '';
@@ -2113,6 +2119,8 @@ function x4Detail(self) {
                         +' '+value.slice(11,19);
                     input.value = value;
                 }
+            }
+            */
             }
             else if (input.getAttribute('xTypeId')=='time') {
                 input.value = x4.format.time(value);
@@ -2460,8 +2468,8 @@ function x4Mover(self) {
             for(var x in $a.data.moverFetch) {
                 var col2 = $a.data.moverFetch[x];
                 var iid = 'check_'+col2;
-                if(iid) {
-                    $a.byId(iid).checked = true;
+                if(u.byId(iid)) {
+                    u.byId(iid).checked = true;
                 }
             }
         }
