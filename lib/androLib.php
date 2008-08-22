@@ -9137,7 +9137,7 @@ function dMonthEnd($datein,$months) {
 *	string unix_ts
 */
 function dEnsureTS($datein) {
-   if(is_integer($datein)) return $datein;
+   if(is_numeric($datein)) return $datein;
    else return strtotime($datein);
 }
 
