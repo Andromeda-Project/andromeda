@@ -1838,7 +1838,7 @@ var u = {
         answer: null,
         json: null,
         
-        /****v* events/currentDialog
+        /****v* dialogs/currentDialog
         *
         * NAME
         *    u.events.currentDialog   
@@ -1854,7 +1854,7 @@ var u = {
         */
         currentDialog: false,
         
-        /****v* events/clear
+        /****v* dialogs/clear
         *
         * NAME
         *   u.events.clear
@@ -2404,41 +2404,41 @@ function androSelect_click(value,suppress_focus) {
 }
 
 
-/****O* Javascript-API/$a
+/****O* Javascript-API/ua
 *
 * NAME
-*   $a
+*   ua
 *
 * FUNCTION
-*   The Javascript $a object provides Andromeda-specific 
+*   The Javascript ua object provides Andromeda-specific 
 *   utilities.  This object is used to communicate with the
 *   web server, and it also contains parsed results that
 *   have been received from the server.
 *
-*   Compare $a to the Javascript u object, which
+*   Compare ua to the Javascript u object, which
 *   contains general purpose utilities that do not depend
 *   upon or expect other Andromeda objects to be present.
 *
-*   The Javascript $a object is present on all HTML sent to
+*   The Javascript ua object is present on all HTML sent to
 *   the browser and can be used on any custom page you write.
 *
 * PORTABILITY
-*   The Javascript $a object is not meant to be used outside
+*   The Javascript ua object is not meant to be used outside
 *   of Andromeda.  Specifically it is hardcoded to expect
 *   an Andromeda web-server.  
 *
-*   The $a object also depends on the u object, and it expects
+*   The ua object also depends on the u object, and it expects
 *   jQuery to be available.
 ******
 */
 window.a = window.ua = window.$a = {
-    /****v* $a/data
+    /****v* ua/data
     *
     * NAME
-    *   $a.data
+    *   ua.data
     *
     * FUNCTION
-    *   The javascript object $a.data contains data that has been
+    *   The javascript object ua.data contains data that has been
     *   sent to the browser by the web server.  Such data can
     *   be sent in a normal HTML page or in a JSON call.
     *
@@ -2475,7 +2475,7 @@ window.a = window.ua = window.$a = {
     *   And then in script you will find this data here:
     *
     *       <script>
-    *       var states = $a.data.states;
+    *       var states = ua.data.states;
     *       for(var idx in states) {
     *           .....
     *       }
@@ -2596,7 +2596,7 @@ window.a = window.ua = window.$a = {
     *
     * FUNCTION
     *   In Andromeda, all Ajax requests are handled by the
-    *   $a.json object.  We do not use the term AJAX because
+    *   ua.json object.  We do not use the term AJAX because
     *   it is not a correct technical description.  We use
     *   term "JSON", as in 'make a JSON call to the server'.
     *
@@ -2609,13 +2609,13 @@ window.a = window.ua = window.$a = {
     ******
     */
     
-    /****O* $a/json
+    /****O* ua/json
     *
     * NAME
-    *   $a.json
+    *   ua.json
     *
     * FUNCTION
-    *   The Javascript object $a.json is used to send any request
+    *   The Javascript object ua.json is used to send any request
     *   to the web server, either for a new complete page or for
     *   data and HTML fragments.
     *   Examples include requesting a single row from a table,
@@ -2628,7 +2628,7 @@ window.a = window.ua = window.$a = {
     *   instead of XML (hence no "X" in AJA"X"), and many calls
     *   are actually synchronous (hence no "A" in "A"JAX).
     *
-    *   The $a.json object is always present on all pages, and
+    *   The ua.json object is always present on all pages, and
     *   you can use it in Javascript code on any custom page.
     *
     * NOTES
@@ -2645,43 +2645,43 @@ window.a = window.ua = window.$a = {
     *   * x4Debug - ignored, but you can examine the results in
     *     firebug.
     *   * x4Error - any errors sent back by this function are reported
-    *     to the user and $a.json.execute returns false.
+    *     to the user and ua.json.execute returns false.
     *   * x4HTML - calls to this function in PHP code provide an 
     *     element Id and a fragment of HTML.  The HTML replaces the
     *     innerHTML of the specific item.
     *   * x4Data - calls to this function in PHP code provide a name
     *     and some data value (including arrays and objects).  The
-    *     result can be examined when the call completes in $a.data.<name>.
+    *     result can be examined when the call completes in ua.data.<name>.
     *   * x4Script - provides script that should execute on the browser
     *     when the call returns.
     *
     * EXAMPLE
     *
-    *   The basic usage of $a.json is to initialize a call 
-    *   with $a.json.init, and then to add parameters with
-    *   $a.json.addParm, and finally to execute and process the
-    *   call with $a.json.execute and $a.json.process.
+    *   The basic usage of ua.json is to initialize a call 
+    *   with ua.json.init, and then to add parameters with
+    *   ua.json.addParm, and finally to execute and process the
+    *   call with ua.json.execute and ua.json.process.
     *
-    *   There are also special-purpose methods like $a.json.inputs
+    *   There are also special-purpose methods like ua.json.inputs
     *   that will take all of the inputs inside of an object and
     *   add them to the request.
     *
-    *   You can also use the function $a.json.windowLocation to
-    *   execute the call as a new page request, and $a.json.newWindow
+    *   You can also use the function ua.json.windowLocation to
+    *   execute the call as a new page request, and ua.json.newWindow
     *   to execute the call as a new page request in a tab.
     *  
     *      <script>
     *      // Initialize the call
-    *      $a.json.init('x4Page','myCustomPage'); 
+    *      ua.json.init('x4Page','myCustomPage'); 
     *      // Name the server-side PHP method to call
-    *      $a.json.addParm('x4Action','getSomething'); 
+    *      ua.json.addParm('x4Action','getSomething'); 
     *      // Add some parms
-    *      $a.json.addParm('parm1','value');
-    *      $a.json.addParm('parm2','value');
+    *      ua.json.addParm('parm1','value');
+    *      ua.json.addParm('parm2','value');
     *      // Execute and process in one step.  Note that this
     *      // is synchronous, there is no need for a callback
     *      // function.
-    *      $a.json.execute(true);
+    *      ua.json.execute(true);
     *     
     *      for(var x in $a.data.returnedStuff) {
     *        ....
@@ -2714,12 +2714,12 @@ window.a = window.ua = window.$a = {
     *   Such a call is handled this way in script:
     *
     *      <script>
-    *      $a.json.init('x4Page','myCustomPage');
+    *      ua.json.init('x4Page','myCustomPage');
     *
     *      // We need the conditional in case the server returns
     *      // an error and we should not replace the html
-    *      if($a.json.execute()) {
-    *         $a.json.process('nameofItemToReplace');
+    *      if(ua.json.execute()) {
+    *         ua.json.process('nameofItemToReplace');
     *      }
     *      </script>
     *
@@ -2739,14 +2739,14 @@ window.a = window.ua = window.$a = {
         /****m* json/init
         *
         * NAME
-        *   $a.json.init
+        *   ua.json.init
         *
         * FUNCTION
-        *   The Javascript method $a.json.init initiates a new 
+        *   The Javascript method ua.json.init initiates a new 
         *   JSON request.
         *
         *   Optionally you can pass two inputs and eliminate one
-        *   call to $a.json.addParm.
+        *   call to ua.json.addParm.
         *
         * INPUTS
         *   string - if provided, a parameter name
@@ -2757,12 +2757,12 @@ window.a = window.ua = window.$a = {
         *
         *      <script>
         *      // The short way
-        *      $a.json.init('x4Page','myCustomPage');
+        *      ua.json.init('x4Page','myCustomPage');
         * 
         *      // Passing w/o parameters requires at least one
-        *      // call to $a.json.addParm.
-        *      $a.json.init();
-        *      $a.json.addParm('x4Page','myCustomPage');
+        *      // call to ua.json.addParm.
+        *      ua.json.init();
+        *      ua.json.addParm('x4Page','myCustomPage');
         *      </script>
         *
         * SOURCE
@@ -2782,11 +2782,11 @@ window.a = window.ua = window.$a = {
         /****m* json/addParm
         *
         * NAME
-        *   $a.json.addParm
+        *   ua.json.addParm
         *
         * FUNCTION
-        *   The Javascript method $a.json.addParm adds one parameter
-        *   to a JSON call previously initiated with $a.json.init.
+        *   The Javascript method ua.json.addParm adds one parameter
+        *   to a JSON call previously initiated with ua.json.init.
         *
         * INPUTS
         *   string - required, a parameter name
@@ -2796,11 +2796,11 @@ window.a = window.ua = window.$a = {
         *   Here are two examples for initiating a JSON request
         *
         *      <script>
-        *      $a.json.init();
+        *      ua.json.init();
         *      // Name the server-side page to call
-        *      $a.json.addParm('x4Page','myCustomPage');
+        *      ua.json.addParm('x4Page','myCustomPage');
         *      // Name the server-side method to call
-        *      $a.json.addParm('x4Action','fetchSomething');
+        *      ua.json.addParm('x4Action','fetchSomething');
         *      </script>
         *
         * SOURCE
@@ -2830,11 +2830,11 @@ window.a = window.ua = window.$a = {
         /****m* json/inputs
         *
         * NAME
-        *   $a.json.inputs
+        *   ua.json.inputs
         *
         * FUNCTION
-        *   The Javascript method $a.json.inputs adds inputs to
-        *   a JSON call previously initiated with $a.json.init.
+        *   The Javascript method ua.json.inputs adds inputs to
+        *   a JSON call previously initiated with ua.json.init.
         *
         *   This method accepts an object as its parameter, and
         *   will add every input that is a child (at any level)
@@ -2844,7 +2844,7 @@ window.a = window.ua = window.$a = {
         *   name the parameter, not the "name" property.  Andromeda
         *   makes no use of the "name" property.
         *
-        *   This method is equivalent to use $a.json.addParm
+        *   This method is equivalent to use ua.json.addParm
         *   for each of the desired inputs.
         *
         *   Checkboxes receive special treatment.  If the box is 
@@ -2902,13 +2902,13 @@ window.a = window.ua = window.$a = {
         /****m* json/serialize
         *
         * NAME
-        *   $a.json.serialize
+        *   ua.json.serialize
         *
         * FUNCTION
-        *   The Javascript method $a.json.serialize takes a
+        *   The Javascript method ua.json.serialize takes a
         *   Javascript Object or Array and serializes it and
         *   adds the values to a JSON request previously
-        *   initialized with $a.json.init.
+        *   initialized with ua.json.init.
         *
         *   This method accepts an object as its parameter.
         *
@@ -2931,9 +2931,9 @@ window.a = window.ua = window.$a = {
         *             x: 5,
         *             y: 10,
         *         }
-        *      $a.json.init('x4Page','myCustomPage');
-        *      $a.json.addParm('x4Action','serialHandler');
-        *      $a.json.serialize('example',x);
+        *      ua.json.init('x4Page','myCustomPage');
+        *      ua.json.addParm('x4Action','serialHandler');
+        *      ua.json.serialize('example',x);
         *      <script>
         *
         *   Then on the server, you can grab the "example" parameter
@@ -2976,18 +2976,18 @@ window.a = window.ua = window.$a = {
         /****m* json/windowLocation
         *
         * NAME
-        *   $a.json.windowLocation
+        *   ua.json.windowLocation
         *
         * FUNCTION
-        *   The Javascript method $a.json.windowLocation takes a
+        *   The Javascript method ua.json.windowLocation takes a
         *   JSON request and executes it as a page request.
         *
         * EXAMPLE
         *   The following example loads a new page
         *
         *      <script>
-        *      $a.json.init('x4Page','calendar');
-        *      $a.json.windowLocation();
+        *      ua.json.init('x4Page','calendar');
+        *      ua.json.windowLocation();
         *      </script>
         *
         * SOURCE
@@ -3001,10 +3001,10 @@ window.a = window.ua = window.$a = {
         /****m* json/newWindow
         *
         * NAME
-        *   $a.json.newWindow
+        *   ua.json.newWindow
         *
         * FUNCTION
-        *   The Javascript method $a.json.newWindow takes a
+        *   The Javascript method ua.json.newWindow takes a
         *   JSON request and executes it as a page request, popping
         *   the result up in a new tab or window.
         *
@@ -3015,8 +3015,8 @@ window.a = window.ua = window.$a = {
         *   The following example loads a new page
         *
         *      <script>
-        *      $a.json.init('x4Page','calendar');
-        *      $a.json.newWindow();
+        *      ua.json.init('x4Page','calendar');
+        *      ua.json.newWindow();
         *      </script>
         *
         * SOURCE
@@ -3030,7 +3030,7 @@ window.a = window.ua = window.$a = {
         /****m* json/executeAsync
         *
         * NAME
-        *   $a.json.executeAsync
+        *   ua.json.executeAsync
         *
         * FUNCTION
         *   By default Andromeda sends JSON requests synchronously,
@@ -3041,7 +3041,7 @@ window.a = window.ua = window.$a = {
         *   to wait, and so you can make asynchronous calls. 
         *
         *   Andromeda does not make use of response handlers, see the
-        *   above section on $a.json for more details.
+        *   above section on ua.json for more details.
         *
         * SOURCE
         */
@@ -3053,17 +3053,17 @@ window.a = window.ua = window.$a = {
         /****m* json/execute
         *
         * NAME
-        *   $a.json.execute
+        *   ua.json.execute
         *
         * FUNCTION
-        *   The Javascript method $a.json.execute sends a request to
-        *   the server that has been initialized with $a.json.init
-        *   and has received parameters with any of $a.json.addParm,
-        *   $a.json.inputs and $a.json.serialize.
+        *   The Javascript method ua.json.execute sends a request to
+        *   the server that has been initialized with ua.json.init
+        *   and has received parameters with any of ua.json.addParm,
+        *   ua.json.inputs and ua.json.serialize.
         *
         *   In normal usage, you call this routine and check for
         *   a return value of true.  If the routine returns true
-        *   you call $a.json.process to process the returned
+        *   you call ua.json.process to process the returned
         *   results.
         *
         * RESULTS
@@ -3158,31 +3158,31 @@ window.a = window.ua = window.$a = {
         /****m* json/process
         *
         * NAME
-        *   $a.json.process
+        *   ua.json.process
         *
         * FUNCTION
-        *   The Javascript method $a.json.execute is the final
+        *   The Javascript method ua.json.execute is the final
         *   step in sending and receiving JSON requests.  This
         *   routine does the following:
         *   * Any HTML sent back via PHP x4HTML replaces the 
         *     innerHTML of the named items (actually item Ids are used).
         *   * Any script sent back via PHP x4Script is executed.
         *   * Any data sent back via PHP x4Data is placed into
-        *     $a.data.
+        *     ua.data.
         *
         * EXAMPLE
         *   This example shows how you can retrieve table data and
         *   then process it:
         *
         *      <script>
-        *      $a.json.init('x4Page','myCustomPage');
-        *      $a.json.addParm('x4Action','getStates');
-        *      // $a.json.execute will return false on errors
-        *      if($a.json.execute()) {
-        *         // $a.json.process puts everything in its place...
-        *         $a.json.process();
+        *      ua.json.init('x4Page','myCustomPage');
+        *      ua.json.addParm('x4Action','getStates');
+        *      // ua.json.execute will return false on errors
+        *      if(ua.json.execute()) {
+        *         // ua.json.process puts everything in its place...
+        *         ua.json.process();
         *         // ...so that we can handle the returned data
-        *         for (var idx in $a.data.states) {
+        *         for (var idx in ua.data.states) {
         *            // do something
         *         }
         *      }
