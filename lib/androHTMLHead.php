@@ -16,7 +16,7 @@ echo "\n<title>".vgfGet('pageTitle')."</title>\n";
 #
 # =====================================================================
 # The jQuery library always comes first
-jsInclude('clib/jquery-1.2.6.js','JQuery is distributed under the GPL
+jsInclude('clib/jquery-1.2.6.pack.js','JQuery is distributed under the GPL
       license, written by a team of programmers led by John Resig,
       more info at http://www.jquery.com'
 );
@@ -26,6 +26,9 @@ jsInclude('clib/jquery-1.2.6.js','JQuery is distributed under the GPL
 #   facilities, so we may as well load the entire thing
 #   and have it available for experiments
 jsInclude('clib/jquery-ui-1.5.2.js');
+
+# 1.6b messes up drag-n-drop 
+#sInclude('clib/jquery-ui-personalized-1.6b.packed.js');
 
 # EXPERIMENTAL.  Added KFD 8/2/08 to scroll inside
 #                of androSelect dropdown.
@@ -64,6 +67,8 @@ cssInclude('clib/date_input.css');
 
 # Another date library, extremely agile
 # with date manipulation
+# Strike 1: 8/21/08, This version cannot be trusted to give the
+#                    correct day of the week.
 jsInclude('clib/jquery.dates.js');
 
 
