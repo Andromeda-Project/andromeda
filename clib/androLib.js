@@ -2565,7 +2565,12 @@ window.a = window.ua = window.$a = {
                 var valold = u.p(inp,'xValue');
                 if(value.trim() == valold.trim()) return;
             }
-            inp.xValue = value;
+            
+            // MAJOR BUG: KFD 8/22/08.  This line is evil.  It causes
+            //       the browser to think the value was not changed, and
+            //       so the browser does not try to save it, and you 
+            //       can figure out the awful calls you get after that.
+            //inp.xValue = value;
             
             $a.json.init('x4Action','fetch');
             $a.json.addParm('x4Page',table);
