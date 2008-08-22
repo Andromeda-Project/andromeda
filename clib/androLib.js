@@ -798,6 +798,52 @@ function  handleResponseOne(one_element,controls) {
    return controls;
 }
 
+/****M* Javascript-API/Date-Extensions
+*
+* NAME
+*   Date-Extensions
+*
+* FUNCTION
+*   Javascript lacks a handful of useful date functions, 
+*   such as returning the day of the week as a string.
+*   These extensions to the Date object provide those
+*   facilities.
+*
+******
+*/
+
+/****m* Date-Extensions
+*
+* NAME
+*   Date.getDow
+*
+* FUNCTION
+*   The Javascript method Date.getDow returns the day of
+*   the week as a string.
+*
+*   If logical true is passed for the first parameter,
+*   a 3-digit abbreviation is returned, using 'Thu' for
+*   Thursday.
+*
+* INPUTS
+*   boolean - If true, returns a 3-digit abbreviation
+*
+*
+* SOURCE
+*
+*/
+Date.prototype.getDow = function(makeItShort) {
+    var days = ['Sunday','Monday','Tuesday','Wednesday'
+        ,'Thursday','Friday','Saturday'
+    ];
+    var retval = days[this.getDay()];
+    if(makeItShort) {
+        return retval.slice(0,3);
+    }
+    return retval;
+}
+/******/
+
 
 /****M* Javascript-API/String-Extensions
 *
@@ -990,6 +1036,23 @@ String.prototype.pad = function(len, pad, dir) {
  
 }
 
+/* ---------------------------------------------------- *\
+
+   FIX BRAIN-DAMAGED INTERNET EXPLORER  
+   
+\* ---------------------------------------------------- */
+
+if(!Array.indexOf){
+    Array.prototype.indexOf = function(obj){
+        for(var i=0; i<this.length; i++){
+            if(this[i]==obj){
+                return i;
+            }
+        }
+        return -1;
+    }
+}
+
 
 /* ---------------------------------------------------- *\
 
@@ -1071,7 +1134,7 @@ var u = {
     /****v* u/debugFlag
     *
     * NAME
-    *    debugFlat
+    *    debugFlag
     *
     * FUNCTION 
     *    If this flag is false, messages sent to u.debug will be
@@ -2339,7 +2402,6 @@ function androSelect_click(value,suppress_focus) {
     }
     return false;
 }
-
 
 
 /****O* Javascript-API/$a
