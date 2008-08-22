@@ -36,8 +36,9 @@
 *	describes the group of tables.
 *
 * EXAMPLE
-*	module example:
-*		description: Examples
+*   Here is an example:
+*       module example:
+*           description: Examples
 *
 ******
 */
@@ -48,15 +49,20 @@
 *	description
 *
 * FUNCTION
-*	The definition description is usually found nested inside other
+*	The property description is usually found nested inside other
 *	definitions.  It used to describe the definition it is nested under.
 *
+*	The description property is used by andromeda to create ui names for fields
+*	and tables.  If you have a column with a description, the description will
+*	be the text next to the input field in the UI.
+*
 * EXAMPLE
-*	module example:
-*		uisort: 0
-*		description: Example module
-*		group admin:
-*			nomenu: "N"
+*   Here is an example:
+*       module example:
+*           uisort: 0
+*           description: Example module
+*           group admin:
+*           nomenu: "N"
 *
 ******
 */
@@ -73,21 +79,22 @@
 *	group, and one module.
 *
 * EXAMPLE
-*	table  contacts:
-*	    module: example
-*	    description: Super Simple Contacts
+*	Here is an example:
+*		table  contacts:
+*		    module: example
+*	   		description: Super Simple Contacts
 *	    
-*	    # a predefined column
-*	    column first_name: 
-*		primary_key: “Y”    
-*		uisearch:   “Y” 
+*	    	# a predefined column
+*	    	column first_name: 
+*				primary_key: "Y"    
+*				uisearch:   "Y" 
 *				
 *	
-*	    group $LOGIN:       
-*		permsel: “Y”        
-*		permins: “Y”         
-*		permupd: “Y”        
-*		permdel: “Y”
+*	    	group $LOGIN:       
+*				permsel: "Y"        
+*				permins: "Y"         
+*				permupd: "Y"        
+*				permdel: "Y"
 *
 ******
 */
@@ -105,19 +112,72 @@
 *	provide all of the specifications again.
 *
 * EXAMPLE
-*	column application:
-*	    type_id: char
-*	    colprec: 10
-*	    description: Application
+*	Here is an example:
+*		column application:
+*	        type_id: char
+*			colprec: 10
+*			description: Application
 *
-*	table applications: 
-*	    description: Applications
-*	    module: apps
-*	    uisort: 100
+*   	table applications: 
+*			description: Applications
+*			module: apps
+*			uisort: 100
 *		
-*	    column application:
-*		primary_key: "Y"
-*		uisearch: "Y"
+*			column application:
+*				primary_key: "Y"
+*				uisearch: "Y"
+*
+******
+*/
+
+/****Z* column/prefix
+*
+* NAME
+*	prefix
+*
+* FUNCTION
+*	The property prefix is used to specify the prefix for a given column.  It is used
+*	often where you have a predefined column that you are using in a table, but you
+*	need to change its name to be more specific.  In essence the prefix property
+*	tells the andromeda yaml parser that "you can find the name of the predefined
+*	column by removing this prefix from the beginning of this column".
+*
+* EXAMPLE
+*	Here is an example:
+*		column key:
+*			type_id: int
+*		
+*		table user:
+*			description: A user's table
+*			column user_key:
+*				primary_key: "Y"
+*				prefix: user_
+*
+******
+*/
+
+/****Z* column/suffix
+*
+* NAME
+*	suffix
+*
+* FUNCTION
+*	The property suffix is used to specify the suffix for a given column.  It is used
+*	often where you have a predefined column that you are using in a table, but you
+*	need to change its name to be more specific.  In essence the prefix property
+*	tells the andromeda yaml parser that "you can find the name of the predefined
+*	column by removing this suffix from the end of this column".
+*
+* EXAMPLE
+*	Here is an example:
+*		column key:
+*			type_id: int
+*		
+*		table example:
+*			description: an example table
+*			column key_extra:
+*				primary_key: "Y"
+*				suffix: _extra
 *
 ******
 */
@@ -156,14 +216,15 @@
 *		- mime-f: MIME on filesystem
 *
 * EXAMPLE
-*	column appspec:
-*	    description: Specification File
-*	    type_id: vchar
-*	    colprec: 30
+*	Here is an example:
+*		column appspec:
+*	    	description: Specification File
+*	    	type_id: vchar
+*	    	colprec: 30
 *
-*	column example:
-*		description: example
-*		type_id: text
+*		column example:
+*			description: example
+*			type_id: text
 *
 ******
 */
@@ -174,14 +235,15 @@
 *	colprec
 *
 * FUNCTION
-*	The property colprec specifies a column length for the column the
-*	definition is nested under.
+*	The property colprec stands for column precision. It is the length of column
+*	in characters. Required for types char, vchar, and numb.
 *
 * EXAMPLE
-*	column example:
-*		description: example column
-*		type_id: vchar
-*		colprec: 20
+*	Here is an example:
+*		column example:
+*			description: example column
+*			type_id: vchar
+*			colprec: 20
 *
 ******
 */
@@ -198,12 +260,13 @@
 *	the column isn't a primary key because "N" is the default for all columns.
 *
 * EXAMPLE
-*	column hasprimekey:
-*		primary_key: "Y"
-*		type_id: text
+*	Here is an example:
+*		column hasprimekey:
+*			primary_key: "Y"
+*			type_id: text
 *
-*	column noprimekey:
-*		type_id: text
+*		column noprimekey:
+*			type_id: text
 *
 ******
 */
@@ -226,8 +289,9 @@
 *	to always view a menu.
 *
 * EXAMPLES
-*	group admin:
-*		nomenu: "N"
+*	Here is an example:
+*		group admin:
+*			nomenu: "N"
 *
 ******
 */
@@ -270,10 +334,11 @@
 *	The following example shows how to set up uisearch on a column.
 *
 * EXAMPLE
-*	column example:
-*		type_id: vchar
-*		colprec: 30
-*		uisearch: "Y"
+*	Here is an example:
+*		column example:
+*			type_id: vchar
+*			colprec: 30
+*			uisearch: "Y"
 *
 ******
 */
@@ -294,11 +359,12 @@
 *	Do not use this property as a security measure, as it is subvertile by an attacker. 
 *
 * EXAMPLE
-*	column example_readonly:
-*		type_id: vchar
-*		colprec: 30
-*		primary_key: "Y"
-*		uiro: "Y"
+*	Here is an example:
+*		column example_readonly:
+*			type_id: vchar
+*			colprec: 30
+*			primary_key: "Y"
+*			uiro: "Y"
 *
 ******
 */
@@ -324,17 +390,14 @@
 *		- FETCH: Pull from parent table
 *		- FETCHEDEF: Pull from parent, overwritable
 *		- DISTRIBUTE: Push from parent table
-*		- EXTEND: Calculate directly
 *		- SUM: Sum from child table
 *		- MIN: Min from child table
 *		- MAX: Max from child table
 *		- COUNT: count from child table
 *		- LATEST: Latest child insert or update
 *		- XML_RPC: Provided by remote system
-*		- SYNCH: Synchronize Parent/Child
 *		- QUEUEPOS: Enforces unique Queue position
 *		- DOMINANT: Only one row can have value Y
-*		- RESOLVE: Will hold resolved foreign key table
 *		- AGG_DOM: Capture value from dominant row
 *		- FETCH_DOM: Pull value from dominant child row
 *		- UID_UPD_PG: Update user ignoring postgres
@@ -365,23 +428,24 @@
 *	useage.
 *
 * EXAMPLE
-*	module group_example:
-*		group $LOGIN:
-*			nomenu: "N"
+*	Here is an example:
+*		module group_example:
+*			group $LOGIN:
+*				nomenu: "N"
 *
-*	group example_2:
-*		permsel: "Y"
-*		permins: "Y"
-*		permupd: "Y"
-*		permdel: "N"
-*		nomenu: "N"
-*		
-*		module example:
-*			permsel: "N"
-*			permins: "N"
-*			permupd: "N"
+*		group example_2:
+*			permsel: "Y"
+*			permins: "Y"
+*			permupd: "Y"
 *			permdel: "N"
-*			nomenu: "Y"
+*			nomenu: "N"
+*		
+*			module example:
+*				permsel: "N"
+*				permins: "N"
+*				permupd: "N"
+*				permdel: "N"
+*				nomenu: "Y"
 *
 ******
 */
@@ -400,9 +464,10 @@
 *	to select out of the module.
 *
 * EXAMPLE
-*	module permsel_example:
-*		group $LOGIN:
-*			permsel: "N"
+*	Here is an example:
+*		module permsel_example:
+*			group $LOGIN:
+*				permsel: "N"
 *
 ******
 */
@@ -421,9 +486,10 @@
 *	to insert into the module.
 *
 * EXAMPLE
-*	module permins_example:
-*		group $LOGIN:
-*			permins: "N"
+*	Here is an example:
+*		module permins_example:
+*			group $LOGIN:
+*				permins: "N"
 *
 ******
 */
@@ -442,9 +508,10 @@
 *	to update in the module.
 *
 * EXAMPLE
-*	module permupd_example:
-*		group $LOGIN:
-*			permupd: "N"
+*	Here is an example:
+*		module permupd_example:
+*			group $LOGIN:
+*				permupd: "N"
 *
 ******
 */
@@ -463,9 +530,10 @@
 *	to delete anything in the module.
 *
 * EXAMPLE
-*	module permdel_example:
-*		group $LOGIN:
-*			permdel: "N"
+*	Here is an example:
+*		module permdel_example:
+*			group $LOGIN:
+*				permdel: "N"
 *
 ******
 */
@@ -483,10 +551,11 @@
 *	The following example displays how to set a tooltip for a column.
 *
 * EXAMPLE
-*	column users:
-*		tooltip: this is the users column
-*		type_id: vchar
-*		colprec: 30
+*	Here is an example:
+*		column users:
+*			tooltip: this is the users column
+*			type_id: vchar
+*			colprec: 30
 *
 ******
 */
@@ -507,24 +576,25 @@
 *	table with usernames and ages.
 *
 * EXAMPLE
-*	table users:
-*		description: User Information
-*		module: example_module
-*		nomenu: "N"
+*	Here is an example:
+*		table users:
+*			description: User Information
+*			module: example_module
+*			nomenu: "N"
 *		
-*		column username:
-*			type_id: vchar
-*			colprec: 20
-*		column age:
-*			type_id: int
+*			column username:
+*				type_id: vchar
+*				colprec: 20
+*			column age:
+*				type_id: int
 *		
-*	content users:
-*		columns: [ username, age ]
-*		values:
-*			- [ Josh, 16 ]
-*			- [ Jake, 17 ]
-*			- [ Andy, 24 ]
-*			- [ John, 32 ]
+*		content users:
+*			columns: [ username, age ]
+*			values:
+*				- [ Josh, 16 ]
+*				- [ Jake, 17 ]
+*				- [ Andy, 24 ]
+*				- [ John, 32 ]
 *
 ******
 */
@@ -703,17 +773,18 @@
 *	range_to
 *
 * EXAMPLE
-*	table rates:
-*	   foreign_key customers:  # make customers part of primary key
-*	      primary_key: "Y"
-*	   column date_begin:
-*	      suffix: _begin
-*	      primary_key: "Y"
-*	      range_to: date_end
-*	   column date_end:
-*	      suffix: _end   
-*	      primary_key: "Y"
-*	      range_from: date_begin
+*	Here is an example:
+*		table rates:
+*	   		foreign_key customers:  # make customers part of primary key
+*				primary_key: "Y"
+*	   		column date_begin:
+*	   	   		suffix: _begin
+*	   	   		primary_key: "Y"
+*	   	   		range_to: date_end
+*	  	 	column date_end:
+*	   	   		suffix: _end   
+*	   	   		primary_key: "Y"
+*	   	   		range_from: date_begin
 *
 ******
 */
@@ -753,10 +824,11 @@
 *	table, the rest is automatic.
 *
 * EXAMPLE
-*	table table_id:
-*		#...various table property assignments go here
-*		foreign_key parent_table_id:
-*			#...any optional foreign key properties
+*	Here is an example:
+*		table table_id:
+*			#...various table property assignments go here
+*			foreign_key parent_table_id:
+*				#...any optional foreign key properties
 *
 ******
 */
@@ -799,7 +871,7 @@
 ******
 */
 
-/****Z* foreign_key/nocolumns
+/*---Z* foreign_key/nocolumns
 *
 * NAME
 *	nocolumns
@@ -810,7 +882,7 @@
 *	one foreign key definitions would end up placing the same column into
 *	the child table.
 *
-******
+*---**
 */
 
 /****Z* foreign_key/uisearch
@@ -984,20 +1056,21 @@
 *	, or always a value.
 *
 * EXAMPLE
-*	table table_id:
-*		#Journal all changes to dollar amounts, record as well
-*		#if user changed the date.
-*		history track_the_money:
-*			#these two properties are required
-*			table_id_dest: journal
-*			column column_id:
-*				recol: column_id
-*			column column_id:
-*				retnew: column_source
-*			column column_id:
-*				retold: column_source
-*			column column_id:
-*				retdiff: column_source
+*	Here is an example:
+*		table table_id:
+*			#Journal all changes to dollar amounts, record as well
+*			#if user changed the date.
+*			history track_the_money:
+*				#these two properties are required
+*				table_id_dest: journal
+*				column column_id:
+*					recol: column_id
+*				column column_id:
+*					retnew: column_source
+*				column column_id:
+*					retold: column_source
+*				column column_id:
+*					retdiff: column_source
 *
 ******
 */
@@ -1125,20 +1198,21 @@
 *	be in the same order as they were defined.
 *
 * EXAMPLE
-*	table employees:	#an employees table with some projections
-*	   column employee_id:
-*	      primary_key: "Y"
-*	      uisearch: "Y"
-*	   column first_name:
-*	      uisearch: "Y"
-*	   column last_name:
-*	      uisearch: "Y"
+*	Here is an example:
+*		table employees:	#an employees table with some projections
+*		   	column employee_id:
+*	   	   		primary_key: "Y"
+*	   	   		uisearch: "Y"
+*	   		column first_name:
+*				uisearch: "Y"
+*	   		column last_name:
+*	     		uisearch: "Y"
 *
-*	# Here is an example of using the dropdown projection
-*	projection dropdown:
-*	   column employee_id:
-*	   column first_name:
-*	   column last_name:
+*	Here is an example of using the dropdown projection:
+*		projection dropdown:
+*	   		column employee_id:
+*	   		column first_name:
+*	   		column last_name:
 *
 ******
 */
@@ -1182,11 +1256,12 @@
 *	for a specific group.  Overrides any module-level security.
 *
 * EXAMPLE
-*	menu menu_id:
-*		# ...menu property/value assignments go here
-*		# Here is the group security assignment
-*		group group_id:
-*			nomenu: "N" #put it on menu!
+*	Here is an example:
+*		menu menu_id:
+*			# ...menu property/value assignments go here
+*			# Here is the group security assignment
+*			group group_id:
+*				nomenu: "N" #put it on menu!
 *
 ******
 */
@@ -1214,49 +1289,50 @@
 *	date-times.
 *
 * EXAMPLE
-*	table table_id:
-*		column column_id:
-*			chain chain_id:
-*				#condition check
-*				test 00:
-*					compare: Chain comparison expression
-*					return: Chain return expression
-*				test 01:
-*					compare: Chain comparison expression
-*					return: Chain return expressions
-*				#the unconditional default return value
-*				test 02:
-*					return: Chain return expression
+*	Here is an example:
+*		table table_id:
+*			column column_id:
+*				chain chain_id:
+*					#condition check
+*					test 00:
+*						compare: Chain comparison expression
+*						return: Chain return expression
+*					test 01:
+*						compare: Chain comparison expression
+*						return: Chain return expressions
+*					#the unconditional default return value
+*					test 02:
+*						return: Chain return expression
 *
-*	#calculated and constraint value
+*	Calculated and constraint value:
 *
-*	table customers:
-*	   # a credit limit, user-entered
-*	   column amt_crlimit:
-*	      suffix: _crlimit
-*	   # the sum of the user's orders
-*	   column amt_orders:
-*	      suffix: _orders
-*	      automation_id: SUM
-*	      auto_formula: orders.amt_final
-*	   # the sum of the user's invoices
-*	   column amt_invoices:
-*	      suffix: _invoices
-*	      automation_id: SUM
-*	      auto_formula: invoices.amt_open
-*	   # put the two together and put a constraint on the result
-*	   column amt_exposure:
-*	      suffix: _exposure
-*	      chain calc:
-*		 # unconditional return
-*		 test 00:
-*		    return: @amt_orders + @amt_invoices
-*	      chain cons:
-*		 # only one test.  If it does not match, chain returns 
-*		 # empty string and the constraint passes.
-*		 test 00:
-*		    compare: @amt_exposure > @amt_crlimit
-*		    return: Credit Limit Exceeded 
+*		table customers:
+*			# a credit limit, user-entered
+*			column amt_crlimit:
+				suffix: _crlimit
+*	  		# the sum of the user's orders
+*			column amt_orders:
+*				suffix: _orders
+*				automation_id: SUM
+*				auto_formula: orders.amt_final
+*			# the sum of the user's invoices
+*			column amt_invoices:
+*				suffix: _invoices
+*				automation_id: SUM
+*				auto_formula: invoices.amt_open
+*			# put the two together and put a constraint on the result
+*			column amt_exposure:
+*				suffix: _exposure
+*				chain calc:
+*			# unconditional return
+*					test 00:
+*						return: @amt_orders + @amt_invoices
+*	     	 	chain cons:
+*		 			# only one test.  If it does not match, chain returns 
+*		 			# empty string and the constraint passes.
+*		 			test 00:
+*		    			compare: @amt_exposure > @amt_crlimit
+*		    			return: Credit Limit Exceeded 
 *
 ******
 */
@@ -1324,17 +1400,18 @@
 *		-<>: not equal
 *
 * EXAMPLE
-*	table table_id:
-*	   column order_status:
-*	      chain calc:
-*		 test 00:
-*		    compare: @flag_cancelled = Y 
-*		    return: CANCELLED
-*		 test 01:
-*		    compare: @date_invoice ISNULL
-*		    return: OPEN
-*		 test 03:
-*		    return: INVOICED
+*	Here is an example:
+*		table table_id:
+*			column order_status:
+*			chain calc:
+*				test 00:
+*					compare: @flag_cancelled = Y 
+*					return: CANCELLED
+*		 		test 01:
+*		    		compare: @date_invoice ISNULL
+*		    		return: OPEN
+*		 		test 03:
+*		    		return: INVOICED
 *
 ******
 */
