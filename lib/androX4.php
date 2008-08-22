@@ -729,6 +729,7 @@ underlined letters that show this, so:
       *
       */
     function fetchRow() {
+        SQL("set datestyle to SQL");
         $skey = SQLFN(gp('x4w_skey'));
         $row = SQL_OneRow("SELECT * FROM ".$this->view_id." WHERE skey=$skey");
         x4Data('row',$row);
