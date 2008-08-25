@@ -50,6 +50,7 @@ class androPageSmarty {
             $smarty->caching = false;
             if ( ArraySafe( $yamlP2['options'], 'noquery','N') == 'N' ) {
                 foreach( $yamlP2['section'] as $section=>$props ) {
+                    $smarty->assign( $section .'-sql', $yamlP2['section'][$section]['sql'] );
                     if ( count( $props ) > 0 ) {
                         if(isset( $yamlP2['section'][$section]['onerow'] ) ) {
                             $onerow = $yamlP2['section'][$section]['onerow'];
