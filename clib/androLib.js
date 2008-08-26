@@ -812,7 +812,7 @@ function  handleResponseOne(one_element,controls) {
 ******
 */
 
-/****m* Date-Extensions
+/****m* Date-Extensions/getDow
 *
 * NAME
 *   Date.getDow
@@ -2557,9 +2557,11 @@ window.a = window.ua = window.$a = {
             //              otherwise fire only on change
             var go = false;
             var column = u.p(inp,'xColumnId');
-            if(typeof(a.data.init[column])!='undefined') {
-                delete a.data.init[column];
-                go = true;
+            if(typeof(a.data.init)!='undefined') {
+                if(typeof(a.data.init[column])!='undefined') {
+                    delete a.data.init[column];
+                    go = true;
+                }
             }
             if(! go) {
                 var valold = u.p(inp,'xValue');
