@@ -13523,8 +13523,8 @@ function jsOutput() {
             $external = true;
         }
         
-        #if($debug=='N' && $external == false) {
-        if(false) {
+        if($debug=='N' && $external == false) {
+        //if(false) {
             $aj[] = $js['file'];
             if($js['comments']<>'') {
                 ?>
