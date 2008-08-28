@@ -103,7 +103,7 @@ FCKConfig.ToolbarSets["Default"] = [
 	['Link','Unlink','Anchor'],
 	['Image','Flash','Table','Rule','Smiley','SpecialChar','PageBreak'],
 	'/',
-	['Style','FontFormat','FontName','FontSize'],
+	['FontFormat','FontName','FontSize'],
 	['TextColor','BGColor'],
 	['FitWindow','-','About']
 ] ;

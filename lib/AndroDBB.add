@@ -373,6 +373,7 @@ content types {
 	// multimedia mime type -- reintroduced 9/7/07 at request
     //   of commercial licensed customer
     values { mime-h; HTML Fragments;     }
+    values { mime-h-f; HTML Fragments;     }
 	// multimedia mime types  -- not really being used
 	values { mime-x; MIME b64 encoded;   }
 	values { mime-b; MIME raw binary;    }
@@ -432,6 +433,7 @@ content type_exps {
     // KFD 9/7/07, when this was reintroduced we made it a text field
     //    instead of bytea, it is *so* much easier
     values { mime-h     ; PGSQL;;text     ;text     ;N;99;  N;}
+    values { mime-h-f     ; PGSQL;;text     ;text     ;N;99;  N;}
 	// KFD 9/7/07, these were all experimental back in '04 and '05 and
     //     are not being used.  
 	values { mime-x     ; PGSQL;;text     ;text     ;N;99;  N;}

@@ -1695,7 +1695,7 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
         $option = html('option',$input,'N');
         $option->hp['value']='N';
     }
-    elseif($type_id=='text' || $type_id=='mime-h') {
+    elseif($type_id=='text' || $type_id=='mime-h' || $type_id=='mime-h-f') {
         $input = html('textarea');
         $rows = a($colinfo,'uirows',10);
         $rows = $rows == 0 ? 10 : $rows;
@@ -2353,6 +2353,7 @@ function SQL_FORMAT($t,$v,$clip=0) {
         }
         return "'".SQL_ESCAPE_STRING($v)."'";
         break;
+    case "mime-h-f":
     case "mime-h":
          if($clip>0 && strlen($v) > $clip) $v = substr($v,0,$clip);
 			//return "'".SQL_ESCAPE_BINARY($v)."'";
@@ -10446,6 +10447,7 @@ function ahInputsComprehensive(
             //unset($col['parms']['value']);
             break;
          case 'text':
+         case 'mime-h-f':
          case 'mime-h':
             //$x=SQL_UNESCAPE_BINARY($col['parms']['value']);
             //ob_start();
@@ -12181,7 +12183,7 @@ function aWidgets(&$table,$row=array(),$mode='upd',$projection='') {
 
         // Replace out the HTML for MIME-H stuff
         // KFD 9/7/07, replace the HTML if it is a WYSIWYG column
-        if($ahcol['type_id']=='mime-h') {
+        if($ahcol['type_id']=='mime-h'  || $ahcol['type_id'] == 'mime-h-f') {
             $ahcols[$colname]['htmlnamed']
                 = '--MIME-H--'.$ahcol['cname'].'--MIME-H--';
             //$html = '--MIME-H--'.$ahcol['cname'].'--MIME-H--';
@@ -12216,14 +12218,14 @@ function jsValues($ahcols,$name,$row,$h) {
 function jsValuesOne($ahcols,$colname,$ahcol,$name,$row,$h) {
     // KFD 9/7/07, slip this in for mime-h columns, they are
     //             much simpler.
-    if($ahcol['type_id']=='mime-h') {
+    if($ahcol['type_id']=='mime-h' || $ahcol['type_id'] == 'mime-h-f' ) {
        $dir = $GLOBALS['AG']['dirs']['root'];
        @include_once($dir.'/clib/FCKeditor/fckeditor.php');
        $oFCKeditor = new FCKeditor($name.$colname);
        $oFCKeditor->BasePath   = 'clib/FCKeditor/';
-       $oFCKeditor->ToolbarSet = 'Basic';
-       $oFCKeditor->Width  = '275' ;
-       $oFCKeditor->Height = '200' ;
+       $oFCKeditor->ToolbarSet = ( $ahcol['type_id'] == 'mime-h' ? 'Basic' : 'Default' );
+       $oFCKeditor->Width  = ( $ahcol['type_id'] == 'mime-h' ? '275' : '470' );
+       $oFCKeditor->Height = ( $ahcol['type_id'] == 'mime-h' ? '200' : '400' );
        $oFCKeditor->Value = trim(ArraySafe($row,$colname,''));
        $hx = $oFCKeditor->CreateHtml();
        $h=str_replace('--MIME-H--'.$name.$colname.'--MIME-H--',$hx,$h);
@@ -12409,7 +12411,7 @@ function hDetailFromAHCols($ahcols,$name,$tabindex,$display='') {
       // Replace out the HTML
       $html=$ahcol['htmlnamed'];
       // KFD 9/7/07, replace the HTML if it is a WYSIWYG column
-      if($ahcol['type_id']=='mime-h') {
+      if($ahcol['type_id']=='mime-h' || $ahcol['type_id'] == 'mime-h-f') {
           $html = '--MIME-H--'.$ahcol['cname'].'--MIME-H--';
       }
 
@@ -12693,6 +12695,7 @@ function ahColFromACol(&$acol) {
       }
       $acol['text-align']='right';
       break;
+    case 'mime-h-f':
     case 'mime-h':
        // Do nothing, it all gets done later.
    default:
@@ -12850,7 +12853,7 @@ function ahColFromACol(&$acol) {
    $hparms='';
    foreach($acol['hparms'] as $parm=>$value) {
        $hparms.=$parm.'="'
-        .($acol['type_id'] == 'mime-h' && $parm=='value'
+        .(( $acol['type_id'] == 'mime-h' || $acol['type_id'] == 'mime-h-f' ) && $parm=='value'
             ? $value
             : hx($value)
         ).'"';
