@@ -42,7 +42,7 @@
 *   in the $_GET superglobal and next in the $_POST superglobal.
 *   This frees the programmer from having to track these two
 *   superglobals independently.  
-*   
+*
 ******
 */
 
@@ -82,6 +82,7 @@ function gp($key,$vardefault='') {
 * FUNCTION
 *    The PHP function gpExists checks to see if the requested variable is inside
 *    the Get/Post parameters.
+*
 *
 * INPUTS 
 *    string $key	- Requested variable name
