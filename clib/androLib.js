@@ -873,7 +873,7 @@ Date.prototype.getDow = function(makeItShort) {
 *     var x = '  abc  ';
 *     var y = x.trim();  // returns 'abc'
 *
-SOURCE
+* SOURCE
 */
 String.prototype.trim = function() {
 	return this.replace(/^\s+|\s+$/g,"");
@@ -894,7 +894,7 @@ String.prototype.trim = function() {
 *     var x = '  abc  ';
 *     var y = x.ltrim();  // returns 'abc  '
 *
-SOURCE
+* SOURCE
 */
 String.prototype.ltrim = function() {
 	return this.replace(/^\s+/,"");
@@ -915,7 +915,7 @@ String.prototype.ltrim = function() {
 *     var x = '  abc  ';
 *     var y = x.ltrim();  // returns '  abc'
 *
-SOURCE
+* SOURCE
 */
 String.prototype.rtrim = function() {
 	return this.replace(/\s+$/,"");
@@ -947,7 +947,7 @@ String.prototype.rtrim = function() {
 *     var x = 'abc';
 *     var y = x.pad(6,'0','L');  // returns '000abc';
 *
-SOURCE
+* SOURCE
 */
 String.prototype.pad = function(size,character,where) {
     var val = this;
