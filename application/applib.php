@@ -201,7 +201,7 @@ function GetOS() {
 }
 
 function isWindows() {
-   $x=eregi('WIN',PHP_OS);
+   $x=eregi('WINNT',PHP_OS);
    return $x===false ? false : true;
 }
 
