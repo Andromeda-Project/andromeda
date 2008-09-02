@@ -61,6 +61,7 @@
 *              // javascript goes here
 *              </script>
 *              <?php
+*         }
 * 
 *         # The third major area is routines that can be called
 *         # from the browser
