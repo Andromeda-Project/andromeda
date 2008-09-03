@@ -4091,8 +4091,13 @@ function ddUserPerm($table_id,$perm_id) {
    // These are pretty simple
    $perm_id=strtoupper($perm_id);
 
-   //$prms=SessionGET('TABLEPERMS'.$perm_id);
-
+   # KFD 9/2/08.  This little hack is for one customer still using x2.
+   #              It fools the framework into thinking it can access
+   #              any table, though actual server-side security will
+   #              prevent unauthorized access.
+   if(!LoggedIn()) return true;
+   #
+   # KFD 9/2/08: Original code is here
    return in_array($table_id,SessionGET('TABLEPERMS'.$perm_id));
 }
 
