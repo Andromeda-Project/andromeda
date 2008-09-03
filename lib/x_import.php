@@ -399,7 +399,7 @@ class x_import extends x_table2 {
          SQLX_insert($t,$mixed[$t['table_id']][0]);
          
          // Complaints?  Problems? Report them!
-         if(Errors()) {
+         if(Errors() && strpos(hErrors(),'Duplicate Value')===false) {
             x_EchoFlush('------------------------------------------------');
             x_EchoFlush("ERROR LINE $linenum when attempting to insert");
             x_EchoFlush(hErrors());
