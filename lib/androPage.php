@@ -547,7 +547,7 @@ class androPage {
      */
     function genSQLSectionJoin($yamlP2) {
         $page = $this->page;
-        $uifilter = $this->yamlP2['uifilter'];
+        $uifilter = a($this->yamlP2,'uifilter',array());
 
         // Go get the joins
         $SQL_FROMJOINS=$this->genSQLFromJoins($yamlP2);
