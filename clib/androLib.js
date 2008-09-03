@@ -1062,49 +1062,53 @@ if(!Array.indexOf){
 
  
 /*
- * Plugin to track focus
- */
-jQuery.focusTrack = false;
-jQuery.focusTrackStack = [ ];
-jQuery.focusTrackPop = function() {
-    if(jQuery.focusTrackStack.length > 0) {
-        $( jQuery.focusTrack ).blur();
-        jQuery.focusTrack = jQuery.focusTrackStack.pop(); 
-    }    
-}
-jQuery.focusTrackBlur = function() {
-    if(jQuery.focusTrackStack.length > 0) {
-        $( jQuery.focusTrack ).blur();
-    }    
-}
-jQuery.focusTrackRestore = function() {
-    $(jQuery.focusTrack).focus();
-}
-jQuery.fn.focusTrack = function(newContext) {
-    // If a new context, push the old back a layer     
-    if(newContext) {
-        if(jQuery.focusTrack) {
-            $(jQuery.focusTrack).blur();
-        }
-        jQuery.focusTrackStack[jQuery.focusTrackStack.length]=jQuery.focusTrack;
-        jQuery.focusTrack = false;
+* Plugin to track focus
+*
+* KFD 9/2/08, make conditional, this is safer
+*/
+if(typeof(jQuery)!='undefined') {
+    jQuery.focusTrack = false;
+    jQuery.focusTrackStack = [ ];
+    jQuery.focusTrackPop = function() {
+        if(jQuery.focusTrackStack.length > 0) {
+            $( jQuery.focusTrack ).blur();
+            jQuery.focusTrack = jQuery.focusTrackStack.pop(); 
+        }    
     }
-    return this.each(function() {
-        $(this).focus( function() {
-            jQuery.focusTrack = this;
-        })
-    });
+    jQuery.focusTrackBlur = function() {
+        if(jQuery.focusTrackStack.length > 0) {
+            $( jQuery.focusTrack ).blur();
+        }    
+    }
+    jQuery.focusTrackRestore = function() {
+        $(jQuery.focusTrack).focus();
+    }
+    jQuery.fn.focusTrack = function(newContext) {
+        // If a new context, push the old back a layer     
+        if(newContext) {
+            if(jQuery.focusTrack) {
+                $(jQuery.focusTrack).blur();
+            }
+            jQuery.focusTrackStack[jQuery.focusTrackStack.length]=jQuery.focusTrack;
+            jQuery.focusTrack = false;
+        }
+        return this.each(function() {
+            $(this).focus( function() {
+                jQuery.focusTrack = this;
+            })
+        });
+    }
+    
+    jQuery.getCSS = function( url, media, rel, title ) {
+       jQuery( document.createElement('link') ).attr({
+           href: url,
+           media: media || 'screen',
+           type: 'text/css',
+           title: title || '',
+           rel: rel || 'stylesheet'
+       }).appendTo('head');
+    };
 }
-
-jQuery.getCSS = function( url, media, rel, title ) {
-   jQuery( document.createElement('link') ).attr({
-       href: url,
-       media: media || 'screen',
-       type: 'text/css',
-       title: title || '',
-       rel: rel || 'stylesheet'
-   }).appendTo('head');
-};
 
 var jqModalClose=function(hash) { hash.w.fadeOut(500, function() { hash.o.fadeOut(250);}); };
 var jqModalOpen=function(hash) { hash.w.fadeIn(500);hash.o.fadeIn(500);};
