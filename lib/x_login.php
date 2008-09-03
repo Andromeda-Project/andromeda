@@ -25,6 +25,9 @@
 class x_login extends x_table2 {
 	var $PageSubtitle = "Some kind of login title";
 	var $pmenu = array();
+    
+    # KFD 9/2/08, compatibility with a legacy application
+    var $directlogin = false;
    
 	function main() {
         $this->PageSubtitle = "Please Login";
