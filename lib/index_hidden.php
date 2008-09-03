@@ -1349,6 +1349,14 @@ function index_hidden_template($mode) {
             vgfSet('template','rt_pixel');
         }
     }
+    
+    # KFD 9/2/08.  We still have one customer with a public 
+    #        interface that is not a Joomla template.  If the
+    #        template is "*" then we DO NOT set up Joomla
+    #        compatibility.  The application will use its own
+    #        file in the application directory that is specified
+    #        with vgaSet('html_pub').  
+    if(vgfGet('template')=='*') return;
 
     # Tell the JOOMLA files that we are legit
     # Fool them, that is...
