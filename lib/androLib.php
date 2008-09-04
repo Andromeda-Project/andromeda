@@ -3018,6 +3018,31 @@ function tmpPathInsert() {
    return vgfGet("tmpPathInsert");
 }
 
+/****f* scriptPath
+*
+* NAME
+*	scriptPath
+*
+* FUNCTION
+*	The PHP function scriptpath
+*	makes it possible to use friendly URL's together with
+*	absolute paths in the special case where your files are stored in
+*	a user's home directory on a local machine.
+*
+*
+******
+*/
+
+function scriptPath() {
+    $path = $_SERVER['SCRIPT_NAME'];
+    $path = str_replace( "index.php", "", $path );
+    $path = str_replace( "//", "/", $path );
+    if ( substr( $path, 0, 1 ) != '/' ) {
+        $path = '/' .$path;
+    }
+    return $path;
+}
+
 /****f* Joomla-Compatibility/ampReplace
 *
 * NAME
