@@ -23,7 +23,7 @@
 
 # ==============================================================
 #
-# SECTION: Get-Post Variables  
+# SECTION: Get-Post Variables
 #
 # Prefix: gp
 #
@@ -35,13 +35,13 @@
 *
 * FUNCTION
 *   The Get-Post Variables functions allow you to retrieve
-*   HTTP Request parameters.  
+*   HTTP Request parameters.
 *
 *   Andromeda has a special system for obtaining Get-Post
 *   variables.  When you request a variable, it checks first
 *   in the $_GET superglobal and next in the $_POST superglobal.
 *   This frees the programmer from having to track these two
-*   superglobals independently.  
+*   superglobals independently.
 *
 ******
 */
@@ -56,7 +56,7 @@
 *    name provided.  A user can provide a default value that should be returned
 *    in case the requested variable does not exist.
 *
-* INPUTS 
+* INPUTS
 *    string $key	- Requested variable name
 *    string $vardefault - value to return if the variable does not exist
 *
@@ -84,7 +84,7 @@ function gp($key,$vardefault='') {
 *    the Get/Post parameters.
 *
 *
-* INPUTS 
+* INPUTS
 *    string $key	- Requested variable name
 *
 * RETURNS
@@ -105,10 +105,10 @@ function gpExists($key) {
 * FUNCTION
 *	The PHP function hgp retrieves the Get/Post value associated with the
 *	variable name provided.  However, this function html encodes the value
-*	before it is returned to the user.  A user can provide a default value 
+*	before it is returned to the user.  A user can provide a default value
 *	that should be returned in case the requested variable does not exist.
 *
-* INPUTS 
+* INPUTS
 *    string $key	- Requested variable name
 *    string $vardefault - value to return if the variable does not exist
 *
@@ -134,7 +134,7 @@ function hgp($key,$default='') {
 *	The PHP function rowFromgp fetches all values from the Get/Post variables
 *	that have names that begin with the provided prefix.
 *
-* INPUTS 
+* INPUTS
 *    string $prefix	- Prefix of the Get/Post variables
 *
 * RETURNS
@@ -158,7 +158,7 @@ function rowFromgp($prefix) {
 *	The PHP function removetrailingnewlines returns a new array with the new
 *	line characters filtered out from the end of the provided input.
 *
-* INPUTS 
+* INPUTS
 *    string $input	- input to filter
 *
 * RETURNS
@@ -205,7 +205,7 @@ function aFromgp($prefix) {
 *	exist, this function creates a new variable with the provided name
 *	and value.
 *
-* INPUTS 
+* INPUTS
 *	string $key	- Name of variable
 *	mixed $value	- Value to assign
 *
@@ -228,7 +228,7 @@ function gpSet($key,$value='') {
 *	a prefix is provided, the prefix will be appended to the beginning of
 *	every variable name that is added.
 *
-* INPUTS 
+* INPUTS
 *	string $prefix	- Prefix to add at the beginning of each variable name
 *	array $array	- Variables and their values to add into the Get/Post
 *			  parameters.
@@ -250,7 +250,7 @@ function gpSetFromArray($prefix,$array) {
 *	The PHP function gpUnSet removes the variable with the provided name from
 *	the Get/Post parameters.
 *
-* INPUTS 
+* INPUTS
 *	string $key	- Variables' name
 *
 * SOURCE
@@ -271,7 +271,7 @@ function gpUnSet($key) {
 *	The PHP function gpUnsetPrefix removes all variables from the Get/Post
 *	parameters with names that begin with the provided prefix.
 *
-* INPUTS 
+* INPUTS
 *    string $prefix	- Prefix of the variables to remove
 *
 * SOURCE
@@ -620,7 +620,7 @@ function json_encode_safe($data) {
 /******/
 
 # ==============================================================
-# 
+#
 # Page/Object handling
 #
 # ==============================================================
@@ -635,8 +635,8 @@ function json_encode_safe($data) {
 function x4Object($x4Page) {
     include_once 'androX4.php';
     $class  = 'androX4';
-    $file = strtolower($x4Page)=='menu' 
-        ? 'androX4Menu.php' 
+    $file = strtolower($x4Page)=='menu'
+        ? 'androX4Menu.php'
         : "x4$x4Page.php";
     if(file_exists_incpath($file)) {
         include_once($file);
@@ -732,7 +732,7 @@ function DispatchObject($gp_page) {
 *	It assumes that the baseline is 1024, and returns a string of the form
 *	"999px" that is scaled up or down based.
 *
-* INPUTS 
+* INPUTS
 *    number $x1024	- Size in 1024x768 mode
 *
 * SOURCE
@@ -757,9 +757,9 @@ function hSizepx($x1024) {
 *
 *	You can provide inner html information, and parent elements.  This function
 *	will automatically add the created child html element to the provided parent
-*	element.  
+*	element.
 *
-* INPUTS 
+* INPUTS
 *	string $tag	- HTML tag
 *	reference $parent - Reference to parent element
 *	mixed $innerHTML - Inner html in this element
@@ -818,7 +818,7 @@ function html($tag,&$parent=null,$innerHTML='') {
 */
 
 class androHtml {
-    
+
 /****v* androHtml/children
 *
 * NAME
@@ -845,7 +845,7 @@ class androHtml {
 ******
 */
     var $hp   = array();
-    
+
 /****v* androHtml/code
 *
 * NAME
@@ -900,7 +900,7 @@ class androHtml {
 ******
 */
     var $innerHtml  = '';
-    
+
 /****v* androHtml/htype
 *
 * NAME
@@ -952,7 +952,7 @@ class androHtml {
 ******
 */
     var $isParent   = false;
-    
+
 /****m* androHtml/setHtml
 *
 * NAME
@@ -969,7 +969,7 @@ class androHtml {
     function setHtml($value) {
         $this->innerHtml = $value;
     }
-    
+
     /**
     * Clear any HTML and erase all children.  Does not affect
     * property assignments.
@@ -990,7 +990,7 @@ class androHtml {
         $this->children = array();
     }
 /******/
-    
+
 /****m* androHtml/clearHP
 *
 * NAME
@@ -1005,7 +1005,7 @@ class androHtml {
         $this->hp = array();
     }
 /******/
-    
+
 /****m* androHtml/clearAP
 *
 * NAME
@@ -1020,7 +1020,7 @@ class androHtml {
         $this->ap = array();
     }
 /******/
-    
+
 /****m* androHtml/addClass
 *
 * NAME
@@ -1038,7 +1038,7 @@ class androHtml {
         $this->classes[] = $value;
     }
 /******/
-    
+
 /****m* androHtml/removeClass
 *
 * NAME
@@ -1057,7 +1057,7 @@ class androHtml {
         if($index) unset($this->classes[$index]);
     }
 /******/
-    
+
 /****m* androHtml/addChild
 *
 * NAME
@@ -1075,7 +1075,7 @@ class androHtml {
         $this->children[] = $object;
     }
 /******/
-    
+
     /****m* androHtml/html
     *
     * NAME
@@ -1097,7 +1097,7 @@ class androHtml {
         return $x;
     }
     /******/
-    
+
 /****m* androHtml/h
 *
 * NAME
@@ -1115,7 +1115,7 @@ class androHtml {
         return $this->html($tag,$innerHTML,$class);
     }
 /******/
- 
+
 /****m* androHtml/hidden
 *
 * NAME
@@ -1140,8 +1140,8 @@ class androHtml {
         $h->hp['value']= $value;
         return $h;
     }
-/******/  
-    
+/******/
+
 /****m* androHtml/tr
 *
 * NAME
@@ -1161,7 +1161,7 @@ class androHtml {
         return $this->html('tr',$innerHTML,$class);
     }
 /******/
-    
+
 /****m* androHtml/td
 *
 * NAME
@@ -1201,7 +1201,7 @@ class androHtml {
         $a->hp['href'] = $href;
         return $a;
     }
-/******/  
+/******/
 
 /****m* androHtml/br
 *
@@ -1311,7 +1311,7 @@ class androHtml {
         foreach($rows as $index=>$row) {
             $tr = html('tr',$tbody);
             $tr->hp['id'] = $rowIdPrefix.($index+1);
-            
+
             if($stripe1 > 0) {
                 $i = $index % $stripe3;
                 if($i > $stripe2) {
@@ -1323,7 +1323,7 @@ class androHtml {
                     }
                 }
             }
-            
+
             foreach($row as $colname=>$colvalue) {
                 html('td',$tr,$colvalue);
             }
@@ -1358,7 +1358,7 @@ class androHtml {
         }
         return $thead;
     }
-    
+
     /****m* androHtml/addItems
     *
     * NAME
@@ -1380,7 +1380,7 @@ class androHtml {
             html($tag,$this,$value);
         }
     }
-    
+
 
     /****m* androHtml/addOptions
     *
@@ -1398,7 +1398,7 @@ class androHtml {
     *	string - name of column to use as value
     *   string - name of column to use as display
     *
-    * SOURCE 
+    * SOURCE
     */
     function addOptions($rows,$value,$desc) {
         foreach($rows as $row) {
@@ -1407,8 +1407,8 @@ class androHtml {
         }
     }
     /******/
-    
-        
+
+
 /****m* androHtml/setAsParent
 *
 * NAME
@@ -1423,7 +1423,7 @@ class androHtml {
         $this->isParent = true;
     }
 /******/
-    
+
 /****m* androHtml/firstChild
 *
 * NAME
@@ -1447,7 +1447,7 @@ class androHtml {
         }
     }
 /******/
-    
+
 /****m* androHtml/lastChild
 *
 * NAME
@@ -1516,7 +1516,7 @@ class androHtml {
                 exit;
             }
         }
-        
+
         # Before we render, we are going to take the code
         # snippets and generate top-level functions for them
         $twoparms = array('click','keypress','keyup','keydown');
@@ -1527,14 +1527,14 @@ class androHtml {
         foreach($this->code as $event=>$snippet) {
             $fname = $snippet_id.'_'.$event;
             jqDocReady("window.$fname = $snippet");
-            if(in_array($event,$twoparms)) 
+            if(in_array($event,$twoparms))
                 $this->hp['on'.$event] = "$fname(this,event)";
-            else 
+            else
                 $this->hp['on'.$event] = "$fname(this)";
         }
-        
+
         if($this->autoFormat) {
-            echo "\n<!-- ELEMENT ID ".$this->hp['id']." (BEGIN) -->";   
+            echo "\n<!-- ELEMENT ID ".$this->hp['id']." (BEGIN) -->";
             //echo "$indent\n<!-- ELEMENT ID ".$this->hp['id']." (BEGIN) -->";
         }
         $parms='';
@@ -1565,7 +1565,7 @@ class androHtml {
         }
         echo "</$this->htype>";
         if($this->autoFormat) {
-            echo "\n<!-- ELEMENT ID ".$this->hp['id']." (END) -->";   
+            echo "\n<!-- ELEMENT ID ".$this->hp['id']." (END) -->";
             //echo "$indent\n<!-- ELEMENT ID ".$this->hp['id']." (END) -->";
         }
     }
@@ -1674,7 +1674,7 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
             $xRoUpd = 'Y';
         }
     }
-    
+
     # First decision is to work out what kind of control to make
     if($type_id=='gender') {
         $input = html('select');
@@ -1720,7 +1720,7 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
         // First work out which control to use
         $table_id_fko = $colinfo['table_id_fko'];
         $ddfko = ddTable($table_id_fko);
-        
+
         /* KFD 5/28/08, experimental, always do dynamic */
         $input = html('input');
         if($ddfko['fkdisplay']<>'none') {
@@ -1731,14 +1731,14 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
                 $input->hp['onblur'] = 'androSelect_onBlur()';
             }
         }
-        
+
         # Give it a class that jQuery will recognize
         if( a($options,'noinfo','N')=='N') {
             $input->addClass('x4Info');
         }
         $input->ap['xTableIdPar'] = $colinfo['table_id_fko'];
         $input->ap['xMatches']    = a($colinfo,'matches');
-        
+
         // If any columns are supposed to fetch from here,
         // set an event to go to server looking for fetches
         //
@@ -1760,8 +1760,8 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
     # Apply the readonly stuff we figured out first
     $input->ap['xRoIns'] = $xRoIns;
     $input->ap['xRoUpd'] = $xRoUpd;
-    
-    
+
+
     #  If we ended up with an INPUT above, set the size
     if($input->htype=='input') {
         # KFD 4/24/08, makes it easier to make widgets in
@@ -1782,7 +1782,7 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
         );
         $input->hp['maxlength'] = a($colinfo,'dispsize',10);
     }
-    
+
     # Add classes that jquery recognizes to
     # extend out the stuff
     if($type_id=='time') {
@@ -1834,7 +1834,7 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
     if(a($colinfo,'inputmask','')<>'') {
         $input->ap['xInputMask'] = $colinfo['inputmask'];
     }
-    
+
     # If the tabloop object has been passed in, add this
     # input to it
     if(!is_null($tabLoop)) {
@@ -1850,7 +1850,7 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
             $input->hp[$key] = $value;
         }
     }
-    
+
     # For now that's all we are going to do.
     return $input;
 }
@@ -1889,7 +1889,7 @@ function projection($dd,$projection='',&$tabLoop,$options=array()) {
     # columns out of it
     if(is_array($projection)) {
         # they gave us an array of columns
-        $columns = $projection; 
+        $columns = $projection;
     }
     else {
         if($projection == '') {
@@ -1911,11 +1911,11 @@ function projection($dd,$projection='',&$tabLoop,$options=array()) {
             $columns = explode(',',$projection);
         }
     }
-    
+
     # Create a top level container
     $ttop  = html('table');
     $trtop = $ttop->h('tr');
-    
+
     # Lay out the projection as a table and return it
     $tdx   = $trtop->html('td');
     $table = $tdx->html('table');
@@ -1937,12 +1937,12 @@ function projection($dd,$projection='',&$tabLoop,$options=array()) {
         else {
             $tr = $table->h('tr');
             $tr->h('td',$dd['flat'][$column]['description'],'x4Caption');
-            
+
             $td = $tr->h('td','','x4Input');
             $td->addChild($input);
         }
         $uiwithnext = a($dd['flat'][$column],'uiwithnext','N');
-        
+
         $colcount++;
         if(count($breakafter)>0) {
             $break = in_array($column_id,$breakafter);
@@ -1959,17 +1959,17 @@ function projection($dd,$projection='',&$tabLoop,$options=array()) {
             $table->hp['style'] = 'margin-left: 30px';
             $table->addClass('x4Detail');
         }
-        
+
     }
     return $ttop;
-    
+
         /*
             // The row and the caption
             $tr = html('tr',$table);
             $td = html('td',$tr);
             $td->setHtml($colinfo['description']);
             $td->hp['class'] = 'x4Caption';
-            
+
             // The input
             $td = html('td',$tr);
             $td->hp['class'] = 'x4Input';
@@ -1980,7 +1980,7 @@ function projection($dd,$projection='',&$tabLoop,$options=array()) {
             $input->ap['xParentId'] = $div->hp['id'];
             $td->addChild($input);
 
-            # On twelfth column, break and make a new column of fields            
+            # On twelfth column, break and make a new column of fields
             $colcount++;
             if(count($breakafter)>0) {
                 $break = in_array($column_id,$breakafter);
@@ -1998,7 +1998,7 @@ function projection($dd,$projection='',&$tabLoop,$options=array()) {
             }
         }
         */
-    
+
 }
 
 /****f* HTML-Generation/inputsTabLoop
@@ -2019,35 +2019,35 @@ function inputsTabLoop(&$tabLoop,$options=array()) {
 
     # Do the first and last manually
     $last = count($tabLoop)-1;
-    $tabLoop[0    ]->ap['xTabPrev']=$tabLoop[$last  ]->hp['id'];  
+    $tabLoop[0    ]->ap['xTabPrev']=$tabLoop[$last  ]->hp['id'];
     $tabLoop[0    ]->ap['xTabNext']=$tabLoop[1      ]->hp['id'];
     $tabLoop[0    ]->hp['tabindex']=1000;
-    $tabLoop[$last]->ap['xTabPrev']=$tabLoop[$last-1]->hp['id'];  
+    $tabLoop[$last]->ap['xTabPrev']=$tabLoop[$last-1]->hp['id'];
     $tabLoop[$last]->ap['xTabNext']=$tabLoop[0      ]->hp['id'];
     $tabLoop[$last]->hp['tabindex']=1000 + count($tabLoop);
-    
+
     # Now loop through the others and assign next and last dudes
     for($x=1; $x< $last; $x++) {
-        $tabLoop[$x]->ap['xTabPrev']=$tabLoop[$x-1]->hp['id'];  
+        $tabLoop[$x]->ap['xTabPrev']=$tabLoop[$x-1]->hp['id'];
         $tabLoop[$x]->ap['xTabNext']=$tabLoop[$x+1]->hp['id'];
         $tabLoop[$x]->hp['tabindex']=1000 + $x;
     }
-    
+
     # Now assign keyboard handlers and anything else
     $xpId = a($options,'xParentId');
     for($x=0; $x<= $last; $x++) {
         $tabLoop[$x]->hp['onkeypress']
             ='return x4.stdlib.inputKeyPress(event,this)';
-        
+
         $tabLoop[$x] = inputFixupByType($tabLoop[$x]);
-        
+
         if($xpId <> '') {
             $tabLoop[$x]->hp['onfocus']
                 ="\$a.byId('$xpId').zLastFocusId = this.id;"
                 ."u.bb.vgfSet('focus',this);";
         }
-                
-    }    
+
+    }
 }
 
 /****f* HTML-Generation/inputFixupByType
@@ -2151,11 +2151,11 @@ function hx($in) {
 function configGet($var,$default='',$skip=array()) {
     # clean up what they passed in
     $var = strtolower(trim($var));
-    
-    # Allow a programmer to override any option 
+
+    # Allow a programmer to override any option
     # by setting an application global
     if( ($ag=vgaGet($var,''))<>'' ) return $ag;
-    
+
     # Define the arrays and then attempt to load them
     $configuser = $configinst = $configapp = $configfw = array();
     $alist = array('configfw','configapp','configinst');
@@ -2165,16 +2165,16 @@ function configGet($var,$default='',$skip=array()) {
             include($file);
         }
     }
-    
+
     #hprint_r($configinst);
-    
+
     # a special case is the user prefs, look for users's file
     $uid = SessionGet("UID");
     $file = fsDirTop()."/dynamic/table_configuser_$uid.php";
     if(file_exists($file)) {
         include($file);
     }
-    
+
     # Now proceed to the first value we find
     if(!in_array('user',$skip)) {
         if( a($configuser,$var,'*null*')<>'*null*') return $configuser[$var];
@@ -2191,7 +2191,7 @@ function configGet($var,$default='',$skip=array()) {
 
 function configWrite($type) {
     # DUPLICATE CODE: THIS CODE IS DUPLICATE IN ANDROBUILD.PHP
-    
+
     # First work out some differences based on which table
     if($type=='inst') {
         $table_id = 'configinst';
@@ -2202,13 +2202,13 @@ function configWrite($type) {
         $uid = SessionGet('UID');
         $file  = fsDirTop()."/dynamic/table_configuser_$uid.php";
     }
-    
+
     # Retrieve the data
     $dd = ddTable($table_id);
     $data= SQL_OneRow("Select * From ".$dd['viewname']);
-    
+
     # Write the array and save it
-    $text ="<?php\n\$$table_id = array("; 
+    $text ="<?php\n\$$table_id = array(";
     $docomma=false;
     $nocols = array('_agg','skey','skey_quiet','recnum');
     foreach($data as $column_id=>$value) {
@@ -2237,12 +2237,12 @@ function configLayoutX4($container,$type) {
         if(file_exists($file)) include($file);
         $row = $configapp;
     }
-    
+
     $top = $container;
     html('h1',$top,"$type Configuration");
-    
+
     $text = "<p>Andromeda configuration settings are defined at four
-    levels:</p> 
+    levels:</p>
     <ul>
     <li>Framework - default setting provided by Andromeda, these cannot
              be directly changed.
@@ -2250,13 +2250,13 @@ function configLayoutX4($container,$type) {
               override framework settings.
     <li>Instance - Anything specified at this level overrides the application
              and framework settings.
-    <li>User - Users can override some configuration settings to 
+    <li>User - Users can override some configuration settings to
                establish their own preferences.  User settings override
                all other levels.
     </ul>";
     html('div',$top,$text);
     $top->br();
-    
+
     # We need the data dictionary for configapp for captions
     # This will have more columns that the framework table, that's
     # why use this instead of configfw
@@ -2269,18 +2269,18 @@ function configLayoutX4($container,$type) {
     $tr = html('tr',$thead);
     $td = html('th',$tr,'Setting');
     $td = html('th',$tr,'Value');
-    
+
     # spit out the values
     $tbody = html('tbody',$table);
     foreach($dd['flat'] as $column_id=>$colinfo) {
         $column_id = trim($column_id);
         if(!isset($dd['flat'][$column_id])) continue;
         if(!isset($row[$column_id])) continue;
-        
+
         $tr = html('tr',$tbody);
         $td = html('td',$tr,$dd['flat'][$column_id]['description']);
         $td->hp['style'] = 'text-align: left';
-        
+
         $td = html('td',$tr,htmlEntities($row[$column_id]));
     }
 }
@@ -2423,7 +2423,7 @@ function SQL_FORMAT($t,$v,$clip=0) {
          else { return SQL_ESCAPE_STRING(trim($v)); }
 		case "rtime":
 		case "time":
-			# KFD 7/8/08, if they returned a jquery time, 
+			# KFD 7/8/08, if they returned a jquery time,
             # convert it to minutes since midnight
             if(strpos($v,'M')!==false) {
                 list($time,$ampm) = explode(" ",$v);
@@ -2524,8 +2524,8 @@ function SQLFDT($value) { return SQL_Format('dtime',$value); }
 *    sqlFilter
 *
 * FUNCTION
-*	The PHP function sqlFilter generates a WHERE clause for a single column given its 
-* 	type and the search value.  Generates index-optimized 
+*	The PHP function sqlFilter generates a WHERE clause for a single column given its
+* 	type and the search value.  Generates index-optimized
 *	WHERE clauses to replace LIKE where possible, respects
 *	commas to do lists, and double-dashes to do ranges.
 * 	Respects the partial date values of m/d, m/yyyy, and
@@ -2548,17 +2548,17 @@ function sqlFilter($colinfo,$tcv,$table = '') {
         $c = "$table.$column_id";
         $table = "$table.";
     }
-    
+
     # If the value is an asterisk, return an unconditional true
     if($tcv=='*') return '1=1';
-    
+
     # Determine if we will use dashes
     $ignore_dashes = a($colinfo,'uisearch_ignore_dash','N');
-    
+
     # Get the dash operator
     $dash = trim(configGet('uisearchdash','-'));
     x4Debug("dash is ".$dash);
-    
+
     # Step one is to split on commas and handle each
     # value separately, then at bottom we recombine
     $values = explode(',',$tcv);
@@ -2572,7 +2572,7 @@ function sqlFilter($colinfo,$tcv,$table = '') {
         switch($type_id) {
         case 'char':
         case 'vchar':
-        case 'text': 
+        case 'text':
         case 'ph12':
         case 'ssn':
         case 'cbool':
@@ -2688,7 +2688,7 @@ function sqlFilter($colinfo,$tcv,$table = '') {
             }
             break;
         }
-        
+
         # now add the new value into the list of clauses
         if(strlen($new) > 0) {
             $sql_new[] = $new;
@@ -2697,7 +2697,7 @@ function sqlFilter($colinfo,$tcv,$table = '') {
 
     # If there are no search criteria, do nothing.  The
     # calling program must interpret this and avoid a search.
-    if(count($sql_new)>0) {    
+    if(count($sql_new)>0) {
         return implode("\n        OR ",$sql_new);
     }
     else {
@@ -2726,7 +2726,7 @@ function sqlOrderBy($vals) {
     if(gpExists('sortCol')) {
         return array(gp('sortCol').' '.gp('sortAD'));
     }
-    
+
     # If not, order by the columns that were passed in with values
     $aorder = array();
     foreach($vals as $column_id=>$val) {
@@ -2734,7 +2734,7 @@ function sqlOrderBy($vals) {
             $aorder[] = "$column_id ASC";
         }
     }
-    
+
     return $aorder;
 }
 
@@ -2749,8 +2749,8 @@ function sqlOrderBy($vals) {
 * FUNCTION
 *	The Joomla Compatibility framework allows 'drop-in' use of Joomla
 *	templates for an Andromeda Application.
-*	
-*	
+*
+*
 *	To use a Joomla template, you must do the following:
 *
 * 	Call [[JoomlaCompatibility()]] from applib
@@ -2768,16 +2768,16 @@ function sqlOrderBy($vals) {
 *	This function generates objects, variables and defines that
 *	satisfy a Joomla template so that it will execute and serve up
 *	Andromeda content.
-*	
+*
 *	The first parameter is the name of the template to use.  The template
 *	files should be in a subdirectory of your app's "templates" directory,
 *	and that subdirectory should have the same name as the template.
-*	
+*
 *	The second parameter, which defaults to blank,
 *	is assigned to $GLOBALS['template_color'].
-*	
+*
 *	Other actions of this program are:
-*	
+*
 *	- defines constant _VALID_MOS as true
 *	- defines constant _ISO as empty
 *	- assigns the application's root directory to global
@@ -2786,20 +2786,20 @@ function sqlOrderBy($vals) {
 *	- creates empty global $my object with property 'id' set to false
 *	- creates empty global $mainframe object, whose getTemplate() method always
 *	  returns the template name.
-*	
+*
 *	The universal dispatcher, [[index_hidden]], looks for the defined constant
 *	_VALID_MOS, and if found it uses the named Joomla template instead of an
 *	Andromeda template.  It also exposes the necessary global variables
 *	that were defined above.
-*	
+*
 *	The compatibility layer provides a handful of functions to emulate the
 *	functions used by Joomla.  The most important function is [[mosMainBody]],
 *	which calls directly to [[ehStandardContent]].  The other functions tend
 *	toward being more placeholders.
-*	
+*
 *	When you use a Joomla template, there are a handful of tasks that must
 *	be performed:
-*	
+*
 *	- Insert a link to the Andromeda javascript library, raxlib.js into
 *	  the template.
 *	- Code up routine appCountModules, which handles calls to Joomla
@@ -2852,7 +2852,7 @@ function JoomlaCompatibility($template_name,$template_color='') {
       // appear to be necessary, but it is cleaner.
       $tpi=tmpPathInsert();
       $tpi=substr($tpi,0,strlen($tpi)-1);
-      $GLOBALS['J']['mC_live_site']     = '/'.$tpi;
+      $GLOBALS['J']['mC_live_site']     = $tpi;
    }
 
    $GLOBALS['J']['template_color']   = $template_color;
@@ -3015,7 +3015,9 @@ function mosMainBody() {
 ******
 */
 function tmpPathInsert() {
-   return vgfGet("tmpPathInsert");
+   // DO Removed 9-5-2008 scriptPath() is more reliable and works with Friendly URL's
+   //return vgfGet("tmpPathInsert");
+   return scriptPath();
 }
 
 /****f* scriptPath
@@ -3081,7 +3083,7 @@ function ampReplace($input) {
 * SOURCE
 */
 function sefRelToAbs($input) {
-   return "/".tmpPathInsert().$input;
+   return tmpPathInsert().$input;
 }
 /******/
 
@@ -3107,7 +3109,7 @@ function fwModuleMenuRight() {
         if(vgfGet('htmlHelp')<>'') {
             $extra.='<li><a href="javascript:void(0)" onclick="x4.help()">Help</a></li>';
         }
-        
+
         #  if they asked for a direct link to menu
         if(ConfigGet('x4padmenu','N')=='Y') {
             $extra.='<li><a href="?x4Page=menu">Menu</a></li>';
@@ -3197,19 +3199,19 @@ function hLinkImage($pic,$alt,$var,$val,$enabled) {
 *	Andromeda provides wrappers for accessing session variables.  The
 *	PHP superglobal $_SESSION should not be directly accessed, instead
 *	an Andromeda program should use [[SessionGet]] and [[SessionSet]].
-*	
+*
 *	Do not use session variables for storing information across different
 *	requests, such as storing user replies going page-to-page through
 *	a wizard.  Use [[Context Functions]] or [[Hidden Variables]]
 *	for these instead, they are much more flexible and robust.
-*	
+*
 *	It may happen that you have multiple Andromeda applications on a server,
 *	and that a browser is connected to more than one of them in multiple
 *	tabls.  This would result in a collision if you were access $_SESSION
 *	directly, because each app would overwrite the variables of the others.
 *	Andromeda prevents these collisions automatically whenever
 *	[[SessionGet]] and [[SessionSet]] are used.
-*	
+*
 *	Andromeda also prevents collissions between session variables used by
 *	the framework and those you may put into your application.  All of the
 *	Session variables accept an optional last parameter (not documented in
@@ -3358,7 +3360,7 @@ function SessionUnSet_Prefix($prefix) {
 *    Global_Variables
 *
 * FUNCTION
-*  Andromeda provides some wrapper that allow you to set and 
+*  Andromeda provides some wrapper that allow you to set and
 *  retrieve PHP global variables without risking a collission with
 *  framework global variables.
 *
@@ -3624,7 +3626,7 @@ The following are [[deprecated]] form variable conventions:
   * INPUTS
   *	$stackname string
   */
-  
+
 /*---h* PHP-API/Stack-Functions
 *
 * NAME
@@ -3640,7 +3642,7 @@ The following are [[deprecated]] form variable conventions:
 *
 * NAME
 *	_scStackInit
-* 
+*
 * FUNCTION
 *	The PHP function _scStackInit initializes a stack for scStackPush and scStackPop.
 *
@@ -3658,7 +3660,7 @@ function _scStackInit($stackname) {
    }
 }
 /*---**/
-  
+
 /*---f* Stack-Functions/scStackPush
 *
 * NAME
@@ -3743,7 +3745,7 @@ function return_value_add($element,$value) {
 
 /**
 * Adds a new return command
-* 
+*
 *	string $command
 *	string $element
 *	mixed $value
@@ -3783,7 +3785,7 @@ function retCmd($command,$element,$value) {
 *	return_command_add
 *
 * FUNCTION
-*	The PHP function return_command_add 
+*	The PHP function return_command_add
 *	adds a new return command with the provided command, element, and value.
 *
 * INPUTS
@@ -3985,7 +3987,7 @@ function &ddTable($table_id) {
         }
         $tabdd['singular'] = $sing;
     }
-    
+
     # If there is a post-processor, execute it now
     $func = 'ddTable_'.$table_id;
     if(function_exists($func)) {
@@ -3997,7 +3999,7 @@ function &ddTable($table_id) {
     #     in continuing
     if(SessionGet('ROOT'))
         return $GLOBALS['AG']['tables'][$table_id];
-    if(SessionGet('GROUP_ID_EFF','')=='') 
+    if(SessionGet('GROUP_ID_EFF','')=='')
         return $GLOBALS['AG']['tables'][$table_id];
 
     # Capture the effective group and keep going
@@ -4026,7 +4028,7 @@ function &ddTable($table_id) {
             }
         }
     }
-    
+
     # Now modify all projections to knock out columns I cannot see
     if(isset($tabdd['views'][$view])) {
         foreach($tabdd['projections'] as $idx=>$list) {
@@ -4038,7 +4040,7 @@ function &ddTable($table_id) {
             $tabdd['projections'][$idx] = implode(',',$alist2);
         }
     }
-    
+
     return $GLOBALS['AG']['tables'][$table_id];
 }
 
@@ -4398,7 +4400,7 @@ function fsDirTop() {
 *	string $key	array key
 *	mixed $value	default value
 * RETURN
-*	mixed		value associated with $key in $arr.  
+*	mixed		value associated with $key in $arr.
 */
 function ArraySafe(&$arr,$key,$value="") {
 	if(isset($arr[$key])) return $arr[$key]; else return $value;
@@ -4412,7 +4414,7 @@ function ArraySafe(&$arr,$key,$value="") {
 *	string $key	array key
 *	mixed $value	default value
 * RETURN
-*	mixed		value associated with $key in $arr.  
+*	mixed		value associated with $key in $arr.
 */
 function a(&$a,$key,$value='') {
     return ArraySafe($a,$key,$value);
@@ -4428,7 +4430,7 @@ function a(&$a,$key,$value='') {
 *	array $arr	candidate array
 *
 * RESULT
-*	array - copy of the array  
+*	array - copy of the array
 */
 function array_copy($source) {
     $retval = array();
@@ -4666,13 +4668,13 @@ parent:System Log Functions
 *	entry will be written, even if the current transaction rolls back.
 *	These kinds of logs are intended for use in debugging or tracking
 *	invisible processes, such as a Paypal IPN transaction.
-*	
+*
 *	A log can be opened with [[SysLogOpen]], which returns a handle to
 *	the log.  Log entries are made with [[SysLogEntry]] and the log is
 *	eventually closed with [[SysLogClose]].
-*	
+*
 *	The logs are stored in tables [[syslogs]] and [[syslogs_e]].
-*	
+*
 *	The guarantee that the log entry will always be written comes at the
 *	price of a separate connection to the database for each log.  In a
 *	debugging situation you can open as many of them as you need, but in
@@ -4836,7 +4838,7 @@ parent:Hidden Variables
 *	Hidden
 *
 * FUNCTION
-*	The PHP function Hidden registers a variable and its value that should be 
+*	The PHP function Hidden registers a variable and its value that should be
 *	output as a hidden variable.
 *
 * INPUTS
@@ -5697,7 +5699,7 @@ function hElement($class,$element,$innerHTML) {
 
 
 /**
-* 
+*
 * Returns an HTML TD element with open and close tags.
 *
 * The first parameter is the [[Optional CSS Class]].
@@ -6236,7 +6238,7 @@ assignment.
 function hLink($class,$caption,$href,$extra='') {
    $class=hTagParm('class',$class);
    //if(substr($href,0,1)=='&') $href=substr($href,1);
-   $prefix='/'.tmpPathInsert();
+   $prefix=tmpPathInsert();
 
    // Try to figure out if they need a question mark in front
    // if there is an equal sign but no question mark, put it in front
@@ -6328,7 +6330,7 @@ function hjxCheckFirst($caption,$href) {
 */
 function hpHref($parms) {
    if(is_array($parms)) $parms=http_build_query($parms);
-   return '/'.tmpPathInsert().$parms;
+   return tmpPathInsert().$parms;
 }
 
 /**
@@ -6470,16 +6472,16 @@ function hImageFromBytes(
 
 /**
 * Needs the CSS Class setting, and an option for checked
-* 
+*
 * INPUTS
 * @deprecated
 */
 function hCheckBox($name,$value) {
    return '<input type="checkbox" name="'.$name.'" value="'.$value.'">';
 }
- 
-/** 
-* Needs the CSS Class setting, and an option for checked 
+
+/**
+* Needs the CSS Class setting, and an option for checked
 *
 * INPUTS
 * @deprecated
@@ -6702,7 +6704,7 @@ function ehErrors() {
 * FUNCTION
 *	Echos directly all hidden variables.  Not necessary if you
 *	use [[ehStandardContent]].
-* 
+*
 ******
 */
 function ehHiddenAndData() {
@@ -6868,7 +6870,7 @@ function ehLoginHorizontal() {
       <input type="submit" value=" Login " name="submit" />
       </form>
       <br/>
-      <a href="/<?=tmpPathInsert()?>?gp_page=x_password">Help with Password</a>
+      <a href="<?=tmpPathInsert()?>?gp_page=x_password">Help with Password</a>
    <?php } else { ?>
       <a href="?st2logout=1">Logout <?=SessionGet("UID")?></a>
    <?php } ?>
@@ -6966,7 +6968,7 @@ function ehModuleCommands() {
 * FUNCTION
 *	These functions make it easier to find things like the current
 *	website's address, without having to go through the $_SERVER superglobal.
-*	
+*
 *	Knowing the website's address is especially useful when you have
 *	multiple instances of an application, such as when you have a test/live
 *	setup or when you are hosting it for more than one customer.  These
@@ -7368,7 +7370,7 @@ function LoggedIn() {
 }
 
 /**
-* Returns true if a the current user is in the 
+* Returns true if a the current user is in the
 * specified group.
 *
 * INPUTS
@@ -7382,22 +7384,22 @@ function inGroup($group) {
     if(count($agroups) == 0) {
         $app = $GLOBALS['AG']['application'];
         $appl= strlen($app);
-        
+
         $groups = explode(',',SessionGet('groups'));
         foreach($groups as $grp) {
             # For some reason these were saved with single
             # quotes around them, get rid of them
             $grp = str_replace("'","",$grp);
-            
+
             # Don't include the $LOGIN group
             if($grp == $app) continue;
-            
+
             # The +1 is for the underscore.  A member
             # of group "admin" in application "example"
             # will actually be in group "admin_example"
             $agroups[] = substr($grp,$appl+1);
         }
-        
+
         SessionSet('agroups',$agroups);
     }
     return in_array($group,$agroups);
@@ -7495,7 +7497,7 @@ function objPage($gp_page) {
 }
 
 /**
-* Builds a business report object with orientation $orient and 
+* Builds a business report object with orientation $orient and
 * parent $parent.  Parent gets set as the trackback for the
 * report.
 *
@@ -7602,7 +7604,7 @@ function fsMakeDirNested($Base_Path,$New_Path) {
 
 /**
 * Writes the php code required to create array $array to the file
-* in directory $dir with filename $name.  Uses $arrayname as the 
+* in directory $dir with filename $name.  Uses $arrayname as the
 * variable name storing the array.
 *
 * INPUTS
@@ -7632,7 +7634,7 @@ $retval
 * Helper recursive function for fsFileFromArray.  Used to build the
 * php array code as a string.  Handles nested arrays and tabs every
 * printed key=> element association by $level tabs.
-* 
+*
 * INPUTS
 *	array $array
 *	int $level
@@ -8396,7 +8398,7 @@ function minmax($val1,$val2) {
 * Returns an array with the previous key and the next key
 * from $skey in the context data.  If $skey == 0 or if it
 * is not found in context data, an array(0,0) is returned.
-* 
+*
 * INPUTS
 *	string $table_id
 *	int $skey
@@ -8467,7 +8469,7 @@ function sqlOBFromContext($table_id) {
 // ------------------------------------------------------------------
 /**
 * Resets the Drilldown storage
-* 
+*
 * INPUTS
 */
 function DrilldownReset() {
@@ -8579,7 +8581,7 @@ function DynamicLoad($filename) {
 /**
 * Clears file with filename $filename.  Assumes that
 * file is a dynamic file (inside the dynamic directory).
-* 
+*
 * INPUTS
 *	string $filename name of file
 */
@@ -8686,7 +8688,7 @@ function CacheWrite($name,$value) {
 }
 
 # ===================================================================
-# 
+#
 # JQUERY FUNCTIONS
 #
 # ===================================================================
@@ -8832,7 +8834,7 @@ function HTML_Hidden($key,$value) {
 *	string $name name of selection
 *	array $resall properties for the options
 *	string $value key for value for options
-*	string $inner key for inner text for options  
+*	string $inner key for inner text for options
 * RETURN
 *	string Generated HTML
 */
@@ -9277,7 +9279,7 @@ function scAddSlash($path) { return raxAddSlash($path); }
 // ==================================================================
 
 /**
-* Clips off the string $item off of the beginning of the 
+* Clips off the string $item off of the beginning of the
 * string $input.  If $item does not exist at the beginning of the string,
 * it returns the string as it was.
 *
@@ -9296,7 +9298,7 @@ function scClipStart($input,$item) {
 }
 
 /**
-* Clips off the string $item out of the string and returns 
+* Clips off the string $item out of the string and returns
 * everything from the string until that point.  If the $item
 * is not at the very end of the string, you will lose the rest of
 * the string after the $item, including the $item.
@@ -9318,7 +9320,7 @@ function scClipAfter($input,$item) {
 // Type conversion functions
 // ==================================================================
 /**
-* Converts an SQL timestamp taken from the database to a 
+* Converts an SQL timestamp taken from the database to a
 * unix timestamp and returns it.
 *
 * INPUTS
@@ -9343,7 +9345,7 @@ function X_SQLTS_TO_UNIX($dttm2timestamp_in){
 /**
 * Converts a Unix timestamp to an SQL database timestamp and returns
 * it.  Has the option to skip quotes or not.
-* 
+*
 * INPUTS
 *	string $dt timestamp
 *	boolean $skipquotes
@@ -9427,7 +9429,7 @@ function Option_Get($varname,$default='') {
         if(!$dbconnected) SQL_ConnPush();
         variables_writeAfter(array());
         if(!$dbconnected) SQL_ConnPop();
-        
+
         /*
         // Retrieve the file
         $rows=SQL_AllRows("select * from variables");
@@ -9875,8 +9877,8 @@ function rowsFromUserSearch(&$table,$lcols=null,$matches=array(),$child=false) {
     // Now go in and retrieve the rows for the skey values
     // that we want
     $gp_spage = ConGet('table',$table_id,'spage',1);
-    
-    /* DJO 8-15-2008 Added to allow config override of rows 
+
+    /* DJO 8-15-2008 Added to allow config override of rows
      * returned for a child table displayed with parent
      */
     if ( $child ) {
@@ -9896,8 +9898,8 @@ function rowsFromUserSearch(&$table,$lcols=null,$matches=array(),$child=false) {
     //    $colob2=$table_opts[$table_id]['sortnext'][$colob];
     //    $gp_ob.=', '.$colob2.' '.ConGet('table',$table_id,'orderasc');
     //}
-    
-    /* DJO 8-15-2008 Added to allow config override of rows 
+
+    /* DJO 8-15-2008 Added to allow config override of rows
      * returned for a child table displayed with parent
      */
     if ( $gp_rpp == 0 ) {
@@ -10334,7 +10336,7 @@ function ahInputsComprehensive(
    // value, class, enabled/disabled, size and so forth.
    //$tabindex=1;
    foreach($acols as $colname) {
-       # HACK KFD 6/2/08.  
+       # HACK KFD 6/2/08.
        if ($colname=='') continue;
       $colinfo = &$table['flat'][$colname];
       $value=ColumnValue($table,$row,$mode,$colname);
@@ -10437,7 +10439,7 @@ function ahInputsComprehensive(
    // Decide which kind of control to use for each one, and
    // do any overrides and extra stuff that may be necessary
    foreach($acols as $colname) {
-       # HACK KFD 6/2/08.  
+       # HACK KFD 6/2/08.
        if ($colname=='') continue;
       $col=&$ahcols[$colname];
       $colinfo = &$table['flat'][$colname];
@@ -10612,9 +10614,9 @@ function ahInputsComprehensive(
    // Finally, generate the html for each one, with special
    // cases for checkboxes, readonly, and so forth
    foreach($acols as $colname) {
-       # HACK KFD 6/2/08.  
+       # HACK KFD 6/2/08.
        if ($colname=='') continue;
-       
+
       // Some things, like Images, are completely setup earlier,
       // so just skip them completely
       if($ahcols[$colname]['html']<>'') {
@@ -10884,7 +10886,7 @@ function raxFLn($FILE,$text) {
   *
   * This routine allows you to pull array elements that
   * may not exist without tripping a notice.
-  * 
+  *
   *	reference &$array
   *	string $key
   */
@@ -10985,7 +10987,7 @@ function XML_RPC($callcode,$arr_inputs) {
 /**
 * Generates an editor textarea with name $name
 * and inner text $value.
-* 
+*
 *	string $name
 *	reference &$value
 */
@@ -11011,7 +11013,7 @@ function ehFCKEditor($name,&$value) {
 * Builds a string of HTML option elements from an array
 * $rows.  After return, string is ready to be placed
 * inside <select> elements.
-* 
+*
 *	array $rows array
 *	mixed $current currently selected option
 *	int $colval column with values
@@ -11602,7 +11604,7 @@ function lFGets($F) {
 /**
 * It runs fgets() on the passed file $F, but then removes all newline and
 * return characters (\n or \r) from it.
-* 
+*
 *	resource $F file pointer
 * RETURN
 *	string
@@ -11792,7 +11794,7 @@ function NoZeroes($value) {
 /**
 * Checks if $file is in the include path.  If it is,
 * then includes the file.
-* 
+*
 *	string $file
 */
 function include_incpath($file) {
@@ -12315,7 +12317,7 @@ function jsValuesOne($ahcols,$colname,$ahcol,$name,$row,$h) {
     if($ahcol['type_id']=='cbool')  $setInScript = true;
     if($ahcol['type_id']=='gender') $setInScript = true;
     if($ahcol['value_min']<>'')     $setInScript = true;
-    #if($ahcol['type_id']=='time' || 
+    #if($ahcol['type_id']=='time' ||
     #    $ahcol['type_id']=='cbool' ||
     #    $ahcol['type_id']=='gender'
     # ) {
@@ -13462,7 +13464,7 @@ function cssInclude($file,$force_immediate=false) {
     // mode, otherwise they all get output as one
     if(configGet('js_css_debug','Y')=='Y' || $force_immediate) {
         ?>
-        <link rel='stylesheet' href='/<?=tmpPathInsert().$file?>' />
+        <link rel='stylesheet' href='<?=tmpPathInsert().$file?>' />
         <?php
     }
     else {
@@ -13500,7 +13502,7 @@ function cssOutput() {
     // Finally, put out the file
     ?>
     <link rel='stylesheet'
-         href='/<?=tmpPathInsert()."clib/css-min-$md5.css"?>' />
+         href='<?=tmpPathInsert()."clib/css-min-$md5.css"?>' />
     <?php
 }
 /**
@@ -13516,7 +13518,7 @@ function jqPlugin( $file, $comments='') {
 */
 function jsInclude( $file, $comments='',$immediate=false ) {
     # KFD 7/28/08, immediate does not mean put it out now,
-    #              but uncoditionally output it as a 
+    #              but uncoditionally output it as a
     #              separate file during jsOutput.
     /*
     if($immediate) {
@@ -13556,7 +13558,7 @@ function jsOutput() {
         if(substr($js['file'],0,7)=='http://') {
             $external = true;
         }
-        
+
         if($debug=='N' && $external == false) {
         //if(false) {
             $aj[] = $js['file'];
@@ -13569,7 +13571,7 @@ function jsOutput() {
             }
         }
         else {
-            $insert = $external ? '' : '/'.tmpPathInsert();
+            $insert = $external ? '' : tmpPathInsert();
             ?>
             <script type="text/javascript"
                      src="<?=$insert.$js['file']?>" >
@@ -13622,7 +13624,7 @@ function jsOutput() {
     // Finally, put out the file
     ?>
     <script type="text/javascript"
-             src="/<?=tmpPathInsert()."clib/js-min-$md5.js"?>" >
+             src="<?=tmpPathInsert()."clib/js-min-$md5.js"?>" >
     </script>
     <?php
 }
@@ -13678,7 +13680,7 @@ function SQL_ConnPush($role='',$db='') {
 function SQLConnected() {
     if(!isset($GLOBALS['dbconn'])) return false;
     if(is_null($GLOBALS['dbconn'])) return false;
-    return true;    
+    return true;
 }
 
 /* DEPRECATED */
@@ -14250,7 +14252,7 @@ function SQLX_Insert($table,$colvals,$rewrite_skey=true,$clip=false) {
                 # KFD 6/18/08, % signs really mess things up
                 #if(strpos($colvals[$colname],'%')!==false) {
                 #    ErrorAdd("The % sign may not be in a saved value");
-                #    vgfSet('ErrorRow_'.$table_id,$colvals);                    
+                #    vgfSet('ErrorRow_'.$table_id,$colvals);
                 #    return 0;
                 #}
                 $cliplen = $clip ? $colinfo['colprec'] : 0;
@@ -14296,7 +14298,7 @@ function SQLX_Insert($table,$colvals,$rewrite_skey=true,$clip=false) {
     if(isset($cache_pkey[$table_id])) {
         CacheRowPut($table,$colvals);
     }
-    
+
     return $retval;
 }
 
@@ -14305,26 +14307,26 @@ function SQLX_Insert($table,$colvals,$rewrite_skey=true,$clip=false) {
 * name: SQLX_Select
 * parm: $tableId  optional  The name or data dictionary
 *
-* Select selected columns and all rows from a 
+* Select selected columns and all rows from a
 * given table.  Automatically uses the correct view
 * if necessary.
 *
-* Optionally, the second parameter can be a "*" or a 
+* Optionally, the second parameter can be a "*" or a
 * comma-separated list of columns or an array of column
 * names.
-* If no column list is provided, all columns are 
-* provided, omitting functional columns like 
+* If no column list is provided, all columns are
+* provided, omitting functional columns like
 * skey_quiet and _agg are omitted, but including skey.
 *
 */
 function SQLX_Select($tableId,$columns='',$options=array()) {
     $dd = ddTable($tableId);
     $view=$dd['viewname'];
-    
+
     if( ($ob = a($options,'ob','')) <> '') {
         $ob = " ORDER BY $ob";
     }
-    
+
     if(!is_array($columns)) {
         if($columns=='' || $columns=='*') {
             $columns = array_keys($dd['flat']);
@@ -14332,8 +14334,8 @@ function SQLX_Select($tableId,$columns='',$options=array()) {
             $columns = implode(',',$columns);
         }
     }
-    
-    return SQL_AllRows("Select $columns from $view $ob"); 
+
+    return SQL_AllRows("Select $columns from $view $ob");
 }
 
 /**
@@ -14795,7 +14797,7 @@ function RowsForSelect($table_id,$firstletters='',$matches=array(),$distinct='',
    if($firstletters=='*') {
        // do nothing, no where clauses
    }
-   
+
    elseif($firstletters<>'') {
       $SLimit="Limit 40 ";
       if(strpos($firstletters,',')===false) {
@@ -14807,7 +14809,7 @@ function RowsForSelect($table_id,$firstletters='',$matches=array(),$distinct='',
              if(!in_array($type_id,array('char','vchar','text'))) {
                  $subs='::varchar';
              }
-             
+
             $sl=strlen($firstletters);
             $xWhere[]
             ="SUBSTRING(LOWER($aproj1$subs) FROM 1 FOR $sl)"
