@@ -216,7 +216,7 @@ class x_wiki {
 
    // Images
    function LinkImage(&$html,$match,$type) {
-      $newval='<img src="/'.tmpPathInsert().'apppub/'.$match.'">';
+      $newval='<img src="' .tmpPathInsert().'apppub/'.$match.'">';
       $html=preg_replace('/\[\['.$type.":".$match.'\]\]/',$newval,$html);
    }
 
