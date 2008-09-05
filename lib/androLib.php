@@ -3043,7 +3043,7 @@ function scriptPath() {
         $path = '/' .$path;
     }
     if (substr( $path, -1 ) != '/' ) {
-        $path = $path .'/'
+        $path = $path .'/';
     }
     $path = str_replace( "//", "/", $path );
     return $path;
