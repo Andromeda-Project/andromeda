@@ -209,7 +209,7 @@ class x_import extends x_table2 {
       $fi=SessionGet('importfile');
       $FILE=fopen($fi['uname'],'r');
       $sline=fsGets($FILE);
-      $aline=explode(',',$sline);
+      $aline=explode('|',$sline);
       array_unshift($aline,'');
       $aline=array_combine($aline,$aline);  // make keys and values the same
       fclose($FILE);
@@ -343,7 +343,7 @@ class x_import extends x_table2 {
       }
          
       // Now convert the first line into the list of columns
-      $acols=explode(',',$line1);
+      $acols=explode('|',$line1);
       x_echoFlush("COLUMNS IN FILE:");
       foreach($acols as $acol) {
          x_EchoFlush($acol);
@@ -373,7 +373,7 @@ class x_import extends x_table2 {
             x_EchoFlush("Line: $linenum processing");
          }
          // Pull the line
-         $data=explode(',',$oneline);
+         $data=explode('|',$oneline);
          // Maybe a problem?
          if(count($data)<>count($acols)) {
             x_EchoFlush("ERROR LINE $linenum");
