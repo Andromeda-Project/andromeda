@@ -10960,13 +10960,15 @@ function Email_Exp($from,$to,$subject,$body,$headers) {
 // and put up some HTML allowing the user to enter values manually,
 // which makes for a great interactive testing system.
 // ==================================================================
-/**
-* Sends an email to $to, with subject $subject and message
-* $message.
+/****f* PHP-API/EmailSend
 *
-*	string $to
-*	string $subject
-*	string $message
+* NAME
+*   emailSend
+*
+* PURPOSE
+*   Sends an email.  NOT YET DOCUMENTED.
+*
+* CHANGE HISTORY
 */
 function EmailSend($to,$subject,$message) {
 	include_once("ddtable_adm_emails.php");
