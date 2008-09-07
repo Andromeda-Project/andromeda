@@ -35,7 +35,7 @@ class x_login extends x_table2 {
         // KFD 3/6/08, changed login processing to st2login=1,
         //             its not a page anymore.
         hidden('st2login',1);          
-        hidden('gp_page','');
+        hidden('gp_page','x_login');
         hidden('gp_posted','1');
         
         // Send these out so they are available after successful login
