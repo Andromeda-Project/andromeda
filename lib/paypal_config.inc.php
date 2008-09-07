@@ -10,7 +10,7 @@
  * Released under Common Public License 1.0
  * http://opensource.org/licenses/cpl.php
  *
- * ---------------------------------------------------------------
+ * --------------------------------------------------------------- 
  * Andromeda MODS Feb 13, 2006
  * Replaced unquoted array index names with quoted array index names  
  *
@@ -30,25 +30,46 @@ global $paypal;
 // FILE HAS BEEN COPIED TO THE APPLICATION DIRECTORY.
 // -----------------------------------------------------------------
 $paypal['business']="example@example.com";
+# KFD 9/6/08, allow overrides from configuration
+if(configGet('paypal_payto','')<>'') {
+    $paypal['business'] = configGet('paypal_payto');   
+}
+
 $paypal['site_url']=
    'http://'.$GLOBALS['_SERVER']['HTTP_HOST']
    .$GLOBALS['_SERVER']['REQUEST_URI'];
+ 
+# KFD 9/6/08, allow overrides from configuration
+if(configGet('paypal_site_url','') <> '') {
+    $paypal['site_url'] = configGet('paypal_site_url');
+}
    
 $paypal['success_url']="?gpt=pp&flag=1";  // after ipn has finished
 $paypal['cancel_url']="?gpt=pp&flag=0";   // after ipn has finished
 
+# KFD 9/6/08, allow overrides from configuration
+if(configGet('paypal_v2','N')=='Y') {
+    $paypal['success_url'] = '?gp_page=x_paypalfinal&flag=success';
+    $paypal['cancel_url'] = '?gp_page=x_paypalfinal&flag=cancel';
+}    
+
 // -----------------------------------------------------------------
 // FLIP BETWEEN THESE TWO FOR LIVE/TEST 
 // -----------------------------------------------------------------
-$paypal['url']="https://www.sandbox.paypal.com/cgi-bin/webscr";  // test
-//$paypal['url']="https://www.paypal.com/cgi-bin/webscr";       // live
+# KFD 9/6/08, allow overrides from configuration
+if(configGet('paypal_test_mode','N')=='Y') {
+    $paypal['url']="https://www.sandbox.paypal.com/cgi-bin/webscr"; 
+}
+else {
+    $paypal['url']="https://www.paypal.com/cgi-bin/webscr";    
+}
 
 // -----------------------------------------------------------------
 // MANY SETTINGS BELOW ARE REM'D OUT IN THE STANDARD ARRANGEMENT,
 // ADD BACK IN ANYTHING YOU NEED FOR AN APPLICATION
 // -----------------------------------------------------------------
 //  An icon user sees while on paypal, personalizes it a bit
-$paypal['image_url']="";
+$paypal['image_url']=configGet('paypal_image_url','');
  // url to call in background while user is waiting
 $paypal['notify_url']="?gp_page=x_paypalipn"; 
                                                 

@@ -21,7 +21,7 @@
 //
 // This is a specification that is included in all projects;
 // to give some information that is universally helpful.
-// ---------------------------------------------------------
+// -------------------------------------f--------------------
 // Revision History
 //
 // 14-Apr-2005  First version in ADD format
@@ -48,7 +48,7 @@ module system     {
 //}
 
 // --------------------------------------------------------------------
-// Group that can do user maintenance
+// Group that can do user maintenance (and file maintenance)
 // --------------------------------------------------------------------
 // This is the super-power group.  Anybody in here has total control
 // of the system.
@@ -64,6 +64,20 @@ group usermaint {
       permdel: Y;
       nomenu:  N;
    }
+}
+
+// People here can 
+group filemaint {
+   description: File Maintenance;
+}
+menu apppub {
+    module: system;
+    description: File Maintenance;
+    uisort: 999;
+    
+    group filemaint {
+        permsel: Y; nomenu: N;
+    }
 }
 
 // =========================================================
@@ -290,6 +304,14 @@ table users {
    index email { idx_unique: Y; column { email; }}
 }
 
+menu userssimple {
+    description: User Migration;
+    module: system;
+    uisort: 110;
+    x2: Y;
+    group usermaint { permsel: Y; nomenu: N; }
+}
+
 //menu impersonate {
 //    module: usermaint;
 //    nomenu: Y;
@@ -468,6 +490,36 @@ column sql_limit {
    type_id: int;
    description: SQL Limit;
 }
+column email_fromname {
+    type_id: vchar; colprec: 30; description: Email From Name;
+    flagcarry: N;
+}
+column email_fromaddr {
+    type_id: vchar; colprec: 30; description: Email From Address;
+    flagcarry: N;
+}
+column email_admin {
+    type_id: vchar; colprec: 40; description: Primary Email Admin;
+    flagcarry: N;
+}
+column paypal_site_url {
+    type_id: vchar; colprec: 200; description: Paypal callback URL;
+}
+column paypal_test_mode {
+    type_id: cbool; description: Paypal sandbox mode;
+}
+column paypal_image_url {
+    type_id: vchar; colprec: 200; description: Paypal Image (logo) URL;
+}
+column paypal_v2 {
+    type_id: cbool; description: Paypal returns to x_paypalfinal.php;
+}
+column paypal_payto {
+    type_id: vchar; colprec: 200; description: Paypal pay to;
+}
+column paypal_fake {
+    type_id: cbool; description: Skip paypal, simulate payment made;
+}
 table configfw {
     module: system;
     uisort: 550;
@@ -481,10 +533,14 @@ table configfw {
         suffix: footer;
         description: Page Footer Text;
     }
-    column { smtpout; }
+    column { smtpout; email_fromname; email_fromaddr; email_admin; }
     column { uisearchdash; }
     column { x4menu; x4padmenu; x4menutitle; x4menutext }
     column { js_css_debug; deprecated; sql_limit }
+    column { paypal_test_mode; paypal_fake;
+        paypal_site_url; paypal_image_url; paypal_v2;
+        paypal_payto;
+    }
 }
 table configapp {
     module: system;
