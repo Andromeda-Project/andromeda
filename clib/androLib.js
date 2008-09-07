@@ -2285,6 +2285,7 @@ function androSelect_onKeyUp(obj,strParms,e) {
         aSelect.div.style.top  = (postop + obj.offsetHeight +1) + "px";
         aSelect.div.style.left = poslft + "px";
         aSelect.div.style.display = 'block';
+        aSelect.hasFocus = false;
         
         // As part of making visible, create an onclick
         // that will trap the event target and lose focus
@@ -2323,6 +2324,7 @@ function androSelect_handler() {
         var table = aSelect.div.firstChild;
         if(table.rows.length > 0) { 
             table.rows[0].onmouseover();
+            aSelect.hasFocus = false;
         }
     }    
 }
@@ -2396,6 +2398,10 @@ function androSelect_mo(tr,skey) {
     tr.className = 'lightgray';
     aSelect.hasFocus = true;   
 }
+function androSelect_moout(tr,skey) {
+    aSelect.hasFocus = false;   
+}
+
 // User clicked on a row
 function androSelect_click(value,suppress_focus) {
     aSelect.control.value = value;
@@ -2555,6 +2561,18 @@ window.a = window.ua = window.$a = {
      */
     forms: {
         fetch: function(table,column,value,obj,inp) {
+            // KFD 9/7/08   If there is an androSelect visible,
+            //              don't do this.
+            if(aSelect) {
+                if(aSelect.hasFocus && aSelect.div.style.display != 'none') {
+                    return;
+                }
+            }
+            // KFD 9/7/08   Hack.  Make sure he goes away if we
+            //              are fetching.
+            androSelect_hide();
+            
+            
             // KFD 7/30/08, detect if this value matches
             //              a "pre" value that was sent in,
             //              and if so, fire no matter what
@@ -2568,7 +2586,7 @@ window.a = window.ua = window.$a = {
                 }
             }
             if(! go) {
-                var valold = u.p(inp,'xValue');
+                var valold = u.p(inp,'xValue','');
                 if(value.trim() == valold.trim()) return;
             }
             
@@ -2579,6 +2597,7 @@ window.a = window.ua = window.$a = {
             //inp.xValue = value;
             
             $a.json.init('x4Action','fetch');
+            $a.json.reportErrors = false;
             $a.json.addParm('x4Page',table);
             $a.json.addParm('column',column);
             $a.json.addParm('value',value);
@@ -2737,6 +2756,7 @@ window.a = window.ua = window.$a = {
         data:       { dd: {} },
         requests:   { },
         parms:      { },
+        reportErrors: true,
         x4Page:     '',
         x4Action:   '',
         explicitParms: '',
@@ -2778,6 +2798,7 @@ window.a = window.ua = window.$a = {
             this.x4Action   = '';
             this.callString = '';
             this.parms      = { };
+            this.reportErrors=true;
             this.explicitParms= '';
             if(name!=null) {
                 this.addParm(name,value);
@@ -3145,12 +3166,12 @@ window.a = window.ua = window.$a = {
             delete http;
 
             // If there were server errors, report those
-            if(this.jdata.error.length>0) {
+            if(this.jdata.error.length>0 && this.reportErrors) {
                 this.hadErrors = true;
                 $a.dialogs.alert(this.jdata.error.join("\n\n"));
                 return false;
             }
-            if(this.jdata.notice.length>0) {
+            if(this.jdata.notice.length>0 && this.reportErrors) {
                 $a.dialogs.alert(this.jdata.notice.join("\n\n"));
             }
             
