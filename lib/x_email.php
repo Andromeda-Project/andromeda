@@ -101,9 +101,15 @@ function X_EMAIL_SEND($em)	{
 		ErrorAdd("ERROR: Cannot send an email within a transaction");
 	}
 	else {
-		$from_addr  = trim(OPTION_GET("EMAILFROM_ADDR"));
-		$from_name  = trim(OPTION_GET("EMAILFROM_NAME"));
-      $smtp_server= trim(OPTION_GET('SMTP_SERVER','localhost'));
+        if(configGet('email_fromaddr')) {
+            $from_addr = configGet('email_fromaddr');
+            $from_name = configGet('email_fromname');
+        }
+        else {
+            $from_addr  = trim(OPTION_GET("EMAILFROM_ADDR"));
+            $from_name  = trim(OPTION_GET("EMAILFROM_NAME"));
+        }
+        $smtp_server= trim(OPTION_GET('SMTP_SERVER','localhost'));
 		if ($from_addr=="") {
 			ErrorAdd("The system's return email address, defined in system variable ".
 				"EMAILFROM_ADDR, must be set to a valid email address.  ".  
@@ -121,7 +127,7 @@ function X_EMAIL_SEND($em)	{
 			$headers['Date']    = date("D, j M Y H:i:s O",time());
 			$body = $em["email_message"];
 			$params['sendmail_path'] = '/usr/lib/sendmail';
-         $params['host'] = $smtp_server;
+            $params['host'] = $smtp_server;
 			// Create the mail object using the Mail::factory method
 			$mail_object = Mail::factory('smtp', $params);
 			$mail_object->send($recipients, $headers, $body);
