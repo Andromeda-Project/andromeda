@@ -6213,6 +6213,8 @@ function PlanMake_TablesUpd($table_id)
    $changes = array();
 	while ($row = pg_fetch_array($results)) {
       if($row['xfate']=='N') {
+         $this->LogEntry("  Adding column ".$row['column_id'].' as '
+            .$row['formula']);
          $changes[] = " ADD ".$row["column_id"]." ".$row["formula"];
          $newcols[]=$row["column_id"];
       }
@@ -6220,7 +6222,7 @@ function PlanMake_TablesUpd($table_id)
          $changes[] 
             ="ALTER COLUMN ".$row["column_id"]
             ." TYPE ".$row["formula"];
-         $this->LogEntry("Altering column ".$row['column_id'].' to '
+         $this->LogEntry("  Altering column ".$row['column_id'].' to '
             .$row['formula'].' from '.$row['formula_r']);
       }
 		
@@ -9758,6 +9760,7 @@ function getRange($formshort) {
     return array($rzero,$rinfi,$rcast);
            
 }
+
 
 // =========================================================================
 // End of Class Definition
