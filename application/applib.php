@@ -53,17 +53,21 @@ function LatestAndro() {
    
    return $maxfile;
 }
-function hLinkBuild($app,$caption) {
-   return hLinkPopup(
-      ''
-      ,$caption
-      ,array(
-         "gp_page"=>"a_builder"
-         ,"gp_out"=>"none"
-         ,'x2'=>1
-         ,'txt_application'=>$app
-      )
-   );
+function hLinkBuild($app,$caption, $code_only=false) {
+    $link_options = array(
+        "gp_page"=>"a_builder"
+        ,"gp_out"=>"none"
+        ,'x2'=>1
+        ,'txt_application'=>$app
+    );
+    if ( $code_only ) {
+        $link_options['code_only'] = 1;
+    }
+    return hLinkPopup(
+        ''
+        ,$caption
+        ,$link_options
+    );
 }
 
 /* KFD 4/15/08
@@ -161,7 +165,7 @@ function appModuleLeft() {
                <a href="?gp_page=applications&gp_skey=<?=$app['skey']?>"
                ><?=$app['application']?></a>
              <td align="right"  class="leftcol">
-               <?=hLinkBuild($app['application'],'Build')?>
+               <?=hLinkBuild($app['application'],'Build')?>&nbsp;|&nbsp;<?=hLinkBuild($app['application'],'Update Code', true)?>
         <?php }?>
         </table>
         <br/>

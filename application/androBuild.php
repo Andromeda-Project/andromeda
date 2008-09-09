@@ -87,61 +87,63 @@ class x_builder {
         // always reduces.        
         #$retval = $retval && $this->JSMinify();
         
-        // If we passed most basic, we prepare the database
-        // by loading stored procedures and making the zdd
-        // schema to use during build.
-        //
-        $retval = $retval && $this->DB_Prepare();
-        $retval = $retval && $this->SP_Load();
-        $retval = $retval && $this->DDRMake();
-        
-        // Load and run out the new specification
-        //
-        $retval = $retval && $this->SpecLoad();
-        $retval = $retval && $this->SpecFlattenValid();
-        $retval = $retval && $this->SpecFlatten();
-        $retval = $retval && $this->SpecFlattenRowCol();
+        if ( !isset( $_REQUEST['code_only'] ) ) {
+            // If we passed most basic, we prepare the database
+            // by loading stored procedures and making the zdd
+            // schema to use during build.
+            //
+            $retval = $retval && $this->DB_Prepare();
+            $retval = $retval && $this->SP_Load();
+            $retval = $retval && $this->DDRMake();
+            
+            // Load and run out the new specification
+            //
+            $retval = $retval && $this->SpecLoad();
+            $retval = $retval && $this->SpecFlattenValid();
+            $retval = $retval && $this->SpecFlatten();
+            $retval = $retval && $this->SpecFlattenRowCol();
 
-        // Now we know everything, we can validate the new
-        // spec.  This does not validate changes.
-        $retval = $retval && $this->SpecValidate();
+            // Now we know everything, we can validate the new
+            // spec.  This does not validate changes.
+            $retval = $retval && $this->SpecValidate();
 
-        $retval = $retval && $this->SpecLocal();  // now only lists
+            $retval = $retval && $this->SpecLocal();  // now only lists
 
-        
-        // Generate all of the DDL, this finishes with new spec
-        $retval = $retval && $this->SpecDDL();   
-        
-        // Now pull current state and look at differences
-        //
-        $retval = $retval && $this->RealityGet();	// What is current state of db?
-        $retval = $retval && $this->Differences();	// diff _r (reality) vs. _c (complete)
-        //$retval = $retval && $this->DiffValidate();	// maybe someday
-        
-        // Assuming we did not fail validation, do it!
-        $retval = $retval && $this->Analyze();
-        $retval = $retval && $this->PlanMake();
-        $retval = $retval && $this->PlanExecute();
-        $retval = $retval && $this->ContentLoad();
-        # KFD 6/7/08 removed, will put perms onto zdd. instead
-        #$retval = $retval && $this->ContentDD();  
-        $retval = $retval && $this->SecurityNodeManager();
-        
-        // This is code generation
-        $retval = $retval && $this->CodeGenerate_Info();
-        $retval = $retval && $this->CodeGenerate_Tables();
-        $retval = $retval && $this->CodeGenerate_Modules();
-        
-        // Big new thing, 2/6/08, build scripts
-        //
-        $retval = $retval && $this->BuildScripts();
-        // build scripts may alter configs, so write them out last
-        $retval = $retval && $this->CodeGenerate_config();
-        
-        
+            
+            // Generate all of the DDL, this finishes with new spec
+            $retval = $retval && $this->SpecDDL();   
+            
+            // Now pull current state and look at differences
+            //
+            $retval = $retval && $this->RealityGet();	// What is current state of db?
+            $retval = $retval && $this->Differences();	// diff _r (reality) vs. _c (complete)
+            //$retval = $retval && $this->DiffValidate();	// maybe someday
+            
+            // Assuming we did not fail validation, do it!
+            $retval = $retval && $this->Analyze();
+            $retval = $retval && $this->PlanMake();
+            $retval = $retval && $this->PlanExecute();
+            $retval = $retval && $this->ContentLoad();
+            # KFD 6/7/08 removed, will put perms onto zdd. instead
+            #$retval = $retval && $this->ContentDD();  
+            $retval = $retval && $this->SecurityNodeManager();
+            
+            // This is code generation
+            $retval = $retval && $this->CodeGenerate_Info();
+            $retval = $retval && $this->CodeGenerate_Tables();
+            $retval = $retval && $this->CodeGenerate_Modules();
+            
+            // Big new thing, 2/6/08, build scripts
+            //
+            $retval = $retval && $this->BuildScripts();
+            // build scripts may alter configs, so write them out last
+            $retval = $retval && $this->CodeGenerate_config();
+        }            
+            
         $this->DB_Close();
         $this->LogClose($retval,$ts);
         $GLOBALS['retval']=$retval;
+
         return;
     }
 // ===================================================================
