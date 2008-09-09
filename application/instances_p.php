@@ -99,6 +99,7 @@ class instances_p extends x_table2 {
             );
             echo( '<br />' );
             echo hLinkPopup(
+            '',
             'Deploy code from
             version '.$verx
                 ,array(
