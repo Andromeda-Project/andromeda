@@ -165,7 +165,7 @@ function appModuleLeft() {
                <a href="?gp_page=applications&gp_skey=<?=$app['skey']?>"
                ><?=$app['application']?></a>
              <td align="right"  class="leftcol">
-               <?=hLinkBuild($app['application'],'Build')?>&nbsp;|&nbsp;<?=hLinkBuild($app['application'],'Update Code', true)?>
+               <?=hLinkBuild($app['application'],'Build')?>
         <?php }?>
         </table>
         <br/>
