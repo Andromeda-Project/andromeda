@@ -405,14 +405,12 @@ function index_hidden_x4Dispatch() {
     # KFD 8/18/08.  Having any gp vars might be screwing things
     #               up, remove them.  Specifically it is screwing
     #               up the gp_command
-#hprint_r($GLOBALS['AG']['clean']);
-    gpUnsetPrefix('gpx');
-    gpUnsetPrefix('gp_');
-    gpUnsetPrefix('x2t_');
-    gpUnset('gpContext');
-#hprint_r($GLOBALS['AG']['clean']);
-##echo ob_get_clean();
-#exit;
+    # KFD 9/10/08.  This belonged in gp_command processing,
+    #               moved it to there.
+    #gpUnsetPrefix('gpx');
+    #gpUnsetPrefix('gp_');
+    #gpUnsetPrefix('x2t_');
+    #gpUnset('gpContext');
     
     # If they are not logged in, or have timed out,
     # send a redirection command to the login page
@@ -611,6 +609,14 @@ function index_hidden_function() {
 function index_hidden_command() {
    // Get command, strip out multiple spaces, split up and
    // grab the command separate from the arguments
+    # KFD 9/10/08.  Unset pretty much everything we know about
+    #               so we can create a new get/post setup out
+    #               of the command.
+    gpUnsetPrefix('gpx');
+    gpUnsetPrefix('gp_');
+    gpUnsetPrefix('x2t_');
+    gpUnset('gpContext');
+   
    $commands = gp('gp_command');
    $commands = preg_replace('/\s{2,}/',' ',$commands);
    gpSet('gp_command',$commands);

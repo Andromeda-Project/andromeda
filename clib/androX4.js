@@ -2624,6 +2624,7 @@ function x4AndroPage(self) {
     self.keyPress_CtrlP = self.printNow;
     
     self.showSql = function() {
+        $a.byId('gp_post').value='onscreen';
         x4.initPost(this);
         $a.json.addParm('showsql',1);
         $a.json.execute();

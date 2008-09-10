@@ -126,11 +126,17 @@ class androPage {
         if( $this->yamlP2['options']['nofilter'] == 'Y' )   $runHTML = false;
         if( gp('gp_post')<>'' && gp('gp_post')<>'onscreen') $runHTML = false;
         if( gp('gp_post')=='onscreen' && gpExists('x4Page'))$runHTML = false;
+        # KFD 9/10/08, don't run HTML if they are requesting Show sql
+        if( gp('showsql')==1                               )$runHTML = false;
         $runPage = true;
+        x4Debug("gp post is ".gp('gp_post'));
         if(gp('gp_post')=='') $runPage = false;
+        
 
         // DO 7/31/2008  If smarty template set && nofilter set just display the page.
-        if ($this->yamlP2['template'] <> '' && $this->yamlP2['options']['nofilter'] == 'Y' ) $runPage = true;
+        if ($this->yamlP2['template'] <> '' 
+            && $this->yamlP2['options']['nofilter'] == 'Y' )
+            $runPage = true;
         
         // DO 7/31/2008 do not need form again for Smarty AndroPage
         if ($this->yamlP2['template'] == '' || gp('gp_post') == '' ) {
