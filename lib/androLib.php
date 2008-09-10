@@ -6675,6 +6675,13 @@ function ehStandardFormOpen($id='Form1') {
 * @deprecated use hErrors()
 */
 function ehErrors() {
+    if(function_exists('app_ehErrors')) {
+        $errors = ErrorsGet();
+        if(count($errors)==0) return;
+        ErrorsClear();
+        app_ehErrors($errors);
+    }
+    
    $aErrors = aErrorsClean();
    if (count($aErrors)>0) {
       echo '<div class="errorbox">';
@@ -10966,11 +10973,22 @@ function Email_Exp($from,$to,$subject,$body,$headers) {
 *   emailSend
 *
 * PURPOSE
-*   Sends an email.  NOT YET DOCUMENTED.
+*   Sends an a plaintext email.
 *
-* CHANGE HISTORY
+* INPUTS
+*   Accepts these inputs, all three required:
+*   * to 
+*   * subject 
+*   * message body
+*
+*
+* DEPENDS
+*   Automatically includes these files:
+*   * ddtable_adm_emails.php
+*   * x_email.php
+*
 */
-function EmailSend($to,$subject,$message) {
+function EmailSend($to,$subject,$message,$headers=array()) {
 	include_once("ddtable_adm_emails.php");
 	include_once("x_email.php");
 	return X_EMAIL_SEND(
@@ -10978,6 +10996,53 @@ function EmailSend($to,$subject,$message) {
 			"email_to"=>trim($to)
 			,"email_subject"=>trim($subject)
 			,"email_message"=>trim($message)
+            ,'headers'=>$headers
+		)
+	);
+}
+
+/****f* PHP-API/EmailSendHTML
+*
+* NAME
+*   emailSendHTML
+*
+* PURPOSE
+*   Sends an an HTML email.
+*
+* INPUTS
+*   Accepts these inputs, all three required:
+*   * to 
+*   * subject 
+*   * message body
+*
+* NOTES
+*   The subject body does not need to include the HTML
+*   and BODY tags, those are added by this routine.
+*
+*   There is no provision for multi-part emails that
+*   include a text portion also.
+*
+*
+* DEPENDS
+*   Automatically includes these files:
+*   * ddtable_adm_emails.php
+*   * x_email.php
+*
+*/
+function EmailSendHtml($to,$subject,$message) {
+	include_once("ddtable_adm_emails.php");
+	include_once("x_email.php");
+    
+    $message = "<html><body>".$message."</body></html>";
+	return X_EMAIL_SEND(
+		ARRAY(
+			"email_to"=>trim($to)
+			,"email_subject"=>trim($subject)
+			,"email_message"=>trim($message)
+            ,'headers'=>array(
+                'MIME-Version'=>'1.0'
+                ,'Content-type'=>'text/html; charset=iso-8859-1'
+            )
 		)
 	);
 }
