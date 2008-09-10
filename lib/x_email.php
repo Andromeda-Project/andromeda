@@ -125,6 +125,9 @@ function X_EMAIL_SEND($em)	{
 			$headers['To']      = $em["email_to"];
 			$headers['Subject'] = $em["email_subject"];
 			$headers['Date']    = date("D, j M Y H:i:s O",time());
+            foreach($em['headers'] as $hname=>$hval) {
+                $headers[$hname] = $hval;
+            }
 			$body = $em["email_message"];
 			$params['sendmail_path'] = '/usr/lib/sendmail';
             $params['host'] = $smtp_server;
