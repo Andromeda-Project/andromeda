@@ -491,11 +491,11 @@ column sql_limit {
    description: SQL Limit;
 }
 column email_fromname {
-    type_id: vchar; colprec: 30; description: Email From Name;
+    type_id: vchar; colprec: 40; description: Email From Name;
     flagcarry: N;
 }
 column email_fromaddr {
-    type_id: vchar; colprec: 30; description: Email From Address;
+    type_id: vchar; colprec: 40; description: Email From Address;
     flagcarry: N;
 }
 column email_admin {
