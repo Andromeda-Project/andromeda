@@ -3829,18 +3829,31 @@ function SpecDDL_Triggers_FK_PT($ufk,$ptab,$chdlist,$parlist) {
 
 	// The EMPTY clause determines what to do if empty. 
 	// Normally that is an error, but the "Allow_empty" flag
-	// gives 'em a pass.  Notice the HUGE ASSUMPTION that
-	// allow empty has a single-column key.
+	// gives 'em a pass.  
+    // KFD 9/11/08, this used to ASSUME a single-column key,
+    //              now we allow multi-column keys
 	//
 	if ($ufk["allow_empty"] == "Y") {
-		$chd = $chdlist[0];
-		$chd_type = $this->utabs[$ufk["table_id_chd"]]["flat"][$chd]["formshort"];
-        //$this->logEntry("Doing $chd_type for $chd"); 
-		$chd_blank= ($chd_type=='int' || $chd_type=='numb') ? "0" : '####';
-		//$emptyList  .= $this->AddList($emptyList," || ")."COALESCE(new.".$chd.",####)";
+        # KFD 9/11/08.  For PROMAT application, our first need to
+        #
+		#$chd = $chdlist[0];
+		#$chd_type = $this->utabs[$ufk["table_id_chd"]]["flat"][$chd]["formshort"];
+		#$chd_blank= ($chd_type=='int' || $chd_type=='numb') ? "0" : '####';
+		#$onEmpty =
+	  	#    "    -- 8001 FK Insert/Update Child Validation\n".
+		#	"    IF COALESCE(new.$chd,$chd_blank) <> $chd_blank THEN\n";
+        $lEmpty = array();
+        foreach($chdlist as $chd) {
+            $chd_type 
+                =$this->utabs[$ufk["table_id_chd"]]["flat"][$chd]["formshort"];
+            $chd_blank= ($chd_type=='int' || $chd_type=='numb') ? "0" : '####';
+            $lEmpty[] = "COALESCE(NEW.$chd,$chd_blank) <> $chd_blank";
+        }
 		$onEmpty =
-			"    -- 8001 FK Insert/Update Child Validation\n".
-			"    IF COALESCE(new.$chd,$chd_blank) <> $chd_blank THEN\n"; 
+	  	    "    -- 8001 FK Insert/Update Child Validation\n".
+			"    IF    ".implode("\n      AND ",$lEmpty)." THEN\n";
+        #
+        # KFD 9/11/08 (END)
 	}
 	else {
       $onEmpty="";
