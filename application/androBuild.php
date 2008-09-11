@@ -8946,9 +8946,10 @@ function SQLFORMATLITERAL($val,$type,$fortheplan,$doubleplan=false) {
 		case "vchar":
 		case "text":
 		case "cbool":
-      case 'ssn':
-      case 'ph12':
-      case "gender":
+        case 'dtime':
+        case 'ssn':
+        case 'ph12':
+        case "gender":
 			$retval = $q.trim($val).$q;
 			break;
 		case "int":
