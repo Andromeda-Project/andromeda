@@ -112,7 +112,7 @@ class x4apppub extends androX4 {
         ?>
         <script>
         window.killPub = function($file,$div) {
-            if(u.dialogs.confirm("Delete file "+$file+"?")) {
+            if(confirm("Delete file "+$file+"?")) {
                 // Run asynchronously, we don't care about result
                 ua.json.init('x4Page','apppub');
                 ua.json.addParm('x4Action','delfile');
