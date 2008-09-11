@@ -13916,6 +13916,7 @@ function SQL2($sql,$dbconn,&$error=false)
       // Made conditional 1/24/07 KFD
       //echo "Error title is".vgfGet("ERROR_TITLE");
       if(SessionGet('ADMIN',false)) {
+      //if(true) {
          ErrorAdd(
             "(ADMIN): You are logged in as an administrator, you will see more"
             ." detail than a regular user."

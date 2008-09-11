@@ -146,9 +146,9 @@ function CleanGetUnset($key) {
 function CleanGet($key,$tdefault="",$reportmissing=true) {
 	$post=$GLOBALS["AG"]["clean"];
 	if (!isset($post[$key])) {
-		if ($reportmissing) {
-			ErrorAdd("System Error, Received variable does not exist: ".$key);
-		}
+		#if ($reportmissing) {
+		#	ErrorAdd("System Error, Received variable does not exist: ".$key);
+		#}
 		return $tdefault;
 	}
 	else {
