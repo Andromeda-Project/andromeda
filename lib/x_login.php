@@ -333,7 +333,10 @@ class x_login extends x_table2 {
       SessionSet("GROUP_ID_EFF",$group_id_eff);
 		SessionSet("groups",$groups);
       if(gp('gpz_page')=='') {
-         gpSet('gp_page','');
+          # KFD 9/12/08, extra command to not change page
+          if(gp('st2keep')<>1) {
+              gpSet('gp_page','');
+          }
       }
       $GLOBALS['session_st'] = 'N';   // for "N"ormal
 		
