@@ -66,6 +66,15 @@ if (!isset($AG['application'])) {
 }
 
 // ==================================================================
+// DJO 9-12-2008
+// >>>
+// >>> Create array to hold all queries issued
+// >>>
+// ==================================================================
+$GLOBALS['AG']['dbg']['sql'] = array();
+
+
+// ==================================================================
 // >>> 
 // >>> Copy the $_POST array and overlay with $_GET
 // >>> Reverse the effects of magic quotes if found

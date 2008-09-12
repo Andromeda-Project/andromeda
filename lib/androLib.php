@@ -13821,7 +13821,7 @@ If there is a previous default connection on the stack, then that
 is popped off and it becomes the current default connection.
 */
 function SQL_ConnPop() {
-   return scDBConn_Pop();
+    return scDBConn_Pop();
 }
 
 /**
@@ -13837,7 +13837,7 @@ Use this command when you want to pull rows from a database one-by-one.
 There is also a collection of [[Specialized SQL Commands]].
 */
 function SQL($sql,&$error=false) {
-   return SQL2($sql,$GLOBALS["dbconn"],$error);
+    return SQL2($sql,$GLOBALS["dbconn"],$error);
 }
 
 
@@ -13856,7 +13856,7 @@ is likely to go over a hundred or so rows.  Below 100 rows, it can
 be more convenient to use [[SQL_AllRows]].
 */
 function SQL_fetch_array($results,$rownum=null,$type=null) {
-	if (!is_null($type)) {
+    if (!is_null($type)) {
 		return @pg_fetch_assoc($results,$rownum,$type);
 	}
 	if (!is_null($rownum)) {
@@ -13930,7 +13930,27 @@ function SQL2($sql,$dbconn,&$error=false)
 	}
 	global $AG;
 	$errlevel = error_reporting(0);
+	$debug = trim(ConfigGet('js_css_debug','N'));
+	if ( $debug ) {
+    	$mtime = microtime();
+        $mtime = explode(" ",$mtime);
+        $mtime = $mtime[1] + $mtime[0];
+        $starttime = $mtime; 
+    }
 	pg_send_query($dbconn,$sql);
+	if ( $debug ) {
+	    $mtime = microtime();
+        $mtime = explode(" ",$mtime);
+        $mtime = $mtime[1] + $mtime[0];
+        $endtime = $mtime;
+        $totaltime = ($endtime - $starttime); 
+	}
+    
+    if ( $debug ) {
+        $dbgsql['sql'] = $sql;
+        $dbgsql['time'] = $totaltime;
+        array_push( $GLOBALS['AG']['dbg']['sql'], $dbgsql );
+    }
 	$results=pg_get_result($dbconn);
 	$t=pg_result_error($results);
    $error=false;

@@ -3471,6 +3471,11 @@ window.a = window.ua = window.$a = {
     }
 }
 
+function showHide( id ) {
+    var tag = '#' + id;
+    $(tag).slideToggle();
+}
+
 
 /* ---------------------------------------------------- *\
    SECTION 8: SUSPECTED DEAD CODE  
