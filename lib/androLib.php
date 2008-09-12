@@ -1472,23 +1472,47 @@ class androHtml {
     }
 /******/
 
-/****m* androHtml/bufferedRender
-*
-* NAME
-*    bufferedRender
-*
-* FUNCTION
-*	The method bufferedRender rendered this androHtml object in a buffer, instead of directly outputing
-*	it to the browser.
-*
-* SOURCE
-*/
+    
+    /****m* androHtml/print_r
+    *
+    * NAME
+    *    print_r
+    *
+    * FUNCTION
+    *	The method dumps a variable into the innerHTML of an
+    *   and Andromeda HTML Object.
+    *
+    * SOURCE
+    */
+    function print_r($value) {
+        ob_start();
+        print_r($value);
+        $pre = $this->h('pre',ob_get_clean());
+        $pre->hp['class'] = 'border: 1px solid gray; background-color:white;
+            color: black;';
+    }
+    /******/
+
+    /****m* androHtml/bufferedRender
+    *
+    * NAME
+    *    bufferedRender
+    *
+    * FUNCTION
+    *	The method bufferedRender rendered this androHtml object in a buffer, instead of directly outputing
+    *	it to the browser.
+    *
+    * SOURCE
+    */
     function bufferedRender() {
         ob_start();
         $this->render();
         return ob_get_clean();
     }
-/******/
+    /******/
+    
+    
+    
 
 /****m* androHtml/render
 *
