@@ -175,7 +175,13 @@ SessionSet('count',SessionGet('count')+1);
 
 // A logout command comes first
 if(gp('st2logout')<>'') {
-   SessionReset();
+    if(gp('st2keep')==1) {
+        SessionSet('UID',$AG['application']);
+        SessionSet('PWD',$AG['application']);
+    }
+    else {
+        SessionReset();
+    }
 }
 
 // This is the only place where we branch out of sequence to 
