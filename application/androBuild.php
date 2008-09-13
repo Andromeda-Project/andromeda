@@ -2866,7 +2866,9 @@ function SpecDDL_Triggers_Security() {
       $sql = "
        -- 1000 Add user to system, goes in as nologin, no password
        new.member_password=####;
-       SELECT INTO AnyInt COUNT(*) FROM pg_shadow WHERE usename = CAST(new.user_id as name);
+       SELECT INTO AnyInt COUNT(*)
+         FROM pg_roles 
+        WHERE LOWER(TRIM(rolname)) = LOWER(TRIM(CAST(new.user_id as name)));
        IF AnyInt = 0 THEN
            EXECUTE ##CREATE USER ## || new.user_id || ## NOLOGIN ##;
        ELSE 
@@ -2883,7 +2885,9 @@ function SpecDDL_Triggers_Security() {
           new.member_password=##temp##;
        END IF;
        
-       SELECT INTO AnyInt COUNT(*) FROM pg_shadow WHERE usename = CAST(new.user_id as name);
+       SELECT INTO AnyInt COUNT(*)
+         FROM pg_roles
+        WHERE LOWER(TRIM(rolname)) = LOWER(TRIM(CAST(new.user_id as name)));
        IF AnyInt = 0 THEN
            EXECUTE ##CREATE USER ## || new.user_id || ## PASSWORD ## || quote_literal(new.member_password);
        ELSE 
