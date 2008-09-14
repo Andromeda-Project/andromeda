@@ -175,7 +175,18 @@ SessionSet('count',SessionGet('count')+1);
 
 // A logout command comes first
 if(gp('st2logout')<>'') {
-    if(gp('st2keep')==1) {
+    if(gpExists('st2keep')) {
+        if(gp('st2keep')==1) {
+            # This just clears user leaves rest of session
+            SessionSet('UID',$AG['application']);
+            SessionSet('PWD',$AG['application']);
+        }
+        else {
+            SessionReset();
+        }
+    }
+    elseif(configGet('logout_clear','Y')=='N') {
+        # Another way to clear user and leave session
         SessionSet('UID',$AG['application']);
         SessionSet('PWD',$AG['application']);
     }

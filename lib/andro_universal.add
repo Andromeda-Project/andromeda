@@ -490,6 +490,10 @@ column sql_limit {
    type_id: int;
    description: SQL Limit;
 }
+column logout_clear {
+    type_id: cbool;
+    description: Clear Session on Logout;
+}
 column email_fromname {
     type_id: vchar; colprec: 40; description: Email From Name;
     flagcarry: N;
@@ -540,6 +544,7 @@ table configfw {
     column { uisearchdash; }
     column { x4menu; x4padmenu; x4menutitle; x4menutext }
     column { js_css_debug; deprecated; sql_limit }
+    column { logout_clear; }
     column { paypal_site_url; paypal_image_url; paypal_payto;
         paypal_noship; paypal_v2;
         paypal_test_mode; paypal_fake;
