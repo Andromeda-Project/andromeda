@@ -25,6 +25,11 @@
 // Andromeda MOD, better compatibility
 global $paypal;
 
+# KFD 9/13/08, added configuration to discard ship-to info
+if(configGet('paypal_noship','N') == 'Y') {
+    $paypal['no_shipping'] = 1;
+}
+
 // -----------------------------------------------------------------
 // STANDARD SETTINGS.  CHANGE THESE TWO SETTINGS AFTER THIS
 // FILE HAS BEEN COPIED TO THE APPLICATION DIRECTORY.
