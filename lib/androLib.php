@@ -3987,16 +3987,36 @@ function &ddTable($table_id) {
 
     # First action, assign the permissions from the session so
     # they are handy
-    $tabdd['perms']['menu']
-        = in_array($table_id,SessionGet('TABLEPERMSMENU'));
-    $tabdd['perms']['sel']
-        = in_array($table_id,SessionGet('TABLEPERMSSEL'));
-    $tabdd['perms']['ins']
-        = in_array($table_id,SessionGet('TABLEPERMSINS'));
-    $tabdd['perms']['upd']
-        = in_array($table_id,SessionGet('TABLEPERMSUPD'));
-    $tabdd['perms']['del']
-        = in_array($table_id,SessionGet('TABLEPERMSDEL'));
+    if ( SessionGet( 'TABLEPERMSMENU' ) != '' ) {
+        $tabdd['perms']['menu']
+            = in_array($table_id,SessionGet('TABLEPERMSMENU'));
+    } else {
+        $tabdd['perms']['menu'] = false;
+    }
+    if ( SessionGet( 'TABLEPERMSSEL' ) != '' ) {
+        $tabdd['perms']['sel']
+             = in_array($table_id,SessionGet('TABLEPERMSSEL'));
+    } else {
+        $tabdd['perms']['sel'] = false;
+    }
+    if ( SessionGet( 'TABLEPERMSINS' ) != '' ) {
+        $tabdd['perms']['ins']
+            = in_array($table_id,SessionGet('TABLEPERMSINS'));
+    } else {
+        $tabdd['perms']['ins'] = false;
+    }
+    if ( SessionGet( 'TABLEPERMSUPD' ) != '' ) {
+        $tabdd['perms']['upd']
+            = in_array($table_id,SessionGet('TABLEPERMSUPD'));
+    } else {
+        $tabdd['perms']['upd'] = false;
+    }
+    if ( SessionGet( 'TABLEPERMSDEL' )  != '' ) {
+        $tabdd['perms']['del']
+            = in_array($table_id,SessionGet('TABLEPERMSDEL'));
+    } else {
+        $tabdd['perms']['del'] = false;
+    }
 
     # By default assume the appropriate view is the table name itself,
     # which may change below
