@@ -97,6 +97,15 @@ class userssimple extends x_table2 {
             $pwd = $user['member_password'];
             SQL("create role {$user['user_id']} login password '$pwd'");
         }
+
+        # Step 1.5 set passwords and let them login
+        $users = SQL_AllRows("select user_id,member_password from users");
+        foreach($users as $user) {
+            $pwd = $user['member_password'];
+            SQL("alter role {$user['user_id']} login password '$pwd'");
+        }
+        echo "<br/>Setting passwords for ".count($users)." users.";
+
         
         # Step 2, for all assignments that do not change,
         #         explicitly grant the role
