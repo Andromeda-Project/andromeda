@@ -465,7 +465,23 @@ content uidisplays {
 // ---------------------------------------------------------
 // Automations are also defined and populated here
 //
-column automation_id   {  description: Automation Code; type_id: vchar; colprec: 10;   colscale: 0;  }
+column automation_id   {  
+    description: Automation Code; 
+    type_id: vchar; 
+    colprec: 10; 
+    colscale: 0;  
+}
+column sqloffset {
+    description: Aggregate Start At (SQL Offset);
+    type_id: vchar;
+    colprec: 50;
+}
+column sqllimit {
+    description: Aggregate Run For (SQL Limit);
+    type_id: vchar;
+    colprec: 50;
+}
+    
 
 table automations {
 	module: datadict;
@@ -696,7 +712,7 @@ table tabcol {
     
     foreign_key automations { allow_empty: Y; }
     column { prefix: auto_;  table_id; column_id; }
-    column { auto_formula; }
+    column { auto_formula; sqloffset; sqllimit; }
     
     column { uiinline; }
     column { required; }
@@ -1317,7 +1333,7 @@ table tabflat {
     // Automations, defined as a foreign key	
     foreign_key { automations; }
     foreign_key tabflat { prefix: auto_; allow_empty: Y; }
-    column { auto_formula; }
+    column { auto_formula; sqloffset; sqllimit; }
     column { range_from; range_to; }
     column { value_min; value_max; uisearch_ignore_dash; }
     column { uirows;    uicols;    }

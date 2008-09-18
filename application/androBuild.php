@@ -116,7 +116,7 @@ class x_builder {
             // Now pull current state and look at differences
             //
             $retval = $retval && $this->RealityGet();	// What is current state of db?
-            $retval = $retval && $this->Differences();	// diff _r (reality) vs. _c (complete)
+            $retval = $retval && $this->Differences();
             //$retval = $retval && $this->DiffValidate();	// maybe someday
             
             // Assuming we did not fail validation, do it!
@@ -1598,17 +1598,28 @@ update zdd.tabcol set
 
 
 function SpecFlatten_Runout() {
-	$this->LogEntry("TABLES: Executing server-side table sequencer: Table_Sequencer");
+	$this->LogEntry("TABLES: Executing server-side table "
+        ." sequencer: Table_Sequencer");
 	$this->SQL("select zdd.table_sequencer();");
-	$results = $this->SQLRead("select table_id FROM zdd.tables WHERE table_seq<0");
+	$results = $this->SQLRead("select table_id FROM zdd.tables 
+        WHERE table_seq<0"
+    );
 	$errors = pg_fetch_all($results);
 	if (false!==$errors) { 
-		$this->LogEntry("There were ".count($errors)." tables that could not be sequenced:");
+		$this->LogEntry(
+            "There were ".count($errors)
+            ." tables that could not be sequenced:"
+        );
 		foreach ($errors as $error) {
 			$t = $error["table_id"];
 			$this->LogEntry("Cannot sequence $t, which depends upon: ");
-			$results = $this->SQLRead("Select table_id_par FROM zdd.table_deps WHERE table_id_chd='$t'");
-			while ($row=pg_fetch_array($results)) { $this->LogEntry("   ".$row["table_id_par"]); }
+			$results = $this->SQLRead(
+                "Select table_id_par FROM zdd.table_deps 
+                  WHERE table_id_chd='$t'"
+            );
+			while ($row=pg_fetch_array($results)) {
+                $this->LogEntry("   ".$row["table_id_par"]); 
+            }
 		}
 		return false;
 	}
@@ -1644,7 +1655,9 @@ function SpecFlatten_Runout() {
                        when t.inputmask <> '' 
                        then t.inputmask
                        when t.type_id = 'numb'
-                       then lpad(''::text,c.colprec::int,' '::text)||'.'||lpad(''::text,c.colscale::int,' '::text)
+                       then lpad(''::text,c.colprec::int,' '::text)
+                            ||'.'||
+                            lpad(''::text,c.colscale::int,' '::text)
                        else '' end
                  ,case when coalesce(tc.flagcarry,'') <> '' 
                        then tc.flagcarry 
@@ -1705,7 +1718,8 @@ function SpecFlatten_Runout() {
                            ,fk.pk_change
                            ,fk.primary_key,fk.uisearch
                            ,fk.table_id_par as table_id_fko
-                           ,TRIM(fk.uicolseq) || '.' || TRIM(f.uicolseq) as uicolseq
+                           ,TRIM(fk.uicolseq) || '.'
+                           || TRIM(f.uicolseq) as uicolseq
                        FROM zdd.tabfky  fk
                        JOIN zdd.tabflat f   ON fk.table_id_par = f.table_id
                       WHERE fk.table_id = '$table_id'
@@ -1744,6 +1758,8 @@ function SpecFlatten_Runout() {
                    ,uiro          = res.uiro
                    ,automation_id = res.automation_id
                    ,auto_formula  = res.auto_formula
+                   ,sqloffset     = res.sqloffset
+                   ,sqllimit      = res.sqllimit
                    ,required      = res.required
                    ,uiinline      = res.uiinline
                FROM (
@@ -1763,6 +1779,8 @@ function SpecFlatten_Runout() {
                          ,".$this->col3res('uiro')."
                          ,".$this->col3res('automation_id')."
                          ,".$this->col3res('auto_formula')."
+                         ,tc.sqloffset
+                         ,tc.sqllimit
                          ,".$this->col3res('required')."
                          ,".$this->col3res('uiinline')."
                      FROM zdd.tabcol  tc
@@ -1988,7 +2006,7 @@ function SpecFlatten_ColumnDeps() {
    //           expressed in terms of its own value.  Very Bad.
    // KFD 12/21/07 How about filtering out dependencies based on
    //              constraints?  That makes much more sense.
-   //           EXPERIMENTAL  EXPERIMENTAL tried w/project PROMOT
+   //           EXPERIMENTAL  EXPERIMENTAL tried w/project PROMAT
 	$sql = "
 		INSERT INTO zdd.column_deps 
 		 (table_id,column_id,table_dep,column_dep,automation_id) 
@@ -1998,8 +2016,33 @@ function SpecFlatten_ColumnDeps() {
 		 WHERE zdd.colchainargs.column_id_arg <> ''
            AND zdd.colchainargs.chain <> 'cons'
          ";
-	$this->SQL($sql);		
+	$this->SQL($sql);	
 
+
+    # KFD 9/18/08, put in column dependencies for
+    #              SUMs that have SQLlimit and SQLOffset
+	$sql = "
+		INSERT INTO zdd.column_deps 
+		 (table_id,column_id,table_dep,column_dep,automation_id) 
+		SELECT DISTINCT table_id,column_id
+                       ,table_id,sqloffset,'EXTEND' 
+		  FROM zdd.tabflat
+         WHERE sqloffset <> '' 
+         ";
+	$this->SQL($sql);	
+	$sql = "
+		INSERT INTO zdd.column_deps 
+		 (table_id,column_id,table_dep,column_dep,automation_id) 
+		SELECT DISTINCT table_id,column_id
+                       ,table_id,sqllimit,'EXTEND' 
+		  FROM zdd.tabflat
+         WHERE sqllimit <> '' 
+         ";
+	$this->SQL($sql);	
+    
+    	
+
+    
 	// This says that the foreign key depends upon each
 	// of the fk parent columns.  This way an FK that is
 	// itself supplied by a calculation can be sequenced
@@ -4286,21 +4329,23 @@ function SpecDDL_Triggers_Automated_FetchDistribute() {
 }
 
 function SpecDDL_Triggers_Automated_Aggregate()  {
-	
-   $retval=true;
+	$retval=true;
+    $sql_aggs = array();
 	$this->LogEntry("Building calculated AGGREGATE clauses");
    
-   // retrieve in order of table, make list of tables 
+    // retrieve in order of table, make list of tables 
 	$results = $this->SQLRead(
-		"SELECT tf.table_id,tf.column_id,tf.automation_id,tf.auto_formula" 
-		." FROM zdd.tabflat tf " 
-		." WHERE tf.automation_id IN ('SUM','COUNT','LATEST','MIN','MAX')"
-      ." ORDER BY tf.table_id"
-   );
-   $tabs_chd = array();
-   $tabs_par = array();
+		"SELECT tf.table_id,tf.column_id
+               ,tf.automation_id,tf.auto_formula
+               ,tf.sqllimit,tf.sqloffset
+		   FROM zdd.tabflat tf  
+		  WHERE tf.automation_id IN ('SUM','COUNT','LATEST','MIN','MAX')
+          ORDER BY tf.table_id"
+    );
+    $tabs_chd = array();
+    $tabs_par = array();
 	while ($row=pg_fetch_array($results)) {
-      // basic stats, including list of child tables 
+        // basic stats, including list of child tables 
 		$table_par = $row["table_id"];
 		$column_par = $row["column_id"];
 
@@ -4313,44 +4358,44 @@ function SpecDDL_Triggers_Automated_Aggregate()  {
 		$column_chd = strtolower($twovals[1]);
 		$table_info_chd = &$this->utabs[$table_chd]["flat"];
 
-      if(!isset($this->ufks[$table_chd."_".$table_par."_"])) {
-         $this->LogEntry("ERROR");
-         $this->LogEntry("ERROR -> building aggregate clause, ");
-         $this->LogEntry("ERROR -> from $table_chd up to $table_par ");
-         $this->LogEntry("ERROR -> a foreign key must be defined.");
-         $retval=false;
-         continue;
-      }
+        if(!isset($this->ufks[$table_chd."_".$table_par."_"])) {
+            $this->LogEntry("ERROR");
+            $this->LogEntry("ERROR -> building aggregate clause, ");
+            $this->LogEntry("ERROR -> from $table_chd up to $table_par ");
+            $this->LogEntry("ERROR -> a foreign key must be defined.");
+            $retval=false;
+            continue;
+        }
 
-      // notice the matchup doesn't distinguish really between
-      // parent and child, it assumes there is only one FK
-      $mx    = $this->ufks[$table_chd."_".$table_par."_"]["cols_match"];
+        // notice the matchup doesn't distinguish really between
+        // parent and child, it assumes there is only one FK
+        $mx    = $this->ufks[$table_chd."_".$table_par."_"]["cols_match"];
 		$match = $this->ufks[$table_chd."_".$table_par."_"]["cols_match"];
 		$match     = str_replace("par.","new.",$mx);
 		//$match = str_replace(","," AND ",$match);
-      $match_old = str_replace("new.",'old.',$match);
+        $match_old = str_replace("new.",'old.',$match);
 
-      $match_latest = $this->ufks[$table_chd."_".$table_par."_"]["cols_match"];
-      $match_latest = str_replace("chd.","new.",$match_latest);
-      $match_latest = str_replace(","," AND "  ,$match_latest);
-      $match_latest = str_replace("par.",""    ,$match_latest);
+        $match_latest = $this->ufks[$table_chd."_".$table_par."_"]["cols_match"];
+        $match_latest = str_replace("chd.","new.",$match_latest);
+        $match_latest = str_replace(","," AND "  ,$match_latest);
+        $match_latest = str_replace("par.",""    ,$match_latest);
       
-      // New general purpose match expressions
-      $mx_old_par = str_replace('chd.','old.',$mx);
-      $mx_old_par = str_replace('par.',$table_par.'.',$mx_old_par);
-      $mx_new_par = str_replace('chd.','new.',$mx);
-      $mx_new_par = str_replace('par.',$table_par.'.',$mx_new_par);
-      $mx_old_chd= str_replace('par.','old.',$mx);
-      $mx_old_chd = str_replace('chd.',$table_chd.'.',$mx_old_chd);
-      $mx_new_chd = str_replace('par.','new.',$mx);
-      $mx_new_chd = str_replace('chd.',$table_chd.'.',$mx_new_chd);
-         $type_id_chd = $table_info_chd[$column_chd]['type_id'];
+        // New general purpose match expressions
+        $mx_old_par = str_replace('chd.','old.',$mx);
+        $mx_old_par = str_replace('par.',$table_par.'.',$mx_old_par);
+        $mx_new_par = str_replace('chd.','new.',$mx);
+        $mx_new_par = str_replace('par.',$table_par.'.',$mx_new_par);
+        $mx_old_chd= str_replace('par.','old.',$mx);
+        $mx_old_chd = str_replace('chd.',$table_chd.'.',$mx_old_chd);
+        $mx_new_chd = str_replace('par.','new.',$mx);
+        $mx_new_chd = str_replace('chd.',$table_chd.'.',$mx_new_chd);
+        $type_id_chd = $table_info_chd[$column_chd]['type_id'];
       
-      // Special simple code for 'LATEST', do this and go to next one
-      // Note 3/7/06, when we started "registering" SUM and COUNT
-      // for optimization, we left this alone.  W/lots of writes this
-      // would be a performance killer.
-      if (in_array($row['automation_id'],array('LATEST','SUM','COUNT'))) {
+        // Special simple code for 'LATEST', do this and go to next one
+        // Note 3/7/06, when we started "registering" SUM and COUNT
+        // for optimization, we left this alone.  W/lots of writes this
+        // would be a performance killer.
+        if (in_array($row['automation_id'],array('LATEST','SUM','COUNT'))) {
          $table_info_chd = &$this->utabs[$table_chd]["flat"];
          $type_id_chd = $table_info_chd[$column_chd]['type_id'];
          $blank = $this->SQLFormatBlank($type_id_chd,true,true);
@@ -4367,34 +4412,148 @@ function SpecDDL_Triggers_Automated_Aggregate()  {
                $this->SpecDDL_TriggerFragment($table_chd,"UPDATE","AFTER","6000",$s1);
          }
          if($row['automation_id']=='SUM') {
-            $s1 = "\n".
-               "    -- 6000 SUM Push\n".
-               "    IF COALESCE(new.$column_chd,0) <> COALESCE(old.$column_chd,0) THEN\n".
-               "        UPDATE $table_par SET $column_par \n".
-               "               = COALESCE($column_par,0) \n".
-               "               + COALESCE(new.$column_chd,0) \n".
-               "               - COALESCE(old.$column_chd,0) \n".
-               "         WHERE $mx_new_par;\n".
-               "    END IF;\n";
-            $this->SpecDDL_TriggerFragment($table_chd,"UPDATE","AFTER","6000",$s1);
-            $s1 = "\n".
-               "    -- 6000 SUM Push\n".
-               "    IF COALESCE(new.$column_chd,0) <> 0 THEN\n".
-               "        UPDATE $table_par SET $column_par \n".
-               "               = COALESCE($column_par,0) \n".
-               "               + COALESCE(new.$column_chd,0) \n".
-               "         WHERE $mx_new_par;\n".
-               "    END IF;\n";
-            $this->SpecDDL_TriggerFragment($table_chd,"INSERT","AFTER","6000",$s1);
-            $s1 = "\n".
-               "    -- 6000 SUM Push\n".
-               "    IF COALESCE(old.$column_chd,0) <> 0 THEN\n".
-               "        UPDATE $table_par SET $column_par \n".
-               "               = COALESCE($column_par,0) \n".
-               "               - COALESCE(old.$column_chd,0) \n".
-               "         WHERE $mx_old_par;\n".
-               "    END IF;\n";
-            $this->SpecDDL_TriggerFragment($table_chd,"DELETE","AFTER","6000",$s1);
+             if($row['sqllimit'] <> '') {
+                # KFD 9/17/08
+                # Limited SUM child pushes (BEGIN)
+                # This is actually simpler to code, though performance
+                # will seriously degrade with many rows.  On any of insert,
+                # update, or delete, the parent table is given a completely
+                # new value
+                
+                # Now we take the column name and write a query
+                # that pulls offset and limit from parent
+                $sqloffset = $row['sqloffset'];
+                $sqllimit  = $row['sqllimit'];
+                $sqlints = 
+                    "SELECT INTO AnyInt,AnyInt2 $sqloffset,$sqllimit"
+                    ." FROM $table_par"
+                    ." WHERE --MATCH--PAR--;";
+                $s1 = "
+    -- 6000 SUM Push (with sqllimit and offset)
+    $sqlints
+    IF --COALESCE--MATCH-- THEN
+        UPDATE $table_par SET $column_par=(
+            SELECT SUM(x1.$column_chd) FROM (
+                SELECT $column_chd
+                  FROM $table_chd
+                 WHERE --MATCH--CHD--
+                 ORDER BY $column_chd
+                OFFSET AnyInt
+                 LIMIT AnyInt2
+                ) x1
+            ) 
+         WHERE --MATCH--PAR--;
+    END IF;\n";
+    
+                # Three series of replacements, for the insert,
+                # update, and delete.  Each needs its own expression
+                # to figure out if something changed.
+                
+                # insert substitions use new. for matches
+                $s2 = str_replace('--COALESCE--MATCH--'
+                    ,"COALESCE(new.$column_chd,0) <> 0"
+                    ,$s1
+                );
+                $s2 = str_replace("--MATCH--CHD--",$mx_new_chd,$s2);
+                $s2 = str_replace('--MATCH--PAR--',$mx_new_par,$s2);
+                $this->SpecDDL_TriggerFragment(
+                    $table_chd,"INSERT","AFTER","6000",$s2
+                );
+                # delete substitutions use old. for matches
+                $s2 = str_replace('--COALESCE--MATCH--'
+                    ,"COALESCE(old.$column_chd,0) <> 0"
+                    ,$s1
+                );
+                $s2 = str_replace("--MATCH--CHD--",$mx_old_chd,$s2);
+                $s2 = str_replace('--MATCH--PAR--',$mx_old_par,$s2);
+                $this->SpecDDL_TriggerFragment(
+                    $table_chd,"DELETE","AFTER","6000",$s2
+                );
+
+                # update also uses new. for matches
+                $s2 = str_replace('--COALESCE--MATCH--'
+                    ,"COALESCE(new.$column_chd,0) <> "
+                    ."COALESCE(old.$column_chd,0) " 
+                    ,$s1
+                );
+                $s2 = str_replace("--MATCH--CHD--",$mx_new_chd,$s2);
+                $s2 = str_replace('--MATCH--PAR--',$mx_new_par,$s2);
+                $this->SpecDDL_TriggerFragment(
+                    $table_chd,"UPDATE","AFTER","6000",$s2
+                );
+                
+                
+                # Major step 2 is to retrigger the SUM if one of
+                # the parent values changes
+                $check[] = "new.$sqloffset <> old.$sqloffset";
+                $check[] = "new.$sqllimit <> old.$sqllimit";
+                $SQLCheck = implode(' OR ',$check);
+                $s1 = "
+    -- 6000 SUM Pull when sqloffset or sqllimit changes
+    AnyInt = new.$sqloffset;
+    AnyInt2= new.$sqllimit;
+    IF $SQLCheck THEN
+        SELECT INTO new.$column_par SUM(x1.$column_chd) FROM ( 
+                SELECT $column_chd
+                  FROM $table_chd
+                 WHERE $mx_new_chd
+                 ORDER BY $column_chd
+                OFFSET AnyInt
+                 LIMIT AnyInt2
+        ) x1;
+    END IF;\n";
+                $this->SpecDDL_TriggerFragment(
+                    $table_par,"UPDATE","BEFORE","5000",$s1,$column_chd
+                );
+                
+                # Build a slightly modified version and save
+                # for use in the _agg='C' clause
+                $s1 = "
+        -- 6000 SUM Pull when sqloffset or sqllimit changes
+        AnyInt = new.$sqloffset;
+        AnyInt2= new.$sqllimit;
+        SELECT INTO new.$column_par SUM(x1.$column_chd) FROM ( 
+                SELECT $column_chd
+                  FROM $table_chd
+                 WHERE $mx_new_chd
+                 ORDER BY $column_chd
+                OFFSET AnyInt
+                 LIMIT AnyInt2
+        ) x1\n;";
+                $sql_aggs[$table_par][] = $s1;
+                
+             }  # Limited SUM child pushes (END) 
+             else {
+                # Child SUM pushes (BEGIN)
+                $s1 = "\n".
+                   "    -- 6000 SUM Push\n".
+                   "    IF COALESCE(new.$column_chd,0) <> COALESCE(old.$column_chd,0) THEN\n".
+                   "        UPDATE $table_par SET $column_par \n".
+                   "               = COALESCE($column_par,0) \n".
+                   "               + COALESCE(new.$column_chd,0) \n".
+                   "               - COALESCE(old.$column_chd,0) \n".
+                   "         WHERE $mx_new_par;\n".
+                   "    END IF;\n";
+                $this->SpecDDL_TriggerFragment($table_chd,"UPDATE","AFTER","6000",$s1);
+                $s1 = "\n".
+                   "    -- 6000 SUM Push\n".
+                   "    IF COALESCE(new.$column_chd,0) <> 0 THEN\n".
+                   "        UPDATE $table_par SET $column_par \n".
+                   "               = COALESCE($column_par,0) \n".
+                   "               + COALESCE(new.$column_chd,0) \n".
+                   "         WHERE $mx_new_par;\n".
+                   "    END IF;\n";
+                $this->SpecDDL_TriggerFragment($table_chd,"INSERT","AFTER","6000",$s1);
+                $s1 = "\n".
+                   "    -- 6000 SUM Push\n".
+                   "    IF COALESCE(old.$column_chd,0) <> 0 THEN\n".
+                   "        UPDATE $table_par SET $column_par \n".
+                   "               = COALESCE($column_par,0) \n".
+                   "               - COALESCE(old.$column_chd,0) \n".
+                   "         WHERE $mx_old_par;\n".
+                   "    END IF;\n";
+                $this->SpecDDL_TriggerFragment($table_chd,"DELETE","AFTER","6000",$s1);
+             }  # Child SUM pushes (END)
          }
          if($row['automation_id']=='COUNT') {
             $s1 = "\n".
@@ -4624,11 +4783,17 @@ function SpecDDL_Triggers_Automated_Aggregate()  {
             ."          WHERE $swhere ;\n";
       }
       
+      $sql_agg_lo = '';
+      if(isset($sql_aggs[$tab_par])) {
+          $sql_agg_lo = implode("\n",$sql_aggs[$tab_par]);
+      }
+      
       // Now build the final SQL for this table
       $sq="\n"
          ."    --- 4000 Recalculate aggregates \n"
          ."    IF new._agg=##C## THEN "
          .$sq
+         .$sql_agg_lo
          ."        new._agg=####;\n"
          ."    END IF;\n";
       //echo "building for $tab_par";
@@ -5658,6 +5823,7 @@ function SpecDDL_Triggers_Pass2($trgs) {
 			"    ErrorList text = ####;\n".
 			"    ErrorCount int = 0;\n".
 			"    AnyInt int;\n".
+			"    AnyInt2 int;\n".
 			"    AnyRow RECORD;\n".
 			"    AnyChar varchar;\n".
          "    AnyChar2 varchar;\n".
