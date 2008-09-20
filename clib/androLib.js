@@ -1612,6 +1612,41 @@ var u = {
             }
         },
         /******/
+
+        /****m* events/getSubscribers
+        *
+        * NAME
+        *   u.events.getSubscribers
+        *
+        * FUNCTION
+        *   The Javascript method u.events.getSubscribes returns
+        *   an array of subscribers to a particular event.
+        *
+        * NOTES
+        *   Use this method to register "owners" or objects that
+        *   have particular responsibility for a task.  For instance
+        *   a grid that displays "patients" might register itself
+        *   as a subscriber to "grid_patients".  Then another object
+        *   that needs to know the owner can call
+        *   u.events.getSubscribers('grid_patients') and find the
+        *   object.
+        *
+        * RETURNS
+        *   An array of zero or more object id's. 
+        *
+        * SOURCE
+        */
+        getSubscribers: function(eventName) {
+            // This code works even if there are no subscribers
+            var retval = [ ];
+            var subscribers = u.p(this.subscribers,eventName,{ });
+            for(var id in subscribers) {
+                retval.push(id);
+            }
+            return retval;
+        },
+        /******/
+
         
         /****m* events/suppressByPrefix
         *
