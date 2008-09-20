@@ -140,6 +140,15 @@ class androX4 {
         $x4Top->hp['id']='x4Top';
         $this->mainLayout($x4Top);
         x4Html('*MAIN*',$x4Top->bufferedRender());
+        
+        # KFD 9/20/08, added a flag to go "please wait" while
+        #              saving, in case there are distribute's
+        if(isset($this->waitOnSave)) {
+            $this->dd['wait_on_save'] = $this->waitOnSave;
+        }
+        else {
+            $this->dd['wait_on_save'] = false;
+        }
         x4Data('dd.'.$this->table_id,$this->dd);
         x4Data('returnto',gp('x4Return'));
         
@@ -529,9 +538,12 @@ underlined letters that show this, so:
         $colPar = $dd['fk_parents'][$parentTable]['cols_par'];
         $div->ap['xRetCol'] = $colPar;
         $vpar   = ddView($parentTable);
-        $sq     = "SELECT $colPar,description
+        # KFD 9/19/08 Hardoded hack for users table, pick user_name
+        #             instead of description.
+        $descol = $parentTable=='users' ? 'user_name' : 'description';
+        $sq     = "SELECT $colPar,$descol as description
                    FROM $vpar par
-                  ORDER BY par.description";
+                  ORDER BY par.$descol";
         $rows   = SQL_AllRows($sq);
             
         # Build an HTML table that displays the security settings

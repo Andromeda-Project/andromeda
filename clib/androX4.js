@@ -2294,6 +2294,12 @@ function x4Detail(self) {
             }
         }
         
+        // KFD 9/20/08, respect "wait_on_save" to put up a please
+        //              wait message
+        if(x4dd.dd[this.zTableId].wait_on_save) {
+            u.dialogs.pleaseWait();
+        }
+        
         $a.json.addParm('x4v_skey',this.skey);
         $a.json.addParm('x4Page'  ,this.zTableId);
         $a.json.addParm('x4Action','update');
