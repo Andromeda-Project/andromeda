@@ -263,6 +263,7 @@ class x_login extends x_table2 {
          else {
             $userinfo=SQL_Fetch_Array($results);
             $group_id_eff=$userinfo['group_id_eff'];
+            SessionSet('user_name',$userinfo['user_name']);
          }
       }
 
