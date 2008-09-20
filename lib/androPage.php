@@ -251,7 +251,7 @@ class androPage {
         # List of ids for buttons below
         if ( $yamlP2['template'] == '' ) {
             $ids=array('pdf'=>'printNow','onscreen'=>'showOnScreen'
-                ,'showSql'=>'showSql'
+                ,'showSql'=>'showSql','csv'=>'csvExport'
             );
         } else {
             $ids = array( 'smarty'=>'RunReport' );
@@ -353,6 +353,20 @@ class androPage {
             else {
                 $inp->hp['onclick'] = "SetAndPost('gp_post','onscreen')";
             }
+
+            # KFD 9/20/08, new option: export to csv
+            $td1->br(2);
+            $inp = html('a-void',$td1,'Export as CSV');
+            $inp->hp['id'] = $ids['csv'];
+            $inp->ap['xLabel'] = 'CtrlO';
+            $inp->addClass('button');
+            if(gpExists('x4Page')) {
+                $inp->hp['onclick'] = "\$a.byId('x4AndroPage').csvExport()";
+            }
+            else {
+                $inp->hp['onclick'] = "SetAndPost('gp_post','csvexport')";
+            }
+
         } else {
              # First button: Run Report
             $inp = html('a-void',$td1,'<u>R</u>un Report');

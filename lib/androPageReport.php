@@ -107,6 +107,7 @@ class androPageReport extends fpdf {
      */
     function main($dbres,$yamlP2,$secinfo) {
         // Set most important flag first!
+        # KFD 9/20/08, this can now be 'csvexport' also!
         $this->format = gp('gp_post');  // pdf or onscreen
         
         // Branch out to do setup...
@@ -123,6 +124,10 @@ class androPageReport extends fpdf {
         // Begin by adding the first page
         if($this->format=='onscreen') {
             $this->headerOnScreen();
+        }
+        elseif($this->format=='csvexport') {
+            $this->csvline = array();
+            $this->csvexport = '';
         }
         else {
             $this->addPage($this->orientation);
@@ -569,6 +574,11 @@ class androPageReport extends fpdf {
                 echo "\n<tr id='row_$this->rowNumber'>";
             }
         }
+        # KFD 9/20/08, put out a newline
+        if($this->format=='csvexport') {
+            $this->csvexport.=implode(',',$this->csvline)."\n";
+            $this->csvline = array();
+        }
     }
        
     /**
@@ -676,7 +686,10 @@ class androPageReport extends fpdf {
        
        # Onscreen version: just output a table cell
        # PDF version: output a cell and advance column counter
-       if($this->format=='onscreen') {
+       if($this->format=='csvexport') {
+           $this->csvline[] = $text;
+       }
+       elseif($this->format=='onscreen') {
            $class='';
            if($last) $text.="&nbsp;&nbsp;&nbsp;";
            if(a($this->md[$col],'linkpage')<>'' && !$titles) {
@@ -814,7 +827,20 @@ class androPageReport extends fpdf {
      *  @since 12/16/07
      */
     function overAndOut($name="report.pdf",$nature='I') {
-        if($this->format=='onscreen') {
+        if($this->format=='csvexport') {
+           header('Cache-Control: maxage=3600'); //Adjust maxage appropriately
+           header('Pragma:',true);  // required to prevent caching
+        
+           // These are the normal ones
+           header(
+             'Content-disposition: attachment; filename="export.csv"'
+           );
+           header('Content-Type: text/plain');
+            echo $this->csvexport;
+            exit;
+            return;
+        }
+        elseif($this->format=='onscreen') {
             echo "\n</table> <!-- androPageReport end -->";
             return;
         }

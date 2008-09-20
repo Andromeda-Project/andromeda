@@ -2654,6 +2654,14 @@ function x4AndroPage(self) {
         return false;
     }
     self.keyPress_CtrlQ = self.showSql;
+
+    self.csvExport = function() {
+        $a.byId('gp_post').value='csvexport';
+        x4.initPost(this);
+        $a.json.newWindow();
+        return false;
+    }
+
     
     self.showOnScreen = function() {
         this.tBody = null;
