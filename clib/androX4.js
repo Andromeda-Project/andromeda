@@ -2169,14 +2169,18 @@ function x4Detail(self) {
         });
     },
     
-    self.setMode= function(mode) {
+    self.setMode = function(mode) {
         this.zMode = mode;
         // Send up a request to enable/disable tabs
         if(mode=='new') {
             this.zParent.sendUp('tabBarOnlyMe',this);
+            // KFD 9/20/08, make Info links disappear
+            $(this).find('a[innerHTML=Info]').hide();
         }
         else {
             this.zParent.sendUp('tabBarEverybody',this);
+            // KFD 9/20/08, make Info links re-appear
+            $(this).find('a[innerHTML=Info]').show();
         }
         
         if(mode=='new') {
