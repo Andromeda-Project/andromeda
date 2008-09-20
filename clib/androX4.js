@@ -1504,6 +1504,9 @@ function x4GridSearch(self) {
     u.events.subscribe('changeRow_'+self.zTableId,self);
     u.events.subscribe('deleteRow_'+self.zTableId,self);
     
+    // Register as grid owner of this table
+    u.events.subscribe('grid_'+self.zTableId,self);
+    
     /* 
      * keyUp handler for inputs is for fetching only:
      * detects changed values and changed sort orders.
@@ -2353,8 +2356,17 @@ function x4Detail(self) {
      */
      self.move = function(keyLabel) {
         if(this.tryToSave()) {
-            this.zGridPane['keyPress_'+keyLabel]();
-            var skey = this.zGridPane.zSkey;
+            var gridId = u.events.getSubscribers('grid_'+this.zTableId);
+            var grid = u.byId(gridId);
+            var conversions = {
+                PageDown:     'DownArrow',
+                PageUp:       'UpArrow',
+                CtrlPageDown: 'CtrlDownArrow',
+                CtrlPageUp:   'CtrlUpArrow'
+            }
+            var funcName = 'keyPress_'+conversions[keyLabel];
+            grid[funcName]();
+            var skey = grid.zSkey;
             if(skey!=this.skey) {
                 this.fetchRow(skey);
             }
