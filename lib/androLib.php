@@ -13702,7 +13702,7 @@ function jsOutput() {
     //
     # KFD 8/20/08, Now minifying files during the build, so we
     #              grab that file if we can find it.  See below
-    /*
+    
     if(count($aj)==0) return;
     $list = implode('|',$aj);
     $md5  = substr(md5($list),0,15);
@@ -13717,7 +13717,7 @@ function jsOutput() {
         }
         file_put_contents($file,$string);
     }
-    */
+    
     if(count($aj)==0) return;
     $list = implode('|',$aj);
     $md5  = substr(md5($list),0,15);
