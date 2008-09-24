@@ -1,0 +1,86 @@
+/* -------------------------------------------------------------- *\
+   -------------------------------------------------------------- 
+   COLORS
+   
+   Go by the menu to get colors.  
+   Menu border is     DARK  PRIMARY
+   Menu background is LIGHT PRIMARY
+   
+   COLOR:  Text color
+   text-decoration: underline
+   
+   
+   -------------------------------------------------------------- 
+\* -------------------------------------------------------------- */
+
+/* Things in the main area are light */
+body, html, td {
+    color: yellow;
+    font-weight: bolder;
+}
+
+.templatemain,.style1  {
+    border-color: #E0E0E0;
+    background-color: #5555FF;
+    color: yellow;
+}
+
+
+/* menus */ 
+div.templatemenu,div.templatemenu  ul {
+    background-color: #5555FF;
+    border-color: #3333FF;
+    font-weight: bold; 
+    color: yellow;
+}
+div.templatemenu ul li span.selected {
+    background-color: #333333;
+}
+div.templatemenu ul li {
+    /* DARK PRIMARY */
+    border-bottom:1px solid #3F7CB9;
+}
+
+/* These are the menu 'pads' */
+.templatemenu span, .templatemenu a {
+    border-right:1px solid #3F7CB9;
+    font-weight: bolder;
+    color: yellow;
+}
+
+/* these are the drop downs */
+.templatemenu ul.right li a {
+    border-left:1px solid #3F7CB9;
+    border-right-width: 0px;
+    color: yellow;
+    font-weight: bolder;
+}
+
+/* Dialog boxes */
+.dialog {
+    border-color: #3F7CB9; 
+}
+
+
+/* Default links everywhere */
+a { color: yellow; text-decoration: underline; }
+a.x4MenuOn { background-color: #3F7CB9; color: white; }
+
+div.templatemenu ul li a {
+    color: yellow;
+    font-weight: bold;
+}
+
+table.thdark thead th {
+    background-color: #505050;
+    color: white;
+    font-weight: bolder;
+}
+
+.dark {
+    background-color: #333333;
+}
+.light {
+    background-color: #666666;
+}
+
