@@ -288,7 +288,7 @@ $$
   $smtp->mail(\'\');
   $smtp->recipient($sendTo);
   $smtp->data();
-  $smtp->datasend("To: $sendTo\n");
+  $smtp->datasend("To: $sendTo\n");z
   $smtp->datasend("Subject: $Subject\n");
   $smtp->datasend("From: ".$from."\n");
   $smtp->datasend("Content-Type: text/plain;\n\n");
@@ -3121,7 +3121,7 @@ function SpecDDL_Triggers_Security() {
           WHERE variable = ##SMTP_SERVER##;
          SELECT INTO AnyChar4 variable_value
            FROM variables
-          WHERE variable ='EMAIL_FROM';
+          WHERE variable =##EMAIL_FROM##;
 
 	      AnyChar
             =##Database Server Time is ## || cast(now() as varchar) || ##\n##
