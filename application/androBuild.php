@@ -3122,7 +3122,6 @@ function SpecDDL_Triggers_Security() {
          SELECT INTO AnyChar4 variable_value
            FROM variables
           WHERE variable = ##EMAIL_FROM##;
-          WHERE variable = ##EMAIL_FROM##;
 
 	      AnyChar
             =##Database Server Time is ## || cast(now() as varchar) || ##\n##
