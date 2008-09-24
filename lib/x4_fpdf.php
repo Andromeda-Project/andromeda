@@ -148,15 +148,26 @@ class x4_fpdf extends fpdf {
             $colstuff = explode(':',$onestop);
             $width = array_shift($colstuff);
             $align='L';
+            $money = false;
+            $multi = false;
             if(count($colstuff)>0) {
                 $align = array_shift($colstuff);
             }
-            $money = count($colstuff)>0 ? true : false;
+            # KFD 9/24/08, look for second to be money and third
+            #              to be "notes", or multi-line
+            if(count($colstuff)>0) {
+                $x = array_shift($colstuff);
+                if($x<>'') $money = true;
+            }
+            $multi = count($colstuff)>0;
+            #$money = count($colstuff)>0 ? true : false;
+            # KFD 9/24/08, END
             $this->cols[] = array(
                 'xpos'=>$posx
                 ,'width'=>$onestop * 72
                 ,'align'=>$align
                 ,'money'=>$money
+                ,'multi'=>$multi
             );
             $posx += ($gutter+$onestop) * 72;
         }
@@ -181,6 +192,14 @@ class x4_fpdf extends fpdf {
         $this->setFont($this->fontname,'',$this->fontsize);
     }
 
+    function OutputLine($text,$style='',$size=null) {
+        if(is_null($size)) $size=$this->fontsize;
+        $this->setFont($this->fontname,$style,$size);
+        $this->Cell(0,0,$text,0,0,'L'); // DOC: 0 width=all
+        $this->Ln($size * $this->linespacing);      
+        $this->setFont($this->fontname,'',$this->fontsize);
+    }
+    
     /**
      * Outputs A line containing the date on left and the
      * page number on the right.  No options or parameters.
@@ -198,7 +217,14 @@ class x4_fpdf extends fpdf {
      * so that "AtNextCol" will begin at the let.
      */
     function nextLine($color=false) {
-        $this->Ln($this->lineheight);
+        #$this->Ln($this->lineheight);
+        if(isset($this->realHeight)) {
+            $this->Ln($this->realHeight + $this->lineheight);
+            unset($this->realHeight);
+        }
+        else {
+            $this->Ln($this->lineheight);
+        }
         $this->lastCol=-1;
     }
        
@@ -279,7 +305,22 @@ class x4_fpdf extends fpdf {
        $width     = $this->cols[$col]['width'];
        $align     = $this->cols[$col]['align'];
        $this->Setx($xposition);
-       $this->Cell($width,0,$text,0,0,$align);
+       # KFD 9/24/08. Capture Y, figure how many lines
+       if($this->cols[$col]['multi']) {
+           $ybeg = $this->getY();
+           $xbeg = $this->getX();
+           $this->setY($ybeg-5);
+           $this->setx($xbeg);
+           $this->MultiCell($width,$this->lineheight,$text,0,$align);
+           $yend = $this->getY();
+           if(!isset($this->realHeight)) $this->realHeight = $this->lineheight;
+           $this->realHeight = max($yend-$ybeg,$this->realHeight);
+           $this->setY($ybeg);
+       }
+       else {
+           $this->Cell($width,0,$text,0,0,$align);
+       }
+       # KFD 9/24/08. (END)
        $this->lastCol = $col;
    }
 
