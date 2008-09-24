@@ -290,9 +290,7 @@ $$
   $smtp->data();
   $smtp->datasend("To: $sendTo\n");
   $smtp->datasend("Subject: $Subject\n");
-  if($from ne \'\') {
-      $smtp->datasend("From: ".$from."\n");
-  }
+  $smtp->datasend("From: ".$from."\n");
   $smtp->datasend("Content-Type: text/plain;\n\n");
   $smtp->datasend($Message);
   $smtp->dataend();
@@ -3055,12 +3053,12 @@ function SpecDDL_Triggers_Security() {
    $sq='
     -- 8000 Send out email with link in it
     SELECT INTO AnyInt Count(*)
-           FROM users WHERE user_id = new.user_id;
+           FROM users WHERE LOWER(user_id) = LOWER(new.user_id);
     IF AnyInt > 0 THEN 
        SELECT INTO AnyChar email
-              FROM users WHERE user_id = new.user_id;
+              FROM users WHERE LOWER(user_id) = LOWER(new.user_id);
        SELECT INTO AnyChar4 member_password
-              FROM users WHERE user_id = new.user_id;
+              FROM users WHERE LOWER(user_id) = LOWER(new.user_id);
        SELECT INTO AnyChar2 variable_value
               FROM variables
              WHERE variable = ##PW_EMAILCONTENT##;
@@ -3097,7 +3095,7 @@ function SpecDDL_Triggers_Security() {
     -- 8000 If link is ok, set the password
     SELECT INTO AnyInt Count(*)
            FROM users_pwrequests
-          WHERE user_id = new.user_id
+          WHERE LOWER(user_id) = LOWER(new.user_id)
             AND md5     = new.md5
             AND age(now(),ts_ins) < ##20  min##;         
     IF AnyInt = 0 THEN                                
@@ -3121,6 +3119,9 @@ function SpecDDL_Triggers_Security() {
          SELECT INTO AnyChar2 variable_value
            FROM variables
           WHERE variable = ##SMTP_SERVER##;
+         SELECT INTO AnyChar4 variable_value
+           FROM variables
+          WHERE variable ='EMAIL_FROM';
 
 	      AnyChar
             =##Database Server Time is ## || cast(now() as varchar) || ##\n##
@@ -3136,6 +3137,7 @@ function SpecDDL_Triggers_Security() {
 		         ,##Log Event: ## || new.elogcode || ## ## || new.elogdesc
 		         ,AnyChar
 		         ,AnyChar2
+                 ,AnyChar4
             );
          END LOOP; 
       END IF;
