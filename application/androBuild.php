@@ -288,7 +288,7 @@ $$
   $smtp->mail(\'\');
   $smtp->recipient($sendTo);
   $smtp->data();
-  $smtp->datasend("To: $sendTo\n");z
+  $smtp->datasend("To: $sendTo\n");
   $smtp->datasend("Subject: $Subject\n");
   $smtp->datasend("From: ".$from."\n");
   $smtp->datasend("Content-Type: text/plain;\n\n");
