@@ -27,7 +27,14 @@ class x_paypalipn extends x_table2 {
       // turn this on here. THen turn on the "file_put_contents" at
       // the bottom of the method.
       $log = SysLogOpen('IPN'); 
-      sysLogEntry($log,'Began work in x_paypalipn');
+      sysLogEntry($log,'Began work in x_paypalipn, next entry is $_POST');
+      
+      # KFD 10/1/08, add more logging.  Project CME occassionally
+      # misses the trx, we want more logging.
+      ob_start();
+      hprint_r($_POST);
+      sysLogEntry($log,ob_get_clean());
+      sysLogEntry($log,'Invoice '.a($_POST,'invoice',''));
       
       global $paypal;
       include_once('paypal_global_config.inc.php'); 
