@@ -2015,6 +2015,8 @@ var u = {
         ******
         */
         alert: function(msg) {
+            alert(msg);
+            return;
             this.prepare('alert');
 
             // Create the content for the dialog itself
@@ -2093,6 +2095,8 @@ var u = {
         ******
         */
         confirm: function(msg,options) {
+            return confirm(msg);
+            
             this.prepare('confirm');
             u.events.subscribe('keyPress_Y'  ,u.byId('dialogbox'));
             u.events.subscribe('keyPress_N'  ,u.byId('dialogbox'));
