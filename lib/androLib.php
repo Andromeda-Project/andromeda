@@ -788,7 +788,7 @@ function html($tag,&$parent=null,$innerHTML='') {
     }
     else {
         $retval->htype='a';
-        $retval->hp['href']='#';
+        $retval->hp['href']='javascript:void(0)';
     }
 
     if($parent != null) {
@@ -819,262 +819,257 @@ function html($tag,&$parent=null,$innerHTML='') {
 
 class androHtml {
 
-/****v* androHtml/children
-*
-* NAME
-*    children
-*
-* FUNCTION
-*	The variable children is an array that holds all of the androHtml elements held within this current
-*	androHtml element.
-*
-******
-*/
+    /****v* androHtml/children
+    *
+    * NAME
+    *    children
+    *
+    * FUNCTION
+    *	The variable children is an array that holds all of the androHtml elements held within this current
+    *	androHtml element.
+    *
+    ******
+    */
     var $children = array();
 
-/****v* androHtml/hp
-*
-* NAME
-*    hp
-*
-* FUNCTION
-*	The variable hp is an array that holds all of this androHtml element's html properties.  These are
-*	properties that would show up in the html code on the page.  For instace, the property "href" is an
-*	html property for the "a" element.
-*
-******
-*/
+    /****v* androHtml/hp
+    *
+    * NAME
+    *    hp
+    *
+    * FUNCTION
+    *	The variable hp is an array that holds all of this androHtml element's html properties.  These are
+    *	properties that would show up in the html code on the page.  For instace, the property "href" is an
+    *	html property for the "a" element.
+    *
+    ******
+    */
     var $hp   = array();
 
-/****v* androHtml/code
-*
-* NAME
-*    code
-*
-* FUNCTION
-*	The variable code is an array that holds all of this androHtml element's javascript code references.
-*
-******
-*/
+    /****v* androHtml/code
+    *
+    * NAME
+    *    code
+    *
+    * FUNCTION
+    *	The variable code is an array that holds all of this androHtml element's javascript code references.
+    *
+    ******
+    */
     var $code = array();
 
-/****v* androHtml/ap
-*
-* NAME
-*    ap
-*
-* FUNCTION
-*	The variable ap is an array that holds all of this androHtml element's additional properties.  These
-*	are self created properties for the object that do not show up in the html source code.
-*
-******
-*/
+    /****v* androHtml/ap
+    *
+    * NAME
+    *    ap
+    *
+    * FUNCTION
+    *	The variable ap is an array that holds all of this androHtml element's additional properties.  These
+    *	are self created properties for the object that do not show up in the html source code.
+    *
+    ******
+    */
     var $ap   = array();
 
-/****v* androHtml/styles
-*
-* NAME
-*    styles
-*
-* FUNCTION
-*	The variable styles is an associative array that holds all of this androHtml element's css style
-*	properties.  If you want to set a style property, you name the property as a key in the array, and
-*	you set the value for the css property as the value for the key.
-*
-* EXAMPLE
-*	$htmlObject->style['float'] = 'right';
-*
-******
-*/
+    /****v* androHtml/styles
+    *
+    * NAME
+    *    styles
+    *
+    * FUNCTION
+    *	The variable styles is an associative array that holds all of this androHtml element's css style
+    *	properties.  If you want to set a style property, you name the property as a key in the array, and
+    *	you set the value for the css property as the value for the key.
+    *
+    * EXAMPLE
+    *	$htmlObject->style = 'float: right';
+    *
+    ******
+    */
     var $style= array();
 
-/****v* androHtml/innerHtml
-*
-* NAME
-*    innerHtml
-*
-* FUNCTION
-*	The variable innerHtml is a string that contains all of the code and text held within this androHtml
-*	element.
-*
-******
-*/
+    /****v* androHtml/innerHtml
+    *
+    * NAME
+    *    innerHtml
+    *
+    * FUNCTION
+    *	The variable innerHtml is a string that contains all of the code and text held within this androHtml
+    *	element.
+    *
+    ******
+    */
     var $innerHtml  = '';
 
-/****v* androHtml/htype
-*
-* NAME
-*    htype
-*
-* FUNCTION
-*	The variable htype is a string that contains the name of the type of html tag that this androHtml
-*	object is representing.  For example, if this androHtml element is representing a div element, htype
-*	would be equal to 'div';
-*
-******
-*/
+    /****v* androHtml/htype
+    *
+    * NAME
+    *    htype
+    *
+    * FUNCTION
+    *	The variable htype is a string that contains the name of the type of html tag that this androHtml
+    *	object is representing.  For example, if this androHtml element is representing a div element, htype
+    *	would be equal to 'div';
+    *
+    ******
+    */
     var $htype      = '';
 
-/****v* androHtml/classes
-*
-* NAME
-*    classes
-*
-* FUNCTION
-*	The variable classes is an array that holds all of this androHtml element's css classes.
-*
-******
-*/
+    /****v* androHtml/classes
+    *
+    * NAME
+    *    classes
+    *
+    * FUNCTION
+    *	The variable classes is an array that holds all of this androHtml element's css classes.
+    *
+    ******
+    */
     var $classes    = array();
 
-/****v* androHtml/autoFormat
-*
-* NAME
-*    autoFormat
-*
-* FUNCTION
-*	The variable autoFormat is a boolean value which states whether this androHtml element is
-*	autoformatted or not.
-*
-******
-*/
+    /****v* androHtml/autoFormat
+    *
+    * NAME
+    *    autoFormat
+    *
+    * FUNCTION
+    *	The variable autoFormat is a boolean value which states whether this androHtml element is
+    *	autoformatted or not.
+    *
+    ******
+    */
     var $autoFormat = false;
 
-/****v* androHtml/isParent
-*
-* NAME
-*    isParent
-*
-* FUNCTION
-*	The variable isParent is a boolean value which states whether this androHtml element is a parent
-*	element or not.
-*
-******
-*/
+    /****v* androHtml/isParent
+    *
+    * NAME
+    *    isParent
+    *
+    * FUNCTION
+    *	The variable isParent is a boolean value which states whether this androHtml element is a parent
+    *	element or not.
+    *
+    ******
+    */
     var $isParent   = false;
 
-/****m* androHtml/setHtml
-*
-* NAME
-*    setHtml
-*
-* FUNCTION
-*	The method setHtml sets this androHtml element's innerHtml to the provided string.
-*
-* INPUTS
-*	string $value - New innerHtml
-*
-******
-*/
+    /****m* androHtml/setHtml
+    *
+    * NAME
+    *    setHtml
+    *
+    * FUNCTION
+    *	The method setHtml sets this androHtml element's innerHtml to the provided string.
+    *
+    * INPUTS
+    *	string $value - New innerHtml
+    *
+    ******
+    */
     function setHtml($value) {
         $this->innerHtml = $value;
     }
 
-    /**
-    * Clear any HTML and erase all children.  Does not affect
-    * property assignments.
+    /****m* androHtml/clear
     *
+    * NAME
+    *    clear
+    *
+    * FUNCTION
+    *	The method clear removes all child elements and innerHtml from this androHtml element.
+    *
+    * SOURCE
     */
-/****m* androHtml/clear
-*
-* NAME
-*    clear
-*
-* FUNCTION
-*	The method clear removes all child elements and innerHtml from this androHtml element.
-*
-* SOURCE
-*/
     function clear() {
         $this->innerHtml = '';
         $this->children = array();
     }
-/******/
+    /******/
 
-/****m* androHtml/clearHP
-*
-* NAME
-*    clearHP
-*
-* FUNCTION
-*	The method clearHP removes all Html properties from this androHtml element.
-*
-* SOURCE
-*/
+    /****m* androHtml/clearHP
+    *
+    * NAME
+    *    clearHP
+    *
+    * FUNCTION
+    *	The method clearHP removes all Html properties from this androHtml element.
+    *
+    * SOURCE
+    */
     function clearHP() {
         $this->hp = array();
     }
-/******/
+    /******/
 
-/****m* androHtml/clearAP
-*
-* NAME
-*    clearAP
-*
-* FUNCTION
-*	The method clearAP removes all additional properties from this androHtml element.
-*
-* SOURCE
-*/
+    /****m* androHtml/clearAP
+    *
+    * NAME
+    *    clearAP
+    *
+    * FUNCTION
+    *	The method clearAP removes all additional properties from this androHtml element.
+    *
+    * SOURCE
+    */
     function clearAP() {
         $this->ap = array();
     }
-/******/
+    /******/
 
-/****m* androHtml/addClass
-*
-* NAME
-*    addClass
-*
-* FUNCTION
-*	The method addClass adds the provided css class to this androHtml object.
-*
-* INPUTS
-*	string $value - Css class to add
-*
-* SOURCE
-*/
+    /****m* androHtml/addClass
+    *
+    * NAME
+    *    addClass
+    *
+    * FUNCTION
+    *	The method addClass adds the provided css class to this androHtml object.
+    *
+    * INPUTS
+    *	string $value - Css class to add
+    *
+    * SOURCE
+    */
     function addClass($value) {
         $this->classes[] = $value;
     }
-/******/
+    /******/
 
-/****m* androHtml/removeClass
-*
-* NAME
-*    removeClass
-*
-* FUNCTION
-*	The method removeClass removes the provided css class from this androHtml object.
-*
-* INPUTS
-*	string $value - Css class to remove from this object
-*
-* SOURCE
-*/
+    /****m* androHtml/removeClass
+    *
+    * NAME
+    *    removeClass
+    *
+    * FUNCTION
+    *	The method removeClass removes the provided css class from this androHtml object.
+    *
+    * INPUTS
+    *	string $value - Css class to remove from this object
+    *
+    * SOURCE
+    */
     function removeClass($value) {
         $index = array_search($value,$this->classes);
         if($index) unset($this->classes[$index]);
     }
-/******/
+    /******/
 
-/****m* androHtml/addChild
-*
-* NAME
-*    addChild
-*
-* FUNCTION
-*	The method addChild adds a child html element to this androHtml object.
-*
-* INPUTS
-*	object $object - androHtml element to add to this object as a child element
-*
-* SOURCE
-*/
+    /****m* androHtml/addChild
+    *
+    * NAME
+    *    addChild
+    *
+    * FUNCTION
+    *	The method addChild adds a child html element to this androHtml object.
+    *
+    * INPUTS
+    *	object $object - androHtml element to add to this object as a child element
+    *
+    * SOURCE
+    */
     function addChild($object) {
         $this->children[] = $object;
     }
-/******/
+    /******/
 
     /****m* androHtml/html
     *
@@ -1098,40 +1093,40 @@ class androHtml {
     }
     /******/
 
-/****m* androHtml/h
-*
-* NAME
-*    h
-*
-* FUNCTION
-*	The method h is a shortcut for the method html.
-*
-* SEE ALSO
-*	html
-*
-* SOURCE
-*/
+    /****m* androHtml/h
+    *
+    * NAME
+    *    h
+    *
+    * FUNCTION
+    *	The method h is a shortcut for the method html.
+    *
+    * SEE ALSO
+    *	html
+    *
+    * SOURCE
+    */
     function h($tag,$innerHTML='',$class='') {
         return $this->html($tag,$innerHTML,$class);
     }
-/******/
+    /******/
 
-/****m* androHtml/hidden
-*
-* NAME
-*    hidden
-*
-* FUNCTION
-*	The method hidden adds a hidden value to this androHtml object.  A hidden variable is stored in
-*	an input html element that has the html property 'type' set to 'hidden'.  This enables the passing
-*	of variables back and forth from the server to the client browser after refreshes.
-*
-* INPUTS
-*	string $name - Name of the hidden variable
-*	string $value - Value for the hidden variable
-*
-* SOURCE
-*/
+    /****m* androHtml/hidden
+    *
+    * NAME
+    *    hidden
+    *
+    * FUNCTION
+    *	The method hidden adds a hidden value to this androHtml object.  A hidden variable is stored in
+    *	an input html element that has the html property 'type' set to 'hidden'.  This enables the passing
+    *	of variables back and forth from the server to the client browser after refreshes.
+    *
+    * INPUTS
+    *	string $name - Name of the hidden variable
+    *	string $value - Value for the hidden variable
+    *
+    * SOURCE
+    */
     function hidden($name,$value = '') {
         $h = $this->h('input');
         $h->hp['type'] = 'hidden';
@@ -1140,131 +1135,131 @@ class androHtml {
         $h->hp['value']= $value;
         return $h;
     }
-/******/
+    /******/
 
-/****m* androHtml/tr
-*
-* NAME
-*    tr
-*
-* FUNCTION
-*	The method tr adds a table row html element to this androHtml element.  Slightly shorter than
-*	using the html method.
-*
-* INPUTS
-*		mixed $innerHTML - inner html
-*		string $class - Css class
-*
-* SOURCE
-*/
+    /****m* androHtml/tr
+    *
+    * NAME
+    *    tr
+    *
+    * FUNCTION
+    *	The method tr adds a table row html element to this androHtml element.  Slightly shorter than
+    *	using the html method.
+    *
+    * INPUTS
+    *		mixed $innerHTML - inner html
+    *		string $class - Css class
+    *
+    * SOURCE
+    */
     function tr($innerHTML='',$class='') {
         return $this->html('tr',$innerHTML,$class);
     }
-/******/
+    /******/
 
-/****m* androHtml/td
-*
-* NAME
-*    td
-*
-* FUNCTION
-*	The method td adds a table colunn element to this androHtml object.
-*
-* INPUTS
-*	mixed $innerHTML - inner html for the td element
-*	string $class - Css class for this td element
-*
-* SOURCE
-*/
+    /****m* androHtml/td
+    *
+    * NAME
+    *    td
+    *
+    * FUNCTION
+    *	The method td adds a table colunn element to this androHtml object.
+    *
+    * INPUTS
+    *	mixed $innerHTML - inner html for the td element
+    *	string $class - Css class for this td element
+    *
+    * SOURCE
+    */
     function td($innerHTML='',$class='') {
         return $this->html('td',$innerHTML,$class);
     }
-/******/
+    /******/
 
-/****m* androHtml/a
-*
-* NAME
-*    a
-*
-* FUNCTION
-*	The method a adds a hyperlink to his androHtml object.
-*
-* INPUTS
-*	mixed $innerHTML - inner html for the 'a' tag
-*	string $href - Hypertext reference
-*	string $class - Css class for the element
-*
-* SOURCE
-*/
+    /****m* androHtml/a
+    *
+    * NAME
+    *    a
+    *
+    * FUNCTION
+    *	The method a adds a hyperlink to his androHtml object.
+    *
+    * INPUTS
+    *	mixed $innerHTML - inner html for the 'a' tag
+    *	string $href - Hypertext reference
+    *	string $class - Css class for the element
+    *
+    * SOURCE
+    */
     function a($innerHTML,$href,$class='') {
         $a = $this->h('a',$innerHTML,$class);
         $a->hp['href'] = $href;
         return $a;
     }
-/******/
+    /******/
 
-/****m* androHtml/br
-*
-* NAME
-*    br
-*
-* FUNCTION
-*	The method br adds the provided amount of break elements to this androHtml object as children
-*	elements.
-*
-* INPUTS
-*	number $count - Number of break elements to add
-*
-* SOURCE
-*/
+    /****m* androHtml/br
+    *
+    * NAME
+    *    br
+    *
+    * FUNCTION
+    *	The method br adds the provided amount of break elements to this androHtml object as children
+    *	elements.
+    *
+    * INPUTS
+    *	number $count - Number of break elements to add
+    *
+    * SOURCE
+    */
     function br($count=1) {
         for($x=1;$x<=$count;$x++) {
             $this->children[] = '<br/>';
         }
     }
-/******/
+    /******/
 
-/****m* androHtml/hr
-*
-* NAME
-*    hr
-*
-* FUNCTION
-*	The method hr adds the provided number of horizontal rule elements to this androHtml object
-*	as children elements.
-*
-* INPUTS
-*	number $count - Number of horizontal rule elements to add
-*
-* SOURCE
-*/
+    /****m* androHtml/hr
+    *
+    * NAME
+    *    hr
+    *
+    * FUNCTION
+    *	The method hr adds the provided number of horizontal rule elements to this androHtml object
+    *	as children elements.
+    *
+    * INPUTS
+    *	number $count - Number of horizontal rule elements to add
+    *
+    * SOURCE
+    */
     function hr($count=1) {
         for($x=1;$x<=$count;$x++) {
             $this->children[] = '<hr/>';
         }
     }
-/******/
+    /******/
 
-/****m* androHtml/nbsp
-*
-* NAME
-*    nbsp
-*
-* FUNCTION
-*	The method nbsp adds the provided number of non-breaking spaces to this androHtml object as
-*	children elements.
-*
-* INPUTS
-*	number $count - Number of non-breaking spaces to add.
-*
-* SOURCE
-*/
+    /****m* androHtml/nbsp
+    *
+    * NAME
+    *    nbsp
+    *
+    * FUNCTION
+    *	The method nbsp adds the provided number of non-breaking spaces to this androHtml object as
+    *	children elements.
+    *
+    * INPUTS
+    *	number $count - Number of non-breaking spaces to add.
+    *
+    * SOURCE
+    */
     function nbsp($count=1) {
         for($x=1;$x<=$count;$x++) {
             $this->children[] = '&nbsp;';
         }
     }
-/******/
+    /******/
 
     /****m* androHtml/autoFormatF
     *
@@ -1331,21 +1326,21 @@ class androHtml {
         return $tbody;
     }
 
-/****m* androHtml/makeThead
-*
-* NAME
-*    makeThead
-*
-* FUNCTION
-*	The method makeThead adds a thead and a set of th elements to a table.
-*
-* NOTE
-*	This method does not check to see if "this" is actually an HTML Table element.
-*
-* INPUTS
-*	mixed $thvalues - a list or array of thead values
-*	string $class - Css class for the thead element
-******/
+    /****m* androHtml/makeThead
+    *
+    * NAME
+    *    makeThead
+    *
+    * FUNCTION
+    *	The method makeThead adds a thead and a set of th elements to a table.
+    *
+    * NOTE
+    *	This method does not check to see if "this" is actually an HTML Table element.
+    *
+    * INPUTS
+    *	mixed $thvalues - a list or array of thead values
+    *	string $class - Css class for the thead element
+    ******/
     function makeThead($thvalues,$class='dark') {
         # Make it an array if it is not already
         if(!is_array($thvalues)) {
@@ -1409,34 +1404,34 @@ class androHtml {
     /******/
 
 
-/****m* androHtml/setAsParent
-*
-* NAME
-*    setAsParent
-*
-* FUNCTION
-*	The method setAsParent sets a flag for this androHtml element to work as parent.
-*
-* SOURCE
-*/
+    /****m* androHtml/setAsParent
+    *
+    * NAME
+    *    setAsParent
+    *
+    * FUNCTION
+    *	The method setAsParent sets a flag for this androHtml element to work as parent.
+    *
+    * SOURCE
+    */
     function setAsParent() {
         $this->isParent = true;
     }
-/******/
+    /******/
 
-/****m* androHtml/firstChild
-*
-* NAME
-*    firstChild
-*
-* FUNCTION
-*	The method firstChild returns a reference to the first child html element in this androHtml object.
-*
-* RETURN VALUE
-*	reference - reference to first child element
-*
-* SOURCE
-*/
+    /****m* androHtml/firstChild
+    *
+    * NAME
+    *    firstChild
+    *
+    * FUNCTION
+    *	The method firstChild returns a reference to the first child html element in this androHtml object.
+    *
+    * RETURN VALUE
+    *	reference - reference to first child element
+    *
+    * SOURCE
+    */
     function firstChild() {
         if(count($this->children)==0) {
             return null;
@@ -1446,21 +1441,21 @@ class androHtml {
             return $retval;
         }
     }
-/******/
+    /******/
 
-/****m* androHtml/lastChild
-*
-* NAME
-*    lastChild
-*
-* FUNCTION
-*	The method lastChild returns a reference to the last child element in this androHtml object.
-*
-* RETURN VALUE
-*	reference - reference to last child
-*
-* SOURCE
-*/
+    /****m* androHtml/lastChild
+    *
+    * NAME
+    *    lastChild
+    *
+    * FUNCTION
+    *	The method lastChild returns a reference to the last child element in this androHtml object.
+    *
+    * RETURN VALUE
+    *	reference - reference to last child
+    *
+    * SOURCE
+    */
     function lastChild() {
         if(count($this->children)==0) {
             return null;
@@ -1470,7 +1465,7 @@ class androHtml {
             return $retval;
         }
     }
-/******/
+    /******/
 
     
     /****m* androHtml/print_r
@@ -1514,19 +1509,19 @@ class androHtml {
     
     
 
-/****m* androHtml/render
-*
-* NAME
-*    render
-*
-* FUNCTION
-*	The method render renders this androHtml object.  It builds all of the html code based on the objects
-*	attributes, children elements, parent elements, etc.  Render directly outputs all html out to the
-*	browser.  User bufferedRender to get the html as a string instead of outputting to the browser.
-*
-* INPUTS
-*	string $parentId - parent id for this androHtml object
-******/
+    /****m* androHtml/render
+    *
+    * NAME
+    *    render
+    *
+    * FUNCTION
+    *	The method render renders this androHtml object.  It builds all of the html code based on the objects
+    *	attributes, children elements, parent elements, etc.  Render directly outputs all html out to the
+    *	browser.  User bufferedRender to get the html as a string instead of outputting to the browser.
+    *
+    * INPUTS
+    *	string $parentId - parent id for this androHtml object
+    ******/
     function render($parentId='') {
         # Accept a parentId, maybe assign one to
         if($parentId <> '') {
@@ -3199,6 +3194,11 @@ function hLinkImage($pic,$alt,$var,$val,$enabled) {
    else {
       return "<img src=\"images/$pic-gray.$ext\">";
    }
+}
+
+function loadYaml($filename) {
+    include_once("spyc.php");
+    return Spyc::YAMLLoad($filename);
 }
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -13702,7 +13702,7 @@ function jsOutput() {
     //
     # KFD 8/20/08, Now minifying files during the build, so we
     #              grab that file if we can find it.  See below
-    
+    /*
     if(count($aj)==0) return;
     $list = implode('|',$aj);
     $md5  = substr(md5($list),0,15);
@@ -13717,7 +13717,7 @@ function jsOutput() {
         }
         file_put_contents($file,$string);
     }
-    
+    */
     if(count($aj)==0) return;
     $list = implode('|',$aj);
     $md5  = substr(md5($list),0,15);
