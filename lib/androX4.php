@@ -214,6 +214,12 @@ underlined letters that show this, so:
         # Add the menu bar
         $x4Window->addChild( $this->menuBar($this->dd) );
         
+        # Temp
+        #ob_start();
+        #hprint_r($_SESSION);
+        #$x4Window->h('div',ob_get_clean());
+        
+        
         #  This is the top level display item
         #
         $x4Display = html('div',$x4Window);
@@ -264,6 +270,11 @@ underlined letters that show this, so:
         foreach($this->dd['fk_children'] as $table_id=>$info) {
             #  First break: uidisplay set to none
             if(trim(strtolower(a($info,'uidisplay',''))) == 'none') {
+                continue;
+            }
+            # Second break: user not allowed to see
+            $perms = SessionGet('TABLEPERMSSEL');
+            if(!in_array($table_id,$perms)) {
                 continue;
             }
             
@@ -580,6 +591,7 @@ underlined letters that show this, so:
     # ----------------------------------
     function moverFetch() {
         $table=$this->dd['table_id'];
+        $view =ddview($table);
         $pkcol = gp('pkcol');
         $pkval = gp('pkval');
         # We're doing this here instead of using SQLFC, because
@@ -588,7 +600,7 @@ underlined letters that show this, so:
         # user_id values.
         $pkval = str_replace("'","''",$pkval);
         $retcol= gp('retcol');
-        $sq = "select $retcol as x from $table where $pkcol = '$pkval'";
+        $sq = "select $retcol as x from $view where $pkcol = '$pkval'";
         $rows = sql_allRows($sq);
         $moverFetch = array();
         foreach($rows as $row) {
@@ -637,9 +649,10 @@ underlined letters that show this, so:
         if($tabPar<>'') {
             $ddpar = ddTable(gp('tableIdPar'));
             $pks   = $ddpar['pks'];
-            $stab  = SQLFN(gp('tableIdPar'));
+            $stab  = ddView(gp('tableIdPar'));
             $skey  = SQLFN(gp('skeyPar'));
             $vals2 = SQL_OneRow("SELECT $pks FROM $stab WHERE skey = $skey");
+            if(!$vals2) $vals2=array();
             $vals  = array_merge($vals,$vals2);
         }
         
