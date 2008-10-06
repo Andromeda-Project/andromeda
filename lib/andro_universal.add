@@ -544,6 +544,7 @@ table configfw {
     column { uisearchdash; }
     column { x4menu; x4padmenu; x4menutitle; x4menutext }
     column { js_css_debug; deprecated; sql_limit }
+    column flag { suffix: _syslog; description: Log SQL to syslog }
     column { logout_clear; }
     column { paypal_site_url; paypal_image_url; paypal_payto;
         paypal_noship; paypal_v2;
@@ -595,9 +596,9 @@ menu configconfirm {
 }
 content configfw {
     columns { smtpout; js_css_debug; uisearchdash; 
-        x4menu; x4padmenu; sql_limit; 
+        x4menu; x4padmenu; sql_limit; flag_syslog
     }
-    update { localhost; N; --; N; N; 300; }
+    update { localhost; N; --; N; N; 300; Y }
 }
 
 

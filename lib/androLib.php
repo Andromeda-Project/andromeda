@@ -14919,7 +14919,9 @@ function RowsForSelect($table_id,$firstletters='',$matches=array(),$distinct='',
    $obj = dispatchObject($table_id);
    if(method_exists($obj,'aSelect_where')) {
        $aWhere[] = $obj->aSelect_where();
-       sysLog(LOG_NOTICE,$obj->aSelect_Where());
+       if ( ConfigGet( 'LOG_SQL', 'Y' ) == 'Y' ) {
+           sysLog(LOG_NOTICE,$obj->aSelect_Where());
+       }
    }
 
 
@@ -15007,7 +15009,9 @@ function RowsForSelect($table_id,$firstletters='',$matches=array(),$distinct='',
    (LOG_INFO,$sq);
    closelog();
    */
-   syslog(LOG_INFO,$sq);
+   if ( ConfigGet( 'LOG_SQL', 'Y' ) == 'Y' ) {
+       syslog(LOG_INFO,$sq);
+   }
    $rows=SQL_Allrows($sq);
    return $rows;
 }
