@@ -15004,12 +15004,14 @@ function RowsForSelect($table_id,$firstletters='',$matches=array(),$distinct='',
    }
    /*
    openlog(false,LOG_NDELAY,LOG_USER);
-   syslog(LOG_INFO,$table['projections']['dropdown']);
-   syslogbodyRows
-   (LOG_INFO,$sq);
+   if ( ConfigGet( 'flag_syslog', 'Y' ) == 'Y' ) {
+	   syslog(LOG_INFO,$table['projections']['dropdown']);
+	   syslogbodyRows
+	   (LOG_INFO,$sq);
+   }
    closelog();
    */
-   if ( ConfigGet( 'LOG_SQL', 'Y' ) == 'Y' ) {
+   if ( ConfigGet( 'flag_syslog', 'Y' ) == 'Y' ) {
        syslog(LOG_INFO,$sq);
    }
    $rows=SQL_Allrows($sq);
