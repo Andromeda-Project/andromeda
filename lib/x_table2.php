@@ -1317,7 +1317,21 @@ class x_table2 {
    }
    
    function hBoxesDefault($mode) {
-      ContextSet('OldRow',$this->row);
+       # KFD 10/8/08, correction to setting of context, make dtimes
+       #              use the same format that we display, so they
+       #              don't come back looking changed when they have not
+       $oldRow = array();
+       foreach($this->table['flat'] as $colname=>$colinfo) {
+           if(!isset($this->row[$colname])) continue;
+           if($colinfo['type_id']!='dtime') {
+               $oldRow[$colname] = $this->row[$colname];
+           }
+           else {
+               $oldRow[$colname] 
+                =date('m/d/Y h:i A',dEnsureTs($this->row[$colname]));
+           }
+       }
+      ContextSet('OldRow',$oldRow);
 
       // KFD 5/27/07, This line replaces the commented line 
       //    below that used ahInputsComprehensive().  We now
