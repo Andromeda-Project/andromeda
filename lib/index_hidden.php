@@ -334,12 +334,12 @@ if(Count(SessionGet('clean',array()))>0 && gpExists('ajxBUFFER')) {
     return;
 }
 
-
-// If gp_echo, just echo back.  This is for debugging of course.
-if(gpExists('gp_echo')) {
-    echo "echo|".gp('gp_echo');
-    return;
-}
+# KFD 10/3/08, Rem'd out
+#// If gp_echo, just echo back.  This is for debugging of course.
+#if(gpExists('gp_echo')) {
+#    echo "echo|".gp('gp_echo');
+#    return;
+#}
 
 // Everything after assumes we need a database connection
 // KFD 3/18/08 If a user has passed in an "impersonation" 
@@ -392,6 +392,16 @@ if(gp('x4Page')=='' && gp('gp_page')=='') {
 // now if required.
 if(    gpExists('gp_command')) index_hidden_command();
 
+# KFD 10/3/08.  Assign an x6 page if we can find
+#               one, which will force an override
+#               of x4 or x2.
+$x6File = 'x6'.gp('x4Page',gp('gp_page')).'.php';
+$x6Page = '';
+if(file_exists_incpath($x6File)) {
+    $x6Page =  gp('x4Page',gp('gp_page'));
+}
+
+
 // Only one path can be chosen, and each path is completely
 // responsible for returning all headers, HTML or anything
 // else it wants to send back.
@@ -403,6 +413,7 @@ elseif(gp('gp_dropdown') <>'') index_hidden_dropdown();
 elseif(gp('gp_fetchrow') <>'') index_hidden_fetchrow();
 elseif(gp('gp_sql')      <>'') index_hidden_sql();
 elseif(gp('gp_ajaxsql')  <>'') index_hidden_ajaxsql();
+elseif($x6Page           <>'') index_hidden_x6Dispatch($x6Page,$x6File);
 elseif(gp('x4Page')      <>'') index_hidden_x4Dispatch();
 else                           index_hidden_page();
 
@@ -413,6 +424,129 @@ return;
 // ==================================================================
 // DISPATCH DESTINATIONS
 // ==================================================================
+// ------------------------------------------------------------------
+// >> index_hidden_x6Dispatch
+// ------------------------------------------------------------------
+function index_hidden_x6Dispatch($x6Page,$x6File) {
+    
+    
+    
+    
+    # This is everything that *might* go back, make a place
+    # for all of it
+    $GLOBALS['AG']['x4'] = array(
+        'error'=>array()
+        ,'debug'=>array()
+        ,'notice'=>array()
+        ,'html'=>array()
+        ,'script'=>array()
+    );
+    
+    # If they are not logged in, or have timed out,
+    # send a redirection command to the login page
+    #
+#    if(!LoggedIn()) {
+#        if(gpExists('json')) {
+#            x4Script("window.location='index.php?gp_page=x_login'");
+#            echo json_encode_safe($GLOBALS['AG']['x4']);
+#        }
+#        else {
+#            echo "<script>window.location='index.php?gp_page=x_login'</script>";
+#        }
+#        return;
+#    }
+    
+    // This is very different from x4 for now, we
+    // assume we would not be here unless there were
+    // an x6 page.
+    //
+#    $x4Page = gp('x4Page');
+#    hidden('x4Page',$x4Page);  # makes form submits come back here
+#    if(gpExists('db')) {
+#        index_hidden_x4DB();
+#    }
+#    else if(file_exists("application/$x4Page.page.yaml")) {   
+#       include 'androPage.php';
+#       $obj_page = new androPage();
+#       if ($obj_page->flag_buffer) { ob_start(); }
+#       $obj_page->main($x4Page);
+#       if ($obj_page->flag_buffer) {
+#           x4HTML("*MAIN*",ob_get_clean());
+#       }
+#    }
+#    else {
+#        $object = x4Object($x4Page);
+
+    # Route to whatever methods are there
+    include('androX6.php');
+    include($x6File);
+    $x6Class = 'x6'.$x6Page;
+    $obj = new $x6Class();
+    ob_start();
+    $obj->html();
+    x4HTML('*MAIN*',ob_get_clean());
+    
+    
+        
+        
+        
+        # Determine method and invoke it.  Notice any
+        # direct output is considered an error
+#        $method = gp('x4Action','main');
+#        ob_start();
+#        $object->$method();
+#        $errors = ob_get_clean();
+#        if($errors <> '') {
+#            x4Error($errors);
+#        }
+#    }
+
+    # Put errors in that were reported by database operations
+    if(Errors()) {
+        $errs = errorsGet();
+        foreach($errs as $err) {
+            x4Error($err);
+        }
+    }
+    
+    # if the "json" flag is set, we return all output as JSON,
+    # otherwise we package it up with the normal template and
+    # return it as main content
+    if(gp('json')==1) {
+        echo json_encode_safe($GLOBALS['AG']['x4']);
+    }
+    else {
+        # Tell the client-side library to initialize the
+        # 'inert' HTML that it received from us.
+        #
+#        x4Script("x4.main()");
+        
+        # Don't need a form in x4 mode
+        vgaSet('NOFORM',true);
+
+        #  Put things where the template expects to find them
+        vgfSet('HTML',$GLOBALS['AG']['x4']['html']['*MAIN*']);
+        foreach($GLOBALS['AG']['x4']['script'] as $script) {
+            jqDocReady($script);
+        }
+
+        # DUPLICATE ALERT: This code copied from 
+        #                  index_hidden_page() below
+        index_hidden_template('x4');
+        global $J;
+        $mainframe               = $J['mainframe'];
+        $my                      = $J['my'];
+        $mosConfig_absolute_path = $J['mC_absolute_path'];
+        $mosConfig_live_site     = $J['mC_live_site'];
+        $template_color          = $J['template_color'];
+        $template_color = 'red';
+        $file
+            =$GLOBALS['AG']['dirs']['root'].'/templates/'
+            .$mainframe->GetTemplate()."/index.php";
+        include($file);
+    }
+    return;
+}
 // ------------------------------------------------------------------
 // >> index_hidden_x4Dispatch
 // ------------------------------------------------------------------
