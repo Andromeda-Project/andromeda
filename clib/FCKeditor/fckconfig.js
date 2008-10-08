@@ -109,7 +109,7 @@ FCKConfig.ToolbarSets["Default"] = [
 ] ;
 
 FCKConfig.ToolbarSets["Basic"] = [
-	['Bold','Italic','-','PasteText','-','OrderedList','UnorderedList','-','Link','Unlink','-','About'],
+	['Bold','Italic','-','PasteText','-','OrderedList','UnorderedList','-','Link','Unlink','Image','-','About'],
         '/',
         ['FontName','FontSize']
 ] ;
