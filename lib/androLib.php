@@ -797,7 +797,7 @@ function html($tag,&$parent=null,$innerHTML='') {
     return $retval;
 }
 
- /****c* HTML-Generation/androHtml
+/****c* HTML-Generation/androHtml
 *
 * NAME
 *    androHtml
@@ -816,7 +816,6 @@ function html($tag,&$parent=null,$innerHTML='') {
 *
 ******
 */
-
 class androHtml {
 
     /****v* androHtml/children
@@ -1326,21 +1325,70 @@ class androHtml {
         return $tbody;
     }
 
-    /****m* androHtml/makeThead
+    /****m* androHtml/addTable
     *
     * NAME
-    *    makeThead
+    *    addTable
     *
     * FUNCTION
-    *	The method makeThead adds a thead and a set of th elements to a table.
+    *	The PHP method androHtml::addTable adds an instance of 
+    *   class androHTMLTable as a child node.  
+    *   The resulting table has special
+    *   routines for easily adding thead, tbody, tr, th and td
+    *   cells.
     *
-    * NOTE
-    *	This method does not check to see if "this" is actually an HTML Table element.
-    *
-    * INPUTS
-    *	mixed $thvalues - a list or array of thead values
-    *	string $class - Css class for the thead element
+    * SEE ALSO
+    *   androHtmlTable
+    *  
     ******/
+    function &addTable() {
+        $newTable = new androHTMLTable();
+        $this->addChild($newTable);
+        return $newTable;
+    }
+
+
+    /****m* androHtml/addTabs
+    *
+    * NAME
+    *    addTabs
+    *
+    * FUNCTION
+    *	The PHP method androHtml::addTabs adds an instance of
+    *   class androHTMLTabs as a child node.  
+    *
+    * SEE ALSO
+    *   androHtmlTabs
+    *  
+    ******/
+    function &addTabs() {
+        $newTabs = new androHTMLTabs();
+        $this->addChild($newTabs);
+        return $newTabs;
+    }
+
+
+
+    /****m* androHtml/addCheckList
+    *
+    * NAME
+    *    addCheckList
+    *
+    * FUNCTION
+    *	The PHP method androHtml::addCheckList adds an instance of 
+    *   class androHTMLCheckList as a child node.  
+    *
+    * SEE ALSO
+    *   androHtmlCheckList
+    *  
+    ******/
+    function &addCheckList() {
+        $newTable = new androHTMLCheckList();
+        $this->addChild($newTable);
+        return $newTable;
+    }
+    
+    /* DEPRECATED */
     function makeThead($thvalues,$class='dark') {
         # Make it an array if it is not already
         if(!is_array($thvalues)) {
@@ -1354,19 +1402,7 @@ class androHtml {
         return $thead;
     }
 
-    /****m* androHtml/addItems
-    *
-    * NAME
-    *    addItems
-    *
-    * FUNCTION
-    *	The method addItems adds one or more cells to a row.
-    *
-    * INPUTS
-    *	string $tag - tag of items to add
-    *	mixed $values - values of cells to add
-    *
-    ******/
+    /* DEPRECATED */
     function addItems($tag,$values) {
         if(!is_array($values)) {
             $values = explode(',',$values);
@@ -1466,8 +1502,8 @@ class androHtml {
         }
     }
     /******/
-
     
+   
     /****m* androHtml/print_r
     *
     * NAME
@@ -1515,9 +1551,11 @@ class androHtml {
     *    render
     *
     * FUNCTION
-    *	The method render renders this androHtml object.  It builds all of the html code based on the objects
-    *	attributes, children elements, parent elements, etc.  Render directly outputs all html out to the
-    *	browser.  User bufferedRender to get the html as a string instead of outputting to the browser.
+    *	The method render renders this androHtml object.  It builds 
+    *   all of the html code based on the objects attributes, 
+    *   children elements, parent elements, etc.  Render directly
+    *   outputs all html out to the browser.  User bufferedRender 
+    *   to get the html as a string instead of outputting to the browser.
     *
     * INPUTS
     *	string $parentId - parent id for this androHtml object
@@ -1550,6 +1588,13 @@ class androHtml {
                 $this->hp['on'.$event] = "$fname(this,event)";
             else
                 $this->hp['on'.$event] = "$fname(this)";
+        }
+        
+        # KFD 10/7/08 if data has been attached, send it as json
+        if(isset($this->data)) {
+            $js = "u.byId('".$this->hp['id']."').zData = "
+                .json_encode($this->data);
+            jqDocReady($js);
         }
 
         if($this->autoFormat) {
@@ -1587,6 +1632,265 @@ class androHtml {
             echo "\n<!-- ELEMENT ID ".$this->hp['id']." (END) -->";
             //echo "$indent\n<!-- ELEMENT ID ".$this->hp['id']." (END) -->";
         }
+    }
+}
+
+/****c* HTML-Generation/androHtmlTabBar
+*
+* NAME
+*    androHtmlTabBar
+*
+* FUNCTION
+*   The class androHtmlTabBar is used to create on-screen Tab Bars
+*   without having to manually create all of the various HTML elements.
+*
+*   The object is a subclass of androHtml, and supports all of its
+*   methods such as addChild, addClass, etc.
+*
+*   
+*
+* EXAMPLE
+*   A typical usage example might be something like this:
+*
+*      <?php
+*      # Create a top-level div
+*      $div = html('div');
+*      $div->h('h1','Here is the title');
+*
+*      # now put in a tab bar with 3 tabs
+*      $tabBar = new androHtmlTabBar('id');
+*      $div->addChild($tabBar);
+*      $tabBar->addTab('Users');  // this is the caption *and* the id
+*      $tabBar->addTab('Groups');
+*      $tabBar->addTab('Tables');
+*   
+*      # Now you can access the tabs like this:
+*      $tabBar->tabs['Users']->h('h2','Welcome to the users tab.');
+*      # ...and so on
+*      ?>
+*
+* SEE ALSO
+*	addChild
+*
+******
+*/
+class androHTMLTabs extends androHTML {
+    /****v* androHTMLTabBar/tabs
+    *
+    * NAME
+    *    tabs
+    *
+    * FUNCTION
+    *   The class property tabs is an associative array that
+    *   can be used to add HTML to the various tabs in the
+    *   tab bar.
+    *
+    * EXAMPLE
+    *   Normal usage looks like this:
+    *      <?php
+    *      $tabBar = new androHtmlTabBar('id');
+    *      $tabBar->addTab('Users');  // this is the caption *and* the id
+    *      $tabBar->tabs['Users']->h('h2','Hello! Welcome to users tab');
+    *      ?>
+    *
+    ******/
+    var $tabs = array();
+    
+    function androHTMLTabs($id='') {
+        # Example HTML from tabbar-top.html 
+        /*
+        <div id="tb">
+          <div class="tb2" id="tabbar_tb">
+            <a    id="tab_Users"  
+                href="javascript:selectTab('tb','Users');">Users</a>
+            <a     id="tab_Groups" 
+                 href="javascript:selectTab('tb','Groups');"
+                class="tabselected">Groups</a>
+          </div>
+          <div class="tb2content" id="tabcontent_tb">
+             <div id="pane_Users"  class="tb2pane">Welcome to users</div>
+             <div id="pane_Groups" class="tb2pane tabselected">Welcome to groups</div>
+          </div>
+        </div>
+        */
+
+        # Build the HTML that looks like the sample above
+        $this->htype = 'div';
+        $this->hp['id'] = $id;
+        $this->addClass('ahTab');
+        
+        # Create the nested div that is the bar of tabs
+        $divBar = $this->divBar = $this->h('div');        
+        $divBar->hp['id'] = $id.'_bar';
+        $divBar->addClass('ahTabBar');
+        
+        # Create the nested div that contains the content panes
+        $divPanes = $this->divPanes = $this->h('div');
+        $divPanes->hp['id'] = $id.'_panes';
+        $divBar->addClass('ahTabPanes');
+        
+    }
+    
+    /****m* androHTMLTabBar/addTab
+    *
+    * NAME
+    *    addTab
+    *
+    * FUNCTION
+    *   This PHP class method addTab is the basic method
+    *   of the androHTMLTabBar class,
+    *   call this function once for each tab you wish to add
+    *   to your tabbar.
+    *
+    * INPUTS
+    *   - $caption string, becomes both caption and ID 
+    *   
+    * RETURNS
+    *   - androHTML, reference to the content area for the new tab
+    *
+    ******/
+    function &addTab($caption) {
+        $id   = $this->hp['id'];
+
+        # Create the new pane first because we need a
+        # count to set classes
+        $newTab = $this->divPanes->h('div');
+        $newTab->hp['id'] = $id.'_pane_'.$caption;
+        $this->panes[] = &$newTab;
+        if(count($this->tabs)==1) {
+            $newTab->addClass('tabpaneselected');
+        }
+        else {
+            $newTab->addClass('tabpane');
+        }
+
+        #  Save the tab for reference by downstream code
+        $this->tabs[$caption] = &$newTab;
+
+        # Create the hyperlink
+        $bid = $id.'_tab_'.$caption;
+        $href = "javascript:x6.tabs.select('$id','$bid')";
+        $a = $this->divBar->a($caption,'#');
+        $a->hp['id'] = $bid;
+        
+        # Return reference to the object so calling program can
+        # put things into the tab.
+        return $newTab;
+    }
+}
+
+
+/****c* HTML-Generation/androHtmlTable
+*
+* NAME
+*    androHtmlTable
+*
+* FUNCTION
+*   The PHP class androHtmlTable models an HTML Table element, with
+*   special properties and methods for easily manipulating rows
+*   and cells.
+*
+*   The object is a subclass of androHtml, and supports all of its
+*   methods such as addChild, addClass, etc.
+*
+*
+******
+*/
+class androHTMLTable extends androHTML {
+    /****v* androHtmlTable/cells
+    *
+    * NAME
+    *    cells
+    *
+    * FUNCTION
+    *   The PHP property androHTMLTable::cells is a two-dimensional
+    *   numeric-indexed array of all cells added to the table. 
+    *   
+    *   This array is only updated for cells created with the
+    *   methods tr and td.  If you use $table->h('td') or similar
+    *   methods the resulting cell will not be in the array.
+    *
+    ******
+    */
+    var $lastBody = false;
+    
+    var $lastRow = false;
+    
+    var $lastCell = false;
+    
+    function androHTMLTable() {
+        $this->htype = 'table';        
+    }
+    
+    function &tbody() {
+        $x = $this->h('tbody');
+        $this->bodies[] = $x;
+        $this->lastBody = $x;
+        return $x;
+    }
+    function &thead() {
+        $x = $this->h('thead');
+        $this->bodies[] = $x;
+        $this->lastBody = $x;
+        return $x;
+    }
+    function &tr() {
+        if(!$this->lastBody) {
+            $this->tbody();
+        }
+        $this->lastRow = $this->lastBody->h('tr');
+        return $this->lastRow;
+    }
+    function &td($mixed='',$tag='td') {
+        # Turn the input into an array no matter what
+        # we were given
+        if(is_array($mixed)) {
+            # already an array, pass it right over
+            $adds=$mixed;
+        }
+        else {
+            if(!is_numeric($mixed)) {
+                # Not numeric, must be a single value
+                $adds = array($mixed);
+            }
+            else {
+                # a numeric was a request for a certain
+                # number of cells.
+                while($mixed>0) {
+                    $adds[] = '';
+                    $mixed--;
+                }
+            }
+        }
+        
+        # Now get us a row if we don't have one
+        if(!$this->lastRow) {
+            $this->tr();
+        }
+        
+        # And finally add 
+        while (count($adds)>0) {
+            $value = array_shift($adds);
+            $this->lastRow->h($tag,$value);
+        }
+    }
+    function &th($mixed='') {
+        return $this->td($mixed,'th');
+    }    
+}
+
+
+class androHTMLCheckList extends androHtml {
+    function androHTMLCheckList() {
+        $this->htype = 'div';   
+    }
+    
+    function addCheckbox($id,$value,$caption) {
+        $div = $this->h('div');
+        $cb = $div->h('input',$caption);
+        $cb->hp['type'] = 'checkbox';
+        $cp->hp['id']   = $id;
+        $cb->hp['value']= $value;
     }
 }
 
@@ -9887,7 +10191,8 @@ function processPost_Textboxes($row) {
       }
       if(count($changed)>0) {
          $changed['skey']=$gp_skey;
-         $table=DD_TableREf($table_id);
+         $table=DD_TableRef($table_id);
+         #hprint_r($changed);
          SQLX_Update($table,$changed,$errrow);
          if(Errors()) {
             // ERRORROW CHANGE 5/30/07, moved to SQLX_* routines
@@ -10400,6 +10705,12 @@ function ahInputsComprehensive(
       //$name=AddControl($table_id,$skey,$colname,$value);
       $name=$name_prefix.$colname;
       $context_row[$colname]=$value;
+      # KFD 10/8/08, correction for timestamps
+      #hprint_r($colname);
+      #hprint_r($colinfo['type_id']);
+      #if($colinfo['type_id'] == 'dtime') {
+      #    $context_row[$colname] = date('m/d/Y h:i A',dEnsureTs($value));
+      #}
 
       // Establish if user can write, then set tabindex accordingly
       $writable=isset($ddmatches[$colname])
@@ -10487,6 +10798,7 @@ function ahInputsComprehensive(
    }
 
    /* KFD 5/10/06, will be used to store original values */
+   hprint_r($context_row);
    ContextSet("OldRow",$context_row);
 
 
@@ -10664,6 +10976,7 @@ function ahInputsComprehensive(
          }
       }
    }
+      
 
    // *****  STEP 3 OF 3: Generate actual HTML
    // Finally, generate the html for each one, with special
@@ -14545,6 +14858,7 @@ function SQLX_Update($table,$colvals,$errrow=array()) {
         // ERRORROW CHANGE 5/30/07, big change, SQLX_* routines now save
         //  the row for the table if there was an error
         $errflag=false;
+        #hprint_r($sql);
         SQL($sql,$errflag);
         if($errflag) {
             vgfSet('ErrorRow_'.$table_id,$errrow);
