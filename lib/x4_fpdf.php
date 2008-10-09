@@ -218,13 +218,13 @@ class x4_fpdf extends fpdf {
      */
     function nextLine($color=false) {
         #$this->Ln($this->lineheight);
-        if(isset($this->realHeight)) {
-            $this->Ln($this->realHeight + $this->lineheight);
-            unset($this->realHeight);
-        }
-        else {
+        #if(isset($this->realHeight)) {
+        #    $this->Ln($this->realHeight + $this->lineheight);
+        #    unset($this->realHeight);
+        #}
+        #else {
             $this->Ln($this->lineheight);
-        }
+        #}
         $this->lastCol=-1;
     }
        
@@ -312,10 +312,10 @@ class x4_fpdf extends fpdf {
            $this->setY($ybeg-5);
            $this->setx($xbeg);
            $this->MultiCell($width,$this->lineheight,$text,0,$align);
-           $yend = $this->getY();
-           if(!isset($this->realHeight)) $this->realHeight = $this->lineheight;
-           $this->realHeight = max($yend-$ybeg,$this->realHeight);
-           $this->setY($ybeg);
+           #$yend = $this->getY();
+           #if(!isset($this->realHeight)) $this->realHeight = $this->lineheight;
+           #$this->realHeight = max($yend-$ybeg,$this->realHeight);
+           #$this->setY($ybeg);
        }
        else {
            $this->Cell($width,0,$text,0,0,$align);
