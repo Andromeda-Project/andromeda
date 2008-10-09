@@ -1844,6 +1844,7 @@ class androHTMLTable extends androHTML {
     function &td($mixed='',$tag='td') {
         # Turn the input into an array no matter what
         # we were given
+        /*
         if(is_array($mixed)) {
             # already an array, pass it right over
             $adds=$mixed;
@@ -1862,17 +1863,22 @@ class androHTMLTable extends androHTML {
                 }
             }
         }
+        */
         
         # Now get us a row if we don't have one
         if(!$this->lastRow) {
             $this->tr();
         }
+        $td = $this->lastRow->h('td',$mixed);
         
         # And finally add 
+        /*
         while (count($adds)>0) {
             $value = array_shift($adds);
             $this->lastRow->h($tag,$value);
         }
+        */
+        return $td;
     }
     function &th($mixed='') {
         return $this->td($mixed,'th');
@@ -10109,7 +10115,7 @@ function processPost_Textboxes($row) {
    $gp_skey  =gp('gpx_skey');
    $table_id =gp('gpx_page');
    $table    =DD_TableREf($table_id);
-
+   
    // Cache flags.  This was introduced for Worldcare 5/22/06.
    // For worldcare the setting is made in applib, it is not set
    // anywhere in the data dictionary.  The idea is that a table
@@ -10705,12 +10711,6 @@ function ahInputsComprehensive(
       //$name=AddControl($table_id,$skey,$colname,$value);
       $name=$name_prefix.$colname;
       $context_row[$colname]=$value;
-      # KFD 10/8/08, correction for timestamps
-      #hprint_r($colname);
-      #hprint_r($colinfo['type_id']);
-      #if($colinfo['type_id'] == 'dtime') {
-      #    $context_row[$colname] = date('m/d/Y h:i A',dEnsureTs($value));
-      #}
 
       // Establish if user can write, then set tabindex accordingly
       $writable=isset($ddmatches[$colname])
