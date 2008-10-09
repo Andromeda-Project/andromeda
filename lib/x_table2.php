@@ -1321,14 +1321,19 @@ class x_table2 {
        #              use the same format that we display, so they
        #              don't come back looking changed when they have not
        $oldRow = array();
+       #hprint_r($this->row);
        foreach($this->table['flat'] as $colname=>$colinfo) {
-           if(!isset($this->row[$colname])) continue;
-           if($colinfo['type_id']!='dtime') {
-               $oldRow[$colname] = $this->row[$colname];
+           if(!isset($this->row[$colname])) {
+               $oldRow[$colname] = '';
            }
            else {
-               $oldRow[$colname] 
-                =date('m/d/Y h:i A',dEnsureTs($this->row[$colname]));
+               if($colinfo['type_id']!='dtime') {
+                   $oldRow[$colname] = $this->row[$colname];
+               }
+               else {
+                   $oldRow[$colname] 
+                    =date('m/d/Y h:i A',dEnsureTs($this->row[$colname]));
+               }
            }
        }
       ContextSet('OldRow',$oldRow);
