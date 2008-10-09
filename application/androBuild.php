@@ -3994,7 +3994,7 @@ function SpecDDL_Triggers_FK_PT($ufk,$ptab,$chdlist,$parlist) {
 	// not 5000.  We only need 5000 for the child table, where every
 	// little piece is sequenced.  Notice for delete cascade we put it
 	// at the front, so if there are any complex chains, they will all
-	// be worked out before the rest of the trigger fires.  
+	// be worked out before the rest of the trigger fires.
 	if ($this->zzArray($ufk,"delete_cascade")=="Y") {
 		$prntList = str_replace("chd.","",$prntList);
 		$s1 = "\n".
