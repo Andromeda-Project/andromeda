@@ -1675,7 +1675,7 @@ class androHtml {
 ******
 */
 class androHTMLTabs extends androHTML {
-    /****v* androHTMLTabBar/tabs
+    /****v* androHtmlTabBar/tabs
     *
     * NAME
     *    tabs
@@ -1731,7 +1731,7 @@ class androHTMLTabs extends androHTML {
         
     }
     
-    /****m* androHTMLTabBar/addTab
+    /****m* androHtmlTabBar/addTab
     *
     * NAME
     *    addTab
@@ -2638,12 +2638,13 @@ function configLayoutX4($container,$type) {
 *    SQL_FORMAT
 *
 * FUNCTION
-*	The PHP function SQL_FORMAT Takes any input value and type and formats it for direct substitution
+*	The PHP function SQL_FORMAT Takes any input value and type and formats
+*   it for direct substitution
 * 	into a SQL string.  So for instance character values are escaped for
 * 	quotes and then surrounded by single quotes.  Numerics are returned
 * 	as-is, dates are formatted and so forth.
 *
-*	 The optional third parameter specifies a maximum length for character
+*	The optional third parameter specifies a maximum length for character
 * 	and varchar fields.  If it is non-zero, the value will be clipped to
 * 	that length.
 *
@@ -3349,7 +3350,7 @@ function tmpPathInsert() {
    return scriptPath();
 }
 
-/****f* scriptPath
+/****f* PHP-API/scriptPath
 *
 * NAME
 *	scriptPath
@@ -3361,8 +3362,7 @@ function tmpPathInsert() {
 *	a user's home directory on a local machine.
 *
 *
-******
-*/
+******/
 
 function scriptPath() {
     $path = $_SERVER['SCRIPT_NAME'];
@@ -4778,7 +4778,7 @@ function a(&$a,$key,$value='') {
     return ArraySafe($a,$key,$value);
 }
 
-/****f* Array-Functions/array_copy
+/*f* Array-Functions/array_copy
 *
 * FUNCTION
 *   Returns a complete copy of an array instead of a reference
@@ -10798,7 +10798,7 @@ function ahInputsComprehensive(
    }
 
    /* KFD 5/10/06, will be used to store original values */
-   hprint_r($context_row);
+   #hprint_r($context_row);
    ContextSet("OldRow",$context_row);
 
 
@@ -11344,7 +11344,7 @@ function Email_Exp($from,$to,$subject,$body,$headers) {
 *   * ddtable_adm_emails.php
 *   * x_email.php
 *
-*/
+******/
 function EmailSend($to,$subject,$message,$headers=array()) {
 	include_once("ddtable_adm_emails.php");
 	include_once("x_email.php");
@@ -11385,7 +11385,7 @@ function EmailSend($to,$subject,$message,$headers=array()) {
 *   * ddtable_adm_emails.php
 *   * x_email.php
 *
-*/
+******/
 function EmailSendHtml($to,$subject,$message) {
 	include_once("ddtable_adm_emails.php");
 	include_once("x_email.php");
