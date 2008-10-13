@@ -527,6 +527,21 @@ column paypal_fake {
 column paypal_v2 {
     type_id: cbool; description: Paypal returns to x_paypalfinal.php;
 }
+column auth_net_debugging {
+    type_id: cbool; description: Authorize.net debugging;
+}
+column auth_net_testing {
+    type_id: cbool; description: Authorize.net testing;
+}
+column auth_net_retries {
+    type_id: numb; colprec: 1; description: Authorize.net Retries;
+}
+column auth_net_login_id {
+    type_id: vchar; colprec: 15; description: Authorize.net Login ID;
+}
+column auth_net_tran_key {
+    type_id: vchar; colprec: 15; description: Authorize.net Trnx Key;
+}
 table configfw {
     module: system;
     uisort: 550;
@@ -549,6 +564,10 @@ table configfw {
     column { paypal_site_url; paypal_image_url; paypal_payto;
         paypal_noship; paypal_v2;
         paypal_test_mode; paypal_fake;
+    }
+    column { 
+        auth_net_debugging; auth_net_testing; auth_net_retries;
+        auth_net_login_id; auth_net_tran_key;
     }
 }
 table configapp {
