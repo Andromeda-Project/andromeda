@@ -1727,7 +1727,7 @@ class androHTMLTabs extends androHTML {
         # Create the nested div that contains the content panes
         $divPanes = $this->divPanes = $this->h('div');
         $divPanes->hp['id'] = $id.'_panes';
-        $divBar->addClass('ahTabPanes');
+        $divPanes->addClass('ahTabPanes');
         
     }
     
@@ -1841,6 +1841,7 @@ class androHTMLTable extends androHTML {
         $this->lastRow = $this->lastBody->h('tr');
         return $this->lastRow;
     }
+    
     function &td($mixed='',$tag='td') {
         # Turn the input into an array no matter what
         # we were given
@@ -1880,6 +1881,7 @@ class androHTMLTable extends androHTML {
         */
         return $td;
     }
+    
     function &th($mixed='') {
         return $this->td($mixed,'th');
     }    
@@ -2204,10 +2206,10 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
 *	as an HTML TABLE with one row per input, captions on left and inputs on right.
 *
 * INPUTS
-*	array $dd - Data Dictionary for table
-*	mixed $projection - name of proection, or array of columns, or comma-list of columns
-*	reference $tabLoop - Tab loop
-*	array $options - Options for the projection
+*	* array $dd - Data Dictionary for table
+*	* mixed $projection - name of proection, or array of columns, or comma-list of columns
+*	* reference $tabLoop - Tab loop
+*	* array $options - Options for the projection
 *
 * RETURN VALUE
 *	androHtml - generated projection (html table)
@@ -4217,28 +4219,10 @@ function DD_EnsureREf(&$unknown) {
 }
 /*---**/
 
-/*---f* Data-Dictionary-Routines/DD_Table
-*
-* NAME
-*	DD_Table
-*
-* FUNCTION
-*	The PHP function DD_Table loads the data dictionary table with the provided table id, and returns
-*	the table instead of a reference.
-*
-* INPUTS
-*	string $table_id - Id of the table to load
-*
-* RETURN VALUE
-*	array - The requested data dictionary table
-*
-* SOURCE
-*/
 function DD_Table($table_id) {
 	include_once("ddtable_".$table_id.".php");
 	return $GLOBALS["AG"]["tables"][$table_id];
 }
-/*---**/
 
 function ddNoWrites() {
    return array(
@@ -4256,16 +4240,19 @@ function ddNoWrites() {
 *	ddTable
 *
 * FUNCTION
-*	The PHP function ddTable is the final form of the various "give me the dd" routines.  This version will
-*	filter the array based on the user credentials.  This means that this is the only call you need, the
-*	array it gives you is completely appropriate for the user.  It returns a reference to the data
-*	dictionary table.
+*	The PHP function ddTable returns an associative array completely
+*   describing a table, including the table's description, module,
+*   and complete details on every column.  The array has been filtered
+*   by the current user's security settings, so that columns the user
+*   is not allowed to see are removed completely.
 *
 * INPUTS
 *	string $table_id - Id for the data dictionary table you want to receive
 *
 * RETURN VALUE
 *	reference - Returns a reference to the requested data dictionary table
+*
+*
 *
 ******
 */
@@ -4408,15 +4395,39 @@ function &ddTable($table_id) {
 *	ddView
 *
 * FUNCTION
-*	The PHP function ddView fetches the viewname for the data dicitonary table provided.  If the table
-*	is not an array, the function asumes that it is the name of the table and then fetches the table using
-*	ddTable.
+*   If a table has row-level or column-level security, then direct
+*   table access is denied to all users, all access must go through
+*   views for that table.  This routine returns the name of the view
+*   that can be used by the currently logged in user.
 *
+*   It is good practice when coding SQL manually to always use
+*   this routine and never to manually hardcode table names, unless
+*   you can be completely certain your application will never contain
+*   row-level and column-level security.
+*
+*   When you use routines like SQLX_Insert and SQLX_Update you
+*   can use the base table name, those routines do not require you
+*   to pass in a view name.  Those routines make the call themselves
+*   to get the view name.
+*  
 * INPUTS
 *	array $tabx - Data Dictionary table
 *
 * RETURN VALUE
 *	string - the view name of the table
+*
+* EXAMPLE
+*   Here is an example of a manual query:
+*
+*       <?php
+*       # Employees table has row-level security, so we must
+*       # find out the name of the view the current user is
+*       # able to access.
+*       $view = ddView('employees');
+*       # Now code the view into an ad-hoc query
+*       $sql  = "select * from $view where dept='xyz'";
+*       $emps = SQL_AllRows($sql);
+*       ?>
 *
 ******
 */
@@ -4485,6 +4496,52 @@ function ddUserPerm($table_id,$perm_id) {
    # KFD 9/2/08: Original code is here
    return in_array($table_id,SessionGET('TABLEPERMS'.$perm_id));
 }
+
+/****f* Data-Dictionary-Routines/ddDescriptions
+*
+* NAME
+*   ddDescriptions
+*
+* PURPOSE
+*   (PHP) Returns an array of column descriptions.
+*
+* INPUTS
+*   Either:
+*   * string - a named projection
+*   * array - a list of column names
+*   * string (comma list) - a comma-separated list of column names
+*
+******/
+function ddDescriptions($table_id,$list) {
+    $dd = ddTable($table_id);
+    if(is_array($list)) {
+        $columns = $list;
+    }
+    else {
+        # if there is a comma, explode it
+        if(strpos($list,',')!==false) {
+            $columns = explode(',',$list);
+        }
+        else {
+            # if its a named projection, take that
+            if(isset($dd['projections'][$list])) {
+                $columns = explode(',',$dd['projections'][$list]); 
+            }
+            # finally, assume it is a column name
+            else {
+                $columns = array($list);
+            }
+        }
+    }
+    
+    # Now just run them out
+    $retval = array();
+    foreach($columns as $col) {
+        $retval[]=$dd['flat'][$col]['description'];
+    }
+    return $retval;
+}
+
 
 //function D*D_arrBrowseColumns(&$table) {
 //   $table=DD_EnsureRef($table);
