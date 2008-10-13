@@ -428,10 +428,6 @@ return;
 // >> index_hidden_x6Dispatch
 // ------------------------------------------------------------------
 function index_hidden_x6Dispatch($x6Page,$x6File) {
-    
-    
-    
-    
     # This is everything that *might* go back, make a place
     # for all of it
     $GLOBALS['AG']['x4'] = array(
