@@ -392,18 +392,49 @@ if(gp('x4Page')=='' && gp('gp_page')=='') {
 // now if required.
 if(    gpExists('gp_command')) index_hidden_command();
 
-# KFD 10/3/08.  Assign an x6 page if we can find
-#               one, which will force an override
-#               of x4 or x2.
-$x6Page = gp('x6Page');
-$x6File = '';
-if($x6Page!='') {
-    $x6File = "x6$x6Page.php";
+# KFD 10/16/08. Beginning of x6 processing.  Load set of
+#               profiles if it exists.  These specify
+#               pre-defined profiles for pages
+$fx6profiles = fsDirTop().'generated/ddx6profiles.php';
+$GLOBALS['AG']['x6profiles'] = array();
+if(file_exists($fx6profiles)) {
+    include($fx6profiles);
+}
+#  This override allows us to change profiles in
+#  applib w/o running a build.
+if(function_exists('app_x6profiles')) {
+    app_x6profiles();
+}
+# Funny business. gp_page is always defined, so we have
+# to check if its blank.
+$x6pagecandidate = gp('gp_page');
+if($x6pagecandidate=='') {
+    $x6pagecandidate= gp('x4Page',gp('x6Page',''));
+}
+$x6Profile = arr($GLOBALS['AG']['x6profiles'],$x6pagecandidate,'');
+
+if($x6Profile<>'') {
+    # If a profile exists, we force x6 processing with 
+    # a profile but no file.  It will all be handled by
+    # built-in framework stuff. see x6 dispatching below
+    # for more details on how that works.
+    $x6Page = $x6pagecandidate;
+    $x6File = '';
 }
 else {
-    $x6File = 'x6'.gp('x4Page',gp('gp_page')).'.php';
-    if(file_exists_incpath($x6File)) {
-        $x6Page =  gp('x4Page',gp('gp_page'));
+    # KFD 10/3/08.  Assign an x6 page if we can find
+    #               one, which will force an override
+    #               of x4 or x2.
+    $x6Page = gp('x6Page');
+    $x6File = '';
+    if($x6Page!='') {
+        $x6File = "x6$x6Page.php";
+    }
+    else {
+        $x6File = 'x6'.gp('x4Page',gp('gp_page')).'.php';
+        if(file_exists_incpath($x6File)) {
+            $x6Page =  gp('x4Page',gp('gp_page'));
+        }
     }
 }
 
@@ -418,7 +449,8 @@ elseif(gp('gp_dropdown') <>'') index_hidden_dropdown();
 elseif(gp('gp_fetchrow') <>'') index_hidden_fetchrow();
 elseif(gp('gp_sql')      <>'') index_hidden_sql();
 elseif(gp('gp_ajaxsql')  <>'') index_hidden_ajaxsql();
-elseif($x6Page           <>'') index_hidden_x6Dispatch($x6Page,$x6File);
+elseif($x6Page           <>'') 
+    index_hidden_x6Dispatch($x6Page,$x6File,$x6Profile);
 elseif(gp('x4Page')      <>'') index_hidden_x4Dispatch();
 else                           index_hidden_page();
 
@@ -432,7 +464,7 @@ return;
 // ------------------------------------------------------------------
 // >> index_hidden_x6Dispatch
 // ------------------------------------------------------------------
-function index_hidden_x6Dispatch($x6Page,$x6File) {
+function index_hidden_x6Dispatch($x6Page,$x6File,$x6Profile) {
     # This is everything that *might* go back, make a place
     # for all of it
     $GLOBALS['AG']['x4'] = array(
@@ -445,17 +477,45 @@ function index_hidden_x6Dispatch($x6Page,$x6File) {
     x4debug($x6Page);
  
 
-    # Route to whatever methods are there
+    # Include the basic x6 class, and set a default for
+    # the class 
     include('androX6.php');
-    include($x6File);
-    $x6Class = 'x6'.$x6Page;
-    $obj = new $x6Class();
-    # now work out which method to call
-    $method = 'html';
-    if(gp('x6Action')<>'') {
+    $x6Class = 'androX6';
+    
+    # Figure out if we are loading a file or calling a
+    # plugin.  If a plugin has been called, that wins.
+    # If not, and a file exists, that wins.  Otherwise
+    # we are falling back to framework code.
+    if(gp('x6plugIn')<>'') {
+        $x6File  = '';
+        $x6Class = 'x6plugIn'.gp('x6plugIn');
+        include($x6Class.'.php');
+    }
+    elseif($x6File<>'' && file_exists_incpath($x6File)) {
+        include($x6File);
+        $x6Class = 'x6'.$x6Page;
+    }
+    
+    # now work out which method to call.  The resolution order is:
+    # - a profile always wins, call the profile
+    # - next an x6Action wins, call that
+    # - call html if it exists
+    if($x6Profile<>'') {
+        $method = 'profile_'.$x6Profile;
+    }
+    elseif (gp('x6Action')<>'') {
         $method = gp('x6Action');
     }
+    else {
+        $method = 'html';
+    }
+
+    # Create the object and do the job
     ob_start();
+    
+    $obj = new $x6Class();
+    $obj->dd   = ddTable($x6Page);
+    $obj->view = arr($obj->dd,'viewname','');
     $obj->$method();
     x4HTML('*MAIN*',ob_get_clean());
 
