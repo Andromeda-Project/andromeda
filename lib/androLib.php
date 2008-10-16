@@ -68,9 +68,16 @@
 * SOURCE
 */
 function gp($key,$vardefault='') {
+    #echo "<br/>Gp called with -$key- -$vardefault-";
 	$post=$GLOBALS["AG"]["clean"];
-	if (!isset($post[$key])) return $vardefault;
-	else return $post[$key];
+    if (!isset($post[$key])) {
+        #echo "<br/> -> not set, returning $vardefault";
+        return $vardefault;
+    }
+	else {
+        #echo "<br/> -> key exists, returning {$post[$key]}";
+        return $post[$key];
+    }
 }
 /******/
 

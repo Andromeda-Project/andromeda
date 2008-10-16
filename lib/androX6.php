@@ -208,9 +208,13 @@ class androX6 {
         # from downstream jqDocReady() calls.
         jqDocReady('x6.init()');
         
-        # Begin with the data dictionaries and db pulls
+        # Grab the data dictionary for this table
         $dd       = $this->dd;
         $table_id = $this->dd['table_id'];
+
+        # Always send the data dictionary.  Various browser-side
+        # actions will need this.
+        jqDocReady("x6dd.tables.$table_id = ".json_encode($dd));
         
         # Now put in your basic title
         $div = html('div');
@@ -230,6 +234,9 @@ class androX6 {
         include 'x6plugInGrid.php';
         $x6grid = new x6plugInGrid;
         $x6grid->main($box1,$dd);
+        
+        $boxx = $div->h('div','&nbsp;');
+        $boxx->addClass('box-spacer');
         
         $box2  = $div->h('div');
         $box2->addClass('box');
