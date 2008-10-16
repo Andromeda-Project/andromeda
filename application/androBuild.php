@@ -132,6 +132,7 @@ class x_builder {
             $retval = $retval && $this->CodeGenerate_Info();
             $retval = $retval && $this->CodeGenerate_Tables();
             $retval = $retval && $this->CodeGenerate_Modules();
+            $retval = $retval && $this->CodeGenerate_x6Profiles();
             
             // Big new thing, 2/6/08, build scripts
             //
@@ -8864,6 +8865,38 @@ SELECT  m.module,m.description as module_text,m.uisort,t.uisort
 	$this->zzFileWriteGenerated($file2,"ddpages.php");
 	return true;
 }
+
+// =====================================================================
+// MODULE INFORMATION
+// =====================================================================
+
+function CodeGenerate_x6Profiles() {
+	$this->LogStage("Writing out x6 profiles");
+
+    # begin with a file
+	$file= "<?php\n".
+		"\$GLOBALS['AG']['x6profiles']=array();\n";
+
+    # Now loop through add in each one
+    $sql="Select table_id,x6profile from zdd.tables";
+	$results = $this->SQLRead($sql);
+    $pfx = "\$GLOBALS['AG']['x6profiles']";
+	while ($row = pg_fetch_array($results)) {
+        if(is_null($row['x6profile'])) continue;
+        if($row['x6profile']=='') continue;
+        
+        $t = $row['table_id'];
+        $p = $row['x6profile'];
+        x_EchoFlush(" -> profile for $t is $p");
+        $file.="\$GLOBALS['AG']['x6profiles']['$t'] = '$p';\n";
+    }
+    $file.="?>";
+    
+	$this->zzFileWriteGenerated($file ,"ddx6profiles.php");
+
+	return true;
+}
+
 
 // =====================================================================
 // Run Build Scripts

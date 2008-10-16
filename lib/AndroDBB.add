@@ -589,13 +589,14 @@ column linknew       {  type_id:  char; colprec: 1;  description: New Link;   }
 column linksearch    {  type_id:  char; colprec: 1;  description: Search Link;}
 column permcol       {  type_id:  char; colprec: 1;  description: Has Column Security; }
 column singular      {  type_id: vchar; colprec: 50; description: Singular Name; }
+column x6profile     {  type_id: vchar; colprec: 20; description: X6 Profile; }
 table tables {
 	module:  datadict;
 	description: Table of Tables;
 	table_seq: 900;
 	
 	column table_id      { primary_key: Y; uisearch: Y; }
-    column  { singular; returnall; }   
+    column  { singular; returnall; x6profile }   
    // Removed KFD 5/24/07, not being used
 	//column column_prefix { primary_key: N; uisearch: Y; }
 	column description  { uisearch: Y; }
