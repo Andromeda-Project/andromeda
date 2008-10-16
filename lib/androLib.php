@@ -969,6 +969,28 @@ class androHtml {
         $this->innerHtml = $value;
     }
 
+    /****m* androHtml/getHtml
+    *
+    * NAME
+    *    getHtml
+    *
+    * FUNCTION
+    *	The method getHtml retrieves the innerHTML of an HTML
+    *   object.  The HTML of nested children is not returned,
+    *   only the literal HTML set by the setHTML() method.
+    *
+    * INPUTS
+    *	none
+    *
+    * RETURNS
+    *   string
+    *
+    ******
+    */
+    function getHtml() {
+        return $this->innerHtml;
+    }
+    
     /****m* androHtml/clear
     *
     * NAME
@@ -1347,6 +1369,36 @@ class androHtml {
         return $newTable;
     }
 
+    /****m* androHtml/addTabDiv
+    *
+    * NAME
+    *    addTabDiv
+    *
+    * FUNCTION
+    *	The PHP method androHtml::addTabDiv adds an instance of 
+    *   class androHTMLTabDiv as a child node.  
+    *   A "TabDiv" is a simulated HTML table that uses divs 
+    *   instead of TD elements.  The two main reasons for doing
+    *   this are that you cannot put an onclick() routine onto
+    *   a TR in Internet Explorer (as of IE7 oct 2008) and
+    *   the scrollable body is easier to get going on 
+    *   a DIV.
+    *
+    * INPUTS
+    *   HEIGHT: The total height of the table including borders,
+    *   header, and footer.
+    *   
+    *
+    * SEE ALSO
+    *   androHtmlTable
+    *  
+    ******/
+    function &addTabDiv($height) {
+        $newTable = new androHTMLTabDiv($height);
+        $this->addChild($newTable);
+        return $newTable;
+    }
+    
 
     /****m* androHtml/addTabs
     *
@@ -1887,19 +1939,181 @@ class androHTMLTable extends androHTML {
     }    
 }
 
-
-class androHTMLCheckList extends androHtml {
-    function androHTMLCheckList() {
-        $this->htype = 'div';   
+/****c* HTML-Generation/androHtmlTabDiv
+*
+* NAME
+*    androHtmlTabDiv
+*
+* FUNCTION
+*   The PHP class androHtmlTable simulates an HTML Table element
+*   using only Divs.  
+*
+*   The object is a subclass of androHtml, and supports all of its
+*   methods such as addChild, addClass, etc.
+*
+*
+******
+*/
+class androHTMLTabDiv extends androHTML {
+    var $columns    = array();
+    var $headers    = array();
+    var $lastRow    = false;
+    var $lastCell   = 0;
+    var $scrollable = false;
+    var $colWidths  = 0;
+    
+    function androHTMLTabDiv($height=300) {
+        $this->htype = 'div';
+        $this->addClass('tdiv');
+        $this->hp['style'] = $height."px;";
+        $this->height = $height;
+        $this->baseRowHeight = 20;
+        
+        # notice: we slip one div inside of thead, 
+        #         we assume there will always be
+        #         only one row, the column headers
+        $x = $this->h('div');
+        $x->addClass('thead');
+        $this->dhead = $x->h('div');
+        
+        # The body is empty, we have to add row by row
+        $this->dbody= $this->h('div');
+        $this->dbody->addClass('tbody');
+        $this->dbody->hp['style'] = "height: {$height}px";
+        
+        # The footer is like the header, we go ahead
+        # and insert the only row, assuming they will
+        # be adding 
+        $x = $this->h('div');
+        $this->dfoot= $x->h('div');
+        $this->dfoot->addClass('tfoot');
+        
     }
     
-    function addCheckbox($id,$value,$caption) {
-        $div = $this->h('div');
-        $cb = $div->h('input',$caption);
-        $cb->hp['type'] = 'checkbox';
-        $cp->hp['id']   = $id;
-        $cb->hp['value']= $value;
+    /****m* androHtmlTabDiv/addColumn
+    *
+    * NAME
+    *    addColumn
+    *
+    * FUNCTION
+    *   This PHP class method addColumn specifies the 
+    *   description and size of a new column.  Call it once
+    *   for each column to be added to the tabdiv.
+    *
+    * INPUTS
+    *   - $caption string, becomes both caption and ID 
+    *   
+    * RETURNS
+    *   - androHTML, reference to the content area for the new tab
+    *
+    ******/
+    function addColumn($options) {
+        $column_id   = arr($options,'column_id' );
+        $dispsize    = arr($options,'dispsize'   ,10);
+        $description = arr($options,'description','No Desc');
+        $type_id     = arr($options,'type_id'    ,'char');
+
+        # Permanently store the column information, 
+        # and increment the running total        
+        $width = $dispsize * 14;
+        $width = min($width,200);
+        $this->colWidths += $width;
+        
+        # Save the information about the column permanently,
+        # we will need all of this when adding cells.
+        $this->columns[] = array(
+            'description'=>$description
+            ,'dispsize'   =>$dispsize
+            ,'type_id'    =>$type_id
+            ,'column_id'  =>$column_id
+            ,'width'      =>$width
+        );
+        
+        # Finally, generate the HTML.
+        $div = $this->dhead->h('div',$description);
+        $div->hp['xColumn'] = $column_id;
+        $this->headers[] = $div;
+        
+        $div->hp['style'] ="
+            max-width: {$width}px;
+            min-width: {$width}px;
+            width:     {$width}px;";
     }
+    /****m* androHtmlTabDiv/lastColumn
+    *
+    * NAME
+    *    lastColumn
+    *
+    * FUNCTION
+    *   This PHP class method lastColumn must be called
+    *   after you have defined all of the columns in the
+    *   table.  This method computes and assigns the
+    *   final width of the overall table.
+    *
+    * INPUTS
+    *   - $scrollable (boolean) if true, make table scrollable 
+    *   
+    ******/
+    function lastColumn($scrollable=true) {
+        # Save the scrollable setting, and compute the final
+        # width of the table
+        $this->scrollable=$scrollable;
+        if($scrollable) {
+            $this->columns[] = array(
+                'description'=>'&nbsp;'
+                ,'dispsize'   =>0
+                ,'type_id'    =>''
+                ,'column_id'  =>''
+                ,'width'      =>25
+            );
+            $div = $this->dhead->h('div','');
+            $div->hp['style'] ="
+                max-width: 25px;
+                min-width: 25px;
+                width:     25px;";
+        }
+        
+        # now work out the final width of the table by 
+        # adding up the columns, adding one for each
+        # column (the border) and two more for the table
+        # border.
+        $width = $this->colWidths;
+        $width+= (count($this->columns)-1)*5;  // border + padding
+        $width+= 39;  // fudge factor, unknown
+        $this->hp['style'].="width: {$width}px";
+    }
+    
+    function addRow($id) {
+        $this->lastRow = $this->dbody->h('div');
+        $this->lastRow->hp['id'] = 'row_'.$id;
+        $this->lastCell = 0;
+        return $this->lastRow;
+    }
+    function addCell($child='') {
+        if(is_object($child)) {
+            $child=$child->bufferedRender();
+        }
+        # figure out if we need a new row
+        $maxcols = count($this->columns);
+        if($this->scrollable) $maxcols--;
+        if($this->lastCell > $maxcols) {
+            $this->addRow();
+        }
+        
+        # now put out the actual div
+        $info = $this->columns[$this->lastCell];
+        $width= $info['width'];
+        $div = $this->lastRow->h('div',$child);
+        $div->hp['gColumn'] = $this->lastCell;
+        $div->hp['style'] ="
+            max-width: {$width}px;
+            min-width: {$width}px;
+            width:     {$width}px;";
+        
+        # up the cell counter
+        $this->lastCell++;
+        
+    }    
 }
 
 /**
@@ -2245,6 +2459,7 @@ function projection($dd,$projection='',&$tabLoop,$options=array()) {
 
     # Create a top level container
     $ttop  = html('table');
+    $ttop->inputs = array();
     $trtop = $ttop->h('tr');
 
     # Lay out the projection as a table and return it
@@ -2259,15 +2474,16 @@ function projection($dd,$projection='',&$tabLoop,$options=array()) {
     $breakafter = a($options,'breakafter',array());
     foreach($columns as $column) {
         $input = input($dd['flat'][$column],$tabLoop,$options);
+        $ttop->inputs[] = $input;
         if($uiwithnext == 'Y') {
             $td->nbsp(2);
-            $td->h('span',$dd['flat'][$column]['description']);
+            $td->h('span',$dd['flat'][$column]['description'].":");
             $td->nbsp();
             $td->addChild($input);
         }
         else {
             $tr = $table->h('tr');
-            $tr->h('td',$dd['flat'][$column]['description'],'x4Caption');
+            $tr->h('td',$dd['flat'][$column]['description'].':','x4Caption');
 
             $td = $tr->h('td','','x4Input');
             $td->addChild($input);
@@ -2293,43 +2509,6 @@ function projection($dd,$projection='',&$tabLoop,$options=array()) {
 
     }
     return $ttop;
-
-        /*
-            // The row and the caption
-            $tr = html('tr',$table);
-            $td = html('td',$tr);
-            $td->setHtml($colinfo['description']);
-            $td->hp['class'] = 'x4Caption';
-
-            // The input
-            $td = html('td',$tr);
-            $td->hp['class'] = 'x4Input';
-            $input = input($colinfo,$tabLoop
-                ,array('parentTable'=>$parentTable)
-            );
-            $input->addClass('x4input');
-            $input->ap['xParentId'] = $div->hp['id'];
-            $td->addChild($input);
-
-            # On twelfth column, break and make a new column of fields
-            $colcount++;
-            if(count($breakafter)>0) {
-                $break = in_array($column_id,$breakafter);
-            }
-            else {
-                $break = $colcount == $colbreak ? true : false;
-            }
-            if($break) {
-                $colcount=0;
-                $tdx = html('td',$trx);
-                $tdx->hp['style'] = 'width: 40px';
-                $tdx = html('td',$trx);
-                $table=html('table',$tdx);
-                $table->addClass('x4Detail');
-            }
-        }
-        */
-
 }
 
 /****f* HTML-Generation/inputsTabLoop
@@ -4497,50 +4676,6 @@ function ddUserPerm($table_id,$perm_id) {
    return in_array($table_id,SessionGET('TABLEPERMS'.$perm_id));
 }
 
-/****f* Data-Dictionary-Routines/ddDescriptions
-*
-* NAME
-*   ddDescriptions
-*
-* PURPOSE
-*   (PHP) Returns an array of column descriptions.
-*
-* INPUTS
-*   Either:
-*   * string - a named projection
-*   * array - a list of column names
-*   * string (comma list) - a comma-separated list of column names
-*
-******/
-function ddDescriptions($table_id,$list) {
-    $dd = ddTable($table_id);
-    if(is_array($list)) {
-        $columns = $list;
-    }
-    else {
-        # if there is a comma, explode it
-        if(strpos($list,',')!==false) {
-            $columns = explode(',',$list);
-        }
-        else {
-            # if its a named projection, take that
-            if(isset($dd['projections'][$list])) {
-                $columns = explode(',',$dd['projections'][$list]); 
-            }
-            # finally, assume it is a column name
-            else {
-                $columns = array($list);
-            }
-        }
-    }
-    
-    # Now just run them out
-    $retval = array();
-    foreach($columns as $col) {
-        $retval[]=$dd['flat'][$col]['description'];
-    }
-    return $retval;
-}
 
 
 //function D*D_arrBrowseColumns(&$table) {
@@ -4821,6 +4956,7 @@ function ArraySafe(&$arr,$key,$value="") {
 	if(isset($arr[$key])) return $arr[$key]; else return $value;
 }
 
+
 /**
 * Wrapper for function {@link ArraySafe}.
 *
@@ -4831,9 +4967,13 @@ function ArraySafe(&$arr,$key,$value="") {
 * RETURN
 *	mixed		value associated with $key in $arr.
 */
+function arr($a, $key, $value='') {
+    return ArraySafe($a,$key,$value);
+}    
 function a(&$a,$key,$value='') {
     return ArraySafe($a,$key,$value);
 }
+
 
 /*f* Array-Functions/array_copy
 *
@@ -9131,6 +9271,12 @@ function jqDocReady($script) {
     $jdr = vgfGet('jqDocReady',array());
     $jdr[] = $script;
     vgfSet('jqDocReady',$jdr);
+    
+    # KFD 10/15/08. If we are in a json call, send this back
+    #               as script instead
+    if(gp('json')==1) {
+        x4Script($script);
+    }
     return false;
 }
 
