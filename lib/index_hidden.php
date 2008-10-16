@@ -395,12 +395,17 @@ if(    gpExists('gp_command')) index_hidden_command();
 # KFD 10/3/08.  Assign an x6 page if we can find
 #               one, which will force an override
 #               of x4 or x2.
-$x6File = 'x6'.gp('x4Page',gp('gp_page')).'.php';
-$x6Page = '';
-if(file_exists_incpath($x6File)) {
-    $x6Page =  gp('x4Page',gp('gp_page'));
+$x6Page = gp('x6Page');
+$x6File = '';
+if($x6Page!='') {
+    $x6File = "x6$x6Page.php";
 }
-
+else {
+    $x6File = 'x6'.gp('x4Page',gp('gp_page')).'.php';
+    if(file_exists_incpath($x6File)) {
+        $x6Page =  gp('x4Page',gp('gp_page'));
+    }
+}
 
 // Only one path can be chosen, and each path is completely
 // responsible for returning all headers, HTML or anything
@@ -437,65 +442,22 @@ function index_hidden_x6Dispatch($x6Page,$x6File) {
         ,'html'=>array()
         ,'script'=>array()
     );
-    
-    # If they are not logged in, or have timed out,
-    # send a redirection command to the login page
-    #
-#    if(!LoggedIn()) {
-#        if(gpExists('json')) {
-#            x4Script("window.location='index.php?gp_page=x_login'");
-#            echo json_encode_safe($GLOBALS['AG']['x4']);
-#        }
-#        else {
-#            echo "<script>window.location='index.php?gp_page=x_login'</script>";
-#        }
-#        return;
-#    }
-    
-    // This is very different from x4 for now, we
-    // assume we would not be here unless there were
-    // an x6 page.
-    //
-#    $x4Page = gp('x4Page');
-#    hidden('x4Page',$x4Page);  # makes form submits come back here
-#    if(gpExists('db')) {
-#        index_hidden_x4DB();
-#    }
-#    else if(file_exists("application/$x4Page.page.yaml")) {   
-#       include 'androPage.php';
-#       $obj_page = new androPage();
-#       if ($obj_page->flag_buffer) { ob_start(); }
-#       $obj_page->main($x4Page);
-#       if ($obj_page->flag_buffer) {
-#           x4HTML("*MAIN*",ob_get_clean());
-#       }
-#    }
-#    else {
-#        $object = x4Object($x4Page);
+    x4debug($x6Page);
+ 
 
     # Route to whatever methods are there
     include('androX6.php');
     include($x6File);
     $x6Class = 'x6'.$x6Page;
     $obj = new $x6Class();
+    # now work out which method to call
+    $method = 'html';
+    if(gp('x6Action')<>'') {
+        $method = gp('x6Action');
+    }
     ob_start();
-    $obj->html();
+    $obj->$method();
     x4HTML('*MAIN*',ob_get_clean());
-    
-    
-        
-        
-        
-        # Determine method and invoke it.  Notice any
-        # direct output is considered an error
-#        $method = gp('x4Action','main');
-#        ob_start();
-#        $object->$method();
-#        $errors = ob_get_clean();
-#        if($errors <> '') {
-#            x4Error($errors);
-#        }
-#    }
 
     # Put errors in that were reported by database operations
     if(Errors()) {
@@ -512,12 +474,7 @@ function index_hidden_x6Dispatch($x6Page,$x6File) {
         echo json_encode_safe($GLOBALS['AG']['x4']);
     }
     else {
-        # Tell the client-side library to initialize the
-        # 'inert' HTML that it received from us.
-        #
-#        x4Script("x4.main()");
-        
-        # Don't need a form in x4 mode
+        # Don't need a form in x6 mode
         vgaSet('NOFORM',true);
 
         #  Put things where the template expects to find them
