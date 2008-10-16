@@ -1036,6 +1036,35 @@ String.prototype.pad = function(len, pad, dir) {
  
 }
 
+/****m* String-Extensions/repeat
+*
+* NAME
+*   String.repeat
+*
+* FUNCTION
+*   The Javascript function repeat returns the input string
+*   repeated any number of times
+*
+* INPUTS
+*   * int - the number of times to repeat the string.
+*
+*
+* EXAMPLE
+*   Example usage:
+*     alert( 'abc'.repeat(3));
+*
+* SOURCE
+*/
+String.prototype.repeat = function(count) {
+    if(count==null) count = 1;
+    retval = '';
+    for(var x = 1; x<= count; x++) {
+        retval+= this;
+    }
+    return retval;
+}
+/******/
+
 /* ---------------------------------------------------- *\
 
    FIX BRAIN-DAMAGED INTERNET EXPLORER  
@@ -1154,6 +1183,74 @@ var u = {
     ******
     */
     debugFlag: false,
+    debugStack: [ ],
+    
+    /****m* u/debugPush
+    *
+    * NAME
+    *   u/debugPush
+    *
+    * FUNCTION
+    *   The javascript method debugPush allows you to turn on 
+    *   debugging and then later turn it back to its original
+    *   setting (either on or off).  This is useful when you 
+    *   do not want to turn debugging on globally, but just want
+    *   to turn it on or off in a particular routine.
+    *
+    * INPUTS
+    *   * boolean - new debugging setting (default: true)
+    *
+    * EXAMPLE
+    *   A javascript example would be:
+    *
+    *      u.debugPush(true); // force debugging on
+    *      u.debug("I want this message no matter what.");
+    *      u.debugPop();      // return to prior setting
+    *
+    * SOURCE
+    */
+    debugPush: function(value) {
+        if(value==null) value = true;
+        this.debugStack.push(this.debugFlag);
+        this.debugFlag = value;
+    },
+    
+    /****m* u/debugPop
+    *
+    * NAME
+    *   u/debugPop
+    *
+    * FUNCTION
+    *   The javascript method debugPop returns the u.debugFlag
+    *   setting to whatever it was before the most recent
+    *   call to u.debugPush.
+    *
+    *   If debugPop is called too many times (more than debugPush)
+    *   was called, a call is made to u.error() but no javascript
+    *   error actually occurs -- program execution will not fail.
+    *
+    * INPUTS
+    *   none.
+    *
+    * EXAMPLE
+    *   A javascript example would be:
+    *
+    *      u.debugPush(true); // force debugging on
+    *      u.debug("I want this message no matter what.");
+    *      u.debugPop();      // return to prior setting
+    *
+    * SOURCE
+    */
+    debugPop: function() {
+        if(this.debugStack.length==0) {
+            u.error("Call to debugPop with no prior call to debugPush");
+        }
+        else {
+            this.debugFlag = this.debugStack.pop();
+        }
+    },
+    
+    
     
     /****m* u/p
     * NAME
@@ -1230,6 +1327,7 @@ var u = {
     },
     /******/
     
+    logIndent: 0,
     /****m* u/log
     * NAME
     *   u.log
@@ -1246,10 +1344,13 @@ var u = {
     *
     * SOURCE
     */
-    log: function(message) {
+    log: function(message,logIndent) {
+        if(logIndent==-1) this.logIndent--;
+        message = ' '.repeat(this.logIndent*3)+message;
+        if(logIndent ==1) this.logIndent++; 
         if(typeof(console)!='undefined') {
-            console.log(msg);
-            return msg;
+            console.log(message);
+            return message;
         }
         return false;
     },
@@ -1276,9 +1377,33 @@ var u = {
     *
     * SOURCE
     */
-    debug: function(message) {
+    debug: function(message,logIndent) {
         if(this.debugFlag) {
-            return this.log(message);
+            return this.log(message,logIndent);
+        }
+        return false;
+    },
+    /******/
+
+    /****m* u/error
+    * NAME
+    *   u.error
+    *
+    * FUNCTION
+    *   This Javascript method sends an error message to 
+    *   console.log if firebug is installed.
+    *
+    *
+    * RESULT
+    *   Returns the original message if console.log is defined
+    *   (that is, if Firebug is installed), otherwise returns false.
+    *
+    * SOURCE
+    */
+    error: function(message,logIndent) {
+        if(typeof(console)!='undefined') {
+            console.error(message);
+            return message;
         }
         return false;
     },
@@ -3196,6 +3321,10 @@ window.a = window.ua = window.$a = {
             catch(e) { 
                 $a.dialogs.alert("Could not process server response!");
                 x4.debug(http.responseText);
+                if(u.byId('x6Log')) {
+                    u.byId('x6Log').innerHTML = http.responseText;
+                    u.byId('x6Log').style.display='block';
+                }
                 return false;
             }
             
