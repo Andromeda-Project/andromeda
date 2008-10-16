@@ -221,6 +221,14 @@ var x6events = {
         return this.retvals[eventName];
     }
 }
+/* **************************************************************** *\
+
+   X6 Data Dictionary
+   
+\* **************************************************************** */
+var x6dd = {
+    tables: { }
+}
 
 /* **************************************************************** *\
 
@@ -331,9 +339,7 @@ var x6 = {
         if(e.shiftKey) retval = 'Shift' + retval;
         
         // Make list of keys to stop no matter what
-        var stopThem = [ 'CtrlF5', 'F10',
-            'CtrlN'
-        ];
+        var stopThem = [ 'CtrlF5', 'F10' ];
         
         // Now we have a complete key label, fire the event
         u.debug("In x6.keyDispatch, code and event follow");
@@ -369,21 +375,48 @@ var x6inputs = {
         else {
             inp.zChanged = 1;
         }
+        x6inputs.setClass(inp);
     },
     
-    focus: function(inp,doRow) {
-        if(typeof(inp.zClassStem)=='undefined') {
-            inp.zClassStem = '';
-        }
-        inp.className = inp.zClassStem+"Selected";
-        if(doRow) {
+    focus: function(inp) {
+        inp.zSelected = 1;
+        x6inputs.setClass(inp);
+    },
+    
+    blur: function(inp) {
+        inp.zSelected = 0;
+        x6inputs.setClass(inp);
+    },
+    
+    setClass: function(inp) {
+        // First grab the flags that determine
+        // what we will do
+        var zSelected = u.p(inp,'zSelected',0);
+        var zChanged  = u.p(inp,'zChanged', 0);
+        var zError    = u.p(inp,'zError'  , 0);
+        var zRO       = u.p(inp,'zRO'     , 0);
+        var zNew      = u.p(inp,'zNew'    , 0);
+        
+        // now pick them in order of preference,
+        // we only pick one stem.
+        if     (zRO)      css = 'readOnly';
+        else if(zError)   css = 'error';
+        else if(zNew)     css = 'changed';
+        else if(zChanged) css = 'changed';
+        else              css = '';
+        
+        // Now pick the selected version if required
+        if(zSelected) css += 'Selected';
+        
+        // Flag to do the row
+        doRow = u.p(inp,'xClassRow',0);
+            
+        // Now set the class name
+        inp.className = css;
+        if(doRow && zSelected) {
             inp.parentNode.parentNode.className = 'selected';
         }
-    },
-    
-    blur: function(inp,doRow) {
-        inp.className = inp.zClassStem;
-        if(doRow) {
+        if(doRow && !zSelected) {
             inp.parentNode.parentNode.className = '';
         }
     }
@@ -782,28 +815,50 @@ var x6plugIns = {
             
             var mode = argsObj.mode;
             var row  = argsObj.row;
-            if      (mode=='new')  return this.goModeNew(row);
-            else if (mode=='edit') return this.goModeEdit(row);
-            else {
+            if(mode!='new' && mode!='edit') {
                 u.error("Object "+this.id+" has received a 'goMode' event "
                     +"for unhandled mode "+mode+".  Cannot process this "
                     +"request."
                 );
             }
+            else {
+                // Set values and remember skey value
+                if(mode=='new')  {
+                    this.zSkey = 0;
+                }
+                else {
+                    this.populateInputs(row);
+                    this.zSkey = row.skey;
+                }
+                
+                // now set the readonly and new flags on all controls
+                u.debugPush();
+                u.debug(mode);
+                $(this).find(':input').each(function() {
+                        u.debug(this.id);
+                    this.zNew = mode=='new' ? 1 : 0;
+                    if(mode=='new') {
+                        var ro = u.p(this,'xroins','N');
+                    }
+                    else {
+                        var ro = u.p(this,'xroupd','N');
+                    }
+                    if(ro=='Y') {
+                        this.zRO = 1;
+                        this.disabled = true;
+                    }
+                    else {
+                        this.zRO = 0;
+                        this.disabled = false;
+                    }
+                    x6inputs.setClass(this);
+                });
+                u.debugPop();
+                $(this).find(':input:not(.readOnly):first').focus();
+            }
         }
         
-        self.goModeNew = function(row) {
-            $(this).find(':input').css('backgroundColor','yellow');
-            this.zSkey = 0;
-            $(this).find(':input:not(.readonly):first').focus();            
-        }
-        self.goModeEdit = function(row) {
-            this.populateInputs(row);
-            this.zSkey = row.skey;
-            $(this).find(':input:not(.readonly):first').focus();            
-        }
-        
-        // Detai accepts a request to delete a row by skey
+        // Detail accepts a request to delete a row by skey
         x6events.subscribeToEvent('delRow_'+table,id);
         self['receiveEvent_delRow_'+table] = function(skey) {
             // <--- early return.  If not our skey, ignore

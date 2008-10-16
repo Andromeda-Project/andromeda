@@ -96,25 +96,32 @@ input,select,textarea {
     background-color: #dddddd;
     color: #444444;
 }
-
 tr.selected {
     background-color: #555555;
     color: white;
 }
 input.Selected,select.Selected,textarea.Selected {
-    border-width: 1px;
-    border-style: solid;
-    border-color: #55555;
-    background-color: #777777;
-    color: white;
+    border-color: #555555;
+    background-color: #f0f0f0;
+    color: #333333;
 }
 input.changed,select.changed,textarea.changed {
-    border-width: 1px;
-    border-style: solid;
-    border-color: lightyellow;
-    background-color: lightyellow;
+    border-color: #E0E224;
+    background-color: #E0E224;
 }
-input.readonly,select.readonly,textarea.readonly {
+input.changedSelected,select.changedSelected,textarea.changedSelected {
+    border-color: #555555;
+    background-color: #FDFF02;
+}
+input.error,select.error,textarea.error {
+    border-color: #FF888A;
+    background-color: #FF888A;
+}
+input.errorSelected,select.errorSelected,textarea.errorSelected {
+    border-color: #555555;
+    background-color: #FFD6D7;
+}
+input.readOnly,select.readOnly,textarea.readOnly {
     border-width: 1px;
     border-style: solid;
     border-color: white;
@@ -123,23 +130,16 @@ input.readonly,select.readonly,textarea.readonly {
     font-weight: bolder;
     
 }
-input.error,select.error,textarea.error {
-    border-width: 1px;
-    border-style: solid;
-    border-color: black;
-    background-color: pink;
-}
 
 td.x4Caption {
     padding-top: 1px;
     padding-right: 5px;
+    padding-left: 12px;
 }
-/*
 td.x4Input {
-    padding-top: 1px;
-    padding-bottom: 1px;
+    padding-right: 12px;
 }
-*/
+
 
 /* ========================================================= *\
    =========================================================
