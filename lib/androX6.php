@@ -211,10 +211,11 @@ class androX6 {
         # Grab the data dictionary for this table
         $dd       = $this->dd;
         $table_id = $this->dd['table_id'];
-
-        # Always send the data dictionary.  Various browser-side
-        # actions will need this.
-        jqDocReady("x6dd.tables.$table_id = ".json_encode($dd));
+        
+        # Notice we are NOT sending the data dictionary up.
+        # We are hoping to avoid that by setting properties
+        # directly onto controls and plugins.
+        #jqDocReady("x6dd.tables.$table_id = ".json_encode($dd));
         
         # Now put in your basic title
         $div = html('div');
@@ -231,6 +232,8 @@ class androX6 {
         # Left side is a grid plugin
         $box1  = $div->h('div');
         $box1->addClass('box');
+        $box1->tabFocus();
+        $box1->hp['onkeydown'] = 'x6inputs.keyDown(event,this)';
         include 'x6plugInGrid.php';
         $x6grid = new x6plugInGrid;
         $x6grid->main($box1,$dd);
@@ -240,6 +243,8 @@ class androX6 {
         
         $box2  = $div->h('div');
         $box2->addClass('box');
+        $box2->tabIndex();
+        $box2->hp['onkeydown'] = 'x6inputs.keyDown(event,this)';
         include 'x6plugInDetail.php';
         $x6detail = new x6plugInDetail;
         $x6detail->main($box2,$dd);
@@ -247,5 +252,12 @@ class androX6 {
         # Render it!  That's it!
         $div->render();
     }
+    # ===================================================================
+    # -------------------------------------------------------------------
+    #
+    # Simple Library routines
+    #
+    # -------------------------------------------------------------------
+    # ===================================================================
 }
 ?>

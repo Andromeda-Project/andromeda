@@ -45,6 +45,8 @@ class x6plugInDetail {
         foreach($projection->inputs as $idx=>$input) {
             $projection->inputs[$idx]->hp['onkeyup']
                 ='x6inputs.keyUp(event,this)';
+            $projection->inputs[$idx]->hp['onkeydown']
+                ='x6inputs.keyDown(event,this)';
             $projection->inputs[$idx]->hp['onfocus']
                 ='x6inputs.focus(this)';
             $projection->inputs[$idx]->hp['onblur']

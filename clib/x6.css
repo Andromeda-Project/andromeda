@@ -43,6 +43,9 @@ div.ahTabPaneSelected {
     border: 5px solid gray;
     position: relative;
 }
+.box:active {
+    border: 5px solid yellow;
+}
 .box-spacer {
     width: 10px;
     float: left;

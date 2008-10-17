@@ -264,8 +264,14 @@ var x6 = {
                 return retval;
         });
         
-        // Fade in anybody who has been asked to fade in
-        $('.fadein').fadeIn('slow');
+        // Fade in anybody who has been asked to fade in,
+        // and when finished put focus onto whichever
+        // object has asked for it.
+        $('.fadein').fadeIn('slow',function() {
+                $('[x6firstFocus=Y]:last').focus();
+        })
+        
+        
     },
     
     // Keyboard handler
@@ -368,6 +374,9 @@ var x6 = {
    
 \* **************************************************************** */
 var x6inputs = {
+    // Key up is used to look for changed values because
+    // you do not see an input's new value until the keyup 
+    // event.  You do not see it in keypress or keydown.
     keyUp: function(e,inp) {
         if(inp.value==inp.zOriginalValue) {
             inp.zChanged = 0;
@@ -378,14 +387,72 @@ var x6inputs = {
         x6inputs.setClass(inp);
     },
     
+    // Keydown is used only for tab or shift tab, to enforce
+    // the concept of a "tab loop".  This function only does
+    // anything if there are no enabled controls after the
+    // 
+    //
+    keyDown: function(e,inp) {
+        u.debugPush();
+        console.log(e);
+        u.debug(e);
+        u.debug(inp);
+        if(e.keyCode!=9) return true;
+        
+        // work out which property to use.
+        if(e.shiftKey) { 
+            var prop = 'xPrevTab';
+            var jqf  = ':last';
+        }
+        else {
+            var prop = 'xNextTab';
+            var jqf  = ':first';
+        }
+        u.debug(prop);
+        u.debug(jqf);
+        
+        // The loop breaks when we find a readable control
+        // or get to the end of the list
+        var xinp = inp;
+        while(true) {
+            // Current control has no next tab, start over
+            // at beginning
+            if( u.p(xinp,prop,'X')=='X') {
+                jqs = '[tabindex]:not([disabled])'+jqf;
+                u.debug("no control found, string to use: "+jqs);
+                $(jqs).focus();
+                e.stopPropagation();
+                return false;
+            }
+            
+            // Advance to next
+            var tabCandidate = u.p(xinp,prop);
+            xinp = $('[tabindex='+tabCandidate+']');
+            
+            // and if the next is not disabled, return TRUE,
+            // do NOTHING, and the browser will handle it
+            if(!xinp.disabled) return true;
+            
+            // if we get around to the original input, something
+            // is wrong, cancel also
+            if(xinp==inp) return true;
+        }
+    },
+    
     focus: function(inp) {
         inp.zSelected = 1;
         x6inputs.setClass(inp);
+    },
+    xFocus: function(anyObject) {
+        $(this).addClass('selected');
     },
     
     blur: function(inp) {
         inp.zSelected = 0;
         x6inputs.setClass(inp);
+    },
+    xBlur: function(anyObject) {
+        $(anyObject).removeClass('selected');
     },
     
     setClass: function(inp) {

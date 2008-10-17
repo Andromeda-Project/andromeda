@@ -1308,6 +1308,106 @@ class androHtml {
     }
     /******/
 
+    /****m* androHtml/tabIndex
+    *
+    * NAME
+    *    tabIndex
+    *
+    * FUNCTION
+    *	The PHP method tabIndex sets the HTML attribute "tabindex" on
+    *   the object.  The first time it is called, this routine 
+    *   sets the index at 1000.  Subsequence calls go to 1001,1002 etc.
+    *
+    *   The first time you call this method it also marks the 
+    *   object as getting focus when the page loads.  To force focus
+    *   to begin on some other object, call tabFocus instead of
+    *   tabIndex for that object.
+    *
+    * INPUTS
+    *   int (optional) starting value.  If this value is supplied,
+    *   the object will get this value for its tabIndex, and 
+    *   subsequent calls will increment from there.  Defaults
+    *   to 1000.
+    *
+    * EXAMPLE
+    *   Here is an example:
+    *     <?php
+    *     $div = html('div');
+    *     $input = $div->h('input');
+    *     $input->tabIndex();
+    *     // more poperty settings...
+    *     $input = $div->h('input'); // reuse var, make another input
+    *     $input->tabIndex();
+    *     ?>
+    *  
+    * SEE ALSO
+    *   tabFocus
+    *
+    ******/
+    function tabIndex($startHere=null) {
+        if(!is_null($startHere)) {
+            $tabIndex = $startHere;
+        }
+        else {
+            $tabIndex = vgfGet('tabindex',0);
+            if($tabIndex == 0) {
+                $this->hp['x6firstFocus']='Y';
+                $tabIndex = 1000;
+            }
+        }
+        $this->hp['tabIndex'] = $tabIndex;
+        vgfSet('tabindex',++$tabIndex);
+        if(is_object(vgfGet('lastTab',0))) {
+            $obj = vgfGet('lastTab');
+            $obj->hp['xNextTab'] = $this->hp['tabIndex'];
+            $this->hp['xPrevTab'] = $obj->hp['tabIndex'];
+        }
+        vgfSet('lastTab',$this);
+    }
+
+    /****m* androHtml/tabFocus
+    *
+    * NAME
+    *    tabFocus
+    *
+    * FUNCTION
+    *	The PHP method tabFocus does exactly the same thing
+    *   as tabIndex, with one additional action.  When the page
+    *   loads, this object will start out with focus.
+    *
+    *   Calling this method more than once while building a page
+    *   causes focus to begin on the last object that made 
+    *   the call.
+    *
+    *   The first time you call tabIndex, it acts like a call
+    *   to tabFocus, so there is no reason to ever call tabFocus
+    *   unless you want focus to begin somewhere other than the
+    *   first tabbable object.
+    *
+    * INPUTS
+    *   int (optional) starting value.  If this value is supplied,
+    *   the object will get this value for its tabIndex, and 
+    *   subsequent calls will increment from there.
+    *
+    * EXAMPLE
+    *   Here is an example:
+    *     <?php
+    *     $div = html('div');
+    *     $input = $div->h('input');
+    *     $input->tabFocus();   // first input should get focus
+    *     // more poperty settings...
+    *     $input = $div->h('input'); // reuse var, make another input
+    *     $input->tabIndex();
+    *     ?>
+    *  
+    *
+    ******/
+    function tabFocus($startHere=null) {
+        $this->tabIndex($startHere);
+        $this->hp['x6firstFocus']='Y';
+    }
+    
+        
     /****m* androHtml/TbodyRows
     *
     * NAME
