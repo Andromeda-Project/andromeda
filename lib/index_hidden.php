@@ -139,6 +139,9 @@ if (file_exists($x)) {
 }
 
 
+#$AG['tracefile'] = fsDirTop().'tmp/trace';
+#xdebug_start_trace($AG['tracefile']);
+
 // ==================================================================
 // >>>
 // >>> Load Andromeda Plugin Manager
@@ -392,51 +395,70 @@ if(gp('x4Page')=='' && gp('gp_page')=='') {
 // now if required.
 if(    gpExists('gp_command')) index_hidden_command();
 
-# KFD 10/16/08. Beginning of x6 processing.  Load set of
-#               profiles if it exists.  These specify
-#               pre-defined profiles for pages
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+# KFD 10/17/08.  x6 Page Resolution
+#
+#
+$x6page    = '';
+$x6file    = '';
+$x6yaml    = '';
+$x6profile = '';
+$x6plugin  = '';
+$x6action  = '';
+
+# Get a candidate page to use to figure out the resolution
+$x6cand = gp('x6page');
+if($x6cand=='') {
+    $x6cand= gp('x4Page',gp('gp_page'));
+}
+
+# Work out if any x6 factor has been specified or exists.
+# If any of them do, it forces dispatching to go to x6.
+# The x6 dispatcher will then resolve what action to take.
+
+# A custom file for this page
+$x = "x6$x6cand.php";
+if(file_exists_incpath($x)) {
+    $x6file = $x;
+}
+
+# a Yaml file for this page
+$x = $x6cand.'.x6.yaml';
+if(file_exists_incpath($x)) {
+    $x6yaml = $x;
+}
+
+# A profile for this page specified either in the dd.yaml
+# or overridden in applib.
 $fx6profiles = fsDirTop().'generated/ddx6profiles.php';
 $GLOBALS['AG']['x6profiles'] = array();
 if(file_exists($fx6profiles)) {
     include($fx6profiles);
 }
-#  This override allows us to change profiles in
-#  applib w/o running a build.
 if(function_exists('app_x6profiles')) {
     app_x6profiles();
 }
-# Funny business. gp_page is always defined, so we have
-# to check if its blank.
-$x6pagecandidate = gp('gp_page');
-if($x6pagecandidate=='') {
-    $x6pagecandidate= gp('x4Page',gp('x6Page',''));
+if(isset($GLOBALS['AG']['x6profiles'][$x6cand])) {
+    $x6profile = $GLOBALS['AG']['x6profiles'][$x6cand];
 }
-$x6Profile = arr($GLOBALS['AG']['x6profiles'],$x6pagecandidate,'');
 
-if($x6Profile<>'') {
-    # If a profile exists, we force x6 processing with 
-    # a profile but no file.  It will all be handled by
-    # built-in framework stuff. see x6 dispatching below
-    # for more details on how that works.
-    $x6Page = $x6pagecandidate;
-    $x6File = '';
+# the action is always taken directly from request variables,
+# 
+$x6action = gp('x6action');
+$x6plugin = gp('x6plugIn');
+
+# Now if any of those were not empty, x6 it is
+if(gp('x6Page').$x6file.$x6yaml.$x6profile.$x6plugin.$x6action<>'') {
+    $x6page = $x6cand;
 }
-else {
-    # KFD 10/3/08.  Assign an x6 page if we can find
-    #               one, which will force an override
-    #               of x4 or x2.
-    $x6Page = gp('x6Page');
-    $x6File = '';
-    if($x6Page!='') {
-        $x6File = "x6$x6Page.php";
-    }
-    else {
-        $x6File = 'x6'.gp('x4Page',gp('gp_page')).'.php';
-        if(file_exists_incpath($x6File)) {
-            $x6Page =  gp('x4Page',gp('gp_page'));
-        }
-    }
-}
+
+# Ken's debugging to make sure assignments worked
+#echo "candidate -$x6cand- page -$x6page- file -$x6file- yaml -$x6yaml-
+#  profile -$x6profile- plugin -$x6plugin- action -$x6action-";
+#exit;    
+#
+# KFD 10/17/08.  x6 Page Resolution (END)
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 // Only one path can be chosen, and each path is completely
 // responsible for returning all headers, HTML or anything
@@ -449,11 +471,15 @@ elseif(gp('gp_dropdown') <>'') index_hidden_dropdown();
 elseif(gp('gp_fetchrow') <>'') index_hidden_fetchrow();
 elseif(gp('gp_sql')      <>'') index_hidden_sql();
 elseif(gp('gp_ajaxsql')  <>'') index_hidden_ajaxsql();
-elseif($x6Page           <>'') 
-    index_hidden_x6Dispatch($x6Page,$x6File,$x6Profile);
+elseif($x6page           <>'') index_hidden_x6Dispatch(
+    $x6page,$x6file,$x6yaml,$x6profile,$x6plugin,$x6action
+);
 elseif(gp('x4Page')      <>'') index_hidden_x4Dispatch();
 else                           index_hidden_page();
 
+#xdebug_stop_trace();
+#echo "<pre style='background-color: white'>";
+#readfile($AG['tracefile'].'.xt');
 
 // All finished, disconnect and leave. 
 scDBConn_Pop();
@@ -464,7 +490,9 @@ return;
 // ------------------------------------------------------------------
 // >> index_hidden_x6Dispatch
 // ------------------------------------------------------------------
-function index_hidden_x6Dispatch($x6Page,$x6File,$x6Profile) {
+function index_hidden_x6Dispatch(
+    $x6page,$x6file,$x6yaml,$x6profile,$x6plugin,$x6action
+) {
     # This is everything that *might* go back, make a place
     # for all of it
     $GLOBALS['AG']['x4'] = array(
@@ -474,49 +502,108 @@ function index_hidden_x6Dispatch($x6Page,$x6File,$x6Profile) {
         ,'html'=>array()
         ,'script'=>array()
     );
-    x4debug($x6Page);
+
+    # If they have already defined MPPages in applib, we will
+    # pick it up here with this global declaration.
+    #
+    # MPPages lists pages that may be accessed w/o login
+    global $MPPages;  
+    if(!is_array($MPPages)) {
+      $MPPages = array();
+    }
+    $MPPages['x_home']='Home Page';
+    $MPPages['x_login']='Login';
+    $MPPages['x_noauth']='Authorization Required';
+    $MPPages['x_password']="Password";
+    $MPPages['x_mpassword']="Member Password";
+    $MPPages['x_paypalipn']='Paypal IPN';
+
+    #$debug=" page -$x6page- file -$x6file- yaml -$x6yaml-
+    #    profile -$x6profile- plugin -$x6plugin- action -$x6action-";
+    #echo $debug;
+    #exit;
+    #x4Debug($debug);
+    
+    # Session timeouts.  Need to code for basic page access
+    # and code for ajax timeouts.
+    #echo $x6page;
+    #hprint_r($MPPages);
+    #echo in_array($x6page,array_keys($MPPages));
+    
+    if(!LoggedIn() && !in_array($x6page,array_keys($MPPages))){
+        if(gpExists('json')) {
+            x4Script("window.location='index.php?gp_page=x_login'");
+            echo json_encode($GLOBALS['AG']['x4']);
+        }
+        else {
+            echo "<script>window.location='index.php?gp_page=x_login'</script>";
+        }
+        return;
+    }
+    
  
 
     # Include the basic x6 class, and set a default for
-    # the class 
+    # the class and the method call
     include('androX6.php');
-    $x6Class = 'androX6';
+    $x6class = 'androX6';
+    $x6method= 'x6main';
     
-    # Figure out if we are loading a file or calling a
-    # plugin.  If a plugin has been called, that wins.
-    # If not, and a file exists, that wins.  Otherwise
-    # we are falling back to framework code.
-    if(gp('x6plugIn')<>'') {
-        $x6File  = '';
-        $x6Class = 'x6plugIn'.gp('x6plugIn');
-        include($x6Class.'.php');
-    }
-    elseif($x6File<>'' && file_exists_incpath($x6File)) {
-        include($x6File);
-        $x6Class = 'x6'.$x6Page;
-    }
-    
-    # now work out which method to call.  The resolution order is:
-    # - a profile always wins, call the profile
-    # - next an x6Action wins, call that
-    # - call html if it exists
-    if($x6Profile<>'') {
-        $method = 'profile_'.$x6Profile;
-    }
-    elseif (gp('x6Action')<>'') {
-        $method = gp('x6Action');
+    # This is the core resolution where we figure out what class
+    # to use and what method to call.  It is a little complicated
+    # because we support 3 different kinds of pages (yaml, profile
+    # and custom) plus calls from plugins to refresh, plus JSON
+    # calls to do database stuff.
+    if($x6plugin<>'') {
+        # A plugin always wins.  A call to a plugin assumes that
+        # x6action is also specified.  We are going to instantiate
+        # the plugin and call the method named by x6action.
+        $x6file  = '';
+        $x6class = 'x6plugin'.$x6plugin;
+        $x6method= $x6action;
+        include($x6class.'.php');
     }
     else {
-        $method = 'html';
+        # No plugin means we are either using the base andromeda
+        # class androX6, or using a custom class.  We only use
+        # a custom class if the programmer has supplied a file.
+        # So if that file exists we load that and use it.
+        if($x6file<>'') {
+            $x6class = 'x6'.$x6page;
+            include($x6class.'.php');
+        }
+            
+        # The next major decision is whether we are calling some
+        # specific action, or loading a page.  If an action was
+        # specified that wins.
+        if($x6action<>'') {
+            $x6method = $x6action;
+        }
+        else {
+            # Now we must be loading a page, because no plugin was
+            # specified and no action.  At this point all that is
+            # left to figure out is whether we load a profile or
+            # go for the default "html" routine.
+            if($x6profile<>'') {
+                $x6method = 'profile_'.$x6profile;
+            }
+            else {
+                $x6method = 'x6main';
+            }
+        }
     }
-
-    # Create the object and do the job
-    ob_start();
     
-    $obj = new $x6Class();
-    $obj->dd   = ddTable($x6Page);
+    # Ken's debugging code to make sure resolution worked
+    #echo "<br/>class -$x6class- method -$x6method-";
+    #exit;
+    
+    # Now everything is resolved.  We know what class to instantiate
+    # and what method to call, so go for it.
+    ob_start();
+    $obj = new $x6class();
+    $obj->dd   = ddTable($x6page);
     $obj->view = arr($obj->dd,'viewname','');
-    $obj->$method();
+    $obj->$x6method();
     x4HTML('*MAIN*',ob_get_clean());
 
     # Put errors in that were reported by database operations
@@ -526,6 +613,8 @@ function index_hidden_x6Dispatch($x6Page,$x6File,$x6Profile) {
             x4Error($err);
         }
     }
+    
+    # CODE BELOW HERE WAS TAKEN FROM X4 UNCHANGED.
     
     # if the "json" flag is set, we return all output as JSON,
     # otherwise we package it up with the normal template and
