@@ -2068,6 +2068,7 @@ class androHTMLTabDiv extends androHTML {
     var $lastCell   = 0;
     var $scrollable = false;
     var $colWidths  = 0;
+    var $rows       = array();
     
     function androHTMLTabDiv($height=300) {
         $this->htype = 'div';
@@ -2192,6 +2193,7 @@ class androHTMLTabDiv extends androHTML {
     
     function addRow($id) {
         $this->lastRow = $this->dbody->h('div');
+        $this->rows[] = $this->lastRow;
         $this->lastRow->hp['id'] = 'row_'.$id;
         $this->lastCell = 0;
         return $this->lastRow;
@@ -2494,13 +2496,38 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
     }
 
     # Look for "on" options
-    $list=array('onchange','onkeyup','onkeydown','onkeypress'
+    $list=array('onchange'
+        ,'onkeyup','onkeydown','onkeypress'
+        ,'onfocus','onblur'
         ,'onmouseover','onmouseout','onclick'
     );
     foreach($options as $key=>$value) {
         if(in_array($key,$list)) {
             $input->hp[$key] = $value;
         }
+    }
+    
+    # KFD 10/18/08, set tab index using new x6 if option is there
+    if(arr($options,'tabindex',false)) {
+        $input->tabIndex();
+    }
+    
+    # KFD 10/18/08, accept a set of attributes from the
+    #               options array
+    $atts = arr($options,'attributes',array());
+    foreach($atts as $name=>$value) {
+        $input->hp[$name]=$value;
+    }
+    
+    # KFD 10/18/08, add any classes named in options
+    $classes = arr($options,'classes',array());
+    foreach($classes as $class) {
+        $input->addClass($class);
+    }
+    
+    # KFD 10/18/08, add default if present
+    if($colinfo['automation_id'] == 'DEFAULT') {
+        $input->hp['xDefault'] = $colinfo['auto_formula'];
     }
 
     # For now that's all we are going to do.
@@ -14574,14 +14601,14 @@ function SQL2($sql,$dbconn,&$error=false)
 	global $AG;
 	$errlevel = error_reporting(0);
 	$debug = trim(ConfigGet('js_css_debug','N'));
-	if ( $debug ) {
+	if ( $debug =='Y') {
     	$mtime = microtime();
         $mtime = explode(" ",$mtime);
         $mtime = $mtime[1] + $mtime[0];
         $starttime = $mtime; 
     }
 	pg_send_query($dbconn,$sql);
-	if ( $debug ) {
+	if ( $debug =='Y') {
 	    $mtime = microtime();
         $mtime = explode(" ",$mtime);
         $mtime = $mtime[1] + $mtime[0];
@@ -15028,8 +15055,6 @@ function SQLX_Insert($table,$colvals,$rewrite_skey=true,$clip=false) {
     }
     x4Debug($sql);
     x4Debug(SessionGet('UID'));
-    //h*print_r($colvals);
-    //h*print_r($sql);
 
     // ERRORROW CHANGE 5/30/07, big change, SQLX_* routines now save
     //  the row for the table if there was an error
@@ -15042,7 +15067,12 @@ function SQLX_Insert($table,$colvals,$rewrite_skey=true,$clip=false) {
 	$notices = pg_last_notice($GLOBALS["dbconn"]);
     $retval = 0;
 	$matches = array();
-	preg_match_all("/SKEY(\D*)(\d*);/",$notices,$matches);
+    # KFD 10/18/08. This venerable line has been quietly working forever,
+    #               until today!  The problem turned out to be the table
+    #               name had a number in it, which screwed it up!  So
+    #               I've changed one line here.
+	#preg_match_all("/SKEY(\D*)(\d*);/",$notices,$matches);    
+    preg_match_all("/SKEY(.*\s)(\d*);/iu",$notices,$matches);
 	if(isset($matches[2][0])) {
         $retval = $matches[2][0];
         if ($rewrite_skey) {
