@@ -1,5 +1,5 @@
 <?php 
-class x6plugInDetail {
+class x6plugindetailDisplay {
     # ================================================================
     # 
     # Plugin main function, usually generates first version
@@ -34,18 +34,40 @@ class x6plugInDetail {
         $a->hp['x6table']  = $table_id;
         $a->hp['x6plugIn'] = 'buttonRemove';
         $a->hp['style']    = 'float: right';
+        $a=$area1->h('a-void','Abandon Changes');
+        $a->addClass('button');
+        $a->hp['x6table']  = $table_id;
+        $a->hp['x6plugIn'] = 'buttonAbandon';
+        $a->hp['style']    = 'float: right';
         
         $area1->br(2);
         
         # generate a detail pane of inputs and assign
         # the standard keyup to all of them.
+        #
+        # Note: tabLoop is a requirement for x4 that is easier
+        # to just define and pass in than it is to try to make
+        # it go away.  
         $tabLoop = array();
-        $projection = projection($dd,'',$tabLoop);
-        $tabindex = 1000;
+        $options = array(
+            'onkeyup'=>'x6inputs.keyUp(event,this)'
+            ,'onkeydown'=>'x6inputs.keyDown(event,this)'
+            ,'onfocus'=>'x6inputs.focus(this)'
+            ,'onblur'=>'x6inputs.blur(this)'
+            ,'attributes'=>array(
+                'xClassRow'=>1
+                ,'disabled'=>true
+            )
+            ,'classes'=>array('readOnly')
+            ,'tabIndex'=>true
+            
+        );
+        $projection = projection($dd,'',$tabLoop,$options);
         foreach($projection->inputs as $idx=>$input) {
+            /*
             $projection->inputs[$idx]->hp['onkeyup']
                 ='x6inputs.keyUp(event,this)';
-            $projection->inputs[$idx]->hp['onkeydown']
+            $projection->inputs[$idx]->hp['onkeypress']
                 ='x6inputs.keyDown(event,this)';
             $projection->inputs[$idx]->hp['onfocus']
                 ='x6inputs.focus(this)';
@@ -53,6 +75,8 @@ class x6plugInDetail {
                 ='x6inputs.blur(this)';
             $projection->inputs[$idx]->hp['xClassRow'] = '1';
             $projection->inputs[$idx]->hp['disabled'] = 'true';
+            */
+            //$projection->inputs[$idx]->addClass('readOnly');
             $projection->inputs[$idx]->tabIndex();
         }
         
@@ -66,6 +90,13 @@ class x6plugInDetail {
         $sb = $area1->h('div','status message here');
         $sb->addClass('statusBar');
         
+        $disables=<<<JS
+            x6events.fireEvent('disable_duplicate');
+            x6events.fireEvent('disable_save');
+            x6events.fireEvent('disable_abandon');
+            x6events.fireEvent('disable_remove');
+JS;
+        jqDocReady($disables);
 
         return $area1;
     }

@@ -1,19 +1,19 @@
 <?php 
-class x6plugInGrid {
+class x6pluginGrid {
     # ================================================================
     # 
     # Plugin main function, usually generates first version
     #  that goes to browser
     #
     # ================================================================
-    function &main(&$area0,$dd) {
+    function &main(&$area0,$dd,$skey=0) {
         $table_id = $dd['table_id'];
         
         # Create a grid. Notice that right now we are assuming
         # 400px high, which we need to do better with later.
         $grid = $area0->addTabDiv('400');
         $grid->hp['id'] = 'grid_'.$table_id;
-        $grid->ap['x6plugIn'] = 'Grid';
+        $grid->ap['x6plugIn'] = 'grid';
         $grid->hp['x6table']  = $table_id;
         
         # Add in the column headers
@@ -56,7 +56,8 @@ class x6plugInGrid {
         $sortAsc = gp('sortAsc','true')=='true' ? 'ASC' : 'DESC';
         x4debug($sortCol);
         x4debug($sortAsc);
-        $sq="Select * from ".$dd['viewname']."
+        $sWhere = $skey==0 ? '' : ' where skey = '.SQLFC($skey);
+        $sq="Select * from ".$dd['viewname']." $sWhere
               order by $sortCol $sortAsc";
         x4debug($sq);
         $rows = SQL_AllRows($sq,'skey');
@@ -66,8 +67,7 @@ class x6plugInGrid {
             $tr->hp['onmouseover']="$(this).addClass('hilight')";
             $tr->hp['onmouseout'] ="$(this).removeClass('hilight')";
             $tr->hp['onclick']    
-                ="x6events.fireEvent('reqEditRow_$table_id',{$user['skey']});"
-                ."this.className='selected'";
+                ="x6events.fireEvent('reqEditRow_$table_id',{$user['skey']});";
             foreach($acols as $col) {
                 $grid->addCell($user[$col]);
             }
@@ -89,12 +89,25 @@ class x6plugInGrid {
     # some reason.
     #
     # ================================================================
-    function refresh() {
-        $table_id = gp('x6Page');
+    function refresh($skey=0) {
+        $table_id = gp('x6page');
         $dd = ddTable($table_id);
         $div = html('div');
-        $grid = &$this->main($div,$dd);
-        x4HTML('*MAIN*',$grid->dbody->bufferedRender());
+        $grid = &$this->main($div,$dd,$skey);
+        if($skey==0) {
+            x4HTML('*MAIN*',$grid->dbody->bufferedRender());
+        }
+        else {
+            x4HTML('*MAIN*',$grid->rows[0]->bufferedRender());
+        }
+    }
+    # ================================================================
+    # 
+    # A onerow request wants the html for a single row
+    #
+    # ================================================================
+    function oneRow() {
+        $this->refresh(gp('skey'));
     }
     
 }
