@@ -27,18 +27,26 @@ class androX6 {
     # Major Area 0: User overridable functions 
     #
     # ===================================================================
-    /****m* androX6/html
+    /****m* androX6/x6main
     *
     * NAME
-    *   androX6/html
+    *   androX6/x6main
     *
     * PURPOSE
     *   If you want to make a purely custom web page then 
-    *   use the html() method to generate and display your html.
+    *   use the x6main() method to generate and display your html.
     *
     ******
     */
-    function html() { }
+    function x6main() { 
+        ?>
+        <h1>Unprogrammed page</h1>
+        
+        <p>The programmer has made a call to a page that has no
+           profile and no custom code.  
+        </p>
+        <?php
+    }
     # ===================================================================
     #
     # SERVER FUNCTION 2: Return a single row when asked 
@@ -62,7 +70,7 @@ class androX6 {
     #
     # ===================================================================
     function save() {
-        $table_id = gp('x6Page');
+        $table_id = gp('x6page');
         $dd = ddTable($table_id);
         
         $row0 = aFromGP('x4v_');
@@ -121,6 +129,7 @@ class androX6 {
         
         if(!isset($row['skey'])) {
             $skey = SQLX_Insert($dd,$row);
+            echo "slqx_insert gave skey $skey";
             if(!errors()) {
                 $row=SQL_OneRow(
                     "Select * FROM {$dd['viewname']} WHERE skey = $skey"
@@ -135,6 +144,7 @@ class androX6 {
                 $row=SQL_OneRow(
                     "Select * FROM {$dd['viewname']} WHERE skey = $skey"
                 );
+                x4Debug($row);
                 x4Data('row',$row);
             }
         }
@@ -150,7 +160,7 @@ class androX6 {
       *
       */
     function delete() {
-        $view = ddView(gp('x6Page'));
+        $view = ddView(gp('x6page'));
         $skey = SQLFN(gp('skey'));
         $sq="Delete from $view where skey = $skey";
         if(Errors()) {
@@ -225,16 +235,16 @@ class androX6 {
         # Make the div into a table controller.  There always
         # has to be a table controller somewhere.
         $div->hp['id'] = 'tc_'.$table_id;
-        $div->ap['x6plugIn'] = 'tableController';
+        $div->ap['x6plugin'] = 'tableController';
         $div->ap['x6table']  = $table_id;
         
         # Create a two-sided layout by creating two boxes
         # Left side is a grid plugin
         $box1  = $div->h('div');
         $box1->addClass('box');
-        $box1->tabFocus();
+        $box1->tabIndex();
         $box1->hp['onkeydown'] = 'x6inputs.keyDown(event,this)';
-        include 'x6plugInGrid.php';
+        include 'x6plugingrid.php';
         $x6grid = new x6plugInGrid;
         $x6grid->main($box1,$dd);
         
@@ -245,8 +255,8 @@ class androX6 {
         $box2->addClass('box');
         $box2->tabIndex();
         $box2->hp['onkeydown'] = 'x6inputs.keyDown(event,this)';
-        include 'x6plugInDetail.php';
-        $x6detail = new x6plugInDetail;
+        include 'x6plugindetailDisplay.php';
+        $x6detail = new x6plugindetailDisplay;
         $x6detail->main($box2,$dd);
         
         # Render it!  That's it!
