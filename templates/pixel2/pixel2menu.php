@@ -21,7 +21,7 @@ foreach($menus as $menuid=>$menuinfo) {
     $ul  = $pad->h('ul');
     $ul->hp['id'] = 'pixel2_menu_'.$menuid;
     $ul->addClass('dropdown');
-    $ul->hp['style'] = 'display:none;';
+    $ul->hp['style'] = 'display:none;z-index:5000';
     $ul->hp['onmouseover'] = "pixel2ShowMenu('$menuid')";
     $ul->hp['onmouseout']  = "window.pixel2pad=false;pixel2HideMenu('$menuid')";
     foreach($menuinfo['items'] as $page=>$pageinfo) {
