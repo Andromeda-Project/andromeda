@@ -19,7 +19,60 @@
    or visit http://www.gnu.org/licenses/gpl.html
 \* ================================================================== */
 
+/* ================================================================== *\
+ 
+   Debugging using Firebug.
+   
+   This file is full of commands that make use of firebugs 
+   very nice console facilities.  The up-side is that we get very
+   thorough event tracing when needed.  The down-side is that they
+   do not work at all on Internet Explorer and severely slow you 
+   down while running.
+   
+   Therefore, it is desirable to be able to turn them off an on
+   from time to time.  The best thing to do is comment them all
+   out completely, but that can be tedious.  The following two
+   Beanshell files show the jEdit commands for turning logging
+   on and off by commenting and uncommenting the relevant lines.
+   
+   # Beanshell: Turn logging off by commenting out lines
+   # NOTICE: THE FIRST AND SECOND LINES HAVE THE STRING LITERAL '* /'
+   #         YOU MUST REMOVE THAT SPACE WHEN YOU RUN THESE
+    SearchAndReplace.setSearchString("/*C* /");
+    SearchAndReplace.setReplaceString("/*C* / //");
+    SearchAndReplace.setBeanShellReplace(false);
+    SearchAndReplace.setIgnoreCase(true);
+    SearchAndReplace.setRegexp(false);
+    SearchAndReplace.setSearchFileSet(new CurrentBufferSet());
+    SearchAndReplace.replaceAll(view);
+    SearchAndReplace.setSearchString("//console.");
+    SearchAndReplace.setReplaceString("////console.");
+    SearchAndReplace.setBeanShellReplace(false);
+    SearchAndReplace.setIgnoreCase(true);
+    SearchAndReplace.setRegexp(false);
+    SearchAndReplace.setSearchFileSet(new CurrentBufferSet());
+    SearchAndReplace.replaceAll(view);
 
+   # Beanshell: Turn logging on by uncommenting the lines.
+   # NOTICE: THE FIRST AND SECOND LINES HAVE THE STRING LITERAL '* /'
+   #         YOU MUST REMOVE THAT SPACE WHEN YOU RUN THESE
+    SearchAndReplace.setSearchString("/*C* / //");
+    SearchAndReplace.setReplaceString("/*C* /");
+    SearchAndReplace.setBeanShellReplace(false);
+    SearchAndReplace.setIgnoreCase(true);
+    SearchAndReplace.setRegexp(false);
+    SearchAndReplace.setSearchFileSet(new CurrentBufferSet());
+    SearchAndReplace.replaceAll(view);
+    SearchAndReplace.setSearchString("////console.");
+    SearchAndReplace.setReplaceString("//console.");
+    SearchAndReplace.setBeanShellReplace(false);
+    SearchAndReplace.setIgnoreCase(true);
+    SearchAndReplace.setRegexp(false);
+    SearchAndReplace.setSearchFileSet(new CurrentBufferSet());
+    SearchAndReplace.replaceAll(view);
+\* ================================================================== */
+    
+    
 /****O* Javascript-API/x6events
 *
 * NAME
@@ -98,9 +151,9 @@ var x6events = {
     * SOURCE
     */
     subscribeToEvent: function(eventName,id) {
-        u.debug('In x6events.subscribeToEvent.  Eventname and id follow');
-        u.debug(eventName);
-        u.debug(id);
+        /*C*/ // var ux=u.uniqueId(); //console.group("subscribeToEvent "+ux);
+        //console.log("event name: ",eventName)
+        //console.log("id subscbr: ",id);
         if(id=='undefined') {
             u.error('x6events.subscribeToEvent.  Second parameter '
                 +' undefined.  First parameter: '+eventName
@@ -120,6 +173,7 @@ var x6events = {
             this.subscribers[eventName] = [ ];
         }
         this.subscribers[eventName].push(id);
+        /*C*/ // //console.groupEnd("subscribeToEvent "+ux);
     },
     /******/
         
@@ -175,9 +229,8 @@ var x6events = {
     */
     retvals: { },
     fireEvent: function(eventName,arguments) {
-        u.debug("in x6events.fireEvent, eventname and arguments follow",1);
-        u.debug(eventName);
-        u.debug(arguments);
+        /*C*/ // var ux=u.uniqueId(); //console.group("fireEvent "+eventName+' '+ux);
+        //console.log('arguments: ',arguments);
         // Find out if anybody is listening for this event
         var subscribers = this.getSubscribers(eventName);
         
@@ -186,38 +239,29 @@ var x6events = {
         this.retvals[eventName] = true;
         for(var x in subscribers) {
             var id = subscribers[x];
-            u.debug("Subscriber is "+id);
+            //console.log("subscriber: ",id);
             var subscriber = u.byId(id);
             if(subscriber==null) {
-                u.error("Object with id "+id+" has subscribed to event "
-                    +eventName+", but no object with that ID exists. "
-                    +" This is usually due to a typo in the subscribeToEvent()"
-                    +" call."
-                );
+                u.error("There is no object with that ID, cannot dispatch");
                 continue;
             }
             
             // First possibility is a generic nofity handler
-            if(typeof(subscriber.receiveEvents)=='function') {
-                u.debug("Dispatching to "+id+" generic NOTIFY method");
-                subscriber.receiveEvents(eventName,arguments);
-            }
-            else if(typeof(subscriber['receiveEvent_'+eventName])=='function') {
-                u.debug("Dispatching to "+id+" specific method "+eventName);
-                subscriber['receiveEvent_'+eventName](arguments);
+            var retval = false;
+            var method = 'receiveEvent_'+eventName;
+            if(typeof(subscriber[method])=='function') {
+                retval = subscriber[method](arguments);
             }
             else {
-                u.error("Object "+id+" has subscribed to event "+eventName
-                    +", but that object has no method named receiveEvents()"
-                    +" nor does it have the specified event handler "
-                    +" receiveEvent_"+eventName+"(), cannot fire the event."
-                );
+                u.error("Subscriber has no method: ",method); 
             }
             if(retval==false) {
                 this.retvals[eventName] = false;
+                break;
             }
         }
-        var retval=u.debug("x6events.fireEvent - "+eventName+" (FINISHED)",-1);
+        //console.log("RETURNING: ",this.retvals[eventName]);
+        /*C*/ // //console.groupEnd("fireEvent "+ux);
         return this.retvals[eventName];
     }
 }
@@ -236,14 +280,14 @@ var x6dd = {
    
 \* **************************************************************** */
 var x6 = {
-    // Find all plugins in the x6plugIns object.  Find all
+    // Find all plugins in the x6plugins object.  Find all
     // DOM elements with property x6plugIn=xxx.  
     // Invoke the constructor for each one.
     init: function() {
         //u.debugFlag = true;
         
         // Job 1: Activate all of the plugins
-        for(var plugInId in x6plugIns) {
+        for(var plugInId in x6plugins) {
             $('[x6plugIn='+plugInId+']').each(function() {
                     if(u.p(this,'id','')=='') {
                         this.id = u.uniqueId();
@@ -252,7 +296,7 @@ var x6 = {
                         "Initializing object "+this.id+" as plugIn "+plugInId
                     );
                     this.zTable = u.p(this,'x6table');
-                    x6plugIns[plugInId](this,this.id,u.p(this,'x6table'));
+                    x6plugins[plugInId](this,this.id,u.p(this,'x6table'));
             });
         }
         
@@ -267,11 +311,11 @@ var x6 = {
         // Fade in anybody who has been asked to fade in,
         // and when finished put focus onto whichever
         // object has asked for it.
-        $('.fadein').fadeIn('slow',function() {
-                $('[x6firstFocus=Y]:last').focus();
-        })
-        
-        
+        $('.fadein').fadeIn('slow',function() { x6.initFocus(); });
+    },
+    
+    initFocus: function() {
+        $('[x6firstFocus=Y]:last').focus();
     },
     
     // Keyboard handler
@@ -378,12 +422,6 @@ var x6inputs = {
     // you do not see an input's new value until the keyup 
     // event.  You do not see it in keypress or keydown.
     keyUp: function(e,inp) {
-        if(inp.value==inp.zOriginalValue) {
-            inp.zChanged = 0;
-        }
-        else {
-            inp.zChanged = 1;
-        }
         x6inputs.setClass(inp);
     },
     
@@ -393,10 +431,10 @@ var x6inputs = {
     // 
     //
     keyDown: function(e,inp) {
-        u.debugPush();
-        console.log(e);
-        u.debug(e);
-        u.debug(inp);
+        //u.debugPush();
+        ////console.log(e);
+        //u.debug(e);
+        //u.debug(inp);
         if(e.keyCode!=9) return true;
         
         // work out which property to use.
@@ -408,34 +446,54 @@ var x6inputs = {
             var prop = 'xNextTab';
             var jqf  = ':first';
         }
-        u.debug(prop);
-        u.debug(jqf);
+        //u.debug(prop);
+        //u.debug(jqf);
         
         // The loop breaks when we find a readable control
         // or get to the end of the list
         var xinp = inp;
+        var jqx  = '';
         while(true) {
             // Current control has no next tab, start over
             // at beginning
             if( u.p(xinp,prop,'X')=='X') {
-                jqs = '[tabindex]:not([disabled])'+jqf;
-                u.debug("no control found, string to use: "+jqs);
-                $(jqs).focus();
-                e.stopPropagation();
-                return false;
+                jqx = '[tabindex]:not([disabled])'+jqf;
+                //u.debug("no control found, string to use: "+jqx);
+                break;
             }
             
             // Advance to next
             var tabCandidate = u.p(xinp,prop);
-            xinp = $('[tabindex='+tabCandidate+']');
+            jsq = '[tabindex='+tabCandidate+']';
+            //u.debug('advancing to '+jsq);
+            xinp = $(jsq)[0];
             
             // and if the next is not disabled, return TRUE,
             // do NOTHING, and the browser will handle it
-            if(!xinp.disabled) return true;
+            if(u.p(xinp,'disabled',false)==false) {
+                //u.debug("next control is not read only, letting browse do it");
+                break;
+            }
             
             // if we get around to the original input, something
-            // is wrong, cancel also
-            if(xinp==inp) return true;
+            // is wrong, cancel also so we don't have an 
+            // infinite loop
+            if(xinp==inp) break;
+        }
+        if(jqx=='') {
+            //u.debug('not trying to pick focus');
+        }
+        else {
+            //u.debug("trying to pick focus: "+jqx);
+            $(jqx).focus();
+        }
+        //u.debugPop();
+        if(jqx=='') {
+            return true;
+        }
+        else {
+            e.preventDefault();
+            return false;
         }
     },
     
@@ -456,6 +514,14 @@ var x6inputs = {
     },
     
     setClass: function(inp) {
+        if(u.p(inp,'zOriginalValue',null)==null) inp.zOriginalValue = '';
+        if(inp.value==inp.zOriginalValue) {
+            inp.zChanged = 0;
+        }
+        else {
+            inp.zChanged = 1;
+        }
+        
         // First grab the flags that determine
         // what we will do
         var zSelected = u.p(inp,'zSelected',0);
@@ -475,6 +541,9 @@ var x6inputs = {
         // Now pick the selected version if required
         if(zSelected) css += 'Selected';
         
+        // Now do some stuff if it is read only
+        inp.disabled = zRO;
+        
         // Flag to do the row
         doRow = u.p(inp,'xClassRow',0);
             
@@ -486,6 +555,15 @@ var x6inputs = {
         if(doRow && !zSelected) {
             inp.parentNode.parentNode.className = '';
         }
+    },
+    
+    clearOut: function(inp) {
+        inp.zRO            = 1;
+        inp.zNew           = 0;
+        inp.zSelected      = 0;
+        inp.value          = '';
+        inp.zOriginalValue = '';
+        x6inputs.setClass(inp);
     }
 }
 
@@ -497,44 +575,55 @@ var x6inputs = {
    
 \* **************************************************************** */
 
-/****O* Javascript-API/x6plugIns
+/****O* Javascript-API/x6plugins
 *
 * NAME
-*   x6plugIns
+*   x6plugins
 *
 * FUNCTION
-*   The javascript object x6plugIns is a collection of functions.
+*   The javascript object x6plugins is a collection of functions.
 *   Each function is a 'constructor'.
 *  
 *
 ******
 */
-var x6plugIns = {
+var x6plugins = {
     buttonNew: function(self,id,table) {
-        x6plugIns.buttonStandard(self,'new','CtrlN');
+        x6plugins.buttonStandard(self,'new','CtrlN');
         self.main = function() {
             x6events.fireEvent('reqNewRow_'+this.zTable);   
         }
     },
     buttonDuplicate: function(self,id,table) {
-        x6plugIns.buttonStandard(self,'duplicate','CtrlD');
+        x6plugins.buttonStandard(self,'duplicate','CtrlD');
+        self.main = function() {
+            x6events.fireEvent('reqNewRow_'+this.zTable,true);   
+        }
     },
     buttonRemove: function(self,id,table) {
-        x6plugIns.buttonStandard(self,'remove','CtrlR');
+        x6plugins.buttonStandard(self,'remove','CtrlR');
         self.main = function() {
             x6events.fireEvent('reqDelRow_'+this.zTable);
         }
     },
+    buttonAbandon: function(self,id,table) {
+        x6plugins.buttonStandard(self,'abandon','CtrlT');
+        self.main = function() {
+            if(confirm("Abandon all changes?")) {
+                x6events.fireEvent('cancelEdit_'+this.zTable);
+            }
+        }
+    },
     buttonSave: function(self,id,table) {
-        x6plugIns.buttonStandard(self,'save','CtrlS');
+        x6plugins.buttonStandard(self,'save','CtrlS');
         self.main = function() {
             x6events.fireEvent('reqSaveRow_'+this.zTable);
         }
     },
-    /****m* x6plugIns/buttonStandard
+    /****m* x6plugins/buttonStandard
     *
     * NAME
-    *   x6plugIns.buttonStandard
+    *   x6plugins.buttonStandard
     *
     * FUNCTION
     *   The Javascript method buttonStandard gives a button 
@@ -575,7 +664,7 @@ var x6plugIns = {
     *         // the first line activates normal behavior, 
     *         // replace the values in this line with those
     *         // appropriate to your button.
-    *         x6plugIns.buttonStandard(self,'save','CtrlS');
+    *         x6plugins.buttonStandard(self,'save','CtrlS');
     *
     *         // Then create the main function 
     *         self.main = function() {
@@ -622,15 +711,20 @@ var x6plugIns = {
             // propagation
             x6events.retvals['key_'+this.zKey] = false;
         }
+        
+        // finally of course set the onclick method
+        $(self).click(function() { 
+            if(!this.zDisabled) this.main(); 
+        });
     },
     
-    /****m* x6plugIns/tableController
+    /****m* x6plugins/tableController
     *
     * NAME
-    *   x6plugIns.tableController
+    *   x6plugins.tableController
     *
     * FUNCTION
-    *   The Javascript method x6plugIns.tableController is
+    *   The Javascript method x6plugins.tableController is
     *   a constructor function.  It accepts as a parameter the
     *   ID of a DOM element.  It adds functions to that DOM 
     *   element so that it will fully implement all browser-side
@@ -684,42 +778,64 @@ var x6plugIns = {
         self['receiveEvent_cacheRows_'+table] = function(rows) {
             this.zRows = rows;
         }
+        // Table Controller will add a row to cache if offered
+        x6events.subscribeToEvent('addRow_'+table,id);
+        self['receiveEvent_addRow_'+table] = function(row) {
+            this.zRows[row.skey] = row;
+        }
         
         // Handle a new row by generating defaults and telling
         // anybody who cares to display this row in this mode
         x6events.subscribeToEvent('reqNewRow_'    +table,id);
-        self['receiveEvent_reqNewRow_'+table] = function() {
-            var argsObj = {
-                mode: 'new',
-                row: { }
-            };
-            x6events.fireEvent('goMode_'+u.p(this,'x6table'),argsObj);
-            this.zSkey=0;
+        self['receiveEvent_reqNewRow_'+table] = function(dupeCurrent) {
+            if( x6events.fireEvent('attemptChangeMode_'+u.p(this,'x6table'))) {
+                if(dupeCurrent && this.zSkey >0) {
+                    var row = this.zRows[this.zSkey];
+                }
+                else {
+                    var row = { }
+                }
+                var argsObj = {
+                    mode: 'new',
+                    row: row
+                };
+                x6events.fireEvent('goMode_'+u.p(this,'x6table'),argsObj);
+                this.zSkey=0;
+            }
         }
 
+        // table controller responds to request to edit a 
+        // particular row.
         x6events.subscribeToEvent('reqEditRow_'   +table,id);
         self['receiveEvent_reqEditRow_'+table] = function(skey) {
-            var argsObj = {
-                mode: 'edit',
-                row: this.zRows[skey]
-            };
-            x6events.fireEvent('goMode_'+u.p(this,'x6table'),argsObj);
-            this.zSkey = skey;
+            if( x6events.fireEvent('attemptChangeMode_'+u.p(this,'x6table'))) {
+                var argsObj = {
+                    mode: 'edit',
+                    row: this.zRows[skey]
+                };
+                x6events.fireEvent('goMode_'+u.p(this,'x6table'),argsObj);
+                this.zSkey = skey;
+            }
         }
+        
+        // table controller responds to an abandon event
+        x6events.subscribeToEvent('cancelEdit_'+table,id);
+        self['receiveEvent_cancelEdit_'+table] = function() {
+            // If we were on a new row, abandon it.  Otherwise
+            // take no action
+            if(this.zSkey==0) this.zSkey = -1;
+        }
+        
 
         x6events.subscribeToEvent('reqDelRow_'    +table,id);
         self['receiveEvent_reqDelRow_'+table] = function() {
-            if(this.zSkey==0) {
-                alert("No need to delete a new row");
-                return false;
-            }
             if(this.zSkey==-1) {
                 alert("Please click on a row first, then click [DELETE]");
                 return false;
             }
             var table = u.p(this,'x6table');
-            ua.json.init('x6Page',table);
-            ua.json.addParm('x6Action','delete');
+            ua.json.init('x6page',table);
+            ua.json.addParm('x6action','delete');
             ua.json.addParm('skey',this.zSkey);
             ua.json.addParm('json',1);
             if(ua.json.execute()) {
@@ -771,12 +887,12 @@ var x6plugIns = {
 
     },
     
-    /****m* x6plugIns/grid 
+    /****m* x6plugins/grid 
     * NAME
-    *   x6plugIns.grid
+    *   x6plugins.grid
     *
     ******/
-    Grid: function(self,id,table) {
+    grid: function(self,id,table) {
         
         // Subscribe to deletion event
         x6events.subscribeToEvent('delRow_'+table,id);
@@ -784,6 +900,55 @@ var x6plugIns = {
             $(this).find('#row_'+skey).fadeOut(function() {
                     $(this).remove();
             });
+        }
+        
+        // Grid accepts an addrow and requests some html from
+        // the server, then interprets it as a goMode
+        //
+        x6events.subscribeToEvent('addRow_'+table,id);
+        self['receiveEvent_addRow_'+table] = function(row) {
+            ua.json.init('x6page',this.zTable);
+            ua.json.addParm('x6plugIn',u.p(this,'x6plugIn'));
+            ua.json.addParm('x6action','onerow');
+            ua.json.addParm('skey',row.skey);
+            if(ua.json.execute()) {
+                var html = ua.json.jdata.html['*MAIN*'];
+                $(this).find('.tbody').prepend(html);
+                this['receiveEvent_goMode_'+table]({mode:'edit',row:row});
+            }
+        }
+        
+        // Grid accepts a notification that we are actually
+        // editing a row or reviewing a row
+        x6events.subscribeToEvent('goMode_'+table,id);
+        self['receiveEvent_goMode_'+table] = function(args) {
+            // In all cases, turn off any rows that are selected
+            $(this).find('.tbody .selected')
+                .removeClass('selected')
+                .removeClass('hilight');
+            
+            // If there is a new row, turn that one on
+            if(args.mode == 'edit') {
+                $(this).find('#row_'+args.row.skey)
+                    .removeClass('hilight')
+                    .addClass('selected');
+            }
+        }
+
+        // Grid responds to request to sort in a particular order
+        x6events.subscribeToEvent('doSort_'+table,id);
+        self['receiveEvent_doSort_'+table] = function(args) {
+            ua.json.init('x6page',this.zTable);
+            ua.json.addParm('x6plugIn',u.p(this,'x6plugIn'));
+            ua.json.addParm('x6action','refresh');
+            ua.json.addParm('sortCol',args.sortCol);
+            ua.json.addParm('sortAsc',args.sortAsc);
+            u.dialogs.pleaseWait();
+            if(ua.json.execute(true)) {
+                var html = ua.json.jdata.html['*MAIN*'];
+                $(this).find('.tbody').replaceWith(html);
+            }
+            u.dialogs.clear();
         }
         
         // First keyboard event, keydown
@@ -812,40 +977,16 @@ var x6plugIns = {
             x6events.retvals['key_UpArrow'] =false;
         }
         
-        // Grid accepts request to delete a row
-        x6events.subscribeToEvent('delRow_'+table,id);
-        self['receiveEvent_delRow_'+table] = function(skey) {
-            $(this).find('#row_'+skey).fadeOut('medium',function() {
-                    $(this).remove();
-            });
-        }
-        
-        // Grid responds to request to sort in a particular order
-        x6events.subscribeToEvent('doSort_'+table,id);
-        self['receiveEvent_doSort_'+table] = function(args) {
-            ua.json.init('x6Page',this.zTable);
-            ua.json.addParm('x6plugIn',u.p(this,'x6plugIn'));
-            ua.json.addParm('x6Action','refresh');
-            ua.json.addParm('sortCol',args.sortCol);
-            ua.json.addParm('sortAsc',args.sortAsc);
-            u.dialogs.pleaseWait();
-            if(ua.json.execute()) {
-                var html = ua.json.jdata.html['*MAIN*'];
-                $(this).find('.tbody').replaceWith(html);
-            }
-            u.dialogs.clear();
-        }
-        
         
     },
     
-    /****m* x6plugIns/detailDisplay
+    /****m* x6plugins/detailDisplay
     *
     * NAME
-    *   x6plugIns.detailDisplay
+    *   x6plugins.detailDisplay
     *
     * FUNCTION
-    *   The Javascript method x6plugIns.detailDisplay implements
+    *   The Javascript method x6plugins.detailDisplay implements
     *   all browser-side functionality for Andromeda's built-in
     *   plugIn detailDisplay.
     *
@@ -856,7 +997,9 @@ var x6plugIns = {
     *   *  goMode_{table}
     *
     * INPUTS
+    *   self - the DOM object to be activated.
     *   id - the ID of the object to be 'activated'.
+    *   table - the database table that the detailPane is handling.
     *
     * RESULTS
     *   no return value.
@@ -866,11 +1009,10 @@ var x6plugIns = {
     detailDisplay: function(self,id,table) {
         self.zSkey = -1;
         
-        // Subscribe to goMode events
-        x6events.subscribeToEvent('goMode_'+table,id);
-        
-        // Handler for the goMode event
-        self['receiveEvent_goMode_'+table] = function(argsObj) {
+        // detail receives a request to attempt to go into a 
+        // mode.  It checks to see if a save is required first.
+        x6events.subscribeToEvent('attemptChangeMode_'+table,id);
+        self['receiveEvent_attemptChangeMode_'+table] = function() {
             // Check for existing row with changes
             if(this.zSkey>=0) {
                 var ichg = $(this).find(":input[zChanged=1]");
@@ -879,51 +1021,116 @@ var x6plugIns = {
                     return false;
                 }
             }
-            
+            return true;
+        }
+        
+        // Detail receives an addRow event and interprets it
+        // as a goMode
+        x6events.subscribeToEvent('addRow_'+table,id);
+        self['receiveEvent_addRow_'+table] = function(row) {
+            this['receiveEvent_goMode_'+table]({mode:'edit',row:row});
+        }
+
+        // detail receives a request to go to a mode which
+        // is unconditional, it will do what it is told
+        x6events.subscribeToEvent('goMode_'+table,id);
+        self['receiveEvent_goMode_'+table] = function(argsObj) {
             var mode = argsObj.mode;
             var row  = argsObj.row;
+            
             if(mode!='new' && mode!='edit') {
                 u.error("Object "+this.id+" has received a 'goMode' event "
                     +"for unhandled mode "+mode+".  Cannot process this "
                     +"request."
                 );
             }
+
+            // Set values and remember skey value
+            x6events.fireEvent('enable_save');
+            x6events.fireEvent('enable_abandon');
+            if(mode=='new')  {
+                x6events.fireEvent('disable_remove');
+                x6events.fireEvent('disable_new');
+                x6events.fireEvent('disable_duplicate');
+                u.debug("detail display going into new mode");
+                // For new rows, set defaults, otherwise blank
+                // out.
+                $(this).find(':input').each(function() {
+                    this.value=u.p(this,'xdefault','');
+                    this.zOriginalValue = this.value;
+                    this.zChanged = 0;
+                });
+                if(typeof(row.skey)!='undefined') {
+                    u.debug("detail display populating inputs");
+                    this.populateInputs(row);
+                }
+                this.zSkey = 0;
+            }
             else {
-                // Set values and remember skey value
-                if(mode=='new')  {
-                    this.zSkey = 0;
+                x6events.fireEvent('enable_remove');
+                x6events.fireEvent('enable_new');
+                x6events.fireEvent('enable_duplicate');
+                this.populateInputs(row);
+                this.zSkey = row.skey;
+            }
+            
+            
+            // now set the readonly and new flags on all controls
+            $(this).find(':input').each(function() {
+                this.zNew = mode=='new' ? 1 : 0;
+                if(mode=='new') {
+                    var ro = u.p(this,'xroins','N');
                 }
                 else {
-                    this.populateInputs(row);
-                    this.zSkey = row.skey;
+                    var ro = u.p(this,'xroupd','N');
                 }
-                
-                // now set the readonly and new flags on all controls
-                u.debugPush();
-                u.debug(mode);
-                $(this).find(':input').each(function() {
-                        u.debug(this.id);
-                    this.zNew = mode=='new' ? 1 : 0;
-                    if(mode=='new') {
-                        var ro = u.p(this,'xroins','N');
-                    }
-                    else {
-                        var ro = u.p(this,'xroupd','N');
-                    }
-                    if(ro=='Y') {
-                        this.zRO = 1;
-                        this.disabled = true;
-                    }
-                    else {
-                        this.zRO = 0;
-                        this.disabled = false;
-                    }
+                if(ro=='Y') {
+                    this.zRO = 1;
+                    this.disabled = true;
+                }
+                else {
+                    this.zRO = 0;
+                    this.disabled = false;
+                }
+                x6inputs.setClass(this);
+            });
+            $(this).find(':input:not(.readOnly):first').focus();
+        }
+    
+        
+        // detail responds to cancel edit command.  If we were
+        // entering new row we clear everything, otherwise we
+        // just restore original values
+        x6events.subscribeToEvent('cancelEdit_'+table,id);
+        self['receiveEvent_cancelEdit_'+table] = function() {
+            if(this.zSkey==0) {
+                x6events.fireEvent('disable_save');
+                x6events.fireEvent('disable_abandon');
+                x6events.fireEvent('disable_remove');
+                x6events.fireEvent('enable_new');
+                x6events.fireEvent('disable_duplicate');
+                u.debug("skey is zero, clearing out");
+                // clear it all out
+                $(this).find(":input").each(function() {
+                        x6inputs.clearOut(this);
+                });
+                x6.initFocus();
+            }
+            else {
+                x6events.fireEvent('enable_save');
+                x6events.fireEvent('enable_abandon');
+                x6events.fireEvent('enable_remove');
+                x6events.fireEvent('enable_new');
+                x6events.fireEvent('enable_duplicate');
+                // restore original values
+                u.debug("Skey is: "+this.zSkey+", restoring original values");
+                $(this).find(":input").each(function() {
+                    this.value = this.zOriginalValue;
                     x6inputs.setClass(this);
                 });
-                u.debugPop();
-                $(this).find(':input:not(.readOnly):first').focus();
             }
         }
+        
         
         // Detail accepts a request to delete a row by skey
         x6events.subscribeToEvent('delRow_'+table,id);
@@ -952,8 +1159,8 @@ var x6plugIns = {
             if(inps.length==0) return true;
             
             var table = u.p(this,'x6table');
-            ua.json.init('x6Page',table);
-            ua.json.addParm('x6Action','save');
+            ua.json.init('x6page',table);
+            ua.json.addParm('x6action','save');
             ua.json.inputs(this);
             ua.json.addParm('x4v_skey',this.zSkey);
             if(ua.json.execute()) {
@@ -962,7 +1169,7 @@ var x6plugIns = {
                 var newvals = $a.data.row;
                 
                 // Publish the event as either a new row
-                // or an updated row
+                // or an updated row.
                 if(this.zSkey==0) {
                     x6events.fireEvent('addRow_'+table,newvals);
                 }
@@ -976,10 +1183,10 @@ var x6plugIns = {
         }
         
         // Accept a row changed event 
-        x6events.subscribeToEvent('rowChanged_'+table,id);
-        self['receiveEvent_rowChanged_'+table] = function(newvals) {
-            this.populateInputs(newvals);  
-        }
+        //x6events.subscribeToEvent('rowChanged_'+table,id);
+        //self['receiveEvent_rowChanged_'+table] = function(newvals) {
+        //    this.populateInputs(newvals);  
+        //}
         
         // --------------------------------------------------------
         //

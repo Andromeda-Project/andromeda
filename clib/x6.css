@@ -83,6 +83,15 @@ a.button {
 }
 
 a.button_disabled {
+    border-width: 1px;
+    border-style: solid;
+    border-top-color: silver;
+    border-left-color: silver;
+    border-bottom-color: black;
+    border-right-color: black;
+    text-decoration: none;
+    margin-left: 8px;
+    padding: 0px 3px 1px 3px;
     color: #808080;
     background-color: #c0c0c0;
 }
