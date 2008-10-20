@@ -269,7 +269,7 @@ underlined letters that show this, so:
         $tabNumber = 2;
         foreach($this->dd['fk_children'] as $table_id=>$info) {
             #  First break: uidisplay set to none
-            if(trim(strtolower(a($info,'uidisplay',''))) == 'none') {
+            if(trim(strtolower(arr($info,'uidisplay',''))) == 'none') {
                 continue;
             }
             # Second break: user not allowed to see
