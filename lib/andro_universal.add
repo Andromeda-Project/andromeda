@@ -1,6 +1,6 @@
 // =========================================================
 // (C) Copyright 2005 by Kenneth Downs
-// 
+//
 // This file is part of Andromeda
 //
 // Andromeda is free software; you can redistribute it and/or modify
@@ -28,21 +28,21 @@
 // =========================================================
 //module operations { description: Operations; uisort: 100; }
 //module utilities  { description: Utilities;  uisort: 600; }
-module reference  { 
-   description: Base Reference; 
+module reference  {
+   description: Base Reference;
    uisort: 800;
    nomenu: Y;
-   
+
    group $LOGIN { permsel: Y; permupd: N; permdel: N; permins: N; nomenu:Y; }
 }
-module system     { 
+module system     {
    description: System;
-   uisort: 950; 
-   nomenu: Y; 
+   uisort: 950;
+   nomenu: Y;
 }
 
-//module xmlrpc  { 
-//   description: XML RPC Definitions; 
+//module xmlrpc  {
+//   description: XML RPC Definitions;
 //   uisort: 951;
 //   nomenu: Y;
 //}
@@ -57,16 +57,16 @@ group usermaint {
    description: User Administrator;
 
    // have full permissions on all user tables
-   module usermaint { 
-      permsel: Y; 
-      permins: Y; 
-      permupd: Y; 
+   module usermaint {
+      permsel: Y;
+      permins: Y;
+      permupd: Y;
       permdel: Y;
       nomenu:  N;
    }
 }
 
-// People here can 
+// People here can
 group filemaint {
    description: File Maintenance;
 }
@@ -74,7 +74,7 @@ menu apppub {
     module: system;
     description: File Maintenance;
     uisort: 999;
-    
+
     group filemaint {
         permsel: Y; nomenu: N;
     }
@@ -94,14 +94,14 @@ menu apppub {
 // Universal Group entries
 // =========================================================
 // A user must be in this group in order to login at all
-group $LOGIN { 
+group $LOGIN {
    description: BASIC LOGIN PRIVILEGE;
-   permsel: N; permins: N; permupd: N; permdel: N; 
+   permsel: N; permins: N; permupd: N; permdel: N;
 }
 
 // This is the root group, the superusers.  They are given complete
 // access to every task on the system
-//group root   { description: Application Login Group; 
+//group root   { description: Application Login Group;
 //   permsel: Y; permupd: Y; permdel: Y; permins: Y;
 //}
 
@@ -110,8 +110,8 @@ group $LOGIN {
 // This group is for people who sign up at the site.  Note the
 // i*dentity security on "user_id".  Any table that has that column
 // they will only be able to see their own information.
-//group member { 
-//   description: Public Group; 
+//group member {
+//   description: Public Group;
 //   i*dentity { user_id; }
 //}
 
@@ -142,8 +142,8 @@ column ssn      { description: SSN; type_id: ssn; }
 
 
 // This flag is used by the UI to suppress rows out of
-// drop-downs.  
-column flag_noselect 
+// drop-downs.
+column flag_noselect
                 { description: Inactive          ; type_id: cbool; }
 
 
@@ -154,7 +154,7 @@ column recnum   { description: Generic Record Number;
    type_id: int; automation_id: SEQUENCE;
 }
 
-column md5 { 
+column md5 {
    description: Hash Code;
 	type_id: char; colprec: 32;
 	uino: Y;
@@ -189,9 +189,9 @@ column nam1st{ description: First        ; type_id: vchar; colprec: 20; }
 column namlst{ description: Last         ; type_id: vchar; colprec: 20; }
 column first_name{ description: First Name   ; type_id: vchar; colprec: 25; }
 column last_name { description: Last Name    ; type_id: vchar; colprec: 25; }
-column add   { description: Address      ; type_id: vchar; colprec: 40; }
-column add1  { description: Address     ; type_id: vchar; colprec: 40; }
-column add2  { description: Address 2    ; type_id: vchar; colprec: 40; }
+column add   { description: Address      ; type_id: vchar; colprec: 75; }
+column add1  { description: Address     ; type_id: vchar; colprec: 75; }
+column add2  { description: Address 2    ; type_id: vchar; colprec: 75; }
 column city  { description: City         ; type_id: vchar; colprec: 22; }
 column state { description: State/Province  ; type_id: char;  colprec: 5;  }
 column zip9  { description: Zip+4        ; type_id: char; colprec: 10; }
@@ -210,7 +210,7 @@ column qty    { description: Qty;      type_id: int;   }
 column cnt    { description: Count;    type_id: int;   }
 column price  { description: Price;    type_id: money; }
 column amt    { description: Amount;   type_id: money; }
-column pct    { 
+column pct    {
     description: Percent;
     type_id: numb;
     colprec: 5;
@@ -229,8 +229,8 @@ column year   { description: year; type_id: numb; colprec: 5; }
 // all databases have a "groups" table anyway.
 // ========================================================================
 //group andro_own { description: Database Superuser; }
-module usermaint { 
-   uisort: 500; 
+module usermaint {
+   uisort: 500;
    description:Users;
    nomenu: Y;
 }
@@ -243,23 +243,23 @@ module usermaint {
 //	description: Node Groups;
 //	module: operations;
 //	risimple: Y;
-	
+
 //	column nodegroup { primary_key: Y; uisearch: Y; }
 //	column description { uisearch: Y; }
 
 	// This is a build table, no changes please!
 //}
-	
+
 //  TABLE: Users
 //
-// The column user_id is in andro_universal 
-column member_password { 
-	description: N/A; 
-	type_id: vchar; 
-	colprec: 20; 
+// The column user_id is in andro_universal
+column member_password {
+	description: N/A;
+	type_id: vchar;
+	colprec: 20;
 }
 column user_name { description: Full Name; type_id: char; colprec: 40; }
-column user_disabled { 
+column user_disabled {
 	description: Account Disabled; type_id: cbool;
 	automation_id: DEFAULT;
 	auto_formula: N;
@@ -267,40 +267,40 @@ column user_disabled {
 column user_pwkey    { description: PW Key; type_id: char; colprec: 32; }
 column user_pwexp    { description: PW Exp; type_id: dtime; }
 
-table users { 
+table users {
 	description: Application Users;
 	module: system;
     uisort: 109;
     group usermaint { nomenu: N; permsel: Y; permins: Y; permupd: Y; permdel: Y;}
-	
+
 	column user_id { primary_key: Y; uisearch: Y; }
 	column user_name { uisearch: Y; }
    column { email; }
    column user_disabled { uino: Y; }
    column { user_pwkey; user_pwexp; hostip; uino: Y; }
-   
+
    column { member_password; automation_id: BLANK; description: Simple Password; }
    column md5 { prefix: member_; description: Encrypted Password; uino: Y; }
 
    // Effective group stuff
-   column flag { suffix: _newgroup; 
+   column flag { suffix: _newgroup;
       automation_id: DEFAULT; auto_formula: N;
       uino: Y;
    }
-   column group_id { 
+   column group_id {
       suffix: _eff;
       description: Effective Group;
       uino: Y;
       automation_id: BLANK;
    }
-   
+
 	//group andro_own  { permins: Y; permsel: Y; }
-   
+
    group $LOGIN { permsel: Y; }
-	
+
 	projection email     { column { user_name; }}
 	projection emailaddr { column { email; }}
-   
+
    index email { idx_unique: Y; column { email; }}
 }
 
@@ -330,14 +330,14 @@ table usersxgroups {
 	module: system;
 	nomenu: Y;
     group usermaint { permsel: Y;permins: Y;permupd: Y;permdel: Y;}
-	
-	foreign_key { table_id_par: users; primary_key: Y; uisearch: Y; 
-		uidisplay: mover; 
-	}
-	foreign_key { table_id_par: groups; primary_key: Y; uisearch: Y; 
+
+	foreign_key { table_id_par: users; primary_key: Y; uisearch: Y;
 		uidisplay: mover;
 	}
-   
+	foreign_key { table_id_par: groups; primary_key: Y; uisearch: Y;
+		uidisplay: mover;
+	}
+
    group $LOGIN { permsel: Y; }
 }
 
@@ -346,9 +346,9 @@ table users_pwrequests {
    description: Password Change Requests;
    nomenu: Y;
    module: usermaint;
-   
+
    group $LOGIN { permins: Y; permupd:N;permsel:N;permdel:N; }
-   
+
    column recnum  { suffix: _pwr; primary_key: Y; }
    column user_id { uisearch: Y; description: User ID;   }
    column md5     { uisearch: Y; description: Hash Code; }
@@ -359,9 +359,9 @@ table users_pwverifies {
    description: Password Change Requests;
    nomenu: Y;
    module: system;
-   
+
    group $LOGIN { permins: Y; permupd:N;permsel:N;permdel:N; }
-   
+
    column recnum  { suffix: _pwv; primary_key: Y; }
    column user_id {               uisearch: Y; description: User ID;   }
    column md5     {               uisearch: Y; description: Hash Code; }
@@ -383,18 +383,18 @@ table adm_emails {
 	column_prefix: adm_email;
     uisort: 100;
 	module: system;
-	
+
 	column adm_email { primary_key: Y; automation_id: SEQUENCE; }
 	column email_to { uisearch: Y; }
 	column email_subject { uisearch: Y; }
-	column { email_message; }	
+	column { email_message; }
 
 	column { ts_ins;uid_ins }
-	
+
 	// Anybody can insert into this table, but nobody can
 	// update or delete
 	group $LOGIN { permins: Y; }
-}	
+}
 
 
 // =================================================================
@@ -407,7 +407,7 @@ column variable_value { description: Value; type_id: text; }
 table variables {
 	description: System Variables;
     uisort: 900;
-	module: system;	
+	module: system;
 
 	column variable { primary_key: Y; uisearch: Y; }
 	column description { uisearch: Y; }
@@ -459,10 +459,10 @@ column uisearchdash {
 }
 column x4menu {
     type_id: cbool;
-    description: Use x4 by Default; 
+    description: Use x4 by Default;
     flagcarry: N;
 }
-column x4padmenu { 
+column x4padmenu {
     type_id: cbool;
     description: Put direct menu link on x4 menu bar;
     flagcarry: N;
@@ -546,9 +546,9 @@ table configfw {
     module: system;
     uisort: 550;
     description: Configuration - Framework;
-    
+
     group $LOGIN { permsel: "Y"; nomenu: "Y"; }
-    
+
     column recnum  { primary_key: "Y"; uisearch: "Y"; }
     column { loginbefore; loginafter; }
     column notes {
@@ -565,7 +565,7 @@ table configfw {
         paypal_noship; paypal_v2;
         paypal_test_mode; paypal_fake;
     }
-    column { 
+    column {
         auth_net_debugging; auth_net_testing; auth_net_retries;
         auth_net_login_id; auth_net_tran_key;
     }
@@ -574,9 +574,9 @@ table configapp {
     module: system;
     uisort: 551;
     description: Configuration - Application;
-    
+
     group $LOGIN { permsel: "Y"; nomenu: "Y";  }
-    
+
     column recnum  { primary_key: "Y"; uisearch: "Y"; }
     column { cf_template; }
     column { smtpout;     }
@@ -585,10 +585,10 @@ table configinst {
     module: system;
     uisort: 552;
     description: Configuration - Instance;
-    
+
     group $LOGIN { permsel: "Y"; }
     group configadmin { permupd: "Y"; permsel: "Y"; nomenu: "N"; }
-    
+
     column recnum  { primary_key: "Y"; uisearch: "Y"; }
     column { smtpout; }
 }
@@ -596,9 +596,9 @@ table configuser {
     module: system;
     uisort: 553;
     description: My Configuration;
-    
+
     group $LOGIN { permsel: Y; permins: Y; permupd: Y;  nomenu: N; }
-    
+
     column uid_ins {
         primary_key: "Y";
         uisearch: "Y";
@@ -614,7 +614,7 @@ menu configconfirm {
     group $LOGIN { permsel: Y; permins: Y; nomenu: N; }
 }
 content configfw {
-    columns { smtpout; js_css_debug; uisearchdash; 
+    columns { smtpout; js_css_debug; uisearchdash;
         x4menu; x4padmenu; sql_limit; flag_syslog
     }
     update { localhost; N; --; N; N; 300; Y }
@@ -633,12 +633,12 @@ content configfw {
 //table sys_logs {/
 //	description: Events Log;
 //	module: system;
-//	
+//
 //	column sys_log { primary_key: Y; uisearch: Y; automation_id: SEQUENCE; }
-	
+
 //	column session { uisearch: Y; }
 //	column hostip  { uisearch: Y; }
-//   column uid     { uisearch: Y; }	
+//   column uid     { uisearch: Y; }
 //   column ts_ins { uisearch: Y; }
 //}
 
@@ -654,16 +654,16 @@ table syslogs {
 	description: Processing Logs;
     uisort: 500;
 	module: system;
-	
+
 	column syslog { primary_key: Y; uisearch: Y; automation_id: SEQUENCE; }
    column syslog_type { uisearch: Y; }
    column syslog_subtype { uisearch: Y; }
    column syslog_name    { uisearch: Y; }
    column { syslog_text; }
    column { ts_ins; uid_ins; }
-   
+
    group $LOGIN { permins: Y; permsel: Y; }
-   
+
    index syslog_subtype { column { syslog_subtype; }}
    index syslog_name    { column { syslog_name;    }}
 }
@@ -676,14 +676,14 @@ table syslogs_e {
    description: Processing Log Details;
    uisort: 501;
    module: system;
-   
+
    column syslog_enum     { primary_key: Y; uisearch: Y; }
    foreign_key syslogs    { uisearch: Y; delete_cascade: Y; }
    //column syslog_etype    { uisearch: Y; }
    //column syslog_etrxtype { uisearch: Y; }
    column { syslog_etext; }
    column { ts_ins; uid_ins; }
-   
+
    group $LOGIN { permins: Y; permsel: Y; }
    //index etrxtype { column { syslog_etrxtype; }}
 }
@@ -691,8 +691,8 @@ table syslogs_e {
 // =================================================================
 // Errors and Events, master and various details
 // =================================================================
-column elog     { 
-   description:   Log Number; 
+column elog     {
+   description:   Log Number;
    type_id:       int;
    automation_id: SEQUENCE;
 }
@@ -701,27 +701,27 @@ column elogcode {
    type_id:       char;
    colprec:       4;
 }
-column elogipv4 {   
+column elogipv4 {
    description:   IPV4 IP Number;
    type_id:       char;
    colprec:       15;
 }
-column elogdesc {   
+column elogdesc {
    description:   Event Description;
    type_id:       char;
    colprec:       40;
 }
-column elogarg1 {   
+column elogarg1 {
    description:   Arg 1;
    type_id:       vchar;
    colprec:       40;
 }
-column elogarg2 {   
+column elogarg2 {
    description:   Arg 2;
    type_id:       vchar;
    colprec:       40;
 }
-column elogarg3 {   
+column elogarg3 {
    description:   Arg 3;
    type_id:       vchar;
    colprec:       40;
@@ -733,7 +733,7 @@ table elogs {
    module: system;
    uisort: 102;
    group $LOGIN { permins: Y; }
-   
+
    column elogcode  {                 uisearch: Y; }
    column flag      { suffix: _fw;  description: Framework; }
    column elog      { primary_key: Y; }
@@ -747,7 +747,7 @@ table elogs_emails {
    description: Email Alert Recipients;
    uisort: 120;
    module: system;
-   
+
    column email { primary_key: Y; uisearch: Y; }
 }
 
@@ -755,11 +755,11 @@ table elogs_codes {
    description: Email Alert Codes;
    uisort: 110;
    module: system;
-   
+
    column elogcode { primary_key: Y; uisearch: Y; }
    column description { uisearch: Y; }
    column flag {
-      uisearch: Y; 
+      uisearch: Y;
       description: Send Email For This Event;
       suffix: _send;
       automation_id: DEFAULT;
@@ -782,11 +782,11 @@ content elogs_codes {
 }
 
 
-// =========================================================== 
+// ===========================================================
 // PAYPAL LOG.  This is a general log of all paypal
-// activity, maintained by the framework, not by 
+// activity, maintained by the framework, not by
 // the database.
-// =========================================================== 
+// ===========================================================
 // -----------------------------------------------------------
 column txn_type      {description: Transaction Type; type_id: vchar; colprec: 20; }
 column txn_id        {description: Transaction ID; type_id: vchar; colprec: 20; }
@@ -825,10 +825,10 @@ table pptransactions {
    column { payment_status; payment_gross; mc_currency; mc_gross; }
    column { pending_reason; payment_type;    }
    column { item_name; item_number; }
-   column { verify_sign; payer_status; test_ipn; tax; quantity; shipping; } 
+   column { verify_sign; payer_status; test_ipn; tax; quantity; shipping; }
    column { notify_version; }
    column { ts_ins; uid_ins; }
-   
+
    group $LOGIN { permins: Y; permsel: Y; }
 }
 
@@ -842,7 +842,7 @@ table pptransactions {
 //
 // =================================================================
 //
-//  The sessions table is a pure client-side table 
+//  The sessions table is a pure client-side table
 //  used and controlled by the client to maintain
 //  sessions.
 //
@@ -853,13 +853,13 @@ table pptransactions {
 //column sess_status { description: Session Status; type_id: char; colprec: 1; }
 //table adm_sessions {
 //	description: Complete Session History;
-//	module: system; 
-	
+//	module: system;
+
 //	column session { primary_key: Y; uisearch: Y; }
 //	column sess_beg { uisearch: Y; }
 //	column { sess_end; sess_upd }
 //	column sess_status { uisearch: Y; }
-	
+
 //	column { hostip; uid }
 //}
 
@@ -873,8 +873,8 @@ table pptransactions {
 //
 // =================================================================
 // =================================================================
-module reports750 { 
-   description: Reports; 
+module reports750 {
+   description: Reports;
    uisort: 750;
    nomenu: Y;
 }
@@ -885,7 +885,7 @@ table reports {
    module: reports750;
    description: Report Writer;
    uisort: 900;
-   
+
    column report { primary_key: Y; uisearch: Y; }
    column description { uisearch: Y; }
    column repfilters { uino: Y; }
@@ -894,7 +894,7 @@ table reports {
       description: Landscape Mode;
    }
    column { ts_ins; uid_ins; ts_upd; uid_upd; }
-   
+
 }
 
 // -- NOTE.  Table_id is a column, not a foreign key.  This is because
@@ -906,11 +906,11 @@ table reporttables {
    module: reports750;
    description: Report Tables;
    nomenu: Y;
-   
+
    foreign_key reports { primary_key: Y; uisearch: Y; }
    column table_id     { primary_key: Y; uisearch: Y; }
    column { ts_ins; uid_ins; ts_upd; uid_upd; }
-   
+
 }
 
 // -- NOTE.  Again there neither table_id nor column_id is a foreign
@@ -920,13 +920,13 @@ table reportcolumns {
    module: reports750;
    description: Report Columns;
    nomenu: Y;
-   
+
    foreign_key reports { primary_key: Y; uisearch: Y; }
    column table_id     { primary_key: Y; uisearch: Y; }
    column column_id    { primary_key: Y; uisearch: Y; }
-   column uicolseq { description: Display Order; 
+   column uicolseq { description: Display Order;
       automation_id: BLANK;
-   } 
+   }
    // A column appears in the sort order if checked.  The sequence
    // of columns in the sort clause goes by display order.
    column flag { suffix: _sort; description: Sort Flag; }
@@ -934,13 +934,13 @@ table reportcolumns {
    //column flag { suffix: _summ; description: Summarize On; }
    //foreign_key { summacts;
    //   column summact { automation_id: BLANK; }
-   //} 
-   column { description; } 
+   //}
+   column { description; }
    //column { compoper; compval; automation_id: BLANK; }
    column { type_id; colprec; colscale; dispsize; }
-   
+
    column { ts_ins; uid_ins; ts_upd; uid_upd; }
-   
+
    index uicolseq { column { uicolseq; } }
 }
 
@@ -952,8 +952,8 @@ table reportlevels {
 
    foreign_key reports { primary_key: Y; uisearch: Y; }
    column reportlevel  { primary_key: Y; }
-   
-   // The user interface always puts levels here. 
+
+   // The user interface always puts levels here.
    column flag { suffix: _skipdetail; description: Skip Detail; uino: Y; }
    column flag { suffix: _count;      description: Count Rows;  uino: Y; }
    column { repfilters; }
@@ -964,14 +964,14 @@ table reportcollevels {
    module: reports750;
    description: Report Columns by Level;
    nomenu: Y;
-   
+
    foreign_key reportcolumns  { primary_key: Y; uisearch: Y; }
    foreign_key reportlevels   { auto_insert: Y; uisearch: Y; nocolumns: Y; }
    column reportlevel { primary_key: Y; }
    foreign_key { summacts; }
-   
+
    column { ts_ins; uid_ins; ts_upd; uid_upd; }
-   
+
    //index uicolseq { column { uicolseq; } }
 }
 
@@ -982,7 +982,7 @@ table summacts {
    module: reports750;
    description: Summary Actions;
    nomenu: Y;
-   
+
    column summact { primary_key: Y; uisearch: Y; }
 }
 
@@ -1002,7 +1002,7 @@ content summacts {
 // =================================================================
 // COMMON APPLICATION TABLES AND DATA
 // -----------------------------------------------------------------
-// Tables and content that are generally useful and so are 
+// Tables and content that are generally useful and so are
 // part of the universal include file
 // =================================================================
 // =================================================================
@@ -1015,19 +1015,19 @@ column timezone_hours { description: Offset Hours; type_id: int; }
 column timezone_mins  { description: Offset Minutes; type_id: int; }
 //column timezone_off   { description: Computed Offset; type_id: int; }
 
-table timezones { 
+table timezones {
 	description: Time Zones;
 	module: reference;
 	risimple: Y;
 	column_prefix: reference;
-	
-   column timezone { primary_key: Y; uisearch: Y; }	
+
+   column timezone { primary_key: Y; uisearch: Y; }
 	column description { uisearch: Y; }
 	column uisort      { uisearch: Y; description: User Sort;}
 
 	column timezone_hours { uisearch: Y; }
    column timezone_mins  { uisearch: Y; }
-   //column timezone_off   { uisearch: Y; automation_id: EXTEND; auto_formula: (@timezone_hours * 60) + @timezone_mins; } 	
+   //column timezone_off   { uisearch: Y; automation_id: EXTEND; auto_formula: (@timezone_hours * 60) + @timezone_mins; }
 
 	projection dropdown { column { description; } }
 	group $LOGIN { permsel: Y; }
@@ -1116,29 +1116,29 @@ content timezones {
 
 //  Days of the week table; useful for scheduling stuff
 //
-column weekday { 
-	description: weekday; 
-	type_id: char; 
+column weekday {
+	description: weekday;
+	type_id: char;
 	colprec: 5; }
-column weekday_desc { 
-	description: Complete Name; 
-	type_id: char; 
+column weekday_desc {
+	description: Complete Name;
+	type_id: char;
 	colprec: 9; }
-table weekdays { 
+table weekdays {
 	description: Week Days;
 	module: reference;
 	risimple: Y;
-	
+
 	column weekday     { primary_key: Y; uisearch: Y; }
 	column description {                 uisearch: Y; }
-	column { uisort; uisearch: Y; } 
-	
+	column { uisort; uisearch: Y; }
+
 	projection dropdown { column { weekday; description; }}
-	
+
 	group $LOGIN { permsel: Y; }
 }
 
-content weekdays { 
+content weekdays {
 	columns { weekday; description; uisort }
    update { SUN;Sunday;1 }
 	update { MON;Monday;2 }
@@ -1153,13 +1153,13 @@ content weekdays {
 table countries {
    description: Countries;
    module: reference;
-   
+
    column country { primary_key: Y; uisearch: Y; }
    column name    {                 uisearch: Y; }
    column { notes; }
 
 	group $LOGIN { permsel: Y; }
-   
+
    projection dropdown { column { name; }}
 }
 
@@ -1409,24 +1409,24 @@ content countries {
 //
 column state_name { description: State Name;     type_id: char; colprec: 30; }
 column country    { description: Country;        type_id: char; colprec: 20; }
-table states { 
+table states {
 	description: States and Provinces;
 	risimple: Y;
 	module: reference;
-	
+
 	column state { primary_key: Y; uisearch: Y; }
 	column state_name { uisearch: Y; }
    foreign_key countries { uisearch: Y; }
-	
+
 	group $LOGIN { permsel: Y; }
-   
+
    projection dropdown { column { country; state_name; }}
 }
 
-content states { 
+content states {
 	columns { state_name; state; country; }
 	insert { Alberta;             AB; CA; }
-	insert { British Columbia;    BC; CA; } 
+	insert { British Columbia;    BC; CA; }
 	insert { Manitoba;            MB; CA; }
    insert { New Brunswick;       NB; CA; }
 	insert { Newfndland/Labrador; NL; CA; }
@@ -1438,10 +1438,10 @@ content states {
 	insert { Quebec;              QC; CA; }
 	insert { Saskatchewan;        SK; CA; }
 	insert { Yukon Territory;     YT; CA; }
-	
+
    insert { Alabama;AL;US }
 	insert { Alaska;AK ;US }
-	insert { Arizona;AZ;US } 
+	insert { Arizona;AZ;US }
 	insert { Arkansas;AR;US }
 	insert { California;CA;US }
 	insert { Colorado;CO;US }
@@ -1493,10 +1493,10 @@ content states {
 	insert { West Virginia;WV;US }
 	insert { Wisconsin;WI;US }
 	insert { Wyoming;WY;US }
-   
+
    // United Kingdom
 	insert { United Kingdom;ENGL;GB; }
-   
+
    // New Zealand
   	insert { New Zealand; NZ; NZ; }
 
@@ -1517,7 +1517,7 @@ column airport_desc { description: Airport Name; type_id: vchar; colprec:100;}
 table airports {
    module: reference;
    description: Airports;
-   
+
    column airport      { uisearch: Y; primary_key: Y; }
    column airport_desc { uisearch: Y; }
 }
@@ -3491,13 +3491,13 @@ column hostpwd   { description: Password;  type_id: char; colprec: 12; }
 // table xmlrpchosts {
 	// description: XML RPC Hosts;
 	// module: xmlrpc;
-	// 
+	//
 	// column hostcode { primary_key: Y; uisearch: Y; }
 	// column hosturl  { uisearch: Y; }
 	// column hostport { uisearch: Y; automation_id: DEFAULT; auto_formula: 80; }
 	// column { hostpath;hostuid;hostpwd }
-// }	
-// 
+// }
+//
 // //  Calls.  A call is a function.
 // //
 // column callcode { description: Call code;        type_id: char; colprec: 20; }
@@ -3506,58 +3506,58 @@ column hostpwd   { description: Password;  type_id: char; colprec: 12; }
 // table xmlrpccalls {
 	// description: XML RPC Function Calls;
 	// module: xmlrpc;
-	// 
+	//
 	// foreign_key { xmlrpchosts; uisearch: Y; }
-// 
+//
 	// column callcode { primary_key: Y; uisearch: Y; }
 	// column { callpath; }
 	// column callmsg  { uisearch: Y; }
 // }
-// 
-// //  Parameters.  
+//
+// //  Parameters.
 // //
 // column parm_seq  { description: Parameter Sequence; type_id: int; }
 // table xmlrpcparms {
 	// description: XML RPC Function Parameters;
 	// module: xmlrpc;
-// 
+//
 	// foreign_key { xmlrpccalls; uisearch: Y; primary_key: Y; }
 	// column parm_seq { primary_key: Y; uisearch: Y; }
 	// column description { uisearch: Y; }
-	// 
+	//
 	// foreign_key { xmlrpcpdtypes; uisearch: Y; }
 	// foreign_key { xmlrpcptypes;  uisearch: Y; }
 // }
-// 
+//
 // //  Parameter Data types; including populated values
 // //
 // column parmdtype { description: Parameter Data Type; type_id: char; colprec: 10; }
 // table xmlrpcpdtypes {
 	// description: XML RPC Parm Data Types;
 	// module: xmlrpc;
-	// 
+	//
 	// column parmdtype { primary_key: Y; uisearch: Y; }
 	// column description { uisearch: Y; }
 // }
-// 
+//
 // content xmlrpcpdtypes {
 	// columns { parmdtype; description }
 	// values  { int; integer }
 	// values  { double; Double-Precision }
 // }
-// 
-// 
+//
+//
 // // Parameter type; inbound and output
 // //
 // column parmtype { description: Input or Return; type_id: char; colprec: 3; }
 // table xmlrpcptypes {
 	// description: XML RPC Parm Type;
 	// module: xmlrpc;
-// 
+//
 	// column parmtype { primary_key: Y; uisearch: Y; }
-	// column description { uisearch: Y; }	
+	// column description { uisearch: Y; }
 // }
-// 
+//
 // content xmlrpcptypes {
 	// columns { parmtype; description }
 	// values { ret;Return Value }
@@ -3568,14 +3568,14 @@ column hostpwd   { description: Password;  type_id: char; colprec: 12; }
 // =================================================================
 // Documentation System
 //
-// This is a general purpose hierarchy of documents.  It was 
+// This is a general purpose hierarchy of documents.  It was
 // developed first in the adocs app.  The tables are intended to be
 // the cornerstone of all self-documenting features.
 //
 // 12/12/06 -Modified for cascade_delete, make everybody's life
-//           easier, since all docs in this system are 
+//           easier, since all docs in this system are
 //           generated out of code.
-// 
+//
 // 4/28/06 - Added to andro_universal.add to be used for generating
 //           one page to describe each table.  Descriptions of code
 //           and other stuff to follow.
@@ -3589,8 +3589,8 @@ column filename { description: File Name;     type_id: vchar; colprec: 60;  }
 // column itemptr   { description: File;      type_id: mime-f; }
 
 // This stuff gets its own module
-module docs { 
-   description: Documentation; 
+module docs {
+   description: Documentation;
    uisort: 900;
    nomenu: Y;
    // KFD 7/24/08, give group configadmin full rights
@@ -3610,12 +3610,12 @@ column pagetext { description: Page Text; type_id: text; }
 //table media {
 //   module: operations;
 //   description: Images;
-//   
+//
 //   column filename { primary_key: Y; uisearch: Y; }
 //   column description { uisearch: Y; }
 //   column { itemptr; }
 //
-//   group $LOGIN { permsel: Y; }   
+//   group $LOGIN { permsel: Y; }
 //   group doccommit { permupd: Y; permins: Y; }
 //}
 
@@ -3624,32 +3624,32 @@ table docpages {
    module: docs;
    description: Pages;
    nomenu: Y;
-   
+
    column pagename    { uisearch: Y; primary_key: Y; }
-   foreign_key docpages { 
-      suffix: _par; 
-      allow_empty: Y; 
+   foreign_key docpages {
+      suffix: _par;
+      allow_empty: Y;
       uisearch:Y;
       delete_cascade: Y;
-      column pagename_par { description: Parent Page; } 
+      column pagename_par { description: Parent Page; }
    }
    column sequence { description: Sequence; uisearch: Y; }
-   
+
    column { pagetext; }
 
    //foreign_key docpageshier { auto_insert: Y; nocolumns: Y; }
-   //column pagehier { uino: Y; 
-   //   chain calc { 
+   //column pagehier { uino: Y;
+   //   chain calc {
    //      test { compare: @pagename_par NULL; return: 1; }
    //      test { compare: @pagename_par EMPTY; return: 1; }
    //      test { return: 0; }
    //   }
   // }
    column filename { automation_id: BLANK; }
-  
+
    column { ts_ins; uid_ins; ts_upd; uid_upd; }
 
-   group $LOGIN { permsel: Y; }   
+   group $LOGIN { permsel: Y; }
    //group doccommit { permupd: Y; permins: Y; }
 }
 
@@ -3662,13 +3662,13 @@ table scripts {
     module: system;
     description: Completed Upgrade Scripts;
     nomenu: Y;
-    
+
     column script { primary_key: Y; uisearch: Y; }
 }
 
 
 // =========================================================
-// Import map tables.  Everybody is allowed full access, 
+// Import map tables.  Everybody is allowed full access,
 // though eventually we want row-level security based on
 // your connection to a table
 // =========================================================
@@ -3678,7 +3678,7 @@ table importmaps {
    description: Import Maps;
    nomenu: Y;
    group $LOGIN { permsel:Y;permins:Y;permupd:Y;permdel:Y; }
-   
+
    column importmap { primary_key: Y; uisearch: Y; }
    column table_id  { primary_key: Y; uisearch: Y; }
    column name { suffix: _prefix; }
@@ -3688,7 +3688,7 @@ table importmapcolumns {
    description: Import Map Columns;
    nomenu: Y;
    group $LOGIN { permsel:Y;permins:Y;permupd:Y;permdel:Y; }
-   
+
    foreign_key importmaps { primary_key: Y; }
    column column_id { description: Target Column; primary_key: Y; uisearch: Y; }
    column column_id { suffix: _src; description: Source;uisearch: Y;  }
