@@ -14619,6 +14619,16 @@ function SQL2($sql,$dbconn,&$error=false)
     if ( $debug ) {
         $dbgsql['sql'] = $sql;
         $dbgsql['time'] = $totaltime;
+        # KFD 10/18/08, add stack dump if xdebug installed
+        if(function_exists('xdebug_get_function_stack')) {
+            ob_start();
+            var_dump(xdebug_get_function_stack());
+            $dbgsql['stack'] = ob_get_clean();
+        }
+        else {
+            $dbgsql['stack'] = 'xdebug not installed, no function '
+                .'stack available.';
+        }
         array_push( $GLOBALS['AG']['dbg']['sql'], $dbgsql );
     }
 	$results=pg_get_result($dbconn);

@@ -451,6 +451,11 @@ column js_css_debug {
     description: Debuggable JS and CSS files;
     flagcarry: Y;
 }
+column admin_logging {
+    type_id: cbool;
+    description: Send Log to Browser (must be root user);
+    flagcarry: N;
+}
 column uisearchdash {
     type_id: char;
     colprec: 3;
@@ -558,7 +563,7 @@ table configfw {
     column { smtpout; email_fromname; email_fromaddr; email_admin; }
     column { uisearchdash; }
     column { x4menu; x4padmenu; x4menutitle; x4menutext }
-    column { js_css_debug; deprecated; sql_limit }
+    column { js_css_debug; admin_logging; deprecated; sql_limit }
     column flag { suffix: _syslog; description: Log SQL to syslog }
     column { logout_clear; }
     column { paypal_site_url; paypal_image_url; paypal_payto;
