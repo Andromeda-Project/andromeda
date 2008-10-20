@@ -1903,8 +1903,32 @@ function specFlatten_Config() {
     foreach($cols as $colrow) {
         if($colrow['column_id'] == 'table_id') continue;
         $acolslist[] = $colrow['column_id'];
+        if($colrow['column_id'] == 'primary_key') {
+            $acolslist2[]= "'N'";
+        }
+        else {
+            $acolslist2[] = 'tf1.'.$colrow['column_id'];
+        }
     }
     $colslist = implode(',',$acolslist);
+    $colslist2= implode(',',$acolslist2);
+    
+    # KFD EXPERIMENTAL 10/20/08
+    # Allow any table to be an "extracolumns" table to a 
+    # previously defined table.  Originally did this as
+    # a hardcoded feature for configapp below
+    #
+    $this->LogEntry("  -> Copying '_extracolumns' into original tables ");
+    $sq="INSERT INTO zdd.tabflat (table_id,$colslist)
+         SELECT replace(tf1.table_id,'_extracolumns',''),$colslist2
+           FROM zdd.tabflat tf1
+           JOIN zdd.tables  t   on tf1.table_id = t.table_id || '_extracolumns'
+          WHERE not exists (select * from zdd.tabflat tf2
+                             where tf2.table_id = t.table_id
+                               and tf2.column_id = tf1.column_id
+                           )";
+    $this->sql($sq);
+    
 
     # The table configapp_extra, if it exists, will have 
     # all of its columns copied to configapp.  This is how we
