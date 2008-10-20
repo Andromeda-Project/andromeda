@@ -139,9 +139,6 @@ if (file_exists($x)) {
 }
 
 
-#$AG['tracefile'] = fsDirTop().'tmp/trace';
-#xdebug_start_trace($AG['tracefile']);
-
 // ==================================================================
 // >>>
 // >>> Load Andromeda Plugin Manager
@@ -290,40 +287,16 @@ if(isset($header_mode)) return;
 
 // ==================================================================
 // >>> 
-// >>> Dispatch redirection.  
+// >>> Turn on logging 
 // >>> 
 // ==================================================================
+# experimental
+#if(configGet('admin_logging','N')=='Y' && SessionGet('ROOT')) {
+#    if(function_exists('xdebug_start_code_coverage')) {
+#        xdebug_start_code_coverage();
+#    }
+#}
 
-# OLDER DEFUNCT CODE, REMOVE AFTER BETA GOES OUT
-/*
-if(vgfGet('x4welcome')=='Y' && gp('x4Page')=='' && LoggedIn()) {
-    # if these two options are set, we don't try to force an x4
-    if( !(gpExists('gp_page') && gpExists('x2')) ) { 
-        gpSet('x4Page',vgaGet('nopage','menu'));
-    }
-}
-*/
-
-
-#  This code is only for a single app which is running
-#  stable on a very old version of Andromeda.  When SDS
-#  upgrades that application, these functions will be
-#  moved into application code.
-#
-/*
-// The parameter 'gp_pageal' means page to go to after a login.
-// Save it now.  Used originally for project cme.
-if(gpExists('gp_pageal')) {
-  SessionSet('clean',array('gp_page'=>gp('gp_pageal')));
-}
-   
-// The parameter 'gp_aftersave' means go to a page after saving
-// information somewhere else.  The program processPost will look
-// for this after saving and do a gpSet() to this value.
-if(gpExists('gp_aftersave')) {
-  SessionSet('gp_aftersave',gp('gp_aftersave'));
-}
-*/
 
 // ==================================================================
 // >>> 
@@ -336,13 +309,6 @@ if(Count(SessionGet('clean',array()))>0 && gpExists('ajxBUFFER')) {
     echo '_redirect|?st2logout=1';
     return;
 }
-
-# KFD 10/3/08, Rem'd out
-#// If gp_echo, just echo back.  This is for debugging of course.
-#if(gpExists('gp_echo')) {
-#    echo "echo|".gp('gp_echo');
-#    return;
-#}
 
 // Everything after assumes we need a database connection
 // KFD 3/18/08 If a user has passed in an "impersonation" 
@@ -477,12 +443,32 @@ elseif($x6page           <>'') index_hidden_x6Dispatch(
 elseif(gp('x4Page')      <>'') index_hidden_x4Dispatch();
 else                           index_hidden_page();
 
-#xdebug_stop_trace();
-#echo "<pre style='background-color: white'>";
-#readfile($AG['tracefile'].'.xt');
-
 // All finished, disconnect and leave. 
 scDBConn_Pop();
+
+// One last thing...  If trace is on, display it now.
+#if(false) {
+if(configGet('admin_logging') && SessionGet('ROOT')) {
+    echo "<div style='background-color: white' id='admin_logging'>";
+    
+    # Use Donald's query stack here:
+    $count = count($GLOBALS['AG']['dbg']['sql']);
+    foreach($GLOBALS['AG']['dbg']['sql'] as $idx=>$q) {
+        $idx++;
+        echo "<h2 style='background-color: #D0D0D0'>Query $idx of $count</h3>";
+        echo "<b>Execution Time: </b>".number_format($q['time'],6);
+        echo "<br/>";
+        echo "<b>Query:</b>";
+        echo "<pre style='margin-left: 50px'>".$q['sql']."</pre>";
+        echo "<b>Stack:</b><div style='margin-left:50px'>";
+        hprint_r($q['stack']);
+        echo "</div>";
+    }
+    phpinfo();
+    echo "</div>";
+}
+
+
 return;
 // ==================================================================
 // DISPATCH DESTINATIONS
@@ -517,7 +503,7 @@ function index_hidden_x6Dispatch(
     $MPPages['x_password']="Password";
     $MPPages['x_mpassword']="Member Password";
     $MPPages['x_paypalipn']='Paypal IPN';
-
+    
     #$debug=" page -$x6page- file -$x6file- yaml -$x6yaml-
     #    profile -$x6profile- plugin -$x6plugin- action -$x6action-";
     #echo $debug;
