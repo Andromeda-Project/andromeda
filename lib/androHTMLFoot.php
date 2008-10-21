@@ -87,13 +87,21 @@ if(configGet('deprecated','Y')=='Y') {
 <div id="dialogbox"     style="display:none"></div>
 
 <?php
-    $debug = trim(ConfigGet('js_css_debug','N'));
-    if ( $debug == 'Y'  && gp('x4Page') == '' ) {
+    $configJS = trim(configGet('js_css_debug' ,'N'));
+    $configAL = trim(configGet('admin_logging','N'));
+    $ROOT     = SessionGet('ROOT');
+    if ( $configJS == 'Y' || ($configAL=='Y' && $ROOT)) {
         echo( '<br /><div class="androQueryLog">' );
         echo( '<div class="androQueryLogTitle"><div style="float:left;height:20px;">Query Log</div><div style="float:right;height:20px;cursor:pointer;" onclick="showHide(\'androQueryLogItems\');">Show/Hide</div></div>' );
         echo( '<div class="androQueryLogItems" id="androQueryLogItems">' );
         foreach ( $GLOBALS['AG']['dbg']['sql'] as $line ) {
-            echo( '<div class="androQueryLogItem"><strong>Query:</strong> ' .$line['sql'] .'<br /><strong>Execution time:</strong> ' .number_format( $line['time'],4 ) .'</div>' );
+            echo( '<div class="androQueryLogItem"><strong>Query:</strong> ' 
+                .'<pre>'.$line['sql'].'</pre>'
+                .'<br /><strong>Execution time:</strong> '
+                .number_format( $line['time'],4 ) );
+            echo "<br/><strong>Execution Stack:</strong><pre>"
+                .$line['stack']."</pre>";     
+            echo "</div>";
         }
         echo( '</div></div>' );
     }

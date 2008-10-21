@@ -446,29 +446,6 @@ else                           index_hidden_page();
 // All finished, disconnect and leave. 
 scDBConn_Pop();
 
-// One last thing...  If trace is on, display it now.
-#if(false) {
-if(configGet('admin_logging') && SessionGet('ROOT')) {
-    echo "<div style='background-color: white' id='admin_logging'>";
-    
-    # Use Donald's query stack here:
-    $count = count($GLOBALS['AG']['dbg']['sql']);
-    foreach($GLOBALS['AG']['dbg']['sql'] as $idx=>$q) {
-        $idx++;
-        echo "<h2 style='background-color: #D0D0D0'>Query $idx of $count</h3>";
-        echo "<b>Execution Time: </b>".number_format($q['time'],6);
-        echo "<br/>";
-        echo "<b>Query:</b>";
-        echo "<pre style='margin-left: 50px'>".$q['sql']."</pre>";
-        echo "<b>Stack:</b><div style='margin-left:50px'>";
-        hprint_r($q['stack']);
-        echo "</div>";
-    }
-    phpinfo();
-    echo "</div>";
-}
-
-
 return;
 // ==================================================================
 // DISPATCH DESTINATIONS
@@ -569,7 +546,7 @@ function index_hidden_x6Dispatch(
             # Now we must be loading a page, because no plugin was
             # specified and no action.  At this point all that is
             # left to figure out is whether we load a profile or
-            # go for the default "html" routine.
+            # go for the default "x6main" routine.
             if($x6profile<>'') {
                 $x6method = 'profile_'.$x6profile;
             }
