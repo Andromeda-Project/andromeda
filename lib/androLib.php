@@ -2526,7 +2526,7 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
     }
     
     # KFD 10/18/08, add default if present
-    if($colinfo['automation_id'] == 'DEFAULT') {
+    if(arr($colinfo,'automation_id','') == 'DEFAULT') {
         $input->hp['xDefault'] = $colinfo['auto_formula'];
     }
 
