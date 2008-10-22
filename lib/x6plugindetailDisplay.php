@@ -8,40 +8,44 @@ class x6plugindetailDisplay {
     # ================================================================
     function &main(&$area1,$dd) {
         $table_id = $dd['table_id'];
+
+        $area1->hp['x6plugin'] = 'detailDisplay';
+        $area1->hp['x6table']  = $table_id;
+        $area1->hp['id'] = 'ddisp_'.$table_id;
         
         # Now for the display
         # Put some buttons on users
         $bb = $area1->h('div');
-        $bb->hp['style'] = 'text-align: left';
-        $a=$area1->h('a-void','New');
-        $a->addClass('button');
+        $bb->addClass('x6buttonBar');
+        $a=$bb->h('a-void','New');
+        $a->addClass('button button-first');
         $a->hp['style'] = 'margin-left: 0px';
         $a->hp['x6table']  = $table_id;
         $a->hp['x6plugIn'] = 'buttonNew';
         $a->hp['style']    = 'float: left';
-        $a=$area1->h('a-void','Duplicate');
+        $a=$bb->h('a-void','Duplicate');
         $a->addClass('button');
         $a->hp['x6table']  = $table_id;
         $a->hp['x6plugIn'] = 'buttonDuplicate';
         $a->hp['style']    = 'float: left';
-        $a=$area1->h('a-void','Save');
+        $a=$bb->h('a-void','Save');
         $a->addClass('button');
         $a->hp['x6table']  = $table_id;
         $a->hp['x6plugIn'] = 'buttonSave';
         $a->hp['style']    = 'float: left';
-        $a=$area1->h('a-void','Remove');
+        $a=$bb->h('a-void','Remove');
         $a->addClass('button');
         $a->hp['x6table']  = $table_id;
         $a->hp['x6plugIn'] = 'buttonRemove';
         $a->hp['style']    = 'float: right';
-        $a=$area1->h('a-void','Abandon Changes');
+        $a=$bb->h('a-void','Abandon Changes');
         $a->addClass('button');
         $a->hp['x6table']  = $table_id;
         $a->hp['x6plugIn'] = 'buttonAbandon';
         $a->hp['style']    = 'float: right';
-        
-        $area1->br(2);
-        
+        //$bb = $area1->h('div');
+        //$bb->hp['style'] = 'clear: both';
+                
         # generate a detail pane of inputs and assign
         # the standard keyup to all of them.
         #
@@ -63,30 +67,16 @@ class x6plugindetailDisplay {
             
         );
         $projection = projection($dd,'',$tabLoop,$options);
-        foreach($projection->inputs as $idx=>$input) {
-            /*
-            $projection->inputs[$idx]->hp['onkeyup']
-                ='x6inputs.keyUp(event,this)';
-            $projection->inputs[$idx]->hp['onkeypress']
-                ='x6inputs.keyDown(event,this)';
-            $projection->inputs[$idx]->hp['onfocus']
-                ='x6inputs.focus(this)';
-            $projection->inputs[$idx]->hp['onblur']
-                ='x6inputs.blur(this)';
-            $projection->inputs[$idx]->hp['xClassRow'] = '1';
-            $projection->inputs[$idx]->hp['disabled'] = 'true';
-            */
+        //foreach($projection->inputs as $idx=>$input) {
             //$projection->inputs[$idx]->addClass('readOnly');
-            $projection->inputs[$idx]->tabIndex();
-        }
+            //$projection->inputs[$idx]->tabIndex();
+        //}
         
+        $parea = $area1->h('div');
+        $parea->addClass('boxdown');
+        $parea->addChild($projection);
+        $parea->hp['style'] = 'height: 550px';
         
-        $area1->hp['x6plugin'] = 'detailDisplay';
-        $area1->hp['x6table']  = $table_id;
-        $area1->hp['id'] = 'ddisp_'.$table_id;
-        $area1->addChild($projection);
-        
-        $area1->br(5);
         $sb = $area1->h('div','status message here');
         $sb->addClass('statusBar');
         
