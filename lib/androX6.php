@@ -210,7 +210,6 @@ class androX6 {
     # ===================================================================
     function profile_twosides() {
         # always include the styles and javascript.
-        cssinclude('clib/x6.css');
         jsInclude('clib/x6.js');
         
         # Do this first, so all objects are initialized
@@ -237,11 +236,14 @@ class androX6 {
         $div->hp['id'] = 'tc_'.$table_id;
         $div->ap['x6plugin'] = 'tableController';
         $div->ap['x6table']  = $table_id;
+
+        $boxx = $div->h('div','&nbsp;');
+        $boxx->addClass('box-spacer');
         
         # Create a two-sided layout by creating two boxes
         # Left side is a grid plugin
         $box1  = $div->h('div');
-        $box1->addClass('box');
+        $box1->addClass('boxup');
         $box1->tabIndex();
         $box1->hp['onkeydown'] = 'x6inputs.keyDown(event,this)';
         include 'x6plugingrid.php';
@@ -252,7 +254,8 @@ class androX6 {
         $boxx->addClass('box-spacer');
         
         $box2  = $div->h('div');
-        $box2->addClass('box');
+        $box2->addClass('boxup');
+        $box2->hp['style'] = 'width: 470px';
         $box2->tabIndex();
         $box2->hp['onkeydown'] = 'x6inputs.keyDown(event,this)';
         include 'x6plugindetailDisplay.php';
