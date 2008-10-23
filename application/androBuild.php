@@ -8443,52 +8443,58 @@ function DBB_LoadContentSimpleInsert($arr,$prefix,$suffix) {
  */
 function DBB_LoadContentComplex($arr,$prefix,$suffix) {
 	foreach ($arr as $table_id=>$stuff) {
-      $this->LogEntry("Processing for table: ".$table_id);
+        $this->LogEntry("Processing for table: ".$table_id);
 		$pk    = $this->utabs[$table_id]["pk"];
-      $flat  = &$this->utabs[$table_id]["flat"];
+        $flat  = &$this->utabs[$table_id]["flat"];
 		$pkarr = explode(",", $pk );
+        #if($table_id=='configapp') {
+        #    echo "prefix -$prefix- suffix -$suffix- pk -$pk-";
+        #    hprint_r($flat);
+        #    hprint_r($pkarr);
+        #    hprint_r($arr);
+        #}
 
 		foreach ($stuff as $onelist) {
 			if ($onelist["__type"]=="columns") { $cols = $onelist; }
 			else {
 				$colvals = $this->array_combine($cols,$onelist);
 
-            // Get the PK stuff				
-            # KFD 6/14, special override for config tables
-            if($table_id == 'configfw' || $table_id=='configapp') {
-                $match = ' 1 = 1 ';
-            }
-            else {
-                $match = "";
-                foreach ($pkarr as $pkcol) {
-                   $match .= $this->AddList($match," AND ").$pkcol. " = '".$colvals[$pkcol]."'";
+                // Get the PK stuff				
+                # KFD 6/14, special override for config tables
+                if($table_id == 'configfw' || $table_id=='configapp') {
+                    $match = ' 1 = 1 ';
                 }
-            }
-            $sql = "SELECT * FROM $table_id WHERE $match";
-            $result = $this->SQLRead($sql);
-            if (pg_num_rows($result)==0) { 
-               $this->DBB_Insert($prefix,$table_id,$suffix,$colvals,true); 
-            }
-            else {
-               if ($onelist["__type"]=="update") {
-                  // Get list of columns w/o PK stuff
-                  $colvals2 = $colvals;
-                  unset($colvals2['columns']);
-                  foreach ($pkarr as $pkcol) { unset($colvals2[$pkcol]); }
-                  $update = '';
-                  foreach ($colvals2 as $colname=>$colvalue) {
-                     $update
-                        .=$this->zzListComma($update)
-                        .$colname.' = '
-                        .$this->SQLFormatLiteral(
-                           $colvalue
-                           ,$flat[$colname]['type_id']
-                           ,false,false);
-                  }
-                  $sql = "UPDATE $table_id SET $update WHERE $match";
-                  $this->SQL($sql);
-               }
-            }
+                else {
+                    $match = "";
+                    foreach ($pkarr as $pkcol) {
+                       $match .= $this->AddList($match," AND ").$pkcol. " = '".$colvals[$pkcol]."'";
+                    }
+                }
+                $sql = "SELECT * FROM $table_id WHERE $match";
+                $result = $this->SQLRead($sql);
+                if (pg_num_rows($result)==0) { 
+                   $this->DBB_Insert($prefix,$table_id,$suffix,$colvals,true); 
+                }
+                else {
+                   if ($onelist["__type"]=="update") {
+                      // Get list of columns w/o PK stuff
+                      $colvals2 = $colvals;
+                      unset($colvals2['columns']);
+                      foreach ($pkarr as $pkcol) { unset($colvals2[$pkcol]); }
+                      $update = '';
+                      foreach ($colvals2 as $colname=>$colvalue) {
+                         $update
+                            .=$this->zzListComma($update)
+                            .$colname.' = '
+                            .$this->SQLFormatLiteral(
+                               $colvalue
+                               ,$flat[$colname]['type_id']
+                               ,false,false);
+                      }
+                      $sql = "UPDATE $table_id SET $update WHERE $match";
+                      $this->SQL($sql);
+                   }
+                }
 			}
 		}
 	}
