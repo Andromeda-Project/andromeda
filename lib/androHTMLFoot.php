@@ -92,15 +92,17 @@ if(configGet('deprecated','Y')=='Y') {
     $ROOT     = SessionGet('ROOT');
     if ( $configJS == 'Y' || ($configAL=='Y' && $ROOT)) {
         echo( '<br /><div class="androQueryLog">' );
-        echo( '<div class="androQueryLogTitle"><div style="float:left;height:20px;">Query Log</div><div style="float:right;height:20px;cursor:pointer;" onclick="showHide(\'androQueryLogItems\');">Show/Hide</div></div>' );
+        echo( '<div class="androQueryLogTitle">
+            <div style="float:left;height:20px;">Query Log</div><div style="float:right;height:20px;cursor:pointer;" onclick="showHide(\'androQueryLogItems\');">Show/Hide</div></div>' );
         echo( '<div class="androQueryLogItems" id="androQueryLogItems">' );
-        foreach ( $GLOBALS['AG']['dbg']['sql'] as $line ) {
-            echo( '<div class="androQueryLogItem"><strong>Query:</strong> ' 
-                .'<pre>'.$line['sql'].'</pre>'
-                .'<br /><strong>Execution time:</strong> '
-                .number_format( $line['time'],4 ) );
-            echo "<br/><strong>Execution Stack:</strong><pre>"
-                .$line['stack']."</pre>";     
+        foreach ( $GLOBALS['AG']['dbg']['sql'] as $key=>$line ) {
+            echo( '<div class="androQueryLogItem" style="width:auto;"><strong>Query:</strong> ' 
+                .'<div><pre style="max-width:100%;">'.$line['sql'].'</pre></div>
+                <div><strong>Execution time:</strong>' .number_format( $line['time'],4 ) .'</div>
+                <div onclick="showHide(\'stack-' .$key .'\');" style="cursor:pointer;">More Details</div>' );
+            echo( '<div style="display:none;" id="stack-' .$key .'">' );
+            echo "<strong>Execution Stack:</strong><pre>"
+                .$line['stack']."</pre></div>";     
             echo "</div>";
         }
         echo( '</div></div>' );
