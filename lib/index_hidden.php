@@ -465,6 +465,18 @@ function index_hidden_x6Dispatch(
         ,'html'=>array()
         ,'script'=>array()
     );
+    
+    # This little bit of magic loads up the CSS information
+    # for the current template and skin, allowing downstream
+    # code to determine how much space they have to work with
+    #
+    $x6skin = arr($_COOKIE,'x6skin','');
+    if($x6skin!='') {
+        $filename  = fsDirTop()."generated/x6skin.$x6skin.ser.txt";
+        $serialized=file_get_contents($filename);
+        $GLOBALS['AG']['x6skin'] = unserialize($serialized);
+    }
+    
 
     # If they have already defined MPPages in applib, we will
     # pick it up here with this global declaration.

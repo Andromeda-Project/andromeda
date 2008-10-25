@@ -1,5 +1,5 @@
 <?php 
-class x6pluginGrid {
+class x6pluginGrid extends androHTML {
     # ================================================================
     # 
     # Plugin main function, usually generates first version
@@ -49,7 +49,7 @@ class x6pluginGrid {
             );
         }
         
-        $grid->lastColumn();
+        $this->width = $grid->lastColumn();
         # Only add one new row.  It wraps automatically to
         # new rows as needed.
         $sortCol = gp('sortCol',$dd['pks']);

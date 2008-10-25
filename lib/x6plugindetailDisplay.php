@@ -9,6 +9,7 @@ class x6plugindetailDisplay {
     function &main(&$area1,$dd) {
         $table_id = $dd['table_id'];
 
+        $area1->addClass('box2');
         $area1->hp['x6plugin'] = 'detailDisplay';
         $area1->hp['x6table']  = $table_id;
         $area1->hp['id'] = 'ddisp_'.$table_id;
@@ -73,9 +74,9 @@ class x6plugindetailDisplay {
         //}
         
         $parea = $area1->h('div');
-        $parea->addClass('boxdown');
+        $parea->addClass('box1');
         $parea->addChild($projection);
-        $parea->hp['style'] = 'height: 550px';
+        $parea->hp['style'] = 'height: 545px; clear: both;';
         
         $sb = $area1->h('div','status message here');
         $sb->addClass('statusBar');
