@@ -240,23 +240,30 @@ class androX6 {
         $boxx = $div->h('div','&nbsp;');
         $boxx->addClass('box-spacer');
         
+        # Get the standard padding, we are going to double it
+        $pad0 = x6CSSDefine('pad0');
+        
         # Create a two-sided layout by creating two boxes
         # Left side is a grid plugin
-        $box1  = $div->h('div');
-        $box1->addClass('boxup');
-        $box1->tabIndex();
-        $box1->hp['onkeydown'] = 'x6inputs.keyDown(event,this)';
+        $area0 = $div->h('div');
+        $area0->hp['style'] = "float: left; 
+            padding-left: {$pad0}px;
+            padding-right: {$pad0}px;";
         include 'x6plugingrid.php';
         $x6grid = new x6plugInGrid;
-        $x6grid->main($box1,$dd);
+        $x6grid->main($area0,$dd);
         
-        $boxx = $div->h('div','&nbsp;');
-        $boxx->addClass('box-spacer');
+        # Calculate how much width is left
+        $wInner = x6CSSDefine('insidewidth');
+        $wInner-=$x6grid->width;
+        $wInner-=2;  // assume a border on the grid
+        $wInner-=2;  // assume a border on the right-side
+        $wInner-= x6CSSDefine('pad0')*6; // 3 times padding doubled
         
         $box2  = $div->h('div');
-        $box2->addClass('boxup');
-        $box2->hp['style'] = 'width: 470px';
-        $box2->tabIndex();
+        $box2->hp['style'] = "float: left; width: {$wInner}px;
+            padding-left: {$pad0}px;
+            padding-right: {$pad0}px;";
         $box2->hp['onkeydown'] = 'x6inputs.keyDown(event,this)';
         include 'x6plugindetailDisplay.php';
         $x6detail = new x6plugindetailDisplay;
