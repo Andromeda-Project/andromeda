@@ -275,6 +275,11 @@ if(!trim($uid)==trim($app)) {
     }
 }
 
+// After all login activity, if the person is not logged in,
+// set an effective group id
+if(!LoggedIn()) {
+    SessionSet('GROUP_ID_EFF',arr($GLOBALS['AG'],'group_login',''));
+}
 
 // ==================================================================
 // >>> 
