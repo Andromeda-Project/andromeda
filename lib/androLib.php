@@ -1062,6 +1062,31 @@ class androHtml {
     }
     /******/
 
+    /****m* androHtml/addStyle
+    *
+    * NAME
+    *    addStyle
+    *
+    * FUNCTION
+    *	The method addStyle adds the provided CSS rule to
+    *   any that are already defined for the node.
+    *
+    * INPUTS
+    *	string $value - Css class to add
+    *
+    * SOURCE
+    */
+    function addStyle($value) {
+        if(substr($value,-1)!=';') $value.=';';
+        if(!isset($this->hp['style'])) {
+            $this->hp['style'] = $value;
+        }
+        else {
+            $this->hp['style'].= $value;
+        }
+    }
+    /******/
+
     /****m* androHtml/removeClass
     *
     * NAME
@@ -2072,7 +2097,7 @@ class androHTMLTabDiv extends androHTML {
     
     function androHTMLTabDiv($height=300) {
         $this->htype = 'div';
-        $this->addClass('tdiv');
+        $this->addClass('tdiv box3');
         $this->hp['style'] = $height."px;";
         $this->height = $height;
         $this->baseRowHeight = 20;
@@ -2122,9 +2147,11 @@ class androHTMLTabDiv extends androHTML {
         $type_id     = arr($options,'type_id'    ,'char');
 
         # Permanently store the column information, 
-        # and increment the running total        
-        $width = $dispsize * 14;
-        $width = min($width,200);
+        # and increment the running total
+        $width1 = max($dispsize,strlen($description)+4);
+        $width1 = intval(.9*$width1);
+        $width1*= x6CssDefine('bodyfs','12px');
+        $width =  min($width1,200);
         $this->colWidths += $width;
         
         # Save the information about the column permanently,
@@ -2172,23 +2199,30 @@ class androHTMLTabDiv extends androHTML {
                 ,'dispsize'   =>0
                 ,'type_id'    =>''
                 ,'column_id'  =>''
-                ,'width'      =>25
+                ,'width'      =>15
             );
+            $this->colWidths+=15;
             $div = $this->dhead->h('div','');
             $div->hp['style'] ="
-                max-width: 25px;
-                min-width: 25px;
-                width:     25px;";
+                max-width: 15px;
+                min-width: 15px;
+                width:     15px;";
         }
+        
+        # Get the standard padding, we hardcoded
+        # assuming 2 for border, 3 for padding left
+        $extra = 5;
         
         # now work out the final width of the table by 
         # adding up the columns, adding one for each
         # column (the border) and two more for the table
         # border.
         $width = $this->colWidths;
-        $width+= (count($this->columns)-1)*5;  // border + padding
-        $width+= 39;  // fudge factor, unknown
+        $width+= (count($this->columns))*$extra;  // border + padding
+        #$width+= 39;  // fudge factor, unknown
         $this->hp['style'].="width: {$width}px";
+        $this->width = $width;
+        return $width;
     }
     
     function addRow($id) {
@@ -2721,6 +2755,9 @@ function inputFixupByType($input) {
     return $input;
 }
 
+
+
+
 # ==============================================================
 #
 # SECTION: HTML RENDERING PART 2: Snippets
@@ -2927,6 +2964,30 @@ function configLayoutX4($container,$type) {
 
         $td = html('td',$tr,htmlEntities($row[$column_id]));
     }
+}
+
+# ==============================================================
+#
+# SECTION: x6skin CSS Stuff
+#
+# ==============================================================
+function x6CSS() {
+    return isset($GLOBALS['AG']['x6skin']);
+}
+function x6CSSDefine($key,$default='') {
+    if(!x6CSS()) return $default;
+    global $AG;
+    $retval= arr($AG['x6skin']['defines'],$key,$default);
+    return str_replace('px','',$retval);
+}
+
+function x6CSSRule($selector,$rule,$default='') {
+    if(!x6CSS()) return $default;
+    
+    $skin = $GLOBALS['AG']['x6skin']['css'];
+    if(!isset($skin[$selector])) return $default;
+    $retval = arr($skin[$selector],$rule,$default);
+    return str_replace('px','',$retval);
 }
 
 # ==============================================================
