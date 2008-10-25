@@ -8564,18 +8564,28 @@ function DBB_SQLBlank($formshort) {
 function CodeGenerate_Info() {
 	$this->LogStage("Generating Application information files.");
 	$this->LogEntry("Generating Info file: generated/appinfo.php");
-   global $parm;
-   $localhost_suffix=$this->zzArraySafe($parm,'LOCALHOST_SUFFIX');
+    global $parm;
+    # KFD 10/25/08, write out name of effective group for the
+    #               $LOGIN group
+    $app = $parm['APP'];
+    if(isset($parm['INST'])) $app.='_'.$parm['INST'];
+    $dbres = $this->SQLRead("Select group_id_eff from zdd.groups_eff
+        where grouplist = '$app'");
+    $row = pg_fetch_all($dbres);
+    $group_eff = $row[0]['group_id_eff'];
+   
+    $localhost_suffix=$this->zzArraySafe($parm,'LOCALHOST_SUFFIX');
 	$text = 
 		"<?php\n".
 		"\$AG['application']='".$parm["APP"]."';\n".
+        "\$AG['group_login']='".$group_eff."';\n".
 		"\$AG['app_desc']='".$parm["APPDSC"]."';\n".
-      "\$AG['localhost_suffix']='".$localhost_suffix."';\n".
-      "\$AG['template']='".$this->zzArraySafe($parm,'TEMPLATE')."';\n".
-      "\$AG['flag_pwmd5']='".$parm['FLAG_PWMD5']."';\n".
-      "?>";
+        "\$AG['localhost_suffix']='".$localhost_suffix."';\n".
+        "\$AG['template']='".$this->zzArraySafe($parm,'TEMPLATE')."';\n".
+        "\$AG['flag_pwmd5']='".$parm['FLAG_PWMD5']."';\n".
+        "?>";
 	$this->zzFileWriteGenerated($text,'appinfo.php');
-   return true;
+    return true;
 }
 
 // =====================================================================
