@@ -4692,8 +4692,6 @@ function &ddTable($table_id) {
     # By default assume the appropriate view is the table name itself,
     # which may change below
     $tabdd['viewname'] = $table_id;
-    #echo "Here is second load:";
-    #hprint_r($tabdd);
 
     #  Work out the singular form of the description
     if(a($tabdd,'singular')=='') {
