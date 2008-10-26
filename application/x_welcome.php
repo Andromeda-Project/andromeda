@@ -56,7 +56,7 @@ class x_welcome extends x_table2 {
     <br/>
     <br/>
     Our main documentation is <a target="_blank" href=
-    "http://www.andromeda-project.org/pages/cms/Documentation">here</a>.
+    "http://www.andromeda-project.org/">here</a>.
     <br/>
     <br/>
 
