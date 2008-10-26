@@ -4810,7 +4810,11 @@ function ddView($tabx) {
         $tabx = ddTable($tabx);
     }
 
-    # Return the viewname
+    # KFD 10/26/08.  If no view, reload with new loader routine.
+    if(!isset($tabx['viewname'])) {
+         unset($GLOBALS['AG']['tables'][$tabx['table_id']]);
+         $tabx=ddTable($tabx);
+    }
     return $tabx['viewname'];
 }
 
@@ -4955,6 +4959,7 @@ function DD_TableDropdown($table_id) {
 *---**
 */
 function DDTable_IDResolve($table_id) {
+    return ddView($table_id);
     // Both super user and nobody get original table
     if(SessionGet("ROOT")) {
       return $table_id;
@@ -5097,7 +5102,9 @@ function DDColumnWritable(&$colinfo,$gpmode,$value) {
 *
 *---**
 */
-function DD_TableRef($table_id) {
+function &DD_TableRef($table_id) {
+    $retval= ddTable($table_id);
+    return $retval;
 	if (!isset($GLOBALS["AG"]["tables"][$table_id])) {
       $file=fsDirTop()."generated/ddtable_".$table_id.".php";
       if(!file_exists($file)) {
@@ -11742,7 +11749,8 @@ function Email_Exp($from,$to,$subject,$body,$headers) {
 *
 ******/
 function EmailSend($to,$subject,$message,$headers=array()) {
-	include_once("ddtable_adm_emails.php");
+    ddTable('adm_emails');
+	#include_once("ddtable_adm_emails.php");
 	include_once("x_email.php");
 	return X_EMAIL_SEND(
 		ARRAY(
