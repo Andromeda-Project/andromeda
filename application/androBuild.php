@@ -8568,7 +8568,7 @@ function CodeGenerate_Info() {
     # KFD 10/25/08, write out name of effective group for the
     #               $LOGIN group
     $app = $parm['APP'];
-    if(isset($parm['INST'])) $app.='_'.$parm['INST'];
+    #if(isset($parm['INST'])) $app.='_'.$parm['INST'];
     $dbres = $this->SQLRead("Select group_id_eff from zdd.groups_eff
         where grouplist = '$app'");
     $row = pg_fetch_all($dbres);
