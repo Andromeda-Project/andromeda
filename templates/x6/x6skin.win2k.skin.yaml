@@ -152,5 +152,11 @@ defines:
     bor3l:     *bor3t
     bor3r:     *bor3t
     
-        
+    # Tabdiv highlights and selected
+    div.tbody div.selected div:
+        bgc:    *selected
+
+    div.tbody div.hilight div:
+        bgc:    *bgcdark
+                
 
