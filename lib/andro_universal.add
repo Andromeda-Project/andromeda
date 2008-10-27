@@ -323,6 +323,14 @@ menu userssimple {
 //    }
 //}
 
+
+menu skinJob {
+    description: Generate Skins;
+    module: system;
+    uisort: 111;
+    group usermaint { permsel: Y; nomenu: N; }
+}
+
 //  TABLE: Cross-reference users to node groups
 //
 table usersxgroups {
