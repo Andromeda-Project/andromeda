@@ -1,0 +1,156 @@
+# ================================================================== 
+#   (C) Copyright 2008 by Secure Data Software, Inc.
+#
+#   This file is part of Andromeda.
+#
+#   Andromeda is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   Andromeda is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with Andromeda; if not, write to the Free Software
+#   Foundation, Inc., 51 Franklin St, Fifth Floor,
+#   Boston, MA  02110-1301  USA
+#   or visit http://www.gnu.org/licenses/gpl.html
+# ==================================================================
+
+# ==================================================================
+# HOW TO USE THIS FILE
+#
+#   This file defines the skin in terms of values previously
+#   defined in the accompanying 'color' and 'size' files.
+# ==================================================================
+
+# Make this the name as it should appear to the user
+name: Win2k
+
+# These are the rules you want to provide, combining 
+# colors and sizes declared in the 'color' and 'size' files.
+defines:
+    # default colors for the document
+    body:
+        bgc:        *bgcdark
+        color:      *black
+        ff:         *ff0
+        fs:         *fs0
+        mart:        1px
+        marb:        0
+        marl:       *pad0
+        marr:       *pad0
+    body a:
+        color:      *link
+        
+    # Title Elements
+    h1:
+        height:     150%
+        fw:         bolder
+        mart:      *menupad
+        marb:      *menupad
+    h2:
+        height:     140%
+        fw:         bolder
+        mart:      *menupad
+        marb:      *menupad
+    h3:
+        height:     130%
+        fw:         bolder
+        mart:      *menupad
+        marb:      *menupad
+    h4:
+        height:     125%
+        fw:         bolder
+        mart:      *menupad
+        marb:      *menupad
+        
+    # Menu definitions
+    .x6menu: 
+        bgc:        *bgcdark
+        height:     *barheight
+        lh:         *barlh
+        width:      *outsidewidth
+    .x6menu ul:
+        mart:        1px
+        marb:        0
+    .x6menu ul li:
+        bort:       *bw0 *bs0 *bgcdark
+        borb:        0
+        borl:       *bw0 *bs0 *bgcdark
+        borr:       *bw0 *bs0 *bgcdark
+        padl:       *menupad
+        padr:       *menupad
+    .x6menu ul li.selected:
+        bgc:        *histrongbgc
+        color:      *histrongcolor
+        bort:       *bw0 *bs0 *black
+        borb:        0
+        borl:       *bw0 *bs0 *black
+        borr:       *bw0 *bs0 *black
+    .x6menu ul.dropdown:
+        bort:       *bw0 *bs0 *black
+        borb:       *bw0 *bs0 *black
+        borl:       *bw0 *bs0 *black
+        borr:       *bw0 *bs0 *black
+        bgc:        *white
+        width:      *dropdownwidth
+        marl:       *dropdownshift
+        post:       *barheight
+    .x6menu ul.dropdown li:
+        color:      *black
+        width:      *dropdowninnerwidth
+    .x6menu ul.dropdown li.selected:
+        bgc:        *histrongbgc
+        color:      *white
+        
+    # the x6body is the outermost "inner" element,
+    # actual content goes into .x6main below
+    .x6body:
+        bgc:        *bgclight
+        bort:       *bor1t
+        borb:       *bor1b
+        borl:       *bor1l
+        borr:       *bor1r
+        height:     *insideheight
+        width:      *insidewidth
+    .x6main:         
+        bgc:        *bgclight
+        padl:       *pad0
+        padr:       *pad0
+        
+    # an optional element
+    .x6commandBar:
+        bgc:        *bgcdark
+        bort:       *bor2t
+        borb:       *bor2b
+        borl:       *bor2l
+        borr:       *bor2r
+        padl:       *pad0
+    .x6footer:
+        padt:       *pad0
+        fs:          80%
+        bgc:        *bgcdark
+        width:      *outsidewidth
+      
+    # Abstract border styles. 
+    # bor1 is "sunken"
+    # bor2 is "raised"
+    bor1t:     *bw0 *bs0 *shadowdark
+    bor1b:     *bw0 *bs0 *shadowlight
+    bor1l:     *bor1t
+    bor1r:     *bor1b
+    bor2t:     *bw0 *bs0 *shadowlight
+    bor2b:     *bw0 *bs0 *shadowdark
+    bor2l:     *bor2t
+    bor2r:     *bor2b
+    bor3t:     *bw0 *bs0 *shadowdark
+    bor3b:     *bor3t
+    bor3l:     *bor3t
+    bor3r:     *bor3t
+    
+        
+

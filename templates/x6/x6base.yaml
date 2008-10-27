@@ -1,0 +1,102 @@
+# ================================================================== 
+#   (C) Copyright 2008 by Secure Data Software, Inc.
+#
+#   This file is part of Andromeda.
+#
+#   Andromeda is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   Andromeda is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with Andromeda; if not, write to the Free Software
+#   Foundation, Inc., 51 Franklin St, Fifth Floor,
+#   Boston, MA  02110-1301  USA
+#   or visit http://www.gnu.org/licenses/gpl.html
+# ================================================================== 
+overrides:
+    .x6main:
+        position: relative
+ 
+        
+    .x6menu ul:
+        float: left
+        list-style-image:    none
+        list-style-position: outside
+        list-style-type:     none
+        # required to prevent normal padding of ul's
+        padding-left: 0
+        
+    .x6menu ul.right:
+        float: right
+        
+    .x6menu ul li:
+        position: relative
+    
+    # Required to prevent list from going vertical
+    .x6menu li:
+        float: left
+        
+    ul.dropdown:
+        position: absolute
+        z-index:  1000
+        
+    .x6menu ul.dropdown li:
+        cursor: pointer
+        position: relative
+        display: block
+        border: 0
+        
+    .x6menu ul.dropdown li a:
+        text-decoration: none
+        width: 100%
+        
+    .box1:
+        border-top:       *bor1t
+        border-bottom:    *bor1b
+        border-left:      *bor1l
+        border-right:     *bor1r
+        background-color: *bgclight
+    .box2:
+        border-top:       *bor2t
+        border-bottom:    *bor2b
+        border-left:      *bor2l
+        border-right:     *bor2r
+        background-color: *bgcdark
+    .box3: 
+        border-top:       *bor3t
+        border-bottom:    *bor3b
+        border-left:      *bor3l
+        border-right:     *bor3r
+        background-color: *bgclight
+    
+        
+    # Tab div stuff
+    div.thead div:
+        height:           *barheight
+        background-color: *bgcdark
+    div.thead div div:
+        float: left
+        height:           *barheight
+        padding-left:     *pad0
+        padding-top:      *pad0
+        border-top:       *bor2t
+        border-bottom:    *bor2b
+        border-left:      *bor2l
+        border-right:     *bor2r
+    div.tbody:
+        overflow-x: hidden
+        overflow-y: scroll
+        clear: both
+    div.tbody div div:
+        float:             left
+        overflow:          hidden
+        height:           *barheight
+        padding-left:     *pad0
+    
+
