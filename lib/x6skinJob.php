@@ -188,7 +188,6 @@ class x6skinJob extends androX6 {
         # the next step below, we won't have them anymore.
         # 
         $selectors = array_keys($skinYaml['defines']);
-
         
         # The first bit of magic is to scan the array and look
         # for elements that are themselves arrays.  We will replace
