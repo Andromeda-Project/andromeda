@@ -158,5 +158,27 @@ defines:
 
     div.tbody div.hilight div:
         bgc:    *bgcdark
+
+    # Input highlights and selecteds w/ conditionals
+
+    tbody tr.selected:
+        bgc:    *dark
+
+    tbody input.changed:
+        bgc:    *clrChanged
+    
+    tbody input.changedSelected:
+        bgc:    *clrChanged
+
+    tbody input.errorSelected:
+        bgc:    *clrError
+
+    tbody input.changedOK:
+        bgc:    *clrOk
+    
+    tbody input.required:
+        bgc:    *clrRequired
+
+    
                 
 
