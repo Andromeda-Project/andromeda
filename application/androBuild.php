@@ -81,7 +81,6 @@ class x_builder {
         $retval = $retval && $this->LogStart();
         $retval = $retval && $this->DB_Connect();
         $retval = $retval && $this->FS_Prepare();
-        return true;
 
         // If we can read files, minify.  Turn this back on if
         // we get a more foolproof minify/pack program that
