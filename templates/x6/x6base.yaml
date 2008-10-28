@@ -20,6 +20,9 @@
 #   or visit http://www.gnu.org/licenses/gpl.html
 # ================================================================== 
 overrides:
+    a:
+        text-decoration: none  
+
     .x6main:
         position: relative
  
