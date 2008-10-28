@@ -1164,6 +1164,39 @@ class androHtml {
     }
     /******/
 
+    
+    /****m* androHtml/form
+    *
+    * NAME
+    *    androHTML/form
+    *
+    * FUNCTION
+    *	The PHP method form creates an HTML FORM node, adds it as a 
+    *   child to the current node, and returns a reference to it.
+    *
+    *   All inputs are optional.
+    *
+    * INPUTS
+    *	string $name - the name of the form.  Default: "Form1"
+    *   string $method - the method (GET or POST).  Default: POST
+    *   string $action - the URI to route to.  Default "index.php"
+    *	string $x6page - the value of x6page to go to, defaults to none.
+    *
+    * SOURCE
+    */
+    function &form($name='Form1',$method='POST',$action="index.php",$x6page=''){
+        $form = $this->h('form');
+        $form->hp['id']     = $name;
+        $form->hp['name']   = $name;
+        $form->hp['method'] = $method;
+        $form->hp['action'] = $action;
+        if($x6page <> '') {
+            $form->hp['action'].="?x6page=".$x6page;
+        }
+        return $form;
+    }
+    /******/
+    
     /****m* androHtml/hidden
     *
     * NAME
@@ -1528,6 +1561,8 @@ class androHtml {
     function &addTabDiv($height) {
         $newTable = new androHTMLTabDiv($height);
         $this->addChild($newTable);
+        
+        $this->h('style','.ui-tabs-hide { display: none; }');
         return $newTable;
     }
     
@@ -1541,12 +1576,15 @@ class androHtml {
     *	The PHP method androHtml::addTabs adds an instance of
     *   class androHTMLTabs as a child node.  
     *
+    *   The androHTMLTabs class depends on jQuery's UI/Tabs
+    *   feature.
+    *
     * SEE ALSO
     *   androHtmlTabs
     *  
     ******/
-    function &addTabs() {
-        $newTabs = new androHTMLTabs();
+    function &addTabs($id) {
+        $newTabs = new androHTMLTabs($id);
         $this->addChild($newTabs);
         return $newTabs;
     }
@@ -1881,48 +1919,72 @@ class androHTMLTabs extends androHTML {
     var $tabs = array();
     
     function androHTMLTabs($id='') {
-        # Example HTML from tabbar-top.html 
+        # Example HTML from jquery tabs 
         /*
-        <div id="tb">
-          <div class="tb2" id="tabbar_tb">
-            <a    id="tab_Users"  
-                href="javascript:selectTab('tb','Users');">Users</a>
-            <a     id="tab_Groups" 
-                 href="javascript:selectTab('tb','Groups');"
-                class="tabselected">Groups</a>
-          </div>
-          <div class="tb2content" id="tabcontent_tb">
-             <div id="pane_Users"  class="tb2pane">Welcome to users</div>
-             <div id="pane_Groups" class="tb2pane tabselected">Welcome to groups</div>
-          </div>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
+                    "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+  <script src="http://code.jquery.com/jquery-latest.js"></script>
+  <link rel="stylesheet" href="http://dev.jquery.com/view/tags/ui/latest/themes/flora/flora.all.css" type="text/css" media="screen" title="Flora (Default)">
+  <script type="text/javascript" src="http://dev.jquery.com/view/tags/ui/latest/ui/ui.core.js"></script>
+  <script type="text/javascript" src="http://dev.jquery.com/view/tags/ui/latest/ui/ui.tabs.js"></script>
+
+
+  <script>
+  $(document).ready(function(){
+    $("#example > ul").tabs();
+  });
+  </script>
+  
+</head>
+<body>
+  
+        <div id="example" class="flora">
+            <ul>
+
+                <li><a href="#fragment-1"><span>One</span></a></li>
+                <li><a href="#fragment-2"><span>Two</span></a></li>
+                <li><a href="#fragment-3"><span>Three</span></a></li>
+            </ul>
+            <div id="fragment-1">
+                <p>First tab is active by default:</p>
+                <pre><code>$('#example > ul').tabs();</code></pre>
+            </div>
+            <div id="fragment-2">
+                Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.
+                Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.
+            </div>
+            <div id="fragment-3">
+                Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.
+                Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.
+                Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.
+            </div>
         </div>
+</body>
+</html>
         */
 
         # Build the HTML that looks like the sample above
         $this->htype = 'div';
         $this->hp['id'] = $id;
-        $this->addClass('ahTab');
+        $this->ul = $this->h('ul');
+        $this->tabs = array();
         
-        # Create the nested div that is the bar of tabs
-        $divBar = $this->divBar = $this->h('div');        
-        $divBar->hp['id'] = $id.'_bar';
-        $divBar->addClass('ahTabBar');
+        # Register the script to turn on the tabs
+        jqDocReady(" \$('#$id > ul').tabs() ");
         
-        # Create the nested div that contains the content panes
-        $divPanes = $this->divPanes = $this->h('div');
-        $divPanes->hp['id'] = $id.'_panes';
-        $divPanes->addClass('ahTabPanes');
         
     }
     
-    /****m* androHtmlTabBar/addTab
+    /****m* androHtmlTabs/addTab
     *
     * NAME
     *    addTab
     *
     * FUNCTION
     *   This PHP class method addTab is the basic method
-    *   of the androHTMLTabBar class,
+    *   of the androHTMLTabs class,
     *   call this function once for each tab you wish to add
     *   to your tabbar.
     *
@@ -1930,36 +1992,23 @@ class androHTMLTabs extends androHTML {
     *   - $caption string, becomes both caption and ID 
     *   
     * RETURNS
-    *   - androHTML, reference to the content area for the new tab
+    *   - androHTML, reference to a div where you can put content
+    *   for the new tab.
     *
     ******/
     function &addTab($caption) {
-        $id   = $this->hp['id'];
-
-        # Create the new pane first because we need a
-        # count to set classes
-        $newTab = $this->divPanes->h('div');
-        $newTab->hp['id'] = $id.'_pane_'.$caption;
-        $this->panes[] = &$newTab;
-        if(count($this->tabs)==1) {
-            $newTab->addClass('tabpaneselected');
-        }
-        else {
-            $newTab->addClass('tabpane');
-        }
-
-        #  Save the tab for reference by downstream code
-        $this->tabs[$caption] = &$newTab;
-
-        # Create the hyperlink
-        $bid = $id.'_tab_'.$caption;
-        $href = "javascript:x6.tabs.select('$id','$bid')";
-        $a = $this->divBar->a($caption,'#');
-        $a->hp['id'] = $bid;
+        # Make an index, and add it in.
+        $index = count($this->tabs)+1;
         
-        # Return reference to the object so calling program can
-        # put things into the tab.
-        return $newTab;
+        # First easy thing is to do the li entry
+        $inner = "<a href='#fragment-$index'><span>$caption</span></a></li>";
+        $this->ul->h('li',$inner);
+        
+        # Next really easy thing to do is make a div, give it
+        # the id, and return it
+        $div = $this->h('div');
+        $div->hp['id'] = "fragment-$index";
+        return $div;
     }
 }
 
