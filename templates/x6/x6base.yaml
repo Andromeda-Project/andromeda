@@ -20,8 +20,8 @@
 #   or visit http://www.gnu.org/licenses/gpl.html
 # ================================================================== 
 overrides:
-    a:
-        text-decoration: none  
+    a.button_disabled,a.button,div.thead div a:
+        text-decoration: none
 
     .x6main:
         position: relative
