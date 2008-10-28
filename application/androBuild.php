@@ -81,6 +81,7 @@ class x_builder {
         $retval = $retval && $this->LogStart();
         $retval = $retval && $this->DB_Connect();
         $retval = $retval && $this->FS_Prepare();
+        return true;
 
         // If we can read files, minify.  Turn this back on if
         // we get a more foolproof minify/pack program that
@@ -9337,7 +9338,7 @@ function FS_PrepareMake() {
         $this->LogEntry("Processing subdir: $tgt");
         
         if(!file_exists($dir_pubx.$tgt)) {
-            $this->LogEntry(" -> Creating this directory");
+            $this->LogEntry(" -> Creating this directory: $dir_pubx.$tgt");
             mkdir($dir_pubx.$tgt);
         }
 
@@ -9520,7 +9521,7 @@ function FS_MKDIR($dir,$noaccess=false) {
 	}
 	else {
 		mkdir($dir);
-		chmod($dir,0770);
+		chmod($dir,02770);
       $this->FS_MKDIR_Noaccess($dir,$noaccess);
 	}
 	return true;
@@ -9546,7 +9547,7 @@ function FS_CHECKDIR($dir,$grp,$checkallfiles=false) {
 		$SCRIPT.="\n";
 		$SCRIPT.="mkdir $dir\n";
 		$SCRIPT.="chgrp ".$grp." $dir \n" ;
-		$SCRIPT.="chmod g+wr $dir\n";
+		$SCRIPT.="chmod 2770 $dir\n";
 	}
 	else {
         // Don't check subversion directories
@@ -9554,8 +9555,8 @@ function FS_CHECKDIR($dir,$grp,$checkallfiles=false) {
         
 		if (! is_writable($dir) || !is_readable($dir)) {
 			$this->LogError("Wrong read/write perms on directory: $dir");
-			$SCRIPT.="chgrp $grp $dir \n"; 
-			$SCRIPT.="chmod g+wr $dir\n";
+			$SCRIPT.="chgrp $grp -R $dir \n"; 
+			$SCRIPT.="chmod 2770 -R $dir\n";
 		}
 		else {
 			// The "Checkallfiles" checks files and also recurses
@@ -9570,7 +9571,7 @@ function FS_CHECKDIR($dir,$grp,$checkallfiles=false) {
 						$this->LogError("Unwritable file in directory: $dir");
                   $this->LogEntry("-- file is: ".$file);
 						$SCRIPT.="chgrp $grp $dir -R\n"; 
-						$SCRIPT.="chmod g+wr $dir -R\n";
+						$SCRIPT.="chmod 2770 $dir -R\n";
                   break;
 					}
                if (is_dir($dir.$file)) {
