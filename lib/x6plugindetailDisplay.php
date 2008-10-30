@@ -16,36 +16,7 @@ class x6plugindetailDisplay {
         
         # Now for the display
         # Put some buttons on users
-        $bb = $area1->h('div');
-        $bb->addClass('x6buttonBar');
-        $a=$bb->h('a-void','New');
-        $a->addClass('button button-first');
-        $a->hp['style'] = 'margin-left: 0px';
-        $a->hp['x6table']  = $table_id;
-        $a->hp['x6plugIn'] = 'buttonNew';
-        $a->hp['style']    = 'float: left';
-        $a=$bb->h('a-void','Duplicate');
-        $a->addClass('button');
-        $a->hp['x6table']  = $table_id;
-        $a->hp['x6plugIn'] = 'buttonDuplicate';
-        $a->hp['style']    = 'float: left';
-        $a=$bb->h('a-void','Save');
-        $a->addClass('button');
-        $a->hp['x6table']  = $table_id;
-        $a->hp['x6plugIn'] = 'buttonSave';
-        $a->hp['style']    = 'float: left';
-        $a=$bb->h('a-void','Remove');
-        $a->addClass('button');
-        $a->hp['x6table']  = $table_id;
-        $a->hp['x6plugIn'] = 'buttonRemove';
-        $a->hp['style']    = 'float: right';
-        $a=$bb->h('a-void','Abandon Changes');
-        $a->addClass('button');
-        $a->hp['x6table']  = $table_id;
-        $a->hp['x6plugIn'] = 'buttonAbandon';
-        $a->hp['style']    = 'float: right';
-        //$bb = $area1->h('div');
-        //$bb->hp['style'] = 'clear: both';
+        $area1->addButtonBar($table_id);
                 
         # generate a detail pane of inputs and assign
         # the standard keyup to all of them.
