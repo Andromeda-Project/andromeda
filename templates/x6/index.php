@@ -48,11 +48,13 @@ function x6ChangeSkin(select) {
 </div>
 <div style="clear: both"></div>
 <div class="x6body">
+    <!--
     <div class="x6commandBar">
     F2: command <input value="hi" />  
     <a href = "#">Calendar</a>
     <a href = "#">Today</a>
     </div>
+    -->
     
     <div class="x6main">
     <?=mosMainBody()?>
