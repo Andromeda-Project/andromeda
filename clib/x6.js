@@ -36,17 +36,8 @@
    on and off by commenting and uncommenting the relevant lines.
    
    # Beanshell: Turn logging off by commenting out lines
-   # NOTICE: THE FIRST AND SECOND LINES HAVE THE STRING LITERAL '* /'
-   #         YOU MUST REMOVE THAT SPACE WHEN YOU RUN THESE
-    SearchAndReplace.setSearchString("/*C* /");
-    SearchAndReplace.setReplaceString("/*C* / //");
-    SearchAndReplace.setBeanShellReplace(false);
-    SearchAndReplace.setIgnoreCase(true);
-    SearchAndReplace.setRegexp(false);
-    SearchAndReplace.setSearchFileSet(new CurrentBufferSet());
-    SearchAndReplace.replaceAll(view);
     SearchAndReplace.setSearchString("//console.");
-    SearchAndReplace.setReplaceString("////console.");
+    SearchAndReplace.setReplaceString("//console.");
     SearchAndReplace.setBeanShellReplace(false);
     SearchAndReplace.setIgnoreCase(true);
     SearchAndReplace.setRegexp(false);
@@ -54,16 +45,7 @@
     SearchAndReplace.replaceAll(view);
 
    # Beanshell: Turn logging on by uncommenting the lines.
-   # NOTICE: THE FIRST AND SECOND LINES HAVE THE STRING LITERAL '* /'
-   #         YOU MUST REMOVE THAT SPACE WHEN YOU RUN THESE
-    SearchAndReplace.setSearchString("/*C* / //");
-    SearchAndReplace.setReplaceString("/*C* /");
-    SearchAndReplace.setBeanShellReplace(false);
-    SearchAndReplace.setIgnoreCase(true);
-    SearchAndReplace.setRegexp(false);
-    SearchAndReplace.setSearchFileSet(new CurrentBufferSet());
-    SearchAndReplace.replaceAll(view);
-    SearchAndReplace.setSearchString("////console.");
+    SearchAndReplace.setSearchString("//console.");
     SearchAndReplace.setReplaceString("//console.");
     SearchAndReplace.setBeanShellReplace(false);
     SearchAndReplace.setIgnoreCase(true);
@@ -71,7 +53,162 @@
     SearchAndReplace.setSearchFileSet(new CurrentBufferSet());
     SearchAndReplace.replaceAll(view);
 \* ================================================================== */
+
+/****O* Javascript-API/jsHtml
+*
+* NAME
+*   Javascript-API.jsHtml
+*
+* FUNCTION
+*   The javascript function jsHtml is a constructor 
+*   function for a new HTML node.  It is considerably
+*   faster and easier than document.createElement() and
+*   node.appendChild.
+*
+*   This function works almost exactly the same way as the
+*   PHP function html(), except that it works in the
+*   browser.
+*
+*   The resulting object is considerably simpler than the
+*   HTML nodes you can create in PHP, and is designed
+*   only for basic tasks.  There are no shortcuts for 
+*   creating complex entities, those must be coded by
+*   hand.
+*
+*   You can pass the innerHTML in as the second parameter,
+*   or you can set it directly by assigning the innerHtml
+*   property of the object.
+*
+* INPUTS
+*   * string - a valid (x)html tag name like 'div' or 'span'
+*   * string - (optional) the value of innerHtml
+*
+* EXAMPLE
+*   Use the Javascript "new" operator with this function.
+*        <script>
+*        var div = new jsHtml('div','Hello, I am a div!');
+*        div.hp.style = 'width: 300px';
+*        var html = div.bufferedRender();
+*        $( -- some jquery selector -- ).append(html);
+*        </script>
+*
+******
+*/
+function jsHtml(tag,innerHtml) {
+    this.tag = tag;
+    this.children = [ ];
+    this.hp = { };
+
+    /****O* jsHtml.innerHtml
+    *
+    * NAME
+    *   jsHtml.innerHtml
+    *
+    * FUNCTION
+    *   The javascript property innerHtml holds the innerHTML
+    *   of an HTML node created by jsHtml().  You can pass in
+    *   the innerHtml as the second parameter to jsHtml, or
+    *   you can set this property directly.
+    *
+    * EXAMPLE
+    *   Use the Javascript "new" operator with this function.
+    *        <script>
+    *        var div = new jsHtml('div');
+    *        div.innerHtml = 'I set this on the 2nd line!';
+    *        var html = div.bufferedRender();
+    *        $( -- some jquery selector -- ).append(html);
+    *        </script>
+    *
+    ******
+    */
+    this.innerHtml = innerHtml ? innerHtml : '';
     
+    /****O* jsHtml.addChild
+    *
+    * NAME
+    *   jsHtml.addChild
+    *
+    * FUNCTION
+    *   The javascript method addChild adds one HTML node as
+    *   a child to another.  Both nodes must have been 
+    *   created by using the jsHtml() constructor function.
+    *
+    * EXAMPLE
+    *   Use the Javascript "new" operator with this function.
+    *        <script>
+    *        var div = new jsHtml('div');
+    *        var span = new jsHtml('span','A span in a div!');
+    *        div.addChild(span);
+    *        var html = div.bufferedRender();
+    *        $( -- some jquery selector -- ).append(html);
+    *        </script>
+    *
+    ******
+    */
+    this.addChild = function(child) {
+        this.children.push(child);
+    }
+    /******/
+
+    /****O* jsHtml.h
+    *
+    * NAME
+    *   jsHtml.h
+    *
+    * FUNCTION
+    *   The javascript method h creates a new HTML node and
+    *   makes it a child of the current node.  This is a 
+    *   shortcut for having to call jsHtml and then
+    *   addChild.
+    *
+    * EXAMPLE
+    *   Use the Javascript "new" operator with this function.
+    *        <script>
+    *        var div = new jsHtml('div');
+    *        var span = div.h('span','Hello!');
+    *        var html = div.bufferedRender();
+    *        $( -- some jquery selector -- ).append(html);
+    *        </script>
+    *
+    ******
+    */
+    this.h = function(tag,innerHtml) {
+        var newNode = new jsHtml(tag,innerHtml);
+        this.addChild(newNode);
+        return newNode;
+    }
+    /******/
+
+    /****O* jsHtml.bufferedRender
+    *
+    * NAME
+    *   jsHtml.bufferedRender
+    *
+    * FUNCTION
+    *   The javascript method bufferedRender returns a string
+    *   of HTML for a node created with jsHtml.  It sets all
+    *   properties, and recursively runs through all children.
+    *   The innerHtml, if it is present, goes out last.
+    *
+    * SOURCE
+    */
+    this.bufferedRender = function() {
+        var html = '<' + this.tag;
+        for(var attName in this.hp) {
+            html+=' '+attName+'="'+this.hp[attName]+'"';
+        }
+        html+=">";
+        for(var idx in this.children) {
+            html+=this.children[idx].bufferedRender();
+        }
+        html+=this.innerHtml;
+        html+='</'+this.tag+'>';
+        return html;
+    }
+    /******/
+
+}
+
     
 /****O* Javascript-API/x6events
 *
@@ -151,7 +288,7 @@ var x6events = {
     * SOURCE
     */
     subscribeToEvent: function(eventName,id) {
-        /*C*/ // var ux=u.uniqueId(); //console.group("subscribeToEvent "+ux);
+        //console.group("subscribeToEvent "+eventName);
         //console.log("event name: ",eventName)
         //console.log("id subscbr: ",id);
         if(id=='undefined') {
@@ -173,7 +310,7 @@ var x6events = {
             this.subscribers[eventName] = [ ];
         }
         this.subscribers[eventName].push(id);
-        /*C*/ // //console.groupEnd("subscribeToEvent "+ux);
+        //console.groupEnd();
     },
     /******/
         
@@ -229,7 +366,7 @@ var x6events = {
     */
     retvals: { },
     fireEvent: function(eventName,arguments) {
-        /*C*/ // var ux=u.uniqueId(); //console.group("fireEvent "+eventName+' '+ux);
+        //console.group("fireEvent "+eventName);
         //console.log('arguments: ',arguments);
         // Find out if anybody is listening for this event
         var subscribers = this.getSubscribers(eventName);
@@ -261,7 +398,7 @@ var x6events = {
             }
         }
         //console.log("RETURNING: ",this.retvals[eventName]);
-        /*C*/ // //console.groupEnd("fireEvent "+ux);
+        //console.groupEnd();
         return this.retvals[eventName];
     }
 }
@@ -284,7 +421,7 @@ var x6 = {
     // DOM elements with property x6plugIn=xxx.  
     // Invoke the constructor for each one.
     init: function() {
-        //u.debugFlag = true;
+        u.debugFlag = true;
         
         // Job 1: Activate all of the plugins
         for(var plugInId in x6plugins) {
@@ -292,9 +429,8 @@ var x6 = {
                     if(u.p(this,'id','')=='') {
                         this.id = u.uniqueId();
                     }
-                    u.debug(
-                        "Initializing object "+this.id+" as plugIn "+plugInId
-                    );
+                    s="Initializing object "+this.id+" as plugIn "+plugInId;
+                    //console.log(s);
                     this.zTable = u.p(this,'x6table');
                     x6plugins[plugInId](this,this.id,u.p(this,'x6table'));
             });
@@ -302,16 +438,19 @@ var x6 = {
         
         // Job 2, activate a global keyboard handler
         $(document).keypress(function(e) {
-                u.debug("document.keypress (BEGIN)",1); 
+                //console.group("Document Keypress");
+                //console.log(e); 
                 var retval= x6.keyDispatcher(e);
-                u.debug("document.keypress (END)",-1); 
+                //console.groupEnd(); 
                 return retval;
         });
         
-        // Fade in anybody who has been asked to fade in,
-        // and when finished put focus onto whichever
-        // object has asked for it.
-        $('.fadein').fadeIn('slow',function() { x6.initFocus(); });
+        // We used to fade in here, but that was no good, because
+        // the fade in would occur before any page-specific code
+        // had run, and the user would see things jumping around.
+        // Now the index_hidden x6 dispatcher sends this command
+        // very last, so it is the last thing that happens.
+        //$('.fadein').fadeIn('slow',function() { x6.initFocus(); });
     },
     
     initFocus: function() {
@@ -392,21 +531,21 @@ var x6 = {
         var stopThem = [ 'CtrlF5', 'F10' ];
         
         // Now we have a complete key label, fire the event
-        u.debug("In x6.keyDispatch, code and event follow");
-        u.debug(retval);
-        u.debug(e);
+        //console.log("In x6.keyDispatch, code and event follow");
+        //console.log(retval);
+        //console.log(e);
         if(stopThem.indexOf(retval)>0) {
-            u.debug("x6.keyDispatch: key is in force stop list, stopping propagation.");
+            //console.log("x6.keyDispatch: key is in force stop list, stopping propagation.");
             e.stopPropagation();
             return false;
         }
         else if (!x6events.fireEvent('key_'+retval,null)) {
-            u.debug("x6.keyDispatch: handler returned false, stopping propagation.");
+            //console.log("x6.keyDispatch: handler returned false, stopping propagation.");
             e.stopPropagation();
             return false;
         }
         else {
-            u.debug("x6.keyDispatch: handler returned true, continuing propagation.");
+            //console.log("x6.keyDispatch: handler returned true, continuing propagation.");
             return true;
         }
     }    
@@ -418,24 +557,46 @@ var x6 = {
    
 \* **************************************************************** */
 var x6inputs = {
+    // This routine takes an input that has no x6 event
+    // handlers and adds all of the event handlers to it
+    initInput: function(input,tabIndex,mode) {
+        //console.group("Initializing Input");
+        //console.log(tabIndex,mode);
+        //console.log(input);
+        $(input)
+            .keyup(function(e)   { x6inputs.keyUp(e,this)   })
+            .keydown(function(e) { x6inputs.keyDown(e,this) })
+            .focus(function(e)   { x6inputs.focus(e,this)   })
+            .blur(function(e)    { x6inputs.blur(e,this)    });
+        input.tabIndex = tabIndex;
+        if(mode=='new') {
+            input.zNew = 1;
+            x6inputs.setClass(input);
+        }
+        //console.groupEnd();
+    },
+    
     // Key up is used to look for changed values because
     // you do not see an input's new value until the keyup 
     // event.  You do not see it in keypress or keydown.
     keyUp: function(e,inp) {
+        //console.group("Input keyUp");
+        //console.log(e);
+        //console.log(inp);
         x6inputs.setClass(inp);
+        //console.groupEnd("Input keyUp");
     },
     
     // Keydown is used only for tab or shift tab, to enforce
     // the concept of a "tab loop".  This function only does
     // anything if there are no enabled controls after the
-    // 
+    // current control
     //
     keyDown: function(e,inp) {
-        //u.debugPush();
-        ////console.log(e);
-        //u.debug(e);
-        //u.debug(inp);
         if(e.keyCode!=9) return true;
+        //console.group("input keyDown handler");
+        //console.log(e);
+        //console.log(inp);
         
         // work out which property to use.
         if(e.shiftKey) { 
@@ -446,8 +607,8 @@ var x6inputs = {
             var prop = 'xNextTab';
             var jqf  = ':first';
         }
-        //u.debug(prop);
-        //u.debug(jqf);
+        //console.log(prop);
+        //console.log(jqf);
         
         // The loop breaks when we find a readable control
         // or get to the end of the list
@@ -458,20 +619,20 @@ var x6inputs = {
             // at beginning
             if( u.p(xinp,prop,'X')=='X') {
                 jqx = '[tabindex]:not([disabled])'+jqf;
-                //u.debug("no control found, string to use: "+jqx);
+                //console.log("no control found, string to use: "+jqx);
                 break;
             }
             
             // Advance to next
             var tabCandidate = u.p(xinp,prop);
             jsq = '[tabindex='+tabCandidate+']';
-            //u.debug('advancing to '+jsq);
+            //console.log('advancing to '+jsq);
             xinp = $(jsq)[0];
             
             // and if the next is not disabled, return TRUE,
             // do NOTHING, and the browser will handle it
             if(u.p(xinp,'disabled',false)==false) {
-                //u.debug("next control is not read only, letting browse do it");
+                //console.log("next control is not read only, letting browse do it");
                 break;
             }
             
@@ -481,17 +642,21 @@ var x6inputs = {
             if(xinp==inp) break;
         }
         if(jqx=='') {
-            //u.debug('not trying to pick focus');
+            //console.log('not trying to pick focus');
         }
         else {
-            //u.debug("trying to pick focus: "+jqx);
+            //console.log("trying to pick focus: "+jqx);
             $(jqx).focus();
         }
         //u.debugPop();
         if(jqx=='') {
+            //console.log("returning TRUE");
+            //console.groupEnd();
             return true;
         }
         else {
+            //console.log("PREVENTING DEFAULT AND RETURNING FALSE");
+            //console.groupEnd();
             e.preventDefault();
             return false;
         }
@@ -514,6 +679,9 @@ var x6inputs = {
     },
     
     setClass: function(inp) {
+        ux = u.uniqueId();
+        //console.group("setClass for an input  "+ux);
+        //console.log(inp);
         if(u.p(inp,'zOriginalValue',null)==null) inp.zOriginalValue = '';
         if(inp.value==inp.zOriginalValue) {
             inp.zChanged = 0;
@@ -537,12 +705,15 @@ var x6inputs = {
         else if(zNew)     css = 'changed';
         else if(zChanged) css = 'changed';
         else              css = '';
+        //console.log("initial class is "+css);
         
         // Now pick the selected version if required
         if(zSelected) css += 'Selected';
+        //console.log("Final class is "+css);
         
         // Now do some stuff if it is read only
         inp.disabled = zRO;
+        //console.log("Read Only Decision is",inp.disabled);
         
         // Flag to do the row
         doRow = u.p(inp,'xClassRow',0);
@@ -555,6 +726,7 @@ var x6inputs = {
         if(doRow && !zSelected) {
             inp.parentNode.parentNode.className = '';
         }
+        //console.groupEnd();
     },
     
     clearOut: function(inp) {
@@ -564,7 +736,12 @@ var x6inputs = {
         inp.value          = '';
         inp.zOriginalValue = '';
         x6inputs.setClass(inp);
+    },
+    
+    findFocus: function(obj) {
+        $(obj).find(":input:first").focus();
     }
+    
 }
 
 
@@ -1207,5 +1384,377 @@ var x6plugins = {
                 }
             }
         }
+    }
+}
+
+
+/***im* x6plugins/tabDiv
+*
+* NAME
+*   x6plugins.tabDiv
+*
+* FUNCTION
+*   The Javascript method x6plugins.tabDiv implements
+*   all browser-side functionality for Andromeda's built-in
+*   plugIn tabDiv.  A "tabDiv" appears to the user to be an
+*   HTML TABLE but it is implemented with divs.
+*
+*   This routine is called automatically by x6.init, there
+*   is not usually any reason for calling this routine
+*   directly.
+*
+* INPUTS
+*   self - the DOM object to be activated.
+*   id - the ID of the object to be 'activated'.
+*   table - the database table that the tabDiv is handling.
+*
+* RESULTS
+*   no return value.
+*
+******
+*/
+x6plugins.x6tabDiv = function(self,id,table) {
+    // Start out by claiming not to be editing
+    // any particular key.
+    self.zSkey = -1;
+
+    // if grid select is 'inline', we subscribe to
+    // requests to edit rows
+    if(u.p(self,'xGridSelect','')=='inline') {
+        x6events.subscribeToEvent('reqEditRow_'+table,id);
+        self['receiveEvent_reqEditRow_'+table] = function(skey) {
+            /* Quiet return if the clicked the row already being edited */
+            if(skey==this.zSkey) return false;
+            
+            //console.group('reqEditRow',table);
+            var grid = this;
+            
+            /*
+            *   If editing a different row, try to save
+            *   and clear that row first
+            */
+            if(this.zSkey>-1) {
+                var oldSkey = this.zSkey;
+                if(!x6events.fireEvent('reqSaveRow_'+this.zTable)) { 
+                    //console.groupEnd();
+                    return false;
+                }
+                else {
+                    //console.log("removing inputs current row");
+                    this.removeInputs(oldSkey);
+                    this.zSkey==-1;
+                }
+            }
+            
+            // Make sure we have the row, otherwise it is
+            // kind of useless
+            if( $(this).find('#row_'+skey).length == 1) {
+                //console.log("We have the row, we can edit");
+                this.zSkey = skey;
+                this.buttonsOn();
+
+                //console.group("Putting inputs into div cells");                
+                $(this).find('.tbody #row_'+skey+' div').each(
+                    function() {
+                        // Work up to figuring out the name of the
+                        // id that holds the hidden input, then
+                        // grab the input and put it in.
+                        var colnum = u.p(this,'gColumn');
+                        var colid  = grid.zColsInfo[colnum].column_id;
+                        var id = 'wrapper_'+grid.zTable+'_'+colid;
+
+                        // Current Value
+                        var curval = this.innerHTML;
+                        //console.log(id,curval);
+                        
+                        this.innerHTML = u.byId(id).innerHTML;
+                        $(this).find(":input")[0].value=curval;
+                        //console.log(this.innerHTML);
+                    }
+                );
+                //console.groupEnd();
+            }
+            
+            //console.groupEnd();
+        }
+    }
+
+    // if grid is editable, xGridReqNew will be set to
+    // 'inline', which means new lines are added directly
+    // to the grid.
+    if(u.p(self,'xGridReqNew','')=='inline') {
+        x6events.subscribeToEvent('reqNewRow_'+table,id);
+        
+        self['receiveEvent_reqNewRow_'+table] = function(skey) {
+            //console.group("reqNewLine "+this.zTable);
+            //console.log('Table: '+this.zTable);
+            
+            /*
+            * If editing a new row, we will try to save it.
+            * If successful, quietly continue.  If it happens
+            * to be all empty, just focus on the row. 
+            */
+            if(this.zSkey>-1) {
+                if(!x6events.fireEvent('reqSaveRow_'+this.zTable)) {
+                    //console.log('Failed to save new row, no new new row');
+                    //console.groupEnd();
+                    x6inputs.findFocus( $(this).find("#row_0") );
+                    return true;
+                }
+            }
+
+            // We are going to make a new row.  Right now it will
+            // go at the top of div.thead, but later it has to
+            // be smarter and go in after the selected row, if any.
+            var newRow = new jsHtml('div');
+            newRow.hp.id = 'row_0';
+            newRow.hp.style = 'display: none;';
+            var numbers = [ 'int', 'numb', 'money' ];
+            //console.log(newRow);
+            for (var idx in this.zColsInfo) {
+                var colInfo = this.zColsInfo[idx];
+                if(colInfo.column_id == '') continue;
+                
+                var innerDiv = newRow.h('div');
+                innerDiv.hp.style= "width: "+colInfo.width+"px;";
+                if(numbers.indexOf(colInfo.type_id)>=0) {
+                    innerDiv.hp.style+="text-align: right";
+                }
+                var id = '#wrapper_'+this.zTable+'_'+colInfo.column_id;
+                var newInput = $(id).html();
+                //console.log("column: ",colInfo.column_id,newInput);
+                innerDiv.innerHtml = newInput;
+            }
+            //console.log(newRow);
+            // Add this new row into the visuals so it is real
+            $(this).find('.tbody').prepend(newRow.bufferedRender());
+            // Initialize all inputs to behave in x6 mode
+            tabIndex = 1000;
+            $(this).find(':input').each(
+                function() { x6inputs.initInput(this,tabIndex++,'new'); }
+            );
+            $(this).find('#row_0').fadeIn('fast'
+                ,function() { x6inputs.findFocus( this ) }
+            );
+            
+            // This warns downstream code that we are working
+            // on a new row.
+            this.zSkey = 0;
+            
+            // Turn on buttons
+            this.buttonsOn();
+            
+            // Send a message and get lost
+            //console.log('New row created, ready to edit');
+            //console.groupEnd();
+            return true;
+        }
+    }
+
+    // If grid allows either kind of inline row, it must
+    // must accept an abandon request and throw out the row
+    var xSelect = u.p(self,'xGridSelect','');
+    var xReqNew = u.p(self,'xGridReqNew','');
+    if(xSelect == 'inline' || xReqNew == 'inline') {
+        x6events.subscribeToEvent('cancelEdit_'+table,id);
+        
+        self['receiveEvent_cancelEdit_'+table] = function(skey) {
+            if(this.zSkey==-1) return false;
+
+            //console.group("Abandon: cancelEdit "+this.zTable);
+            if(this.zSkey==0) {
+                //console.log("Abandoning new row");
+                this.zSkey = -1;
+                this.buttonsOff();
+                $(this).find("#row_0").fadeOut('fast'
+                    ,function() { $(this).remove(); }
+                );
+            }
+            
+            if(this.zSkey>0) {
+                
+            }
+            
+            //console.groupEnd();
+        }
+    }
+
+    // An explicit flag set in the PHP side determines
+    // if we accept delete requests
+    if(u.p(self,'xGridReqDel','N')=='Y') {
+        x6events.subscribeToEvent('reqDelRow_'+table,id);
+        
+        self['receiveEvent_reqDelRow_'+table] = function() {
+            //console.group("reqDelRow "+table);
+            if(this.zSkey==-1) {
+                //console.log("No row, ignoring");
+                //console.groupEnd();
+                alert("Please select a row first");
+                return;
+            }
+            else if(this.zSkey==0) {
+                //console.log("on a new row, firing cancelEdit command");
+                x6events.fireEvent('cancelEdit_'+this.zTable);
+            }
+            else {
+                if(confirm("Delete the selected row?")) {
+                    //console.log("asking server to delete");
+                    ua.json.init('x6page',this.zTable);
+                    ua.json.addParm('x6action','delete');
+                    ua.json.addParm('skey',this.zSkey);
+                    if(!ua.json.execute()) {
+                        //console.log("server refused to delete");
+                    }
+                    else {
+                        //console.log("server did the delete");
+                        $(this).find('#row_'+this.zSkey).fadeOut(
+                            function() { $(this).remove(); }
+                        );
+                        this.zSkey = -1;
+                        this.buttonsOff();
+                    }
+                }
+            }
+            //console.groupEnd();
+        }
+    }
+    
+    // If grid allows either kind of inline row, it must
+    // must accept a save request as well
+    if(xSelect == 'inline' || xReqNew == 'inline') {
+        x6events.subscribeToEvent('reqSaveRow_'+table,id);
+        
+        self['receiveEvent_reqSaveRow_'+table] = function() {
+            /* never should get here if zskey=-1 */
+            if(this.zSkey==-1) return false;
+
+            //console.group("Request, Save Row "+this.zTable);
+            
+            var allInputs = '';
+            $(this).find("#row_"+this.zSkey+" :input").each(
+                function() {
+                    allInputs += this.value.trim();
+                }
+            );
+            if( allInputs=='') {
+                //console.log("Current row is empty, no save");
+                if(this.zSkey==0) {
+                    //console.log("New Row, firing cancelEdit, returning TRUE");
+                    x6events.fireEvent('cancelEdit_'+this.zTable);
+                    //console.groupEnd()
+                    return true;
+                }
+                else {
+                    //console.log("Must remain on row, returning FALSE");
+                    //console.groupEnd()
+                    return false;
+                }
+            }
+
+            /* Row is not empty, continue with save */            
+            ua.json.init('x6page',this.zTable);
+            ua.json.addParm('x6action','save');
+            ua.json.addParm('x4v_skey',this.zSkey);
+            ua.json.inputs(this);
+            if(!ua.json.execute()) {
+                //console.log("Errors on save, returning FALSE");
+                //console.groupEnd();
+                return false;
+            }
+            else {
+                // If returned ok, we have a new skey
+                //console.log("Row saved OK");
+                ua.json.process();
+                var row = $a.data.row;
+                var skey = row.skey; 
+
+                // Replace the input values with server returned values
+                $(this).find("#row_"+this.zSkey+" div").each(
+                    function() {
+                        col = u.p($(this).find(":input")[0],'xColumnId');
+                        //console.log(col,row[col]);
+                        this.innerHTML = row[col];
+                    }
+                );
+                
+                // If this was a new row, set it up 
+                if(this.zSkey==0) {
+                    $(this).find("#row_0").each(
+                        function() {
+                            this.id = 'row_'+$a.data.row.skey;
+                        }
+                    );
+                
+                    // PHP-JAVASCRIPT DUPLICATION ALERT!
+                    // This code also exists in androLib.php
+                    // addRow method of the tabDiv class
+                    var table = this.zTable;
+                    if (u.p(this,'xgridhilight')=='Y') {
+                        $(this).find('#row_'+$a.data.row.skey)
+                            .mouseover(
+                                function() {
+                                    $(this).addClass('hilight')
+                                }
+                            )
+                            .mouseout( 
+                                function() {
+                                    $(this).removeClass('hilight')
+                                }
+                            )
+                            .click(
+                                function() {
+                                    x6events.fireEvent(
+                                        'reqEditRow_'+table,this.id
+                                    );
+                                }
+                            );
+                    }
+                }
+               
+                
+                // Tell downstream code we are not editing a row
+                this.zSkey = -1;
+                this.buttonsOff();
+            }
+            //console.groupEnd();
+            return true;
+        }
+    }
+
+
+    /*
+    *   Routine to remove inputs from a given row and replace
+    *   them with the values of the inputs
+    */
+    self.removeInputs = function(skey) {
+        //console.group("Removing Inputs");
+        //console.log("Row skey: ",skey);
+        $(this).find("#row_"+skey+" div").each(
+            function() {
+                value = $(this).find(":input")[0].value;
+                this.innerHTML = value;
+            }
+        );
+        //console.groupEnd();
+    }
+
+    
+    /*
+    *   The three action buttons [SAVE] [ABANDON] and 
+    *   [REMOVE] only make sense when there is a row
+    *   being edited.  Various modes where a row is being
+    *   edited must call "buttonsOn", and the others
+    *   must call "buttonsOff"
+    *
+    */
+    self.buttonsOn = function() {
+        x6events.fireEvent('enable_save');
+        x6events.fireEvent('enable_abandon');
+        x6events.fireEvent('enable_remove');
+    }
+    self.buttonsOff = function(remove) {
+        x6events.fireEvent('disable_save');
+        x6events.fireEvent('disable_abandon');
+        x6events.fireEvent('disable_remove');
     }
 }
