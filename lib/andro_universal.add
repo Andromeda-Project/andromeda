@@ -553,7 +553,7 @@ column auth_net_login_id {
     type_id: vchar; colprec: 15; description: Authorize.net Login ID;
 }
 column auth_net_tran_key {
-    type_id: vchar; colprec: 15; description: Authorize.net Trnx Key;
+    type_id: vchar; colprec: 20; description: Authorize.net Trnx Key;
 }
 table configfw {
     module: system;
