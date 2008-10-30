@@ -20,6 +20,14 @@
 #   or visit http://www.gnu.org/licenses/gpl.html
 # ================================================================== 
 overrides:
+    # Page Control
+    .fadein:
+        display: none
+
+    # Buttons
+    a.button_disabled:
+        cursor: default
+        
     a.button_disabled,a.button,div.thead div a:
         text-decoration: none
 
