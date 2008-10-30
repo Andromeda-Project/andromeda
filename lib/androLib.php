@@ -1346,6 +1346,142 @@ class androHtml {
         }
     }
     /******/
+    
+    /****m* androHtml/hiddenInputs
+    *
+    * NAME
+    *    androHtml.hiddenInputs
+    *
+    * FUNCTION
+    *    The PHP method hiddenInputs adds an invisible div to the
+    *    current node and fills it with inputs for provided table.
+    *    These can cloned (using jQuery) in browser-side code to
+    *    place inputs on-the-fly anywhere on the screen.
+    *
+    *    The function returns a reference to the div.  The div 
+    *    contains an associative array indexed on column name
+    *    that contains references to the inputs.
+    *
+    * INPUTS
+    *    mixed - either a table name or a data dictionary array reference.
+    *
+    * RETURNS
+    *    reference - reference to the invisible div.
+    *
+    ******/
+    function &hiddenInputs($x) {
+        # Get a data dictionary
+        if(is_array($x)) {
+            $dd = $x;
+        }
+        else {
+            $dd = ddTable($x);
+        }
+        
+        # Make the master Div
+        $div = $this->h('div');
+        $div->hp['style'] = 'display: none';
+        
+        # Loop through the dictionary, not skipping any column
+        foreach($dd['flat'] as $colname=>$colinfo) {
+            $wrapper = $div->h('div');
+            $wrapper->hp['id'] 
+                ='wrapper_'.$dd['table_id'].'_'.$colinfo['column_id'];
+            $input = input($colinfo);
+            $div->inputs[$colname] = $input;
+            $wrapper->addChild($input);
+        }
+        return $div;        
+    }
+    
+    /****m* androHtml/addButtonBarStandard
+    *
+    * NAME
+    *    androHtml.addButtonBarStandard
+    *
+    * FUNCTION
+    *    The PHP method addButtonBarStandard adds a div to the
+    *    current node that contains the standard buttons for
+    *    [New], [Duplicate], [Save], [Abandon], and [Remove].
+    *
+    *    The div has class x6buttonBar (note capitalization).
+    *
+    *    The function returns a reference to the div.  The div
+    *    contains an array called buttons that is indexed on
+    *    the button action.  The actions are:
+    *    * new 
+    *    * duplicate
+    *    * save
+    *    * remove
+    *    * abandon
+    *
+    * INPUTS
+    *    * string - the name of the table the buttons operate on
+    *    * mixed - a list of buttons to include, comma separated.
+    *      default is to include all five buttons.
+    *  
+    *
+    * RETURNS
+    *    reference - reference to the div.
+    *
+    ******/
+    function &addButtonBar($table_id,$buts=null) {
+        if(is_null($buts)) {
+            $buts = 'new,duplicate,save,remove,abandon';
+        }
+        $abuts = explode(',',$buts);
+        
+        $bb = $this->h('div');
+        $bb->addClass('x6buttonBar');
+        if(in_array('new',$abuts)) {
+            $a=$bb->h('a-void','New');
+            $a->addClass('button button-first');
+            $a->hp['style'] = 'margin-left: 0px';
+            $a->hp['x6table']  = $table_id;
+            $a->hp['x6plugIn'] = 'buttonNew';
+            $a->hp['style']    = 'float: left';
+            $bb->buttons['new'] = $a;
+        }
+        if(in_array('duplicate',$abuts)) {
+            $a=$bb->h('a-void','Duplicate');
+            $a->addClass('button');
+            $a->hp['x6table']  = $table_id;
+            $a->hp['x6plugIn'] = 'buttonDuplicate';
+            $a->hp['style']    = 'float: left';
+            $bb->buttons['duplicate'] = $a;
+            #jqDocReady("x6events.fireEvent('disable_duplicate')");
+        }
+        if(in_array('save',$abuts)) {
+            $a=$bb->h('a-void','Save');
+            $a->addClass('button');
+            $a->hp['x6table']  = $table_id;
+            $a->hp['x6plugIn'] = 'buttonSave';
+            $a->hp['style']    = 'float: left';
+            $bb->buttons['save'] = $a;
+            jqDocReady("x6events.fireEvent('disable_save')");
+        }
+        if(in_array('remove',$abuts)) {
+            $a=$bb->h('a-void','Remove');
+            $a->addClass('button');
+            $a->hp['x6table']  = $table_id;
+            $a->hp['x6plugIn'] = 'buttonRemove';
+            $a->hp['style']    = 'float: right';
+            $bb->buttons['remove'] = $a;
+            jqDocReady("x6events.fireEvent('disable_remove')");
+        }
+        if(in_array('abandon',$abuts)) {
+            $a=$bb->h('a-void','Abandon');
+            $a->addClass('button');
+            $a->hp['x6table']  = $table_id;
+            $a->hp['x6plugIn'] = 'buttonAbandon';
+            $a->hp['style']    = 'float: right';
+            $bb->buttons['abandon'] = $a;
+            jqDocReady("x6events.fireEvent('disable_abandon')");
+        }
+            
+        return $bb;
+    }
+    
 
     /****m* androHtml/autoFormatF
     *
@@ -1977,10 +2113,10 @@ class androHTMLTabs extends androHTML {
         
     }
     
-    /****m* androHtmlTabs/addTab
+    /****m* androHtml/addTab
     *
     * NAME
-    *    addTab
+    *    androHtml.addTab
     *
     * FUNCTION
     *   This PHP class method addTab is the basic method
@@ -2147,9 +2283,13 @@ class androHTMLTabDiv extends androHTML {
     function androHTMLTabDiv($height=300) {
         $this->htype = 'div';
         $this->addClass('tdiv box3');
+        $this->hp['x6plugin'] = 'x6tabDiv';
         $this->hp['style'] = $height."px;";
         $this->height = $height;
         $this->baseRowHeight = 20;
+        
+        # create default options
+        $this->hp['xGridHilight'] = 'Y';
         
         # notice: we slip one div inside of thead, 
         #         we assume there will always be
@@ -2222,6 +2362,11 @@ class androHTMLTabDiv extends androHTML {
             max-width: {$width}px;
             min-width: {$width}px;
             width:     {$width}px;";
+            
+        # Numerics are right-justified
+        if(in_array($type_id,array('int','numb','money'))) {
+            $div->hp['style'].='text-align: right';
+        }
     }
     /****m* androHtmlTabDiv/lastColumn
     *
@@ -2258,6 +2403,13 @@ class androHTMLTabDiv extends androHTML {
                 width:     15px;";
         }
         
+        # Send the column structure back as JSON
+        jqDocReady(
+            "u.byId('".$this->hp['id']."').zColsInfo="
+            .json_encode($this->columns)
+        );
+        
+        
         # Get the standard padding, we hardcoded
         # assuming 2 for border, 3 for padding left
         $extra = 5;
@@ -2279,6 +2431,18 @@ class androHTMLTabDiv extends androHTML {
         $this->rows[] = $this->lastRow;
         $this->lastRow->hp['id'] = 'row_'.$id;
         $this->lastCell = 0;
+
+        # PHP-JAVASCRIPT DUPLICATION ALERT!
+        # This code also exists in x6.js in browser-side
+        # constructor of the tabDiv object.
+        $table_id = $this->hp['x6table'];
+        if($this->hp['xGridHilight'] == 'Y') {        
+            $this->lastRow->hp['onmouseover']="$(this).addClass('hilight')";
+            $this->lastRow->hp['onmouseout'] ="$(this).removeClass('hilight')";
+            $this->lastRow->hp['onclick']    
+                ="x6events.fireEvent('reqEditRow_$table_id',$id);";
+        }
+        
         return $this->lastRow;
     }
     function addCell($child='') {
@@ -2301,6 +2465,11 @@ class androHTMLTabDiv extends androHTML {
             max-width: {$width}px;
             min-width: {$width}px;
             width:     {$width}px;";
+            
+        # Now for numerics do right-justified
+        if(in_array($info['type_id'],array('int','numb','money'))) {
+            $div->hp['style'].='text-align: right';
+        }
         
         # up the cell counter
         $this->lastCell++;
@@ -7914,6 +8083,7 @@ function httpHeadersForDownload($filespec,$attachment=false) {
      ,'cpt'=>'application/mac-compactpro'
      ,'csh'=>'application/x-csh'
      ,'css'=>'text/css'
+     ,'csv'=>'application/vnd.ms-excel'
      ,'dcr'=>'application/x-director'
      ,'dir'=>'application/x-director'
      ,'djv'=>'image/vnd.djvu'
@@ -8079,7 +8249,9 @@ function httpHeadersForDownload($filespec,$attachment=false) {
      'Content-disposition: '.$dispo.'; filename="'.basename($filespec).'"'
    );
    header('Content-Type: '.ArraySafe($result,$ext,'text/html'));
-   header('Content-Length: '.(string)(filesize($filespec)));
+   if(file_exists($filespec)) {
+       header('Content-Length: '.(string)(filesize($filespec)));
+   }
 }
 
 
