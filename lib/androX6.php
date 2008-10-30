@@ -129,7 +129,6 @@ class androX6 {
         
         if(!isset($row['skey'])) {
             $skey = SQLX_Insert($dd,$row);
-            echo "slqx_insert gave skey $skey";
             if(!errors()) {
                 $row=SQL_OneRow(
                     "Select * FROM {$dd['viewname']} WHERE skey = $skey"
@@ -209,14 +208,6 @@ class androX6 {
     # *******************************************************************
     # ===================================================================
     function profile_twosides() {
-        # always include the styles and javascript.
-        jsInclude('clib/x6.js');
-        
-        # Do this first, so all objects are initialized
-        # and ready to receive events that may be fired
-        # from downstream jqDocReady() calls.
-        jqDocReady('x6.init()');
-        
         # Grab the data dictionary for this table
         $dd       = $this->dd;
         $table_id = $this->dd['table_id'];
@@ -272,6 +263,81 @@ class androX6 {
         # Render it!  That's it!
         $div->render();
     }
+    # ===================================================================
+    # *******************************************************************
+    #
+    # Profile 2: "tabDiv"  editable!
+    #
+    # *******************************************************************
+    # ===================================================================
+    function profile_tabDiv() {
+        # these were provided by the code that instantiated
+        # and initialized the object.
+        $dd       = $this->dd;
+        $table_id = $this->dd['table_id'];
+
+        # Create the top level div
+        $top=html('div');
+        $top->addClass('fadein');
+        
+        # Create a hidden object that contains inputs we will
+        # clone over to the grid on demand
+        $top->hiddenInputs($dd);
+        
+        # Get us the basic title
+        $top->br();  // do this for extra spacing
+        $top->h('h1',$dd['description']);
+        $bb = $top->addButtonBar($table_id);
+        $clearboth = $top->h('div');
+        $clearboth->hp['style'] = 'clear: both';
+        
+        
+        # Call to subroutine that builds the grid.  This
+        # same subroutine will be called by browser-side
+        # code when things need to be refreshed.
+        $top->br();
+        
+        # Work out a height by finding out inside height
+        # and subtracing line height a few times
+        $gridHeight 
+            =x6cssDefine('insideheight')
+            -(x6cssDefine('barheight') * 7);
+        $grid = $top->addTabDiv($gridHeight);
+        $grid->hp['x6table']      = $table_id;
+        $grid->hp['id']           = "tabDiv_$table_id";
+        $grid->hp['xGridSelect' ] = 'inline'; // vs. nothing
+        $grid->hp['xGridReqNew' ] = 'inline'; // vs. nothing
+        $grid->hp['xGridReqDel' ] = 'Y';   // vs. nothing
+        
+        # Now obtain the _uisearch columns and make one column each
+        $uisearch = $dd['projections']['_uisearch'];
+        $aColumns = explode(',',$uisearch);
+        foreach($aColumns as $column) {
+            $grid->addColumn($dd['flat'][$column]);
+        }
+        $gridWidth=$grid->lastColumn();
+        
+        # Now set the left-padding to be 1/3 of remaining space
+        $remain = x6cssDefine('insidewidth') - $gridWidth;
+        $remain = intval($remain/3);
+        $top->hp['style'] = "padding-left: {$remain}px";
+        
+        # Also, let's set the width of the button bar
+        # now that we know what it is
+        $bb->hp['style'] = "width: {$gridWidth}px";
+        
+        # The data...
+        $rows = SQL_AllRows("Select skey,$uisearch from $table_id");
+        foreach($rows as $row) {
+            $grid->addRow($row['skey']);
+            foreach($aColumns as $column) {
+                $grid->addCell($row[$column]);
+            }
+        }
+        
+        # always at the end, render it
+        $top->render();
+    }    
     # ===================================================================
     # -------------------------------------------------------------------
     #
