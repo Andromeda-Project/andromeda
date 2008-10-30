@@ -64,10 +64,11 @@ class x6pluginGrid extends androHTML {
         foreach($rows as $user) {
             $tr = $grid->addRow($user['skey']);
             #$tr->hp['id'] = 'row_'.$user['skey'];
-            $tr->hp['onmouseover']="$(this).addClass('hilight')";
-            $tr->hp['onmouseout'] ="$(this).removeClass('hilight')";
-            $tr->hp['onclick']    
-                ="x6events.fireEvent('reqEditRow_$table_id',{$user['skey']});";
+            # This code moved into tabdiv itself
+            #$tr->hp['onmouseover']="$(this).addClass('hilight')";
+            #$tr->hp['onmouseout'] ="$(this).removeClass('hilight')";
+            #$tr->hp['onclick']    
+            #    ="x6events.fireEvent('reqEditRow_$table_id',{$user['skey']});";
             foreach($acols as $col) {
                 $grid->addCell($user[$col]);
             }
