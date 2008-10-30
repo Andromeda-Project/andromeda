@@ -475,7 +475,7 @@ function index_hidden_x6Dispatch(
     # for the current template and skin, allowing downstream
     # code to determine how much space they have to work with
     #
-    $x6skin = arr($_COOKIE,'x6skin','');
+    $x6skin = arr($_COOKIE,'x6skin','win2k.gray.1024');
     if($x6skin!='') {
         $filename  = fsDirTop()."generated/x6skin.$x6skin.ser.txt";
         $serialized=file_get_contents($filename);
@@ -570,6 +570,13 @@ function index_hidden_x6Dispatch(
             else {
                 $x6method = 'x6main';
             }
+            
+            # If we are loading a page, we need the x6 javascript
+            # and the first command in jqDocReady should be to
+            # initialize the objects so downstrem code can make
+            # them visible.
+            jsInclude('clib/x6.js');
+            jqDocReady('x6.init()');
         }
     }
     
@@ -603,6 +610,10 @@ function index_hidden_x6Dispatch(
         echo json_encode_safe($GLOBALS['AG']['x4']);
     }
     else {
+        # Pass in the command to fade in and set focus
+        $fadeIn = "$('.fadein').fadeIn('slow',function() { x6.initFocus(); });";
+        jqDocReady($fadeIn);
+        
         # Don't need a form in x6 mode
         vgaSet('NOFORM',true);
 
