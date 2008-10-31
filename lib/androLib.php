@@ -1971,6 +1971,9 @@ class androHtml {
             $this->hp['style']=$style;
         }
         foreach($this->hp as $parmname=>$parmvalue) {
+            if($parmname=='href') {
+                $parmvalue=preg_replace('/&([a-zA-z])/','&amp;$1',$parmvalue);
+            }
             $parms.="\n  $parmname=\"$parmvalue\"";
         }
         foreach($this->ap as $parmname=>$parmvalue) {
@@ -2666,7 +2669,10 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
     # Apply the readonly stuff we figured out first
     $input->ap['xRoIns'] = $xRoIns;
     $input->ap['xRoUpd'] = $xRoUpd;
-
+    
+    # Assign all inputs to a tab group.  If no optional
+    # value was provided, use a default
+    $input->hp['xTabGroup'] = arr($options,'tabGroup','tgdefault');
 
     #  If we ended up with an INPUT above, set the size
     if($input->htype=='input') {
@@ -7632,10 +7638,11 @@ function ehStandardContent($dotitle=false) {
 */
 function ehStandardFormOpen($id='Form1') {
    $x=$id; //annoying jedit compiler warning
+   $style = vgfGet('x6') ? '' : 'style="height:100%"';
    ?>
    <form method="post" action="index.php" id="<?=$x?>"
                  enctype="multipart/form-data"
-                 name="Form1" style="height:100%;">
+                 name="Form1" <?=$style?> >
    <?php
 }
 
