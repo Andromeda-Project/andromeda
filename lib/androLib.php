@@ -4926,7 +4926,7 @@ function &ddTable($table_id) {
     # If there is a post-processor, execute it now
     $func = 'ddTable_'.$table_id;
     if(function_exists($func)) {
-        $tabdd = $func($tabdd);
+        $func($tabdd);
     }
 
     # --> EARLY RETURN
