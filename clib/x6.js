@@ -99,7 +99,7 @@ function jsHtml(tag,innerHtml) {
     this.children = [ ];
     this.hp = { };
 
-    /****O* jsHtml.innerHtml
+    /****O* jsHtml/innerHtml
     *
     * NAME
     *   jsHtml.innerHtml
@@ -123,7 +123,7 @@ function jsHtml(tag,innerHtml) {
     */
     this.innerHtml = innerHtml ? innerHtml : '';
     
-    /****O* jsHtml.addChild
+    /****O* jsHtml/addChild
     *
     * NAME
     *   jsHtml.addChild
@@ -150,7 +150,7 @@ function jsHtml(tag,innerHtml) {
     }
     /******/
 
-    /****O* jsHtml.h
+    /****O* jsHtml/h
     *
     * NAME
     *   jsHtml.h
@@ -179,7 +179,7 @@ function jsHtml(tag,innerHtml) {
     }
     /******/
 
-    /****O* jsHtml.bufferedRender
+    /****O* jsHtml/bufferedRender
     *
     * NAME
     *   jsHtml.bufferedRender
