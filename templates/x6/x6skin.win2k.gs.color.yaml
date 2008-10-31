@@ -60,3 +60,8 @@ defines:
     bs0:            solid
     bw0:            1px
     
+    # These colors were added to give some 'color' to objects
+    clrChanged:   @ffebcd
+    clrError:     @ff4500
+    clrOk:        @7fff00
+    clrRequired:  @abcdef    

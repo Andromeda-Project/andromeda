@@ -6,10 +6,10 @@
 # If none, pick win2k.gray.1024
 $cookie = arr($_COOKIE,'x6skin','win2k.gray.1024');
 ?>
-<link    rel="stylesheet" 
-      x6skin="Y"
+<link    rel="stylesheet"
+       x6skin="Y"
         href="apppub/x6skin.<?=$cookie?>.css" />
-
+        
 <script type="text/javascript">
 function x6ChangeSkin(select) {
     link = document.createElement('link');

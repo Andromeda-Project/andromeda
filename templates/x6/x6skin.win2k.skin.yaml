@@ -48,25 +48,25 @@ defines:
         
     # Title Elements
     h1:
-        height:     150%
+        height:    *fsh1
         fw:         bolder
-        mart:      *menupad
-        marb:      *menupad
+        #mart:      *menupad
+        #marb:      *menupad
     h2:
-        height:     140%
+        height:    *fsh2
         fw:         bolder
-        mart:      *menupad
-        marb:      *menupad
+        #mart:      *menupad
+        #marb:      *menupad
     h3:
-        height:     130%
+        height:    *fsh3
         fw:         bolder
-        mart:      *menupad
-        marb:      *menupad
+        #mart:      *menupad
+        #marb:      *menupad
     h4:
-        height:     125%
+        height:    *fsh4
         fw:         bolder
-        mart:      *menupad
-        marb:      *menupad
+        #mart:      *menupad
+        #marb:      *menupad
         
     # Menu definitions
     .x6menu: 

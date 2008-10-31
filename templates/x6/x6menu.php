@@ -9,6 +9,7 @@ defined( '_VALID_MOS' )
 # AREA 1: Render the menu.  Note we directly output it
 # ==================================================================
 $menus=SessionGET("AGMENU",array());
+#if(count($menus)==0) return;
 $ulpads = html('ul');
 $first = 0;
 foreach($menus as $menuid=>$menuinfo) {
@@ -32,7 +33,7 @@ foreach($menus as $menuid=>$menuinfo) {
         #$ul->br();
         if($pageinfo['uix2'] == 'Y') {
             #$a->hp['href'] = "?gp_page=$page&x2=1";
-            $href = "?gp_page=$page&x2=1";
+            $href = "?gp_page=$page&amp;x2=1";
         }
         else {
             #$a->hp['href'] = "?x6page=$page";
@@ -47,7 +48,8 @@ $ulpads->render();
 # AREA 2: Some script
 # ==================================================================
 ?>
-<script>
+<script type="text/javascript">
+/*  <![CDATA[  */
 window.x6menu = false;
 // If menu is activated, pick this one and turn off other,
 // but if menu is not active do nothing
@@ -85,8 +87,9 @@ function x6menuclick(menuid) {
 }
 
 document.onclick = function(e) {
-    var cn = e.target.className
-    if(cn != 'dropdown' && cn !='x6menuspan') {
+    e = (e) ? e : ((window.event) ? window.event : "");
+    var tg = e.target;
+    if(!$(tg).hasClass('dropdown') && !$(tg).hasClass('x6menuspan')){    
         if(window.x6menu) {
             var pad = u.byId('x6menu_'+window.x6menu);
             pad.style.display = 'none';
@@ -95,5 +98,5 @@ document.onclick = function(e) {
         }
     }
 };
-
+/* ]]> */
 </script>

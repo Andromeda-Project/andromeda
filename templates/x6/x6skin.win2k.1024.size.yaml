@@ -39,6 +39,10 @@ defines:
     
     # The normal default font size
     fs0:             12px
+    fsh1:            18px
+    fsh2:            16px
+    fsh3:            14px
+    fsh4:            13px
 
     # Some major sizes for the general layout
     outsidewidth:    991px

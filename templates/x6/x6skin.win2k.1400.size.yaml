@@ -39,7 +39,12 @@ defines:
     
     # The normal default font size
     fs0:             15px
+    fsh1:            23px
+    fsh2:            21px
+    fsh3:            19px
+    fsh4:            17px
 
+    
     # Some major sizes for the general layout
     outsidewidth:    1351px
     insidewidth:     1350px   # for .x6main specifically
