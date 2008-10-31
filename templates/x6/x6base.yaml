@@ -1,4 +1,4 @@
-# ================================================================== 
+\# ================================================================== 
 #   (C) Copyright 2008 by Secure Data Software, Inc.
 #
 #   This file is part of Andromeda.
@@ -30,6 +30,9 @@ overrides:
         
     a.button_disabled,a.button,div.thead div a:
         text-decoration: none
+
+    tbody tr td.style1:
+        vertical-align: top    
 
     .x6main:
         position: relative

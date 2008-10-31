@@ -332,6 +332,7 @@ class x6skinJob extends androX6 {
             ,'posb'  =>'bottom'
             ,'posl'  =>'left'
             ,'posr'  =>'right'
+            ,'vertical-align'=>'valign'
         ); 
         
         foreach($selectors as $selector) {

@@ -62,6 +62,7 @@ defines:
         fw:         bolder
         #mart:      *menupad
         #marb:      *menupad
+        padb:       *menupad
     h4:
         height:    *fsh4
         fw:         bolder
@@ -121,7 +122,7 @@ defines:
         bgc:        *bgclight
         padl:       *pad0
         padr:       *pad0
-        
+
     # an optional element
     .x6commandBar:
         bgc:        *bgcdark
@@ -174,6 +175,7 @@ defines:
         padb: *pad0
         padl: *pad0
         padr: *pad0
+        td: blink
 
     div.x6buttonBar a.button_disabled:
         bort:   *bor3t
@@ -194,21 +196,25 @@ defines:
     tbody tr.selected:
         bgc:    *dark
 
-    tbody input.changed:
+    tbody input.changed,div.tbody div input.changed:
         bgc:    *clrChanged
     
     tbody input.changedSelected:
         bgc:    *clrChanged
 
-    tbody input.errorSelected:
+    tbody input.errorSelected,div.tbody div input.errorSelected:
         bgc:    *clrError
 
-    tbody input.changedOK:
+    tbody input.changedOK,div.tbody div input.changedOK:
         bgc:    *clrOk
     
-    tbody input.required:
+    tbody input.required,div.tbody div input.required:
         bgc:    *clrRequired
 
-    
-                
+    tbody tr td input.readOnly:
+        bgc:    *bgclight
 
+    # Code to realign the lists on the menu
+    
+    tbody:
+        valign: top
