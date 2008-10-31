@@ -471,6 +471,8 @@ function index_hidden_x6Dispatch(
         ,'script'=>array()
     );
     
+    vgfSet('x6',true);
+    
     # This little bit of magic loads up the CSS information
     # for the current template and skin, allowing downstream
     # code to determine how much space they have to work with
