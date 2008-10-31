@@ -71,35 +71,39 @@ class x_login extends x_table2 {
 <!-- LOGIN HTML (BEGIN) -->
 <br/>
 <center>
-<h1><?=configGet('loginbefore',$GLOBALS['AG']['app_desc'])?></h1>
+<?=configGet('loginbefore',$GLOBALS['AG']['app_desc'])?>
 </center>
 
-</center>
-<br>
-<br>
-<table align="CENTER">
+<br/>
+<br/>
+<table align="center">
 	<tr>
 		<td class="logincaption">Login Name:</td>
 		<td class="logininput">
-			<input class="login" id="loginUID" name="loginUID" max_length="10" size="10" value="<?=$loginUID?>">
-			</input></td>
+			<input class="login" id="loginUID" name="loginUID" 
+                maxlength="60" size="10" value="<?=$loginUID?>" />
+			</td>
 	</tr>
 	<tr>
 		<td class="logincaption">Password:</td>
 		<td class="logininput">
-			<input class="login"  name="loginPWD" type="password" max_length="10" size="10">
-			</input></td>
+			<input class="login"  name="loginPWD"
+               type="password" maxlength="20" size="10" />
+		</td>
 	</tr>
-	<tr><td colspan=2>&nbsp;</td></tr>
+	<tr><td colspan="2">&nbsp;</td></tr>
 	<tr>
 		<td class="logincaption">&nbsp;</td>
-		<td class="logininput"><input class="login" type="submit" name="pushSave" value="Login" /></td>
+		<td class="logininput">
+        <input class="login" type="submit" name="pushSave" value="Login" />
+        </td>
 	</tr>
 </table>
-<br>
-<br>
+<br/>
+<br/>
 <center>
-<a href="<?=$hForgot?>">Forgotten Password and Change Password</a></center>
+<a href="<?=$hForgot?>">Forgotten Password and Change Password</a>
+</center>
 <!-- LOGIN HTML (END) -->		
 		<?php
 	}
