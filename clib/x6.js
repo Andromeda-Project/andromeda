@@ -565,9 +565,9 @@ var x6inputs = {
         //console.log(input);
         $(input)
             .keyup(function(e)   { x6inputs.keyUp(e,this)   })
-            .keydown(function(e) { x6inputs.keyDown(e,this) })
             .focus(function(e)   { x6inputs.focus(e,this)   })
-            .blur(function(e)    { x6inputs.blur(e,this)    });
+            .blur(function(e)    { x6inputs.blur(e,this)    })
+            .keydown(function(e) { x6inputs.keyDown(e,this) });
         input.tabIndex = tabIndex;
         if(mode=='new') {
             input.zNew = 1;
@@ -598,68 +598,40 @@ var x6inputs = {
         //console.log(e);
         //console.log(inp);
         
-        // work out which property to use.
-        if(e.shiftKey) { 
-            var prop = 'xPrevTab';
-            var jqf  = ':last';
-        }
-        else {
-            var prop = 'xNextTab';
-            var jqf  = ':first';
-        }
-        //console.log(prop);
-        //console.log(jqf);
+        var tg = u.p(inp,'xTabGroup','tgdefault');
+        //console.log("Tab Group",tg);
         
-        // The loop breaks when we find a readable control
-        // or get to the end of the list
-        var xinp = inp;
-        var jqx  = '';
-        while(true) {
-            // Current control has no next tab, start over
-            // at beginning
-            if( u.p(xinp,prop,'X')=='X') {
-                jqx = '[tabindex]:not([disabled])'+jqf;
-                //console.log("no control found, string to use: "+jqx);
-                break;
+        if(e.shiftKey) { 
+            // hitting shift-tab on the first control means
+            // jump back to the last control
+            var first = $('[xTabGroup='+tg+']:not([disabled]):first')[0];
+            //console.log("The first is:");
+            //console.log(first);
+            //console.log("The input is:");
+            //console.log(inp);
+            if(first==inp) {
+                //console.log("This is first, jumping to last");
+                $('[xTabGroup='+tg+']:not([disabled]):last').focus();
+                e.preventDefault();
             }
-            
-            // Advance to next
-            var tabCandidate = u.p(xinp,prop);
-            jsq = '[tabindex='+tabCandidate+']';
-            //console.log('advancing to '+jsq);
-            xinp = $(jsq)[0];
-            
-            // and if the next is not disabled, return TRUE,
-            // do NOTHING, and the browser will handle it
-            if(u.p(xinp,'disabled',false)==false) {
-                //console.log("next control is not read only, letting browse do it");
-                break;
-            }
-            
-            // if we get around to the original input, something
-            // is wrong, cancel also so we don't have an 
-            // infinite loop
-            if(xinp==inp) break;
-        }
-        if(jqx=='') {
-            //console.log('not trying to pick focus');
         }
         else {
-            //console.log("trying to pick focus: "+jqx);
-            $(jqx).focus();
+            // hitting tab on the last control is the only
+            // thing I care about.  If I'm not on the last
+            // control, let the browser do it, much faster.
+            var last = $('[xTabGroup='+tg+']:not([disabled]):last')[0];
+            //console.log("The last is:");
+            //console.log(last);
+            //console.log("The input is:");
+            //console.log(inp);
+            if(last==inp) {
+                //console.log("This is last, jumping to first");
+                $('[xTabGroup='+tg+']:not([disabled]):first').focus();
+                e.preventDefault();
+            }
         }
-        //u.debugPop();
-        if(jqx=='') {
-            //console.log("returning TRUE");
-            //console.groupEnd();
-            return true;
-        }
-        else {
-            //console.log("PREVENTING DEFAULT AND RETURNING FALSE");
-            //console.groupEnd();
-            e.preventDefault();
-            return false;
-        }
+        //console.groupEnd();
+        return;
     },
     
     focus: function(inp) {
@@ -1472,6 +1444,13 @@ x6plugins.x6tabDiv = function(self,id,table) {
                         //console.log(this.innerHTML);
                     }
                 );
+                tabIndex = 1000;
+                $(this).find('.tbody #row_'+skey+' :input').each(
+                    function() {
+                        x6inputs.initInput(this,tabIndex++,'new'); 
+                        this.setAttribute('xTabGroup','rowEdit');
+                    }
+                );
                 //console.groupEnd();
             }
             
@@ -1486,7 +1465,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
         x6events.subscribeToEvent('reqNewRow_'+table,id);
         
         self['receiveEvent_reqNewRow_'+table] = function(skey) {
-            //console.group("reqNewLine "+this.zTable);
+            //console.group("reqNewRow "+this.zTable);
             //console.log('Table: '+this.zTable);
             
             /*
@@ -1495,6 +1474,10 @@ x6plugins.x6tabDiv = function(self,id,table) {
             * to be all empty, just focus on the row. 
             */
             if(this.zSkey>-1) {
+                /* special case, empty new row, just focus */
+                if(this.zSkey == 0) {
+                    
+                }
                 if(!x6events.fireEvent('reqSaveRow_'+this.zTable)) {
                     //console.log('Failed to save new row, no new new row');
                     //console.groupEnd();
@@ -1531,7 +1514,10 @@ x6plugins.x6tabDiv = function(self,id,table) {
             // Initialize all inputs to behave in x6 mode
             tabIndex = 1000;
             $(this).find(':input').each(
-                function() { x6inputs.initInput(this,tabIndex++,'new'); }
+                function() { 
+                    x6inputs.initInput(this,tabIndex++,'new'); 
+                    this.setAttribute('xTabGroup','rowEdit');
+                }
             );
             $(this).find('#row_0').fadeIn('fast'
                 ,function() { x6inputs.findFocus( this ) }
