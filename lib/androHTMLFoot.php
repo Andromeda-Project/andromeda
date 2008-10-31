@@ -70,12 +70,14 @@ if(configGet('deprecated','Y')=='Y') {
 ?>
 <div style="display:none" id="idiv1" class="idiv1" onclick="x4.helpClear()">
 </div>
-</div>         
 <div  style="display:none" id="idiv2" class="idiv2"> 
   <table width="100%">
     <tr>
     <td align="left"><h1>Help System</h1></td>
-    <td align="right" style="padding-right: 15px"><h3><a href="javascript:x4.helpClear()">Close</a></h3>
+    <td align="right" style="padding-right: 15px">
+        <h3><a href="javascript:x4.helpClear()">Close</a></h3>
+    </td>
+    </tr>
   </table>
   <br/>
   <div id="idiv2content" class="idiv2content" 
