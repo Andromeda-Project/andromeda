@@ -478,8 +478,10 @@ function index_hidden_x6Dispatch(
     $x6skin = arr($_COOKIE,'x6skin','win2k.gray.1024');
     if($x6skin!='') {
         $filename  = fsDirTop()."generated/x6skin.$x6skin.ser.txt";
-        $serialized=file_get_contents($filename);
-        $GLOBALS['AG']['x6skin'] = unserialize($serialized);
+        if(file_exists($filename)) {
+            $serialized=file_get_contents($filename);
+            $GLOBALS['AG']['x6skin'] = unserialize($serialized);
+        }
     }
     
 
