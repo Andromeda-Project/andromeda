@@ -1651,12 +1651,10 @@ function SpecFlatten_Runout() {
                  ,c.colprec,c.colscale,c.colres,c.type_id
                  ,case when c.inputmask <> '' 
                        then c.inputmask
+                       when COALESCE(tc.inputmask,'') <> '' 
+                       then tc.inputmask
                        when t.inputmask <> '' 
                        then t.inputmask
-                       when t.type_id = 'numb'
-                       then lpad(''::text,c.colprec::int,' '::text)
-                            ||'.'||
-                            lpad(''::text,c.colscale::int,' '::text)
                        else '' end
                  ,case when coalesce(tc.flagcarry,'') <> '' 
                        then tc.flagcarry 
