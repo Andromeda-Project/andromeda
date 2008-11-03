@@ -201,6 +201,191 @@ class androX6 {
     }
 
     # ===================================================================
+    #
+    # SERVER FUNCTION 6: fetch browse/grid values
+    #
+    # ===================================================================
+    function browseFetch() {
+        #  This is the list of columns to return 
+        $acols = explode(',',$this->dd['projections']['_uisearch']);
+
+        #  By default the search criteria come from the 
+        #  variables, unless it is a child table search
+        $vals = aFromGP('x6w_');
+        $awhere = array();
+        $tabPar = gp('tableIdPar');
+        if($tabPar<>'') {
+            $ddpar = ddTable(gp('tableIdPar'));
+            $pks   = $ddpar['pks'];
+            $stab  = ddView(gp('tableIdPar'));
+            $skey  = SQLFN(gp('skeyPar'));
+            $vals2 = SQL_OneRow("SELECT $pks FROM $stab WHERE skey = $skey");
+            if(!$vals2) $vals2=array();
+            $vals  = array_merge($vals,$vals2);
+        }
+        
+        # Build the where clause        
+        #
+        $this->flat = $this->dd['flat'];
+        foreach($vals as $column_id=>$colvalue) {
+            if(!isset($this->flat[$column_id])) continue;
+            $colinfo = $this->flat[$column_id];
+            $exact = isset($vals2[$column_id]);
+            
+            //$tcv  = trim($colvalue);
+            $tcv = $colvalue;
+            $type = $colinfo['type_id'];
+            if ($tcv != "") {
+                // trap for a % sign in non-string
+                $xwhere = sqlFilter($this->flat[$column_id],$tcv);
+                if($xwhere<>'') $awhere[] = "($xwhere)";
+            }
+        }
+        
+        # <----- RETURN
+        if(count($awhere) == 0) { x4Debug("returning"); return; }
+        
+        # Generate the limit
+        $SLimit = ' LIMIT 100';
+        if($tabPar <> '') {
+            if(a($this->dd['fk_parents'][$tabPar],'uiallrows','N')=='Y') {
+                $SLimit = '';
+            }
+        }
+        
+
+        #  Build the Order by
+        #        
+        $ascDesc = gp('sortAD')=='ASC' ? ' ASC' : ' DESC';
+        $aorder = array();
+        $searchsort = trim(a($this->dd,'uisearchsort',''));
+        if(gpExists('sortAD')) {
+            $aorder[] = gp('sortCol').' '.gp('sortAD');
+        }
+        if($searchsort <> '') {
+            $aocols = explode(",",$searchsort);
+            foreach($aocols as $pmcol) {
+                $char1 = substr($pmcol,0,1);
+                $column_id = substr($pmcol,1);
+                if($char1 == '+') {
+                    $aorder[] = $column_id.' ASC';
+                }
+                else {
+                    $aorder[] = $column_id.' DESC';
+                }
+            }
+            $SQLOrder = " ORDER BY ".implode(',',$aorder);
+        }
+        else {
+            # KFD 6/18/08, new routine that works out sort 
+            $aorder = sqlOrderBy($vals);
+            if(count($aorder)==0) {
+                $SQLOrder = '';
+            }
+            else {
+                $SQLOrder = " ORDER BY ".implode(',',$aorder);
+            }
+        }
+        
+        # just before building the query, drop out
+        # any columns that have a table_id_fko to the parent
+        foreach($acols as $idx=>$column_id) {
+            if($this->flat[$column_id]['table_id_fko'] == $tabPar
+                && $tabPar <> '') {
+                unset($acols[$idx]);
+            }
+        }
+        
+        // Build the where and limit
+        $SWhere = ' WHERE '.implode(' AND ',$awhere);
+
+        // Retrieve data
+        $SQL ="SELECT skey,".implode(',',$acols)
+             ."  FROM ".$this->dd['viewname']
+             .$SWhere
+             .$SQLOrder
+             .$SLimit;
+        $answer =SQL_AllRows($SQL);
+        
+        # Now make up the generic div and add all of the cells
+        $grid = new androHTMLTabDiv(500);
+        $this->tabDivGeneric($grid,$this->dd);
+        $grid->addData($answer);
+        ob_start();
+        foreach($grid->dbody->children as $child) {
+            $child->render();
+        }
+        x4Html('browseFetchHtml',ob_get_clean());
+        return;
+    }
+    
+    # ===================================================================
+    # *******************************************************************
+    #
+    # Profile 0: "conventional"
+    #
+    # *******************************************************************
+    # ===================================================================
+    function profile_conventional() {
+        # Grab the data dictionary for this table
+        $dd       = $this->dd;
+        $table_id = $this->dd['table_id'];
+
+        # Create the top level div as a table controller
+        $top=html('div');
+        $top->addClass('fadein');
+        $top->hp['x6plugin'] = 'tableController';
+        $top->hp['x6table']  = $table_id;
+
+        # Begin with title and tabs
+        $top->h('h1',$dd['description']);
+        $tabs = $top->addTabs('tabs_'.$table_id);
+        $lookup = $tabs->addTab('Lookup');
+        $detail = $tabs->addTab('Detail');
+        $detail->h('h1','This is detail');
+
+        # We use gridHeight as the general height of the content area
+        $gridHeight 
+            =x6cssDefine('insideheight')
+            -(x6cssDefine('barheight') * 11);
+
+        # Put a grid into the lookup area, load it up with
+        # the uisearch columns, and tell it to load up a
+        # row of search inputs
+        $grid = $lookup->addTabDiv($gridHeight+50);
+        $gridWidth = $this->tabDivGeneric($grid,$dd);
+        $grid->addLookupInputs();
+        
+        # Find out how many child tables there are.  We are making
+        # the assumption that there will *always* be child tables
+        # because otherwise the programmer would have selected
+        # a different profile.
+        #
+        $height = intval($gridHeight/2);
+        $divDetail = $detail->h('div');
+        $divDetail->addClass('x6detail');
+        
+        # The div kids is a tabbar of 
+        $divKids = $detail->h('div');
+        $divKids->addClass('x6childtabs');
+        $tabKids = $divKids->addTabs('kids_'.$table_id);
+        foreach($dd['fk_children'] as $child=>$info) {
+            $tab = $tabKids->addTab($info['description']);
+            $grid = $tab->addTabDiv($height);
+            $grid->hp['x6table']   = $child;
+            $grid->hp['id']        = 'tabDiv_'.$child;
+            $grid->hp['xSortable'] = 'Y';
+            $ddChild = ddTable($child);
+            $aColumns= explode(',',$ddChild['projections']['_uisearch']);            
+            foreach($aColumns as $column) {
+                $grid->addColumn($ddChild['flat'][$column]);
+            }
+        }
+        
+        $top->render();
+    }
+
+    # ===================================================================
     # *******************************************************************
     #
     # Profile 1: "twosides"
@@ -279,6 +464,8 @@ class androX6 {
         # Create the top level div
         $top=html('div');
         $top->addClass('fadein');
+        $top->hp['x6plugin'] = 'tableController';
+        $top->hp['x6table']  = $table_id;
         
         # Create a hidden object that contains inputs we will
         # clone over to the grid on demand
@@ -305,9 +492,8 @@ class androX6 {
         $grid = $top->addTabDiv($gridHeight);
         $grid->hp['x6table']      = $table_id;
         $grid->hp['id']           = "tabDiv_$table_id";
-        $grid->hp['xGridSelect' ] = 'inline'; // vs. nothing
-        $grid->hp['xGridReqNew' ] = 'inline'; // vs. nothing
-        $grid->hp['xGridReqDel' ] = 'Y';   // vs. nothing
+        $grid->hp['uiNewRow' ] = 'inline'; // vs. nothing
+        $grid->hp['uiEditRow'] = 'inline'; // vs. nothing
         
         # Now obtain the _uisearch columns and make one column each
         $uisearch = $dd['projections']['_uisearch'];
@@ -345,5 +531,20 @@ class androX6 {
     #
     # -------------------------------------------------------------------
     # ===================================================================
+    # Makes a generic tabdiv.  First created 11/3/08 so we can add
+    # cells to it for a browseFetch and then pluck out the tbody html
+    function tabDivGeneric(&$grid,$dd) {
+        $table_id = $dd['table_id'];
+        $grid->hp['x6table']      = $table_id;
+        $grid->hp['id']           = "tabDiv_$table_id";
+        $grid->hp['xSortable']    = 'Y';
+        $uisearch = $dd['projections']['_uisearch'];
+        $aColumns = explode(',',$uisearch);
+        foreach($aColumns as $column) {
+            $grid->addColumn($dd['flat'][$column]);
+        }
+        $gridWidth=$grid->lastColumn();
+        return $gridWidth;
+    }
 }
 ?>
