@@ -19,6 +19,7 @@ echo "\n<title>".vgfGet('pageTitle')."</title>\n";
 jsInclude('clib/jquery-1.2.6.pack.js','JQuery is distributed under the GPL
       license, written by a team of programmers led by John Resig,
       more info at http://www.jquery.com'
+      ,'Y'
 );
 
 # EXPERIMENTAL: jquery ui full boat
@@ -26,57 +27,74 @@ jsInclude('clib/jquery-1.2.6.pack.js','JQuery is distributed under the GPL
 #   facilities, so we may as well load the entire thing
 #   and have it available for experiments
 jsInclude('clib/jquery-ui-1.5.2.js');
+if(vgfGet('x6')) {
+    cssInclude('clib/jquery-ui-themeroller.css');
+}
 
 # 1.6b messes up drag-n-drop 
 #sInclude('clib/jquery-ui-personalized-1.6b.packed.js');
 
 # EXPERIMENTAL.  Added KFD 8/2/08 to scroll inside
 #                of androSelect dropdown.
-jsInclude('clib/jquery.scrollTo.js');
+if(!vgfGet('x6')) {
+    jsInclude('clib/jquery.scrollTo.js');
+}
 
 # JQUERY MODALS
 # Status: must keep, at least one commercial customer
 #         using it already.
-jsInclude('clib/jqModal.js','jqModal was written by Brice Burgess
+if(!vgfGet('x6')) {
+    jsInclude('clib/jqModal.js','jqModal was written by Brice Burgess
      and is distributed under the MIT license.  His website is
      http://dev.iceburg.net/jquery/jqModal/');
-cssInclude('clib/jqModal.css');
+    cssInclude('clib/jqModal.css');
+}
 
 
 # SCROLLABLE TABLES
 # Status: unknown.  It's kind of ok, but it seems that it might
 #         be simpler just to create table bodies with fixed 
 #         heights and overflow: scroll
-if(gpExists('x4Page')) {
-    jsInclude('clib/webtoolkit.jscrollable.js','Scrollable table is
-        available at www.webtoolkit.info');
-    jsInclude('clib/webtoolkit.scrollabletable.js','Scrollable table is
-        available at www.webtoolkit.info');
+if(!vgfGet('x6')) {
+    if(gpExists('x4Page')) {
+        jsInclude('clib/webtoolkit.jscrollable.js','Scrollable table is
+            available at www.webtoolkit.info');
+        jsInclude('clib/webtoolkit.scrollabletable.js','Scrollable table is
+            available at www.webtoolkit.info');
+    }
 }
 
 # Time Entry.  A very nifty plugin that makes time entry
 #              inputs easy to work with
-cssInclude('clib/jquery.timeentry.css');
-jsInclude('clib/jquery.timeentry.js');
+if(!vgfGet('x6')) {
+    cssInclude('clib/jquery.timeentry.css');
+    jsInclude('clib/jquery.timeentry.js');
+}
 // Date entry with their over-engineered downloads
 
 # Date Manipulation.  This is a combo data input system
 #      and library for date manipulation.
-jsInclude('clib/jquery.date_input.js');
-cssInclude('clib/date_input.css');
+if(!vgfGet('x6')) {
+    jsInclude('clib/jquery.date_input.js');
+    cssInclude('clib/date_input.css');
+}
 
 # Another date library, extremely agile
 # with date manipulation
 # Strike 1: 8/21/08, This version cannot be trusted to give the
 #                    correct day of the week.
-jsInclude('clib/jquery.dates.js');
+if(!vgfGet('x6')) {
+    jsInclude('clib/jquery.dates.js');
+}
 
 
 # Jquery Tooltip
 #  Don't need dimensions, we have jquery 1.2.6 now
 #jsInclude("clib/jquery.dimensions.js");
-jsInclude("clib/jquery.tooltip.js");
-cssInclude("clib/jquery.tooltip.css");
+if(!vgfGet('x6')) {
+    jsInclude("clib/jquery.tooltip.js");
+    cssInclude("clib/jquery.tooltip.css");
+}
 
 
 # =====================================================================
