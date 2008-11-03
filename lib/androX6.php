@@ -342,7 +342,6 @@ class androX6 {
         $tabs = $top->addTabs('tabs_'.$table_id);
         $lookup = $tabs->addTab('Lookup');
         $detail = $tabs->addTab('Detail');
-        $detail->h('h1','This is detail');
 
         # We use gridHeight as the general height of the content area
         $gridHeight 
@@ -363,7 +362,10 @@ class androX6 {
         #
         $height = intval($gridHeight/2);
         $divDetail = $detail->h('div');
+        $divDetail->hp['style'] = 'height: '.$height.'px; overflow: scroll';
         $divDetail->addClass('x6detail');
+        $tabLoop = array();
+        $divDetail->addChild( projection($this->dd,'',$tabLoop) );
         
         # The div kids is a tabbar of 
         $divKids = $detail->h('div');
@@ -412,6 +414,7 @@ class androX6 {
         $div->hp['id'] = 'tc_'.$table_id;
         $div->ap['x6plugin'] = 'tableController';
         $div->ap['x6table']  = $table_id;
+        $div->ap['xCache']   = 'Y';  // results will be cached
 
         $boxx = $div->h('div','&nbsp;');
         $boxx->addClass('box-spacer');
