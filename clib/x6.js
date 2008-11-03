@@ -889,630 +889,508 @@ var x6plugins = {
         $(self).click(function() { 
             if(!this.zDisabled) this.main(); 
         });
-    },
+    }
+}
+ 
+
+/****m* x6plugins/tableController
+*
+* NAME
+*   x6plugins.tableController
+*
+* FUNCTION
+*   The Javascript method x6plugins.tableController is
+*   a constructor function.  It accepts as a parameter the
+*   ID of a DOM element.  It adds functions to that DOM 
+*   element so that it will fully implement all browser-side
+*   features of our tableController object.
+*
+*   A tableController subscribes to all events in which a
+*   user requests to do something like add a row or delete
+*   a row.  The tableController executes whatever server-side
+*   requests are required, and then fires various events to
+*   notify other UI elements that they should display the
+*   results.
+* 
+*   Normally you do not invoke this method directly.  All 
+*   x6 plugins are detected and implmented automatically on
+*   page load.
+
+*   To turn any DOM element into a table controller, just set
+*   the properties x6plugIn and x6table, as in either
+*   of these:
+*
+*      <?php
+*      # here is one way to do it:
+*      echo "<div x6plugIn='tableController' x6table='users'>";
+*
+*      # another way to do it:
+*      $div = html('div');
+*      $div->hp['x6plugIn'] = 'tableController';
+*      $div->hp['x6table'] = 'users';
+*      $div->render();
+*      ?>
+*
+*   You should not have more than one table controller per 
+*   table on a page -- Andromeda will not trap for this!
+*
+* INPUTS
+*   id - the ID of the object to be 'activated'.
+*
+* RESULTS
+*   no return value.
+*
+******
+*/
+x6plugins.tableController = function(self,id,table) {
+    // Initialize new properties
+    u.bb.vgfSet('skey_'+table,-1);
+    self.zSortCol = false;
+    self.zSortAsc = false;
+    self.zCache   = u.p(self,'xCache')=='Y' ? true : false;
     
-    /****m* x6plugins/tableController
-    *
-    * NAME
-    *   x6plugins.tableController
-    *
-    * FUNCTION
-    *   The Javascript method x6plugins.tableController is
-    *   a constructor function.  It accepts as a parameter the
-    *   ID of a DOM element.  It adds functions to that DOM 
-    *   element so that it will fully implement all browser-side
-    *   features of our tableController object.
-    *
-    *   A tableController subscribes to all events in which a
-    *   user requests to do something like add a row or delete
-    *   a row.  The tableController executes whatever server-side
-    *   requests are required, and then fires various events to
-    *   notify other UI elements that they should display the
-    *   results.
-    * 
-    *   Normally you do not invoke this method directly.  All 
-    *   x6 plugins are detected and implmented automatically on
-    *   page load.
-    
-    *   To turn any DOM element into a table controller, just set
-    *   the properties x6plugIn and x6table, as in either
-    *   of these:
-    *
-    *      <?php
-    *      # here is one way to do it:
-    *      echo "<div x6plugIn='tableController' x6table='users'>";
-    *
-    *      # another way to do it:
-    *      $div = html('div');
-    *      $div->hp['x6plugIn'] = 'tableController';
-    *      $div->hp['x6table'] = 'users';
-    *      $div->render();
-    *      ?>
-    *
-    *   You should not have more than one table controller per 
-    *   table on a page -- Andromeda will not trap for this!
-    *
-    * INPUTS
-    *   id - the ID of the object to be 'activated'.
-    *
-    * RESULTS
-    *   no return value.
-    *
-    ******
+    /*
+    *   Table controller accepts the request to
+    *   save current changes.  First checks if this
+    *   makes sense.
+    *   
     */
-    tableController: function(self,id,table) {
-        // Initialize new properties
-        u.bb.vgfSet('skey_'+table,-1);
-        self.zSortCol = false;
-        self.zSortAsc = false;
+    x6events.subscribeToEvent('reqSaveRow_'+table,id);
+    self['receiveEvent_reqSaveRow_'+table] = function(dupe) {
+        //console.group("tableController reqSaveRow "+this.zTable);
         
-        /*
-        *   Table controller will be happy to cache
-        *   rows for a table if they are offered. It
-        *   will also be happy to add a row to that
-        *   cache if offered.  There ought also to be
-        *   something here to remove a row, but that
-        *   seems to be missing?
-        *
-        *   Note: shouldn't that be cacheAddRow ?
-        *   Note: and then wouldn't we want cacheDelRow?
-        */
-        x6events.subscribeToEvent('cacheRows_'+table,id);
-        self['receiveEvent_cacheRows_'+table] = function(rows) {
-            this.zRows = rows;
+        var result = this.saveOk();
+        u.bb.vgfSet('lastSave_'+this.zTable,result);
+        //console.log('tableController reqSaveRow finished');
+        //console.groupEnd();
+    }
+    
+    
+    /*
+    *   Table controller accepts the request to
+    *   begin editing a new row.  It must first 
+    *   work out if any open rows being edited must
+    *   be saved.  If everything works out it 
+    *   broadcasts a UI notification that UI elements
+    *   should display their inputs in NEW mode.
+    *   
+    */
+    x6events.subscribeToEvent('reqNewRow_'    +table,id);
+    self['receiveEvent_reqNewRow_'+table] = function(dupe) {
+        //console.group("tableController reqNewRow "+this.zTable);
+        
+        var result = this.saveOk();
+        u.bb.vgfSet('lastSave_'+this.zTable,result);
+        if(result!='fail') {
+            x6events.fireEvent('uiNewRow_'+table);
         }
-        x6events.subscribeToEvent('addRow_'+table,id);
-        self['receiveEvent_addRow_'+table] = function(row) {
-            this.zRows[row.skey] = row;
-        }
+        //console.groupEnd();
+    }
 
-        /*
-        *   Table controller accepts the request to
-        *   save current changes.  First checks if this
-        *   makes sense.
-        *   
-        */
-        x6events.subscribeToEvent('reqSaveRow_'+table,id);
-        self['receiveEvent_reqSaveRow_'+table] = function(dupe) {
-            //console.group("tableController reqSaveRow "+this.zTable);
-            
+    /*
+    *   Table controller accepts a request to edit a 
+    *   row.  It is smart enough that if we are already
+    *   editing that row it does nothing.  Otherwise
+    *   it tries to save any existing row before 
+    *   deciding whether to move on.
+    *   
+    */
+    x6events.subscribeToEvent('reqEditRow_'+table,id);
+    self['receiveEvent_reqEditRow_'+table] = function(skey) {
+        //console.group("tableController reqEditRow "+this.zTable);
+        var skeynow = u.bb.vgfGet('skey_'+this.zTable);
+        if(skeynow == skey) {
+            //console.log("Request to edit same row, no action");
+        } 
+        else {
             var result = this.saveOk();
             u.bb.vgfSet('lastSave_'+this.zTable,result);
             if(result!='fail') {
-                if(result!='noaction') {
-                    x6events.fireEvent('uiRowSaved_'+table,$a.data.row);
+                x6events.fireEvent('uiEditRow_'+table,skey);
+            }
+        }
+        //console.log("tableController reqEditRow finished");
+        //console.groupEnd();
+        return true;
+    }
+    
+    /*
+    *   The saveOk figures out if it needs to save and
+    *   tries to do so.  If no active fields have changed,
+    *   it just returns 'noaction'.  If it needs to save,
+    *   it attempts to do so and returns 'success' or
+    *   'fail'.
+    */
+    self.saveOk = function() {
+        //console.group("tableController saveOK");
+        var inpAll = { };
+        var inpChg = { };
+        var cntChg = 0;
+        var jq = ':input[xtableid='+this.zTable+'][zActive]';
+        //console.log("Query string",jq);
+        $(this).find(jq).each(
+            function() {
+                var col = u.p(this,'xcolumnid');
+                inpAll[col] = this.value;
+                var oval = u.p(this,'zOriginalValue','').trim();
+                if(this.value.trim()!= oval) {
+                    inpChg[col] = this.value.trim();
+                    cntChg++;
                 }
             }
-            //console.log('tableController reqSaveRow finished');
-            //console.groupEnd();
+        );
+        //console.log("All inputs: ",inpAll);
+        //console.log("Changed inputs: ",inpChg);
+        //console.log("Count of changes: ",cntChg);
+        
+        // Only attempt a save if something changed
+        if(cntChg == 0) {
+            //console.log("no changes, not trying to save");
+            var retval = 'noaction';
         }
-        
-        
-        /*
-        *   Table controller accepts the request to
-        *   begin editing a new row.  It must first 
-        *   work out if any open rows being edited must
-        *   be saved.  If everything works out it 
-        *   broadcasts a UI notification that UI elements
-        *   should display their inputs in NEW mode.
-        *   
-        */
-        x6events.subscribeToEvent('reqNewRow_'    +table,id);
-        self['receiveEvent_reqNewRow_'+table] = function(dupe) {
-            //console.group("tableController reqNewRow "+this.zTable);
-            
-            var result = this.saveOk();
-            u.bb.vgfSet('lastSave_'+this.zTable,result);
-            if(result!='fail') {
-                if(result!='noaction') {
-                    x6events.fireEvent('uiRowSaved_'+table,$a.data.row);
-                }
-                x6events.fireEvent('uiNewRow_'+table);
+        else {
+            //console.log("attempting database save");
+            //console.log("Sending x4v_skey ",this.zSkey);
+            ua.json.init('x6page',this.zTable);
+            ua.json.addParm('x6action','save');
+            ua.json.addParm('x4v_skey',u.bb.vgfGet('skey_'+this.zTable));
+            ua.json.inputs(jq);
+            if(ua.json.execute()) {
+                var retval = 'success';
+                ua.json.process();
             }
-            //console.groupEnd();
-        }
-
-        /*
-        *   Table controller accepts a request to edit a 
-        *   row.  It is smart enough that if we are already
-        *   editing that row it does nothing.  Otherwise
-        *   it tries to save any existing row before 
-        *   deciding whether to move on.
-        *   
-        */
-        x6events.subscribeToEvent('reqEditRow_'+table,id);
-        self['receiveEvent_reqEditRow_'+table] = function(skey) {
-            //console.group("tableController reqEditRow "+this.zTable);
-            var skeynow = u.bb.vgfGet('skey_'+this.zTable);
-            if(skeynow == skey) {
-                //console.log("Request to edit same row, no action");
-            } 
             else {
-                var result = this.saveOk();
-                u.bb.vgfSet('lastSave_'+this.zTable,result);
-                if(result!='fail') {
-                    if(result!='noaction') {
-                        x6events.fireEvent('uiRowSaved_'+table,$a.data.row);
+                var retval = 'fail';
+                var errors = [ ];
+                for(var idx in ua.json.jdata.error) {
+                    if(ua.json.jdata.error[idx].slice(0,8)!='(ADMIN):') {
+                        errors.push(ua.json.jdata.error[idx]);
                     }
-                    x6events.fireEvent('uiEditRow_'+table,skey);
                 }
+                //console.log("save failed, here are errors");
+                //console.log(errors);
+                x6events.fireEvent('uiShowErrors_'+this.zTable,errors);
             }
-            //console.log("tableController reqEditRow finished");
-            //console.groupEnd();
-            return true;
         }
         
-        /*
-        *   The saveOk figures out if it needs to save and
-        *   tries to do so.  If no active fields have changed,
-        *   it just returns 'noaction'.  If it needs to save,
-        *   it attempts to do so and returns 'success' or
-        *   'fail'.
-        */
-        self.saveOk = function() {
-            //console.group("tableController saveOK");
-            var inpAll = { };
-            var inpChg = { };
-            var cntChg = 0;
-            var jq = ':input[xtableid='+this.zTable+'][zActive]';
-            //console.log("Query string",jq);
-            $(this).find(jq).each(
+        // If save went ok, notify any ui elements, then 
+        // fire off a cache save also if required.
+        if(retval=='success') {
+            //console.log(retval);
+            x6events.fireEvent('uiRowSaved_'+table,$a.data.row);
+            if(this.zCache) {
+                this.zRows[$a.data.row.skey] = $a.data.row;
+            }
+        }            
+        
+        //console.log("tableController saveOK RETURNING: ",retval);
+        //console.groupEnd();
+        return retval;
+    };
+
+
+    /*
+    *   The table controller accepts requests to undo
+    *   changes to a row.  It actually rolls back all
+    *   inputs and sets their classes, and then
+    *   fires of a uiUndoRow event so various other
+    *   elements can do their own thing.
+    */
+    x6events.subscribeToEvent('reqUndoRow_'+table,id);
+    self['receiveEvent_reqUndoRow_'+table] = function() {
+        //console.group("tableController reqUndoRow");
+        var skey = u.bb.vgfGet('skey_'+table);
+        if(skey>=0) {
+            //console.log("Skey is >= 0, continuing ",skey);
+            $(this).find(":input:not([disabled])[zActive]").each( 
                 function() {
-                    var col = u.p(this,'xcolumnid');
-                    inpAll[col] = this.value;
-                    var oval = u.p(this,'zOriginalValue','').trim();
-                    if(this.value.trim()!= oval) {
-                        inpChg[col] = this.value.trim();
-                        cntChg++;
-                    }
+                    this.value = this.zOriginalValue;
+                    this.zError = 0;
+                    x6inputs.setClass(this);
                 }
             );
-            //console.log("All inputs: ",inpAll);
-            //console.log("Changed inputs: ",inpChg);
-            //console.log("Count of changes: ",cntChg);
-            
-            // Only attempt a save if something changed
-            if(cntChg == 0) {
-                //console.log("no changes, not trying to save");
-                var retval = 'noaction';
-            }
-            else {
-                //console.log("attempting database save");
-                //console.log("Sending x4v_skey ",this.zSkey);
-                ua.json.init('x6page',this.zTable);
-                ua.json.addParm('x6action','save');
-                ua.json.addParm('x4v_skey',u.bb.vgfGet('skey_'+this.zTable));
-                ua.json.inputs(jq);
-                if(ua.json.execute()) {
-                    var retval = 'success';
-                    ua.json.process();
-                }
-                else {
-                    var retval = 'fail';
-                    var errors = [ ];
-                    for(var idx in ua.json.jdata.error) {
-                        if(ua.json.jdata.error[idx].slice(0,8)!='(ADMIN):') {
-                            errors.push(ua.json.jdata.error[idx]);
-                        }
-                    }
-                    //console.log("save failed, here are errors");
-                    //console.log(errors);
-                    x6events.fireEvent('uiShowErrors_'+this.zTable,errors);
-                }
-            }
-            
-            //console.log("tableController saveOK RETURNING: ",retval);
-            //console.groupEnd();
-            return retval;
-        };
-
-
-        /*
-        *   The table controller accepts requests to undo
-        *   changes to a row.  It actually rolls back all
-        *   inputs and sets their classes, and then
-        *   fires of a uiUndoRow event so various other
-        *   elements can do their own thing.
-        */
-        x6events.subscribeToEvent('reqUndoRow_'+table,id);
-        self['receiveEvent_reqUndoRow_'+table] = function() {
-            //console.group("tableController reqUndoRow");
-            var skey = u.bb.vgfGet('skey_'+table);
-            if(skey>=0) {
-                //console.log("Skey is >= 0, continuing ",skey);
-                $(this).find(":input:not([disabled])[zActive]").each( 
-                    function() {
-                        this.value = this.zOriginalValue;
-                        this.zError = 0;
-                        x6inputs.setClass(this);
-                    }
-                );
-                x6events.fireEvent('uiUndoRow_'+this.zTable);
-            }
-            //console.log("tableController reqUndoRow Finished");
-            //console.groupEnd();
-            return true;
+            x6events.fireEvent('uiUndoRow_'+this.zTable);
         }
-        
-
-        /*
-        *   The table controller accepts delete request
-        *   and asks the database to do the delete.  If
-        *   this is successful, it tells any UI subscribers
-        *   to update their displays accordingly.
-        */
-        x6events.subscribeToEvent('reqDelRow_'    +table,id);
-        self['receiveEvent_reqDelRow_'+table] = function() {
-            //console.group("tableController reqDelRow ",this.zTable);
-            var skey = u.bb.vgfGet('skey_'+this.zTable);
-            if(this.zSkey<1) {
-                //console.log("nothing being edited, quietly ignoring");
-            }
-            else {
-                if(confirm("Delete current row?")) {
-                    //console.log("sending delete to server");
-                    ua.json.init('x6page',this.zTable);
-                    ua.json.addParm('x6action','delete');
-                    ua.json.addParm('skey',skey);
-                    ua.json.addParm('json',1);
-                    if(ua.json.execute()) {
-                        x6events.fireEvent('uiDelRow_'+table,skey);
-                    }
-                }
-            }
-            //console.log("tableController reqDelRow finished");
-            //console.groupEnd();
-            return true;
-        }
-        
-        // Sort requests are sorted out here.        
-        x6events.subscribeToEvent('reqSort_'+table,id);
-        self['receiveEvent_reqSort_'+table] = function(args) {
-            // Work out sort order
-            table = this.zTable
-            xColumn = args.xColumn;
-            xChGroup= args.xChGroup;
-            if(xColumn == this.zSortCol) {
-                this.zSortAsc = ! this.zSortAsc;
-            }
-            else {
-                this.zSortCol = xColumn;
-                this.zSortAsc = true;
-            }
-            
-            // Flip all icons to both
-            $('[xChGroup='+xChGroup+']').html('&uarr;&darr');
-            
-            // Flip just this icon to up or down
-            var icon = this.zSortAsc ? '&darr;' : '&uarr;';
-            $('[xChGroup='+xChGroup+'][xColumn='+xColumn+']').html(icon);
-            
-            // Make the request to the server
-            var args2 = { sortCol: this.zSortCol, sortAsc: this.zSortAsc };
-            x6events.fireEvent('doSort_'+this.zTable,args2);
-        }
-        
-
-    },
+        //console.log("tableController reqUndoRow Finished");
+        //console.groupEnd();
+        return true;
+    }
     
-    /****m* x6plugins/grid 
-    * NAME
-    *   x6plugins.grid
-    *
-    ******/
-    grid: function(self,id,table) {
-        
-        // Subscribe to deletion event
-        x6events.subscribeToEvent('delRow_'+table,id);
-        self['receiveEvent_delRow_'+table] = function(skey) {
-            $(this).find('#row_'+skey).fadeOut(function() {
-                    $(this).remove();
-            });
-        }
-        
-        // Grid accepts an addrow and requests some html from
-        // the server, then interprets it as a goMode
-        //
-        x6events.subscribeToEvent('addRow_'+table,id);
-        self['receiveEvent_addRow_'+table] = function(row) {
-            ua.json.init('x6page',this.zTable);
-            ua.json.addParm('x6plugIn',u.p(this,'x6plugIn'));
-            ua.json.addParm('x6action','onerow');
-            ua.json.addParm('skey',row.skey);
-            if(ua.json.execute()) {
-                var html = ua.json.jdata.html['*MAIN*'];
-                $(this).find('.tbody').prepend(html);
-                this['receiveEvent_goMode_'+table]({mode:'edit',row:row});
-            }
-        }
-        
-        // Grid accepts a notification that we are actually
-        // editing a row or reviewing a row
-        x6events.subscribeToEvent('goMode_'+table,id);
-        self['receiveEvent_goMode_'+table] = function(args) {
-            // In all cases, turn off any rows that are selected
-            $(this).find('.tbody .selected')
-                .removeClass('selected')
-                .removeClass('hilight');
-            
-            // If there is a new row, turn that one on
-            if(args.mode == 'edit') {
-                $(this).find('#row_'+args.row.skey)
-                    .removeClass('hilight')
-                    .addClass('selected');
-            }
-        }
 
-        // Grid responds to request to sort in a particular order
-        x6events.subscribeToEvent('doSort_'+table,id);
-        self['receiveEvent_doSort_'+table] = function(args) {
-            ua.json.init('x6page',this.zTable);
-            ua.json.addParm('x6plugIn',u.p(this,'x6plugIn'));
-            ua.json.addParm('x6action','refresh');
-            ua.json.addParm('sortCol',args.sortCol);
-            ua.json.addParm('sortAsc',args.sortAsc);
-            u.dialogs.pleaseWait();
-            if(ua.json.execute(true)) {
-                var html = ua.json.jdata.html['*MAIN*'];
-                $(this).find('.tbody').replaceWith(html);
-            }
-            u.dialogs.clear();
-        }
-        
-        // First keyboard event, keydown
-        x6events.subscribeToEvent('key_UpArrow',id);
-        self.receiveEvent_key_UpArrow = function(e) {
-            var jqRows = $(this).find('.hilight').prev();
-            if(jqRows.length==0) {
-                $(this).find('tbody tr:first').addClass('hilight');
-            }
-            else {
-                $(this).find('tbody tr.hilight').removeClass('hilight')
-                    .prev().addClass('hilight');
-            }
-            x6events.retvals['key_UpArrow'] =false;
-        }
-        x6events.subscribeToEvent('key_DownArrow',id);
-        self.receiveEvent_key_DownArrow = function(e) {
-            var jqRows = $(this).find('.hilight').next();
-            if(jqRows.length==0) {
-                $(this).find('tbody tr:first').addClass('hilight');
-            }
-            else {
-                $(this).find('.hilight').removeClass('hilight')
-                    .next().addClass('hilight');
-            }
-            x6events.retvals['key_UpArrow'] =false;
-        }
-        
-        
-    },
-    
-    /****m* x6plugins/detailDisplay
-    *
-    * NAME
-    *   x6plugins.detailDisplay
-    *
-    * FUNCTION
-    *   The Javascript method x6plugins.detailDisplay implements
-    *   all browser-side functionality for Andromeda's built-in
-    *   plugIn detailDisplay.
-    *
-    *   A 'detailDisplay' plugIn displays user inputs to edit
-    *   the values for a particular row in a table.  
-    *
-    *   This plugin subscribes to the following events:
-    *   *  goMode_{table}
-    *
-    * INPUTS
-    *   self - the DOM object to be activated.
-    *   id - the ID of the object to be 'activated'.
-    *   table - the database table that the detailPane is handling.
-    *
-    * RESULTS
-    *   no return value.
-    *
-    ******
+    /*
+    *   The table controller accepts delete request
+    *   and asks the database to do the delete.  If
+    *   this is successful, it tells any UI subscribers
+    *   to update their displays accordingly.
     */
-    detailDisplay: function(self,id,table) {
-        self.zSkey = -1;
-        
-        // detail receives a request to attempt to go into a 
-        // mode.  It checks to see if a save is required first.
-        x6events.subscribeToEvent('attemptChangeMode_'+table,id);
-        self['receiveEvent_attemptChangeMode_'+table] = function() {
-            // Check for existing row with changes
-            if(this.zSkey>=0) {
-                var ichg = $(this).find(":input[zChanged=1]");
-                if(ichg.length > 0) {
-                    alert("There are changed Values.  Must save first");
-                    return false;
-                }
-            }
-            return true;
+    x6events.subscribeToEvent('reqDelRow_'    +table,id);
+    self['receiveEvent_reqDelRow_'+table] = function() {
+        //console.group("tableController reqDelRow ",this.zTable);
+        var skey = u.bb.vgfGet('skey_'+this.zTable);
+        if(this.zSkey<1) {
+            //console.log("nothing being edited, quietly ignoring");
         }
-        
-        // Detail receives an addRow event and interprets it
-        // as a goMode
-        x6events.subscribeToEvent('addRow_'+table,id);
-        self['receiveEvent_addRow_'+table] = function(row) {
-            this['receiveEvent_goMode_'+table]({mode:'edit',row:row});
+        else {
+            if(confirm("Delete current row?")) {
+                //console.log("sending delete to server");
+                ua.json.init('x6page',this.zTable);
+                ua.json.addParm('x6action','delete');
+                ua.json.addParm('skey',skey);
+                ua.json.addParm('json',1);
+                if(ua.json.execute()) {
+                    x6events.fireEvent('uiDelRow_'+table,skey);
+                }
+            }
         }
-
-        // detail receives a request to go to a mode which
-        // is unconditional, it will do what it is told
-        x6events.subscribeToEvent('goMode_'+table,id);
-        self['receiveEvent_goMode_'+table] = function(argsObj) {
-            var mode = argsObj.mode;
-            var row  = argsObj.row;
-            
-            if(mode!='new' && mode!='edit') {
-                u.error("Object "+this.id+" has received a 'goMode' event "
-                    +"for unhandled mode "+mode+".  Cannot process this "
-                    +"request."
-                );
-            }
-
-            // Set values and remember skey value
-            x6events.fireEvent('enable_save');
-            x6events.fireEvent('enable_abandon');
-            if(mode=='new')  {
-                x6events.fireEvent('disable_remove');
-                x6events.fireEvent('disable_new');
-                x6events.fireEvent('disable_duplicate');
-                u.debug("detail display going into new mode");
-                // For new rows, set defaults, otherwise blank
-                // out.
-                $(this).find(':input').each(function() {
-                    this.value=u.p(this,'xdefault','');
-                    this.zOriginalValue = this.value;
-                    this.zChanged = 0;
-                });
-                if(typeof(row.skey)!='undefined') {
-                    u.debug("detail display populating inputs");
-                    this.populateInputs(row);
-                }
-                this.zSkey = 0;
-            }
-            else {
-                x6events.fireEvent('enable_remove');
-                x6events.fireEvent('enable_new');
-                x6events.fireEvent('enable_duplicate');
-                this.populateInputs(row);
-                this.zSkey = row.skey;
-            }
-            
-            
-            // now set the readonly and new flags on all controls
-            $(this).find(':input').each(function() {
-                this.zNew = mode=='new' ? 1 : 0;
-                if(mode=='new') {
-                    var ro = u.p(this,'xroins','N');
-                }
-                else {
-                    var ro = u.p(this,'xroupd','N');
-                }
-                if(ro=='Y') {
-                    this.zRO = 1;
-                    this.disabled = true;
-                }
-                else {
-                    this.zRO = 0;
-                    this.disabled = false;
-                }
-                x6inputs.setClass(this);
-            });
-            $(this).find(':input:not(.readOnly):first').focus();
-        }
+        //console.log("tableController reqDelRow finished");
+        //console.groupEnd();
+        return true;
+    }
     
+    // Sort requests are sorted out here.        
+    x6events.subscribeToEvent('reqSort_'+table,id);
+    self['receiveEvent_reqSort_'+table] = function(args) {
+        // Work out sort order
+        table = this.zTable
+        xColumn = args.xColumn;
+        xChGroup= args.xChGroup;
+        if(xColumn == this.zSortCol) {
+            this.zSortAsc = ! this.zSortAsc;
+        }
+        else {
+            this.zSortCol = xColumn;
+            this.zSortAsc = true;
+        }
         
-        // detail responds to cancel edit command.  If we were
-        // entering new row we clear everything, otherwise we
-        // just restore original values
-        x6events.subscribeToEvent('cancelEdit_'+table,id);
-        self['receiveEvent_cancelEdit_'+table] = function() {
-            if(this.zSkey==0) {
-                x6events.fireEvent('disable_save');
-                x6events.fireEvent('disable_abandon');
-                x6events.fireEvent('disable_remove');
-                x6events.fireEvent('enable_new');
-                x6events.fireEvent('disable_duplicate');
-                u.debug("skey is zero, clearing out");
-                // clear it all out
-                $(this).find(":input").each(function() {
-                        x6inputs.clearOut(this);
-                });
-                x6.initFocus();
+        // Flip all icons to both
+        $('[xChGroup='+xChGroup+']').html('&uarr;&darr');
+        
+        // Flip just this icon to up or down
+        var icon = this.zSortAsc ? '&darr;' : '&uarr;';
+        $('[xChGroup='+xChGroup+'][xColumn='+xColumn+']').html(icon);
+        
+        // Make the request to the server
+        var args2 = { sortCol: this.zSortCol, sortAsc: this.zSortAsc };
+        x6events.fireEvent('doSort_'+this.zTable,args2);
+    }
+    
+
+    /*
+    *   Table controller will be happy to cache
+    *   rows for a table if they are offered. It
+    *   will also be happy to add a row to that
+    *   cache if offered.  There ought also to be
+    *   something here to remove a row, but that
+    *   seems to be missing?
+    *
+    *   Note: shouldn't that be cacheAddRow ?
+    *   Note: and then wouldn't we want cacheDelRow?
+    */
+    this.zRows = { };
+    x6events.subscribeToEvent('cacheRows_'+table,id);
+    self['receiveEvent_cacheRows_'+table] = function(rows) {
+        this.zRows = rows;
+    }
+    x6events.subscribeToEvent('addRow_'+table,id);
+    self['receiveEvent_addRow_'+table] = function(row) {
+        this.zRows[row.skey] = row;
+    }
+    
+    /*
+    *    A request to put the current row onto
+    *    the bulletin board.
+    */
+    x6events.subscribeToEvent('dbFetchRow_'+table,id);
+    self['receiveEvent_dbFetchRow_'+table] = function(skey) {
+        
+        if(typeof(this.zRows[skey])=='undefined') {
+            //console.log("tableController bbRow, no row found");
+        }
+        else {
+            //console.log("tableController bbRow, publishing row "+skey);
+            //console.log("putting onto bb as dbRow_"+this.zTable);
+            u.bb.vgfSet('dbRow_'+this.zTable,this.zRows[skey]);
+        }
+    }
+    
+    /*
+    *   Two requests, one to turn on editing-mode buttons,
+    *   another to turn them off.
+    */
+    x6events.subscribeToEvent('buttonsOn_'+table,id);
+    self['receiveEvent_buttonsOn_'+table] = function() {
+        x6events.fireEvent('enable_save');
+        x6events.fireEvent('enable_abandon');
+        x6events.fireEvent('enable_remove');
+    }
+    x6events.subscribeToEvent('buttonsOff_'+table,id);
+    self['receiveEvent_buttonsOff_'+table] = function() {
+        x6events.fireEvent('disable_save');
+        x6events.fireEvent('disable_abandon');
+        x6events.fireEvent('disable_remove');
+    }
+}
+    
+    
+/****m* x6plugins/detailDisplay
+*
+* NAME
+*   x6plugins.detailDisplay
+*
+* FUNCTION
+*   The Javascript method x6plugins.detailDisplay implements
+*   all browser-side functionality for Andromeda's built-in
+*   plugIn detailDisplay.
+*
+*   A 'detailDisplay' plugIn displays user inputs to edit
+*   the values for a particular row in a table.  
+*
+*   This plugin subscribes to the following events:
+*   *  goMode_{table}
+*
+* INPUTS
+*   self - the DOM object to be activated.
+*   id - the ID of the object to be 'activated'.
+*   table - the database table that the detailPane is handling.
+*
+* RESULTS
+*   no return value.
+*
+******
+*/
+x6plugins.detailDisplay = function(self,id,table) {
+    // detail receives a request to go to a mode which
+    // is unconditional, it will do what it is told
+    x6events.subscribeToEvent('uiEditRow_'+table,id);
+    self['receiveEvent_uiEditRow_'+table] = function(skey) {
+        //console.group("detailDisplay uiEditRow",skey);
+        
+        // Ask somebody to publish the row
+        x6events.fireEvent('dbFetchRow_'+table,skey);
+        var row = u.bb.vgfGet('dbRow_'+table);
+        
+        // Branch out to display in edit mode
+        this.displayRow('edit',row);
+        //console.log("detailDisplay displayRow FINISHED");
+        //console.groupEnd();
+    }
+        
+    // Detail receives an addRow event and interprets it
+    // as a goMode
+    x6events.subscribeToEvent('uiNewRow_'+table,id);
+    self['receiveEvent_uiNewRow_'+table] = function(row) {
+        //console.group("detailDisplay uiNewRow");
+        this.displayRow('new',{});
+        //console.log("detailDisplay uiNewRow FINISHED");
+        //console.groupEnd();
+    }
+
+    /*
+    *    A uiRowSaved says there are new values.  This
+    *    will be caught and interpreted as a uiEditRow
+    */
+    x6events.subscribeToEvent('uiRowSaved_'+table,id);
+    self['receiveEvent_uiRowSaved_'+table] = function(row) {
+        //console.group("detailDisplay uiRowSaved",skey);
+        this.displayRow('edit',row);
+        //console.log("detailDisplay uiRowSaved FINISHED");
+        //console.groupEnd();
+    }
+        
+    /*
+    *    A uiDelRow clears all inputs
+    */
+    x6events.subscribeToEvent('uiDelRow_'+table,id);
+    self['receiveEvent_uiDelRow_'+table] = function(skey) {
+        //console.group("detailDisplay uiDelRow",skey);
+        $(this).find(':input').each(function() {
+            this.value='';
+            this.zOriginalValue = '';
+            this.zChanged = 0;
+            this.zActive  = 0;
+            this.zRo      = 1;
+            x6inputs.setClass(this);
+        });
+        x6events.fireEvent('buttonsOff_'+this.zTable);
+        //console.log("detailDisplay uiDelRow FINISHED");
+        //console.groupEnd();
+    }
+
+    self.displayRow = function(mode,row) { 
+        //console.group("detailDisplay displayRow ",mode);
+        //console.log(row);
+        if(mode!='new' && mode!='edit') {
+            u.error("Object "+this.id+" has received a 'goMode' event "
+                +"for unhandled mode "+mode+".  Cannot process this "
+                +"request."
+            );
+        }
+
+        // Set values and remember skey value
+        x6events.fireEvent('buttonsOn_'+this.zTable);
+        if(mode=='new')  {
+            //console.log("detail display going into new mode");
+            // For new rows, set defaults, otherwise blank
+            // out.
+            $(this).find(':input').each(function() {
+                this.value=u.p(this,'xdefault','');
+                this.zOriginalValue = this.value;
+                this.zChanged = 0;
+                this.zActive  = 1;
+            });
+            //if(typeof(row.skey)!='undefined') {
+            //    u.debug("detail display populating inputs");
+            //    this.populateInputs(row);
+            //}
+            u.bb.vgfSet('skey_'+this.zTable,0);
+        }
+        else {
+            this.populateInputs(row);
+            u.bb.vgfSet('skey_'+this.zTable,row.skey);
+        }
+        
+        
+        // now set the readonly and new flags on all controls
+        $(this).find(':input').each(function() {
+            this.zNew = mode=='new' ? 1 : 0;
+            if(mode=='new') {
+                var ro = u.p(this,'xroins','N');
             }
             else {
-                x6events.fireEvent('enable_save');
-                x6events.fireEvent('enable_abandon');
-                x6events.fireEvent('enable_remove');
-                x6events.fireEvent('enable_new');
-                x6events.fireEvent('enable_duplicate');
-                // restore original values
-                u.debug("Skey is: "+this.zSkey+", restoring original values");
-                $(this).find(":input").each(function() {
-                    this.value = this.zOriginalValue;
-                    x6inputs.setClass(this);
-                });
+                var ro = u.p(this,'xroupd','N');
             }
-        }
-        
-        
-        // Detail accepts a request to delete a row by skey
-        x6events.subscribeToEvent('delRow_'+table,id);
-        self['receiveEvent_delRow_'+table] = function(skey) {
-            // <--- early return.  If not our skey, ignore
-            if(skey!=this.zSkey) return true;
-            
-            $(this).find(':input').each(function() {
-                    this.value = '';
-                    this.zOriginalValue = '';
-                    this.zChanged = 0;
-                    this.className = 'readOnly';
-            });
-        }
-        
-        // Detail accepts a request to save row and tries to 
-        // do so
-        x6events.subscribeToEvent('reqSaveRow_'+table,id);
-        self['receiveEvent_reqSaveRow_'+table] = function(argsObj) {
-            // <--- Early return if nothing to do.  This stays in
-            //      even if we disable the key appropriately, so that
-            //      it is more robust.
-            if(this.zSkey==-1) return true;
-            // <--- Early return if no fields changed
-            var inps = $(this).find(':input[zChanged=1]');
-            if(inps.length==0) return true;
-            
-            var table = u.p(this,'x6table');
-            ua.json.init('x6page',table);
-            ua.json.addParm('x6action','save');
-            ua.json.inputs(this);
-            ua.json.addParm('x4v_skey',this.zSkey);
-            if(ua.json.execute()) {
-                // process and capture the returned row
-                ua.json.process();
-                var newvals = $a.data.row;
-                
-                // Publish the event as either a new row
-                // or an updated row.
-                if(this.zSkey==0) {
-                    x6events.fireEvent('addRow_'+table,newvals);
-                }
-                else {
-                    x6events.fireEvent('rowChanged_'+table,newvals);
-                    x6events.fireEvent(
-                        'goMode_'+table,{mode:'edit',row:newvals}
-                    );
-                }
+            if(ro=='Y') {
+                this.zRO = 1;
+                this.disabled = true;
             }
-        }
+            else {
+                this.zRO = 0;
+                this.disabled = false;
+            }
+            x6inputs.setClass(this);
+        });
+        $(this).find(':input:not(.readOnly):first').focus();
         
-        // Accept a row changed event 
-        //x6events.subscribeToEvent('rowChanged_'+table,id);
-        //self['receiveEvent_rowChanged_'+table] = function(newvals) {
-        //    this.populateInputs(newvals);  
-        //}
-        
-        // --------------------------------------------------------
-        //
-        self.populateInputs = function(row) {
-            $(this).find(":input").each(function() {
-                    this.zOriginalValue = '';
-                    this.zChanged       = false;
-            });
-            for(var colname in row) {
-                var val = row[colname];
-                colname=colname.trim();
-                var jqobj =$(this).find(':input[xcolumnid='+colname+']');
-                if(jqobj.length>0) {
-                    if(val==null) val='';
-                    jqobj[0].value          = val;
-                    jqobj[0].zOriginalValue = val;
-                    jqobj[0].zChanged       = false;
-                }
+        //console.log("detailDisplay displayRow FINISHED");
+        //console.groupEnd();
+        return true;
+    }
+
+    self.populateInputs = function(row) {
+        $(this).find(":input").each(function() {
+                this.zOriginalValue = '';
+                this.zChanged       = false;
+        });
+        for(var colname in row) {
+            var val = row[colname];
+            colname=colname.trim();
+            var jqobj =$(this).find(':input[xcolumnid='+colname+']');
+            if(jqobj.length>0) {
+                if(val==null) val='';
+                jqobj[0].value          = val;
+                jqobj[0].zOriginalValue = val;
+                jqobj[0].zChanged       = false;
+                jqobj[0].zActive        = 1;
             }
         }
     }
@@ -1627,14 +1505,13 @@ x6plugins.x6tabDiv = function(self,id,table) {
             var grid = this;
             $(this).find('#row_0').fadeIn('fast'
                 ,function() {
-                    //grid.buttonsOn();
                     x6inputs.findFocus( this );
                 }
             );
             
             // Send a message and get lost
             u.bb.vgfSet('skey_'+this.zTable,0);
-            this.buttonsOn();
+            x6events.fireEvent('buttonsOn_'+this.zTable);
             //console.log('New row created, ready to edit');
             //console.groupEnd();
             return true;
@@ -1694,7 +1571,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
             );
             var string = x6inputs.jqFocusString();
             $(this).find('.tbody #row_'+skey+' '+string).focus();
-            this.buttonsOn();
+            x6events.fireEvent('buttonsOn_'+this.zTable);
             u.bb.vgfSet('skey_'+this.zTable,skey);
             //console.log('uiEditRow Completed, returning true');
             //console.groupEnd();
@@ -1725,10 +1602,10 @@ x6plugins.x6tabDiv = function(self,id,table) {
         // and the last save had no action, kill the row
         if(skey==0) {
             if(u.bb.vgfGet('lastSave_'+this.zTable)=='noaction') {
+                //console.log("No action on last save, removing row ",skey);
                 $(this).find("#row_0").fadeOut(
                     function() { $(this).remove() }
                 );
-                return;
             }
         }
         
@@ -1752,59 +1629,104 @@ x6plugins.x6tabDiv = function(self,id,table) {
         // Replace the input values with server returned values
         skey = u.bb.vgfGet('skey_'+this.zTable);
         if( $(this).find("#row_"+skey+" :input").length > 0) {
-            $(this).find("#row_"+skey+" :input").each(
-                function() {
-                    col = u.p(this,'xColumnId');
-                    //console.log(col,row[col]);
-                    this.value = row[col];
-                    this.zOriginalValue = row[col];
-                }
-            );
-            this.removeInputs();
-            this.buttonsOff();
-            u.bb.vgfSet('skey_'+this.zTable,-1);
-            
-            // If this was a new row, set it up
-            if(skey==0) {
-                //console.log("Was new row, setting up the row for editing");
-                table = this.zTable;
-                $(this).find("#row_0").each(
-                    function() {
-                        this.id = 'row_'+row.skey;
-                    }
-                );
-            
-                // PHP-JAVASCRIPT DUPLICATION ALERT!
-                // This code also exists in androLib.php
-                // addRow method of the tabDiv class
-                var table = this.zTable;
-                $(this).find('#row_'+row.skey)
-                    .mouseover(
-                        function() { 
-                            $(this).siblings('.hilight').removeClass('hilight');
-                            $(this).addClass('hilight') 
-                        }
-                    )
-                    //.mouseout( 
-                    //    function() { $(this).removeClass('hilight') }
-                    //)
-                    .click(
-                        function() {
-                            console.log("in the click");
-                            x6events.fireEvent(
-                                'reqEditRow_'+table,row.skey
-                            );
-                        }
-                    );
-            }
-            
+            //console.log($(this).find("#row_"+skey+" :input"));
+            //console.log("found inputs, going rowSavedEdit");
+            this.uiRowSavedEdit(row);
         }
         else {
-            // TODO: Updating values not coded yet
+            //console.log("no inputs, going rowSavedNoEdit");
+            this.uiRowSavedNoEdit(row);
         }
         //console.log("tabDiv uiRowSaved finished, returning TRUE");
         //console.groupEnd();
-        return true;
+    }
+    
+    self.uiRowSavedEdit = function(row) {
+        var skey = u.bb.vgfGet('skey_'+this.zTable);
+        $(this).find("#row_"+skey+" :input").each(
+            function() {
+                col = u.p(this,'xColumnId');
+                //console.log(col,row[col]);
+                this.value = row[col];
+                this.zOriginalValue = row[col];
+            }
+        );
+        this.removeInputs();
+        x6events.fireEvent('buttonsOff_'+this.zTable);
+        u.bb.vgfSet('skey_'+this.zTable,-1);
+        
+        // If this was a new row, set it up
+        if(skey==0) {
+            //console.log("Was new row, setting up the row for editing");
+            table = this.zTable;
+            $(this).find("#row_0").each(
+                function() {
+                    this.id = 'row_'+row.skey;
+                }
+            );
+        
+            this.initRow(skey);
+        }
+        
+    }
+        
+    self.uiRowSavedNoEdit = function(row) {
+        var skey = row.skey;
+        
+        // If a new row has been saved and we don't 
+        // have it, create it now
+        if($(this).find('.tbody #row_'+skey).length==0) {
+            var newRow = new jsHtml('div');
+            newRow.hp.id = 'row_'+skey;
+            newRow.hp.style = 'display: none;';
+            var numbers = [ 'int', 'numb', 'money' ];
+            for (var idx in this.zColsInfo) {
+                var colInfo = this.zColsInfo[idx];
+                if(colInfo.column_id == '') continue;
+                
+                var innerDiv = newRow.h('div');
+                innerDiv.hp.style= "width: "+colInfo.width+"px;";
+                innerDiv.hp.gColumn = idx;
+                if(numbers.indexOf(colInfo.type_id)>=0) {
+                    innerDiv.hp.style+="text-align: right";
+                }
+                innerDiv.innerHtml = row[colInfo.column_id];
+            }
+            $(this).find('.tbody').prepend(newRow.bufferedRender());
+            this.initRow(skey);
+            $(this).find("#row_"+skey).fadeIn();
+        }
+        else {
+            for(var idx in this.zColsInfo) {
+                var col = this.zColsInfo[idx].column_id;
+                if(col!='') {
+                    var str="#row_"+skey+" div[gColumn="+idx+"]";
+                    $(this).find(str).html(row[col]);
+                }
+            }
+        }
+    }
+    
+    self.initRow = function(skey) {
+        // PHP-JAVASCRIPT DUPLICATION ALERT!
+        // This code also exists in androLib.php
+        // addRow method of the tabDiv class
+        var table = this.zTable;
+        $(this).find('#row_'+skey)
+            .mouseover(
+                function() { 
+                    $(this).siblings('.hilight').removeClass('hilight');
+                    $(this).addClass('hilight') 
+                }
+            )
+            .click(
+                function() {
+                    x6events.fireEvent(
+                        'reqEditRow_'+table,skey
+                    );
+                }
+            );
+        
     }
                 
     /*
@@ -1831,7 +1753,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
                 }
             );
             u.bb.vgfSet('skey_'+this.zTable,-1);
-            this.buttonsOff();
+            x6events.fireEvent('buttonsOff_'+this.zTable);
         }
         //console.log("uiDelRow finished");
         //console.groupEnd();
@@ -1844,13 +1766,13 @@ x6plugins.x6tabDiv = function(self,id,table) {
     if(uiEditRow=='inline' || uiNewRow=='inline') {
         x6events.subscribeToEvent('uiShowErrors_'+table,id);
         self['receiveEvent_uiShowErrors_'+table] = function(errors) {
-            console.group("tabDiv uiShowErrors");
-            console.log(errors);
+            //console.group("tabDiv uiShowErrors");
+            //console.log(errors);
             for(var idx in errors) {
-                console.log(errors[idx]);
+                //console.log(errors[idx]);
                 var aError = errors[idx].split(':');
                 var column = aError[0];
-                console.log("Setting zError for column ",column);
+                //console.log("Setting zError for column ",column);
                 $(this).find(":input[xColumnId="+column+"]").each(
                     function() {
                         this.zError = 1;
@@ -1858,32 +1780,11 @@ x6plugins.x6tabDiv = function(self,id,table) {
                     }
                 );
             }
-            console.log("tabDiv uiShowErrors finished");
-            console.groupEnd();
+            //console.log("tabDiv uiShowErrors finished");
+            //console.groupEnd();
             return true;
         }
     }
-    
-    
-    /*
-    *   The three action buttons [SAVE] [ABANDON] and 
-    *   [REMOVE] only make sense when there is a row
-    *   being edited.  Various modes where a row is being
-    *   edited must call "buttonsOn", and the others
-    *   must call "buttonsOff"
-    *
-    */
-    self.buttonsOn = function() {
-        x6events.fireEvent('enable_save');
-        x6events.fireEvent('enable_abandon');
-        x6events.fireEvent('enable_remove');
-    }
-    self.buttonsOff = function(remove) {
-        x6events.fireEvent('disable_save');
-        x6events.fireEvent('disable_abandon');
-        x6events.fireEvent('disable_remove');
-    }
-    
     
     /*
     *    Keyboard handling.  At very
@@ -1927,9 +1828,9 @@ x6plugins.x6tabDiv = function(self,id,table) {
     }
     x6events.subscribeToEvent('key_Enter',id);
     self.receiveEvent_key_Enter = function(e) {
-        console.group("tabDiv key_Enter - clicking hilighted rows");
+        //console.group("tabDiv key_Enter - clicking hilighted rows");
         $(this).find('.tbody div.hilight').click();
-        console.groupEnd();
+        //console.groupEnd();
     }
     
     /*
