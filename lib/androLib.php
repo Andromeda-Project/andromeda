@@ -1442,15 +1442,15 @@ class androHtml {
             $a->hp['style']    = 'float: left';
             $bb->buttons['new'] = $a;
         }
-        if(in_array('duplicate',$abuts)) {
-            $a=$bb->h('a-void','Duplicate');
-            $a->addClass('button');
-            $a->hp['x6table']  = $table_id;
-            $a->hp['x6plugIn'] = 'buttonDuplicate';
-            $a->hp['style']    = 'float: left';
-            $bb->buttons['duplicate'] = $a;
-            #jqDocReady("x6events.fireEvent('disable_duplicate')");
-        }
+        #if(in_array('duplicate',$abuts)) {
+        #    $a=$bb->h('a-void','Duplicate');
+        #    $a->addClass('button');
+        #    $a->hp['x6table']  = $table_id;
+        #    $a->hp['x6plugIn'] = 'buttonDuplicate';
+        #    $a->hp['style']    = 'float: left';
+        #    $bb->buttons['duplicate'] = $a;
+        #    #jqDocReady("x6events.fireEvent('disable_duplicate')");
+        #}
         if(in_array('save',$abuts)) {
             $a=$bb->h('a-void','Save');
             $a->addClass('button');
@@ -1648,6 +1648,31 @@ class androHtml {
         return $tbody;
     }
 
+    /****m* androHtml/addInput
+    *
+    * NAME
+    *    addInput
+    *
+    * FUNCTION
+    *	The PHP method androHtml::addInput adds an HTML input as
+    *   a child of the current node.  
+    *
+    * INPUTS
+    *   array - dictionary info on the field, e.g. $dd['flat']['price']
+    *
+    * RETURNS
+    *   node - a reference to the input.
+    *
+    * SEE ALSO
+    *   androHtmlTable
+    *  
+    ******/
+    function &addInput($colinfo) {
+        $input =  input($colinfo);
+        $this->addChild($input);
+        return $input;
+    }
+    
     /****m* androHtml/addTable
     *
     * NAME
@@ -1706,7 +1731,7 @@ class androHtml {
     /****m* androHtml/addTabs
     *
     * NAME
-    *    addTabs
+    *   addTabs
     *
     * FUNCTION
     *	The PHP method androHtml::addTabs adds an instance of
@@ -1996,10 +2021,10 @@ class androHtml {
     }
 }
 
-/****c* HTML-Generation/androHtmlTabBar
+/****c* HTML-Generation/androHtmlTabs
 *
 * NAME
-*    androHtmlTabBar
+*    androHtmlTabs
 *
 * FUNCTION
 *   The class androHtmlTabBar is used to create on-screen Tab Bars
@@ -2137,16 +2162,17 @@ class androHTMLTabs extends androHTML {
     ******/
     function &addTab($caption) {
         # Make an index, and add it in.
-        $index = count($this->tabs)+1;
+        $index = $this->hp['id'].'-'.(count($this->tabs)+1);
         
         # First easy thing is to do the li entry
-        $inner = "<a href='#fragment-$index'><span>$caption</span></a></li>";
+        $inner = "<a href='#$index'><span>$caption</span></a></li>";
         $this->ul->h('li',$inner);
         
         # Next really easy thing to do is make a div, give it
         # the id, and return it
         $div = $this->h('div');
-        $div->hp['id'] = "fragment-$index";
+        $this->tabs[] = $div;
+        $div->hp['id'] = "$index";
         return $div;
     }
 }
@@ -2429,8 +2455,13 @@ class androHTMLTabDiv extends androHTML {
         return $width;
     }
     
-    function addRow($id) {
-        $this->lastRow = $this->dbody->h('div');
+    function addRow($id,$thead=false) {
+        if(!$thead) {
+            $this->lastRow = $this->dbody->h('div');
+        }
+        else {
+            $this->lastRow = $this->dhead->h('div');
+        }
         $this->rows[] = $this->lastRow;
         $this->lastRow->hp['id'] = 'row_'.$id;
         $this->lastCell = 0;
@@ -2440,10 +2471,13 @@ class androHTMLTabDiv extends androHTML {
         # constructor of the tabDiv object.
         $table_id = $this->hp['x6table'];
         if($this->hp['xGridHilight'] == 'Y') {        
-            $this->lastRow->hp['onmouseover']="$(this).addClass('hilight')";
-            $this->lastRow->hp['onmouseout'] ="$(this).removeClass('hilight')";
-            $this->lastRow->hp['onclick']    
-                ="x6events.fireEvent('reqEditRow_$table_id',$id);";
+            $this->lastRow->hp['onmouseover']=
+                "$(this).siblings('.hilight').removeClass('hilight');
+                 $(this).addClass('hilight')";
+            if(!$thead) {
+                $this->lastRow->hp['onclick']    
+                    ="x6events.fireEvent('reqEditRow_$table_id',$id);";
+            }
         }
         
         return $this->lastRow;
@@ -2477,7 +2511,47 @@ class androHTMLTabDiv extends androHTML {
         # up the cell counter
         $this->lastCell++;
         
-    }    
+    }   
+    
+    function addData($rows) {
+        foreach($rows as $row) {
+            $this->addRow();
+            foreach($this->columns as $colinfo) {
+                if($colinfo['column_id']=='') continue;
+                
+                $column_id = trim($colinfo['column_id']);
+                if(isset($row[$column_id])) {
+                    $this->addCell($row[$column_id]);
+                }
+            }
+        }
+    }
+    
+    function addLookupInputs() {
+        $fakeCI = array('colprec'=>'10');
+        
+        $table_id = $this->hp['x6table'];
+        $this->addRow('lookup',true);
+        foreach($this->columns as $colinfo) {
+            # Skip the column that is for the scrollbar
+            $column = trim($colinfo['column_id']);
+            if($column=='') continue;
+            
+            $inpid = 'search_'.$table_id.'_'.$column;
+            
+            $inp= input($colinfo);
+            $inp->hp['maxlength'] = 500;
+            $inp->hp['id'] = $inpid;
+            $inp->hp['autocomplete'] = 'off';
+            $inp->hp['xValue']='';
+            $inp->hp['xColumnId'] = $column;
+            $inp->hp['onkeyup'] = "u.byId('".$this->hp['id']."').fetch()";
+            #$inp->ap['xParentId'] = $t->hp['id'];
+            #$inp->ap['xNoEnter'] = 'Y';
+            $this->addCell($inp);
+        }
+        
+    }
 }
 
 /**
@@ -2742,9 +2816,40 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
     $input->ap['xColprec'] = $colprec;
     $input->ap['xColscale'] = $colscale;
 
-    # Optional properties
+    # KFD 11/1/08.  Grab an input mask if it has been
+    #               provided.  Otherwise make one up for
+    #               numerics, dates, etc.
     if(a($colinfo,'inputmask','')<>'') {
         $input->ap['xInputMask'] = $colinfo['inputmask'];
+    }
+    else {
+        switch($colinfo['type_id']) {
+        case 'numb':
+            if($colinfo['colscale']==0) {
+                $inputMask = str_repeat('9',$colinfo['colprec']);
+            }
+            else {
+                $left = $colinfo['colprec'] - $colinfo['colscale'] - 1;
+                $inputMask 
+                    =str_repeat('9',$left)
+                    .'.'.str_repeat('9',$colinfo['colscale']); 
+            }
+            break;
+        case 'money':
+            $inputMask = '9,999,999.99';
+            break;
+        case 'int':
+            $inputMask = '999,999,999';
+            break;
+        case 'date':
+            $inputMask = '99/99/9999';
+            break;
+        default:
+            $inputMask = '';
+        }
+        if($inputMask!='') {
+            $input->hp['xInputMask'] = $inputMask;
+        }
     }
 
     # If the tabloop object has been passed in, add this
@@ -14577,25 +14682,24 @@ function jqPlugin( $file, $comments='') {
 * @deprecated
 */
 function jsInclude( $file, $comments='',$immediate=false ) {
-    # KFD 7/28/08, immediate does not mean put it out now,
-    #              but uncoditionally output it as a
-    #              separate file during jsOutput.
-    /*
-    if($immediate) {
-        ?>
-        <script type="text/javascript"
-                 src="<?=$insert.$file?>" >
-        <?=$comments?>
-        </script>
-        <?php
+    # KFD 11/1/08.  Yet another mod to the meaning of immediate.
+    #       It now means to slip it in as the first.  If you use
+    #       this for more than one file you must do them in
+    #       *reverse* order because the 2nd will go in ahead
+    #       of the first and so forth.
+    $ajs = vgfGet('jsIncludes',array());
+    $newEntry =array(
+        'file'=>$file
+        ,'comments'=>$comments
+        ,'immediate'=>$immediate
+    ); 
+    if($immediate=='Y') {
+        array_unshift($ajs,$newEntry);
     }
     else {
-    */
-        $ajs = vgfGet('jsIncludes',array());
-        $ajs[]=array('file'=>$file,'comments'=>$comments
-            ,'immediate'=>$immediate);
-        vgfSet('jsIncludes',$ajs);
-    #}
+        $ajs[]=$newEntry;
+    }
+    vgfSet('jsIncludes',$ajs);
 }
 /**
 * @deprecated
