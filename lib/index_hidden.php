@@ -412,6 +412,11 @@ if(function_exists('app_x6profiles')) {
 if(isset($GLOBALS['AG']['x6profiles'][$x6cand])) {
     $x6profile = $GLOBALS['AG']['x6profiles'][$x6cand];
 }
+#else {
+#    if(configGet('flag_x6','N')=='Y' && $x6cand!='menu') {
+#        $x6profile = 'conventional';
+#    }
+#}
 
 # the action is always taken directly from request variables,
 # 
@@ -580,6 +585,7 @@ function index_hidden_x6Dispatch(
             # initialize the objects so downstrem code can make
             # them visible.
             jsInclude('clib/x6.js');
+            #jsInclude('clib/jquery.maskedinput-1.1.4.js');
             jqDocReady('x6.init()');
         }
     }
