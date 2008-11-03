@@ -2515,7 +2515,7 @@ class androHTMLTabDiv extends androHTML {
     
     function addData($rows) {
         foreach($rows as $row) {
-            $this->addRow();
+            $this->addRow($row['skey']);
             foreach($this->columns as $colinfo) {
                 if($colinfo['column_id']=='') continue;
                 
