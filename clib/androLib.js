@@ -1516,6 +1516,9 @@ var u = {
         */
         vgfSet: function(varName,value) {
             this.fwvars[varName] = value;
+            //if(typeof(console)!='undefined') {
+            //    console.log("vgfSet",varName,value);
+            //}
         },
         /******/
         
@@ -1537,7 +1540,11 @@ var u = {
         * SOURCE
         */
         vgfGet: function(varName,defValue) {
-            return u.p(this.fwvars,varName,defValue);
+            var retval = u.p(this.fwvars,varName,defValue);
+            //if(typeof(console)!='undefined') {
+            //    console.log("vgfGet",varName,retval,defValue);
+            //}
+            return retval;
         },
         /******/
 
@@ -3067,7 +3074,13 @@ window.a = window.ua = window.$a = {
             if(obj==null) {
                 obj = $a.byId('x4Top');
             }
-            $(obj).find(':input').each( function() {
+            if(typeof(obj)=='string') {
+                var jqObjects = $(obj);
+            }
+            else {
+                var jqObjects = $(obj).find(":input");
+            }
+            jqObjects.each( function() {
                     if(direct) 
                         var id = 'x4c_'+u.p(this,'xColumnId');
                     else
