@@ -92,7 +92,7 @@ if(configGet('deprecated','Y')=='Y') {
     $configJS = trim(configGet('js_css_debug' ,'N'));
     $configAL = trim(configGet('admin_logging','N'));
     $ROOT     = SessionGet('ROOT');
-    if ( $configJS == 'Y' || ($configAL=='Y' && $ROOT)) {
+    if ( ($configJS == 'Y' || ($configAL=='Y' && $ROOT)) && !vgfGet('x6')) {
         echo( '<br /><div class="androQueryLog">' );
         echo( '<div class="androQueryLogTitle">
             <div style="float:left;height:20px;">Query Log</div><div style="float:right;height:20px;cursor:pointer;" onclick="showHide(\'androQueryLogItems\');">Show/Hide</div></div>' );
