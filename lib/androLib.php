@@ -393,10 +393,10 @@ function gpToSession() {
 *
 ******/
 
-/****f* JSON-Returns/x4Error
+/****f* JSON-Returns/x6Error
 *
 * NAME
-*	x4Error
+*	x6Error
 *
 * FUNCTION
 *	Saves an error for later processing
@@ -406,15 +406,16 @@ function gpToSession() {
 *
 * SOURCE
 */
+function x6Error($parm1) { return x4Error($parm1); }
 function x4Error($parm1) {
     $GLOBALS['AG']['x4']['error'][] = $parm1;
 }
 /******/
 
-/*---f* JSON-Returns/x4Notice
+/*---f* JSON-Returns/x6Notice
 *
 * NAME
-*	x4Notice
+*	x6Notice
 *
 * FUNCTION
 *	Saves a notice for later processing
@@ -424,15 +425,16 @@ function x4Error($parm1) {
 *
 * SOURCE
 */
+function x6Notice($parm1) { return x4Notice($parm1); }
 function x4Notice($parm1) {
     $GLOBALS['AG']['x4']['notice'][] = $parm1;
 }
 /*---**/
 
-/*---f* JSON-Returns/x4Print_r
+/*---f* JSON-Returns/x6Print_r
 *
 * NAME
-*	x4Print_r
+*	x6Print_r
 *
 * FUNCTION
 *	The PHP function x4Print_r dumps the provided variable and saves the output as a notice
@@ -443,6 +445,7 @@ function x4Notice($parm1) {
 *
 * SOURCE
 */
+function x6Print_r($var) { x4Print_r($var); }
 function x4Print_r($var) {
     ob_start();
     print_r($var);
@@ -450,10 +453,10 @@ function x4Print_r($var) {
 }
 /*---**/
 
-/****f* JSON-Returns/x4Debug
+/****f* JSON-Returns/x6Debug
 *
 * NAME
-*	x4Debug
+*	x6Debug
 *
 * FUNCTION
 *	The PHP function x4Debug saves debug information for later processing
@@ -463,6 +466,7 @@ function x4Print_r($var) {
 *
 * SOURCE
 */
+function x6Debug($parm1) { return x4Debug($parm1); }
 function x4Debug($parm1) {
     $GLOBALS['AG']['x4']['debug'][] = $parm1;
 }
@@ -474,10 +478,10 @@ function x4DebugSQL($parm1) {
     x4Debug($parm1);
 }
 
-/****f* JSON-Returns/x4HTML
+/****f* JSON-Returns/x6HTML
 *
 * NAME
-*	x4HTML
+*	x6HTML
 *
 * FUNCTION
 *	The PHP function x4HTML is used to save the provided html for later processing.
@@ -488,6 +492,7 @@ function x4DebugSQL($parm1) {
 *
 * SOURCE
 */
+function x6HTML($parm1,$parm2) { return x4html($parm1,$parm2); }
 function x4HTML($parm1,$parm2) {
     if(!isset($GLOBALS['AG']['x4']['html'][$parm1])) {
         $GLOBALS['AG']['x4']['html'][$parm1] = '';
@@ -532,10 +537,10 @@ function x4HtmlDump($parm1) {
 *	string $parm1	script to store
 */
 
-/****f* JSON-Returns/x4Script
+/****f* JSON-Returns/x6Script
 *
 * NAME
-*	x4Script
+*	x6Script
 *
 * FUNCTION
 *	The PHP function x4Script strips the <script> and </script> tags from $parm1 and
@@ -547,6 +552,7 @@ function x4HtmlDump($parm1) {
 *
 * SOURCE
 */
+function x6script($parm1) { return x4script($parm1); }
 function x4SCRIPT($parm1) {
     $parm1 = preg_replace("/<script>/i",'',$parm1);
     $parm1 = preg_replace("/<\/script>/i",'',$parm1);
@@ -560,10 +566,10 @@ function x4SCRIPT($parm1) {
 *	mixed $data
 */
 
-/****f* JSON-Returns/x4Data
+/****f* JSON-Returns/x6Data
 *
 * NAME
-*	x4Data
+*	x6Data
 *
 * FUNCTION
 *	The PHP function x4Data JSON encodes the data to be saved as javascript for later processing.
@@ -574,6 +580,7 @@ function x4SCRIPT($parm1) {
 *
 * SOURCE
 */
+function x6Data($name,$data) { x4data($name,$data); }
 function x4Data($name,$data) {
     $script = "\n\$a.data.$name = ".json_encode_safe($data).";";
     x4Script($script);
@@ -2366,12 +2373,12 @@ class androHTMLTabDiv extends androHTML {
 
         # Permanently store the column information, 
         # and increment the running total
-        $width1 = max($dispsize,strlen($description)+4);
+        $width1 = max($dispsize,strlen(trim($description))+4);
         
         # JB: Changed intval to reclaim grid space
         #$width1 = intval(.7*$width1);
         $width1 = intval(.9*$width1);
-        $width1*= x6CssDefine('bodyfs','12px');
+        $width1*= x6CssDefine('bodyfs','12px')*.90;
         $width =  min($width1,200);
         $this->colWidths += $width;
         
@@ -2461,6 +2468,24 @@ class androHTMLTabDiv extends androHTML {
         $this->width = $width;
         return $width;
     }
+
+    function makeSortable() { 
+        $table_id = $this->hp['x6table'];
+        foreach($this->headers as $idx=>$header) {
+            $hdrhtml = $header->getHtml();
+            $a = html('a-void');
+            $a->setHtml('&uarr;&darr;');
+            $col = $this->columns[$idx]['column_id'];
+            $args="{xChGroup:'$table_id', xColumn: '$col'}";
+            $a->hp['onclick'] = "x6events.fireEvent('reqSort_$table_id',$args)";
+            $a->hp['xChGroup'] = $table_id;
+            $a->hp['xColumn']  = $col;
+            $this->headers[$idx]->setHtml(
+                $hdrhtml.'&nbsp;&nbsp;'.$a->bufferedRender()
+            );
+        }
+    }
+
     
     function addRow($id,$thead=false) {
         if(!$thead) {
