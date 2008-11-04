@@ -77,6 +77,31 @@ class androX6 {
         $row1 = aFromgp('x4inp_'.$table_id.'_');
         $row = array_merge($row0,$row1);
         if(a($row,'skey',0)==0) unset($row['skey']);
+        
+        # an skeyAfter value means we must find the queuepos
+        # column in this table, and save a value of that 
+        # column equal to +1 of the value in row skeyAfter
+        if(gp('skeyAfter',false)!==false) {
+            foreach($dd['flat'] as $colname=>$colinfo) {
+                if(strtolower($colinfo['automation_id'])=='queuepos') {
+                    $queuepos = $colname;
+                    break;
+                }
+            }
+
+            if(gp('skeyAfter')==0) {
+                $row[$queuepos] = 1;
+            }
+            else {
+                $qpvalue = SQL_OneValue($queuepos,
+                    "Select $queuepos from {$dd['viewname']}
+                    where skey = ".sqlfc(gp('skeyAfter'))
+                );
+                $qpvalue++;
+                $row[$queuepos] = $qpvalue;
+            }
+        }
+        
 
         # KFD 6/28/08, a non-empty date must be valid
         $errors = false;
@@ -463,6 +488,16 @@ class androX6 {
         # and initialized the object.
         $dd       = $this->dd;
         $table_id = $this->dd['table_id'];
+        
+        # Scan through and look for a single queuepos column,
+        # it changes things considerably
+        $queuepos = '';
+        foreach($dd['flat'] as $colname=>$colinfo) {
+            if(strtolower($colinfo['automation_id'])=='queuepos') {
+                $queuepos = $colname;
+                break;
+            }
+        }
 
         # Create the top level div
         $top=html('div');
@@ -501,10 +536,35 @@ class androX6 {
         # Now obtain the _uisearch columns and make one column each
         $uisearch = $dd['projections']['_uisearch'];
         $aColumns = explode(',',$uisearch);
+        foreach($aColumns as $idx=>$column) {
+            if($column==$queuepos) unset($aColumns[$idx]);
+        }
         foreach($aColumns as $column) {
-            $grid->addColumn($dd['flat'][$column]);
+            $desc = $dd['flat'][$column]['descshort'];
+            if($desc=='') {
+                $desc = $dd['flat'][$column]['description'];
+            }
+            $desc = str_replace(' ','&nbsp;',$desc);
+            $options=array(
+                'column_id' =>  $column
+                ,'dispsize' =>  $dd['flat'][$column]['dispsize']
+                ,'type_id'  =>  $dd['flat'][$column]['type_id']
+                ,'description'=>$desc
+                ,'sortable'   =>true
+            );
+            #$grid->addColumn($dd['flat'][$column]);
+            $grid->addColumn($options);
         }
         $gridWidth=$grid->lastColumn();
+        
+        # Make sortable
+        if($queuepos=='') {
+            $grid->makeSortable();
+        }
+        else {
+            $grid->ap['xInsertAfter'] = 'Y';
+        }
+        
         
         # Now set the left-padding to be 1/3 of remaining space
         $remain = x6cssDefine('insidewidth') - $gridWidth;
@@ -516,7 +576,8 @@ class androX6 {
         $bb->hp['style'] = "width: {$gridWidth}px";
         
         # The data...
-        $rows = SQL_AllRows("Select skey,$uisearch from $table_id");
+        if($queuepos) $ob = " order by $queuepos"; 
+        $rows = SQL_AllRows("Select skey,$uisearch from $table_id $ob");
         foreach($rows as $row) {
             $grid->addRow($row['skey']);
             foreach($aColumns as $column) {
