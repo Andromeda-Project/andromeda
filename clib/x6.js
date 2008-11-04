@@ -564,19 +564,31 @@ var x6inputs = {
         //console.log("tabindex, mode, tabgroup: ",tabIndex,mode,tabGroup);
         //console.log(input);
         
+        // Get the read-only decision
+        if(mode=='new') {
+            //console.log("hello, ro ins");
+            input.zRO = u.p(input,'xroins','N')=='Y' ? 1: 0;
+        }
+        else {
+            //console.log("hello, ro upd");
+            input.zRO = u.p(input,'xroupd','N')=='Y' ? 1: 0;
+        }
+        
         // This is standard events and attributes
         input.setAttribute('xTabGroup',tabGroup);
         input.setAttribute('tabIndex' ,tabIndex);
         input.zOriginalValue = input.value.trim();
-        $(input)
-            .keyup(function(e)   { x6inputs.keyUp(e,this)   })
-            .focus(function(e)   { x6inputs.focus(e,this)   })
-            .blur(function(e)    { x6inputs.blur(e,this)    })
-            .keydown(function(e) { x6inputs.keyDown(e,this) });
+        if(!input.zRO) {
+            $(input)
+                .keyup(function(e)   { x6inputs.keyUp(e,this)   })
+                .focus(function(e)   { x6inputs.focus(e,this)   })
+                .blur(function(e)    { x6inputs.blur(e,this)    })
+                .keydown(function(e) { x6inputs.keyDown(e,this) });
+        }
         if(mode=='new') {
             input.zNew = 1;
-            x6inputs.setClass(input);
         }
+        x6inputs.setClass(input);
         
         // KFD 11/1/08, EXPERIMENTAL use of jquery.maskedinput
         //if(u.p(input,'xinputmask','')!='') {
@@ -599,6 +611,27 @@ var x6inputs = {
         //console.group("Input keyUp");
         //console.log(e);
         //console.log(inp);
+        
+        // if a numeric, filter out disallowed values
+        type = u.p(inp,'xtypeid');
+        //console.log(typeof(inp.value));
+        switch(type) {
+        case 'int':
+            //console.log("int, allowing only digits");
+            //console.log(inp);
+            //console.log(inp.value);
+            inp.value = inp.value.replace(/[^0-9]/g,'');
+            break;
+        case 'numb':
+        case 'money':
+            //console.log("numb or money, allowing only digits and period");
+            inp.value = inp.value.replace(/[^0-9\.]/g,'');
+            break;
+        case date:
+            //console.log("date, alowing digits, / and -");
+            inp.value = inp.value.replace(/[^0-9\/\-]/g,'');
+        }
+        
         x6inputs.setClass(inp);
         //console.groupEnd("Input keyUp");
     },
@@ -737,7 +770,8 @@ var x6inputs = {
     
     jqFocusString: function() {
         return ":input:not([disabled]):first";
-    }
+    },
+
 }
 
 
@@ -1049,12 +1083,18 @@ x6plugins.tableController = function(self,id,table) {
             var retval = 'noaction';
         }
         else {
+            
             //console.log("attempting database save");
             //console.log("Sending x4v_skey ",this.zSkey);
             ua.json.init('x6page',this.zTable);
             ua.json.addParm('x6action','save');
             ua.json.addParm('x4v_skey',u.bb.vgfGet('skey_'+this.zTable));
             ua.json.inputs(jq);
+            // Look for an "skey after" to send back 
+            var skeyAfter = u.bb.vgfGet('skeyAfter_'+this.zTable,-1);
+            if(skeyAfter!=-1) {
+                ua.json.addParm('skeyAfter',skeyAfter);
+            }
             if(ua.json.execute()) {
                 var retval = 'success';
                 ua.json.process();
@@ -1072,6 +1112,7 @@ x6plugins.tableController = function(self,id,table) {
                 x6events.fireEvent('uiShowErrors_'+this.zTable,errors);
             }
         }
+        u.bb.vgfSet('lastSave_'+this.zTable,retval);
         
         // If save went ok, notify any ui elements, then 
         // fire off a cache save also if required.
@@ -1171,7 +1212,7 @@ x6plugins.tableController = function(self,id,table) {
         
         // Make the request to the server
         var args2 = { sortCol: this.zSortCol, sortAsc: this.zSortAsc };
-        x6events.fireEvent('doSort_'+this.zTable,args2);
+        x6events.fireEvent('uiSort_'+this.zTable,args2);
     }
     
 
@@ -1490,11 +1531,34 @@ x6plugins.x6tabDiv = function(self,id,table) {
                 innerDiv.innerHtml = newInput;
             }
             
+            /* 
+            *   Kind of a big deal.  If the grid has the
+            *   flag xInsertAfter set to "Y", we must slip the
+            *   new row in after the current, and trap the
+            *   skey value of the current
+            */
+            var iAfter = false;
+            if(u.p(this,'xInsertAfter','N')=='Y') {
+                if(skey>0) {
+                    iAfter = skey;
+                    u.bb.vgfSet('skeyAfter_'+this.zTable,skey);
+                }
+                else {
+                    u.bb.vgfSet('skeyAfter_'+this.zTable,0);
+                }
+            }
+            if(iAfter) {
+                $(this).find('#row_'+iAfter).after(newRow.bufferedRender());
+            }
+            else {
+                $(this).find('.tbody').prepend(newRow.bufferedRender());
+                u.bb.vgfSet('skeyAfter_'+this.zTable,-1);
+            }
+            
             /*
             *   Now do everything required to make the 
             *   row visible and editable
             */
-            $(this).find('.tbody').prepend(newRow.bufferedRender());
             tabIndex = 1000;
             $(this).find(':input').each(
                 function() { 
@@ -1566,7 +1630,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
             tabIndex = 1000;
             $(this).find('.tbody #row_'+skey+' :input').each(
                 function() {
-                    x6inputs.initInput(this,tabIndex++,'new','rowEdit'); 
+                    x6inputs.initInput(this,tabIndex++,'edit','rowEdit'); 
                 }
             );
             var string = x6inputs.jqFocusString();
@@ -1881,5 +1945,26 @@ x6plugins.x6tabDiv = function(self,id,table) {
                 //this.indexRows();
             }
         }
+    }
+    
+    /*
+    *    Accept request to sort on a column.  The grid makes
+    *    the request because the grid is going to display it,
+    *    which keeps everything in one place.
+    */    
+    x6events.subscribeToEvent('uiSort_'+table,id);
+    self['receiveEvent_uiSort_'+table] = function(args) {
+        u.bb.vgfSet('skey_'+this.zTable,-1);
+        ua.json.init('x6page',this.zTable);
+        ua.json.addParm('x6plugIn','grid');
+        ua.json.addParm('x6action','refresh');
+        ua.json.addParm('sortCol',args.sortCol);
+        ua.json.addParm('sortAsc',args.sortAsc);
+        u.dialogs.pleaseWait();
+        if(ua.json.execute(true)) {
+            var html = ua.json.jdata.html['*MAIN*'];
+            $(this).find('.tbody').replaceWith(html);
+        }
+        u.dialogs.clear();
     }
 }
