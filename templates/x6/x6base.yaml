@@ -88,7 +88,6 @@ overrides:
         border-left:      *bor3l
         border-right:     *bor3r
         background-color: *bgclight
-    
         
     # Tab div stuff
     div.thead div:
@@ -97,8 +96,9 @@ overrides:
     div.thead div div:
         float: left
         height:           *barheight
-        padding-left:     *pad0
-        padding-top:      *pad0
+    #    padding-left:     *pad0
+    #    padding-top:      *pad0
+        line-height:      22px
         border-top:       *bor2t
         border-bottom:    *bor2b
         border-left:      *bor2l
@@ -111,6 +111,6 @@ overrides:
         float:             left
         overflow:          hidden
         height:           *barheight
-        padding-left:     *pad0
-    
+    #    padding-left:     *pad0
+        line-height:       22px
 

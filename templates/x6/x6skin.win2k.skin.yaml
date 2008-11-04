@@ -152,13 +152,19 @@ defines:
     bor3b:     *bor3t
     bor3l:     *bor3t
     bor3r:     *bor3t
-    
+    bordr:     *bw0 *bs0 *bgclight    
+    bordr2:    *bw0 *bs0 *bgcdark
+
     # Tabdiv highlights and selected
     div.tbody div.selected div:
         bgc:    *selected
 
     div.tbody div.hilight div:
         bgc:    *bgcdark
+        bort:   *bordr2
+        borb:   *bordr2
+        borl:   *bordr2
+        borr:   *bordr2
 
     # Boxes and all that good stuff
 
@@ -193,28 +199,52 @@ defines:
 
     # Input highlights and selecteds w/ conditionals
 
-    tbody tr.selected:
+    tr.selected:
         bgc:    *dark
 
-    tbody input.changed,div.tbody div input.changed:
-        bgc:    *clrChanged
+    input.changed,input.changedSelected:
+         bgc:    *clrChanged
+
+    input.error:
+         bgc:    *clrError
+
+    input.changedOK,input.OK:
+         bgc:    *clrOk
+
+    input.required:
+         bgc:   *clrRequired
+    input.readOnly:
+         bgc:   *bgclight
+
+    #tbody tr.selected:
+    #    bgc:    *dark
+
+    #tbody input.changed,div.tbody div input.changed:
+    #    bgc:    *clrChanged
     
-    tbody input.changedSelected:
-        bgc:    *clrChanged
-
-    tbody input.errorSelected,div.tbody div input.errorSelected:
-        bgc:    *clrError
-
-    tbody input.changedOK,div.tbody div input.changedOK:
-        bgc:    *clrOk
+    #tbody input.changedSelected:
+    #    bgc:    *clrChanged
     
-    tbody input.required,div.tbody div input.required:
-        bgc:    *clrRequired
+    #tbody input.error,div.tbody div input.error:
+    #    bgc:    *clrError
 
-    tbody tr td input.readOnly:
-        bgc:    *bgclight
+    #tbody input.changedOK,div.tbody div input.changedOK:
+    #    bgc:    *clrOk
+    
+    #tbody input.required,div.tbody div input.required:
+    #    bgc:    *clrRequired
+
+    #tbody tr td input.readOnly:
+    #    bgc:    *bgclight
 
     # Code to realign the lists on the menu
     
     tbody:
         valign: top
+  
+    div.tbody div div:
+        bort:   *bordr 
+        borb:   *bordr 
+        borl:   *bordr 
+        borr:   *bordr 
+        padr:   4px
