@@ -12,7 +12,7 @@ class x6pluginGrid extends androHTML {
         # Create a grid. Notice that right now we are assuming
         # 400px high, which we need to do better with later.
         $grid = $area0->addTabDiv('550');
-        $grid->hp['id'] = 'grid_'.$table_id;
+        $grid->hp['id'] = 'tabDiv_'.$table_id;
         $grid->ap['x6plugIn'] = 'grid';
         $grid->hp['x6table']  = $table_id;
         
