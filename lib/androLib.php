@@ -2367,6 +2367,9 @@ class androHTMLTabDiv extends androHTML {
         # Permanently store the column information, 
         # and increment the running total
         $width1 = max($dispsize,strlen($description)+4);
+        
+        # JB: Changed intval to reclaim grid space
+        #$width1 = intval(.7*$width1);
         $width1 = intval(.9*$width1);
         $width1*= x6CssDefine('bodyfs','12px');
         $width =  min($width1,200);
@@ -2391,6 +2394,8 @@ class androHTMLTabDiv extends androHTML {
             max-width: {$width}px;
             min-width: {$width}px;
             width:     {$width}px;";
+        # JB:  Added padding here to realign the grid w/ "; moved to last line
+        #   padding-right: 4px;";
             
         # Numerics are right-justified
         if(in_array($type_id,array('int','numb','money'))) {
@@ -2448,7 +2453,9 @@ class androHTMLTabDiv extends androHTML {
         # column (the border) and two more for the table
         # border.
         $width = $this->colWidths;
-        $width+= (count($this->columns))*$extra;  // border + padding
+        # JB:  Increased width of master table by 1px so it lines up
+        #$width+= ((count($this->columns))*$extra)+1;  // border + padding
+        $width+= (count($this->columns))*$extra;
         #$width+= 39;  // fudge factor, unknown
         $this->hp['style'].="width: {$width}px";
         $this->width = $width;
