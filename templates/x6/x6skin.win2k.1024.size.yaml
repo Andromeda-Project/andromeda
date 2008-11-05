@@ -31,7 +31,8 @@ defines:
     
     # Default padding for anything that is padded
     pad0:            3px
-    
+    pad1:            6px
+
     # Some specific sizes for menu
     dropdownwidth:      200px
     dropdownshift:      -7px
@@ -40,6 +41,7 @@ defines:
     # The normal default font size
     fs0:             12px
     lh0:             18px
+    lh1:             12px
     fsh1:            18px
     lhh1:            28px
     fsh2:            16px

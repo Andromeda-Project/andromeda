@@ -39,8 +39,8 @@ defines:
         color:      *black
         ff:         *ff0
         fs:         *fs0
-        lh:         *lh0
-        mart:        1px
+        lh:         *lh1
+        mart:        0
         marb:        0
         marl:       *pad0
         marr:       *pad0
@@ -54,13 +54,13 @@ defines:
         fw:         bolder
         mart:       0
         marb:       0
-        padt:       0
-        padb:       5px
+        padt:      *pad0
+        padb:      *pad1
     h2:
         height:    *fsh2
         fw:         bolder
-        #mart:      *menupad
-        #marb:      *menupad
+        #mart:     *menupad
+        #marb:     *menupad
     h3:
         height:    *fsh3
         fw:         bolder
@@ -76,11 +76,12 @@ defines:
     # Menu definitions
     .x6menu: 
         bgc:        *bgcdark
-        height:     *barheight
-        lh:         *barlh
+    #    height:     *barheight
+    #    lh:         *barlh
+        lh:         *lh0
         width:      *outsidewidth
     .x6menu ul:
-        mart:        1px
+        mart:        0
         marb:        0
     .x6menu ul li:
         bort:       *bw0 *bs0 *bgcdark
@@ -108,12 +109,15 @@ defines:
     .x6menu ul.dropdown li:
         color:      *black
         width:      *dropdowninnerwidth
+        lh:         *barlh
+           
     .x6menu ul.dropdown li.selected:
         bgc:        *histrongbgc
         color:      *white
         
     # the x6body is the outermost "inner" element,
     # actual content goes into .x6main below
+    # JB:  Height here is necessary
     .x6body:
         bgc:        *bgclight
         bort:       *bor1t
@@ -169,11 +173,11 @@ defines:
         marl:   *pad0
         mart:   *pad0
         marb:   *pad0
-        padt: *pad0
-        padb: *pad0
-        padl: *pad0
-        padr: *pad0
-        td: blink
+        padt:   *pad0
+        padb:   *pad0
+        padl:   *pad0
+        padr:   *pad0
+        #td:     blink
 
     div.x6buttonBar a.button_disabled:
         bort:   *bor3t
@@ -184,15 +188,15 @@ defines:
         marl:   *pad0
         mart:   *pad0
         marb:   *pad0
-        padt: *pad0
-        padb: *pad0
-        padl: *pad0
-        padr: *pad0
+        padt:   *pad0
+        padb:   *pad0
+        padl:   *pad0
+        padr:   *pad0
 
     # Input highlights and selecteds w/ conditionals
 
     tr.selected:
-        bgc:    *dark
+        bgc:     *dark
 
     input.changed,input.changedSelected:
          bgc:    *clrChanged
@@ -233,25 +237,23 @@ defines:
 
     # Tabdiv highlights and selected
     div.tbody div.selected div:
-        bgc:    *selected
+        bgc:     *selected
 
     div.tbody div.hilight div:
-        bgc:    *bgcdark
-        bort:   *bordr2
-        borb:   *bordr2
-        borl:   *bordr2
-        borr:   *bordr2
+        bgc:     *bgcdark
+        bort:    *bordr2
+        borb:    *bordr2
+        borl:    *bordr2
+        borr:    *bordr2
   
     div.tbody div div:
-        bort:   *bordr 
-        borb:   *bordr 
-        borl:   *bordr 
-        borr:   *bordr 
-        padr:   *pad0
-        padl:   *pad0
+        bort:    *bordr 
+        borb:    *bordr 
+        borl:    *bordr 
+        borr:    *bordr 
+        padr:    *pad0
+        padl:    *pad0
         
     div.thead div div:
-        padr:   *pad0
-        padl:   *pad0
-        
-        
+        padr:    *pad0
+        padl:    *pad0

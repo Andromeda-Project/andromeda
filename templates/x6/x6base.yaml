@@ -77,10 +77,14 @@ overrides:
         border-right:     *bor1r
         background-color: *bgclight
     .box2:
-        border-top:       *bor2t
-        border-bottom:    *bor2b
-        border-left:      *bor2l
-        border-right:     *bor2r
+        #border-top:       *bor2t
+        #border-bottom:    *bor2b
+        #border-left:      *bor2l
+        #border-right:     *bor2r
+        border-top:       *bor1t
+        border-bottom:    *bor1t
+        border-left:      *bor1t
+        border-right:     *bor1t
         background-color: *bgcdark
     .box3: 
         border-top:       *bor3t
