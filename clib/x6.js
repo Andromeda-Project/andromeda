@@ -429,10 +429,9 @@ var x6 = {
                     if(u.p(this,'id','')=='') {
                         this.id = u.uniqueId();
                     }
-                    //s="Initializing object "+this.id+" as plugIn "+plugInId;
-                    //c*onsole.log(s);
                     this.zTable = u.p(this,'x6table');
-                    x6plugins[plugInId](this,this.id,u.p(this,'x6table'));
+                    //console.log("Initializing x6plugin  ",this);
+                    x6plugins[plugInId](this,this.id,this.zTable);
             });
         }
         
@@ -577,7 +576,10 @@ var x6inputs = {
         // This is standard events and attributes
         input.setAttribute('xTabGroup',tabGroup);
         input.setAttribute('tabIndex' ,tabIndex);
-        input.zOriginalValue = input.value.trim();
+        /* IE Madness.  If no value assigned, the property 
+           is not there, must use u.p                         */;
+        //input.zOriginalValue = input.value.trim();
+        input.zOriginalValue = u.p(input,'value','').trim();
         if(!input.zRO) {
             $(input)
                 .keyup(function(e)   { x6inputs.keyUp(e,this)   })
@@ -627,7 +629,7 @@ var x6inputs = {
             //console.log("numb or money, allowing only digits and period");
             inp.value = inp.value.replace(/[^0-9\.]/g,'');
             break;
-        case date:
+        case 'date':
             //console.log("date, alowing digits, / and -");
             inp.value = inp.value.replace(/[^0-9\/\-]/g,'');
         }
@@ -770,8 +772,7 @@ var x6inputs = {
     
     jqFocusString: function() {
         return ":input:not([disabled]):first";
-    },
-
+    }
 }
 
 
@@ -1227,7 +1228,7 @@ x6plugins.tableController = function(self,id,table) {
     *   Note: shouldn't that be cacheAddRow ?
     *   Note: and then wouldn't we want cacheDelRow?
     */
-    this.zRows = { };
+    self.zRows = { };
     x6events.subscribeToEvent('cacheRows_'+table,id);
     self['receiveEvent_cacheRows_'+table] = function(rows) {
         this.zRows = rows;
@@ -1246,6 +1247,12 @@ x6plugins.tableController = function(self,id,table) {
         
         if(typeof(this.zRows[skey])=='undefined') {
             //console.log("tableController bbRow, no row found");
+            ua.json.init('x6page',this.zTable);
+            ua.json.addParm('x6action','fetchRow');
+            ua.json.addParm('x4w_skey',skey);
+            if(ua.json.execute(true)) {
+                u.bb.vgfSet('dbRow_'+this.zTable,a.data.row);
+            }
         }
         else {
             //console.log("tableController bbRow, publishing row "+skey);
@@ -1412,6 +1419,14 @@ x6plugins.detailDisplay = function(self,id,table) {
         });
         $(this).find(':input:not(.readOnly):first').focus();
         
+        // Now that all displays are done, if we have a tab
+        // selector and index, select it
+        var tabSelector = u.p(this,'xTabSelector','');
+        if(tabSelector != '') {
+            var tabIndex = u.p(this,'xTabIndex');
+            $(tabSelector).tabs('select',tabIndex);
+        }
+        
         //console.log("detailDisplay displayRow FINISHED");
         //console.groupEnd();
         return true;
@@ -1511,6 +1526,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
             *   inputs that have been provided by the PHP code,
             *   and get them all initialized and ready to go.
             */
+            /*  Don't work in IE 
             var newRow = new jsHtml('div');
             newRow.hp.id = 'row_0';
             newRow.hp.style = 'display: none;';
@@ -1530,6 +1546,26 @@ x6plugins.x6tabDiv = function(self,id,table) {
                 //console.log("column: ",colInfo.column_id);
                 innerDiv.innerHtml = newInput;
             }
+            */
+            var newRow = "<div id='row_0' style='display:none'>";
+            var numbers = [ 'int', 'numb', 'money' ];
+            for (var idx in this.zColsInfo) {
+                var colInfo = this.zColsInfo[idx];
+                if(colInfo.column_id == '') continue;
+
+                newRow+= "<div gColumn = '"+idx+"'" 
+                    +" style='width: "+colInfo.width+"px;";
+                if(numbers.indexOf(colInfo.type_id)>=0) {
+                    newRow+="text-align: right;";
+                }
+                newRow+="'>";
+                var id = '#wrapper_'+this.zTable+'_'+colInfo.column_id;
+                var newInput = $(id).html();
+                //console.log("column: ",colInfo.column_id);
+                newRow+=newInput+"</div>";
+            }
+            newRow+="</div>";
+            
             
             /* 
             *   Kind of a big deal.  If the grid has the
@@ -1548,10 +1584,12 @@ x6plugins.x6tabDiv = function(self,id,table) {
                 }
             }
             if(iAfter) {
-                $(this).find('#row_'+iAfter).after(newRow.bufferedRender());
+                //$(this).find('#row_'+iAfter).after(newRow.bufferedRender());
+                $(this).find('#row_'+iAfter).after(newRow);                
             }
             else {
-                $(this).find('.tbody').prepend(newRow.bufferedRender());
+                //$(this).find('.tbody').prepend(newRow.bufferedRender());
+                $(this).find('.tbody').prepend(newRow);
                 u.bb.vgfSet('skeyAfter_'+this.zTable,-1);
             }
             

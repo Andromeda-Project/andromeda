@@ -73,7 +73,8 @@
 .ui-tabs-nav {
 	/*resets*/margin: 0; padding: 0; border: 0; outline: 0; line-height: 1.3; text-decoration: none; font-size: 100%; list-style: none;
 	font-family: Lucida Grande, Lucida Sans, Arial, sans-serif;
-	font-size: 1.2em;
+    /* KFD */
+	/* font-size: 1.2em; */
 	float: left;
 	position: relative;
 	z-index: 1;
@@ -116,7 +117,7 @@
 	background: #f3f3f3 url(images/f3f3f3_40x100_textures_01_flat_0.png) 0 0 repeat-x;
 	color: #362b36;
 	/* KFD padding: 1.5em 1.7em; */  padding: 5px;
-	font-size: 1.2em;
+	/* font-size: 1.2em; */
 	min-width: 0; /* => IE7 trigger hasLayout (while maintaining valid CSS) to prevent margins pushed here from preceding elements */
 }
 * html .ui-tabs-panel {
