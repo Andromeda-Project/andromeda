@@ -61,24 +61,15 @@ defines:
         fw:         bolder
         #mart:     *menupad
         #marb:     *menupad
-    h3:
-        height:    *fsh3
-        fw:         bolder
-        #mart:      *menupad
-        #marb:      *menupad
-        padb:       *menupad
-    h4:
-        height:    *fsh4
-        fw:         bolder
-        #mart:      *menupad
-        #marb:      *menupad
         
+    # ========================================================
+    #
     # Menu definitions
+    #
+    # ========================================================
     .x6menu: 
         bgc:        *bgcdark
-    #    height:     *barheight
-    #    lh:         *barlh
-        lh:         *lh0
+        lh:         *lhmbar
         width:      *outsidewidth
     .x6menu ul:
         mart:        0
@@ -90,6 +81,8 @@ defines:
         borr:       *bw0 *bs0 *bgcdark
         padl:       *menupad
         padr:       *menupad
+        mart:       *menumart
+        padb:       *menupadb
     .x6menu ul li.selected:
         bgc:        *histrongbgc
         color:      *histrongcolor
@@ -105,7 +98,7 @@ defines:
         bgc:        *white
         width:      *dropdownwidth
         marl:       *dropdownshift
-        post:       *barheight
+        post:       *menupost
     .x6menu ul.dropdown li:
         color:      *black
         width:      *dropdowninnerwidth
@@ -141,7 +134,8 @@ defines:
         padl:       *pad0
     .x6footer:
         padt:       *pad0
-        fs:          80%
+        fs:         *fsfoot
+        lh:         *lhfoot
         bgc:        *bgcdark
         width:      *outsidewidth
       
@@ -177,6 +171,7 @@ defines:
         padb:   *pad0
         padl:   *pad0
         padr:   *pad0
+        lh:     *lhbutton
         #td:     blink
 
     div.x6buttonBar a.button_disabled:
@@ -192,9 +187,17 @@ defines:
         padb:   *pad0
         padl:   *pad0
         padr:   *pad0
+        lh:     *lhbutton
 
+
+    # Base input definitions
+    select,input,textarea:
+        bort:   *bor1t
+        borb:   *bor1b
+        borl:   *bor1l
+        borr:   *bor1r
+        
     # Input highlights and selecteds w/ conditionals
-
     tr.selected:
         bgc:     *dark
 
@@ -212,28 +215,6 @@ defines:
     input.readOnly:
          bgc:   *bgclight
 
-    #tbody tr.selected:
-    #    bgc:    *dark
-
-    #tbody input.changed,div.tbody div input.changed:
-    #    bgc:    *clrChanged
-    
-    #tbody input.changedSelected:
-    #    bgc:    *clrChanged
-    
-    #tbody input.error,div.tbody div input.error:
-    #    bgc:    *clrError
-
-    #tbody input.changedOK,div.tbody div input.changedOK:
-    #    bgc:    *clrOk
-    
-    #tbody input.required,div.tbody div input.required:
-    #    bgc:    *clrRequired
-
-    #tbody tr td input.readOnly:
-    #    bgc:    *bgclight
-
-    # Code to realign the lists on the menu
 
     # Tabdiv highlights and selected
     div.tbody div.selected div:

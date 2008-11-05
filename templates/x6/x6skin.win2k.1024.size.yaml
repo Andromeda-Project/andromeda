@@ -41,12 +41,24 @@ defines:
     # The normal default font size
     fs0:             12px
     lh0:             18px
-    lh1:             12px
+    lh1:             16px
+    
+    fsfoot:          10px
+    lhfoot:          16px
+    
+    lhbutton:        12px
+
+    lhmbar:          21px
+    menumart:        -2px
+    menupadb:        2px
+    menupost:        23px
+
+    
     fsh1:            18px
     lhh1:            28px
+    
     fsh2:            16px
-    fsh3:            14px
-    fsh4:            13px
+    lhh2:            24px
 
     # Some major sizes for the general layout
     outsidewidth:    991px

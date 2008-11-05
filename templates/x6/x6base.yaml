@@ -36,7 +36,6 @@ overrides:
 
     .x6main:
         position: relative
- 
         
     .x6menu ul:
         float: left
@@ -70,6 +69,11 @@ overrides:
         text-decoration: none
         width: 100%
         
+    # ===============================================================
+    #
+    #  Template - wide definitions
+    #
+    # ===============================================================
     .box1:
         border-top:       *bor1t
         border-bottom:    *bor1b
@@ -77,10 +81,6 @@ overrides:
         border-right:     *bor1r
         background-color: *bgclight
     .box2:
-        #border-top:       *bor2t
-        #border-bottom:    *bor2b
-        #border-left:      *bor2l
-        #border-right:     *bor2r
         border-top:       *bor1t
         border-bottom:    *bor1t
         border-left:      *bor1t
@@ -93,31 +93,30 @@ overrides:
         border-right:     *bor3r
         background-color: *bgclight
         
-    # Tab div stuff
+    # ===============================================================
+    #
+    #  TAB DIV
+    #
+    # ===============================================================
     div.thead div:
-        height:           *barheight
-        background-color: *bgcdark
+        height:             *barheight
+        background-color:   *bgcdark
     div.thead div div:
         float: left
-    #    height:           *barheight
-    #    padding-left:     *pad0
-    #    padding-top:      *pad0
-        line-height:       *barheight
-        border-top:       *bor2t
-        border-bottom:    *bor2b
-        border-left:      *bor2l
-        border-right:     *bor2r
+        line-height:        *barheight
+        border-top:         *bor2t
+        border-bottom:      *bor2b
+        border-left:        *bor2l
+        border-right:       *bor2r
     div.thead div div.linput
-        border: 1px solid *bgclight
-        background-color: *bgclight
+        border: 1px solid   *bgclight
+        background-color:   *bgclight
     div.tbody:
         overflow-x: hidden
         overflow-y: scroll
         clear: both
     div.tbody div div:
-        float:             left
-        overflow:          hidden
-        height:           *barheight
-    #    padding-left:     *pad0
-        line-height:       22px
+        float:               left
+        overflow:            hidden
+        line-height:        *barheight
 
