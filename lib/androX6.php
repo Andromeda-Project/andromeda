@@ -440,11 +440,18 @@ class androX6 {
         # We are hoping to avoid that by setting properties
         # directly onto controls and plugins.
         #jqDocReady("x6dd.tables.$table_id = ".json_encode($dd));
+
+
+        # Get the standard padding, we are going to double it
+        $pad0 = x6CSSDefine('pad0');
+        $heightRemain = x6cssDefine('insideheight');
         
         # Now put in your basic title
         $div = html('div');
         $div->addClass('fadein');
         $div->h('h1','<center>'.$dd['description'].'</center>');
+        $heightRemain -= x6cssHeight('h1');
+        $heightRemain -= ($pad0*2);
         
         # Make the div into a table controller.  There always
         # has to be a table controller somewhere.
@@ -452,12 +459,6 @@ class androX6 {
         $div->ap['x6plugin'] = 'tableController';
         $div->ap['x6table']  = $table_id;
         $div->ap['xCache']   = 'Y';  // results will be cached
-
-        $boxx = $div->h('div','&nbsp;');
-        $boxx->addClass('box-spacer');
-        
-        # Get the standard padding, we are going to double it
-        $pad0 = x6CSSDefine('pad0');
         
         # Create a two-sided layout by creating two boxes
         # Left side is a grid plugin
@@ -467,23 +468,25 @@ class androX6 {
             padding-right: {$pad0}px;";
         include 'x6plugingrid.php';
         $x6grid = new x6plugInGrid;
-        $x6grid->main($area0,$dd);
+        $x6grid->main($area0,$dd,0,$heightRemain);
         
         # Calculate how much width is left
         $wInner = x6CSSDefine('insidewidth');
         $wInner-=$x6grid->width;
         $wInner-=2;  // assume a border on the grid
         $wInner-=2;  // assume a border on the right-side
-        $wInner-= x6CSSDefine('pad0')*6; // 3 times padding doubled
+        $wInner-= ($pad0*6); // 3 times padding doubled
         
         $box2  = $div->h('div');
-        $box2->hp['style'] = "float: left; width: {$wInner}px;
+        $box2->hp['style'] = "float: left; 
+            width: {$wInner}px;
+            height: {$heightRemain}px;
             padding-left: {$pad0}px;
             padding-right: {$pad0}px;";
         $box2->hp['onkeydown'] = 'x6inputs.keyDown(event,this)';
         include 'x6plugindetailDisplay.php';
         $x6detail = new x6plugindetailDisplay;
-        $x6detail->main($box2,$dd);
+        $x6detail->main($box2,$dd,$heightRemain-2);
         
         # Render it!  That's it!
         $div->render();
@@ -521,8 +524,11 @@ class androX6 {
         # clone over to the grid on demand
         $top->hiddenInputs($dd);
         
+        $hremain = x6cssDefine('insideheight');
+        
         # Get us the basic title
         $top->h('h1',$dd['description']);
+        $hremain -= x6cssHeight('h1');
         $bb = $top->addButtonBar($table_id);
         $clearboth = $top->h('div');
         $clearboth->hp['style'] = 'clear: both';
@@ -535,10 +541,7 @@ class androX6 {
         
         # Work out a height by finding out inside height
         # and subtracing line height a few times
-        $gridHeight 
-            =x6cssDefine('insideheight')
-            -(x6cssDefine('barheight') * 7);
-        $grid = $top->addTabDiv($gridHeight);
+        $grid = $top->addTabDiv($hremain - 5);
         $grid->hp['x6table']      = $table_id;
         $grid->hp['id']           = "tabDiv_$table_id";
         $grid->hp['uiNewRow' ] = 'inline'; // vs. nothing

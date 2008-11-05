@@ -330,6 +330,12 @@ menu skinJob {
     uisort: 111;
     group usermaint { permsel: Y; nomenu: N; }
 }
+menu skinShow {
+    description: Show Current Skin CSS;
+    module: system;
+    uisort: 112;
+    group usermaint { permsel: Y; nomenu: N; }
+}
 
 //  TABLE: Cross-reference users to node groups
 //

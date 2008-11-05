@@ -2329,9 +2329,12 @@ class androHTMLTabDiv extends androHTML {
         $this->htype = 'div';
         $this->addClass('tdiv box3');
         $this->hp['x6plugin'] = 'x6tabDiv';
-        $this->hp['style'] = $height."px;";
+        $this->hp['style'] = "height: {$height}px;";
         $this->height = $height;
         $this->baseRowHeight = 20;
+        
+        # Figure the tbody height
+        $tbodyh=$height-x6cssHeight('div.thead div div');
         
         # create default options
         $this->hp['xGridHilight'] = 'Y';
@@ -2346,7 +2349,7 @@ class androHTMLTabDiv extends androHTML {
         # The body is empty, we have to add row by row
         $this->dbody= $this->h('div');
         $this->dbody->addClass('tbody');
-        $this->dbody->hp['style'] = "height: {$height}px";
+        $this->dbody->hp['style'] = "height: {$tbodyh}px";
         
         # The footer is like the header, we go ahead
         # and insert the only row, assuming they will
@@ -3361,6 +3364,33 @@ function x6CSSRule($selector,$rule,$default='') {
     if(!isset($skin[$selector])) return $default;
     $retval = arr($skin[$selector],$rule,$default);
     return str_replace('px','',$retval);
+}
+
+function x6cssRuleSize($selector,$rule,$default=0) {
+    if(!x6CSS()) return $default;
+    
+    $skin = $GLOBALS['AG']['x6skin']['css'];
+    if(!isset($skin[$selector])) return $default;
+    $retval = arr($skin[$selector],$rule,$default);
+    $arv = explode(' ',$retval);
+    foreach($arv as $arv1) {
+        if(strpos($arv1,'px')!==false) {
+            return str_replace('px','',$arv1);
+        }
+    }
+    return $default;
+}
+
+function x6cssHeight($element) {
+    $defaultLH = x6cssDefine('lh0',0);
+    $height = x6CSSRuleSize($element,'line-height'   ,$defaultLH);
+    $height+= x6CSSRuleSize($element,'border-top'    ,0);
+    $height+= x6CSSRuleSize($element,'border-bottom' ,0);
+    $height+= x6CSSRuleSize($element,'padding-top'   ,0);
+    $height+= x6CSSRuleSize($element,'padding-bottom',0);
+    $height+= x6CSSRuleSize($element,'margin-top'    ,0);
+    $height+= x6CSSRuleSize($element,'margin-bottom' ,0);
+    return $height;
 }
 
 # ==============================================================
