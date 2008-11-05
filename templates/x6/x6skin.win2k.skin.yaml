@@ -39,6 +39,7 @@ defines:
         color:      *black
         ff:         *ff0
         fs:         *fs0
+        lh:         *lh0
         mart:        1px
         marb:        0
         marl:       *pad0
@@ -48,10 +49,13 @@ defines:
         
     # Title Elements
     h1:
-        height:    *fsh1
+        fs:          *fsh1
+        lh:          *lhh1
         fw:         bolder
-        #mart:      *menupad
-        #marb:      *menupad
+        mart:       0
+        marb:       0
+        padt:       0
+        padb:       5px
     h2:
         height:    *fsh2
         fw:         bolder
@@ -155,19 +159,7 @@ defines:
     bordr:     *bw0 *bs0 *bgclight    
     bordr2:    *bw0 *bs0 *bgcdark
 
-    # Tabdiv highlights and selected
-    div.tbody div.selected div:
-        bgc:    *selected
-
-    div.tbody div.hilight div:
-        bgc:    *bgcdark
-        bort:   *bordr2
-        borb:   *bordr2
-        borl:   *bordr2
-        borr:   *bordr2
-
     # Boxes and all that good stuff
-
     div.x6buttonBar a.button:
         bort:   *bor2t
         borb:   *bor2b
@@ -238,13 +230,28 @@ defines:
     #    bgc:    *bgclight
 
     # Code to realign the lists on the menu
-    
-    tbody:
-        valign: top
+
+    # Tabdiv highlights and selected
+    div.tbody div.selected div:
+        bgc:    *selected
+
+    div.tbody div.hilight div:
+        bgc:    *bgcdark
+        bort:   *bordr2
+        borb:   *bordr2
+        borl:   *bordr2
+        borr:   *bordr2
   
     div.tbody div div:
         bort:   *bordr 
         borb:   *bordr 
         borl:   *bordr 
         borr:   *bordr 
-        padr:   4px
+        padr:   *pad0
+        padl:   *pad0
+        
+    div.thead div div:
+        padr:   *pad0
+        padl:   *pad0
+        
+        

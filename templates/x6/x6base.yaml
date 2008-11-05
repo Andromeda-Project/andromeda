@@ -95,14 +95,17 @@ overrides:
         background-color: *bgcdark
     div.thead div div:
         float: left
-        height:           *barheight
+    #    height:           *barheight
     #    padding-left:     *pad0
     #    padding-top:      *pad0
-        line-height:      22px
+        line-height:       *barheight
         border-top:       *bor2t
         border-bottom:    *bor2b
         border-left:      *bor2l
         border-right:     *bor2r
+    div.thead div div.linput
+        border: 1px solid *bgclight
+        background-color: *bgclight
     div.tbody:
         overflow-x: hidden
         overflow-y: scroll

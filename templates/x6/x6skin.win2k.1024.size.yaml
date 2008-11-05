@@ -39,7 +39,9 @@ defines:
     
     # The normal default font size
     fs0:             12px
+    lh0:             18px
     fsh1:            18px
+    lhh1:            28px
     fsh2:            16px
     fsh3:            14px
     fsh4:            13px
