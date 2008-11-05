@@ -367,9 +367,14 @@ class androX6 {
         $top->hp['x6table']  = $table_id;
         $top->hp['id']       = 'tc_'.$table_id;
         
+        # Get innerheight
+        $height = x6cssDefine('insideheight') - x6cssHeight('h1');
+        # hack because we don't know height of tabs
+        $height-= (x6cssDefine('lh0')*3);
+        
         # Begin with title and tabs
         $top->h('h1',$dd['description']);
-        $tabs = $top->addTabs('tabs_'.$table_id);
+        $tabs = $top->addTabs('tabs_'.$table_id,$height);
         $lookup = $tabs->addTab('Lookup');
         $detail = $tabs->addTab('Detail',true);
 
@@ -384,15 +389,19 @@ class androX6 {
         $grid = $lookup->addTabDiv($gridHeight+50);
         $gridWidth = $this->tabDivGeneric($grid,$dd);
         $grid->addLookupInputs();
+
+        # Work out the height of the bottom bar
+        $bheight = 25+ (x6cssDefine('lh0')*2);
+        $height-= ($bheight + 60);
+
         
         # Find out how many child tables there are.  We are making
         # the assumption that there will *always* be child tables
         # because otherwise the programmer would have selected
         # a different profile.
         #
-        $height = intval($gridHeight/2);
         $divDetail = $detail->h('div');
-        $divDetail->hp['style'] = 'height: '.$height.'px; overflow: scroll';
+        $divDetail->hp['style'] = 'height: '.$height.'px; overflow-y: scroll';
         $divDetail->addClass('x6detail');
         $tabLoop = array();
         $divDetail->addButtonBar($table_id);
@@ -406,11 +415,13 @@ class androX6 {
         
         # The div kids is a tabbar of 
         $divKids = $detail->h('div');
+        $divKids->hp['style'] = "height: {$bheight}px;"; 
         $divKids->addClass('x6childtabs');
-        $tabKids = $divKids->addTabs('kids_'.$table_id);
+        $tabKids = $divKids->addTabs('kids_'.$table_id,$bheight);
+        $tab = $tabKids->addTab("Hide");
         foreach($dd['fk_children'] as $child=>$info) {
             $tab = $tabKids->addTab($info['description']);
-            $grid = $tab->addTabDiv($height);
+            $grid = $tab->addTabDiv(50);
             $grid->hp['x6table']   = $child;
             $grid->hp['id']        = 'tabDiv_'.$child;
             $grid->hp['xSortable'] = 'Y';
@@ -530,18 +541,13 @@ class androX6 {
         $top->h('h1',$dd['description']);
         $hremain -= x6cssHeight('h1');
         $bb = $top->addButtonBar($table_id);
+        $hremain -= x6cssHeight('div.x6buttonBar a.button');
         $clearboth = $top->h('div');
         $clearboth->hp['style'] = 'clear: both';
         
-        
-        # Call to subroutine that builds the grid.  This
-        # same subroutine will be called by browser-side
-        # code when things need to be refreshed.
-        $top->br();
-        
         # Work out a height by finding out inside height
         # and subtracing line height a few times
-        $grid = $top->addTabDiv($hremain - 5);
+        $grid = $top->addTabDiv($hremain - x6cssHeight('h1'));
         $grid->hp['x6table']      = $table_id;
         $grid->hp['id']           = "tabDiv_$table_id";
         $grid->hp['uiNewRow' ] = 'inline'; // vs. nothing

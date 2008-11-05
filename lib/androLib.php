@@ -1751,8 +1751,8 @@ class androHtml {
     *   androHtmlTabs
     *  
     ******/
-    function &addTabs($id) {
-        $newTabs = new androHTMLTabs($id);
+    function &addTabs($id,$height=500) {
+        $newTabs = new androHTMLTabs($id,$height);
         $this->addChild($newTabs);
         return $newTabs;
     }
@@ -2089,7 +2089,7 @@ class androHTMLTabs extends androHTML {
     ******/
     var $tabs = array();
     
-    function androHTMLTabs($id='') {
+    function androHTMLTabs($id='',$height=500) {
         # Example HTML from jquery tabs 
         /*
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
@@ -2137,6 +2137,7 @@ class androHTMLTabs extends androHTML {
         */
 
         # Build the HTML that looks like the sample above
+        $this->height=$height;
         $this->htype = 'div';
         $this->hp['id'] = $id;
         $this->ul = $this->h('ul');
@@ -2171,18 +2172,13 @@ class androHTMLTabs extends androHTML {
         # Make an index, and add it in.
         $index = $this->hp['id'].'-'.(count($this->tabs)+1);
         
+        # Make a style setting just for this element, otherwise
+        # jquery ui clobbers the height setting
+        $this->h('style',"#$index { height: {$this->height}px;}");
+        
         # First easy thing is to do the li entry
         $inner = "<a href='#$index'><span>$caption</span></a></li>";
         $this->ul->h('li',$inner);
-        
-        # If tab should be disabled at startup, send some
-        # code to that effect.  jQuery wants zero-based indexes
-        # on these commands.
-        if($disable) {
-            $id = $this->hp['id'];
-            $didx = count($this->tabs);
-            # jqDocReady(" \$('#$id > ul').tabs('disable',[$didx])");            
-        }
         
         # Next really easy thing to do is make a div, give it
         # the id, and return it
