@@ -57,10 +57,14 @@ class androX6 {
       *
       */
     function fetchRow() {
+        $table_id = gp('x6page');
+        $dd = ddTable($table_id);
+        $view = $dd['viewname'];
+
         SQL("set datestyle to US");
         SQL("set datestyle to SQL");
         $skey = SQLFN(gp('x4w_skey'));
-        $row = SQL_OneRow("SELECT * FROM ".$this->view_id." WHERE skey=$skey");
+        $row = SQL_OneRow("SELECT * FROM $view WHERE skey=$skey");
         x4Data('row',$row);
     }
 
@@ -361,17 +365,18 @@ class androX6 {
         $top->addClass('fadein');
         $top->hp['x6plugin'] = 'tableController';
         $top->hp['x6table']  = $table_id;
-
+        $top->hp['id']       = 'tc_'.$table_id;
+        
         # Begin with title and tabs
         $top->h('h1',$dd['description']);
         $tabs = $top->addTabs('tabs_'.$table_id);
         $lookup = $tabs->addTab('Lookup');
-        $detail = $tabs->addTab('Detail');
+        $detail = $tabs->addTab('Detail',true);
 
         # We use gridHeight as the general height of the content area
         $gridHeight 
             =x6cssDefine('insideheight')
-            -(x6cssDefine('barheight') * 11);
+            -(x6cssDefine('barheight') *8);
 
         # Put a grid into the lookup area, load it up with
         # the uisearch columns, and tell it to load up a
@@ -390,7 +395,14 @@ class androX6 {
         $divDetail->hp['style'] = 'height: '.$height.'px; overflow: scroll';
         $divDetail->addClass('x6detail');
         $tabLoop = array();
+        $divDetail->addButtonBar($table_id);
         $divDetail->addChild( projection($this->dd,'',$tabLoop) );
+        $divDetail->ap['x6plugin'] = 'detailDisplay';
+        $divDetail->hp['id']       = 'detail_'.$table_id;
+        $divDetail->hp['x6table']  = $table_id;
+        $divDetail->ap['xTabSelector'] = $tabs->ts;
+        $divDetail->ap['xTabIndex']    = 2;
+        $detail->br();
         
         # The div kids is a tabbar of 
         $divKids = $detail->h('div');
@@ -498,7 +510,7 @@ class androX6 {
                 break;
             }
         }
-
+        
         # Create the top level div
         $top=html('div');
         $top->addClass('fadein');
@@ -510,7 +522,6 @@ class androX6 {
         $top->hiddenInputs($dd);
         
         # Get us the basic title
-        $top->br();  // do this for extra spacing
         $top->h('h1',$dd['description']);
         $bb = $top->addButtonBar($table_id);
         $clearboth = $top->h('div');
@@ -576,6 +587,7 @@ class androX6 {
         $bb->hp['style'] = "width: {$gridWidth}px";
         
         # The data...
+        $ob='';
         if($queuepos) $ob = " order by $queuepos"; 
         $rows = SQL_AllRows("Select skey,$uisearch from $table_id $ob");
         foreach($rows as $row) {

@@ -1401,10 +1401,10 @@ class androHtml {
         return $div;        
     }
     
-    /****m* androHtml/addButtonBarStandard
+    /****m* androHtml/addButtonBar
     *
     * NAME
-    *    androHtml.addButtonBarStandard
+    *    androHtml.addButtonBar
     *
     * FUNCTION
     *    The PHP method addButtonBarStandard adds a div to the
@@ -2140,12 +2140,12 @@ class androHTMLTabs extends androHTML {
         $this->htype = 'div';
         $this->hp['id'] = $id;
         $this->ul = $this->h('ul');
+        $this->ul->hp['id'] = $id."_tabs";
+        $ts = $this->ts = "#$id > ul";
         $this->tabs = array();
         
         # Register the script to turn on the tabs
-        jqDocReady(" \$('#$id > ul').tabs() ");
-        
-        
+        jqDocReady(" \$('$ts').tabs() ");
     }
     
     /****m* androHtml/addTab
@@ -2167,13 +2167,22 @@ class androHTMLTabs extends androHTML {
     *   for the new tab.
     *
     ******/
-    function &addTab($caption) {
+    function &addTab($caption,$disable=false) {
         # Make an index, and add it in.
         $index = $this->hp['id'].'-'.(count($this->tabs)+1);
         
         # First easy thing is to do the li entry
         $inner = "<a href='#$index'><span>$caption</span></a></li>";
         $this->ul->h('li',$inner);
+        
+        # If tab should be disabled at startup, send some
+        # code to that effect.  jQuery wants zero-based indexes
+        # on these commands.
+        if($disable) {
+            $id = $this->hp['id'];
+            $didx = count($this->tabs);
+            # jqDocReady(" \$('#$id > ul').tabs('disable',[$didx])");            
+        }
         
         # Next really easy thing to do is make a div, give it
         # the id, and return it
@@ -2379,8 +2388,10 @@ class androHTMLTabDiv extends androHTML {
         #$width1 = intval(.7*$width1);
         $width1 = intval(.9*$width1);
         $width1*= x6CssDefine('bodyfs','12px')*.90;
-        $width =  min($width1,200);
-        $this->colWidths += $width;
+        $width  = min($width1,200);
+        $pad0   = x6CSSDefine('pad0');
+        $bord   = 1;   // HARDCODE!
+        $this->colWidths += $width + ($pad0*2) + ($bord*2);
         
         # Save the information about the column permanently,
         # we will need all of this when adding cells.
@@ -2401,8 +2412,6 @@ class androHTMLTabDiv extends androHTML {
             max-width: {$width}px;
             min-width: {$width}px;
             width:     {$width}px;";
-        # JB:  Added padding here to realign the grid w/ "; moved to last line
-        #   padding-right: 4px;";
             
         # Numerics are right-justified
         if(in_array($type_id,array('int','numb','money'))) {
@@ -2436,7 +2445,9 @@ class androHTMLTabDiv extends androHTML {
                 ,'column_id'  =>''
                 ,'width'      =>15
             );
-            $this->colWidths+=15;
+            $pad0   = x6CSSDefine('pad0');
+            $bord   = 1;   // HARDCODE!
+            $this->colWidths+=15 + ($pad0*2) + ($bord*2);
             $div = $this->dhead->h('div','');
             $div->hp['style'] ="
                 max-width: 15px;
@@ -2453,7 +2464,7 @@ class androHTMLTabDiv extends androHTML {
         
         # Get the standard padding, we hardcoded
         # assuming 2 for border, 3 for padding left
-        $extra = 5;
+        #--$extra = 5;
         
         # now work out the final width of the table by 
         # adding up the columns, adding one for each
@@ -2462,7 +2473,7 @@ class androHTMLTabDiv extends androHTML {
         $width = $this->colWidths;
         # JB:  Increased width of master table by 1px so it lines up
         #$width+= ((count($this->columns))*$extra)+1;  // border + padding
-        $width+= (count($this->columns))*$extra;
+        #--$width+= (count($this->columns))*$extra;
         #$width+= 39;  // fudge factor, unknown
         $this->hp['style'].="width: {$width}px";
         $this->width = $width;
@@ -2514,7 +2525,7 @@ class androHTMLTabDiv extends androHTML {
         
         return $this->lastRow;
     }
-    function addCell($child='') {
+    function addCell($child='',$class='') {
         if(is_object($child)) {
             $child=$child->bufferedRender();
         }
@@ -2529,6 +2540,7 @@ class androHTMLTabDiv extends androHTML {
         $info = $this->columns[$this->lastCell];
         $width= $info['width'];
         $div = $this->lastRow->h('div',$child);
+        if($class!='') $div->addClass($class);
         $div->hp['gColumn'] = $this->lastCell;
         $div->hp['style'] ="
             max-width: {$width}px;
@@ -2580,7 +2592,7 @@ class androHTMLTabDiv extends androHTML {
             $inp->hp['onkeyup'] = "u.byId('".$this->hp['id']."').fetch()";
             #$inp->ap['xParentId'] = $t->hp['id'];
             #$inp->ap['xNoEnter'] = 'Y';
-            $this->addCell($inp);
+            $this->addCell($inp,'linput');
         }
         
     }
