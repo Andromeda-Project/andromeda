@@ -16151,4 +16151,23 @@ function RowsForSelect($table_id,$firstletters='',$matches=array(),$distinct='',
    return $rows;
 }
 
+/**
+name:cssExclude
+parm:string file
+
+Removes an included css file from the css array.
+This will not work if debugging is enabled or immedate was set.
+*/
+
+function cssExclude( $file ) {
+    $css = vgfGet( 'cssIncludes' );
+    $newcss = array();
+    foreach( $css as $cssfile ) {
+        if ( $cssfile != $file ) {
+            $newcss[] = $cssfile;
+        }
+    }
+    vgfSet('cssIncludes',$css);
+}
+
 ?>
