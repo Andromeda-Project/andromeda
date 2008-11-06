@@ -14697,15 +14697,18 @@ function characterData($parser, $data) {
 function cssInclude($file,$force_immediate=false) {
     // This program echos out immediately if not in debug
     // mode, otherwise they all get output as one
-    if(configGet('js_css_debug','Y')=='Y' || $force_immediate) {
-        ?>
-        <link rel='stylesheet' href='<?=tmpPathInsert().$file?>' />
-        <?php
-    }
-    else {
-        $css = vgfGet('cssIncludes',array());
-        $css[]=$file;
-        vgfSet('cssIncludes',$css);
+    $cssExcludes = vgfGet('cssExcludes',array());
+    if ( !in_array( $file, $cssExcludes ) ) {
+        if(configGet('js_css_debug','Y')=='Y' || $force_immediate) {
+            ?>
+            <link rel='stylesheet' href='<?=tmpPathInsert().$file?>' />
+            <?php
+        }
+        else {
+            $css = vgfGet('cssIncludes',array());
+            $css[]=$file;
+            vgfSet('cssIncludes',$css);
+        }
     }
 }
 /**
@@ -16160,14 +16163,21 @@ This will not work if debugging is enabled or immedate was set.
 */
 
 function cssExclude( $file ) {
-    $css = vgfGet( 'cssIncludes' );
-    $newcss = array();
-    foreach( $css as $cssfile ) {
-        if ( $cssfile != $file ) {
-            $newcss[] = $cssfile;
+    if ( !empty( $file ) ) {
+        $css = vgfGet( 'cssIncludes', array() );
+        $cssExcludes = vgfGet( 'cssExcludes',array() );
+        $newcss = array();
+        foreach( $css as $cssfile ) {
+            if ( $cssfile != $file ) {
+                $newcss[] = $cssfile;
+            }
         }
+        if ( !in_array( $file, $cssExcludes ) ) {
+            $cssExcludes[] = $file;
+        }
+        vgfSet('cssExcludes', $cssExcludes );
+        vgfSet('cssIncludes',$css);
     }
-    vgfSet('cssIncludes',$css);
 }
 
 ?>
