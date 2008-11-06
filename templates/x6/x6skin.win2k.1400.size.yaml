@@ -19,7 +19,7 @@
 #   Boston, MA  02110-1301  USA
 #   or visit http://www.gnu.org/licenses/gpl.html
 # ==================================================================
-name: 1024x768
+name: 1400x1050
 
 defines:
     # Specific padding on either side of entries in menu bar
@@ -64,4 +64,8 @@ defines:
     outsidewidth:    991px
     insidewidth:     990px   # for .x6main specifically
     insideheight:    670px
+    
+    # Special sizes for inputs inside of a tabdiv
+    tinppadt:        *pad0
+    tinpheight:      20px        
         

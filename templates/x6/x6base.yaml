@@ -3,18 +3,18 @@
 #
 #   This file is part of Andromeda.
 #
-#   Andromeda is free software; you can redistribute it and/or modify
+#   Andromeda is free software you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation; either version 2 of the License, or
+#   the Free Software Foundation either version 2 of the License, or
 #   (at your option) any later version.
 #
 #   Andromeda is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   but WITHOUT ANY WARRANTY without even the implied warranty of
 #   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #   GNU General Public License for more details.
 #
 #   You should have received a copy of the GNU General Public License
-#   along with Andromeda; if not, write to the Free Software
+#   along with Andromeda if not, write to the Free Software
 #   Foundation, Inc., 51 Franklin St, Fifth Floor,
 #   Boston, MA  02110-1301  USA
 #   or visit http://www.gnu.org/licenses/gpl.html
@@ -81,10 +81,10 @@ overrides:
         border-right:     *bor1r
         background-color: *bgclight
     .box2:
-        border-top:       *bor1t
-        border-bottom:    *bor1t
-        border-left:      *bor1t
-        border-right:     *bor1t
+        border-top:       *bor2t
+        border-bottom:    *bor2t
+        border-left:      *bor2t
+        border-right:     *bor2t
         background-color: *bgcdark
     .box3: 
         border-top:       *bor3t
@@ -92,6 +92,58 @@ overrides:
         border-left:      *bor3l
         border-right:     *bor3r
         background-color: *bgclight
+       
+    # ===============================================================
+    #
+    #  DETAIL PANES
+    #
+    # ===============================================================
+    # tables that contain detail elements
+    table.x4Detail:
+        border-spacing: 0
+        border-collapse: collapse
+    td.x4Caption:
+        text-align: right
+        padl:       *pad0
+        
+    # ===============================================================
+    #
+    #  JQuery UI - Tabs
+    #
+    # ===============================================================
+    .ui-tabs-nav:
+        list-style: none
+        float: left
+        position: relative
+        bottom: -1px
+        z-index: 1
+
+    .ui-tabs-nav li:
+        text-decoration: none 
+        list-style: none
+        float: left
+
+    .ui-tabs-nav li a:
+        list-style:      none
+        float:           left
+        text-decoration: none 
+        outline:         none
+
+    .ui-tabs-panel:
+        text-decoration: none
+        list-style: none
+        clear:left
+        outline: 0 
+
+    # IE6 trigger hasLayout (while maintaining valid CSS) 
+    # in IE6 to prevent margins pushed here from preceding elements 
+    #* html .ui-tabs-panel:
+    #    display: inline-block 
+
+    .ui-tabs-hide:
+        # for accessible hiding: position: absolute left: -99999999px
+        display: none  
+
         
     # ===============================================================
     #
@@ -108,9 +160,6 @@ overrides:
         border-bottom:      *bor2b
         border-left:        *bor2l
         border-right:       *bor2r
-    div.thead div div.linput
-        border: 1px solid   *bgclight
-        background-color:   *bgclight
     div.tbody:
         overflow-x: hidden
         overflow-y: scroll
@@ -118,5 +167,4 @@ overrides:
     div.tbody div div:
         float:               left
         overflow:            hidden
-        line-height:        *barheight
 

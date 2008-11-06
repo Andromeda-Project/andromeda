@@ -28,7 +28,7 @@ jsInclude('clib/jquery-1.2.6.pack.js','JQuery is distributed under the GPL
 #   and have it available for experiments
 jsInclude('clib/jquery-ui-1.5.2.js');
 if(vgfGet('x6')) {
-    cssInclude('clib/jquery-ui-themeroller.css');
+    #cssInclude('clib/jquery-ui-themeroller.css');
 }
 
 # 1.6b messes up drag-n-drop 

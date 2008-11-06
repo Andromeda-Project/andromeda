@@ -200,6 +200,7 @@ defines:
     # Input highlights and selecteds w/ conditionals
     tr.selected:
         bgc:     *dark
+        color:   *white
 
     input.changed,input.changedSelected:
          bgc:    *clrChanged
@@ -214,26 +215,101 @@ defines:
          bgc:   *clrRequired
     input.readOnly:
          bgc:   *bgclight
+         bort:  *bw0 *bs0 *bgclight
+         borb:  *bw0 *bs0 *bgclight
+         borl:  *bw0 *bs0 *bgclight
+         borr:  *bw0 *bs0 *bgclight
+         color: *black
 
+    # ===============================================================
+    #
+    #  JQuery UI - Tabs
+    #
+    # ===============================================================
+    # This is the bar itself.  Border-right allows us to have
+    # no right-border for the items, avoiding border doubling
+    .ui-tabs-nav:
+        mart:    0
+        marb:    0
+        marl:    0
+        marr:    0
+        padt:    0
+        padb:    0
+        padl:    0
+        padr:    0
+        borr:    *bw0 *bs0 *shadowdark
+   
+    .ui-tabs-nav li:
+        lh:      *lhtab
+        mart:    0
+        marb:    0
+        marl:    0
+        marr:    0
+        padt:   *menupad
+        padb:   *menupad
+        padl:   *tabpad
+        padr:   *tabpad
+        bort:   *bor3t 
+        borb:   *bor3t 
+        borl:   *bor3t 
+        borr:    0 
+        
+    .ui-tabs-nav li a:
+        color: *black
+        mart:    0
+        marb:    0
+        marl:    0
+        marr:    0
+        bort:    0 
+        borb:    0 
+        borl:    0 
+        borr:    0 
+        
+    .ui-tabs-nav li.ui-tabs-selected a:
+        color: *white
 
+    .ui-tabs-nav li.ui-tabs-selected:
+        bgc:   *dark
+     
+    .ui-tabs-panel:
+        mart:    0
+        marb:    0
+        marl:    0
+        marr:    0
+        padt:    0
+        padb:    0
+        padl:    0
+        padr:    0
+        bort:   *bw0 *bs0 *shadowdark
+        borb:   *bw0 *bs0 *shadowdark
+        borl:   *bw0 *bs0 *shadowdark
+        borr:   *bw0 *bs0 *shadowdark
+        
+        
+    # ===============================================================
+    #
+    #  Andromeda TabDiv
+    #
+    # ===============================================================
     # Tabdiv highlights and selected
     div.tbody div.selected div:
         bgc:     *selected
 
-    div.tbody div.hilight div:
-        bgc:     *bgcdark
-        bort:    *bordr2
-        borb:    *bordr2
-        borl:    *bordr2
-        borr:    *bordr2
-  
     div.tbody div div:
-        bort:    *bordr 
-        borb:    *bordr 
-        borl:    *bordr 
-        borr:    *bordr 
+        bort:   0
+        borb:   0
+        borl:   0
+        borr:   0
         padr:    *pad0
         padl:    *pad0
+        lh:      *barheight
+        
+    div.tbody input:
+        padt:    *tinppadt
+        height:  *tinpheight
+
+    div.tbody div.hilight div:
+        bgc:     *bgcdark
         
     div.thead div div:
         padr:    *pad0

@@ -1726,11 +1726,11 @@ class androHtml {
     *   androHtmlTable
     *  
     ******/
-    function &addTabDiv($height) {
-        $newTable = new androHTMLTabDiv($height);
+    function &addTabDiv($height,$lookups=false) {
+        $newTable = new androHTMLTabDiv($height,$lookups);
         $this->addChild($newTable);
         
-        $this->h('style','.ui-tabs-hide { display: none; }');
+        #$this->h('style','.ui-tabs-hide { display: none; }');
         return $newTable;
     }
     
@@ -2137,8 +2137,8 @@ class androHTMLTabs extends androHTML {
         */
 
         # Build the HTML that looks like the sample above
-        $this->height=$height;
-        $this->htype = 'div';
+        $this->height =$height;
+        $this->htype  = 'div';
         $this->hp['id'] = $id;
         $this->ul = $this->h('ul');
         $this->ul->hp['id'] = $id."_tabs";
@@ -2321,7 +2321,8 @@ class androHTMLTabDiv extends androHTML {
     var $colWidths  = 0;
     var $rows       = array();
     
-    function androHTMLTabDiv($height=300) {
+    function androHTMLTabDiv($height=300,$lookups=false) {
+        $this->lookups = $lookups;
         $this->htype = 'div';
         $this->addClass('tdiv box3');
         $this->hp['x6plugin'] = 'x6tabDiv';
@@ -2329,8 +2330,12 @@ class androHTMLTabDiv extends androHTML {
         $this->height = $height;
         $this->baseRowHeight = 20;
         
-        # Figure the tbody height
-        $tbodyh=$height-x6cssHeight('div.thead div div');
+        # Figure the tbody height.  If lookups has
+        # been set, double the amount we subtract
+        $height-=x6cssHeight('div.thead div div');
+        if($lookups) {
+            $height-=x6cssHeight('div.thead div div');
+        }
         
         # create default options
         $this->hp['xGridHilight'] = 'Y';
@@ -2340,12 +2345,13 @@ class androHTMLTabDiv extends androHTML {
         #         only one row, the column headers
         $x = $this->h('div');
         $x->addClass('thead');
+        $this->dhead0= $x;
         $this->dhead = $x->h('div');
         
         # The body is empty, we have to add row by row
         $this->dbody= $this->h('div');
         $this->dbody->addClass('tbody');
-        $this->dbody->hp['style'] = "height: {$tbodyh}px";
+        $this->dbody->hp['style'] = "height: {$height}px;";
         
         # The footer is like the header, we go ahead
         # and insert the only row, assuming they will
@@ -2460,6 +2466,11 @@ class androHTMLTabDiv extends androHTML {
             .json_encode($this->columns)
         );
         
+        # If the lookups flag is set, add that now
+        if($this->lookups) {
+            $this->addLookupInputs();
+        }
+        
         
         # Get the standard padding, we hardcoded
         # assuming 2 for border, 3 for padding left
@@ -2502,7 +2513,7 @@ class androHTMLTabDiv extends androHTML {
             $this->lastRow = $this->dbody->h('div');
         }
         else {
-            $this->lastRow = $this->dhead->h('div');
+            $this->lastRow = $this->dhead0->h('div');
         }
         $this->rows[] = $this->lastRow;
         $this->lastRow->hp['id'] = 'row_'.$id;
@@ -2528,6 +2539,7 @@ class androHTMLTabDiv extends androHTML {
         if(is_object($child)) {
             $child=$child->bufferedRender();
         }
+        if(trim($child)=='') $child = '&nbsp;';
         # figure out if we need a new row
         $maxcols = count($this->columns);
         if($this->scrollable) $maxcols--;
@@ -2582,6 +2594,8 @@ class androHTMLTabDiv extends androHTML {
             
             $inpid = 'search_'.$table_id.'_'.$column;
             
+            $width = $colinfo['width'] - (2* x6cssDefine('pad0')) - 2;
+            
             $inp= input($colinfo);
             $inp->hp['maxlength'] = 500;
             $inp->hp['id'] = $inpid;
@@ -2589,9 +2603,14 @@ class androHTMLTabDiv extends androHTML {
             $inp->hp['xValue']='';
             $inp->hp['xColumnId'] = $column;
             $inp->hp['onkeyup'] = "u.byId('".$this->hp['id']."').fetch()";
+            $inp->hp['style'  ] = "width: {$width}px";
             #$inp->ap['xParentId'] = $t->hp['id'];
             #$inp->ap['xNoEnter'] = 'Y';
             $this->addCell($inp,'linput');
+        }
+        
+        if($this->scrollable) {
+            $this->addCell('');
         }
         
     }
@@ -3386,6 +3405,16 @@ function x6cssHeight($element) {
     $height+= x6CSSRuleSize($element,'padding-bottom',0);
     $height+= x6CSSRuleSize($element,'margin-top'    ,0);
     $height+= x6CSSRuleSize($element,'margin-bottom' ,0);
+    /*
+    echo "<br/>".$element;
+    echo "<br/>".x6CSSRuleSize($element,'line-height'   ,$defaultLH);
+    echo "<br/>".x6CSSRuleSize($element,'border-top'    ,0);
+    echo "<br/>".x6CSSRuleSize($element,'border-bottom' ,0);
+    echo "<br/>".x6CSSRuleSize($element,'padding-top'   ,0);
+    echo "<br/>".x6CSSRuleSize($element,'padding-bottom',0);
+    echo "<br/>".x6CSSRuleSize($element,'margin-top'    ,0);
+    echo "<br/>".x6CSSRuleSize($element,'margin-bottom' ,0);
+    */
     return $height;
 }
 

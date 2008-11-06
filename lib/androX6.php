@@ -367,10 +367,11 @@ class androX6 {
         $top->hp['x6table']  = $table_id;
         $top->hp['id']       = 'tc_'.$table_id;
         
-        # Get innerheight
+        # Get innerheight working value as base less h1
         $height = x6cssDefine('insideheight') - x6cssHeight('h1');
-        # hack because we don't know height of tabs
-        $height-= (x6cssDefine('lh0')*3);
+        # Remove the height of a row of tabs
+        $height-= x6cssHeight('.ui-tabs-nav li');
+        $height-= (x6cssDefine('pad0')*2);
         
         # Begin with title and tabs
         $top->h('h1',$dd['description']);
@@ -378,17 +379,22 @@ class androX6 {
         $lookup = $tabs->addTab('Lookup');
         $detail = $tabs->addTab('Detail',true);
 
-        # We use gridHeight as the general height of the content area
-        $gridHeight 
-            =x6cssDefine('insideheight')
-            -(x6cssDefine('barheight') *8);
-
-        # Put a grid into the lookup area, load it up with
-        # the uisearch columns, and tell it to load up a
-        # row of search inputs
-        $grid = $lookup->addTabDiv($gridHeight+50);
+        # Make a generic tabDiv, which will show all uisearch 
+        # columns, and add a row of lookup inputs to it.  
+        # Enclose it in a div that gives some padding on top
+        # and bottom.  Divide up the left-right free space to
+        # put 1/3 on the left and the remaining on the right.
+        $divgrid = $lookup->h('div');
+        $grid = $divgrid->addTabDiv($height - (x6CssDefine('lh0')*2),true);
         $gridWidth = $this->tabDivGeneric($grid,$dd);
-        $grid->addLookupInputs();
+        # Work out the available free width after making the grid
+        $wAvail = x6cssDefine('insidewidth')
+            - 2 // hardcoded assumption of border of tab container
+            - (x6cssDefine('pad0')*2)  // padding outside of tab container
+            - $gridWidth;
+        $divgrid->hp['style']=
+            "padding-left: ".intval($wAvail/3)."px;
+            padding-top: ".x6CSSDefine('lh0')."px;";
 
         # Work out the height of the bottom bar
         $bheight = 25+ (x6cssDefine('lh0')*2);
@@ -405,7 +411,23 @@ class androX6 {
         $divDetail->addClass('x6detail');
         $tabLoop = array();
         $divDetail->addButtonBar($table_id);
-        $divDetail->addChild( projection($this->dd,'',$tabLoop) );
+        $div = $divDetail->h('div');
+        $div->hp['style'] = 'clear:both';
+        
+        $options = array(
+            'onkeyup'=>'x6inputs.keyUp(event,this)'
+            ,'onkeydown'=>'x6inputs.keyDown(event,this)'
+            ,'onfocus'=>'x6inputs.focus(this)'
+            ,'onblur'=>'x6inputs.blur(this)'
+            ,'attributes'=>array(
+                'xClassRow'=>1
+                ,'disabled'=>true
+            )
+            ,'classes'=>array('readOnly')
+            ,'tabIndex'=>true
+            
+        );
+        $divDetail->addChild( projection($this->dd,'',$tabLoop,$options) );
         $divDetail->ap['x6plugin'] = 'detailDisplay';
         $divDetail->hp['id']       = 'detail_'.$table_id;
         $divDetail->hp['x6table']  = $table_id;

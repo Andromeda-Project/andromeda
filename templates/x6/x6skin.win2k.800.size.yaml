@@ -64,4 +64,7 @@ defines:
     outsidewidth:    780px
     insidewidth:     779px   # for .x6main specifically
     insideheight:    550px
-        
+ 
+    # Special sizes for inputs inside of a tabdiv
+    tinppadt:        *pad0
+    tinpheight:      20px        

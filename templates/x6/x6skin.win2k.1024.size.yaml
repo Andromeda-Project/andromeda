@@ -22,8 +22,14 @@
 name: 1024x768
 
 defines:
+    # Some major sizes for the general layout
+    outsidewidth:    991px
+    insidewidth:     990px   # for .x6main specifically
+    insideheight:    670px
+
     # Specific padding on either side of entries in menu bar
     menupad: 6px
+    tabpad:  12px
 
     # height of any one-line menu bar, command bar, status bar etc.
     barheight:       24px
@@ -42,6 +48,7 @@ defines:
     fs0:             12px
     lh0:             18px
     lh1:             16px
+    lhtab:           *lh1
     
     fsfoot:          10px
     lhfoot:          16px
@@ -52,7 +59,6 @@ defines:
     menumart:        -2px
     menupadb:        2px
     menupost:        23px
-
     
     fsh1:            18px
     lhh1:            28px
@@ -60,8 +66,7 @@ defines:
     fsh2:            16px
     lhh2:            24px
 
-    # Some major sizes for the general layout
-    outsidewidth:    991px
-    insidewidth:     990px   # for .x6main specifically
-    insideheight:    670px
-        
+    # Special sizes for inputs inside of a tabdiv
+    tinppadt:        *pad0
+    tinpheight:      *lh0
+

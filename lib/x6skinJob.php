@@ -346,8 +346,15 @@ class x6skinJob extends androX6 {
         
         # The second step is to pass through the
         # overrides in baseYaml and add them into
-        # the selector rules.  
+        # the selector rules.
         foreach($baseYaml['overrides'] as $selector=>$rules) {
+            if(!is_array($rules)) {
+                echo "<br/>ERROR: $selector has bad rules:";
+                echo "<br/>This can happen if you use TAB instead of 
+                    spaces to indent.";
+                hprint_r($rules);
+                continue;
+            }
             foreach($rules as $rule=>$value) {
                 # If the override is a pointer, fetch
                 # the literal value
