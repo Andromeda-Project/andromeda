@@ -40,6 +40,20 @@ class x6plugindetailDisplay {
         );
         $projection = projection($dd,'',$tabLoop,$options);
 
+        /*
+        ?>
+        <script>
+        $("#ddisp_stores_inner").animate(
+            {height:428},200,null
+                ,function() { 
+                    $(this).css('overflow-y:scroll');
+                    $("#kids_stores-2").animate({height:261},500)
+                }
+           }
+   );
+        
+        </script>
+        */
 
         # Calculate height of inner area
         $hinner 
@@ -54,7 +68,9 @@ class x6plugindetailDisplay {
         $parea = $area1->h('div');
         $parea->addClass('box1');
         $parea->addChild($projection);
-        $parea->hp['style'] = "height: {$hinner}px; clear: both;";
+        $parea->hp['style'] = "height: {$hinner}px; clear: both; 
+        overflow-y: scroll";
+        $parea->hp['id'] = $area1->hp['id'].'_inner';
         
         $sb = $area1->h('div','status message here');
         $sb->addClass('statusBar');

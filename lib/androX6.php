@@ -367,15 +367,36 @@ class androX6 {
         $top->hp['x6table']  = $table_id;
         $top->hp['id']       = 'tc_'.$table_id;
         
-        # Get innerheight working value as base less h1
-        $height = x6cssDefine('insideheight') - x6cssHeight('h1');
-        # Remove the height of a row of tabs
-        $height-= x6cssHeight('.ui-tabs-nav li');
-        $height-= (x6cssDefine('pad0')*2);
+        # Various heights.  Assume all borders are the same and get
+        # only one.
+        $hinside = x6cssDefine('insideheight');
+        $hh1     = x6cssHeight('h1');
+        $htabs   = x6cssHeight('.ui-tabs-nav li');
+        $hborder = x6cssRuleSize('ui-tabs-panel','border-top');
+        $pad0    = x6cssDefine('pad0');
+        $hlh     = x6CssDefine('lh0');
+        
+        # $hpane1 is the outer, it is what is left after removing
+        # h1, one row of tabs, and padding at bottom.
+        $hpane1  = $hinside - $hh1 - $htabs - ($pad0 * 2);
+        
+        # $hchild is the height of the empty nested tab
+        # pane, hardcoded at pad0
+        $hempty  = $pad0;
+        
+        # $hdetail is the height of the detail pane inside of the 
+        # detail tab.  It is the $hpane1 less another tab (the 
+        # nested one), and $hempty, and a double padding
+        $hdetail = $hpane1 - $htabs - $hempty - ($pad0 * 2);
+        
+        #echo "<br/>inside height available ".x6cssDefine('insideheight');
+        #echo "<br/>Height of tabs main: $height";
+        #echo "<br/>Total height kids tabs and panes: $kidsheight";
+        #echo "<br/>Pane height kids: $kidpaneheight";
         
         # Begin with title and tabs
         $top->h('h1',$dd['description']);
-        $tabs = $top->addTabs('tabs_'.$table_id,$height);
+        $tabs = $top->addTabs('tabs_'.$table_id,$hpane1);
         $lookup = $tabs->addTab('Lookup');
         $detail = $tabs->addTab('Detail',true);
 
@@ -385,7 +406,7 @@ class androX6 {
         # and bottom.  Divide up the left-right free space to
         # put 1/3 on the left and the remaining on the right.
         $divgrid = $lookup->h('div');
-        $grid = $divgrid->addTabDiv($height - (x6CssDefine('lh0')*2),true);
+        $grid = $divgrid->addTabDiv($hpane1 - ($hlh*2),true);
         $gridWidth = $this->tabDivGeneric($grid,$dd);
         # Work out the available free width after making the grid
         $wAvail = x6cssDefine('insidewidth')
@@ -394,56 +415,31 @@ class androX6 {
             - $gridWidth;
         $divgrid->hp['style']=
             "padding-left: ".intval($wAvail/3)."px;
-            padding-top: ".x6CSSDefine('lh0')."px;";
+             padding-top: ".x6CSSDefine('lh0')."px;";
 
-        # Work out the height of the bottom bar
-        $bheight = 25+ (x6cssDefine('lh0')*2);
-        $height-= ($bheight + 60);
-
-        
         # Find out how many child tables there are.  We are making
         # the assumption that there will *always* be child tables
         # because otherwise the programmer would have selected
         # a different profile.
         #
         $divDetail = $detail->h('div');
-        $divDetail->hp['style'] = 'height: '.$height.'px; overflow-y: scroll';
-        $divDetail->addClass('x6detail');
-        $tabLoop = array();
-        $divDetail->addButtonBar($table_id);
-        $div = $divDetail->h('div');
-        $div->hp['style'] = 'clear:both';
+        include 'x6plugindetailDisplay.php';
+        $x6detail = new x6plugindetailDisplay;
+        $x6detail->main($divDetail,$dd,$hdetail);
         
-        $options = array(
-            'onkeyup'=>'x6inputs.keyUp(event,this)'
-            ,'onkeydown'=>'x6inputs.keyDown(event,this)'
-            ,'onfocus'=>'x6inputs.focus(this)'
-            ,'onblur'=>'x6inputs.blur(this)'
-            ,'attributes'=>array(
-                'xClassRow'=>1
-                ,'disabled'=>true
-            )
-            ,'classes'=>array('readOnly')
-            ,'tabIndex'=>true
-            
-        );
-        $divDetail->addChild( projection($this->dd,'',$tabLoop,$options) );
-        $divDetail->ap['x6plugin'] = 'detailDisplay';
-        $divDetail->hp['id']       = 'detail_'.$table_id;
-        $divDetail->hp['x6table']  = $table_id;
-        $divDetail->ap['xTabSelector'] = $tabs->ts;
-        $divDetail->ap['xTabIndex']    = 2;
-        $detail->br();
         
         # The div kids is a tabbar of 
-        $divKids = $detail->h('div');
-        $divKids->hp['style'] = "height: {$bheight}px;"; 
-        $divKids->addClass('x6childtabs');
-        $tabKids = $divKids->addTabs('kids_'.$table_id,$bheight);
+        #$divKids = $detail->h('div');
+        #$divKids->hp['style'] = "height: {$bheight}px;"; 
+        #$divKids->addClass('x6childtabs');
+        $tabKids = $detail->addTabs('kids_'.$table_id,$hempty);
         $tab = $tabKids->addTab("Hide");
         foreach($dd['fk_children'] as $child=>$info) {
             $tab = $tabKids->addTab($info['description']);
-            $grid = $tab->addTabDiv(50);
+            #$tab->hp['style'] 
+            #    ="height: {$kidpaneheight}px; overflow-y: scroll";
+            /*
+            $grid = $tab->addTabDiv($kidpane);
             $grid->hp['x6table']   = $child;
             $grid->hp['id']        = 'tabDiv_'.$child;
             $grid->hp['xSortable'] = 'Y';
@@ -452,6 +448,7 @@ class androX6 {
             foreach($aColumns as $column) {
                 $grid->addColumn($ddChild['flat'][$column]);
             }
+            */
         }
         
         $top->render();
@@ -513,9 +510,9 @@ class androX6 {
         $box2  = $div->h('div');
         $box2->hp['style'] = "float: left; 
             width: {$wInner}px;
-            height: {$heightRemain}px;
             padding-left: {$pad0}px;
             padding-right: {$pad0}px;";
+#            height: {$heightRemain}px;
         $box2->hp['onkeydown'] = 'x6inputs.keyDown(event,this)';
         include 'x6plugindetailDisplay.php';
         $x6detail = new x6plugindetailDisplay;

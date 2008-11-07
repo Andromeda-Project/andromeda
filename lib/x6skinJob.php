@@ -398,7 +398,7 @@ class x6skinJob extends androX6 {
             }
             echo "}\n\n";
         }
-        $filename = fsDirTop()."apppub/x6skin.$skin.$color.$size.css";
+        $filename = fsDirTop()."clib/x6skin.$skin.$color.$size.css";
         file_put_contents($filename,ob_get_clean());
         
         # Another job, write out the CSS as a serialized

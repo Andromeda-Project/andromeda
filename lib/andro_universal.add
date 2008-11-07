@@ -627,12 +627,12 @@ table configuser {
         }
     }
 }
-menu configconfirm {
-    module: system;
-    uisort: 554;
-    description: Configuration Review;
-    group $LOGIN { permsel: Y; permins: Y; nomenu: N; }
-}
+//menu configconfirm {
+//    module: system;
+//    uisort: 554;
+//    description: Configuration Review;
+//    group $LOGIN { permsel: Y; permins: Y; nomenu: N; }
+//}
 content configfw {
     columns { smtpout; js_css_debug; uisearchdash;
         x4menu; x4padmenu; sql_limit; flag_syslog
