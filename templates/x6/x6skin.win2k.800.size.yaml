@@ -24,6 +24,7 @@ name: 800x600
 defines:
     # Specific padding on either side of entries in menu bar
     menupad: 5px
+    tabpad:  10px
 
     # height of any one-line menu bar, command bar, status bar etc.
     barheight:       24px
@@ -42,9 +43,12 @@ defines:
     fs0:             10px
     lh0:             16px
     lh1:             14px
+    lhtab:          *lh1
     
     fsfoot:          9px
     lhfoot:          14px
+    
+    lhstatus:        14px
     
     lhbutton:        10px
 

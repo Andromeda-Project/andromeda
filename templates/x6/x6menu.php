@@ -42,6 +42,21 @@ foreach($menus as $menuid=>$menuinfo) {
         $li->hp['onclick'] = "window.location='$href'";
     }
 }
+if(LoggedIn()) {
+    $pad = $ulpads->h('li');
+    $pad->hp['id'] = 'x6menupad_menu';
+    $span= $pad->h('span','Menu');
+    $span->hp['onmouseover'] = "x6menumouseover('menu')";
+    $span->hp['onclick']     = "window.location='?x4Page=menu'";
+    $span->addClass('x6menuspan'); // bogus, just for tracking
+
+    $pad = $ulpads->h('li');
+    $pad->hp['id'] = 'x6menupad_logout';
+    $span= $pad->h('span','Logout');
+    $span->hp['onmouseover'] = "x6menumouseover('logout')";
+    $span->hp['onclick']     = "window.location='?st2logout=1'";
+    $span->addClass('x6menuspan'); // bogus, just for tracking
+}
 $ulpads->render();
 
 # ==================================================================
@@ -58,14 +73,16 @@ function x6menumouseover(menuid) {
     if(window.x6menu == menuid) return;
 
     // Turn off the old one
-    var pad = u.byId('x6menu_'+window.x6menu);
-    pad.style.display = 'none';
+    //var pad = u.byId('x6menu_'+window.x6menu);
+    //pad.style.display = 'none';
+    $("#x6menu_"+window.x6menu).css('display','none');
     $('#x6menupad_'+window.x6menu).removeClass('selected');
     
     // Turn on the new one
     window.x6menu = menuid;
-    var pad = u.byId('x6menu_'+menuid);
-    pad.style.display = '';
+    //var pad = u.byId('x6menu_'+menuid);
+    //pad.style.display = '';
+    $("#x6menu_"+window.x6menu).css('display','');
     $('#x6menupad_'+menuid).addClass('selected');
 }
 

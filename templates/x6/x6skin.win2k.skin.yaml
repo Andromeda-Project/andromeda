@@ -132,6 +132,10 @@ defines:
         borl:       *bor2l
         borr:       *bor2r
         padl:       *pad0
+     
+    .statusBar:
+        lh:         *lhstatus
+       
     .x6footer:
         padt:       *pad0
         fs:         *fsfoot
@@ -204,7 +208,11 @@ defines:
 
     input.changed,input.changedSelected:
          bgc:    *clrChanged
-
+    select.changed,select.changeSelected:
+         bgc:    *clrChanged
+    textarea.changed,textarea.changedSelected:
+         bgc:    *clrChanged
+    
     input.error:
          bgc:    *clrError
 
@@ -213,7 +221,7 @@ defines:
 
     input.required:
          bgc:   *clrRequired
-    input.readOnly:
+    input.readOnly,select.readOnly,textarea.readOnly:
          bgc:   *bgclight
          bort:  *bw0 *bs0 *bgclight
          borb:  *bw0 *bs0 *bgclight

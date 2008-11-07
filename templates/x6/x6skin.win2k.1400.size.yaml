@@ -24,6 +24,7 @@ name: 1400x1050
 defines:
     # Specific padding on either side of entries in menu bar
     menupad: 6px
+    tabpad:  12px
 
     # height of any one-line menu bar, command bar, status bar etc.
     barheight:       24px
@@ -42,6 +43,9 @@ defines:
     fs0:             12px
     lh0:             18px
     lh1:             16px
+    lhtab:          *lh1
+    
+    lhstatus:        22px
     
     fsfoot:          10px
     lhfoot:          16px

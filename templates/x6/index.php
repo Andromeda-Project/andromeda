@@ -8,14 +8,14 @@ $cookie = arr($_COOKIE,'x6skin','win2k.gray.1024');
 ?>
 <link    rel="stylesheet"
        x6skin="Y"
-        href="apppub/x6skin.<?=$cookie?>.css" />
+        href="clib/x6skin.<?=$cookie?>.css" />
         
 <script type="text/javascript">
 function x6ChangeSkin(select) {
     link = document.createElement('link');
     link.setAttribute('rel','stylesheet');
     link.setAttribute('type','text/css');
-    link.setAttribute('href','apppub/x6skin.'+select.value+'.css');
+    link.setAttribute('href','clib/x6skin.'+select.value+'.css');
     link.setAttribute('x6skin','Y');
     link.setAttribute('xname',select.value);
     document.getElementsByTagName("head")[0].appendChild(link);
@@ -57,6 +57,7 @@ function x6ChangeSkin(select) {
     -->
     
     <div class="x6main">
+    <?="in group root".inGroup('root')?>
     <?=mosMainBody()?>
     </div>
 </div>

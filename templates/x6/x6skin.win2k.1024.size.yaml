@@ -53,6 +53,8 @@ defines:
     fsfoot:          10px
     lhfoot:          16px
     
+    lhstatus:        20px
+    
     lhbutton:        12px
 
     lhmbar:          21px
