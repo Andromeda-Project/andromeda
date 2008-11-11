@@ -302,7 +302,12 @@ class androPage {
             else {
                 $options['inputId']='ap_'.$id;
             }
-            $options['value'] = gp('ap_'.$id);
+            
+            if ( isset( $options['value'] ) && gp('ap_'.$id) == '' ) {
+                $options['value'] = $options['value'];
+            } else {
+                $options['value'] = gp('ap_'.$id);
+            }
             $type_id = a($options,'cotype_id','vchar');
 
             $tr = html('tr',$table);
