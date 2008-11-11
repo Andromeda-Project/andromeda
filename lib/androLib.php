@@ -802,7 +802,7 @@ function html($tag,&$parent=null,$innerHTML='') {
     }
     else {
         $retval->htype='a';
-        $retval->hp['href']='javascript:void(0)';
+        $retval->hp['href']='#';
     }
 
     if($parent != null) {
