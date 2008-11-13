@@ -1,4 +1,4 @@
-\# ================================================================== 
+# ================================================================== 
 #   (C) Copyright 2008 by Secure Data Software, Inc.
 #
 #   This file is part of Andromeda.
@@ -69,29 +69,29 @@ overrides:
         text-decoration: none
         width: 100%
         
-    # ===============================================================
+    # ===================================================================
     #
     #  Template - wide definitions
-    #
-    # ===============================================================
-    .box1:
-        border-top:       *bor1t
-        border-bottom:    *bor1b
-        border-left:      *bor1l
-        border-right:     *bor1r
-        background-color: *bgclight
-    .box2:
-        border-top:       *bor2t
-        border-bottom:    *bor2t
-        border-left:      *bor2t
-        border-right:     *bor2t
-        background-color: *bgcdark
-    .box3: 
-        border-top:       *bor3t
-        border-bottom:    *bor3b
-        border-left:      *bor3l
-        border-right:     *bor3r
-        background-color: *bgclight
+    #  11/11 JB: These can/will be altered by skins - moved to .skin.yaml
+    # ===================================================================
+    #.box1:
+    #    border-top:       *bor1t
+    #    border-bottom:    *bor1b
+    #    border-left:      *bor1l
+    #    border-right:     *bor1r
+    #    background-color: *bgclight
+    #.box2:
+    #    border-top:       *bor2t
+    #    border-bottom:    *bor2t
+    #    border-left:      *bor2t
+    #    border-right:     *bor2t
+    #    background-color: *bgcdark
+    #.box3: 
+    #    border-top:       *bor3t
+    #    border-bottom:    *bor3b
+    #    border-left:      *bor3l
+    #    border-right:     *bor3r
+    #    background-color: *bgclight
        
     # ===============================================================
     #
