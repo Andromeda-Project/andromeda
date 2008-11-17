@@ -169,12 +169,12 @@ column explain { description: Explanation; type_id: text; }
 // These are useful instances of some basic types or
 // automation codes
 //
-column ts_ins   { description: Created           ; type_id: dtime ; colprec:  0; colscale: 0; automation_id: TS_INS; uiwithnext: Y; }
-column ts_upd   { description: Last Changed      ; type_id: dtime ; colprec:  0; colscale: 0; automation_id: TS_UPD; uiwithnext: Y; }
+column ts_ins   { description: Insert TS           ; type_id: dtime ; colprec:  0; colscale: 0; automation_id: TS_INS; uiwithnext: Y; }
+column ts_upd   { description: Update TS      ; type_id: dtime ; colprec:  0; colscale: 0; automation_id: TS_UPD; uiwithnext: Y; }
 column ts_upd_nopost  { description: Last Changed      ; type_id: dtime ; colprec:  0; colscale: 0; automation_id: TS_UPD_PG; uiwithnext: Y; }
-column uid_ins  { description: By                ; type_id: vchar  ; colprec: 40; colscale: 0; automation_id: UID_INS; }
-column uid_upd  { description: By                ; type_id: vchar  ; colprec: 40; colscale: 0; automation_id: UID_UPD; }
-column uid_upd_nopost  { description: By                ; type_id: vchar  ; colprec: 40; colscale: 0; automation_id: UID_UPD_PG; }
+column uid_ins  { description: Inserted By                ; type_id: vchar  ; colprec: 40; colscale: 0; automation_id: UID_INS; dispsize: 10; }
+column uid_upd  { description: Updated By                ; type_id: vchar  ; colprec: 40; colscale: 0; automation_id: UID_UPD; dispsize: 10;}
+column uid_upd_nopost  { description: By                ; type_id: vchar  ; colprec: 40; colscale: 0; automation_id: UID_UPD_PG; dispsize: 10; }
 column gender   { description: Gender            ; type_id: gender; }
 column rulecode { description: Rule Code         ; type_id: cbool;  }
 column notes    { description: Notes             ; type_id: text; }
