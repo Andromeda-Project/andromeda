@@ -1667,7 +1667,12 @@ function SpecFlatten_Runout() {
                        then c.uisearch_ignore_dash
                        else t.uisearch_ignore_dash end as uisearch_ignore_dash
                  ,tc.uisearchsort
-                 ,t.formula,t.formshort,t.dispsize
+                 ,t.formula,t.formshort
+                 ,case when COALESCE(tc.dispsize,'')<>'' 
+                       THEN tc.dispsize
+                       WHEN COALESCE(c.dispsize ,'')<>''
+                       THEN c.dispsize
+                       ELSE t.dispsize END
              FROM zdd.tabcol tc
              JOIN zdd.columns   c ON tc.column_id_src = c.column_id
              JOIN zdd.type_exps t ON c.type_id        = t.type_id
