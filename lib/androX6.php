@@ -271,8 +271,8 @@ class androX6 {
             }
         }
         
-        # <----- RETURN
-        if(count($awhere) == 0) { x4Debug("returning"); return; }
+        # <----- RETURN (MAYBE)
+        if(count($awhere) == 0 && gp('xReturnAll','N')=='N') return;
         
         # Generate the limit
         $SLimit = ' LIMIT 100';
@@ -281,15 +281,20 @@ class androX6 {
                 $SLimit = '';
             }
         }
+        if(gp('xReturnAll','N')=='Y') $SLimit = '';
         
 
         #  Build the Order by
         #        
         $ascDesc = gp('sortAD')=='ASC' ? ' ASC' : ' DESC';
         $aorder = array();
-        $searchsort = trim(a($this->dd,'uisearchsort',''));
-        if(gpExists('sortAD')) {
+        if(gpExists('sortAsc')) {
+            x6Debug(gp('sortAsc'));            
+            $ascDesc = gp('sortAsc')=='true' ? ' ASC' : ' DESC';
             $aorder[] = gp('sortCol').' '.gp('sortAD');
+        }
+        else {
+            $searchsort = trim(a($this->dd,'uisearchsort',''));
         }
         if($searchsort <> '') {
             $aocols = explode(",",$searchsort);
@@ -326,25 +331,60 @@ class androX6 {
         }
         
         // Build the where and limit
-        $SWhere = ' WHERE '.implode(' AND ',$awhere);
+        if(count($awhere)==0) 
+            $SWhere = '';
+        else 
+            $SWhere = ' WHERE '.implode(' AND ',$awhere);
 
         // Retrieve data
-        $SQL ="SELECT skey,".implode(',',$acols)
+        #$SQL ="SELECT skey,".implode(',',$acols)
+        # KFD 11/15/08.  We can actually select *, because the grid
+        #                works out what columns it needs, and we
+        #                don't want to accidentally reduce the column
+        #                list and exclude something it needs.
+        $SQL ="SELECT * "
              ."  FROM ".$this->dd['viewname']
              .$SWhere
              .$SQLOrder
              .$SLimit;
         $answer =SQL_AllRows($SQL);
         
+        # These parameters have to be sent from the back.  They
+        # figure everything out.
+        $sortable = gp('xSortable','N')=='Y';
+        $gridHeight=gp('xGridHeight',500);
+        
         # Now make up the generic div and add all of the cells
-        $grid = new androHTMLTabDiv(500);
-        $this->tabDivGeneric($grid,$this->dd);
+        $grid = new androHTMLTabDiv($gridHeight,false,$sortable);
+        $this->tabDivGeneric($grid,$this->dd,$tabPar);
         $grid->addData($answer);
+        
+        # Put some important properties on the grid!
+        $grid->ap['xGridHeight'] = $gridHeight;
+        $grid->ap['xReturnAll']  = gp('xReturnAll','N');
+        if($tabPar<>'') {
+            $grid->ap['x6tablePar']=$tabPar;
+        }
+        if(arr($this->dd,'x6childwrites','N')=='Y') {
+            $grid->editInPlace();
+        }
+        
+        # If they asked for the entire grid, send it back
+        # as *MAIN* and let the browser put it where it belongs 
+        if(gp('sendGrid',0)==1) {
+            ob_start();
+            $grid->render();
+            x6html('*MAIN*',ob_get_clean());
+        }
+        
+        # ..otherwise just send the body back
+        x6Html('browseFetchHtml',$grid->dbody->bufferedRender());
+        return;
         ob_start();
         foreach($grid->dbody->children as $child) {
             $child->render();
         }
-        x4Html('browseFetchHtml',ob_get_clean());
+        x6Html('browseFetchHtml',ob_get_clean());
         return;
     }
     
@@ -361,11 +401,8 @@ class androX6 {
         $table_id = $this->dd['table_id'];
 
         # Create the top level div as a table controller
-        $top=html('div');
+        $top= new androHTMLTableController($table_id);
         $top->addClass('fadein');
-        $top->hp['x6plugin'] = 'tableController';
-        $top->hp['x6table']  = $table_id;
-        $top->hp['id']       = 'tc_'.$table_id;
         
         # Various heights.  Assume all borders are the same and get
         # only one.
@@ -417,7 +454,7 @@ class androX6 {
             "padding-left: ".intval($wAvail/3)."px;
              padding-top: ".x6CSSDefine('lh0')."px;";
 
-        # Find out how many child tables there are.  We are making
+        # We are making
         # the assumption that there will *always* be child tables
         # because otherwise the programmer would have selected
         # a different profile.
@@ -426,29 +463,22 @@ class androX6 {
         include 'x6plugindetailDisplay.php';
         $x6detail = new x6plugindetailDisplay;
         $x6detail->main($divDetail,$dd,$hdetail);
+        $divDetail->ap['xTabSelector'] = $tabs->ts;
+        $divDetail->ap['xTabIndex']    = 1;
         
-        
-        # The div kids is a tabbar of 
-        #$divKids = $detail->h('div');
-        #$divKids->hp['style'] = "height: {$bheight}px;"; 
-        #$divKids->addClass('x6childtabs');
-        $tabKids = $detail->addTabs('kids_'.$table_id,$hempty);
+        # The div kids is a tabbar of child tables
+        $options=array('slideup'=>$divDetail->innerId
+            ,'styles'=>array('overflow'=>'hidden')
+        );
+        $tabKids = $detail->addTabs('kids_'.$table_id,$hempty,$options);
         $tab = $tabKids->addTab("Hide");
         foreach($dd['fk_children'] as $child=>$info) {
+            #$tc = new androHTMLTableController($child);
+            #$top->addChild($tc);
+            $top->addTableController($child);
             $tab = $tabKids->addTab($info['description']);
-            #$tab->hp['style'] 
-            #    ="height: {$kidpaneheight}px; overflow-y: scroll";
-            /*
-            $grid = $tab->addTabDiv($kidpane);
-            $grid->hp['x6table']   = $child;
-            $grid->hp['id']        = 'tabDiv_'.$child;
-            $grid->hp['xSortable'] = 'Y';
-            $ddChild = ddTable($child);
-            $aColumns= explode(',',$ddChild['projections']['_uisearch']);            
-            foreach($aColumns as $column) {
-                $grid->addColumn($ddChild['flat'][$column]);
-            }
-            */
+            $tab->ap['x6tablePar'] = $table_id;
+            $tab->ap['x6table'   ] = $child;
         }
         
         $top->render();
@@ -466,29 +496,18 @@ class androX6 {
         $dd       = $this->dd;
         $table_id = $this->dd['table_id'];
         
-        # Notice we are NOT sending the data dictionary up.
-        # We are hoping to avoid that by setting properties
-        # directly onto controls and plugins.
-        #jqDocReady("x6dd.tables.$table_id = ".json_encode($dd));
-
-
         # Get the standard padding, we are going to double it
         $pad0 = x6CSSDefine('pad0');
         $heightRemain = x6cssDefine('insideheight');
         
         # Now put in your basic title
-        $div = html('div');
+        $div = new androHTMLTableController($table_id);
         $div->addClass('fadein');
+        $div->ap['xCache']   = 'Y';  // results will be cached
         $div->h('h1','<center>'.$dd['description'].'</center>');
         $heightRemain -= x6cssHeight('h1');
         $heightRemain -= ($pad0*2);
         
-        # Make the div into a table controller.  There always
-        # has to be a table controller somewhere.
-        $div->hp['id'] = 'tc_'.$table_id;
-        $div->ap['x6plugin'] = 'tableController';
-        $div->ap['x6table']  = $table_id;
-        $div->ap['xCache']   = 'Y';  // results will be cached
         
         # Create a two-sided layout by creating two boxes
         # Left side is a grid plugin
@@ -512,11 +531,10 @@ class androX6 {
             width: {$wInner}px;
             padding-left: {$pad0}px;
             padding-right: {$pad0}px;";
-#            height: {$heightRemain}px;
         $box2->hp['onkeydown'] = 'x6inputs.keyDown(event,this)';
-        include 'x6plugindetailDisplay.php';
-        $x6detail = new x6plugindetailDisplay;
-        $x6detail->main($box2,$dd,$heightRemain-2);
+        #include 'x6plugindetailDisplay.php';
+        #$x6detail = new x6plugindetailDisplay;
+        #$x6detail->main($box2,$dd,$heightRemain-2);
         
         # Render it!  That's it!
         $div->render();
@@ -535,7 +553,9 @@ class androX6 {
         $table_id = $this->dd['table_id'];
         
         # Scan through and look for a single queuepos column,
-        # it changes things considerably
+        # it changes things considerably: the queuepos column
+        # is hidden and sorting is forced on that column.  It is
+        # also assigned automatically as the user creates rows.
         $queuepos = '';
         foreach($dd['flat'] as $colname=>$colinfo) {
             if(strtolower($colinfo['automation_id'])=='queuepos') {
@@ -543,16 +563,12 @@ class androX6 {
                 break;
             }
         }
+        # Make sortable or not based on queuepos
+        $sortable = $queuepos=='';
         
         # Create the top level div
-        $top=html('div');
+        $top=new androHTMLTableController($table_id);
         $top->addClass('fadein');
-        $top->hp['x6plugin'] = 'tableController';
-        $top->hp['x6table']  = $table_id;
-        
-        # Create a hidden object that contains inputs we will
-        # clone over to the grid on demand
-        $top->hiddenInputs($dd);
         
         $hremain = x6cssDefine('insideheight');
         
@@ -566,11 +582,22 @@ class androX6 {
         
         # Work out a height by finding out inside height
         # and subtracing line height a few times
-        $grid = $top->addTabDiv($hremain - x6cssHeight('h1'));
+        $gridHeight = $hremain - x6cssHeight('h1');
+        $grid       = $top->addTabDiv($gridHeight,false,$sortable);
         $grid->hp['x6table']      = $table_id;
         $grid->hp['id']           = "tabDiv_$table_id";
-        $grid->hp['uiNewRow' ] = 'inline'; // vs. nothing
-        $grid->hp['uiEditRow'] = 'inline'; // vs. nothing
+        $grid->editInPlace();
+        
+        # More features specific to this profile, these will 
+        # allow browseFetch not to have to figure this all out
+        # all over again.
+        $grid->ap['xGridHeight'] = $gridHeight;
+        $grid->ap['xSortable']   = $sortable ? "Y" : "N";
+        $grid->ap['xReturnAll']  = "Y";
+
+        # If queuepos set, set this flag        
+        if($queuepos) $grid->ap['xInsertAfter'] = 'Y';
+        
         
         # Now obtain the _uisearch columns and make one column each
         $uisearch = $dd['projections']['_uisearch'];
@@ -583,7 +610,6 @@ class androX6 {
             if($desc=='') {
                 $desc = $dd['flat'][$column]['description'];
             }
-            $desc = str_replace(' ','&nbsp;',$desc);
             $options=array(
                 'column_id' =>  $column
                 ,'dispsize' =>  $dd['flat'][$column]['dispsize']
@@ -595,15 +621,6 @@ class androX6 {
             $grid->addColumn($options);
         }
         $gridWidth=$grid->lastColumn();
-        
-        # Make sortable
-        if($queuepos=='') {
-            $grid->makeSortable();
-        }
-        else {
-            $grid->ap['xInsertAfter'] = 'Y';
-        }
-        
         
         # Now set the left-padding to be 1/3 of remaining space
         $remain = x6cssDefine('insidewidth') - $gridWidth;
@@ -628,6 +645,8 @@ class androX6 {
         # always at the end, render it
         $top->render();
     }    
+    
+    
     # ===================================================================
     # -------------------------------------------------------------------
     #
@@ -637,12 +656,23 @@ class androX6 {
     # ===================================================================
     # Makes a generic tabdiv.  First created 11/3/08 so we can add
     # cells to it for a browseFetch and then pluck out the tbody html
-    function tabDivGeneric(&$grid,$dd) {
+    function tabDivGeneric(&$grid,$dd,$tabPar='') {
         $table_id = $dd['table_id'];
         $grid->hp['x6table']      = $table_id;
         $grid->hp['id']           = "tabDiv_$table_id";
         $grid->hp['xSortable']    = 'Y';
-        $uisearch = $dd['projections']['_uisearch'];
+        
+        # KFD 11/15/08 
+        # Nifty trick to allow different columns when viewed as 
+        # child table.  If tabPar is passed in, we will pick
+        # the projection named "child_{tabPar}" if it exists.
+        # The first line will pull an empty result if this feature
+        # has not been used by the programmer, which causes a fallback
+        # to the normal uisearch approach.
+        $uisearch = arr($dd['projections'],'child_'.$tabPar,'');
+        if($uisearch=='') {
+            $uisearch = $dd['projections']['_uisearch'];
+        }
         $aColumns = explode(',',$uisearch);
         foreach($aColumns as $column) {
             $grid->addColumn($dd['flat'][$column]);
