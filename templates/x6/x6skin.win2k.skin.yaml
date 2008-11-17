@@ -329,8 +329,8 @@ defines:
     div.tbody div div:
         bort:   0
         borb:   0
-        borl:   0
-        borr:   0
+        borl:   *bw0 *bs0 *bgclight
+        borr:   *bw0 *bs0 *bgclight
         padr:    *pad0
         padl:    *pad0
         lh:      *barheight
@@ -341,6 +341,28 @@ defines:
 
     div.tbody div.hilight div:
         bgc:     *bgcdark
+        borl:   *bw0 *bs0 *bgcdark
+        borr:   *bw0 *bs0 *bgcdark
+
+    div.tbody div.hilight div input.readOnly:
+        bort:   *bw0 *bs0 *bgcdark
+        borb:   *bw0 *bs0 *bgcdark
+        borl:   *bw0 *bs0 *bgcdark
+        borr:   *bw0 *bs0 *bgcdark
+        bgc:     *bgcdark
+    div.tbody div.hilight div select.readOnly:
+        bort:   *bw0 *bs0 *bgcdark
+        borb:   *bw0 *bs0 *bgcdark
+        borl:   *bw0 *bs0 *bgcdark
+        borr:   *bw0 *bs0 *bgcdark
+        bgc:     *bgcdark
+    div.tbody div.hilight div textarea.readOnly:
+        bort:   *bw0 *bs0 *bgcdark
+        borb:   *bw0 *bs0 *bgcdark
+        borl:   *bw0 *bs0 *bgcdark
+        borr:   *bw0 *bs0 *bgcdark
+        bgc:     *bgcdark
+
         
     div.thead div div:
         padr:    *pad0

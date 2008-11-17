@@ -57,7 +57,6 @@ function x6ChangeSkin(select) {
     -->
     
     <div class="x6main">
-    <?="in group root".inGroup('root')?>
     <?=mosMainBody()?>
     </div>
 </div>
