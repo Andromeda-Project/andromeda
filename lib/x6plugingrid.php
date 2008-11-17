@@ -6,7 +6,7 @@ class x6pluginGrid extends androHTML {
     #  that goes to browser
     #
     # ================================================================
-    function &main(&$area0,$dd,$skey=0,$height) {
+    function &main(&$area0,$dd,$skey=0,$height=300) {
         $table_id = $dd['table_id'];
         
         # Create a grid.

@@ -13,6 +13,7 @@ class x6plugindetailDisplay {
         $area1->hp['x6plugin'] = 'detailDisplay';
         $area1->hp['x6table']  = $table_id;
         $area1->hp['id'] = 'ddisp_'.$table_id;
+        $area1->innerId  = "ddisp_{$table_id}_inner";
         
         # Now for the display
         # Put some buttons on users
@@ -40,21 +41,6 @@ class x6plugindetailDisplay {
         );
         $projection = projection($dd,'',$tabLoop,$options);
 
-        /*
-        ?>
-        <script>
-        $("#ddisp_stores_inner").animate(
-            {height:428},200,null
-                ,function() { 
-                    $(this).css('overflow-y:scroll');
-                    $("#kids_stores-2").animate({height:261},500)
-                }
-           }
-   );
-        
-        </script>
-        */
-
         # Calculate height of inner area
         $hinner 
             =$height
@@ -70,7 +56,7 @@ class x6plugindetailDisplay {
         $parea->addChild($projection);
         $parea->hp['style'] = "height: {$hinner}px; clear: both; 
         overflow-y: scroll";
-        $parea->hp['id'] = $area1->hp['id'].'_inner';
+        $parea->hp['id'] = $area1->innerId;
         
         $sb = $area1->h('div','status message here');
         $sb->addClass('statusBar');
