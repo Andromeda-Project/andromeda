@@ -601,7 +601,17 @@ function index_hidden_x6Dispatch(
     $obj->dd   = ddTable($x6page);
     $obj->view = arr($obj->dd,'viewname','');
     $obj->$x6method();
-    x4HTML('*MAIN*',ob_get_clean());
+    x6HTML('*MAIN*',ob_get_clean());
+    
+    # Now if they made a "main" call, see if they want us to
+    # send back some script as well
+    if($x6method=='x6main') {
+        if(method_exists($obj,'x6script')) {
+            ob_start();
+            $obj->x6script();
+            x6script(ob_get_clean());
+        }
+    }
 
     # Put errors in that were reported by database operations
     if(Errors()) {
