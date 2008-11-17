@@ -590,13 +590,14 @@ column linksearch    {  type_id:  char; colprec: 1;  description: Search Link;}
 column permcol       {  type_id:  char; colprec: 1;  description: Has Column Security; }
 column singular      {  type_id: vchar; colprec: 50; description: Singular Name; }
 column x6profile     {  type_id: vchar; colprec: 20; description: X6 Profile; }
+column x6childwrites {  type_id:  char; colprec: 1;  description: X6 Child Writes; }
 table tables {
 	module:  datadict;
 	description: Table of Tables;
 	table_seq: 900;
 	
 	column table_id      { primary_key: Y; uisearch: Y; }
-    column  { singular; returnall; x6profile }   
+    column  { singular; returnall; x6profile;x6childwrites }   
    // Removed KFD 5/24/07, not being used
 	//column column_prefix { primary_key: N; uisearch: Y; }
 	column description  { uisearch: Y; }
@@ -705,7 +706,7 @@ table tabcol {
     column { colres; }
     column { ins; uiro; uino; uicolseq; }
     column { uiwithnext; uisearch; description; }
-    column { descshort; }
+    column { descshort; dispsize}
     column { range_from; range_to; }
     column { value_min; value_max; uisearch_ignore_dash; }
     column { uirows;    uicols;    }

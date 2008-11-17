@@ -1701,6 +1701,12 @@ class androHtml {
         $this->addChild($newTable);
         return $newTable;
     }
+    
+    function &addTableController($table_id) {
+        $retval = new androHTMLTableController($table_id);
+        $this->addChild($retval);
+        return $retval;
+    }
 
     /****m* androHtml/addTabDiv
     *
@@ -1726,8 +1732,8 @@ class androHtml {
     *   androHtmlTable
     *  
     ******/
-    function &addTabDiv($height,$lookups=false) {
-        $newTable = new androHTMLTabDiv($height,$lookups);
+    function &addTabDiv($height,$lookups=false,$sortable=false) {
+        $newTable = new androHTMLTabDiv($height,$lookups,$sortable);
         $this->addChild($newTable);
         
         #$this->h('style','.ui-tabs-hide { display: none; }');
@@ -1751,8 +1757,8 @@ class androHtml {
     *   androHtmlTabs
     *  
     ******/
-    function &addTabs($id,$height=500) {
-        $newTabs = new androHTMLTabs($id,$height);
+    function &addTabs($id,$height=500,$options=array()) {
+        $newTabs = new androHTMLTabs($id,$height,$options);
         $this->addChild($newTabs);
         return $newTabs;
     }
@@ -2028,6 +2034,23 @@ class androHtml {
     }
 }
 
+
+class androHTMLTableController extends androHTML {
+    function androHTMLTableController($table_id) {
+        $this->htype = 'div';
+        $this->hp['x6plugin'] = 'tableController';
+        $this->hp['x6table']  = $table_id;
+        $this->hp['id']       = 'tc_'.$table_id;
+        
+        $this->ap['xPermIns'] = ddUserPerm($table_id,'ins');
+        $this->ap['xPermUpd'] = ddUserPerm($table_id,'upd');
+        $this->ap['xPermDel'] = ddUserPerm($table_id,'del');
+        $this->ap['xPermSel'] = ddUserPerm($table_id,'sel');
+    }
+}
+
+
+
 /****c* HTML-Generation/androHtmlTabs
 *
 * NAME
@@ -2089,7 +2112,7 @@ class androHTMLTabs extends androHTML {
     ******/
     var $tabs = array();
     
-    function androHTMLTabs($id='',$height=500) {
+    function androHTMLTabs($id='',$height=500,$options=array()) {
         # Example HTML from jquery tabs 
         /*
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
@@ -2137,6 +2160,7 @@ class androHTMLTabs extends androHTML {
         */
 
         # Build the HTML that looks like the sample above
+        $this->options=$options;
         $this->height =$height;
         $this->htype  = 'div';
         $this->hp['id'] = $id;
@@ -2146,7 +2170,20 @@ class androHTMLTabs extends androHTML {
         $this->tabs = array();
         
         # Register the script to turn on the tabs
-        jqDocReady(" \$('$ts').tabs() ");
+        jqDocReady(" \$('$ts').tabs(); ");
+        
+        # If there is a slideup option set, set the function
+        if(isset($options['slideup'])) {
+            $topPane = $options['slideup'];
+            $script="
+                $('$ts').bind('tabsselect',
+                    function(event, ui) { 
+                        return x6tabs.slideUp(event,ui,'$topPane');
+                    }
+                );
+            ";
+            jqDocReady($script);
+        }
     }
     
     /****m* androHtml/addTab
@@ -2185,6 +2222,12 @@ class androHTMLTabs extends androHTML {
         $div = $this->h('div');
         $this->tabs[] = $div;
         $div->hp['id'] = "$index";
+        if(isset($this->options['styles'])) {
+            $div->hp['style']='';
+            foreach($this->options['styles'] as $rule=>$value) {
+                $div->hp['style'].="$rule: $value";
+            }
+        }
         return $div;
     }
 }
@@ -2321,8 +2364,9 @@ class androHTMLTabDiv extends androHTML {
     var $colWidths  = 0;
     var $rows       = array();
     
-    function androHTMLTabDiv($height=300,$lookups=false) {
+    function androHTMLTabDiv($height=300,$lookups=false,$sortable=false) {
         $this->lookups = $lookups;
+        $this->sortable= $sortable;
         $this->htype = 'div';
         $this->addClass('tdiv box3');
         $this->hp['x6plugin'] = 'x6tabDiv';
@@ -2384,29 +2428,39 @@ class androHTMLTabDiv extends androHTML {
         $dispsize    = arr($options,'dispsize'   ,10);
         $description = arr($options,'description','No Desc');
         $type_id     = arr($options,'type_id'    ,'char');
+        $forcelong   = arr($options,'forcelong'  ,false);
 
         # Permanently store the column information, 
         # and increment the running total
-        $width1 = max($dispsize,strlen(trim($description))+4);
+        $width1 = max($dispsize,strlen(trim($description)));
+        if($this->sortable) $width1+=2;
+        
+        # Now that we have what we need from description,
+        # turn spaces into &nbsp;
+        $description = str_replace(' ','&nbsp;',$description);
         
         # JB: Changed intval to reclaim grid space
         #$width1 = intval(.7*$width1);
-        $width1 = intval(.9*$width1);
-        $width1*= x6CssDefine('bodyfs','12px')*.90;
-        $width  = min($width1,200);
+        #$width1 = intval(.9*$width1);
+        $width1*= x6CssDefine('bodyfs','12px')*.72;
+        $width = $forcelong ? $width1 : intval(min($width1,200)); 
         $pad0   = x6CSSDefine('pad0');
         $bord   = 1;   // HARDCODE!
         $this->colWidths += $width + ($pad0*2) + ($bord*2);
         
         # Save the information about the column permanently,
         # we will need all of this when adding cells.
-        $this->columns[] = array(
+        $colinfo = array(
             'description'=>$description
             ,'dispsize'   =>$dispsize
             ,'type_id'    =>$type_id
             ,'column_id'  =>$column_id
             ,'width'      =>$width
+            ,'colprec'    =>arr($options,'colprec' ,$dispsize)
+            ,'colscale'   =>arr($options,'colscale',$dispsize)
         );
+        $this->columns[]               = $colinfo;
+        $this->columnsById[$column_id] = $colinfo;
         
         # Finally, generate the HTML.
         $div = $this->dhead->h('div',$description);
@@ -2441,7 +2495,7 @@ class androHTMLTabDiv extends androHTML {
     function lastColumn($scrollable=true) {
         # Save the scrollable setting, and compute the final
         # width of the table
-        $this->scrollable=$scrollable;
+        #$this->scrollable=$scrollable;
         if($scrollable) {
             $this->columns[] = array(
                 'description'=>'&nbsp;'
@@ -2465,10 +2519,19 @@ class androHTMLTabDiv extends androHTML {
             "u.byId('".$this->hp['id']."').zColsInfo="
             .json_encode($this->columns)
         );
+        jqDocReady(
+            "u.byId('".$this->hp['id']."').zColsById="
+            .json_encode($this->columnsById)
+        );
         
         # If the lookups flag is set, add that now
         if($this->lookups) {
             $this->addLookupInputs();
+        }
+        
+        # If the sortable flag was set, add that now
+        if($this->sortable) {
+            $this->makeSortable();
         }
         
         
@@ -2495,18 +2558,30 @@ class androHTMLTabDiv extends androHTML {
         foreach($this->headers as $idx=>$header) {
             $hdrhtml = $header->getHtml();
             $a = html('a-void');
-            $a->setHtml('&uarr;&darr;');
+            $a->setHtml('&hArr;');
             $col = $this->columns[$idx]['column_id'];
             $args="{xChGroup:'$table_id', xColumn: '$col'}";
             $a->hp['onclick'] = "x6events.fireEvent('reqSort_$table_id',$args)";
             $a->hp['xChGroup'] = $table_id;
             $a->hp['xColumn']  = $col;
             $this->headers[$idx]->setHtml(
-                $hdrhtml.'&nbsp;&nbsp;'.$a->bufferedRender()
+                $hdrhtml.'&nbsp;'.$a->bufferedRender()
             );
         }
     }
 
+    function editInPlace() {
+        $this->hp['uiNewRow' ] = 'inline'; // vs. nothing
+        $this->hp['uiEditRow'] = 'inline'; // vs. nothing
+        
+        
+        # Create a hidden object that contains inputs we will
+        # clone over to the grid on demand
+        $dd = ddTable($this->hp['x6table']);
+        $this->hiddenInputs($dd);
+        
+        
+    }
     
     function addRow($id,$thead=false) {
         if(!$thead) {
@@ -2535,7 +2610,7 @@ class androHTMLTabDiv extends androHTML {
         
         return $this->lastRow;
     }
-    function addCell($child='',$class='') {
+    function addCell($child='',$class='',$id='') {
         if(is_object($child)) {
             $child=$child->bufferedRender();
         }
@@ -2551,9 +2626,13 @@ class androHTMLTabDiv extends androHTML {
         $info = $this->columns[$this->lastCell];
         $width= $info['width'];
         $div = $this->lastRow->h('div',$child);
+        if($id<>'') {
+            $div->hp['id'] = $id;
+        }
         if($class!='') $div->addClass($class);
         $div->hp['gColumn'] = $this->lastCell;
         $div->hp['style'] ="
+            overflow: hidden;
             max-width: {$width}px;
             min-width: {$width}px;
             width:     {$width}px;";
@@ -2569,6 +2648,7 @@ class androHTMLTabDiv extends androHTML {
     }   
     
     function addData($rows) {
+        $dd = ddTable($this->hp['x6table']);
         foreach($rows as $row) {
             $this->addRow($row['skey']);
             foreach($this->columns as $colinfo) {
@@ -2576,7 +2656,12 @@ class androHTMLTabDiv extends androHTML {
                 
                 $column_id = trim($colinfo['column_id']);
                 if(isset($row[$column_id])) {
-                    $this->addCell($row[$column_id]);
+                    $type_id=$dd['flat'][$column_id]['type_id'];
+                    $value=hFormat($type_id,$row[$column_id]);
+                    $this->addCell($value);
+                }
+                else {
+                    $this->addCell('');
                 }
             }
         }
@@ -3858,7 +3943,13 @@ function sqlFilter($colinfo,$tcv,$table = '') {
 function sqlOrderBy($vals) {
     # First see if an explicit sortAD and sortCol were passed
     if(gpExists('sortCol')) {
-        return array(gp('sortCol').' '.gp('sortAD'));
+        if(gp('sortAsc',false)) {
+            $ad = gp('sortAsc')=='true' ? ' ASC' : ' DESC';
+        }
+        else {
+            $ad = gp('sortAD');
+        }
+        return array(gp('sortCol').' '.$ad);
     }
 
     # If not, order by the columns that were passed in with values
