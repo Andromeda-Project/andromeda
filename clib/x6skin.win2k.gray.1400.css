@@ -1,7 +1,7 @@
 /* ==================================================== *\
  * Andromeda Generated CSS file                         
  * Generated: Sat, 15 Nov 2008 17:47:58 -0500
- * Skin, color, size: win2k, gray, 1024
+ * Skin, color, size: win2k, gray, 1400
 \* ==================================================== */
         
 body {
@@ -125,7 +125,7 @@ h2 {
 }
 
 .statusBar {
-    line-height:             20px;
+    line-height:             22px;
 }
 
 .x6footer {
@@ -310,7 +310,7 @@ div.tbody div div {
 
 div.tbody input {
     padding-top:             3px;
-    height:                  18px;
+    height:                  20px;
 }
 
 div.tbody div.hilight div {

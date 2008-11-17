@@ -1,7 +1,7 @@
 /* ==================================================== *\
  * Andromeda Generated CSS file                         
  * Generated: Sat, 15 Nov 2008 17:47:58 -0500
- * Skin, color, size: win2k, gray, 1024
+ * Skin, color, size: win2k, gray, 800
 \* ==================================================== */
         
 body {
@@ -12,8 +12,8 @@ body {
     font-family:             verdana, sans-serif;
     color:                   #000000;
     background-color:        #d0d0d0;
-    font-size:               12px;
-    line-height:             16px;
+    font-size:               10px;
+    line-height:             14px;
 }
 
 body a {
@@ -25,20 +25,20 @@ h1 {
     margin-bottom:           0;
     padding-top:             3px;
     padding-bottom:          6px;
-    font-size:               18px;
+    font-size:               16px;
     font-weight:             bolder;
-    line-height:             28px;
+    line-height:             26px;
 }
 
 h2 {
     font-weight:             bolder;
-    height:                  16px;
+    height:                  14px;
 }
 
 .x6menu {
     background-color:        #d0d0d0;
     line-height:             21px;
-    width:                   991px;
+    width:                   780px;
 }
 
 .x6menu ul {
@@ -58,8 +58,8 @@ h2 {
     border-right:            1px solid #d0d0d0;
     margin-top:              -2px;
     padding-bottom:          2px;
-    padding-left:            6px;
-    padding-right:           6px;
+    padding-left:            5px;
+    padding-right:           5px;
     position:                relative;
 }
 
@@ -104,8 +104,8 @@ h2 {
     border-left:             1px solid #909090;
     border-right:            1px solid #ffFFff;
     background-color:        #f0f0f0;
-    height:                  670px;
-    width:                   990px;
+    height:                  550px;
+    width:                   779px;
 }
 
 .x6main {
@@ -125,15 +125,15 @@ h2 {
 }
 
 .statusBar {
-    line-height:             20px;
+    line-height:             14px;
 }
 
 .x6footer {
     padding-top:             3px;
     background-color:        #d0d0d0;
-    font-size:               10px;
-    line-height:             16px;
-    width:                   991px;
+    font-size:               9px;
+    line-height:             14px;
+    width:                   780px;
 }
 
 div.x6buttonBar a.button {
@@ -149,7 +149,7 @@ div.x6buttonBar a.button {
     padding-left:            3px;
     padding-right:           3px;
     color:                   #000000;
-    line-height:             12px;
+    line-height:             10px;
 }
 
 div.x6buttonBar a.button_disabled {
@@ -165,7 +165,7 @@ div.x6buttonBar a.button_disabled {
     padding-left:            3px;
     padding-right:           3px;
     color:                   #909090;
-    line-height:             12px;
+    line-height:             10px;
 }
 
 select,input,textarea {
@@ -239,11 +239,11 @@ input.readOnly,select.readOnly,textarea.readOnly {
     margin-bottom:           0;
     margin-left:             0;
     margin-right:            0;
-    padding-top:             6px;
-    padding-bottom:          6px;
-    padding-left:            12px;
-    padding-right:           12px;
-    line-height:             16px;
+    padding-top:             5px;
+    padding-bottom:          5px;
+    padding-left:            10px;
+    padding-right:           10px;
+    line-height:             14px;
     text-decoration:         none;
     list-style:              none;
     float:                   left;
@@ -310,7 +310,7 @@ div.tbody div div {
 
 div.tbody input {
     padding-top:             3px;
-    height:                  18px;
+    height:                  20px;
 }
 
 div.tbody div.hilight div {
