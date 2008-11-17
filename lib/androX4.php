@@ -677,7 +677,8 @@ underlined letters that show this, so:
         if(count($awhere) == 0) { x4Debug("returning"); return; }
         
         # Generate the limit
-        $SLimit = ' LIMIT 100';
+        # KFD 11/12/08, modified to respect sql_limit, with default of 100
+        $SLimit = ' LIMIT '.configGet('sql_limit',100);
         if($tabPar <> '') {
             if(a($this->dd['fk_parents'][$tabPar],'uiallrows','N')=='Y') {
                 $SLimit = '';
