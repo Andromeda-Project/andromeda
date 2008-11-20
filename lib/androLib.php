@@ -472,6 +472,31 @@ function x4Debug($parm1) {
 }
 /******/
 
+/****f* JSON-Returns/x6DebugClean
+*
+* NAME
+*	x6DebugClean
+*
+* FUNCTION
+*	The PHP function x4DebugClean saves debug information and sends it back
+*   to the browser in a JSON call.  This routine differes from x6Debug
+*   because this method also clears out newlines and compresses whitespace.
+*
+* INPUTS
+*	string $parm1 - the debug info to save
+*
+* SOURCE
+*/
+function x6DebugClean($parm1) { return x4DebugClean($parm1); }
+function x4DebugClean($parm1) {
+    $parm1 = str_replace("\n",'' ,$parm1);
+    $parm1 = str_replace("\t",' ',$parm1);
+    $parm1 = preg_replace('/\s{2,}/',' ',$parm1);
+    $GLOBALS['AG']['x4']['debug'][] = $parm1;
+}
+/******/
+
+
 
 function x4DebugSQL($parm1) {
     $parm1 = str_replace("\n","",$parm1);
@@ -1229,6 +1254,45 @@ class androHtml {
         return $h;
     }
     /******/
+    
+    /****m* androHtml/detailRow
+    *
+    * NAME
+    *    androHtml.detailRow
+    *
+    * FUNCTION
+    *	The PHP method androHtml.detailRow adds a TR and two TD elements
+    *   to a TABLE.  The left side has class "x4Caption" and contains the
+    *   caption/label for the field.  The right side contains an input
+    *   for the field.
+    *
+    * 
+    *
+    * INPUTS
+    *   array $dd - the table's complete data dictionary
+    *   string $column - name of the database column (field)
+    *
+    *
+    * SOURCE
+    */
+    function detailRow($dd,$column,$options=array()) {
+        # something we need for b/w compatibility that is
+        # easier to declare and ignore than it is to
+        # try to get rid of. (Also, getting rid of it will
+        # break some of my older apps).
+        $tabLoop=array();
+        
+        $tr = $this->h('tr');
+        $td = $tr->h('td',$dd['flat'][$column]['description']);
+        $td->addClass('x4Caption');
+        
+        $input=input($dd['flat'][$column],$tabLoop,$options);
+        $td = $tr->h('td');
+        $td->setHtml($input->bufferedRender());
+        $td->addClass('x4Input');
+    }
+    /******/
+    
 
     /****m* androHtml/tr
     *
@@ -2936,7 +3000,8 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
         $input->hp['id'] = $options['prefix'].$table_id.'_'.$column_id;
     }
     elseif($table_id<>'') {
-        $input->hp['id'] = 'x4inp_'.$table_id.'_'.$column_id;
+        $prefix = vgfGet('x6') ? 'x6inp_' : 'x4inp_';
+        $input->hp['id'] = $prefix.$table_id.'_'.$column_id;
     }
     else {
         $inputno = vgfGet('inputNumber',0)+1;
