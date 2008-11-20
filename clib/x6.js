@@ -1611,6 +1611,33 @@ x6plugins.x6tabDiv = function(self,id,table) {
     var uiEditRow = u.p(self,'uiEditRow','');
     
     /*
+    *  A grid may be set to receive a cacheRows event.
+    *  If so, it will replace its own data with the
+    *  data that has been provided.
+    */
+    if(u.p(self,'xCacheRows','')=='Y') {
+        x6events.subscribeToEvent('cacheRows_'+table,id);
+        
+        self['receiveEvent_cacheRows_'+table] = function(rows) {
+            // Clear current data
+            $(this).find('.tbody').html();
+            // Add new data
+            for(var x in rows) {
+                this.addRow(rows[x]);
+            }
+        }
+    }
+    
+    /*
+    *   Related to the above is a simple command to add a row
+    *
+    */
+    self.addRow = function(row) {
+        
+    }
+    
+    
+    /*
     *   The grid is happy to display a new row for
     *   editing if a certain flag has been set.
     *   The event uiNewRow is unconditional, it means
