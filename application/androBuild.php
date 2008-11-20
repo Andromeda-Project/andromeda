@@ -4463,7 +4463,7 @@ function SpecDDL_Triggers_Automated_Aggregate()  {
     $sqlints
     IF --COALESCE--MATCH-- THEN
         UPDATE $table_par SET $column_par=(
-            SELECT SUM(x1.$column_chd) FROM (
+            SELECT COALESCE(SUM(x1.$column_chd),0) FROM (
                 SELECT $column_chd
                   FROM $table_chd
                  WHERE --MATCH--CHD--
