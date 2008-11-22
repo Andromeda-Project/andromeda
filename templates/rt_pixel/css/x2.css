@@ -277,33 +277,5 @@ table.adocs_table1 td.adocs_th {
     background-color: #E0E0E0;
 }
 
-div.androQueryLog {
-    border: 1px solid #CCCCCC;
-    height: auto;
-    width: 1000px;
-    margin-left:auto;
-    margin-right:auto;
-    background-color:#FFFFFF;
-}
-
-div.androQueryLogTitle {
-    color: #FFFFFF;
-    font-weight: bold;
-    background-color: #3F7CB9;
-    padding: 5px;
-    height:15px;
-}
-div.androQueryLogItems {
-    height: auto;
-    display:none;
-}
-
-div.androQueryLogItem {
-    font-size:8pt;
-    height: auto;
-    padding:5px;
-    border-bottom: 1px solid #000000;
-}
-
 
 
