@@ -115,7 +115,10 @@ if(gp('x4Page')=='' && gp('gp_page')<>'') {
 }
 // ..and this (misnamed) holds info for dynamic select
 //cssInclude('clib/raxlib.css');
-
+$configJS = trim(configGet('js_css_debug' ,'N'));
+if ( $configJS == 'Y' ) {
+    cssInclude( 'clib/debug.css' );
+}
 // DHTML Goodies calendar
 if(vgfGet('suppress_goodies_calendar')!==true) { 
     cssInclude('clib/dhtmlgoodies_calendar.css');
