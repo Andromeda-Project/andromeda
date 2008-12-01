@@ -584,6 +584,9 @@ function x4SCRIPT($parm1) {
     $GLOBALS['AG']['x4']['script'][] = $parm1;
 }
 /******/
+function x6scriptKill() {
+    $GLOBALS['AG']['x4']['script'] = array();
+}
 
 /**
 * JSON encodes the data to be saved as javascript for later processing.
@@ -1254,27 +1257,8 @@ class androHtml {
         return $h;
     }
     /******/
-    
-    /****m* androHtml/detailRow
-    *
-    * NAME
-    *    androHtml.detailRow
-    *
-    * FUNCTION
-    *	The PHP method androHtml.detailRow adds a TR and two TD elements
-    *   to a TABLE.  The left side has class "x4Caption" and contains the
-    *   caption/label for the field.  The right side contains an input
-    *   for the field.
-    *
-    * 
-    *
-    * INPUTS
-    *   array $dd - the table's complete data dictionary
-    *   string $column - name of the database column (field)
-    *
-    *
-    * SOURCE
-    */
+
+    /* DEPRECATED */    
     function detailRow($dd,$column,$options=array()) {
         # something we need for b/w compatibility that is
         # easier to declare and ignore than it is to
@@ -1496,7 +1480,78 @@ class androHtml {
     *    reference - reference to the div.
     *
     ******/
-    function &addButtonBar($table_id,$buts=null) {
+    # overrides default addButtonbar
+    function bbHeight() { return x6cssHeight('div.x6buttonBar a.button');} 
+    function addButtonBar() {
+        $bbHeight = $this->bbHeight();
+        $table_id = $this->hp['x6table'];
+        $abuts = array('new','save','remove','abandon');
+        
+        # First trick is to create the div that will be
+        # slipped in above the titles.
+        $this->buttonBar = html('div');
+        $this->buttonBar->hp['style'] = "height: {$bbHeight}px;";
+        if(arr($this->hp,'x6plugin','')=='x6tabDiv') {
+            array_unshift($this->dhead0->children,$this->buttonBar);
+        }
+        else {
+            $this->addChild($this->buttonBar);
+        }
+        
+        $pad0 = x6cssDefine('pad0');
+        
+        $bb = $this->buttonBar;
+        $bb->addClass('x6buttonBar');
+        if(in_array('new',$abuts)) {
+            $a=$bb->h('a-void','New');
+            $a->addClass('button button-first');
+            $a->hp['style'] = 'margin-left: 0px';
+            $a->hp['x6table']  = $table_id;
+            $a->hp['x6plugin'] = 'buttonNew';
+            $a->hp['id']       = 'buttonNew_'.$table_id;
+            $a->hp['style']    = 'float: left';
+            $bb->buttons['new'] = $a;
+            $a->initPlugin();
+        }
+        if(in_array('save',$abuts)) {
+            $a=$bb->h('a-void','Save');
+            $a->addClass('button');
+            $a->hp['x6table']  = $table_id;
+            $a->hp['x6plugin'] = 'buttonSave';
+            $a->hp['id']       = 'buttonSave_'.$table_id;
+            $a->hp['style']    = 'float: left';
+            $bb->buttons['save'] = $a;
+            $a->initPlugin();
+            jqDocReady("x6events.fireEvent('disable_save')");
+        }
+        if(in_array('remove',$abuts)) {
+            $a=$bb->h('a-void','Remove');
+            $a->addClass('button');
+            $a->hp['x6table']  = $table_id;
+            $a->hp['x6plugin'] = 'buttonRemove';
+            $a->hp['id']       = 'buttonRemove_'.$table_id;
+            $a->hp['style']    = "float: right; margin-right: {$pad0}px";
+            $bb->buttons['remove'] = $a;
+            $a->initPlugin();
+            jqDocReady("x6events.fireEvent('disable_remove')");
+        }
+        if(in_array('abandon',$abuts)) {
+            $a=$bb->h('a-void','Abandon');
+            $a->addClass('button');
+            $a->hp['x6table']  = $table_id;
+            $a->hp['x6plugin'] = 'buttonAbandon';
+            $a->hp['id']       = 'buttonAbandon_'.$table_id;
+            $a->hp['style']    = 'float: right';
+            $bb->buttons['abandon'] = $a;
+            $a->initPlugin();
+            jqDocReady("x6events.fireEvent('disable_abandon')");
+        }
+            
+        return $bb;
+    }
+    
+    
+    function &addButtonBarOld($table_id,$buts=null) {
         if(is_null($buts)) {
             $buts = 'new,duplicate,save,remove,abandon';
         }
@@ -1554,7 +1609,7 @@ class androHtml {
     }
     
 
-    /****m* androHtml/autoFormatF
+    /****m* androHtml/autoFormat
     *
     * NAME
     *    autoFormat
@@ -1796,13 +1851,42 @@ class androHtml {
     *   androHtmlTable
     *  
     ******/
-    function &addTabDiv($height,$lookups=false,$sortable=false) {
-        $newTable = new androHTMLTabDiv($height,$lookups,$sortable);
+    function &addTabDiv(
+        $height,$table_id,$lookups=false,$sortable=false,$bb=false,$edit=false
+    ) {
+        $newTable = new androHTMLTabDiv(
+            $height,$table_id,$lookups,$sortable,$bb,$edit
+        );
         $this->addChild($newTable);
         
-        #$this->h('style','.ui-tabs-hide { display: none; }');
         return $newTable;
     }
+
+    /****m* androHtml/addDetail
+    *
+    * NAME
+    *    addTabDiv
+    *
+    * FUNCTION
+    *	The PHP method androHtml::addDetail adds an instance of 
+    *   class androHTMLDetail as a child node.  This is an HTML
+    *   TABLE that will contain rows of inputs - caption on the
+    *   left and input on the right.
+    *
+    * INPUTS
+    *   string table_id - the name of the table being edited
+    *   
+    *
+    * SEE ALSO
+    *   androHtmlDetail
+    *  
+    ******/
+    function &addDetail($table_id,$complete=false,$height=300) {
+        $newDetail = new androHTMLDetail($table_id,$complete,$height);
+        $this->addChild($newDetail);
+        return $newDetail;
+    }
+
     
 
     /****m* androHtml/addTabs
@@ -1914,6 +1998,14 @@ class androHtml {
         $this->isParent = true;
     }
     /******/
+
+    # Internal use only
+    function initPlugin() {
+        $plugin = $this->hp['x6plugin'];
+        $table  = $this->hp['x6table'];
+        jqDocReady("var plugin = u.byId('{$this->hp['id']}');");
+        jqDocReady("x6plugins.$plugin(plugin,plugin.id,'$table')");
+    }
 
     /****m* androHtml/firstChild
     *
@@ -2110,6 +2202,8 @@ class androHTMLTableController extends androHTML {
         $this->ap['xPermUpd'] = ddUserPerm($table_id,'upd');
         $this->ap['xPermDel'] = ddUserPerm($table_id,'del');
         $this->ap['xPermSel'] = ddUserPerm($table_id,'sel');
+        
+        $this->initPlugin();
     }
 }
 
@@ -2427,22 +2521,33 @@ class androHTMLTabDiv extends androHTML {
     var $scrollable = false;
     var $colWidths  = 0;
     var $rows       = array();
+    var $buttonBar  = false;
     
-    function androHTMLTabDiv($height=300,$lookups=false,$sortable=false) {
+    function androHTMLTabDiv(
+        $height=300,$table,$lookups=false,$sortable=false,$bb=false,$edit=false
+    ) {
         $this->lookups = $lookups;
         $this->sortable= $sortable;
         $this->htype = 'div';
         $this->addClass('tdiv box3');
         $this->hp['x6plugin'] = 'x6tabDiv';
+        $this->hp['x6table']  = $table;
+        $this->hp['id']       = 'tabDiv_'.$table.'_'.rand(100,999);
+        $this->initPlugin();
         $this->hp['style'] = "height: {$height}px;";
         $this->height = $height;
-        $this->baseRowHeight = 20;
+        $cssLineHeight             = x6cssHeight('div.thead div div');
+        $this->hp['cssLineHeight'] = $cssLineHeight;
+        $this->hp['xRowsVisible']  = intval($height/$cssLineHeight);
         
         # Figure the tbody height.  If lookups has
         # been set, double the amount we subtract
         $height-=x6cssHeight('div.thead div div');
         if($lookups) {
             $height-=x6cssHeight('div.thead div div');
+        }
+        if($bb) {
+            $height  -= $this->bbHeight();
         }
         
         # create default options
@@ -2455,6 +2560,23 @@ class androHTMLTabDiv extends androHTML {
         $x->addClass('thead');
         $this->dhead0= $x;
         $this->dhead = $x->h('div');
+        
+        # Again, add button bar if required
+        if($bb) {
+            $this->addButtonBar();
+        }
+        $this->hp['xButtonBar'] = $bb ? 'Y' : 'N';
+        
+        # Add features if editInPlace
+        if($edit) {
+            $this->hp['uiNewRow' ] = 'inline'; // vs. nothing
+            $this->hp['uiEditRow'] = 'inline'; // vs. nothing
+            
+            # Create a hidden object that contains inputs we will
+            # clone over to the grid on demand
+            $dd = ddTable($this->hp['x6table']);
+            $this->hiddenInputs($dd);
+        }
         
         # The body is empty, we have to add row by row
         $this->dbody= $this->h('div');
@@ -2503,10 +2625,12 @@ class androHTMLTabDiv extends androHTML {
         # turn spaces into &nbsp;
         $description = str_replace(' ','&nbsp;',$description);
         
-        # JB: Changed intval to reclaim grid space
-        #$width1 = intval(.7*$width1);
-        #$width1 = intval(.9*$width1);
-        $width1*= x6CssDefine('bodyfs','12px')*.72;
+        # KFD Calculated width of 14 12px chars is 110px
+        #     This means avg width is 7.85 pixels
+        #     This means the ratio of width to height is .654
+        #     However, if you add sortable, it gets a LEETLE TOO TINY,
+        #     so we kicked it up to....
+        $width1*= x6CssDefine('bodyfs','12px')*.67;
         $width = $forcelong ? $width1 : intval(min($width1,200)); 
         $pad0   = x6CSSDefine('pad0');
         $bord   = 1;   // HARDCODE!
@@ -2633,19 +2757,6 @@ class androHTMLTabDiv extends androHTML {
             );
         }
     }
-
-    function editInPlace() {
-        $this->hp['uiNewRow' ] = 'inline'; // vs. nothing
-        $this->hp['uiEditRow'] = 'inline'; // vs. nothing
-        
-        
-        # Create a hidden object that contains inputs we will
-        # clone over to the grid on demand
-        $dd = ddTable($this->hp['x6table']);
-        $this->hiddenInputs($dd);
-        
-        
-    }
     
     function addRow($id,$thead=false) {
         if(!$thead) {
@@ -2662,10 +2773,12 @@ class androHTMLTabDiv extends androHTML {
         # This code also exists in x6.js in browser-side
         # constructor of the tabDiv object.
         $table_id = $this->hp['x6table'];
-        if($this->hp['xGridHilight'] == 'Y') {        
+        if($this->hp['xGridHilight'] == 'Y') {
+            # Removes hilight from any other row, and hilights
+            # this one if it is not selected (edited)
             $this->lastRow->hp['onmouseover']=
                 "$(this).siblings('.hilight').removeClass('hilight');
-                 $(this).addClass('hilight')";
+                $('#row_$id:not(.selected)').addClass('hilight')";
             if(!$thead) {
                 $this->lastRow->hp['onclick']    
                     ="x6events.fireEvent('reqEditRow_$table_id',$id);";
@@ -2765,6 +2878,133 @@ class androHTMLTabDiv extends androHTML {
     }
 }
 
+/****c* HTML-Generation/androHtmlDetail
+*
+* NAME
+*    androHtmlDetail
+*
+* FUNCTION
+*   The PHP class androHtmlDetail provides an HTML table that can
+*   be populated with caption/input rows using addInput().
+*
+*   The object is a subclass of androHtml, and supports all of its
+*   methods such as addChild, addClass, etc.
+*
+*
+******
+*/
+class androHTMLDetail extends androHTML {
+    var $firstFocus = false;
+    
+    function androHTMLDetail($table_id,$complete=false,$height=300) {
+        $this->hp['x6plugin'] = 'detailDisplay';
+        $this->hp['x6table']  = $table_id;
+        $this->hp['id'] = 'ddisp_'.$table_id;
+        $this->initPlugin();
+        if($complete) {
+            $this->htype='div';
+            $this->innerId  = "ddisp_{$table_id}_inner";
+            $this->makeComplete($table_id,$height);
+        }
+        else {
+            $this->htype='table';
+            $this->inputsTable=$this;
+            $this->addClass('x6Detail');
+        }
+    }
+    
+    function makeComplete($table_id,$height) {
+        # The complete track is much more involved, adds
+        # buttons and a status bar at bottom.
+        $this->addClass('box2');
+        $this->hp['xInitDisabled'] = 'Y';
+        $pad0 = x6CssDefine('pad0');
+        $this->hp['style'] = "height: {$height}px;
+            padding-left: {$pad0}px;
+            padding-right: {$pad0}px;";
+        
+        # Now for the display
+        # Put some buttons on users
+        $this->addButtonBar();
+                
+        # Put in a div that will be the inner box
+        #
+        $div = $this->h('div');
+        $div->addClass('box1');
+        $dd = ddTable($table_id);
+        $table = $div->h('table');
+        $table->addClass('x6Detail');
+        $this->inputsTable = $table;
+        $cols  = projectionColumns($dd,'');
+        foreach($cols as $col) {
+            $this->addInput($dd,$col);
+        }
+
+        # Calculate height of inner area
+        $hinner 
+            =$height
+            -($pad0 * 2)          // padding top and bottom
+            -x6cssDefine('lh0')   // for status bar at bottom
+            -x6cssRuleSize('.box1','border-top')
+            -x6cssRuleSize('.box1','border-bottom')
+            -x6cssRuleSize('.box1','padding-top')
+            -x6cssRuleSize('.box1','padding-bottom')
+            -x6cssHeight('div.x6buttonBar a.button');
+        $div->hp['style'] = "height: {$hinner}px; clear: both; 
+            overflow-y: scroll;
+            padding: {$pad0}px;";
+            
+        $div->hp['id'] = $this->innerId;
+        
+        $sb = $this->h('div','status message here');
+        $sb->addClass('statusBar');
+    }
+    
+    /****m* androHtmlDetail/addInput
+    *
+    * NAME
+    *    androHtml.addInput
+    *
+    * FUNCTION
+    *	The PHP method androHtml.addInput adds a TR and two TD elements
+    *   to a TABLE.  The left side has class "x6Caption" and contains the
+    *   caption/label for the field.  The right side contains an input
+    *   for the field and as class 'x6Input'.
+    *
+    * 
+    *
+    * INPUTS
+    *   array $dd - the table's complete data dictionary
+    *   string $column - name of the database column (field)
+    *
+    *
+    * SOURCE
+    */
+    function addInput(&$dd,$column,$options=array()) {
+        # something we need for b/w compatibility that is
+        # easier to declare and ignore than it is to
+        # try to get rid of. (Also, getting rid of it will
+        # break some of my older apps).
+        $tabLoop=array();
+        
+        $tr = $this->inputsTable->h('tr');
+        $td = $tr->h('td',$dd['flat'][$column]['description']);
+        $td->addClass('x6Caption');
+        
+        $input=input($dd['flat'][$column],$tabLoop,$options);
+        if(!$this->firstFocus) {
+            $input->hp['x6firstFocus'] = 'Y';
+            $this->firstFocus = true;
+        }
+        $td = $tr->h('td');
+        $td->setHtml($input->bufferedRender());
+        $td->addClass('x6Input');
+        
+    }
+    /******/
+}
+
+
 /**
 * Create a form with parent html element $parent.
 *
@@ -2839,6 +3079,22 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
     $colscale = a($colinfo,'colscale');
     $table_id = a($colinfo,'table_id');
     $column_id= a($colinfo,'column_id');
+
+    $x6 = vgfGet('x6');
+    if($x6) {
+        $x6options = array(
+            'onkeyup'=>'x6inputs.keyUp(event,this)'
+            ,'onkeydown'=>'return x6inputs.keyDown(event,this)'
+            ,'onfocus'=>'x6inputs.focus(this)'
+            ,'onblur'=>'x6inputs.blur(this)'
+            ,'attributes'=>array(
+                'xClassRow'=>1
+            )
+            ,'tabIndex'=>true
+        );
+        $options = array_merge($options,$x6options);
+    }
+    
 
     # Work out the read-only status for insert and update
     # Begin with unconditional
@@ -3082,6 +3338,14 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
         }
     }
     
+    # KFD 11/29/08, while we are on options, for a SELECT
+    #               in x6, onchange should set class.  This
+    #               makes it change class even before 
+    #               losing focus if user uses mouse
+    if($x6 && $input->htype=='select') {
+        $input->hp['onclick'] = 'x6inputs.setClass(this)';
+    }
+    
     # KFD 10/18/08, set tab index using new x6 if option is there
     if(arr($options,'tabindex',false)) {
         $input->tabIndex();
@@ -3105,6 +3369,7 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
         $input->hp['xDefault'] = $colinfo['auto_formula'];
     }
 
+    
     # For now that's all we are going to do.
     return $input;
 }
@@ -3139,32 +3404,7 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
 *
 ******/
 function projection($dd,$projection='',&$tabLoop,$options=array()) {
-    # Work out what they gave us and make a list of
-    # columns out of it
-    if(is_array($projection)) {
-        # they gave us an array of columns
-        $columns = $projection;
-    }
-    else {
-        if($projection == '') {
-            $columns = array();
-            foreach($dd['flat'] as $column_id=>$colinfo) {
-                if($colinfo['uino']=='Y'   ) continue;
-                if($column_id=='skey'      ) continue;
-                if($column_id=='_agg'      ) continue;
-                if($column_id=='skey_quiet') continue;
-                $columns[]=$column_id;
-            }
-        }
-        elseif(isset($dd['projections'][$projection])) {
-            # they named a projection
-            $columns = explode(',',$dd['projections'][$projection]);
-        }
-        else {
-            # assume a comma list of columns
-            $columns = explode(',',$projection);
-        }
-    }
+    $columns = projectionColumns($dd,$projection);
 
     # Create a top level container
     $ttop  = html('table');
@@ -3201,7 +3441,7 @@ function projection($dd,$projection='',&$tabLoop,$options=array()) {
 
         $colcount++;
         if(count($breakafter)>0) {
-            $break = in_array($column_id,$breakafter);
+            $break = in_array($column,$breakafter);
         }
         else {
             $break = $colcount == $colbreak ? true : false;
@@ -3218,6 +3458,36 @@ function projection($dd,$projection='',&$tabLoop,$options=array()) {
 
     }
     return $ttop;
+}
+
+function projectionColumns($dd,$projection='') {
+    # Work out what they gave us and make a list of
+    # columns out of it
+    if(is_array($projection)) {
+        # they gave us an array of columns
+        $columns = $projection;
+    }
+    else {
+        if($projection == '') {
+            $columns = array();
+            foreach($dd['flat'] as $column_id=>$colinfo) {
+                if($colinfo['uino']=='Y'   ) continue;
+                if($column_id=='skey'      ) continue;
+                if($column_id=='_agg'      ) continue;
+                if($column_id=='skey_quiet') continue;
+                $columns[]=$column_id;
+            }
+        }
+        elseif(isset($dd['projections'][$projection])) {
+            # they named a projection
+            $columns = explode(',',$dd['projections'][$projection]);
+        }
+        else {
+            # assume a comma list of columns
+            $columns = explode(',',$projection);
+        }
+    }
+    return $columns;    
 }
 
 /****f* HTML-Generation/inputsTabLoop
