@@ -922,6 +922,7 @@ String.prototype.rtrim = function() {
 }
 /******/
 
+
 /****m* String-Extensions/pad
 *
 * NAME
@@ -1062,6 +1063,48 @@ String.prototype.repeat = function(count) {
         retval+= this;
     }
     return retval;
+}
+/******/
+
+/****m* String-Extensions/htmlDisplay
+*
+* NAME
+*   String.htmlDisplay
+*
+* FUNCTION
+*   The Javascript function htmlDisplay converts the HTML
+*   characters ampersand '&amp;', less than '&lt;' and
+*   greater-than '&gt;' to their HTML entities equivalents
+*   for safe display.
+*
+*   The reverse function is htmlEdit.
+*
+* SOURCE
+*/
+String.prototype.htmlDisplay = function() {
+    return this.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+/******/
+
+/****m* String-Extensions/htmlEdit
+*
+* NAME
+*   String.htmlEdit
+*
+* FUNCTION
+*   The Javascript function htmlEdit removes HTML entities 
+*   from a string and replaces them with literal characters,
+*   suitable for editing in an input.  The characters replaced
+*   are ampersand '&amp;', less-than '&lt;', greater-than '&gt;'
+*   and non-breaking space '&amp;nbsp;'.
+*
+* SOURCE
+*/
+String.prototype.htmlEdit = function() {
+    return this.replace(/&amp;/g,'&')
+        .replace(/&lt;/g,'<')
+        .replace(/&gt;/g,'>')
+        .replace(/&nbsp;/g,' ');
 }
 /******/
 
@@ -2334,7 +2377,177 @@ var u = {
             $('#dialogoverlay').css('opacity',0.4);
             $('#dialogbox').css(    'opacity',1);
         }
+    },
+    
+    /* KFD 11/26/08
+       EXPERIMENTAL
+       Put here because there is already one in ua, where it
+       really does not belong.
+       Originally used by x6inputs.keydown to figure things out
+    */
+    metaKeys: {
+        8: 'BackSpace',
+        9: 'Tab',
+        13: 'Enter',
+        16: 'Shift',
+        17: 'Ctrl',
+        18: 'Alt',
+        20: 'CapsLock',
+        27: 'Esc',
+        33: 'PageUp',
+        34: 'PageDown',
+        35: 'End',
+        36: 'Home',
+        37: 'LeftArrow',
+        38: 'UpArrow',
+        39: 'RightArrow',
+        40: 'DownArrow',
+        45: 'Insert',
+        46: 'Delete',
+        112: 'F1' ,
+        113: 'F2' ,
+        114: 'F3' ,
+        115: 'F4' ,
+        116: 'F5' ,
+        117: 'F6' ,
+        118: 'F7' ,
+        119: 'F8' ,
+        120: 'F9' ,
+        121: 'F10',
+        122: 'F11',
+        123: 'F12'
+    },
+    keyLabel: function(e) {
+        var x = e.keyCode || e.charCode;
+        
+        var x4Keys = { };
+        x4Keys['8']  = 'BackSpace';
+        x4Keys['9']  = 'Tab';
+        x4Keys['13'] = 'Enter';
+        //x4Keys['16'] = '';   // actually Shift, but prefix will take care of it
+        //x4Keys['17'] = '';   // actually Ctrl,  but prefix will take care of it
+        //x4Keys['18'] = '';   // actually Alt,   but prefix will take care of it
+        // KFD Added these three lines, so that keyup/keydown are tracked
+        x4Keys['16'] = 'Shift';
+        x4Keys['17'] = 'Ctrl';
+        x4Keys['18'] = 'Alt';
+        x4Keys['20'] = 'CapsLock';
+        x4Keys['27'] = 'Esc';
+        x4Keys['33'] = 'PageUp';
+        x4Keys['34'] = 'PageDown';
+        x4Keys['35'] = 'End';
+        x4Keys['36'] = 'Home';
+        x4Keys['37'] = 'LeftArrow';
+        x4Keys['38'] = 'UpArrow';
+        x4Keys['39'] = 'RightArrow';
+        x4Keys['40'] = 'DownArrow';
+        x4Keys['45'] = 'Insert';
+        x4Keys['46'] = 'Delete';
+        x4Keys['112']= 'F1' ;
+        x4Keys['113']= 'F2' ;
+        x4Keys['114']= 'F3' ;
+        x4Keys['115']= 'F4' ;
+        x4Keys['116']= 'F5' ;
+        x4Keys['117']= 'F6' ;
+        x4Keys['118']= 'F7' ;
+        x4Keys['119']= 'F8' ;
+        x4Keys['120']= 'F9' ;
+        x4Keys['121']= 'F10';
+        x4Keys['122']= 'F11';
+        x4Keys['123']= 'F12';
+        
+        x4Keys = this.metaKeys;
+    
+        // If they hit one of the control keys, check for
+        // Shift, Ctrl, or Alt
+        var retval = '';
+        if(typeof(x4Keys[x])!='undefined') {
+            retval = x4Keys[x];
+            if(e.ctrlKey)  retval = 'Ctrl'  + retval;
+            // KFD 8/4/08, this never worked, removed.
+            if(e.altKey)   retval = 'Alt'   + retval;
+            if(e.shiftKey) retval = 'Shift' + retval;
+            return retval;
+        }
+        
+        // If letters we look at shift key and return
+        // upper or lower case
+        if(x >= 65 && x <= 90) {
+            if(e.shiftKey) {
+                var letters = 
+                    [ 'A', 'B', 'C', 'D', 'E', 'F', 'G',
+                      'H', 'I', 'J', 'K', 'L', 'M', 'N',
+                      'O', 'P', 'Q', 'R', 'S', 'T', 'U',
+                      'V', 'W', 'X', 'Y', 'Z' ];
+            }
+            else {
+                var letters = 
+                    [ 'a', 'b', 'c', 'd', 'e', 'f', 'g',
+                      'h', 'i', 'j', 'k', 'l', 'm', 'n',
+                      'o', 'p', 'q', 'r', 's', 't', 'u',
+                      'v', 'w', 'x', 'y', 'z' ];
+            }
+            return letters[x - 65];
+        }
+        
+        // Numbers or the corresponding codes go here
+        if(x >= 48 && x <= 57) {
+            if(e.shiftKey) {
+                var numbers = [ ')','!','@','#','$','%','^','&','*','(' ];
+            }
+            else {
+                var numbers = [ '0','1','2','3','4','5','6','7','8','9' ];
+            }
+            return numbers[x - 48];
+        }
+        
+        var lastChance = {
+            192: '`',
+            109: '-',
+            61:  '=',
+            219: '[',
+            221: ']',
+            220: '\\',
+            188: ',',
+            190: '.',
+            191: '/',
+            59:  ';',
+            222: "'"
+        }
+        if(typeof(lastChance[x])!='undefined') {
+            if(e.shiftKey) {
+                var lastChance = {
+                    192: '~',
+                    109: '_',
+                    61:  '+',
+                    219: '{',
+                    221: '}',
+                    220: '|',
+                    188: '<',
+                    190: '>',
+                    191: '?',
+                    59:  ':',
+                    222: '"'
+                }
+            }
+            return lastChance[x];
+        }
+        // otherwise put on any prefixes and return
+        console.log(x);
+        return retval;
+    },
+    
+    keyIsNumeric: function(e) {
+        var keyLabel = this.keyLabel(e);
+        var numbers = [ '0','1','2','3','4','5','6','7','8','9' ];
+        return numbers.indexOf(keyLabel)>=0;
+    },
+    
+    keyIsMeta: function(e) {
+        var code = e.keyCode || e.charCode;
+        return typeof(this.metaKeys[code])!='undefined';
     }
+    
 }
 
 
@@ -2924,6 +3137,8 @@ window.a = window.ua = window.$a = {
     */
     json: {
         callString: '',
+        http:       false,
+        active:     false,
         jdata:      { },
         data:       { dd: {} },
         requests:   { },
@@ -3072,7 +3287,12 @@ window.a = window.ua = window.$a = {
         inputs: function(obj,direct) {
             if(direct==null) direct=false;
             if(obj==null) {
-                obj = $a.byId('x4Top');
+                if(u.byId('x4Top')!=null) {
+                    obj = u.byId('x4Top');
+                }
+                else {
+                    obj = $('.x6main')[0];
+                }
             }
             if(typeof(obj)=='string') {
                 var jqObjects = $(obj);
@@ -3289,9 +3509,11 @@ window.a = window.ua = window.$a = {
             // Create an object
             var browser = navigator.appName;
             if(browser == "Microsoft Internet Explorer"){
+                // KFD 11/24
                 var http = new ActiveXObject("Microsoft.XMLHTTP");
             }
             else {
+                // KFD 11/24
                 var http = new XMLHttpRequest();
             }
             // KFD 7/8/08, When the user is clicking on
@@ -3307,6 +3529,7 @@ window.a = window.ua = window.$a = {
             this.requests[key] = http;
             
             // If async, we have to do it a little differently
+            // KFD 11/24, did nothing yet for async
             if(async) {
                 http.onreadystatechange = function() {
                     if(this.readyState!=4) return;
@@ -3320,6 +3543,10 @@ window.a = window.ua = window.$a = {
             http.open('POST' , entireGet, async);
             http.send(null);
 
+            // KFD 11/24A
+            this.active = false;
+            
+            
             // An asynchronous call now exits, but a
             // synchronous call continues            
             if (async) return;
@@ -3581,7 +3808,8 @@ window.a = window.ua = window.$a = {
       *
       */
     label: function(e) {
-        var x = e.keyCode;
+        // KFD 11/26/08, nifty fix to recognize letters etc
+        var x = e.keyCode || e.charCode;
         
         var x4Keys = { };
         x4Keys['8']  = 'BackSpace';
@@ -3619,11 +3847,15 @@ window.a = window.ua = window.$a = {
         x4Keys['122']= 'F11';
         x4Keys['123']= 'F12';
     
-        // If they did not hit a control key of some sort, look
-        // next for letters
+        // If they hit one of the control keys, check for
+        // Shift, Ctrl, or Alt
         var retval = '';
         if(typeof(x4Keys[x])!='undefined') {
             retval = x4Keys[x];
+            if(e.ctrlKey)  retval = 'Ctrl'  + retval;
+            // KFD 8/4/08, this never worked, removed.
+            if(e.altKey)   retval = 'Alt'   + retval;
+            if(e.shiftKey) retval = 'Shift' + retval;
         }
         else {
             var letters = 
@@ -3632,22 +3864,18 @@ window.a = window.ua = window.$a = {
                   'O', 'P', 'Q', 'R', 'S', 'T', 'U',
                   'V', 'W', 'X', 'Y', 'Z' ];
             var numbers = [ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ];
-            if(e.charCode >= 65 && e.charCode <= 90) {
-                retval = letters[e.charCode - 65];
+            if(x >= 65 && x <= 90) {
+                retval = letters[x - 65];
             }
-            else if(e.charCode >= 97 && e.charCode <= 121) {
-                retval = letters[e.charCode - 97];
+            else if(x >= 97 && x <= 121) {
+                retval = letters[x - 97];
             }
-            else if(e.charCode >= 48 && e.charCode <= 57) {
-                retval = numbers[e.charCode - 48];
+            else if(x >= 48 && x <= 57) {
+                retval = numbers[x - 48];
             }
         }
     
         // otherwise put on any prefixes and return
-        if(e.ctrlKey)  retval = 'Ctrl'  + retval;
-        // KFD 8/4/08, this never worked, removed.
-        if(e.altKey)   retval = 'Alt'   + retval;
-        if(e.shiftKey) retval = 'Shift' + retval;
         
         return retval;
     }
@@ -3657,6 +3885,499 @@ function showHide( id ) {
     var tag = '#' + id;
     $(tag).slideToggle();
 }
+
+
+/* ----------------------------------------------------- *\
+   EXPERIMENTAL, json constructor
+\* ----------------------------------------------------- */
+function androJSON(parm,value) {
+    
+    this.callString = '';
+    this.http       =  false,
+    this.active     =false,
+    this.jdata      ={ },
+    this.data       ={ dd: {} },
+    this.requests   ={ },
+    this.parms      ={ },
+    this.reportErrors= true,
+    this.x4Page     ='',
+    this.x4Action   ='',
+    this.explicitParms= '',
+    this.hadErrors= false,
+
+    /****m* json/addParm
+    *
+    * NAME
+    *   ua.json.addParm
+    *
+    * FUNCTION
+    *   The Javascript method ua.json.addParm adds one parameter
+    *   to a JSON call previously initiated with ua.json.init.
+    *
+    * INPUTS
+    *   string - required, a parameter name
+    *   mixed - required, the value for the parameter
+    *
+    * EXAMPLE
+    *   Here are two examples for initiating a JSON request
+    *
+    *      <script>
+    *      ua.json.init();
+    *      // Name the server-side page to call
+    *      ua.json.addParm('x4Page','myCustomPage');
+    *      // Name the server-side method to call
+    *      ua.json.addParm('x4Action','fetchSomething');
+    *      </script>
+    *
+    * SOURCE
+    */
+    this.addParm = function(name,value) {
+        this.parms[name] = value;
+        if(name=='x4Page')   this.x4Page = value;
+        if(name=='x4Action') this.x4Action = value;
+    }
+    /******/
+    
+    // Original init code
+    this.x4Page     = '';
+    this.x4Action   = '';
+    this.callString = '';
+    this.parms      = { };
+    this.reportErrors=true;
+    this.explicitParms= '';
+    if(parm!=null) {
+        this.addParm(parm,value);
+    }
+    // Create an object
+    var browser = navigator.appName;
+    if(browser == "Microsoft Internet Explorer"){
+        // KFD 11/24
+        this.http = new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    else {
+        // KFD 11/24
+        this.http = new XMLHttpRequest();
+    }
+    
+    this.makeString = function() {
+        if(this.explicitParms!='') {
+            return this.explicitParms;
+        }
+        var list = [ ];
+        for(var x in this.parms) {
+            list[list.length] = x + "=" +encodeURIComponent(this.parms[x]);
+        }
+        return list.join('&');
+    }
+    //addValue: function(name,value) {
+    //    if(this.callString!='') this.callString+="&";
+    //    this.callString += 'x4c_' + name + '=' + encodeURIComponent(value);
+    //},
+    
+    /****m* json/inputs
+    *
+    * NAME
+    *   ua.json.inputs
+    *
+    * FUNCTION
+    *   The Javascript method ua.json.inputs adds inputs to
+    *   a JSON call previously initiated with ua.json.init.
+    *
+    *   This method accepts an object as its parameter, and
+    *   will add every input that is a child (at any level)
+    *   of that object.
+    *
+    *   This method uses the "id" property of the input to
+    *   name the parameter, not the "name" property.  Andromeda
+    *   makes no use of the "name" property.
+    *
+    *   This method is equivalent to use ua.json.addParm
+    *   for each of the desired inputs.
+    *
+    *   Checkboxes receive special treatment.  If the box is 
+    *   checked a value of 'Y' is sent, and if the box is not
+    *   checked a value of 'N' is sent.
+    *
+    *   The name of each parameter is normally the Id of the
+    *   input.  If the inputs were generated by Andromeda
+    *   on an Extended-Desktop page, they will have the names
+    *   'x4inp_<tableId>_<columnId>.  
+    *
+    * INPUTS
+    *   object - optional, the object to recurse.  You must
+    *   pass the object itself, not its Id.  If no object is
+    *   passed the Extended-Desktop top-level object x4Top
+    *   is used, which means you get every input on the page,
+    *   whether or not it is visible or
+    *
+    *   direct - a special flag that says to name the parameters
+    *   'x4c_<columnId>'.  This is required when you are sending
+    *   Direct-Database-Access calls.
+    *
+    *
+    * SOURCE
+    */
+    this.inputs= function(obj,direct) {
+        if(direct==null) direct=false;
+        if(obj==null) {
+            obj = $a.byId('x4Top');
+        }
+        if(typeof(obj)=='string') {
+            var jqObjects = $(obj);
+        }
+        else {
+            var jqObjects = $(obj).find(":input");
+        }
+        jqObjects.each( function() {
+                if(direct) 
+                    var id = 'x4c_'+u.p(this,'xColumnId');
+                else
+                    var id = this.id;
+                    
+                
+                if(this.type=='checkbox') {
+                    if(this.checked) {
+                        $a.json.addParm(id,'Y');
+                    }
+                    else {
+                        $a.json.addParm(id,'N');
+                    }
+                }
+                else {
+                    if(this.value!='') {
+                        $a.json.addParm(id,this.value);
+                    }
+                }
+        });
+    }
+    /******/
+    
+    /****m* json/serialize
+    *
+    * NAME
+    *   ua.json.serialize
+    *
+    * FUNCTION
+    *   The Javascript method ua.json.serialize takes a
+    *   Javascript Object or Array and serializes it and
+    *   adds the values to a JSON request previously
+    *   initialized with ua.json.init.
+    *
+    *   This method accepts an object as its parameter.
+    *
+    *   When you call this function, the parameters sent
+    *   back take the form of an associative array.
+    *
+    * INPUTS
+    *   prefix - The base name of the parameter
+    *
+    *   object - the object to serialize.
+    *
+    * EXAMPLE
+    *   Consider the following object that is serialized
+    *
+    *      <script>
+    *      var x = {
+    *         parm1: [ 1, 2, 3],
+    *         parm2: 'hello',
+    *         parm3: {
+    *             x: 5,
+    *             y: 10,
+    *         }
+    *      ua.json.init('x4Page','myCustomPage');
+    *      ua.json.addParm('x4Action','serialHandler');
+    *      ua.json.serialize('example',x);
+    *      <script>
+    *
+    *   Then on the server, you can grab the "example" parameter
+    *   and you will get the following associative array:
+    *
+    *      <?php
+    *      # this is file x4myCustomPage.php
+    *      class x4myCustomPage extends androX4 {
+    * 
+    *          # this handles the 'x4Action' specified above
+    *          function serialHandler() {
+    *              $example = gp('example');
+    *            
+    *              # ...the following code shows how 
+    *              #    the values that are in x4
+    *              $example['parm1'][0] = 1;
+    *              $example['parm1'][1] = 2;
+    *              $example['parm1'][2] = 3;
+    *              $example['parm2'] = 'hello';
+    *              $example['parm3']['x'] = 5;
+    *              $example['parm3']['y'] = 10;
+    *          }
+    *      }
+    *      ?>
+    *
+    * SOURCE
+    */
+    this.serialize = function(prefix,obj) {
+        for(var x in obj) {
+            if(typeof(obj[x])=='object') {
+                this.serialize(prefix+'['+x+']',obj[x]);
+            }
+            else {
+                this.addParm(prefix+'['+x+']',obj[x]);
+            }
+        }
+    }
+    /******/
+    
+    /****m* json/windowLocation
+    *
+    * NAME
+    *   ua.json.windowLocation
+    *
+    * FUNCTION
+    *   The Javascript method ua.json.windowLocation takes a
+    *   JSON request and executes it as a page request.
+    *
+    * EXAMPLE
+    *   The following example loads a new page
+    *
+    *      <script>
+    *      ua.json.init('x4Page','calendar');
+    *      ua.json.windowLocation();
+    *      </script>
+    *
+    * SOURCE
+    */
+    this.windowLocation = function() {
+        var entireGet = 'index.php?'+this.makeString()
+        window.location = entireGet;
+    }
+    /******/
+    
+    /****m* json/newWindow
+    *
+    * NAME
+    *   ua.json.newWindow
+    *
+    * FUNCTION
+    *   The Javascript method ua.json.newWindow takes a
+    *   JSON request and executes it as a page request, popping
+    *   the result up in a new tab or window.
+    *
+    *   When the user exits the resulting tab or window, it
+    *   will close.  
+    *
+    * EXAMPLE
+    *   The following example loads a new page
+    *
+    *      <script>
+    *      ua.json.init('x4Page','calendar');
+    *      ua.json.newWindow();
+    *      </script>
+    *
+    * SOURCE
+    */
+    this.newWindow = function() {
+        var entireGet = 'index.php?'+this.makeString()+'&x4Return=exit';
+        $a.openWindow(entireGet);
+    }
+    /******/
+
+    /****m* json/executeAsync
+    *
+    * NAME
+    *   ua.json.executeAsync
+    *
+    * FUNCTION
+    *   By default Andromeda sends JSON requests synchronously,
+    *   which is more appropriate for business database applications
+    *   than asynchronous requests.
+    *
+    *   There are however some times when you do not want the user
+    *   to wait, and so you can make asynchronous calls. 
+    *
+    *   Andromeda does not make use of response handlers, see the
+    *   above section on ua.json for more details.
+    *
+    * SOURCE
+    */
+    this.executeAsync = function() {
+        this.execute(true,true);
+    }
+    /******/
+    
+    /****m* json/execute
+    *
+    * NAME
+    *   ua.json.execute
+    *
+    * FUNCTION
+    *   The Javascript method ua.json.execute sends a request to
+    *   the server that has been initialized with ua.json.init
+    *   and has received parameters with any of ua.json.addParm,
+    *   ua.json.inputs and ua.json.serialize.
+    *
+    *   In normal usage, you call this routine and check for
+    *   a return value of true.  If the routine returns true
+    *   you call ua.json.process to process the returned
+    *   results.
+    *
+    * RESULTS
+    *   This routine returns true if the server reports no 
+    *   errors.
+    *
+    *   If the server reports errors, they are displayed to the
+    *   user using u.dialogs.alert, and this routine returns
+    *   false.
+    *
+    *******
+    */
+    this.execute = function(autoProcess,async) {
+        this.hadErrors = false;
+        if(async==null) async = false;
+        if(autoProcess==null) autoProcess=false;
+        
+        // KFD 7/8/08, When the user is clicking on
+        //             search boxes, they can click faster
+        //             than we can get answers, so if
+        //             we notice we are running an action
+        //             that is already in progress, we
+        //             cancel the earlier action.
+        //var key = this.x4Page + this.x4Action;
+        //if( typeof(this.requests[key])!='undefined') {
+        //    this.requests[key].abort();
+        //}
+        //this.requests[key] = http;
+        
+        // If async, we have to do it a little differently
+        // KFD 11/24, did nothing yet for async
+        if(async) {
+            http.onreadystatechange = function() {
+                if(this.readyState!=4) return;
+                $a.json.processPre(this,key,false);
+                $a.json.process();
+            }
+        }
+        
+        // Execute the call
+        var entireGet = 'index.php?json=1&'+this.makeString();
+        this.http.open('POST' , entireGet, async);
+        this.http.send(null);
+        
+        // An asynchronous call now exits, but a
+        // synchronous call continues            
+        if (async) return;
+        else return this.processPre(autoProcess);
+        
+    }
+    
+    this.processPre = function(autoProcess) {
+        // Attempt to evaluate the JSON
+        try {
+            eval('this.jdata = '+this.http.responseText);
+        }
+        catch(e) { 
+            $a.dialogs.alert("Could not process server response!");
+            x4.debug(this.http.responseText);
+            if(u.byId('x6Log')) {
+                u.byId('x6Log').innerHTML = http.responseText;
+                u.byId('x6Log').style.display='block';
+            }
+            this.http = false;
+            return false;
+        }
+        
+        // KFD 7/8/08, additional housekeeping, throw away
+        //             references to the object
+        this.http = false;
+
+        // If there were server errors, report those
+        if(this.jdata.error.length>0 && this.reportErrors) {
+            this.hadErrors = true;
+            $a.dialogs.alert(this.jdata.error.join("\n\n"));
+            return false;
+        }
+        if(this.jdata.notice.length>0 && this.reportErrors) {
+            $a.dialogs.alert(this.jdata.notice.join("\n\n"));
+        }
+        
+        if(autoProcess) {
+            this.process();
+        }
+        
+        return true;
+    }
+    
+    /****m* json/process
+    *
+    * NAME
+    *   ua.json.process
+    *
+    * FUNCTION
+    *   The Javascript method ua.json.execute is the final
+    *   step in sending and receiving JSON requests.  This
+    *   routine does the following:
+    *   * Any HTML sent back via PHP x4HTML replaces the 
+    *     innerHTML of the named items (actually item Ids are used).
+    *   * Any script sent back via PHP x4Script is executed.
+    *   * Any data sent back via PHP x4Data is placed into
+    *     ua.data.
+    *
+    * EXAMPLE
+    *   This example shows how you can retrieve table data and
+    *   then process it:
+    *
+    *      <script>
+    *      ua.json.init('x4Page','myCustomPage');
+    *      ua.json.addParm('x4Action','getStates');
+    *      // ua.json.execute will return false on errors
+    *      if(ua.json.execute()) {
+    *         // ua.json.process puts everything in its place...
+    *         ua.json.process();
+    *         // ...so that we can handle the returned data
+    *         for (var idx in ua.data.states) {
+    *            // do something
+    *         }
+    *      }
+    *      <script>
+    *
+    *   This code requires the following PHP code on the server:
+    *
+    *      <?php
+    *      # this is file application/x4myCustomPage.php
+    *      class x4myCustomPage extends androX4 {
+    *          function getStates() {
+    *              $states = SQL("Select * from states");
+    *              x4Data('states',$states);
+    *          }
+    *      }
+    *
+    *******
+    */
+    this.process = function(divMain) {
+        for(var x in this.jdata.html) {
+            if(x=='*MAIN*') {
+                $('#'+divMain).html(this.jdata.html[x]);
+            }
+            else {
+                var obj = u.byId(x);
+                if(obj) {
+                    if (obj.tagName =='INPUT') {
+                        obj.value = this.jdata.html[x];
+                    }
+                    else {
+                        obj.innerHTML = this.jdata.html[x];
+                    }
+                }
+            }
+        }
+        
+        // Execute any script that was provided
+        for(var x in this.jdata.script) {
+            eval(this.jdata.script[x]); 
+        }
+        
+        return true;
+    }
+}
+
 
 
 /* ---------------------------------------------------- *\
