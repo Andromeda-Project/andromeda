@@ -630,19 +630,22 @@ function index_hidden_x6Dispatch(
         echo json_encode_safe($GLOBALS['AG']['x4']);
     }
     else {
-        # Pass in the command to fade in and set focus
-        $fadeIn = "$('.fadein').fadeIn('slow',function() { x6.initFocus(); });";
-        jqDocReady($fadeIn);
-        
         # Don't need a form in x6 mode
         vgaSet('NOFORM',true);
 
         #  Put things where the template expects to find them
         vgfSet('HTML',$GLOBALS['AG']['x4']['html']['*MAIN*']);
+        
+        #  If there was some script, add that in
         foreach($GLOBALS['AG']['x4']['script'] as $script) {
             jqDocReady($script);
         }
 
+        # The absolute very last command is the fade in
+        $fadeIn = "$('.fadein').fadeIn('slow',function() { x6.initFocus(); });";
+        jqDocReady($fadeIn);
+        
+        
         # DUPLICATE ALERT: This code copied from 
         #                  index_hidden_page() below
         index_hidden_template('x4');
