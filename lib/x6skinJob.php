@@ -90,6 +90,7 @@ class x6skinJob extends androX6 {
         # Now we have to make sure this is a base skin
         # file for each skin we found, oth
         foreach($skins as $skin=>$info){
+            $skinYaml = false;
             if(file_exists($dir1."x6skin.$skin.skin.yaml")) {
                 $skinYaml = loadYaml($dir1."x6skin.$skin.skin.yaml");
             }
@@ -104,6 +105,9 @@ class x6skinJob extends androX6 {
                       <br/>MUST DISCARD THIS SKIN<br/><br/>";
                     unset($skins[$skin]);
                 }
+            }
+            if($skinYaml) {
+                $skins[$skin]['skinYaml'] = $skinYaml;
             }
         }
         
@@ -120,6 +124,7 @@ class x6skinJob extends androX6 {
         echo "<h3>Writing Skin Files Now</h3>";
         $skinFiles = array();
         foreach($skins as $skin=>$skininfo) {
+            $skinYaml = $skininfo['skinYaml'];
             foreach($skininfo['colors'] as $color=>$colorfile) {
                 foreach($skininfo['sizes'] as $size=>$sizefile) {
                     # The mainCore program actually builds
