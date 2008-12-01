@@ -19,24 +19,22 @@
 #   Boston, MA  02110-1301  USA
 #   or visit http://www.gnu.org/licenses/gpl.html
 # ==================================================================
-name: Blue2
+name: Blue
 
 defines:
     # Top level settings
-    ff0:           terminal,verdana, sans-serif
+    ff0:            monospace
 
     # Two basic background colors we need
-    bgclight:       @f0f0f0
-    bgcdark:        @d0d0d0
+    bgclight:       black
+    bgcdark:        blue
     # the two colors that make 3d shadows
-    shadowlight:    @ffFFff
-    shadowdark:     @909090
-    black:          @000000
-    white:          @ffffff
+    shadowlight:     red
+    shadowdark:      cyan
+    black:           yellow
+    white:           white
 
     # Colors we refer to by name
-    black:          @000000
-    white:          @ffffff
     dark:           @5E71A2
     selected:       @30FF30
     
@@ -58,23 +56,11 @@ defines:
     # but border size in this case is part of the color
     # scheme, so here it is
     bs0:          solid
-    bw0:          1px
+    bw0:          0px
     
  
     # These colors were added to give some 'color' to objects
-    clrChanged:   *yellow
-    clrError:     *red
-    clrOk:        *green
-    clrRequired:  *white
-
-    # These are the base colors for DOS
-    # Black/White left for reference
-  
-    # black: @000000
-    # white: @FFFFFF
-    red:   @FF0000
-    green: @00FF00
-    blue:  @0000FF
-    yellow: @FFFF00
-    magenta: @FF00FF
-    cyan: @00FFFF
+    clrChanged:   @ffebcd
+    clrError:     @ff4500
+    clrOk:        @7fff00
+    clrRequired:  @abcdef

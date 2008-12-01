@@ -27,6 +27,9 @@ overrides:
     # Buttons
     a.button_disabled:
         cursor: default
+        outline: 0
+    a:
+        outline: 0
         
     a.button_disabled,a.button,div.thead div a:
         text-decoration: none
@@ -99,12 +102,13 @@ overrides:
     #
     # ===============================================================
     # tables that contain detail elements
-    table.x4Detail:
+    table.x6Detail:
         border-spacing: 0
         border-collapse: collapse
-    td.x4Caption:
-        text-align: right
-        padl:       *pad0
+    td.x6Caption:
+        text-align:      right
+        padding-left:   *pad0
+        padding-bottom: *pad0
         
     # ===============================================================
     #

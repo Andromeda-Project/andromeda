@@ -190,7 +190,8 @@ defines:
         borb:   *bor2b
         borl:   *bor2l
         borr:   *bor2r
-        color:  *black
+        color:  *histrongcolor
+        bgc:    *histrongbgc
         marl:   *pad0
         mart:   *pad0
         marb:   *pad0
@@ -199,7 +200,22 @@ defines:
         padl:   *pad0
         padr:   *pad0
         lh:     *lhbutton
-        #td:     blink
+    div.x6buttonBar a.button_mousedown:
+        # flip borders around to make it look pressed in
+        borb:   *bor2t
+        bort:   *bor2b
+        borr:   *bor2l
+        borl:   *bor2r
+        color:  *histrongcolor
+        bgc:    *histrongbgc
+        marl:   *pad0
+        mart:   *pad0
+        marb:   *pad0
+        padt:   *pad0more
+        padb:   *pad0less
+        padl:   *pad0more
+        padr:   *pad0less
+        lh:     *lhbutton
 
     div.x6buttonBar a.button_disabled:
         bort:   *bor3t
@@ -223,6 +239,8 @@ defines:
         borb:   *bor1b
         borl:   *bor1l
         borr:   *bor1r
+    select:
+        height: *barheight
         
     # Input highlights and selecteds w/ conditionals
     tr.selected:
@@ -231,7 +249,7 @@ defines:
 
     input.changed,input.changedSelected:
          bgc:    *clrChanged
-    select.changed,select.changeSelected:
+    select.changed,select.changedSelected:
          bgc:    *clrChanged
     textarea.changed,textarea.changedSelected:
          bgc:    *clrChanged
@@ -239,18 +257,19 @@ defines:
     input.error:
          bgc:    *clrError
 
-    input.changedOK,input.OK:
-         bgc:    *clrOk
-
     input.required:
          bgc:   *clrRequired
-    input.readOnly,select.readOnly,textarea.readOnly:
-         bgc:   *bgclight
-         bort:  *bw0 *bs0 *bgclight
-         borb:  *bw0 *bs0 *bgclight
-         borl:  *bw0 *bs0 *bgclight
-         borr:  *bw0 *bs0 *bgclight
-         color: *black
+    input[disabled],select[disabled],textarea[disabled]:
+        bgc:   *bgclight
+        bort:   *bor1t
+        borb:   *bor1b
+        borl:   *bor1l
+        borr:   *bor1r
+        # bort:  *bw0 *bs0 *bgclight
+        # borb:  *bw0 *bs0 *bgclight
+        # borl:  *bw0 *bs0 *bgclight
+        # borr:  *bw0 *bs0 *bgclight
+        color: *black
 
     # ===============================================================
     #
@@ -324,7 +343,9 @@ defines:
     # ===============================================================
     # Tabdiv highlights and selected
     div.tbody div.selected div:
-        bgc:     *selected
+        bgc:     *histrongbgc
+        borl:    *bw0 *bs0 *histrongbgc
+        borr:    *bw0 *bs0 *histrongbgc
 
     div.tbody div div:
         bort:   0

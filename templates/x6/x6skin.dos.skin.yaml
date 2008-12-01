@@ -28,15 +28,15 @@
 # ==================================================================
 
 # Make this the name as it should appear to the user
-name: DOS
+name: Dos
 
 # These are the rules you want to provide, combining 
 # colors and sizes declared in the 'color' and 'size' files.
 defines:
     # default colors for the document
     body:
-        bgc:        *black
-        color:      *white
+        bgc:        *bgcdark
+        color:      *black
         ff:         *ff0
         fs:         *fs0
         lh:         *lh1
@@ -45,20 +45,20 @@ defines:
         marl:       *pad0
         marr:       *pad0
     body a:
-        color:      *white
+        color:      *link
         
     # Title Elements
     h1:
         fs:          *fsh1
         lh:          *lhh1
-        bgc:        *blue
+        fw:         bolder
         mart:       0
         marb:       0
         padt:      *pad0
         padb:      *pad1
     h2:
         height:    *fsh2
-        bgc:       *cyan
+        fw:         bolder
         #mart:     *menupad
         #marb:     *menupad
         
@@ -68,11 +68,10 @@ defines:
     #
     # ========================================================
     .x6menu: 
-        bgc:        *black
+        bgc:        *bgcdark
         lh:         *lhmbar
         width:      *outsidewidth
     .x6menu ul:
-        bgc:        *blue
         mart:        0
         marb:        0
     .x6menu ul li:
@@ -85,7 +84,7 @@ defines:
         mart:       *menumart
         padb:       *menupadb
     .x6menu ul li.selected:
-        bgc:        *black
+        bgc:        *histrongbgc
         color:      *histrongcolor
         bort:       *bw0 *bs0 *black
         borb:        0
@@ -106,14 +105,14 @@ defines:
         lh:         *barlh
            
     .x6menu ul.dropdown li.selected:
-        bgc:        *black
+        bgc:        *histrongbgc
         color:      *white
         
     # the x6body is the outermost "inner" element,
     # actual content goes into .x6main below
     # JB:  Height here is necessary
     .x6body:
-        bgc:        *blue
+        bgc:        *bgclight
         bort:       *bor1t
         borb:       *bor1b
         borl:       *bor1l
@@ -121,13 +120,13 @@ defines:
         height:     *insideheight
         width:      *insidewidth
     .x6main:         
-        bgc:        *black
+        bgc:        *bgclight
         padl:       *pad0
         padr:       *pad0
 
     # an optional element
     .x6commandBar:
-        bgc:        *black
+        bgc:        *bgcdark
         bort:       *bor2t
         borb:       *bor2b
         borl:       *bor2l
@@ -141,56 +140,57 @@ defines:
         padt:       *pad0
         fs:         *fsfoot
         lh:         *lhfoot
-        bgc:        *black
+        bgc:        *bgcdark
         width:      *outsidewidth
       
     # Abstract border styles. 
     # bor1 is "sunken"
     # bor2 is "raised"
-    bor1t:     *bw0 *bs0 *white
-    bor1b:     *bw0 *bs0 *white
+    bor1t:     *bw0 *bs0 *shadowdark
+    bor1b:     *bw0 *bs0 *shadowlight
     bor1l:     *bor1t
     bor1r:     *bor1b
-    bor2t:     *bw0 *bs0 *white
-    bor2b:     *bw0 *bs0 *white
+    bor2t:     *bw0 *bs0 *shadowlight
+    bor2b:     *bw0 *bs0 *shadowdark
     bor2l:     *bor2t
     bor2r:     *bor2b
-    bor3t:     *bw0 *bs0 *white
+    bor3t:     *bw0 *bs0 *shadowdark
     bor3b:     *bor3t
     bor3l:     *bor3t
     bor3r:     *bor3t
-    bordr:     *bw0 *bs0 *white    
-    bordr2:    *bw0 *bs0 *white
+    bordr:     *bw0 *bs0 *bgclight    
+    bordr2:    *bw0 *bs0 *bgcdark
 
     # Boxes and all that good stuff
-    
+
     .box1:
         bort:       *bor1t
         borb:    *bor1b
         borl:      *bor1l
         borr:     *bor1r
-        bgc: *black
+        bgc: *bgclight
     .box2:
         bort:       *bor2t
         borb:    *bor2t
         borl:      *bor2t
         borr:     *bor2t
-        bgc: *blue
+        bgc: *bgcdark
     .box3: 
         bort:       *bor3t
         borb:    *bor3b
         borl:      *bor3l
         borr:     *bor3r
-        bgc: *black
+        bgc: *bgclight
 
-    # More detailed box definitions
+
+
 
     div.x6buttonBar a.button:
         bort:   *bor2t
         borb:   *bor2b
         borl:   *bor2l
         borr:   *bor2r
-        color:  *white
+        color:  *black
         marl:   *pad0
         mart:   *pad0
         marb:   *pad0
@@ -206,7 +206,7 @@ defines:
         borb:   *bor3t
         borl:   *bor3t
         borr:   *bor3t
-        color:  *black
+        color:  *shadowdark
         marl:   *pad0
         mart:   *pad0
         marb:   *pad0
@@ -226,8 +226,8 @@ defines:
         
     # Input highlights and selecteds w/ conditionals
     tr.selected:
-        bgc:     *blue
-        color:   *black
+        bgc:     *dark
+        color:   *white
 
     input.changed,input.changedSelected:
          bgc:    *clrChanged
@@ -268,7 +268,7 @@ defines:
         padb:    0
         padl:    0
         padr:    0
-        borr:    *bw0 *bs0 *black
+        borr:    *bw0 *bs0 *shadowdark
    
     .ui-tabs-nav li:
         lh:      *lhtab
@@ -311,10 +311,10 @@ defines:
         padb:    0
         padl:    0
         padr:    0
-        bort:   *bw0 *bs0 *black
-        borb:   *bw0 *bs0 *black
-        borl:   *bw0 *bs0 *black
-        borr:   *bw0 *bs0 *black
+        bort:   *bw0 *bs0 *shadowdark
+        borb:   *bw0 *bs0 *shadowdark
+        borl:   *bw0 *bs0 *shadowdark
+        borr:   *bw0 *bs0 *shadowdark
         
         
     # ===============================================================
@@ -329,8 +329,8 @@ defines:
     div.tbody div div:
         bort:   0
         borb:   0
-        borl:   0
-        borr:   0
+        borl:   *bw0 *bs0 *bgclight
+        borr:   *bw0 *bs0 *bgclight
         padr:    *pad0
         padl:    *pad0
         lh:      *barheight
@@ -341,8 +341,29 @@ defines:
 
     div.tbody div.hilight div:
         bgc:     *bgcdark
+        borl:   *bw0 *bs0 *bgcdark
+        borr:   *bw0 *bs0 *bgcdark
+
+    div.tbody div.hilight div input.readOnly:
+        bort:   *bw0 *bs0 *bgcdark
+        borb:   *bw0 *bs0 *bgcdark
+        borl:   *bw0 *bs0 *bgcdark
+        borr:   *bw0 *bs0 *bgcdark
+        bgc:     *bgcdark
+    div.tbody div.hilight div select.readOnly:
+        bort:   *bw0 *bs0 *bgcdark
+        borb:   *bw0 *bs0 *bgcdark
+        borl:   *bw0 *bs0 *bgcdark
+        borr:   *bw0 *bs0 *bgcdark
+        bgc:     *bgcdark
+    div.tbody div.hilight div textarea.readOnly:
+        bort:   *bw0 *bs0 *bgcdark
+        borb:   *bw0 *bs0 *bgcdark
+        borl:   *bw0 *bs0 *bgcdark
+        borr:   *bw0 *bs0 *bgcdark
+        bgc:     *bgcdark
+
         
     div.thead div div:
-        bgc:     *blue
         padr:    *pad0
         padl:    *pad0

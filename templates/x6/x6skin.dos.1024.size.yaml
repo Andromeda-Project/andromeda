@@ -25,7 +25,7 @@ defines:
     # Some major sizes for the general layout
     outsidewidth:    991px
     insidewidth:     990px   # for .x6main specifically
-    insideheight:    670px
+    insideheight:    605px
 
     # Specific padding on either side of entries in menu bar
     menupad: 6px
