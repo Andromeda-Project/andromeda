@@ -1723,7 +1723,8 @@ function x4GridSearch(self) {
         this.cntNoBlank = 0;
         
         // Initialize and then scan
-        $a.json.init('x4Page',this.zTableId);
+        var json = new androJSON('x4Page',this.zTableId);        
+        //-// $a.json.init('x4Page',this.zTableId);
         $(this).find(":input").each(function() {
             if(typeof(this.zValue)=='undefined') 
                 this.zValue = this.getAttribute('xValue');
@@ -1734,14 +1735,17 @@ function x4GridSearch(self) {
                 x4.parent(this).cntNoBlank++;
             }
             this.zValue = this.value;
-            $a.json.addParm('x4w_'+this.getAttribute('xColumnId'),this.value);
+            //-//$a.json.addParm('x4w_'+this.getAttribute('xColumnId'),this.value);
+            json.addParm('x4w_'+this.getAttribute('xColumnId'),this.value);
         });
         
         // If there is a parent table, this code "fakes it out"
         // to force a fetch and not to clear
         if(this.zIsChild) {
-            $a.json.addParm('tableIdPar',this.zTableIdPar);
-            $a.json.addParm('skeyPar',this.zSkeyPar);
+            json.addParm('tableIdPar',this.zTableIdPar);
+            json.addParm('skeyPar',this.zSkeyPar);
+            //-//$a.json.addParm('tableIdPar',this.zTableIdPar);
+            //-//$a.json.addParm('skeyPar',this.zSkeyPar);
             this.doFetch=true;
             this.cntNoBlank = 100;
         }
@@ -1756,12 +1760,17 @@ function x4GridSearch(self) {
                 return;
             }
             if(this.zSortCol) {
-                $a.json.addParm('sortCol',this.zSortCol);
-                $a.json.addParm('sortAD' ,this.zSortAD);
+                //-//$a.json.addParm('sortCol',this.zSortCol);
+                //-//$a.json.addParm('sortAD' ,this.zSortAD);
+                json.addParm('sortCol',this.zSortCol);
+                json.addParm('sortAD' ,this.zSortAD);
             }
-            $a.json.addParm('x4Action','browseFetch');
-            if( $a.json.execute()) {
-                $a.json.process();
+            //-//$a.json.addParm('x4Action','browseFetch');
+            //-//if( $a.json.execute()) {
+                //-//$a.json.process();
+            json.addParm('x4Action','browseFetch');
+            if( json.execute()) {
+                json.process();
                 // The standard path is to take data returned
                 // by the server and render it.  This is safe
                 // even if the server does not return anything,
