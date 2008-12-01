@@ -1,5 +1,6 @@
 <?php
 $deprecated = configGet('deprecated','Y');
+$x6         = vgfGet('x6',false);
 # =====================================================================
 # 
 # Output the title
@@ -36,14 +37,14 @@ if(vgfGet('x6')) {
 
 # EXPERIMENTAL.  Added KFD 8/2/08 to scroll inside
 #                of androSelect dropdown.
-if(!vgfGet('x6')) {
+if(!$x6) {
     jsInclude('clib/jquery.scrollTo.js');
 }
 
 # JQUERY MODALS
 # Status: must keep, at least one commercial customer
 #         using it already.
-if(!vgfGet('x6')) {
+if(!$x6) {
     jsInclude('clib/jqModal.js','jqModal was written by Brice Burgess
      and is distributed under the MIT license.  His website is
      http://dev.iceburg.net/jquery/jqModal/');
@@ -55,7 +56,7 @@ if(!vgfGet('x6')) {
 # Status: unknown.  It's kind of ok, but it seems that it might
 #         be simpler just to create table bodies with fixed 
 #         heights and overflow: scroll
-if(!vgfGet('x6')) {
+if(!$x6) {
     if(gpExists('x4Page')) {
         jsInclude('clib/webtoolkit.jscrollable.js','Scrollable table is
             available at www.webtoolkit.info');
@@ -66,7 +67,7 @@ if(!vgfGet('x6')) {
 
 # Time Entry.  A very nifty plugin that makes time entry
 #              inputs easy to work with
-if(!vgfGet('x6')) {
+if(!$x6) {
     cssInclude('clib/jquery.timeentry.css');
     jsInclude('clib/jquery.timeentry.js');
 }
@@ -74,7 +75,7 @@ if(!vgfGet('x6')) {
 
 # Date Manipulation.  This is a combo data input system
 #      and library for date manipulation.
-if(!vgfGet('x6')) {
+if(!$x6) {
     jsInclude('clib/jquery.date_input.js');
     cssInclude('clib/date_input.css');
 }
@@ -83,7 +84,7 @@ if(!vgfGet('x6')) {
 # with date manipulation
 # Strike 1: 8/21/08, This version cannot be trusted to give the
 #                    correct day of the week.
-if(!vgfGet('x6')) {
+if(!$x6) {
     jsInclude('clib/jquery.dates.js');
 }
 
@@ -91,7 +92,7 @@ if(!vgfGet('x6')) {
 # Jquery Tooltip
 #  Don't need dimensions, we have jquery 1.2.6 now
 #jsInclude("clib/jquery.dimensions.js");
-if(!vgfGet('x6')) {
+if(!$x6) {
     jsInclude("clib/jquery.tooltip.js");
     cssInclude("clib/jquery.tooltip.css");
 }
@@ -105,12 +106,12 @@ if(!vgfGet('x6')) {
 #
 # =====================================================================
 jsInclude('clib/androLib.js');
-if($deprecated) {
+if($deprecated && !$x6) {
     jsInclude('clib/androLibDeprecated.js');
 }
 
 // The x2 css file is loaded, unless there is an x4 page
-if(gp('x4Page')=='' && gp('gp_page')<>'') {
+if(gp('x4Page')=='' && gp('gp_page')<>'' && !$x6) {
     cssInclude('templates/'.$mainframe->getTemplate().'/css/x2.css');
 }
 // ..and this (misnamed) holds info for dynamic select
@@ -127,7 +128,9 @@ if(vgfGet('suppress_goodies_calendar')!==true) {
 
 // Positioning styles
 if(vgfGet('suppress_andromeda_css')!==true || vgfGet('x4')===true) {
-    cssInclude("clib/andromeda.css");
+    if(!$x6) {
+        cssInclude("clib/andromeda.css");
+    }
 }
 
 
@@ -140,7 +143,7 @@ if(vgfGet('suppress_andromeda_css')!==true || vgfGet('x4')===true) {
 #
 #
 # =====================================================================
-if(gpExists('x4Page')) {
+if(gpExists('x4Page') && !vgfGet('x6')) {
     jsInclude('clib/androX4.js');
 }
 
