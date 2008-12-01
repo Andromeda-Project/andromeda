@@ -1,6 +1,6 @@
 /* ==================================================== *\
  * Andromeda Generated CSS file                         
- * Generated: Sat, 15 Nov 2008 17:47:58 -0500
+ * Generated: Fri, 28 Nov 2008 16:55:36 -0500
  * Skin, color, size: win2k, gray, 800
 \* ==================================================== */
         
@@ -136,6 +136,30 @@ h2 {
     width:                   780px;
 }
 
+.box1 {
+    border-top:              1px solid #909090;
+    border-bottom:           1px solid #ffFFff;
+    border-left:             1px solid #909090;
+    border-right:            1px solid #ffFFff;
+    background-color:        #f0f0f0;
+}
+
+.box2 {
+    border-top:              1px solid #ffFFff;
+    border-bottom:           1px solid #ffFFff;
+    border-left:             1px solid #ffFFff;
+    border-right:            1px solid #ffFFff;
+    background-color:        #d0d0d0;
+}
+
+.box3 {
+    border-top:              1px solid #909090;
+    border-bottom:           1px solid #909090;
+    border-left:             1px solid #909090;
+    border-right:            1px solid #909090;
+    background-color:        #f0f0f0;
+}
+
 div.x6buttonBar a.button {
     border-top:              1px solid #ffFFff;
     border-bottom:           1px solid #909090;
@@ -148,7 +172,8 @@ div.x6buttonBar a.button {
     padding-bottom:          3px;
     padding-left:            3px;
     padding-right:           3px;
-    color:                   #000000;
+    color:                   #ffffff;
+    background-color:        #5E71A2;
     line-height:             10px;
 }
 
@@ -196,19 +221,15 @@ input.error {
     background-color:        #ff4500;
 }
 
-input.changedOK,input.OK {
-    background-color:        #7fff00;
-}
-
 input.required {
     background-color:        #abcdef;
 }
 
-input.readOnly,select.readOnly,textarea.readOnly {
-    border-top:              1px solid #f0f0f0;
-    border-bottom:           1px solid #f0f0f0;
-    border-left:             1px solid #f0f0f0;
-    border-right:            1px solid #f0f0f0;
+input[disabled],select[disabled],textarea[disabled] {
+    border-top:              1px solid #909090;
+    border-bottom:           1px solid #ffFFff;
+    border-left:             1px solid #909090;
+    border-right:            1px solid #ffFFff;
     color:                   #000000;
     background-color:        #f0f0f0;
 }
@@ -360,6 +381,11 @@ div.thead div div {
 
 a.button_disabled {
     cursor:                  default;
+    outline:                 0;
+}
+
+a {
+    outline:                 0;
 }
 
 a.button_disabled,a.button,div.thead div a {
@@ -388,38 +414,15 @@ ul.dropdown {
     width:                   100%;
 }
 
-.box1 {
-    border-top:              1px solid #909090;
-    border-bottom:           1px solid #ffFFff;
-    border-left:             1px solid #909090;
-    border-right:            1px solid #ffFFff;
-    background-color:        #f0f0f0;
-}
-
-.box2 {
-    border-top:              1px solid #ffFFff;
-    border-bottom:           1px solid #ffFFff;
-    border-left:             1px solid #ffFFff;
-    border-right:            1px solid #ffFFff;
-    background-color:        #d0d0d0;
-}
-
-.box3 {
-    border-top:              1px solid #909090;
-    border-bottom:           1px solid #909090;
-    border-left:             1px solid #909090;
-    border-right:            1px solid #909090;
-    background-color:        #f0f0f0;
-}
-
-table.x4Detail {
+table.x6Detail {
     border-spacing:          0;
     border-collapse:         collapse;
 }
 
-td.x4Caption {
+td.x6Caption {
     text-align:              right;
-    padl:                    3px;
+    padding-left:            3px;
+    padding-bottom:          3px;
 }
 
 .ui-tabs-hide {
