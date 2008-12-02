@@ -1128,10 +1128,13 @@ if(!Array.indexOf){
 
 /* ---------------------------------------------------- *\
 
-   SECTION 3: jQuery plugins  
+   SECTION 3: jQuery plugins and additions  
    
 \* ---------------------------------------------------- */
-
+jQuery.extend(
+  jQuery.expr[ ":" ], 
+  { reallyvisible : "!(jQuery(a).is(':hidden') || jQuery(a).parents(':hidden').length)" }
+);
  
 /*
 * Plugin to track focus
@@ -2420,42 +2423,6 @@ var u = {
     keyLabel: function(e) {
         var x = e.keyCode || e.charCode;
         
-        var x4Keys = { };
-        x4Keys['8']  = 'BackSpace';
-        x4Keys['9']  = 'Tab';
-        x4Keys['13'] = 'Enter';
-        //x4Keys['16'] = '';   // actually Shift, but prefix will take care of it
-        //x4Keys['17'] = '';   // actually Ctrl,  but prefix will take care of it
-        //x4Keys['18'] = '';   // actually Alt,   but prefix will take care of it
-        // KFD Added these three lines, so that keyup/keydown are tracked
-        x4Keys['16'] = 'Shift';
-        x4Keys['17'] = 'Ctrl';
-        x4Keys['18'] = 'Alt';
-        x4Keys['20'] = 'CapsLock';
-        x4Keys['27'] = 'Esc';
-        x4Keys['33'] = 'PageUp';
-        x4Keys['34'] = 'PageDown';
-        x4Keys['35'] = 'End';
-        x4Keys['36'] = 'Home';
-        x4Keys['37'] = 'LeftArrow';
-        x4Keys['38'] = 'UpArrow';
-        x4Keys['39'] = 'RightArrow';
-        x4Keys['40'] = 'DownArrow';
-        x4Keys['45'] = 'Insert';
-        x4Keys['46'] = 'Delete';
-        x4Keys['112']= 'F1' ;
-        x4Keys['113']= 'F2' ;
-        x4Keys['114']= 'F3' ;
-        x4Keys['115']= 'F4' ;
-        x4Keys['116']= 'F5' ;
-        x4Keys['117']= 'F6' ;
-        x4Keys['118']= 'F7' ;
-        x4Keys['119']= 'F8' ;
-        x4Keys['120']= 'F9' ;
-        x4Keys['121']= 'F10';
-        x4Keys['122']= 'F11';
-        x4Keys['123']= 'F12';
-        
         x4Keys = this.metaKeys;
     
         // If they hit one of the control keys, check for
@@ -2464,7 +2431,6 @@ var u = {
         if(typeof(x4Keys[x])!='undefined') {
             retval = x4Keys[x];
             if(e.ctrlKey)  retval = 'Ctrl'  + retval;
-            // KFD 8/4/08, this never worked, removed.
             if(e.altKey)   retval = 'Alt'   + retval;
             if(e.shiftKey) retval = 'Shift' + retval;
             return retval;
@@ -2487,7 +2453,7 @@ var u = {
                       'o', 'p', 'q', 'r', 's', 't', 'u',
                       'v', 'w', 'x', 'y', 'z' ];
             }
-            return letters[x - 65];
+            var retval = letters[x - 65];
         }
         
         // Numbers or the corresponding codes go here
@@ -2498,7 +2464,13 @@ var u = {
             else {
                 var numbers = [ '0','1','2','3','4','5','6','7','8','9' ];
             }
-            return numbers[x - 48];
+            var retval = numbers[x - 48];
+        }
+        if(retval!='') {
+            if(e.ctrlKey)  retval = 'Ctrl'  + retval;
+            if(e.altKey)   retval = 'Alt'   + retval;
+            if(e.shiftKey) retval = 'Shift' + retval;
+            return retval;            
         }
         
         var lastChance = {
@@ -3561,7 +3533,6 @@ window.a = window.ua = window.$a = {
             }
             catch(e) { 
                 $a.dialogs.alert("Could not process server response!");
-                x4.debug(http.responseText);
                 if(u.byId('x6Log')) {
                     u.byId('x6Log').innerHTML = http.responseText;
                     u.byId('x6Log').style.display='block';

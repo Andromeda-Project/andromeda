@@ -839,6 +839,111 @@ function html($tag,&$parent=null,$innerHTML='') {
     return $retval;
 }
 
+/****f* HTML-Generation/htmlMacroTop
+*
+* NAME
+*    htmlMacroTop
+*
+* FUNCTION
+*	The PHP function htmlMacroTop is a shortcut for creating a top-level
+*   div that has class "fadein" (so that it fades in after the page is
+*   initialzied) and contains an H1 taken from the page or menu entry's
+*   title from the data dictionary.
+*
+* INPUTS
+*	string $page - The page, which is a table name or menu entry
+*
+* RETURNS
+*	androHtml DIV object with a title built in and having class "fadeIn".
+******
+*/
+function &htmlMacroTop($page) {
+    $retval = html('div');
+    $retval->addClass('fadein');
+    $retval->h('h1',ddPageDescription($page));
+    return $retval;
+}
+
+/****f* HTML-Generation/htmlMacroGridWithData
+*
+* NAME
+*    htmlMacroGridWithData
+*
+* FUNCTION
+*	The PHP function htmlMacroGridWithData is a shortcut 
+*   that creates a grid for editing existing data.
+*   The grid does not contain any buttons for [New], [Save], etc.,
+*   it contains inputs that save immediately when the user changes
+*   a value.
+*
+*   In standard usage, you execute a query using SQL_AllRows, then
+*   call this macro to set up a grid allowing the user to edit
+*   the data.  
+*
+*   This macro assumes the grid is the only element on the page.
+*   It will be high enough to leave space for an H1 above it and
+*   and blank space below it.  It will be shifted about 1/3 across
+*   the screen horizontally.
+*
+* INPUTS
+*	array $dd - The data dictionary of the table being edited
+*   mixed $cols - comma-separated list of columns, or array of columns
+*   array $rows - an array of row arrays.  The skey column must be included.
+*
+* RETURNS
+*	androHtml GRID object with inputs that save each value as the
+*   user changes them.  Returns a free-standing HTML object, use
+*   addChild() to add it into an existing HTML object.
+******
+*/
+function &htmlMacroGridWithData($dd,$cols,$rows) {
+    # Make sure the list of columns is an array
+    if(!is_array($cols)) {
+        $cols = explode(',',$cols);   
+    }
+    
+    # This is convenient to have
+    $table_id = $dd['table_id'];
+
+    # Work out grid height as inside height less two h1's, one
+    # at top and a blank space at bottom
+    $hinside = x6cssDefine('insideheight');
+    $hh1     = x6cssHeight('h1');
+    $gheight = $hinside - ($hh1 * 2);
+    
+    # create a tabdiv and add the columns
+    $tabDiv = new androHTMLTabDiv($gheight,$table_id);
+    foreach($cols as $col) {
+        $tabDiv->addColumn($dd['flat'][$col]);
+    }
+    $gwidth = $tabDiv->lastColumn();
+     
+    # Get the width of the grid and wiggle it over               
+    $remain = x6cssDefine('insidewidth') - $gwidth;
+    $remain = intval($remain/3);
+    $tabDiv->hp['style'] .= "; margin-left: {$remain}px";
+    
+    foreach($rows as $row) {
+        $tabDiv->addRow($row['skey']);
+        foreach($cols as $col) {
+            $colinfo = &$dd['flat'][$col];
+            if($colinfo['uiro'] == 'Y') {
+                $tabDiv->addCell($row[$col]);   
+            }
+            else {
+                $inp = input($dd['flat'][$col]);
+                if(isset($inp->style['text-align'])) {
+                    $inp->hp['size']-=2;   
+                }
+                $inp->hp['value'] = arr($row,$col,'&nbsp;');
+                $tabDiv->addCell($inp);
+            }
+            
+        }
+    }
+    return $tabDiv;
+}
+    
 /****c* HTML-Generation/androHtml
 *
 * NAME
@@ -2321,7 +2426,9 @@ class androHTMLTabs extends androHTML {
         $this->options=$options;
         $this->height =$height;
         $this->htype  = 'div';
-        $this->hp['id'] = $id;
+        $this->hp['x6plugin'] = 'x6tabs';
+        $this->hp['id']       = $id;
+        $this->hp['x6table']  = '*';
         $this->ul = $this->h('ul');
         $this->ul->hp['id'] = $id."_tabs";
         $ts = $this->ts = "#$id > ul";
@@ -2333,15 +2440,36 @@ class androHTMLTabs extends androHTML {
         # If there is a slideup option set, set the function
         if(isset($options['slideup'])) {
             $topPane = $options['slideup'];
+            $tpi     = $options['slideupinner'];
             $script="
                 $('$ts').bind('tabsselect',
                     function(event, ui) { 
-                        return x6tabs.slideUp(event,ui,'$topPane');
+                        return x6tabs.slideUp(event,ui,'$topPane','$tpi');
                     }
                 );
             ";
             jqDocReady($script);
         }
+        # If we are on a conventional profile, 
+        if(arr($options,'x6profile','')=='conventional') {
+            $script="
+                $('$ts').bind('tabsselect',
+                    function(event, ui) {
+                        // Turn on keyboard events
+                        if(ui.index==0) {
+                            var grid = $(ui.panel)
+                                .find('[x6profile=conventional]')[0];
+                            grid.keyboardOn();
+                        }
+                        setTimeout(function() {x6.initFocus();},100);
+                    }
+                );
+            ";
+            jqDocReady($script);
+        }
+        
+        # Now initialize the plugin. 
+        $this->initPlugin();
     }
     
     /****m* androHtml/addTab
@@ -2367,12 +2495,17 @@ class androHTMLTabs extends androHTML {
         # Make an index, and add it in.
         $index = $this->hp['id'].'-'.(count($this->tabs)+1);
         
+        # Get the offset, if they gave one, for setting
+        # CTRL+Number key activation
+        $offset = arr($this->hp,'xOffset',0);
+        $key    = $offset + count($this->tabs);
+        
         # Make a style setting just for this element, otherwise
         # jquery ui clobbers the height setting
         $this->h('style',"#$index { height: {$this->height}px;}");
         
         # First easy thing is to do the li entry
-        $inner = "<a href='#$index'><span>$caption</span></a></li>";
+        $inner = "<a href='#$index'><span>$key: $caption</span></a></li>";
         $this->ul->h('li',$inner);
         
         # Next really easy thing to do is make a div, give it
@@ -2539,6 +2672,10 @@ class androHTMLTabDiv extends androHTML {
         $cssLineHeight             = x6cssHeight('div.thead div div');
         $this->hp['cssLineHeight'] = $cssLineHeight;
         $this->hp['xRowsVisible']  = intval($height/$cssLineHeight);
+        $this->hp['xGridHeight']   = $height;
+        $this->hp['xLookups']      = $lookups ? 'Y' : 'N';
+        $this->hp['xSortable']     = $sortable? 'Y' : 'N';
+        $this->hp['xInitKeyboard'] = 'Y';
         
         # Figure the tbody height.  If lookups has
         # been set, double the amount we subtract
@@ -2791,6 +2928,9 @@ class androHTMLTabDiv extends androHTML {
         if(is_object($child)) {
             $child=$child->bufferedRender();
         }
+        else {
+            $child=str_replace(' ','&nbsp;',$child);
+        }
         if(trim($child)=='') $child = '&nbsp;';
         # figure out if we need a new row
         $maxcols = count($this->columns);
@@ -2849,7 +2989,7 @@ class androHTMLTabDiv extends androHTML {
         
         $table_id = $this->hp['x6table'];
         $this->addRow('lookup',true);
-        foreach($this->columns as $colinfo) {
+        foreach($this->columns as $idx=>$colinfo) {
             # Skip the column that is for the scrollbar
             $column = trim($colinfo['column_id']);
             if($column=='') continue;
@@ -2859,6 +2999,9 @@ class androHTMLTabDiv extends androHTML {
             $width = $colinfo['width'] - (2* x6cssDefine('pad0')) - 2;
             
             $inp= input($colinfo);
+            if($idx==0) {
+                $inp->ap['x6firstFocus']='Y';
+            }
             $inp->hp['maxlength'] = 500;
             $inp->hp['id'] = $inpid;
             $inp->hp['autocomplete'] = 'off';
@@ -2933,10 +3076,16 @@ class androHTMLDetail extends androHTML {
         $div->addClass('box1');
         $dd = ddTable($table_id);
         $table = $div->h('table');
+        $table->hp['style']='float: left; margin-right: 20px';
         $table->addClass('x6Detail');
         $this->inputsTable = $table;
         $cols  = projectionColumns($dd,'');
-        foreach($cols as $col) {
+        foreach($cols as $idx=>$col) {
+            if($idx>0 && $idx % 17 == 0) {
+                $this->inputsTable=$div->h('table');
+                $this->inputsTable->hp['style'] = 'float: left';
+                $this->inputsTable->addClass('x6Detail');
+            }
             $this->addInput($dd,$col);
         }
 
@@ -7857,6 +8006,12 @@ function hLink($class,$caption,$href,$extra='') {
       }
    }
    return "<a href=\"".$prefix.$href."\" ".$class." $extra>".$caption."</a>";
+}
+
+function ddPageDescription($page) {
+    $PAGES='explicity assignment avoids compiler warning';
+    include('ddpages.php'); //re-assings PAGES ARRAY
+    return arr($PAGES,$page,'Page '.$page.' is not defined');
 }
 
 

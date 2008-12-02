@@ -1,6 +1,6 @@
 /* ==================================================== *\
  * Andromeda Generated CSS file                         
- * Generated: Sat, 29 Nov 2008 11:30:05 -0500
+ * Generated: Tue, 02 Dec 2008 13:04:50 -0500
  * Skin, color, size: win2k, gray, 1024
 \* ==================================================== */
         
@@ -338,6 +338,30 @@ div.tbody div.selected div {
     border-left:             1px solid #5E71A2;
     border-right:            1px solid #5E71A2;
     background-color:        #5E71A2;
+}
+
+div.tbody div.flavor0 div {
+    border-left:             1px solid #A0FFA0;
+    border-right:            1px solid #A0FFA0;
+    background-color:        #A0FFA0;
+}
+
+div.tbody div.flavor1 div {
+    border-left:             1px solid #A0A0FF;
+    border-right:            1px solid #A0A0FF;
+    background-color:        #A0A0FF;
+}
+
+div.tbody div.flavor2 div {
+    border-left:             1px solid #FFA0A0;
+    border-right:            1px solid #FFA0A0;
+    background-color:        #FFA0A0;
+}
+
+div.tbody div.flavor3 div {
+    border-left:             1px solid #FF00FF;
+    border-right:            1px solid #FF00FF;
+    background-color:        #FF00FF;
 }
 
 div.tbody div div {

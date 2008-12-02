@@ -354,12 +354,19 @@ class androX6 {
         
         # These parameters have to be sent from the back.  They
         # figure everything out.
-        $sortable = gp('xSortable','N')=='Y';
-        $gridHeight=gp('xGridHeight',500);
+        $sortable  = gp('xSortable','N')=='Y';
+        $gridHeight= gp('xGridHeight',500);
+        $lookups   = gp('xLookups','N')=='Y';
+        $edit      = ($tabPar != '') && ($this->dd['x6childwrites'] == 'Y');
+        x6Debug($tabPar);
+        x6Debug($this->dd['x6childwrites']);
+        x6Debug($edit);
         
         # Now make up the generic div and add all of the cells
-        $bb = gp('xButtonBar','N')=='Y';
-        $grid = new androHTMLTabDiv($gridHeight,$table_id,false,$sortable,$bb);
+        $bb = gp('xButtonBar','N')=='Y' || $edit;
+        $grid = new androHTMLTabDiv(
+            $gridHeight,$table_id,$lookups,$sortable,$bb,$edit
+        );
         $this->tabDivGeneric($grid,$this->dd,$tabPar);
         $grid->addData($answer);
         
@@ -369,9 +376,9 @@ class androX6 {
         if($tabPar<>'') {
             $grid->ap['x6tablePar']=$tabPar;
         }
-        if(arr($this->dd,'x6childwrites','N')=='Y') {
-            $grid->editInPlace();
-        }
+        #if(arr($this->dd,'x6childwrites','N')=='Y') {
+        #    $grid->editInPlace();
+        #}
         
         # If they asked for the entire grid, send it back
         # as *MAIN* and let the browser put it where it belongs 
@@ -584,7 +591,10 @@ class androX6 {
         $hpane1  = $hinside - $hh1 - $htabs - ($pad0 * 2);
         
         # $hchild is the height of the empty nested tab
-        # pane, hardcoded at pad0
+        # pane, hardcoded at pad0.  This is where the child 
+        # tables are initially displayed -- at the bottom of the
+        # detail pane.  They are initially slid all of the way down,
+        # that is why their height is only pad0.
         $hempty  = $pad0;
         
         # $hdetail is the height of the detail pane inside of the 
@@ -599,7 +609,8 @@ class androX6 {
         
         # Begin with title and tabs
         $top->h('h1',$dd['description']);
-        $tabs = $top->addTabs('tabs_'.$table_id,$hpane1);
+        $options = array('x6profile'=>'conventional');
+        $tabs = $top->addTabs('tabs_'.$table_id,$hpane1,$options);
         $lookup = $tabs->addTab('Lookup');
         $detail = $tabs->addTab('Detail',true);
 
@@ -609,7 +620,8 @@ class androX6 {
         # and bottom.  Divide up the left-right free space to
         # put 1/3 on the left and the remaining on the right.
         $divgrid = $lookup->h('div');
-        $grid = $divgrid->addTabDiv($hpane1 - ($hlh*2),true);
+        $grid = $divgrid->addTabDiv($hpane1 - ($hlh*2),$table_id,true,true);
+        $grid->hp['x6profile'] = 'conventional';
         $gridWidth = $this->tabDivGeneric($grid,$dd);
         # Work out the available free width after making the grid
         $wAvail = x6cssDefine('insidewidth')
@@ -625,18 +637,19 @@ class androX6 {
         # because otherwise the programmer would have selected
         # a different profile.
         #
-        $divDetail = $detail->h('div');
-        include 'x6plugindetailDisplay.php';
-        $x6detail = new x6plugindetailDisplay;
-        $x6detail->main($divDetail,$dd,$hdetail);
+        $divDetail = $detail->addDetail($dd['table_id'],true,$hdetail);
         $divDetail->ap['xTabSelector'] = $tabs->ts;
         $divDetail->ap['xTabIndex']    = 1;
         
-        # The div kids is a tabbar of child tables
-        $options=array('slideup'=>$divDetail->innerId
+        # The div kids is a tabbar of child tables.  Notice that we
+        # put nothing into them.  They are loaded dynamically when
+        # the user picks them.
+        $options=array('slideup'=>$divDetail->hp['id']
+            ,'slideupinner'=>$divDetail->innerId
             ,'styles'=>array('overflow'=>'hidden')
         );
         $tabKids = $detail->addTabs('kids_'.$table_id,$hempty,$options);
+        $tabKids->hp['xOffset'] = 2;
         $tab = $tabKids->addTab("Hide");
         foreach($dd['fk_children'] as $child=>$info) {
             #$tc = new androHTMLTableController($child);

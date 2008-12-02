@@ -29,15 +29,18 @@
    do not work at all on Internet Explorer and severely slow you 
    down while running.
    
-   Therefore, it is desirable to be able to turn them off an on
+   Therefore, it is desirable to be able to turn them off andon
    from time to time.  The best thing to do is comment them all
    out completely, but that can be tedious.  The following two
    Beanshell files show the jEdit commands for turning logging
    on and off by commenting and uncommenting the relevant lines.
    
+   If you want to do it manually, just replace all "console."
+   with "//console." or vice-versa.
+   
    # Beanshell: Turn logging off by commenting out lines
-    SearchAndReplace.setSearchString("//console.");
-    SearchAndReplace.setReplaceString("//console.");
+    SearchAndReplace.setSearchString("console.");
+    SearchAndReplace.setReplaceString("console.");
     SearchAndReplace.setBeanShellReplace(false);
     SearchAndReplace.setIgnoreCase(true);
     SearchAndReplace.setRegexp(false);
@@ -45,8 +48,8 @@
     SearchAndReplace.replaceAll(view);
 
    # Beanshell: Turn logging on by uncommenting the lines.
-    SearchAndReplace.setSearchString("//console.");
-    SearchAndReplace.setReplaceString("//console.");
+    SearchAndReplace.setSearchString("console.");
+    SearchAndReplace.setReplaceString("console.");
     SearchAndReplace.setBeanShellReplace(false);
     SearchAndReplace.setIgnoreCase(true);
     SearchAndReplace.setRegexp(false);
@@ -503,13 +506,16 @@ var x6 = {
     },
     
     initFocus: function() {
-        var first = $('[x6firstFocus=Y]:last');
+        //var str   = '[x6firstFocus=Y]:not([disabled]):reallyvisible:first';
+        var str   = 'input:not([disabled]):reallyvisible:first';        
+        var first = $(str);
         if(first.length>0) first.focus();
         else $('.x6main').focus();
     },
     
     // Keyboard handler
     keyDispatcher: function(e) {
+        /*
         var x = e.keyCode;
         
         // First make a big list of codes and look for the event
@@ -574,6 +580,9 @@ var x6 = {
         // KFD 8/4/08, this never worked, removed.
         if(e.altKey)   retval = 'Alt'   + retval;
         if(e.shiftKey) retval = 'Shift' + retval;
+        */
+        
+        var retval = u.keyLabel(e);
         
         // Make list of keys to stop no matter what
         var stopThem = [ 'CtrlF5', 'F10' ];
@@ -587,7 +596,7 @@ var x6 = {
             e.stopPropagation();
             return false;
         }
-        else if (!x6events.fireEvent('key_'+retval,null)) {
+        else if (!x6events.fireEvent('key_'+retval,retval)) {
             //console.log("x6.keyDispatch: handler returned false, stopping propagation.");
             e.stopPropagation();
             return false;
@@ -1013,91 +1022,6 @@ var x6inputs = {
     }
 }
 
-/* **************************************************************** *\
-
-   Additional routines for jquery tabs
-   
-\* **************************************************************** */
-x6tabs = {
-    slideUp: function(event,ui,topPane) {
-        var obj = u.byId(topPane);
-        if(typeof(obj.currentChild)=='undefined') obj.currentChild='*';
-        var currentChild = obj.currentChild
-        var newChild     = ui.panel.id;
-        
-        // if UI.index = 0, they clicked hide.  We do not have to
-        // shrink up the tab because jQuery appears to reset heights
-        // on a tab when it is hidden from view.  So when the user
-        // picks the "hide" tab,  all we have to do is pull down
-        // the top pane
-        if(ui.index==0) {
-            if(currentChild!='*') {
-                var newHeight=$('#'+currentChild).height()-350;
-                var newHeight = $('#'+topPane).height()+350;
-                $('#'+topPane).animate( {height: newHeight},500,null
-                    ,function() { $(this).css('overflow-y','scroll'); }
-                );
-                obj.currentChild = '*';
-                return true;
-            }
-        }
-        
-        // If no tab, slide up and slide down 
-        if(currentChild=='*') {
-            var newHeight = $('#'+topPane).height()-350;
-            $('#'+topPane).animate( {height: newHeight},500,null
-                ,function() { 
-                    $(this).css('overflow-y','scroll');
-                }
-            );
-            // Originally I had this in after the toppane scrolled
-            // up, but it looks cooler if it happens a little bit
-            // after.
-            var newHeight=$(ui.panel).height()+350;
-            setTimeout(function() {
-                    $(ui.panel).animate({height: newHeight},500,null
-                        ,function() { x6tabs.slideUpData(newChild,newHeight) }
-                    );
-            },200);
-            u.byId(topPane).currentChild = newChild;
-            return true;
-        }
-
-        // If we are still here, they picked one child tab
-        // while another was still open.  We have to drop down
-        // the selected tab.  We have to do this even if they
-        // swap around between tabs, because jQuery restores the
-        // original height (3px or so) when it hides a tab.
-        var newHeight=$(ui.panel).height()+350;
-        setTimeout(function() {
-                $(ui.panel).animate({height: newHeight},500,null
-                    ,function() { x6tabs.slideUpData(newChild,newHeight) } 
-                );
-        },100);
-        u.byId(topPane).currentChild = newChild;
-        return true;
-    },
-    
-    slideUpData: function(paneId,newHeight) {
-        var pane     = u.byId(paneId);
-        var tablePar = u.p(pane,'x6tablePar');
-        var table    = u.p(pane,'x6table'   );
-        var skeyPar  = u.bb.vgfGet('skey_'+tablePar);
-        ua.json.init(   'x6page'    ,table        );
-        ua.json.addParm('x6action'  ,'browseFetch');
-        ua.json.addParm('tableIdPar',tablePar     );
-        ua.json.addParm('skeyPar'   ,skeyPar      );
-        ua.json.addParm('sendGrid'  ,1            );
-        ua.json.addParm('xSortable' ,'Y'          );
-        ua.json.addParm('xReturnAll','Y'          );
-        ua.json.addParm('xGridHeight',newHeight-2  ); // assume borders
-        if(ua.json.execute()) {
-            ua.json.process(paneId);
-            var id = $(pane).find("div")[0].id;
-            x6.initOne(id);
-        }
-    }
-}
 
 
 /* **************************************************************** *\
@@ -2443,7 +2367,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
         x6events.unsubscribeToEvent('key_DownArrow',id);
         x6events.unsubscribeToEvent('key_Enter',id);
     }
-    if( ['x6tabDiv','twosides'].indexOf(self.x6profile)>=0) self.keyboardOn();
+    if(u.p(self,'xInitKeyboard','N')=='Y') self.keyboardOn();
 
 
     
@@ -2484,8 +2408,10 @@ x6plugins.x6tabDiv = function(self,id,table) {
             //ua.json.addParm('xSortable'  ,'N');
             //ua.json.addParm('xReturnAll' ,'N');
             json.addParm('x6action'   ,'browseFetch');
-            json.addParm('xSortable'  ,'N');
+            json.addParm('xSortable'  ,u.p(this,'xSortable'  ,'N'));
             json.addParm('xReturnAll' ,'N');
+            json.addParm('xGridHeight',u.p(this,'xGridHeight',500));
+            json.addParm('xLookups'   ,u.p(this,'xLookups'   ,'N'));
             if( json.execute()) {
                 json.process();
                 // The standard path is to take data returned
@@ -2532,3 +2458,135 @@ x6plugins.x6tabDiv = function(self,id,table) {
         u.dialogs.clear();
     }
 }
+
+
+/* **************************************************************** *\
+
+   Additional routines for jquery tabs
+   
+\* **************************************************************** */
+x6tabs = {
+    slideUp: function(event,ui,topPane,topPaneI) {
+        var obj = u.byId(topPane);
+        if(typeof(obj.currentChild)=='undefined') obj.currentChild='*';
+        var currentChild = obj.currentChild
+        var newChild     = ui.panel.id;
+        
+        // if UI.index = 0, they clicked hide.  We do not have to
+        // shrink up the tab because jQuery appears to reset heights
+        // on a tab when it is hidden from view.  So when the user
+        // picks the "hide" tab,  all we have to do is pull down
+        // the top pane
+        if(ui.index==0) {
+            if(currentChild!='*') {
+                var newHeight = $('#'+topPane).height()+350;
+                var newHeightI= $('#'+topPaneI).height()+350;
+                $('#'+topPaneI).animate( {height: newHeightI},500,null
+                    ,function() { $(this).css('overflow-y','scroll'); }
+                );
+                $('#'+topPane).animate( {height: newHeight},500);
+                obj.currentChild = '*';
+                return true;
+            }
+        }
+        
+        // If no tab, slide up and slide down 
+        if(currentChild=='*') {
+            var newHeight = $('#'+topPane).height()-350;
+            var newHeightI= $('#'+topPaneI).height()-350;
+            setTimeout(function() {
+                $('#'+topPaneI).animate( {height: newHeightI},500,null
+                    ,function() {
+                        $(this).css('overflow-y','scroll');
+                    }
+                );
+            },100);
+            $('#'+topPane).animate( {height: newHeight},500 );
+            //$('#'+topPane).animate( {height: newHeight},500,null
+            //    ,function() { 
+            //        $(this).css('overflow-y','scroll');
+            //    }
+            //);
+            // Originally I had this in after the toppane scrolled
+            // up, but it looks cooler if it happens a little bit
+            // after.
+            var newHeight=$(ui.panel).height()+350;
+            setTimeout(function() {
+                    $(ui.panel).animate({height: newHeight},500,null
+                        ,function() { x6tabs.slideUpData(newChild,newHeight) }
+                    );
+            },200);
+            u.byId(topPane).currentChild = newChild;
+            return true;
+        }
+
+        // If we are still here, they picked one child tab
+        // while another was still open.  We have to drop down
+        // the selected tab.  We have to do this even if they
+        // swap around between tabs, because jQuery restores the
+        // original height (3px or so) when it hides a tab.
+        var newHeight=$(ui.panel).height()+350;
+        setTimeout(function() {
+                $(ui.panel).animate({height: newHeight},500,null
+                    ,function() { x6tabs.slideUpData(newChild,newHeight) } 
+                );
+        },100);
+        u.byId(topPane).currentChild = newChild;
+        return true;
+    },
+    
+    slideUpData: function(paneId,newHeight) {
+        var pane     = u.byId(paneId);
+        var tablePar = u.p(pane,'x6tablePar');
+        var table    = u.p(pane,'x6table'   );
+        var skeyPar  = u.bb.vgfGet('skey_'+tablePar);
+        ua.json.init(   'x6page'    ,table        );
+        ua.json.addParm('x6action'  ,'browseFetch');
+        ua.json.addParm('tableIdPar',tablePar     );
+        ua.json.addParm('skeyPar'   ,skeyPar      );
+        ua.json.addParm('sendGrid'  ,1            );
+        ua.json.addParm('xSortable' ,'Y'          );
+        ua.json.addParm('xReturnAll','Y'          );
+        ua.json.addParm('xGridHeight',newHeight-2  ); // assume borders
+        if(ua.json.execute()) {
+            ua.json.process(paneId);
+            var id = $(pane).find("div")[0].id;
+            x6.initOne(id);
+        }
+    }
+}
+
+x6plugins.x6tabs = function(self,id,table) {
+    // We use a standard routine on the PHP side to generate
+    // the initialization command, and that routine always
+    // passes in the three parameters above.  For tabs we
+    // ignore the parameters, we do not need them.
+    
+    // The count and offset variables determine which
+    // keystrokes to listen for.
+    var count = Number($('#'+id+' > ul > li').length);
+    var offset= Number(u.p(self,'xOffset',0));
+    
+    for(var x = offset; x<(offset+count); x++) {
+        x6events.subscribeToEvent('key_Ctrl'+x.toString(),self.id);
+        self['receiveEvent_key_Ctrl'+x.toString()] = function(key) {
+            console.time("tabs key");
+            console.time("checking for visible");
+            // Abort if he is not really visible, this is the
+            // easiest way to do this, and we don't have to 
+            // keep track of whether or not it is visible.
+            if($(this).find(":reallyvisible").length==0) return;
+            console.timeEnd("checking for visible");
+            
+            // get the offset, the keystroke, 
+            // and calculate the index.
+            var offset = Number(u.p(this,'xOffset',0));
+            var key    = Number(key.slice(-1));
+            var index  = (key - offset);
+            var str = '#'+this.id+' > ul';
+            $(str).tabs('select',index);
+            console.timeEnd("tabs key");
+        }
+    }
+}
+

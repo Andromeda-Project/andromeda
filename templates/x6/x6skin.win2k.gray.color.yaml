@@ -39,6 +39,10 @@ defines:
     white:          @ffffff
     dark:           @5E71A2
     selected:       @30FF30
+    flavor0:        @A0FFA0
+    flavor1:        @A0A0FF
+    flavor2:        @FFA0A0
+    flavor3:        @FF00FF
     
     # Colors for highlighting and selecting
     histrong:

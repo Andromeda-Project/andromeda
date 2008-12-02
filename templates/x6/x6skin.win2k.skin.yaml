@@ -346,6 +346,22 @@ defines:
         bgc:     *histrongbgc
         borl:    *bw0 *bs0 *histrongbgc
         borr:    *bw0 *bs0 *histrongbgc
+    div.tbody div.flavor0 div:
+        bgc:     *flavor0
+        borl:    *bw0 *bs0 *flavor0
+        borr:    *bw0 *bs0 *flavor0
+    div.tbody div.flavor1 div:
+        bgc:     *flavor1
+        borl:    *bw0 *bs0 *flavor1
+        borr:    *bw0 *bs0 *flavor1
+    div.tbody div.flavor2 div:
+        bgc:     *flavor2
+        borl:    *bw0 *bs0 *flavor2
+        borr:    *bw0 *bs0 *flavor2
+    div.tbody div.flavor3 div:
+        bgc:     *flavor3
+        borl:    *bw0 *bs0 *flavor3
+        borr:    *bw0 *bs0 *flavor3
 
     div.tbody div div:
         bort:   0
