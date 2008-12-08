@@ -296,7 +296,7 @@ class x4_fpdf extends fpdf {
        }
        
        # Figure out if we need to reformat as money
-       if($this->cols[$col]['money']) {
+       if($this->cols[$col]['money'] &&is_numeric($text)) {
            $text = hmoney($text);
        }
        
