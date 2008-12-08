@@ -1135,6 +1135,24 @@ jQuery.extend(
   jQuery.expr[ ":" ], 
   { reallyvisible : "!(jQuery(a).is(':hidden') || jQuery(a).parents(':hidden').length)" }
 );
+
+/*
+jQuery.fn.isVisible = function(obj){
+    var rv = true;
+    if( !$(obj).is( ':visible' ) ) {
+        console.log("object ",this);
+        return $([]);
+    }
+    $(obj).parents().each(
+        function(){
+            if( !$(this).is(':visible') ) {
+                console.log("not visible!  stopping ",this);
+                return $([]);
+            }
+    });
+    return obj;
+}
+*/
  
 /*
 * Plugin to track focus
@@ -2421,7 +2439,24 @@ var u = {
         123: 'F12'
     },
     keyLabel: function(e) {
-        var x = e.keyCode || e.charCode;
+        // if e.originalEvent is defined, this is a jQuery event.
+        // jQuery events have charCode for non-meta keys, and they
+        // shift the alphabet up by 32 characters for no good reason
+        // at all.  
+        if(e.originalEvent) {
+            if(e.charCode >= 97 && e.charCode <= 122) {
+                var x = e.charCode - 32;
+            }
+            else if(e.charCode != 0) {
+                var x = e.charCode
+            }
+            else {
+                var x = e.keyCode;
+            }
+        }
+        else {
+            var x = e.keyCode;
+        }
         
         x4Keys = this.metaKeys;
     
@@ -2439,7 +2474,7 @@ var u = {
         // If letters we look at shift key and return
         // upper or lower case
         if(x >= 65 && x <= 90) {
-            if(e.shiftKey) {
+            if(e.shiftKey || e.ctrlKey || e.altKey) {
                 var letters = 
                     [ 'A', 'B', 'C', 'D', 'E', 'F', 'G',
                       'H', 'I', 'J', 'K', 'L', 'M', 'N',
@@ -2453,6 +2488,8 @@ var u = {
                       'o', 'p', 'q', 'r', 's', 't', 'u',
                       'v', 'w', 'x', 'y', 'z' ];
             }
+            if(e.ctrlKey)  retval = 'Ctrl'  + retval;
+            if(e.altKey)   retval = 'Alt'   + retval;
             var retval = letters[x - 65];
         }
         
@@ -2502,10 +2539,10 @@ var u = {
                     222: '"'
                 }
             }
-            return lastChance[x];
+            var retval = lastChance[x];
+            return retval;
         }
         // otherwise put on any prefixes and return
-        console.log(x);
         return retval;
     },
     
@@ -3267,7 +3304,7 @@ window.a = window.ua = window.$a = {
                 }
             }
             if(typeof(obj)=='string') {
-                var jqObjects = $(obj);
+                var jqObjects = $(obj).find(':input');
             }
             else {
                 var jqObjects = $(obj).find(":input");
