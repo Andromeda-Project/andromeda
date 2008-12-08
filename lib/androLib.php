@@ -1627,29 +1627,29 @@ class androHtml {
             $a->hp['style']    = 'float: left';
             $bb->buttons['save'] = $a;
             $a->initPlugin();
-            jqDocReady("x6events.fireEvent('disable_save')");
+            jqDocReady("x6events.fireEvent('disable_save_$table_id')");
         }
         if(in_array('remove',$abuts)) {
-            $a=$bb->h('a-void','Remove');
+            $a=$bb->h('a-void','Delete');
             $a->addClass('button');
             $a->hp['x6table']  = $table_id;
-            $a->hp['x6plugin'] = 'buttonRemove';
-            $a->hp['id']       = 'buttonRemove_'.$table_id;
+            $a->hp['x6plugin'] = 'buttonDelete';
+            $a->hp['id']       = 'buttonDelete_'.$table_id;
             $a->hp['style']    = "float: right; margin-right: {$pad0}px";
             $bb->buttons['remove'] = $a;
             $a->initPlugin();
-            jqDocReady("x6events.fireEvent('disable_remove')");
+            jqDocReady("x6events.fireEvent('disable_remove_$table_id')");
         }
         if(in_array('abandon',$abuts)) {
-            $a=$bb->h('a-void','Abandon');
+            $a=$bb->h('a-void','Cancel');
             $a->addClass('button');
             $a->hp['x6table']  = $table_id;
-            $a->hp['x6plugin'] = 'buttonAbandon';
-            $a->hp['id']       = 'buttonAbandon_'.$table_id;
+            $a->hp['x6plugin'] = 'buttonCancel';
+            $a->hp['id']       = 'buttonCancel_'.$table_id;
             $a->hp['style']    = 'float: right';
             $bb->buttons['abandon'] = $a;
             $a->initPlugin();
-            jqDocReady("x6events.fireEvent('disable_abandon')");
+            jqDocReady("x6events.fireEvent('disable_abandon_$table_id')");
         }
             
         return $bb;
@@ -2706,8 +2706,8 @@ class androHTMLTabDiv extends androHTML {
         
         # Add features if editInPlace
         if($edit) {
-            $this->hp['uiNewRow' ] = 'inline'; // vs. nothing
-            $this->hp['uiEditRow'] = 'inline'; // vs. nothing
+            $this->hp['uiNewRow' ] = 'Y'; // vs. nothing
+            $this->hp['uiEditRow'] = 'Y'; // vs. nothing
             
             # Create a hidden object that contains inputs we will
             # clone over to the grid on demand
