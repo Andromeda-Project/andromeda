@@ -68,7 +68,8 @@ var x4 =  {
     *
     */
     keyLabel: function(e) {
-        var x = e.keyCode;
+        var x = e.keyCode || e.charCode;
+        //console.log(e);
         
         var x4Keys = { };
         x4Keys['8']  = 'BackSpace';
@@ -181,6 +182,7 @@ var x4 =  {
         });
         
         $(document).keypress(function(e) {
+                //e = window.event || e;
             var keyLabel = x4.keyLabel(e);
             
             // Add Shift and Alt if they are recorded
@@ -227,11 +229,14 @@ var x4 =  {
                      'F1','F2','F3','F4' ,'F5' ,'F6'
                     ,'F7','F8','F9','F10','F11','F12'
                 ];
-                if(list.indexOf(keyLabel)>0) {
-                    var k = keyLabel
-                    x4.debug("doc keypress stopping "+k+" unconditionally");
-                    stop = true;
-                }
+                // KFD 12/5/08, this causes text input to be screwed
+                // up because F1 is the same as letter 'p', and it
+                // prevents things.  Have to live w/o for now.
+                //if(list.indexOf(keyLabel)>0) {
+                //    var k = keyLabel
+                //    x4.debug("doc keypress stopping "+k+" unconditionally");
+                //   stop = true;
+                //}
             }
             // Escape key should always stop propagation, it turns
             // off things like returning to menu, stops scripts and 
