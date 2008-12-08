@@ -35,12 +35,12 @@
    Beanshell files show the jEdit commands for turning logging
    on and off by commenting and uncommenting the relevant lines.
    
-   If you want to do it manually, just replace all "console."
+   If you want to do it manually, just replace all "//console."
    with "//console." or vice-versa.
    
    # Beanshell: Turn logging off by commenting out lines
-    SearchAndReplace.setSearchString("console.");
-    SearchAndReplace.setReplaceString("console.");
+    SearchAndReplace.setSearchString("//console.");
+    SearchAndReplace.setReplaceString("//console.");
     SearchAndReplace.setBeanShellReplace(false);
     SearchAndReplace.setIgnoreCase(true);
     SearchAndReplace.setRegexp(false);
@@ -48,8 +48,8 @@
     SearchAndReplace.replaceAll(view);
 
    # Beanshell: Turn logging on by uncommenting the lines.
-    SearchAndReplace.setSearchString("console.");
-    SearchAndReplace.setReplaceString("console.");
+    SearchAndReplace.setSearchString("//console.");
+    SearchAndReplace.setReplaceString("//console.");
     SearchAndReplace.setBeanShellReplace(false);
     SearchAndReplace.setIgnoreCase(true);
     SearchAndReplace.setRegexp(false);
@@ -463,32 +463,13 @@ var x6 = {
     // DOM elements with property x6plugIn=xxx.  
     // Invoke the constructor for each one.
     init: function() {
-        // KFD 11/28/08.  Removed this and put initialization commands
-        //                into jqDocReady.  Turns out each plugin init
-        //                takes 5ms, but the jquery search for them
-        //                takes 350ms of a second, terrible.  So the
-        //                PHP code is generating commands to initialize
-        //                each plugin.
-        // Job 1: Activate all of the plugins
-        /*
-        for(var plugInId in x6plugins) {
-            $('[x6plugIn='+plugInId+']').each(function() {
-                    if(u.p(this,'id','')=='') {
-                        this.id = u.uniqueId();
-                    }
-                    //console.time("inititialing "+this.id);
-                    this.zTable = u.p(this,'x6table');
-                    //console.log("Initializing x6plugin  ",this);
-                    x6plugins[plugInId](this,this.id,this.zTable);
-                    //console.timeEnd("inititialing "+this.id);
-            });
-        }
-        */
-        
-        // Job 2, activate a global keyboard handler
+        // Activate a global keyboard handler
+        // SEE ALSO: input.keyDown(), it must also pass some
+        //           events to keyDispatcher that don't go to
+        //           the document.keypress from an input 
         $(document).keypress(function(e) {
                 //console.group("Document Keypress");
-                //console.log(e); 
+                //console.log("keypress ",e);
                 var retval= x6.keyDispatcher(e);
                 //console.groupEnd(); 
                 return retval;
@@ -508,6 +489,7 @@ var x6 = {
     initFocus: function() {
         //var str   = '[x6firstFocus=Y]:not([disabled]):reallyvisible:first';
         var str   = 'input:not([disabled]):reallyvisible:first';        
+        //var first = $('input:not([disabled])').isVisible().find(':first');
         var first = $(str);
         if(first.length>0) first.focus();
         else $('.x6main').focus();
@@ -515,73 +497,6 @@ var x6 = {
     
     // Keyboard handler
     keyDispatcher: function(e) {
-        /*
-        var x = e.keyCode;
-        
-        // First make a big list of codes and look for the event
-        var x4Keys = { };
-        x4Keys['8']  = 'BackSpace';
-        x4Keys['9']  = 'Tab';
-        x4Keys['13'] = 'Enter';
-        x4Keys['16'] = 'Shift';
-        x4Keys['17'] = 'Ctrl';
-        x4Keys['18'] = 'Alt';
-        x4Keys['20'] = 'CapsLock';
-        x4Keys['27'] = 'Esc';
-        x4Keys['33'] = 'PageUp';
-        x4Keys['34'] = 'PageDown';
-        x4Keys['35'] = 'End';
-        x4Keys['36'] = 'Home';
-        x4Keys['37'] = 'LeftArrow';
-        x4Keys['38'] = 'UpArrow';
-        x4Keys['39'] = 'RightArrow';
-        x4Keys['40'] = 'DownArrow';
-        x4Keys['45'] = 'Insert';
-        x4Keys['46'] = 'Delete';
-        x4Keys['112']= 'F1' ;
-        x4Keys['113']= 'F2' ;
-        x4Keys['114']= 'F3' ;
-        x4Keys['115']= 'F4' ;
-        x4Keys['116']= 'F5' ;
-        x4Keys['117']= 'F6' ;
-        x4Keys['118']= 'F7' ;
-        x4Keys['119']= 'F8' ;
-        x4Keys['120']= 'F9' ;
-        x4Keys['121']= 'F10';
-        x4Keys['122']= 'F11';
-        x4Keys['123']= 'F12';
-    
-        // If they did not hit a control key of some sort, look
-        // next for letters
-        var retval = '';
-        if(typeof(x4Keys[x])!='undefined') {
-            retval = x4Keys[x];
-        }
-        else {
-            var letters = 
-                [ 'A', 'B', 'C', 'D', 'E', 'F', 'G',
-                  'H', 'I', 'J', 'K', 'L', 'M', 'N',
-                  'O', 'P', 'Q', 'R', 'S', 'T', 'U',
-                  'V', 'W', 'X', 'Y', 'Z' ];
-            var numbers = [ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ];
-            if(e.charCode >= 65 && e.charCode <= 90) {
-                retval = letters[e.charCode - 65];
-            }
-            else if(e.charCode >= 97 && e.charCode <= 121) {
-                retval = letters[e.charCode - 97];
-            }
-            else if(e.charCode >= 48 && e.charCode <= 57) {
-                retval = numbers[e.charCode - 48];
-            }
-        }
-    
-        // otherwise put on any prefixes and return
-        if(e.ctrlKey)  retval = 'Ctrl'  + retval;
-        // KFD 8/4/08, this never worked, removed.
-        if(e.altKey)   retval = 'Alt'   + retval;
-        if(e.shiftKey) retval = 'Shift' + retval;
-        */
-        
         var retval = u.keyLabel(e);
         
         // Make list of keys to stop no matter what
@@ -614,57 +529,6 @@ var x6 = {
    
 \* **************************************************************** */
 var x6inputs = {
-    // This routine takes an input that has no x6 event
-    // handlers and adds all of the event handlers to it
-    initInput: function(input,tabIndex,mode,tabGroup) {
-        //console.group("Initializing Input");
-        //console.log("tabindex, mode, tabgroup: ",tabIndex,mode,tabGroup);
-        //console.log(input);
-        
-        // Get the read-only decision
-        if(mode=='new') {
-            //console.log("hello, ro ins");
-            input.disabled = u.p(input,'xroins','N')=='Y';
-        }
-        else {
-            //console.log("hello, ro upd");
-            input.disabled = u.p(input,'xroupd','N')=='Y';
-        }
-        
-        // This is standard events and attributes
-        input.setAttribute('xTabGroup',tabGroup);
-        input.setAttribute('tabIndex' ,tabIndex);
-        /* IE Madness.  If no value assigned, the property 
-           is not there, must use u.p                         */;
-        //input.zOriginalValue = input.value.trim();
-        // KFD 11/27/08, this belongs in focus...
-        input.zOriginalValue = u.p(input,'value','').trim();
-        if(!input.zRO) {
-            $(input)
-                .keyup(function(e)   { x6inputs.keyUp(e,this)   })
-                .focus(function(e)   { x6inputs.focus(this)   })
-                .blur(function(e)    { x6inputs.blur(this)    })
-                .keydown(function(e) { return x6inputs.keyDown(e,this) });
-        }
-        if(mode=='new') {
-            input.zNew = 1;
-        }
-        x6inputs.setClass(input);
-        
-        // KFD 11/1/08, EXPERIMENTAL use of jquery.maskedinput
-        //if(u.p(input,'xinputmask','')!='') {
-        //    $(input).mask(u.p(input,'xinputmask'));
-        //}
-
-        // This is important, it says that this is an 
-        // active input.  This distinguishes it from possible
-        // hidden inputs that were used as a clone source 
-        // that have many of the same properties.
-        input.zActive = 1;
-
-        //console.groupEnd();
-    },
-    
     // Key up is used to look for changed values because
     // you do not see an input's new value until the keyup 
     // event.  You do not see it in keypress or keydown.
@@ -684,7 +548,6 @@ var x6inputs = {
     //
     keyDown: function(e,inp) {
         //console.group('Input keyDown ');
-        //console.log(e);
         //console.log(inp);
         var keyLabel=u.keyLabel(e);
         var isTab   =keyLabel=='Tab'    || keyLabel=='ShiftTab';
@@ -695,7 +558,35 @@ var x6inputs = {
         
         // All meta keys return true immediately except TAB and ENTER
         if(isMeta && !isNav) {
-            //console.log("meta key but not tab or enter, returning true");
+            //console.log(keyLabel);
+            var handUpList = ['UpArrow','DownArrow','PageUp','PageDown'];
+            if(handUpList.indexOf(keyLabel)>=0) {
+                //console.log("Weird key that we pass up to doc-level keyPress");
+                var retval= x6.keyDispatcher(e);
+                //console.groupEnd(); 
+                return retval;
+            }
+            else if(keyLabel=='CtrlLeftArrow') {
+                this.firstInput(inp);
+            }
+            else if(keyLabel=='CtrlRightArrow') {
+                this.lastInput(inp);
+            }
+            else if(keyLabel=='Home') {
+                if(inp.selectionStart == 0 && inp.selectionEnd==0)
+                    this.firstInput(inp);
+            }
+            else if(keyLabel=='End') {
+                //console.log(inp);
+                var ss = inp.selectionStart;
+                var se = inp.selectionEnd;
+                var ln = inp.value.toString().trim().length;
+                //console.log(ss,se,ln);
+                if(ss == se && se == ln) this.lastInput(inp);
+            }
+            else {
+                //console.log("meta but not nav, ret true");
+            }
             //console.groupEnd();
             return true;
         }
@@ -998,6 +889,15 @@ var x6inputs = {
         }
     },
     
+    firstInput: function(inp) {
+        var xtg = u.p(inp,'xTabGroup','tgdefault');
+        $(":input[xtabgroup="+xtg+"]:not([disabled]):first").focus();
+    },
+    lastInput: function(inp) {
+        var xtg = u.p(inp,'xTabGroup','tgdefault');
+        $(":input[xtabgroup="+xtg+"]:not([disabled]):last").focus();
+    },
+    
     jqFocusString: function() {
         return ":input:not([disabled]):first";
     },
@@ -1057,14 +957,14 @@ var x6plugins = {
         }
     },
     */
-    buttonRemove: function(self,id,table) {
-        x6plugins.buttonStandard(self,'remove','CtrlR');
+    buttonDelete: function(self,id,table) {
+        x6plugins.buttonStandard(self,'delete','CtrlD');
         self.main = function() {
             x6events.fireEvent('reqDelRow_'+this.zTable);
         }
     },
-    buttonAbandon: function(self,id,table) {
-        x6plugins.buttonStandard(self,'abandon','CtrlT');
+    buttonCancel: function(self,id,table) {
+        x6plugins.buttonStandard(self,'cancel','Esc');
         self.main = function() {
             if(confirm("Abandon all changes?")) {
                 x6events.fireEvent('reqUndoRow_'+this.zTable);
@@ -1139,15 +1039,15 @@ var x6plugins = {
         self.zKey      = key;
         
         // Respond to an enable event
-        x6events.subscribeToEvent('enable_'+action,self.id);
-        self['receiveEvent_enable_'+action] = function() {
+        x6events.subscribeToEvent('enable_'+action+'_'+self.zTable,self.id);
+        self['receiveEvent_enable_'+action+'_'+self.zTable] = function() {
             this.className = 'button';
             this.zDisabled = false;
         }
 
         // Respond to an disable event
-        x6events.subscribeToEvent('disable_'+action,self.id);
-        self['receiveEvent_disable_'+action] = function() {
+        x6events.subscribeToEvent('disable_'+action+'_'+self.zTable,self.id);
+        self['receiveEvent_disable_'+action+'_'+self.zTable] = function() {
             this.className = 'button_disabled';
             this.zDisabled = true;
         }
@@ -1536,15 +1436,15 @@ x6plugins.tableController = function(self,id,table) {
     */
     x6events.subscribeToEvent('buttonsOn_'+table,id);
     self['receiveEvent_buttonsOn_'+table] = function() {
-        x6events.fireEvent('enable_save');
-        x6events.fireEvent('enable_abandon');
-        x6events.fireEvent('enable_remove');
+        x6events.fireEvent('enable_save_'   +this.zTable);
+        x6events.fireEvent('enable_abandon_'+this.zTable);
+        x6events.fireEvent('enable_remove_' +this.zTable);
     }
     x6events.subscribeToEvent('buttonsOff_'+table,id);
     self['receiveEvent_buttonsOff_'+table] = function() {
-        x6events.fireEvent('disable_save');
-        x6events.fireEvent('disable_abandon');
-        x6events.fireEvent('disable_remove');
+        x6events.fireEvent('disable_save_'   +this.zTable);
+        x6events.fireEvent('disable_abandon_'+this.zTable);
+        x6events.fireEvent('disable_remove_' +this.zTable);
     }
 }
     
@@ -1810,7 +1710,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
     *   should proceed forthwith.
     */
     x6events.subscribeToEvent('uiNewRow_'+table,id);
-    if(uiNewRow!='inline') {
+    if(uiNewRow!='Y') {
         // If not inline, it always stops responding on a new row
         self['receiveEvent_uiNewRow_'+table] = function() {
             this.keyboardOff();
@@ -1897,10 +1797,10 @@ x6plugins.x6tabDiv = function(self,id,table) {
             *   row visible and editable
             */
             tabIndex = 1000;
+            var grid = this;
             $(this).find(':input').each(
                 function() {
-                    x6inputs.initInput(this,tabIndex++,'new','rowNew'); 
-                    this.setAttribute('xTabGroup','rowEdit');
+                    grid.initInput(this,tabIndex++,'new','rowNew'); 
                     this.setAttribute('xClassRow','0');
                 }
             );
@@ -1920,6 +1820,39 @@ x6plugins.x6tabDiv = function(self,id,table) {
             return true;
         }
     }
+    
+   
+    self.initInput = function(input,tabIndex,mode,tabGroup) {
+        //console.group("Initializing Input");
+        //console.log("tabindex, mode, tabgroup: ",tabIndex,mode,tabGroup);
+        //console.log(input);
+        
+        // Get the read-only decision
+        if(mode=='new') {
+            //console.log("hello, ro ins");
+            input.disabled = u.p(input,'xroins','N')=='Y';
+        }
+        else {
+            //console.log("hello, ro upd");
+            input.disabled = u.p(input,'xroupd','N')=='Y';
+        }
+        
+        // This is standard events and attributes
+        input.setAttribute('xTabGroup',tabGroup);
+        input.setAttribute('tabIndex' ,tabIndex);
+        input.zOriginalValue = u.p(input,'value','').trim();
+        if(mode=='new') {
+            input.zNew = 1;
+        }
+        x6inputs.setClass(input);
+        
+        // This is important, it says that this is an 
+        // active input.  This distinguishes it from possible
+        // hidden inputs that were used as a clone source 
+        // that have many of the same properties.
+        input.zActive = 1;
+        //console.groupEnd();
+    }
 
 
     /*
@@ -1928,9 +1861,9 @@ x6plugins.x6tabDiv = function(self,id,table) {
     *   it just turns off the keyboard.
     */
     x6events.subscribeToEvent('uiEditRow_'+table,id);
-    if(uiEditRow!='inline') {
+    if(uiEditRow!='Y') {
         self['receiveEvent_uiEditRow_'+table] = function(skey) {
-            this.keyboardOff();
+            //this.keyboardOff();
         }
     }
     else {
@@ -1987,17 +1920,18 @@ x6plugins.x6tabDiv = function(self,id,table) {
                 }
             );
             tabIndex = 1000;
+            var grid = this;
             $(this).find('.tbody #row_'+skey+' :input').each(
                 function() {
+                    grid.initInput(this,tabIndex++,'edit','rowEdit');
                     this.setAttribute('xClassRow',0);
-                    x6inputs.initInput(this,tabIndex++,'edit','rowEdit');
                 }
             );
             var string = x6inputs.jqFocusString();
             $(this).find('.tbody #row_'+skey).addClass('selected');
             $(this).find('.tbody #row_'+skey+' '+string).focus();
             x6events.fireEvent('buttonsOn_'+this.zTable);
-            this.keyboardOff();
+            //this.keyboardOff();
             u.bb.vgfSet('skey_'+this.zTable,skey);
             //console.log('uiEditRow Completed, returning true');
             //console.groupEnd();
@@ -2061,9 +1995,10 @@ x6plugins.x6tabDiv = function(self,id,table) {
     *   Undo Row: the table controller has already reset
     *   any inputs, we will just remove them
     */
-    if(uiEditRow=='inline' || uiNewRow=='inline') {
+    if(uiEditRow=='Y' || uiNewRow=='Y') {
         x6events.subscribeToEvent('uiUndoRow_'+table,id);
         self['receiveEvent_uiUndoRow_'+table] = function(skey) {
+            x6events.fireEvent('buttonsOff_'+this.zTable);
             this.removeInputs();
             $(this).find("#row_"+skey).mouseover();
             u.bb.vgfSet('skey_'+this.zTable,-1);
@@ -2266,7 +2201,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
     *    If a grid is displaying inputs, it may also have
     *    to display errors.
     */
-    if(uiEditRow=='inline' || uiNewRow=='inline') {
+    if(uiEditRow=='Y' || uiNewRow=='Y') {
         x6events.subscribeToEvent('uiShowErrors_'+table,id);
         self['receiveEvent_uiShowErrors_'+table] = function(errors) {
             //console.group("tabDiv uiShowErrors");
@@ -2290,33 +2225,18 @@ x6plugins.x6tabDiv = function(self,id,table) {
     }
     
     /*
-    *    Keyboard handling.  At very
-    *    least there are always 3 we accept: arrow keys and
-    *    ENTER key.  These are not automatically subscribed,
-    *    they must be turned on and off according to context.
+    *    Keyboard handling: row navigation
     */
-    // First keyboard event, keydown
     self.receiveEvent_key_UpArrow = function(e) {
         //console.group("tabDiv key_UpArrow");
-        var jqRows = $(this).find('.hilight').prev();
-        if(jqRows.length==0) {
-            //console.log("going for first row");
-            $(this).find('.tbody div:first').addClass('hilight');
+        var jqCurrent = this.jqCurrentRow();
+        var jqRowPrev = $(jqCurrent).prev();
+        if(jqCurrent.length==0) {
+            this.goRowTop();
         }
-        else {
-            // before doing anything, figure how many rows below
-            var rowsBelow = $(this).find('.hilight').nextAll().length;
-            var rowsLimit = Number(u.p(this,'xRowsVisible')) / 2;
-            
-            //console.log("Going for previous row");
-            $(this).find('.tbody div.hilight').removeClass('hilight')
-                .prev().addClass('hilight');
-            if(rowsBelow >= rowsLimit) {
-                var tbody = $(this).find('.tbody');
-                var shNow = tbody.scrollTop();
-                var shNew = Number(u.p(this,'cssLineHeight'));
-                tbody.scrollTop(shNow - (shNew-2));
-            }
+        else if(jqRowPrev.length!=0) {
+            this.goRowJq(jqRowPrev);
+            this.scrollMove(-1);
         }
         x6events.retvals['key_UpArrow'] =false;
         //console.log("tabDiv key_UpArrow finished");
@@ -2324,48 +2244,170 @@ x6plugins.x6tabDiv = function(self,id,table) {
     }
     self.receiveEvent_key_DownArrow = function(e) {
         //console.group("tabDiv key_DownArrow");
-        var jqRowNext = $(this).find('.hilight').next();
-        var jqRowPrev = $(this).find('.hilight').prev();
-        if(jqRowNext.length==0 && jqRowPrev.length==0) {
-            //console.log("going for first row");
-            $(this).find('.tbody div:first').addClass('hilight');
+        //console.log(e);
+        var jqCurrent = this.jqCurrentRow();
+        var jqRowNext = $(jqCurrent).next();
+        if(jqCurrent.length==0) {
+            this.goRowTop();
         }
         else if(jqRowNext.length!=0) {
-            // before doing anything, figure how many rows above
-            var rowsAbove = $(this).find('.hilight').prevAll().length;
-            var rowsLimit = Number(u.p(this,'xRowsVisible')) / 2;
-            
-            //console.log("going for next row");
-            $(this).find('.hilight').removeClass('hilight')
-                .next().addClass('hilight');
-            if(rowsAbove >= rowsLimit) {
-                var tbody = $(this).find('.tbody');
-                var shNow = tbody.scrollTop();
-                var shNew = Number(u.p(this,'cssLineHeight'));
-                tbody.scrollTop(shNow + (shNew -2 ));
-            }
+            this.goRowJq(jqRowNext);
+            this.scrollMove(1);
         }
         x6events.retvals['key_DownArrow'] =false;
         //console.log("tabDiv key_DownArrow finished");
         //console.groupEnd();
+    }
+    self.receiveEvent_key_PageUp = function(e) {
+        //console.group("tabDiv key_DownArrow");
+        var jqCurrent = this.jqCurrentRow();
+        var jqRowPrev = $(jqCurrent).prevAll();
+        if(jqCurrent.length==0) {
+            this.goRowTop();
+        }
+        else if(jqRowPrev.length!=0) {
+            var cntAbove  = jqRowPrev.length;
+            var cntJump   = Number(u.p(this,'xRowsVisible')) - 2;
+            
+            // Figure out how far to go up, then figure the row
+            var rowsChange = cntAbove < cntJump ? cntAbove : cntJump;
+            var newRow     = jqRowPrev[ rowsChange - 1 ];
+            this.goRowJq($(newRow));
+            this.scrollMove(-rowsChange);
+        }
+        x6events.retvals['key_PageUp'] =false;
+        //console.log("tabDiv key_DownArrow finished");
+        //console.groupEnd();
+    }
+    self.receiveEvent_key_PageDown = function(e) {
+        //console.group("tabDiv key_DownArrow");
+        var jqCurrent = this.jqCurrentRow();
+        var jqRowNext = $(jqCurrent).nextAll();
+        if(jqCurrent.length==0) {
+            this.goRowTop();
+        }
+        else if(jqRowNext.length!=0) {
+            // before doing anything, figure how many rows above
+            var cntBelow = jqRowNext.length;
+            var cntJump  = Number(u.p(this,'xRowsVisible')) - 2;
+            
+            // Figure out how far to go up, then figure the row
+            var rowsChange = cntBelow < cntJump ? cntBelow : cntJump;
+            var newRow     = jqRowNext[ rowsChange - 1 ];
+            this.goRowJq($(newRow));
+            this.scrollMove(rowsChange);
+        }
+        x6events.retvals['key_PageDown'] =false;
+        //console.log("tabDiv key_DownArrow finished");
+        //console.groupEnd();
+    }
+    self.receiveEvent_key_CtrlHome = function(e) {
+        this.goRowTop();
+        x6events.retvals['key_CtrlHome'] =false;
+    }
+    self.receiveEvent_key_CtrlEnd = function(e) {
+        this.goRowJq( $(this).find('.tbody > div:last') ); 
+        var rowHeight = Number(u.p(this,'cssLineHeight'));
+        var rowCount  = $(this).find('.tbody > div').length;
+        $(this).find('.tbody').scrollTop(rowHeight * rowCount);
     }
     self.receiveEvent_key_Enter = function(e) {
         //console.group("tabDiv key_Enter - clicking hilighted rows");
         $(this).find('.tbody div.hilight').click();
         //console.groupEnd();
     }
+    
+    /*
+    *    Routines to move pick a row and scroll
+    *
+    */
+    self.jqCurrentRow = function() {
+        var jq = $(this).find('.selected');
+        if(jq.length > 0) return jq;
+        var jq = $(this).find('.hilight');
+        if(jq.length > 0) return jq;
+        return $([]);
+        
+    }
+    self.goRowBySkey = function(skey) {
+        //console.log('goRowBySkey ',skey);
+        if( u.p(this,'uiEditRow','')=='Y') {
+            //console.log("We can edit, firing reqEditRow");
+            x6events.fireEvent('reqEditRow_'+this.zTable,skey);
+        }
+        else {
+            //console.log("We do not edit, hilighting");
+            $(this).find('.hilight').removeClass('.hilight');
+            $(this).find('#row_'+skey).addClass('.hilight');
+        }
+    }
+    self.goRow = function(ordinal) {
+        var row = $(this).find('.tbody > div')[ordinal];
+        var skey= row.id.slice(4);
+        //console.log("goRow for ",ordinal,' has picked skey ',skey);
+        this.goRowBySkey(skey);
+    }
+    self.goRowJq = function(jqRow) {
+        var skey = jqRow[0].id.slice(4);
+        //console.log("goRow by jQuery object ");
+        //console.log(jqRow);
+        //console.log(skey);
+        this.goRowBySkey(skey);
+    }
+    self.goRowTop = function() {
+        this.goRow(0);
+        $(this).find('.tbody').scrollTop(0);
+    }
+    self.scrollMove = function(change) {
+        // Get all of the numbers we need
+        var jqRow     = this.jqCurrentRow();
+        var cntAbove  = $(jqRow).prevAll().length;
+        var cntBelow  = $(jqRow).nextAll().length;
+        var cntAll    = $(this).find('.tbody > div').length;
+        var cntVisible= Number(u.p(this,'xRowsVisible'));
+        var cssHeight = Number(u.p(this,'cssLineHeight'));
+        //console.log(change,cntAbove,cntBelow,cntAll,cntVisible,cssHeight);
+        
+        var stAdjust = 0;
+        if(change > 0) {
+            if(cntAbove > (cntVisible/2)) {
+                var stAdjust = change * (cssHeight-2);
+            }
+        }
+        else {
+            if(cntBelow > (cntVisible/2)) {
+                var stAdjust = change * (cssHeight-2);
+            }
+        }
+        if(stAdjust!=0) {
+            //console.log(stAdjust);
+            var stNow     = $(this).find('.tbody').scrollTop();
+            $(this).find('.tbody').scrollTop(stNow + stAdjust);
+        }
+        
+    }
 
+    /*
+    *   This is the list of the keys that we wrote handlers
+    *   for above.  They have to sometimes be turned off
+    *   and on
+    */
+    self.keyList = [
+        'PageUp', 'PageDown', 'CtrlHome', 'CtrlEnd'
+        ,'UpArrow', 'DownArrow', 'Enter'
+    ];
     self.keyboardOn = function() {
-        //console.log("Turning on keyboard events ",this.id);
-        x6events.subscribeToEvent('key_UpArrow',id);
-        x6events.subscribeToEvent('key_DownArrow',id);
-        x6events.subscribeToEvent('key_Enter',id);
+        for(var key in this.keyList) {
+            var keyLabel = this.keyList[key];
+            x6events.subscribeToEvent('key_'+keyLabel,id);
+        }
         $(this).focus();
     }
     self.keyboardOff = function() {
-        x6events.unsubscribeToEvent('key_UpArrow',id);
-        x6events.unsubscribeToEvent('key_DownArrow',id);
-        x6events.unsubscribeToEvent('key_Enter',id);
+        for(var key in this.keyList) {
+            var keyLabel = this.keyList[key];
+            x6events.unsubscribeToEvent('key_'+keyLabel,id);
+        }
     }
     if(u.p(self,'xInitKeyboard','N')=='Y') self.keyboardOn();
 
@@ -2570,13 +2612,14 @@ x6plugins.x6tabs = function(self,id,table) {
     for(var x = offset; x<(offset+count); x++) {
         x6events.subscribeToEvent('key_Ctrl'+x.toString(),self.id);
         self['receiveEvent_key_Ctrl'+x.toString()] = function(key) {
-            console.time("tabs key");
-            console.time("checking for visible");
+            //console.time("tabs key");
+            //console.time("checking for visible");
             // Abort if he is not really visible, this is the
             // easiest way to do this, and we don't have to 
             // keep track of whether or not it is visible.
             if($(this).find(":reallyvisible").length==0) return;
-            console.timeEnd("checking for visible");
+            //if($(this).isVisible().length==0) return;            
+            //console.timeEnd("checking for visible");
             
             // get the offset, the keystroke, 
             // and calculate the index.
@@ -2585,7 +2628,7 @@ x6plugins.x6tabs = function(self,id,table) {
             var index  = (key - offset);
             var str = '#'+this.id+' > ul';
             $(str).tabs('select',index);
-            console.timeEnd("tabs key");
+            //console.timeEnd("tabs key");
         }
     }
 }
