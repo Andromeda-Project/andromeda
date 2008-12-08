@@ -23,6 +23,12 @@ jsInclude('clib/jquery-1.2.6.pack.js','JQuery is distributed under the GPL
       ,'Y'
 );
 
+# LOADS SPECIFIC TO x6
+if($x6) {
+    # NOPE.  Don't work anymore in jquery 1.2...
+    #jsInclude('clib/jquery-fieldselection.js');
+}
+
 # EXPERIMENTAL: jquery ui full boat
 #   This seems to be the annointed king of jQuery UI
 #   facilities, so we may as well load the entire thing
