@@ -82,9 +82,36 @@ class androX6 {
         $row = array_merge($row0,$row1);
         if(a($row,'skey',0)==0) unset($row['skey']);
         
+        # KFD 12/8/08, More generalized code to allow for
+        #              inserts before or after a row.
+        #
         # an skeyAfter value means we must find the queuepos
         # column in this table, and save a value of that 
         # column equal to +1 of the value in row skeyAfter
+        if(gp('queuepos','')<>'') {
+            $queuepos = gp('queuepos');
+            $skeyBefore=gp('skeyBefore');
+            $skeyAfter =gp('skeyAfter');
+            $skey      = 0;
+            if($skeyBefore <> -1) $skey = $skeyBefore;
+            if($skeyAfter  <> -1) $skey = $skeyAfter;
+            if($skey==0) {
+                $row[$queuepos] = 1;
+            }
+            else {
+                $qpvalue = SQL_OneValue($queuepos,
+                    "Select $queuepos from {$dd['viewname']}
+                    where skey = ".sqlfc($skey)
+                );
+                if($skey==$skeyAfter) 
+                    $qpvalue++;
+                else
+                    $qpvalue--;
+                $row[$queuepos] = $qpvalue;
+            }
+        }
+            
+        /*
         if(gp('skeyAfter',false)!==false) {
             foreach($dd['flat'] as $colname=>$colinfo) {
                 if(strtolower($colinfo['automation_id'])=='queuepos') {
@@ -105,6 +132,7 @@ class androX6 {
                 $row[$queuepos] = $qpvalue;
             }
         }
+        */
         
 
         # KFD 6/28/08, a non-empty date must be valid
@@ -415,6 +443,7 @@ class androX6 {
         foreach($dd['flat'] as $colname=>$colinfo) {
             if(strtolower($colinfo['automation_id'])=='queuepos') {
                 $queuepos = $colname;
+                jqDocReady("u.bb.vgfSet('queuepos_$table_id',$colname)");
                 break;
             }
         }
@@ -448,6 +477,7 @@ class androX6 {
         $grid->ap['xGridHeight'] = $gridHeight;
         $grid->ap['xSortable']   = $sortable ? "Y" : "N";
         $grid->ap['xReturnAll']  = "Y";
+        
 
         # If queuepos set, set this flag        
         if($queuepos) $grid->ap['xInsertAfter'] = 'Y';
