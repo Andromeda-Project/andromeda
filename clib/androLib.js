@@ -3304,7 +3304,12 @@ window.a = window.ua = window.$a = {
                 }
             }
             if(typeof(obj)=='string') {
-                var jqObjects = $(obj).find(':input');
+                if(obj.indexOf('input')==-1) {
+                    var jqObjects = $(obj).find(':input');
+                }
+                else {
+                    var jqObjects = $(obj);
+                }
             }
             else {
                 var jqObjects = $(obj).find(":input");
