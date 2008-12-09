@@ -649,6 +649,11 @@ var x6inputs = {
             return false;
         }
         if(inp==last && !e.shiftKey) {
+            //if(u.p(inp,'inGrid',false)) {
+            //    x6events.fireEvent('key_DownArrow');
+            //    return;
+            //}
+            
             $('[xTabGroup='+tg+']:not([disabled]):first').focus();
             //console.log("Last input, no shift, going to first");
             //console.groupEnd();
@@ -949,14 +954,12 @@ var x6plugins = {
             x6events.fireEvent('reqNewRow_'+this.zTable);   
         }
     },
-    /*
-    buttonDuplicate: function(self,id,table) {
-        x6plugins.buttonStandard(self,'duplicate','CtrlD');
+    buttonInsert: function(self,id,table) {
+        x6plugins.buttonStandard(self,'ins','CtrlI');
         self.main = function() {
             x6events.fireEvent('reqNewRow_'+this.zTable,true);   
         }
     },
-    */
     buttonDelete: function(self,id,table) {
         x6plugins.buttonStandard(self,'delete','CtrlD');
         self.main = function() {
@@ -1179,13 +1182,13 @@ x6plugins.tableController = function(self,id,table) {
     *   
     */
     x6events.subscribeToEvent('reqNewRow_'    +table,id);
-    self['receiveEvent_reqNewRow_'+table] = function(dupe) {
+    self['receiveEvent_reqNewRow_'+table] = function(tabDivBefore) {
         //console.group("tableController reqNewRow "+this.zTable);
         
         var result = this.saveOk();
         u.bb.vgfSet('lastSave_'+this.zTable,result);
         if(result!='fail') {
-            x6events.fireEvent('uiNewRow_'+table);
+            x6events.fireEvent('uiNewRow_'+table,tabDivBefore);
         }
         //console.groupEnd();
     }
@@ -1261,9 +1264,13 @@ x6plugins.tableController = function(self,id,table) {
             ua.json.addParm('x6v_skey',u.bb.vgfGet('skey_'+this.zTable));
             ua.json.inputs(jq);
             // Look for an "skey after" to send back 
-            var skeyAfter = u.bb.vgfGet('skeyAfter_'+this.zTable,-1);
-            if(skeyAfter!=-1) {
-                ua.json.addParm('skeyAfter',skeyAfter);
+            var queuepos  = u.bb.vgfGet('queuepos_'+this.zTable,false);
+            if(queuepos) {
+                var skeyAfter = u.bb.vgfGet('skeyAfter_' +this.zTable,-1);
+                var skeyBefore= u.bb.vgfGet('skeyBefore_'+this.zTable,-1);
+                ua.json.addParm('queuepos'  ,queuepos);
+                ua.json.addParm('skeyAfter' ,skeyAfter);
+                ua.json.addParm('skeyBefore',skeyBefore);
             }
             if(ua.json.execute()) {
                 var retval = 'success';
@@ -1437,14 +1444,14 @@ x6plugins.tableController = function(self,id,table) {
     x6events.subscribeToEvent('buttonsOn_'+table,id);
     self['receiveEvent_buttonsOn_'+table] = function() {
         x6events.fireEvent('enable_save_'   +this.zTable);
-        x6events.fireEvent('enable_abandon_'+this.zTable);
-        x6events.fireEvent('enable_remove_' +this.zTable);
+        x6events.fireEvent('enable_cancel_' +this.zTable);
+        x6events.fireEvent('enable_delete_' +this.zTable);
     }
     x6events.subscribeToEvent('buttonsOff_'+table,id);
     self['receiveEvent_buttonsOff_'+table] = function() {
         x6events.fireEvent('disable_save_'   +this.zTable);
-        x6events.fireEvent('disable_abandon_'+this.zTable);
-        x6events.fireEvent('disable_remove_' +this.zTable);
+        x6events.fireEvent('disable_cancel_' +this.zTable);
+        x6events.fireEvent('disable_delete_' +this.zTable);
     }
 }
     
@@ -1504,9 +1511,10 @@ x6plugins.detailDisplay = function(self,id,table) {
     }
         
     // Detail receives an addRow event and interprets it
-    // as a goMode
+    // as a goMode.  The parameter is intended only for
+    // grids, a detail display ignores it.
     x6events.subscribeToEvent('uiNewRow_'+table,id);
-    self['receiveEvent_uiNewRow_'+table] = function(row) {
+    self['receiveEvent_uiNewRow_'+table] = function(tabDivBefore) {
         //console.group("detailDisplay uiNewRow");
         this.displayRow('new',{});
         //console.log("detailDisplay uiNewRow FINISHED");
@@ -1645,6 +1653,25 @@ x6plugins.detailDisplay = function(self,id,table) {
     }
 }
 
+x6tabDiv = {
+    mouseEnabled: true,
+    
+    mouseDisable: function() {
+        this.mouseEnabled = false;
+        $('body').css('cursor','url(clib/mouseOff.png), default');
+        $(document).one('mousemove',function() {
+            x6tabDiv.mouseEnabled = true;
+            $('body').css('cursor','');
+        });
+    },
+    
+    mouseover: function(rowDiv) {
+        if(!this.mouseEnabled) return false;
+        
+        $(rowDiv).siblings('.hilight').removeClass('hilight');
+        $('#'+rowDiv.id+':not(.selected)').addClass('hilight');
+    }
+}
 
 /***im* x6plugins/tabDiv
 *
@@ -1711,13 +1738,15 @@ x6plugins.x6tabDiv = function(self,id,table) {
     */
     x6events.subscribeToEvent('uiNewRow_'+table,id);
     if(uiNewRow!='Y') {
-        // If not inline, it always stops responding on a new row
+        // If the grid itself does not display the row, then it
+        // stops responding to keyboard events while somebody
+        // else is displaying the new row.
         self['receiveEvent_uiNewRow_'+table] = function() {
             this.keyboardOff();
         }
     }
     else {
-        self['receiveEvent_uiNewRow_'+table] = function() {
+        self['receiveEvent_uiNewRow_'+table] = function(tabDivBefore) {
             //console.group("tabDiv uiNewRow "+this.zTable);
             var skey = u.bb.vgfGet('skey_'+this.zTable,-1);
             
@@ -1767,30 +1796,49 @@ x6plugins.x6tabDiv = function(self,id,table) {
             
             
             /* 
-            *   Kind of a big deal.  If the grid has the
-            *   flag xInsertAfter set to "Y", we must slip the
-            *   new row in after the current, and trap the
-            *   skey value of the current
+            *   Now figure out where to put the row.  [New] always
+            *   goes after current row, and [Insert] passes the 
+            *   tabDivBefore flag that says go before the current
+            *   row.  If there is no current row, [Insert] goes at
+            *   the top and [New] goes at the bottom.
             */
-            var iAfter = false;
-            if(u.p(this,'xInsertAfter','N')=='Y') {
-                if(skey>0) {
-                    iAfter = skey;
-                    u.bb.vgfSet('skeyAfter_'+this.zTable,skey);
+            // First work out current row, if there is one
+            var iRelative = false;
+            if(skey!=0) {
+                iRelative = skey;
+                if(tabDivBefore) {
+                    u.bb.vgfSet('skeyBefore_'+this.zTable,skey);
                 }
                 else {
-                    u.bb.vgfSet('skeyAfter_'+this.zTable,0);
+                    u.bb.vgfSet('skeyAfter_'+this.zTable,skey);
                 }
-            }
-            if(iAfter) {
-                //$(this).find('#row_'+iAfter).after(newRow.bufferedRender());
-                $(this).find('#row_'+iAfter).after(newRow);                
+                var jqRow = $('#row_'+skey);
             }
             else {
-                //$(this).find('.tbody').prepend(newRow.bufferedRender());
-                $(this).find('.tbody').prepend(newRow);
-                u.bb.vgfSet('skeyAfter_'+this.zTable,-1);
+                u.bb.vgfSet('skeyBefore_'+this.zTable,-1);
+                u.bb.vgfSet('skeyAfter_'+this.zTable, -1);
+                var jqRow = this.jqCurrentRow();
             }
+            
+            // Now go either before or after the row we found, or at
+            // top or bottom as the case may be
+            if(jqRow.length==0) {
+                if(tabDivBefore) {
+                    $(this).find('.tbody').prepend(newRow);                    
+                }
+                else {
+                    $(this).find('.tbody').append(newRow);                    
+                }
+            }
+            else {
+                if(tabDivBefore) {
+                    $(jqRow).before(newRow);
+                }
+                else {
+                    $(jqRow).after(newRow);
+                }
+            }
+
             
             /*
             *   Now do everything required to make the 
@@ -1815,6 +1863,8 @@ x6plugins.x6tabDiv = function(self,id,table) {
             u.bb.vgfSet('skey_'+this.zTable,0);
             x6events.fireEvent('buttonsOn_'+this.zTable);
             this.keyboardOff();
+            $(this).find('.tbody > div.hilight').removeClass('hilight');
+            x6tabDiv.mouseDisable();
             //console.log('New row created, ready to edit');
             //console.groupEnd();
             return true;
@@ -1916,7 +1966,10 @@ x6plugins.x6tabDiv = function(self,id,table) {
                     //console.log(id,curval);
                     
                     this.innerHTML = u.byId(id).innerHTML;
-                    $(this).find(":input")[0].value=curval;
+                    $(this).find(":input").each(function() {
+                            this.value=curval;
+                            this.inGrid = true;
+                    });
                 }
             );
             tabIndex = 1000;
@@ -1930,6 +1983,8 @@ x6plugins.x6tabDiv = function(self,id,table) {
             var string = x6inputs.jqFocusString();
             $(this).find('.tbody #row_'+skey).addClass('selected');
             $(this).find('.tbody #row_'+skey+' '+string).focus();
+            $(this).find('.tbody > div.hilight').removeClass('hilight');
+            x6tabDiv.mouseDisable();
             x6events.fireEvent('buttonsOn_'+this.zTable);
             //this.keyboardOff();
             u.bb.vgfSet('skey_'+this.zTable,skey);
@@ -1961,11 +2016,13 @@ x6plugins.x6tabDiv = function(self,id,table) {
         $(this).find("#row_"+skey+" div").each(
             function() {
                 var inp    = $(this).find(":input")[0];
-                var val    = inp.value;
-                var col    = u.p(inp,'xColumnId');
-                var typeid = grid.zColsById[col].type_id;
-                //console.log(val);
-                this.innerHTML = x6dd.display(typeid,val,'&nbsp;');
+                if(inp != null) {
+                    var val    = inp.value;
+                    var col    = u.p(inp,'xColumnId');
+                    var typeid = grid.zColsById[col].type_id;
+                    //console.log(val);
+                    this.innerHTML = x6dd.display(typeid,val,'&nbsp;');
+                }
             }
         );
 
@@ -2000,7 +2057,19 @@ x6plugins.x6tabDiv = function(self,id,table) {
         self['receiveEvent_uiUndoRow_'+table] = function(skey) {
             x6events.fireEvent('buttonsOff_'+this.zTable);
             this.removeInputs();
-            $(this).find("#row_"+skey).mouseover();
+            if(skey==0) {
+                var iBefore = u.bb.vgfGet('skeyBefore_'+this.zTable,-1);
+                var iAfter  = u.bb.vgfGet('skeyAfter_' +this.zTable,-1);
+                if(iBefore!=-1) {
+                    x6events.fireEvent('reqEditRow_'+this.zTable,iBefore);
+                }
+                else if(iAfter!=-1) {
+                    x6events.fireEvent('reqEditRow_'+this.zTable,iAfter);
+                }
+            }
+            else {
+                $(this).find("#row_"+skey).mouseover();
+            }
             u.bb.vgfSet('skey_'+this.zTable,-1);
         }
     }
@@ -2118,12 +2187,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
         var table = this.zTable;
         $(this).find('#row_'+skey)
             .mouseover(
-                function() {
-                    $(this).siblings('.hilight').removeClass('hilight');
-                    if(!$(this).hasClass('selected')) {
-                        $(this).addClass('hilight');
-                    }
-                }
+                function() { x6tabDiv.mouseover(this) }
             )
             .click(
                 function() {
@@ -2238,6 +2302,12 @@ x6plugins.x6tabDiv = function(self,id,table) {
             this.goRowJq(jqRowPrev);
             this.scrollMove(-1);
         }
+        else {
+            // KFD 12/8/08, if new rows are inline, do it
+            if(u.p(this,'uiNewRow','N')=='Y') {
+                x6events.fireEvent('reqNewRow_'+this.zTable,true);
+            }
+        }
         x6events.retvals['key_UpArrow'] =false;
         //console.log("tabDiv key_UpArrow finished");
         //console.groupEnd();
@@ -2253,6 +2323,12 @@ x6plugins.x6tabDiv = function(self,id,table) {
         else if(jqRowNext.length!=0) {
             this.goRowJq(jqRowNext);
             this.scrollMove(1);
+        }
+        else {
+            // KFD 12/8/08, if new rows are inline, do it
+            if(u.p(this,'uiNewRow','N')=='Y') {
+                x6events.fireEvent('reqNewRow_'+this.zTable);
+            }
         }
         x6events.retvals['key_DownArrow'] =false;
         //console.log("tabDiv key_DownArrow finished");
@@ -2309,7 +2385,9 @@ x6plugins.x6tabDiv = function(self,id,table) {
         this.goRowJq( $(this).find('.tbody > div:last') ); 
         var rowHeight = Number(u.p(this,'cssLineHeight'));
         var rowCount  = $(this).find('.tbody > div').length;
-        $(this).find('.tbody').scrollTop(rowHeight * rowCount);
+        //$(this).find('.tbody').scrollTop(rowHeight * rowCount);
+        var stNew = rowHeight * rowCount;
+        $(this).find('.tbody').animate({scrollTop:stNew},400);
     }
     self.receiveEvent_key_Enter = function(e) {
         //console.group("tabDiv key_Enter - clicking hilighted rows");
@@ -2356,7 +2434,8 @@ x6plugins.x6tabDiv = function(self,id,table) {
     }
     self.goRowTop = function() {
         this.goRow(0);
-        $(this).find('.tbody').scrollTop(0);
+        //$(this).find('.tbody').scrollTop(0);
+        $(this).find('.tbody').animate({scrollTop: 0},400);
     }
     self.scrollMove = function(change) {
         // Get all of the numbers we need
@@ -2382,7 +2461,9 @@ x6plugins.x6tabDiv = function(self,id,table) {
         if(stAdjust!=0) {
             //console.log(stAdjust);
             var stNow     = $(this).find('.tbody').scrollTop();
-            $(this).find('.tbody').scrollTop(stNow + stAdjust);
+            var stNew     = stNow + stAdjust;
+            //$(this).find('.tbody').scrollTop(stNow + stAdjust);
+            $(this).find('.tbody').animate({scrollTop:stNew},100);
         }
         
     }
