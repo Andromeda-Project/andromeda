@@ -1617,6 +1617,16 @@ class androHtml {
             $a->hp['style']    = 'float: left';
             $bb->buttons['new'] = $a;
             $a->initPlugin();
+
+            $a=$bb->h('a-void','Insert');
+            $a->addClass('button');
+            $a->hp['style'] = 'margin-left: 0px';
+            $a->hp['x6table']  = $table_id;
+            $a->hp['x6plugin'] = 'buttonInsert';
+            $a->hp['id']       = 'buttonInsert_'.$table_id;
+            $a->hp['style']    = 'float: left';
+            $bb->buttons['ins'] = $a;
+            $a->initPlugin();
         }
         if(in_array('save',$abuts)) {
             $a=$bb->h('a-void','Save');
@@ -1638,7 +1648,7 @@ class androHtml {
             $a->hp['style']    = "float: right; margin-right: {$pad0}px";
             $bb->buttons['remove'] = $a;
             $a->initPlugin();
-            jqDocReady("x6events.fireEvent('disable_remove_$table_id')");
+            jqDocReady("x6events.fireEvent('disable_delete_$table_id')");
         }
         if(in_array('abandon',$abuts)) {
             $a=$bb->h('a-void','Cancel');
@@ -1649,7 +1659,7 @@ class androHtml {
             $a->hp['style']    = 'float: right';
             $bb->buttons['abandon'] = $a;
             $a->initPlugin();
-            jqDocReady("x6events.fireEvent('disable_abandon_$table_id')");
+            jqDocReady("x6events.fireEvent('disable_cancel_$table_id')");
         }
             
         return $bb;
@@ -2913,9 +2923,9 @@ class androHTMLTabDiv extends androHTML {
         if($this->hp['xGridHilight'] == 'Y') {
             # Removes hilight from any other row, and hilights
             # this one if it is not selected (edited)
-            $this->lastRow->hp['onmouseover']=
-                "$(this).siblings('.hilight').removeClass('hilight');
-                $('#row_$id:not(.selected)').addClass('hilight')";
+            $this->lastRow->hp['onmouseover']='x6tabDiv.mouseover(this)';
+            #    "$(this).siblings('.hilight').removeClass('hilight');
+            #    $('#row_$id:not(.selected)').addClass('hilight')";
             if(!$thead) {
                 $this->lastRow->hp['onclick']    
                     ="x6events.fireEvent('reqEditRow_$table_id',$id);";
