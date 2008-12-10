@@ -432,22 +432,17 @@ var x6dd = {
     // KFD 11/13/08.  Generic display routine
     display: function(typeid,value,nullDisplay) {
         if(nullDisplay==null) nullDisplay = '';
-        //console.log("x6dd.display parms: ",typeid,value,nullDisplay);
         if(value==null || value.toString().trim()=='') {
-            //console.log("x6dd.display returning empty string: ",nullDisplay);
             return nullDisplay;
         }
         switch(typeid) {
         case 'int':
         case 'numb':
         case 'money':
-            //console.log("I've got int, numb, or money", value);
             if(value=='null') return '';
-            //console.log("x6dd.display returning number");
             return Number(value);
             break;
         default:
-            //console.log("x6dd.display parms: ",typeid,value);
             return value;
         }
     }
@@ -813,7 +808,7 @@ var x6inputs = {
         if(u.p(inp,'disabled',false)) {
             inp.className='';
             doRow = u.p(inp,'xClassRow',0);
-            if(doRow) {
+            if(doRow!=0) {
                 inp.parentNode.parentNode.className = '';
             }
             return;
@@ -1381,11 +1376,11 @@ x6plugins.tableController = function(self,id,table) {
         }
         
         // Flip all icons to both
-        $('[xChGroup='+xChGroup+']').html('&hArr;');
+        //$('[xChGroup='+xChGroup+']').html('&hArr;');
         
         // Flip just this icon to up or down
         var icon = this.zSortAsc ? '&dArr;' : '&uArr;';
-        $('[xChGroup='+xChGroup+'][xColumn='+xColumn+']').html(icon);
+        //$('[xChGroup='+xChGroup+'][xColumn='+xColumn+']').html(icon);
         
         // Make the request to the server
         var args2 = { sortCol: this.zSortCol, sortAsc: this.zSortAsc };
@@ -1665,11 +1660,27 @@ x6tabDiv = {
         });
     },
     
+    removeHighlight: function(table) {
+        var rowNow = u.bb.vgfGet('highlight_'+table,'');
+        if(rowNow!='') $('#'+rowNow).removeClass('hilight');
+        u.bb.vgfSet('highlight_'+table,'');
+        this.mouseDisable();
+    },
+    
     mouseover: function(rowDiv) {
         if(!this.mouseEnabled) return false;
+        var pieces = rowDiv.id.split('_');
         
-        $(rowDiv).siblings('.hilight').removeClass('hilight');
-        $('#'+rowDiv.id+':not(.selected)').addClass('hilight');
+        var rowNow = u.bb.vgfGet('highlight_'+pieces[0],'');
+        if(rowNow!='') u.byId(rowNow).className = '';
+        var row = u.byId(rowDiv.id);
+        if(row.id != 'selected') {
+            u.byId(rowDiv.id).className = 'hilight';
+            u.bb.vgfSet('highlight_'+pieces[0],rowDiv.id);
+        }
+        
+        //$(rowDiv).siblings('.hilight').removeClass('hilight');
+        //$('#'+rowDiv.id+':not(.selected)').addClass('hilight');
     }
 }
 
@@ -1716,6 +1727,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
     *  If so, it will replace its own data with the
     *  data that has been provided.
     */
+    /* SUSPICIOUS, probably do not need this
     if(u.p(self,'xCacheRows','')=='Y') {
         x6events.subscribeToEvent('cacheRows_'+table,id);
         
@@ -1727,6 +1739,15 @@ x6plugins.x6tabDiv = function(self,id,table) {
             //    this.addRow(rows[x]);
             //}
         }
+    }
+    */
+
+    self.rowId = function(skey,noPound) {
+        return (noPound==null ? '#' : '')+this.zTable+'_'+skey;
+    }
+    self.skeyForRow = function(row) {
+        var pieces = row.id.split('_');
+        return pieces[1];
     }
     
     /*
@@ -1748,6 +1769,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
     else {
         self['receiveEvent_uiNewRow_'+table] = function(tabDivBefore) {
             //console.group("tabDiv uiNewRow "+this.zTable);
+            //console.time("tabDiv uiNewRow");
             var skey = u.bb.vgfGet('skey_'+this.zTable,-1);
             
             /*
@@ -1755,7 +1777,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
             *   focus on it.
             */
             if(skey==0 && u.bb.vgfGet('lastSave_'+this.zTable)=='noaction') {
-                $(this).find("#row_0 :input:first:not([disabled])").focus();
+                $(this.rowId(0)+" :input:first:not([disabled])").focus();
                 //console.log("On an empty new row, setting focus");
                 //console.groupEnd();
                 return;
@@ -1775,7 +1797,10 @@ x6plugins.x6tabDiv = function(self,id,table) {
             *   inputs that have been provided by the PHP code,
             *   and get them all initialized and ready to go.
             */
-            var newRow = "<div id='row_0' style='display:none'>";
+            var newRow = 
+                "<div id='"+this.zTable+"_0' "
+                +" class='selected' "
+                +" style='display:none'>";
             var numbers = [ 'int', 'numb', 'money' ];
             for (var idx in this.zColsInfo) {
                 var colInfo = this.zColsInfo[idx];
@@ -1808,11 +1833,14 @@ x6plugins.x6tabDiv = function(self,id,table) {
                 iRelative = skey;
                 if(tabDivBefore) {
                     u.bb.vgfSet('skeyBefore_'+this.zTable,skey);
+                    u.bb.vgfSet('skeyAfter_' +this.zTable,-1);
                 }
                 else {
-                    u.bb.vgfSet('skeyAfter_'+this.zTable,skey);
+                    u.bb.vgfSet('skeyAfter_' +this.zTable,skey);
+                    u.bb.vgfSet('skeyBefore_'+this.zTable,-1);
                 }
-                var jqRow = $('#row_'+skey);
+                //var jqRow = $('#row_'+skey);
+                var jqRow = $(this.rowId(skey));
             }
             else {
                 u.bb.vgfSet('skeyBefore_'+this.zTable,-1);
@@ -1824,17 +1852,21 @@ x6plugins.x6tabDiv = function(self,id,table) {
             // top or bottom as the case may be
             if(jqRow.length==0) {
                 if(tabDivBefore) {
+                    //console.log("body prepend");
                     $(this).find('.tbody').prepend(newRow);                    
                 }
                 else {
+                    //console.log("body append");
                     $(this).find('.tbody').append(newRow);                    
                 }
             }
             else {
                 if(tabDivBefore) {
+                    //console.log("before this row: ",jqRow);
                     $(jqRow).before(newRow);
                 }
                 else {
+                    //console.log("after this row: ",jqRow);
                     $(jqRow).after(newRow);
                 }
             }
@@ -1846,14 +1878,15 @@ x6plugins.x6tabDiv = function(self,id,table) {
             */
             tabIndex = 1000;
             var grid = this;
-            $(this).find(':input').each(
+            //$(this).find('#row_0 :input').each(
+            $(this.rowId(0)+' :input').each(            
                 function() {
-                    grid.initInput(this,tabIndex++,'new','rowNew'); 
                     this.setAttribute('xClassRow','0');
+                    grid.initInput(this,tabIndex++,'new','rowNew'); 
                 }
             );
-            var grid = this;
-            $(this).find('#row_0').fadeIn('fast'
+            //$(this).find('#row_0').fadeIn('fast'
+            $(this.rowId(0)).fadeIn('fast'
                 ,function() {
                     x6inputs.findFocus( this );
                 }
@@ -1862,10 +1895,12 @@ x6plugins.x6tabDiv = function(self,id,table) {
             // Send a message and get lost
             u.bb.vgfSet('skey_'+this.zTable,0);
             x6events.fireEvent('buttonsOn_'+this.zTable);
-            this.keyboardOff();
-            $(this).find('.tbody > div.hilight').removeClass('hilight');
-            x6tabDiv.mouseDisable();
+            //console.time("remove highlight");
+            //$(this).find('.tbody > div.hilight').removeClass('hilight');
+            x6tabDiv.removeHighlight(this.zTable);
+            //console.timeEnd('remove highlight');
             //console.log('New row created, ready to edit');
+            //console.timeEnd("tabDiv uiNewRow");
             //console.groupEnd();
             return true;
         }
@@ -1899,7 +1934,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
         // This is important, it says that this is an 
         // active input.  This distinguishes it from possible
         // hidden inputs that were used as a clone source 
-        // that have many of the same properties.
+        // that have many or all of the same properties.
         input.zActive = 1;
         //console.groupEnd();
     }
@@ -1913,14 +1948,15 @@ x6plugins.x6tabDiv = function(self,id,table) {
     x6events.subscribeToEvent('uiEditRow_'+table,id);
     if(uiEditRow!='Y') {
         self['receiveEvent_uiEditRow_'+table] = function(skey) {
-            //this.keyboardOff();
+            this.keyboardOff();
         }
     }
     else {
         self['receiveEvent_uiEditRow_'+table] = function(skey) {
             //console.group("tabDiv uiEditRow "+this.zTable);
     
-            if( $(this).find('#row_'+skey).length == 0) {
+            if(u.byId(this.rowId(skey,false))==null) {
+            //if( $(this).find('#row_'+skey).length == 0) {
                 //console.log("We don't have that row, cannot edit");
                 //console.groupEnd();
                 return;
@@ -1940,51 +1976,50 @@ x6plugins.x6tabDiv = function(self,id,table) {
             if(u.bb.vgfGet('skey_'+this.zTable)>=0) {
                 this.removeInputs();
             }
-    
+
+            // Set this before adding inputs.  If you
+            // do it afterward we get "jumpies" as the
+            // border/padding/margin adjusts.
+            //$(this).find('.tbody #row_'+skey)[0].className='selected';
+            //console.log(this.rowId(skey));
+            var rowId = this.rowId(skey,true);
+            u.byId(rowId).className='selected';
+
             //console.log("Putting inputs into div cells");
-            grid = this;
-            $(this).find('.tbody #row_'+skey+' div').each(
+            var grid = this;
+            var tabIndex = 1000;
+            var focus=false;
+            //$(this).find('#row_'+skey+' div').each(
+            //console.log(this.rowId(skey)+' div');
+            $(this.rowId(skey)+' div').each(            
                 function() {
+                    var div = this;
                     // Work up to figuring out the name of the
                     // id that holds the hidden input, then
                     // grab the input and put it in.
-                    var colnum = u.p(this,'gColumn');
+                    var colnum = u.p(div,'gColumn');
                     var colid  = grid.zColsInfo[colnum].column_id;
                     var id = 'wrapper_'+grid.zTable+'_'+colid;
                     //console.log(id);
 
                     // Current Value
-                    // KFD 11/13/08, special exception for &nbsp;
                     // KFD 11/29/08, use special html conversion
-                    var curval = this.innerHTML.htmlEdit();
-                    //if(this.innerHTML.trim()=='&nbsp;') {
-                    //    var curval = '';
-                    //}
-                    //else {
-                    //    var curval = this.innerHTML;
-                    //}
-                    //console.log(id,curval);
+                    var curval = div.innerHTML.htmlEdit();
                     
-                    this.innerHTML = u.byId(id).innerHTML;
-                    $(this).find(":input").each(function() {
-                            this.value=curval;
-                            this.inGrid = true;
-                    });
+                    div.innerHTML = u.byId(id).innerHTML;
+                    var inp = div.lastChild;
+                    inp.value  = curval;
+                    inp.inGrid = true;
+                    inp.setAttribute('xClassRow',0);
+                    grid.initInput(inp,tabIndex++,'edit','rowEdit');
+                    if(!inp.disabled && !focus) {
+                        inp.focus();
+                        focus=true;
+                    }
                 }
             );
-            tabIndex = 1000;
-            var grid = this;
-            $(this).find('.tbody #row_'+skey+' :input').each(
-                function() {
-                    grid.initInput(this,tabIndex++,'edit','rowEdit');
-                    this.setAttribute('xClassRow',0);
-                }
-            );
-            var string = x6inputs.jqFocusString();
-            $(this).find('.tbody #row_'+skey).addClass('selected');
-            $(this).find('.tbody #row_'+skey+' '+string).focus();
-            $(this).find('.tbody > div.hilight').removeClass('hilight');
-            x6tabDiv.mouseDisable();
+            
+            x6tabDiv.removeHighlight(this.zTable);
             x6events.fireEvent('buttonsOn_'+this.zTable);
             //this.keyboardOff();
             u.bb.vgfSet('skey_'+this.zTable,skey);
@@ -1994,7 +2029,6 @@ x6plugins.x6tabDiv = function(self,id,table) {
         }
     }
     
-    
     /*
     *   A grid may need to convert inputs back into display
     *   elements.  This routine is unconditionally created
@@ -2003,19 +2037,28 @@ x6plugins.x6tabDiv = function(self,id,table) {
     */
     self.removeInputs = function() {
         //console.group("tabDiv removeInputs");
-        if( $(this).find(':input').length==0 ) {
+        var skey = u.bb.vgfGet('skey_'+this.zTable);
+
+        //if( $(this).find('#row_'+skey+' :input').length==0 ) {
+        if( $(this.rowId(skey)+' :input').length==0 ) {
             //console.log("no inputs, doing nothing");
             //console.groupEnd();
             return;
         }
+        
+        // Remove the "selected" class from the inputs row,
+        // it does not belong there anymore.
+        u.byId(this.rowId(skey,true)).className = '';
 
-        var skey = u.bb.vgfGet('skey_'+this.zTable);
         //console.log("skey is ",skey);
         var grid = this;
-        $(this).find("#row_"+skey).removeClass('selected');        
-        $(this).find("#row_"+skey+" div").each(
+        //$(this).find("#row_"+skey).removeClass('selected').find("div").each(
+        //if( $(this.rowId(skey)+' :input').length==0 ) {
+        //$(this).find("#row_"+skey+" div").each(
+        $(this.rowId(skey)+' div').each(
             function() {
-                var inp    = $(this).find(":input")[0];
+                var inp    = this.firstChild; 
+                //var inp    = $(this).find(":input")[0];
                 if(inp != null) {
                     var val    = inp.value;
                     var col    = u.p(inp,'xColumnId');
@@ -2031,7 +2074,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
         if(skey==0) {
             if(u.bb.vgfGet('lastSave_'+this.zTable)=='noaction') {
                 //console.log("No action on last save, removing row ",skey);
-                $(this).find("#row_0").fadeOut(
+                $(this.rowId(0)).fadeOut(
                     function() { $(this).remove() }
                 );
             }
@@ -2046,8 +2089,6 @@ x6plugins.x6tabDiv = function(self,id,table) {
         return true;
     }
     
-    
-    
     /*
     *   Undo Row: the table controller has already reset
     *   any inputs, we will just remove them
@@ -2055,22 +2096,33 @@ x6plugins.x6tabDiv = function(self,id,table) {
     if(uiEditRow=='Y' || uiNewRow=='Y') {
         x6events.subscribeToEvent('uiUndoRow_'+table,id);
         self['receiveEvent_uiUndoRow_'+table] = function(skey) {
-            x6events.fireEvent('buttonsOff_'+this.zTable);
-            this.removeInputs();
-            if(skey==0) {
-                var iBefore = u.bb.vgfGet('skeyBefore_'+this.zTable,-1);
-                var iAfter  = u.bb.vgfGet('skeyAfter_' +this.zTable,-1);
-                if(iBefore!=-1) {
-                    x6events.fireEvent('reqEditRow_'+this.zTable,iBefore);
-                }
-                else if(iAfter!=-1) {
-                    x6events.fireEvent('reqEditRow_'+this.zTable,iAfter);
-                }
+            //console.group('tabDiv uiUndoRow ',skey);
+            if(skey!=0) {
+                //console.log("Skey is not zero, resetting values");
+                //$(this).find('#row_'+skey+' :input').each(
+                $(this.rowId(skey)+' :input').each(
+                    function() {
+                        this.value = this.zOriginalValue;
+                        x6inputs.setClass(this);
+                    }
+                );
             }
             else {
-                $(this).find("#row_"+skey).mouseover();
+                //console.log("Skey is zero, removing row");
+                this.removeInputs();
+                var iBefore = u.bb.vgfGet('skeyBefore_'+this.zTable,-1);
+                var iAfter  = u.bb.vgfGet('skeyAfter_' +this.zTable,-1);
+                ////console.log(iBefore,iAfter);
+                if     (iBefore!=-1) skeyNew = iBefore;
+                else if(iAfter !=-1) skeyNew = iAfter;
+                else skeyNew = -1;
+                if(skeyNew!=-1){
+                    //console.log("Picked this row to edit: ",skeyNew);
+                    x6events.fireEvent('reqEditRow_'+this.zTable,skeyNew);
+                    //$(this).find('#row_'+skeyNew).mouseover();
+                }
             }
-            u.bb.vgfSet('skey_'+this.zTable,-1);
+            //console.groupEnd();
         }
     }
     else if(self.kbOnEdit) {
@@ -2079,8 +2131,6 @@ x6plugins.x6tabDiv = function(self,id,table) {
             this.keyboardOn();
         }
     }
-    
-    
     
     /*
     *   A grid must always have a facility to receive 
@@ -2094,10 +2144,13 @@ x6plugins.x6tabDiv = function(self,id,table) {
         //console.group("tabDiv uiRowSaved: "+this.zTable);
         // Replace the input values with server returned values
         skey = u.bb.vgfGet('skey_'+this.zTable);
-        if( $(this).find("#row_"+skey+" :input").length > 0) {
+        //if( $(this).find("#row_"+skey+" :input").length > 0) {
+        if( $(this.rowId(skey)+' :input').length > 0) {
             //console.log($(this).find("#row_"+skey+" :input"));
             //console.log("found inputs, going rowSavedEdit");
             this.uiRowSavedEdit(row);
+            var skeyNew = skey==0 ? row.skey : skey;
+            x6events.fireEvent('reqEditRow_'+this.zTable,skeyNew);
         }
         else {
             //console.log("no inputs, going rowSavedNoEdit");
@@ -2113,7 +2166,8 @@ x6plugins.x6tabDiv = function(self,id,table) {
     self.uiRowSavedEdit = function(row) {
         var skey = u.bb.vgfGet('skey_'+this.zTable);
         var grid = this;
-        $(this).find("#row_"+skey+" :input").each(
+        //$(this).find("#row_"+skey+" :input").each(
+        $(this.rowId(skey)+" :input").each(
             function() {
                 var col    = u.p(this,'xColumnId');
                 var typeid = grid.zColsById[col].type_id;
@@ -2123,22 +2177,24 @@ x6plugins.x6tabDiv = function(self,id,table) {
             }
         );
         this.removeInputs();
-        x6events.fireEvent('buttonsOff_'+this.zTable);
+        //x6events.fireEvent('buttonsOff_'+this.zTable);
         u.bb.vgfSet('skey_'+this.zTable,-1);
         
         // If this was a new row, set it up
         if(skey==0) {
             //console.log("Was new row, setting up the row for editing");
             table = this.zTable;
+            /*
             $(this).find("#row_0").each(
                 function() {
                     this.id = 'row_'+row.skey;
                 }
             );
+            */
+            u.byId(this.zTable+'_0').id = this.zTable+'_'+row.skey;
             this.initRow(row.skey);
+            
         }
-        $(this).find('#row_'+row.skey).mouseover();
-        
     }
         
     self.uiRowSavedNoEdit = function(row) {
@@ -2146,7 +2202,8 @@ x6plugins.x6tabDiv = function(self,id,table) {
         
         // If a new row has been saved and we don't 
         // have it, create it now
-        if($(this).find('.tbody #row_'+skey).length==0) {
+        //if($(this).find('.tbody #row_'+skey).length==0) {
+        if($(this.rowId(skey)).length==0) {        
             var newRow = new jsHtml('div');
             newRow.hp.id = 'row_'+skey;
             newRow.hp.style = 'display: none;';
@@ -2167,14 +2224,16 @@ x6plugins.x6tabDiv = function(self,id,table) {
             }
             $(this).find('.tbody').prepend(newRow.bufferedRender());
             this.initRow(skey);
-            $(this).find("#row_"+skey).fadeIn();
+            $(this.rowId(skey)).fadeIn();
         }
         else {
             for(var idx in this.zColsInfo) {
                 var col = this.zColsInfo[idx].column_id;
                 if(col!='') {
-                    var str="#row_"+skey+" div[gColumn="+idx+"]";
-                    $(this).find(str).html(row[col]);
+                    //var str="#row_"+skey+" div[gColumn="+idx+"]";
+                    var str=this.rowId(skey)+" div[gColumn="+idx+"]";
+                    //$(this).find(str).html(row[col]);
+                    $(str).html(row[col]);
                 }
             }
         }
@@ -2185,7 +2244,8 @@ x6plugins.x6tabDiv = function(self,id,table) {
         // This code also exists in androLib.php
         // addRow method of the tabDiv class
         var table = this.zTable;
-        $(this).find('#row_'+skey)
+        //$(this).find('#row_'+skey)
+        $(this.rowId(skey))
             .mouseover(
                 function() { x6tabDiv.mouseover(this) }
             )
@@ -2208,6 +2268,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
     self['receiveEvent_uiDelRow_'+table] = function() {
         //console.group("tabDiv uiDelRow "+this.zTable);
         skey = u.bb.vgfGet('skey_'+this.zTable);
+        //console.log("current skey ",skey);
         
         if(this.kbOnEdit) {
             this.keyboardOn();
@@ -2221,12 +2282,12 @@ x6plugins.x6tabDiv = function(self,id,table) {
         if(skey!=-1) {
             var hilightRow = false;
             //console.log("Determining row to highlight afer removing");
-            var jqCandidate = $(this).find('#row_'+skey).next();
+            var jqCandidate = $(this.rowId(skey)).next();
             if(jqCandidate.length>0) {
                 var hilightRow = jqCandidate;
             }
             else {
-                var jqCandidate = $(this).find('#row_'+skey).prev();
+                var jqCandidate = $(this.rowId(skey)).prev();
                 if(jqCandidate.length>0) {
                     var hilightRow = jqCandidate;
                 }
@@ -2237,12 +2298,12 @@ x6plugins.x6tabDiv = function(self,id,table) {
             //console.log("No row, ignoring");
             return;
         }
-        else if(this.zSkey==0) {
+        else if(skey==0) {
             //console.log("on a new row, firing cancelEdit command");
             x6events.fireEvent('cancelEdit_'+this.zTable);
         }
         else {
-            $(this).find("#row_"+skey).fadeOut(
+            $(this.rowId(skey)).fadeOut(
                 function() {
                     $(this).remove();
                 }
@@ -2255,7 +2316,8 @@ x6plugins.x6tabDiv = function(self,id,table) {
         }
         else {
             //console.log("Will hilight this row: ",hilightRow);
-            $(hilightRow).mouseover();
+            var skey = this.skeyForRow(hilightRow[0]);
+            x6events.fireEvent('reqEditRow_'+this.zTable,skey);
         }
         //console.log("uiDelRow finished");
         //console.groupEnd();
@@ -2296,15 +2358,18 @@ x6plugins.x6tabDiv = function(self,id,table) {
         var jqCurrent = this.jqCurrentRow();
         var jqRowPrev = $(jqCurrent).prev();
         if(jqCurrent.length==0) {
+            //console.log("current is zero, going to top");
             this.goRowTop();
         }
         else if(jqRowPrev.length!=0) {
+            //console.log("there is a previous, going to that");
             this.goRowJq(jqRowPrev);
             this.scrollMove(-1);
         }
         else {
             // KFD 12/8/08, if new rows are inline, do it
             if(u.p(this,'uiNewRow','N')=='Y') {
+                //console.log("requesting new row, forcing insert before");
                 x6events.fireEvent('reqNewRow_'+this.zTable,true);
             }
         }
@@ -2385,13 +2450,15 @@ x6plugins.x6tabDiv = function(self,id,table) {
         this.goRowJq( $(this).find('.tbody > div:last') ); 
         var rowHeight = Number(u.p(this,'cssLineHeight'));
         var rowCount  = $(this).find('.tbody > div').length;
-        //$(this).find('.tbody').scrollTop(rowHeight * rowCount);
         var stNew = rowHeight * rowCount;
         $(this).find('.tbody').animate({scrollTop:stNew},400);
     }
     self.receiveEvent_key_Enter = function(e) {
         //console.group("tabDiv key_Enter - clicking hilighted rows");
         $(this).find('.tbody div.hilight').click();
+        //var jqRow = $(this).find('div.hilight')[0];
+        //var skey  = this.skeyForRow(jqRow);
+        //x6events.fireEvent('reqEditRow_'+this.zTable,skey);
         //console.groupEnd();
     }
     
@@ -2400,12 +2467,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
     *
     */
     self.jqCurrentRow = function() {
-        var jq = $(this).find('.selected');
-        if(jq.length > 0) return jq;
-        var jq = $(this).find('.hilight');
-        if(jq.length > 0) return jq;
-        return $([]);
-        
+        return $(this).find('.selected');
     }
     self.goRowBySkey = function(skey) {
         //console.log('goRowBySkey ',skey);
@@ -2421,12 +2483,12 @@ x6plugins.x6tabDiv = function(self,id,table) {
     }
     self.goRow = function(ordinal) {
         var row = $(this).find('.tbody > div')[ordinal];
-        var skey= row.id.slice(4);
+        var skey= this.skeyForRow(row);
         //console.log("goRow for ",ordinal,' has picked skey ',skey);
         this.goRowBySkey(skey);
     }
     self.goRowJq = function(jqRow) {
-        var skey = jqRow[0].id.slice(4);
+        var skey = this.skeyForRow(jqRow[0]);
         //console.log("goRow by jQuery object ");
         //console.log(jqRow);
         //console.log(skey);
@@ -2442,30 +2504,40 @@ x6plugins.x6tabDiv = function(self,id,table) {
         var jqRow     = this.jqCurrentRow();
         var cntAbove  = $(jqRow).prevAll().length;
         var cntBelow  = $(jqRow).nextAll().length;
-        var cntAll    = $(this).find('.tbody > div').length;
+        var cntAll    = cntAbove + cntBelow + 1;
         var cntVisible= Number(u.p(this,'xRowsVisible'));
-        var cssHeight = Number(u.p(this,'cssLineHeight'));
-        //console.log(change,cntAbove,cntBelow,cntAll,cntVisible,cssHeight);
+        var cssHeight = Number(u.p(this,'cssLineHeight')) - 2;
+        var scrollNow = $(this).find('.tbody').scrollTop();
+        var limitBot  = cntVisible - 2;
+        var limitTop  = 3;
         
-        var stAdjust = 0;
+        // Work out where the last row was, by first working out
+        // where the current row is and then going backward.
+        var rowRaw = (cntAbove + 1);
+        var rowReal= rowRaw - (scrollNow / cssHeight);
+        
+        // Work out what we should adjust.
+        var stAdjust = false;
         if(change > 0) {
-            if(cntAbove > (cntVisible/2)) {
-                var stAdjust = change * (cssHeight-2);
+            // We are going down.  If the new position would be
+            // beyond
+            if(rowReal > limitBot) {
+                var rowsAdjust = rowReal - limitBot;
+                stAdjust = rowsAdjust * cssHeight;
             }
         }
         else {
-            if(cntBelow > (cntVisible/2)) {
-                var stAdjust = change * (cssHeight-2);
+            if(rowReal < limitTop) {
+                var rowsAdjust = rowReal - limitTop;
+                stAdjust = rowsAdjust * cssHeight;
             }
         }
         if(stAdjust!=0) {
             //console.log(stAdjust);
-            var stNow     = $(this).find('.tbody').scrollTop();
-            var stNew     = stNow + stAdjust;
+            var stNew     = scrollNow + stAdjust;
             //$(this).find('.tbody').scrollTop(stNow + stAdjust);
-            $(this).find('.tbody').animate({scrollTop:stNew},100);
+            $(this).find('.tbody').animate({scrollTop:stNew},200);
         }
-        
     }
 
     /*
@@ -2478,19 +2550,29 @@ x6plugins.x6tabDiv = function(self,id,table) {
         ,'UpArrow', 'DownArrow', 'Enter'
     ];
     self.keyboardOn = function() {
+        if(this.keyboardStatus=='On') return;
         for(var key in this.keyList) {
             var keyLabel = this.keyList[key];
             x6events.subscribeToEvent('key_'+keyLabel,id);
         }
+        this.keyboardStatus = 'On';
         $(this).focus();
     }
     self.keyboardOff = function() {
+        if(this.keyboardStatus=='Off') return;
         for(var key in this.keyList) {
             var keyLabel = this.keyList[key];
             x6events.unsubscribeToEvent('key_'+keyLabel,id);
         }
+        this.keyboardStatus = 'Off';
     }
-    if(u.p(self,'xInitKeyboard','N')=='Y') self.keyboardOn();
+    this.keyboardStatus = 'Off'
+    if(u.p(self,'xInitKeyboard','N')=='Y') {
+        self.keyboardOn();
+        if(uiEditRow=='Y') {
+            x6events.fireEvent('key_DownArrow'); 
+        }
+    }
 
 
     
