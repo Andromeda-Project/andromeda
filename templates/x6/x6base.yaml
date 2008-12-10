@@ -47,6 +47,7 @@ overrides:
         list-style-type:     none
         # required to prevent normal padding of ul's
         padding-left: 0
+        cursor: pointer
         
     .x6menu ul.right:
         float: right

@@ -23,7 +23,7 @@ name: Gray
 
 defines:
     # Top level settings
-    ff0:           verdana, sans-serif
+    ff0:           verdana
 
     # Two basic background colors we need
     bgclight:       @f0f0f0

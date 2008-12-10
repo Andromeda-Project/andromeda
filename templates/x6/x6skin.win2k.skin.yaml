@@ -239,6 +239,8 @@ defines:
         borb:   *bor1b
         borl:   *bor1l
         borr:   *bor1r
+        ff:     *ff0
+        fs:     *fs0
     select:
         height: *barheight
         
@@ -342,10 +344,17 @@ defines:
     #
     # ===============================================================
     # Tabdiv highlights and selected
-    div.tbody div.selected div:
-        bgc:     *histrongbgc
-        borl:    *bw0 *bs0 *histrongbgc
-        borr:    *bw0 *bs0 *histrongbgc
+    #div.tbody div.selected div:
+        #bgc:     *histrongbgc
+        #borl:    *bw0 *bs0 *histrongbgc
+        #borr:    *bw0 *bs0 *histrongbgc
+        #padl:    *pad0
+        #padr:    *pad0
+    div.tbody div.selected input:
+        #bgc:     *histrongbgc
+        #borl:    *bw0 *bs0 *histrongbgc
+        #borr:    *bw0 *bs0 *histrongbgc
+        marl:    -2px
     div.tbody div.flavor0 div:
         bgc:     *flavor0
         borl:    *bw0 *bs0 *flavor0
@@ -371,6 +380,7 @@ defines:
         padr:    *pad0
         padl:    *pad0
         lh:      *barheight
+        height:  *barheight
         
     div.tbody input:
         padt:    *tinppadt
