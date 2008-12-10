@@ -15639,26 +15639,36 @@ function scDBConn_Pop() {
 /* FRAMEWORK */
 function SQL_CONNSTRING($tuid,$tpwd,$app="") {
 	global $AG;
-	if ($app=="") { $app = $AG["application"]; }
+
+    if (file_exists( $AG['dirs']['application'] .'pg_overrides.php' ) ) {
+        include( $AG['dirs']['application'] .'pg_overrides.php' );
+        if ( isset( $pg_overrides ) ) {
+            foreach( $pg_overrides as $key=>$value ) {
+                $$key = $value;
+            }
+        }
+    }
+    
+    if ($app=="") { $app = $AG["application"]; }
 	return
-		" dbname=".$app.
+        ( isset($host) ? " host=" .$host : "" )
+		." dbname=".$app.
 		" user=".strtolower($tuid).
 		" password=".$tpwd;
 }
 
 /* FRAMEWORK */
 function SQL_CONN($tuid,$tpwd,$app="") {
-	global $AG;
+    global $AG;
 	//if ($app=="") { $app = $AG["application"]; }
-   $app = $AG["application"];
-   //echo "$tuid $tpwd $app";
+    $app = $AG["application"];
+    //echo "$tuid $tpwd $app";
 	$tcs = SQL_CONNSTRING($tuid,$tpwd,$app);
-   if(function_exists('pg_connect')) {
-      $conn = @pg_connect($tcs,PGSQL_CONNECT_FORCE_NEW );
-   }
-   else {
-      $conn = false;
-   }
+    if(function_exists('pg_connect')) {
+       $conn = @pg_connect($tcs,PGSQL_CONNECT_FORCE_NEW );
+    } else {
+        $conn = false;
+    }
 	return $conn;
 }
 
