@@ -1637,7 +1637,7 @@ class androHtml {
             $a->hp['style']    = 'float: left';
             $bb->buttons['save'] = $a;
             $a->initPlugin();
-            jqDocReady("x6events.fireEvent('disable_save_$table_id')");
+            #jqDocReady("x6events.fireEvent('disable_save_$table_id')");
         }
         if(in_array('remove',$abuts)) {
             $a=$bb->h('a-void','Delete');
@@ -1648,7 +1648,7 @@ class androHtml {
             $a->hp['style']    = "float: right; margin-right: {$pad0}px";
             $bb->buttons['remove'] = $a;
             $a->initPlugin();
-            jqDocReady("x6events.fireEvent('disable_delete_$table_id')");
+            #jqDocReady("x6events.fireEvent('disable_delete_$table_id')");
         }
         if(in_array('abandon',$abuts)) {
             $a=$bb->h('a-void','Cancel');
@@ -1659,7 +1659,7 @@ class androHtml {
             $a->hp['style']    = 'float: right';
             $bb->buttons['abandon'] = $a;
             $a->initPlugin();
-            jqDocReady("x6events.fireEvent('disable_cancel_$table_id')");
+            #jqDocReady("x6events.fireEvent('disable_cancel_$table_id')");
         }
             
         return $bb;
@@ -2288,7 +2288,7 @@ class androHtml {
         foreach($this->ap as $parmname=>$parmvalue) {
             $parms.="\n  $parmname=\"$parmvalue\"";
         }
-        echo "\n<".$this->htype.' '.$parms.'>'.$this->innerHtml;
+        echo "<".$this->htype.' '.$parms.'>'.$this->innerHtml;
         foreach($this->children as $child) {
             if(is_string($child)) {
                 echo $child;
@@ -2297,7 +2297,7 @@ class androHtml {
                 $child->render($parentId);
             }
         }
-        echo "</$this->htype>";
+        echo "</$this->htype \n>";
         if($this->autoFormat) {
             echo "\n<!-- ELEMENT ID ".$this->hp['id']." (END) -->";
             //echo "$indent\n<!-- ELEMENT ID ".$this->hp['id']." (END) -->";
@@ -2766,7 +2766,7 @@ class androHTMLTabDiv extends androHTML {
         # Permanently store the column information, 
         # and increment the running total
         $width1 = max($dispsize,strlen(trim($description)));
-        if($this->sortable) $width1+=2;
+        #if($this->sortable) $width1+=2;
         
         # Now that we have what we need from description,
         # turn spaces into &nbsp;
@@ -2853,10 +2853,12 @@ class androHTMLTabDiv extends androHTML {
         jqDocReady(
             "u.byId('".$this->hp['id']."').zColsInfo="
             .json_encode($this->columns)
+            ,true
         );
         jqDocReady(
             "u.byId('".$this->hp['id']."').zColsById="
             .json_encode($this->columnsById)
+            ,true
         );
         
         # If the lookups flag is set, add that now
@@ -2893,14 +2895,15 @@ class androHTMLTabDiv extends androHTML {
         foreach($this->headers as $idx=>$header) {
             $hdrhtml = $header->getHtml();
             $a = html('a-void');
-            $a->setHtml('&hArr;');
+            $a->setHtml($hdrhtml);
+            #$a->setHtml('&hArr;');
             $col = $this->columns[$idx]['column_id'];
             $args="{xChGroup:'$table_id', xColumn: '$col'}";
             $a->hp['onclick'] = "x6events.fireEvent('reqSort_$table_id',$args)";
             $a->hp['xChGroup'] = $table_id;
             $a->hp['xColumn']  = $col;
             $this->headers[$idx]->setHtml(
-                $hdrhtml.'&nbsp;'.$a->bufferedRender()
+                $a->bufferedRender()
             );
         }
     }
@@ -2913,7 +2916,10 @@ class androHTMLTabDiv extends androHTML {
             $this->lastRow = $this->dhead0->h('div');
         }
         $this->rows[] = $this->lastRow;
-        $this->lastRow->hp['id'] = 'row_'.$id;
+        // KFD EXPERIMENTAL 12/9
+        $this->lastRow->hp['id'] = $this->hp['x6table']."_$id";        
+        #$this->lastRow->hp['id'] = 'row_'.$id;
+        
         $this->lastCell = 0;
 
         # PHP-JAVASCRIPT DUPLICATION ALERT!
@@ -10481,18 +10487,24 @@ function CacheWrite($name,$value) {
 * Stores a fragment of script to run inside of
 * jquery's documentReady() action.
 *
-*	string   Script.  May be enclosed in html SCRIPT tags,
-*                 which you may want to do if your editor makes
-*                 it easier to work with it that way.
+*	* string   Script.  May be enclosed in html SCRIPT tags,
+*   which you may want to do if your editor makes
+*   it easier to work with it that way.
+*   * boolean insert. If true, inserts script at top of list
 *
 * RETURN
 *	false   Always returns false.
 */
-function jqDocReady($script) {
+function jqDocReady($script,$insert=false) {
     $script = preg_replace("/<script>/i",''  ,$script);
     $script = preg_replace("/<\/script>/i",'',$script);
     $jdr = vgfGet('jqDocReady',array());
-    $jdr[] = $script;
+    if($insert) {
+        array_unshift($jdr,$script);
+    }
+    else {
+        $jdr[] = $script;
+    }
     vgfSet('jqDocReady',$jdr);
     
     # KFD 10/15/08. If we are in a json call, send this back
