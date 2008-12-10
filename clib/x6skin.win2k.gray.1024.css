@@ -1,6 +1,6 @@
 /* ==================================================== *\
  * Andromeda Generated CSS file                         
- * Generated: Tue, 02 Dec 2008 13:04:50 -0500
+ * Generated: Tue, 09 Dec 2008 21:40:13 -0500
  * Skin, color, size: win2k, gray, 1024
 \* ==================================================== */
         
@@ -9,7 +9,7 @@ body {
     margin-bottom:           0;
     margin-left:             3px;
     margin-right:            3px;
-    font-family:             verdana, sans-serif;
+    font-family:             verdana;
     color:                   #000000;
     background-color:        #d0d0d0;
     font-size:               12px;
@@ -49,6 +49,7 @@ h2 {
     list-style-position:     outside;
     list-style-type:         none;
     padding-left:            0;
+    cursor:                  pointer;
 }
 
 .x6menu ul li {
@@ -215,6 +216,8 @@ select,input,textarea {
     border-bottom:           1px solid #ffFFff;
     border-left:             1px solid #909090;
     border-right:            1px solid #ffFFff;
+    font-family:             verdana;
+    font-size:               12px;
 }
 
 select {
@@ -334,10 +337,8 @@ input[disabled],select[disabled],textarea[disabled] {
     outline:                 0;
 }
 
-div.tbody div.selected div {
-    border-left:             1px solid #5E71A2;
-    border-right:            1px solid #5E71A2;
-    background-color:        #5E71A2;
+div.tbody div.selected input {
+    margin-left:             -2px;
 }
 
 div.tbody div.flavor0 div {
@@ -372,6 +373,7 @@ div.tbody div div {
     padding-left:            3px;
     padding-right:           3px;
     line-height:             24px;
+    height:                  24px;
     float:                   left;
     overflow:                hidden;
 }
