@@ -27,6 +27,11 @@ jsInclude('clib/jquery-1.2.6.pack.js','JQuery is distributed under the GPL
 if($x6) {
     # NOPE.  Don't work anymore in jquery 1.2...
     #jsInclude('clib/jquery-fieldselection.js');
+    
+    # Nifty, lets us find out style sheet rules
+    # Not so nifty, does not extract rules like 'padding-top',
+    #   has no getter, only a setter.
+    #jsInclude('clib/jquery.rule-1.0.1-min.js');
 }
 
 # EXPERIMENTAL: jquery ui full boat
