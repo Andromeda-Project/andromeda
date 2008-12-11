@@ -149,6 +149,23 @@ overrides:
         # for accessible hiding: position: absolute left: -99999999px
         display: none  
 
+    # ===============================================================
+    #
+    #  Buttons 
+    #
+    # ===============================================================
+    span.button:
+        border-top:         *bor2t
+        border-bottom:      *bor2b
+        border-left:        *bor2l
+        border-right:       *bor2r
+        cursor:             pointer
+    span.button_mousedown:
+        border-bottom:      *bor2t
+        border-top:         *bor2b
+        border-right:       *bor2l
+        border-left:        *bor2r
+        cursor:             pointer
         
     # ===============================================================
     #
@@ -172,4 +189,14 @@ overrides:
     div.tbody div div:
         float:               left
         overflow:            hidden
+
+    # ===============================================================
+    #
+    # X6 Drop-down select
+    #
+    # ===============================================================
+    div.x6select table:
+        border-collapse: collapse
+        border-spacing:  0
+        background-color: *white
 

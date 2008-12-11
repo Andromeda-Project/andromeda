@@ -206,16 +206,16 @@ defines:
         bort:   *bor2b
         borr:   *bor2l
         borl:   *bor2r
-        color:  *histrongcolor
-        bgc:    *histrongbgc
-        marl:   *pad0
-        mart:   *pad0
-        marb:   *pad0
-        padt:   *pad0more
-        padb:   *pad0less
-        padl:   *pad0more
-        padr:   *pad0less
-        lh:     *lhbutton
+        #color:  *histrongcolor
+        #bgc:    *histrongbgc
+        #marl:   *pad0
+        #mart:   *pad0
+        #marb:   *pad0
+        #padt:   *pad0more
+        #padb:   *pad0less
+        #padl:   *pad0more
+        #padr:   *pad0less
+        #lh:     *lhbutton
 
     div.x6buttonBar a.button_disabled:
         bort:   *bor3t
@@ -414,3 +414,23 @@ defines:
     div.thead div div:
         padr:    *pad0
         padl:    *pad0
+        
+    # ===============================================================
+    #
+    #  X6 SELECT
+    #
+    # ===============================================================
+    div.x6select table tbody tr.hilight td:
+        bgc:                *bgcdark
+    div.x6select table thead tr th:
+        bort:   *bor2t
+        borb:   *bor2b
+        borl:   *bor2l
+        borr:   *bor2r
+        bgc:    *bgclight
+    div.x6select table tbody td:
+        bort:   *bs0 *bw0 *bgcdark
+        borb:   *bs0 *bw0 *bgcdark
+        borl:   *bs0 *bw0 *bgcdark
+        borr:   *bs0 *bw0 *bgcdark
+                
