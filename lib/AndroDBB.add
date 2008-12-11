@@ -591,13 +591,14 @@ column permcol       {  type_id:  char; colprec: 1;  description: Has Column Sec
 column singular      {  type_id: vchar; colprec: 50; description: Singular Name; }
 column x6profile     {  type_id: vchar; colprec: 20; description: X6 Profile; }
 column x6childwrites {  type_id:  char; colprec: 1;  description: X6 Child Writes; }
+column x6all         {  type_id:  char; colprec: 1;  description: x6select Preload All Rows; }
 table tables {
 	module:  datadict;
 	description: Table of Tables;
 	table_seq: 900;
 	
 	column table_id      { primary_key: Y; uisearch: Y; }
-    column  { singular; returnall; x6profile;x6childwrites }   
+    column  { singular; returnall; x6profile;x6childwrites;x6all }   
    // Removed KFD 5/24/07, not being used
 	//column column_prefix { primary_key: N; uisearch: Y; }
 	column description  { uisearch: Y; }
