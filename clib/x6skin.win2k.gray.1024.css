@@ -1,6 +1,6 @@
 /* ==================================================== *\
  * Andromeda Generated CSS file                         
- * Generated: Tue, 09 Dec 2008 21:40:13 -0500
+ * Generated: Wed, 10 Dec 2008 13:58:20 -0500
  * Skin, color, size: win2k, gray, 1024
 \* ==================================================== */
         
@@ -183,16 +183,6 @@ div.x6buttonBar a.button_mousedown {
     border-bottom:           1px solid #ffFFff;
     border-left:             1px solid #909090;
     border-right:            1px solid #ffFFff;
-    margin-top:              3px;
-    margin-bottom:           3px;
-    margin-left:             3px;
-    padding-top:             4px;
-    padding-bottom:          2px;
-    padding-left:            4px;
-    padding-right:           2px;
-    color:                   #ffffff;
-    background-color:        #5E71A2;
-    line-height:             12px;
 }
 
 div.x6buttonBar a.button_disabled {
@@ -424,6 +414,25 @@ div.thead div div {
     border-right:            1px solid #909090;
 }
 
+div.x6select table tbody tr.hilight td {
+    background-color:        #d0d0d0;
+}
+
+div.x6select table thead tr th {
+    border-top:              1px solid #ffFFff;
+    border-bottom:           1px solid #909090;
+    border-left:             1px solid #ffFFff;
+    border-right:            1px solid #909090;
+    background-color:        #f0f0f0;
+}
+
+div.x6select table tbody td {
+    border-top:              solid 1px #d0d0d0;
+    border-bottom:           solid 1px #d0d0d0;
+    border-left:             solid 1px #d0d0d0;
+    border-right:            solid 1px #d0d0d0;
+}
+
 .fadein {
     display:                 none;
 }
@@ -478,6 +487,22 @@ td.x6Caption {
     display:                 none;
 }
 
+span.button {
+    border-top:              1px solid #ffFFff;
+    border-bottom:           1px solid #909090;
+    border-left:             1px solid #ffFFff;
+    border-right:            1px solid #909090;
+    cursor:                  pointer;
+}
+
+span.button_mousedown {
+    border-bottom:           1px solid #ffFFff;
+    border-top:              1px solid #909090;
+    border-right:            1px solid #ffFFff;
+    border-left:             1px solid #909090;
+    cursor:                  pointer;
+}
+
 div.thead div {
     height:                  24px;
     background-color:        #d0d0d0;
@@ -487,5 +512,11 @@ div.tbody {
     overflow-x:              hidden;
     overflow-y:              scroll;
     clear:                   both;
+}
+
+div.x6select table {
+    border-collapse:         collapse;
+    border-spacing:          0;
+    background-color:        #ffffff;
 }
 
