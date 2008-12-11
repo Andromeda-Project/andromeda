@@ -4288,7 +4288,9 @@ function androJSON(parm,value) {
         }
         catch(e) { 
             $a.dialogs.alert("Could not process server response!");
-            x4.debug(this.http.responseText);
+            if(typeof(x4)!='undefined') {
+                x4.debug(this.http.responseText);
+            }
             if(u.byId('x6Log')) {
                 u.byId('x6Log').innerHTML = http.responseText;
                 u.byId('x6Log').style.display='block';
