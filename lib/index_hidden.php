@@ -478,6 +478,23 @@ function index_hidden_x6Dispatch(
     
     vgfSet('x6',true);
     
+    # KFD 12/10/08, allow dynamic lookups. 
+    #
+    if(gp('x6select',false)) {
+        $table_id = gp('x6page');
+        $gpletters= gp('gpletters');
+        $matches  = array();
+        
+        $rows=RowsForSelect($table_id,$gpletters,$matches,'',true);
+        foreach($rows as $idx=>$row) {
+            unset($rows[$idx]['skey']);
+        }
+        x6Data('x6select',$rows);
+        echo json_encode_safe($GLOBALS['AG']['x4']);
+        return;
+    }
+    
+    
     # This little bit of magic loads up the CSS information
     # for the current template and skin, allowing downstream
     # code to determine how much space they have to work with
