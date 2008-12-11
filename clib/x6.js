@@ -567,6 +567,16 @@ var x6inputs = {
             else if(keyLabel=='CtrlRightArrow') {
                 this.lastInput(inp);
             }
+            else if(keyLabel=='ShiftDownArrow') {
+                if(u.p(inp,'x6select','N')=='Y') {
+                    x6inputs.x6select.display(inp,'Down');
+                }
+            }
+            else if(keyLabel=='ShiftUpArrow') {
+                if(u.p(inp,'x6select','N')=='Y') {
+                    x6inputs.x6select.display(inp,'Up');
+                }
+            }
             else if(keyLabel=='Home') {
                 if(inp.selectionStart == 0 && inp.selectionEnd==0)
                     this.firstInput(inp);
@@ -588,7 +598,7 @@ var x6inputs = {
         
         // Type validation for some types, only if not TAB or ENTER
         if(!isNav) {
-            //console.log("Not nav key, doing type validation");
+            console.log("Not nav key, doing type validation");
             type = u.p(inp,'xtypeid');
             switch(type) {
             case 'int':
@@ -605,25 +615,67 @@ var x6inputs = {
                 if(!u.keyIsNumeric(e)) {
                     if(keyLabel!='-' && keyLabel!='/') return false;
                 }
+                break;
+            case 'gender':
+                if(['M','F','U','H'].indexOf(keyLabel.toUpperCase())==-1) {
+                    return false;
+                }
+                break;
+            case 'cbool':
+                if(['Y','N'].indexOf(keyLabel.toUpperCase())==-1) {
+                    return false;
+                }
+                break;
             }
+            
+            // Next possibility is a lookup that requires a
+            // fetch from the server.
+            if(u.p(inp,'x6select','N')=='Y' && u.p(inp,'xValues',null)==null) {
+                // Generate the value to send back
+                var val = inp.value;
+                var val = val.slice(0,inp.selectionStart)
+                    +keyLabel
+                    +val.slice(inp.selectionEnd);
+                //console.log("current value: ",inp.value)
+                //console.log("sel start: ",inp.selectionStart)
+                //console.log("sel end: ",inp.selectionEnd)
+                //console.log("computed value:",val);
+                json = new androJSON('x6page',u.p(inp,'x6seltab'));
+                json.addParm('x6select','Y');
+                json.addParm('gpletters',val);
+                json.execute(true);
+                x6inputs.x6select.display(inp);
+                x6inputs.x6select.displayDynamic(inp,ua.data.x6select);
+            }
+            
             //console.log("Type validation complete, returning true");
             //console.groupEnd();
             return true;
         }
         
+        // If this input has an open x6select (SELECT replacement)
+        // then ask it for the value.
+        //
+        // Do this *before* the afterBlurner command below, so that
+        // the value is set when afterBlurner fires.
+        if(u.p(inp,'x6select','N')=='Y') {
+            x6inputs.x6select.assignToMe(inp);
+        }
         
         // This took a lot of experimentation to get right.
         // Normally a BLUR would occur when an object loses focus
-        //  -> except if the user hits ENTER, we must force validation
-        //  -> except if validation enables new controls
+        //  -> except if the user hits ENTER, we must force processing
+        //  -> except if processing enables new inputs
         //
         // So we unconditionally fire the afterblurner to hit
-        // anything the control's special validation code might
+        // anything the control's special processing code might
         // do.  Then we proceed normally.
         //
         // Also: returning false does NOT prevent losing focus,
-        // that's we don't check the return value.
+        // that's we don't check the return value.  We are not
+        // *validating*, we are *processing*.
         x6inputs.afterBlurner(inp);
+        
         
         // Get the first and last controls for easier
         // logic immediately below
@@ -733,6 +785,7 @@ var x6inputs = {
         inp.zSelected = 0;
         x6inputs.setClass(inp);
         x6inputs.afterBlurner(inp);
+        x6inputs.x6select.hide();
         //console.log("Input Blur DONE");
         //console.groupEnd();
         return true;
@@ -918,6 +971,232 @@ var x6inputs = {
         }
         else {
             return false;
+        }
+    },
+    
+    ddClick: function(button) {
+        var id = u.p(button,'xInputId');
+        var inp = $('[zActive]#'+id)[0];
+        this.x6select.display(inp);
+    },
+    
+    x6select: {
+        dynRowCount: 15,
+        div: false,
+        
+        hide: function() {
+            $(".x6select").remove();
+            this.tbody=false;
+            this.div = false;
+        },
+        
+        assignToMe: function(inp) {
+            if(this.div) {
+                var row = $('.x6select tr.hilight');
+                if(row.length > 0) {
+                    inp.value = row[0].firstChild.innerHTML;
+                }
+            }
+        },
+        
+        display: function(input,fromKeyboard) {
+            if(fromKeyboard!=null) {
+                if(this.div && this.div.style.display=='block') {
+                    return this.moveUpOrDown(fromKeyboard);
+                }
+            }
+            
+            if(!this.div) {
+                this.div = document.createElement('DIV');
+                this.div.style.display    = 'none';
+                this.div.style.position   = 'absolute';
+                this.div.style.backgroundColor = 'white';
+                this.div.style.overflow   = 'hidden';
+                this.div.style.border     ="1px solid black";
+                var lineHeight            = $(input).height();
+                this.lineHeight           = lineHeight;
+                this.div.style.lineHeight = lineHeight+"px";
+                this.div.style.cursor     = 'pointer';
+                this.div.style.zIndex     = 1000;
+                this.div.className        = 'x6select';
+
+                // Work out minimum width as the input plus the button
+                var jqButton = $('[xInputId='+input.id+']');
+                if(jqButton.length==0) {
+                    var minwidth = 10;
+                }
+                else {
+                    var minwidth 
+                        = ($(jqButton).offset().left - $(input).offset().left)
+                        + $(jqButton).width();
+                }
+                this.div.style.minWidth = minwidth + "px";
+                
+                // Put in the titles.  This is also where we
+                // work out the height of the drop-down
+                this.div.innerHTML = this.displayTitles(input);
+                
+                // Put in the div, and do the mouse events
+                document.body.appendChild(this.div);
+
+                // This is for optimization, allows us to avoid
+                // repeatedly making jquery calls for this object
+                this.tbody = $('.x6select tbody')[0];
+                
+                // special routine to populate with fixed
+                // values on a pre-populated attribute.  If none
+                // are there it does nothing.
+                this.displayFixed(input);
+                
+            }
+            // If it is invisible, position it and then make it visible
+            if(this.div.style.display=='none') {
+                var position = $(input).offset();
+                var postop = position.top -1;
+                var poslft = position.left;
+                this.div.style.top  = (postop + input.offsetHeight +1) + "px";
+                this.div.style.left = poslft + "px";
+                this.div.style.display = 'block';
+                this.mouseEvents(input);
+            }
+            
+            if(fromKeyboard != null) {
+                this.moveUpOrDown(fromKeyboard);
+            }
+        },
+        
+        displayTitles: function(input) {
+            // If still here, we have values and descriptions
+            var retval = '<table><thead><tr>';
+            var descs  = u.p(input,'xTitles').split('|');
+            for(var idx in descs) {
+                retval+='<th>'+descs[idx]+'</th>';
+            }
+            retval+='<th>&nbsp;&nbsp;&nbsp;&nbsp;';
+
+            // Now work out the height.  If static, go by
+            // the number of rows, otherwise set it to 16, which
+            // is 15 for data and one for titles.
+            if(u.p(input,'x6rowCount',null)!=null) {
+                var rowCount = Number(u.p(input,'x6rowCount'));
+            }
+            else {
+                var rowCount = this.dynRowCount;
+            }
+            this.div.style.height = ((this.lineHeight+3)*(rowCount+1))+"px";
+            // ...and the height of the body
+            var h = (this.lineHeight + 3)*rowCount;
+            
+            // Now put out an empty body
+            retval+='</thead>'
+                +'<tbody style="height: '+h+'px; max-height: '+h+'px; '
+                +' overflow-y:scroll">'
+                +'</tbody></table>';
+            return retval;
+        },
+        
+        displayFixed: function(input) {
+            var svals = u.p(input,'xValues','');
+            if(svals.trim()=='') return;
+
+            console.log(svals);
+            retval = '';
+            var rows   = svals.split('||');
+            for(var idx in rows) {
+                retval += '<tr>';
+                var values = rows[idx].split('|');
+                for(var idx2 in values) {
+                    retval+= '<td>'+values[idx2];
+                }
+            }
+            console.log(retval);
+            this.tbody.innerHTML = retval;
+        },
+        
+        displayDynamic: function(input,rows) {
+            retval = ''
+            if(rows.length==0) {
+                this.tbody.innerHTML = '';
+                return;
+            }
+            for(var idx in rows) {
+                retval += '<tr>';
+                var values = rows[idx];
+                for(var idx2 in values) {
+                    retval+= '<td>'+values[idx2];
+                }
+            }
+            var lh = this.lineHeight + 3;
+            if(rows.length < this.dynRowCount) {
+                this.div.style.height = lh*(rows.length+1) + "px";
+                this.tbody.style.height = lh*rows.length  + "px";
+            }
+            else {
+                this.div.style.height = lh*(this.dynRowCount+1) + "px";
+                this.tbody.style.height = lh*this.dynRowCount + "px";
+            }
+            this.tbody.innerHTML = retval;
+            this.mouseEvents(input);
+        },
+        
+        mouseEvents: function(input) {
+            $('.x6select td')
+            .each(
+                function() {
+                    this.input = input;
+                }
+            )
+            .mouseover(
+                function() {
+                    var rowNow = $('.x6select tr.hilight');
+                    if(rowNow.length > 0) {
+                        if(rowNow[0] == this.parentNode) return;
+                    }
+                    $('.x6select tr.hilight').removeClass('hilight');
+                    $(this.parentNode).addClass('hilight');
+                }
+            )
+            .mousedown(
+                function(e) {
+                    this.input.value = this.parentNode.firstChild.innerHTML;
+                    x6inputs.x6select.hide();
+                    setTimeout(function() {$(this.input).focus();},100);
+                    e.stopPropagation();
+                    return false;
+                }
+            );
+        },
+        
+        moveUpOrDown: function(direction) {
+            // get current row
+            var rowNow = $('.x6select tr.hilight:visible');
+            var jqBody = $('.x6select tbody');
+            if(rowNow.length==0) {
+                $(jqBody[0].firstChild).addClass('hilight');
+            }
+            else {
+                if(direction == 'Up') {
+                    var candidate = $(rowNow).prev();
+                    console.log("Up candidate ",candidate);
+                    var rowsBelow = $(rowNow).nextAll().length;
+                    if(rowsBelow > 5) {
+                        var stNow = $('.x6select tbody').scrollTop();
+                        $(jqBody).scrollTop(stNow - ( this.lineHeight + 3));                        
+                    }
+                }
+                else {
+                    var candidate = $(rowNow).next();
+                    console.log("Down candidate ",candidate);
+                    var rowsAbove = $(rowNow).prevAll().length;
+                    if(rowsAbove > 5) {
+                        var stNow = $('.x6select tbody').scrollTop();
+                        $(jqBody).scrollTop(stNow + this.lineHeight + 3);                        
+                    }
+                }
+                console.log("row now ",rowNow);
+                console.log(direction);
+                if (candidate.length > 0) $(candidate[0].firstChild).mouseover();
+            }
         }
     }
 }
@@ -1669,6 +1948,8 @@ x6tabDiv = {
     
     mouseover: function(rowDiv) {
         if(!this.mouseEnabled) return false;
+        if(!rowDiv.id) return false;
+        if(rowDiv.className=='selected') return false;
         var pieces = rowDiv.id.split('_');
         
         var rowNow = u.bb.vgfGet('highlight_'+pieces[0],'');
@@ -1931,6 +2212,20 @@ x6plugins.x6tabDiv = function(self,id,table) {
         }
         x6inputs.setClass(input);
         
+        // An 'x6select' control replaces HTML Select.  We add
+        // a little button off to the right of the input.
+        if(u.p(input,'x6select','N')=='Y') {
+            var str= '<span '
+                + 'class="button" '
+                + 'xInputId="'+input.id+'" '
+                + 'onmousedown = "this.className = '+"'button_mousedown'"+'" '
+                + 'onmouseup   = "this.className = '+"'button'"+'" '
+                + 'onmouseout  = "this.className = '+"'button'"+'" '
+                + 'onclick="x6inputs.ddClick(this)">'
+                + '&nbsp;&darr;&nbsp;</span>';
+            $(input).after(str);
+        }
+        
         // This is important, it says that this is an 
         // active input.  This distinguishes it from possible
         // hidden inputs that were used as a clone source 
@@ -2045,6 +2340,9 @@ x6plugins.x6tabDiv = function(self,id,table) {
             //console.groupEnd();
             return;
         }
+        
+        // KFD 12/10/08, hide any dropdowns
+        x6inputs.x6select.hide();
         
         // Remove the "selected" class from the inputs row,
         // it does not belong there anymore.
