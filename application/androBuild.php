@@ -1638,6 +1638,7 @@ function SpecFlatten_Runout() {
         $sq="INSERT INTO zdd.tabflat (
                  table_id,column_id_src,column_id,suffix,prefix
                 ,primary_key,uisearch
+                ,auto_prefix,auto_suffix
                 ,colprec,colscale,colres,type_id,inputmask
                 ,flagcarry
                 ,table_id_fko
@@ -1648,6 +1649,7 @@ function SpecFlatten_Runout() {
                   '$table_id',tc.column_id_src
                  ,tc.column_id
                  ,tc.suffix,tc.prefix,tc.primary_key,tc.uisearch
+                 ,tc.auto_prefix,tc.auto_suffix
                  ,c.colprec,c.colscale,c.colres,c.type_id
                  ,case when c.inputmask <> '' 
                        then c.inputmask
@@ -4052,7 +4054,7 @@ function SpecDDL_Triggers_FK_PT($ufk,$ptab,$chdlist,$parlist) {
 
 function SpecDDL_Triggers_Automated() {
     $retval = true;
-    $this->SpecDDL_Triggers_Automated_FetchDistribute();
+    $retval = $retval && $this->SpecDDL_Triggers_Automated_FetchDistribute();
     $retval = $retval && $this->SpecDDL_Triggers_Automated_Aggregate();
     $retval = $retval && $this->specddl_triggers_automated_queuepos();
     $retval = $retval && $this->specddl_triggers_automated_dominant();
@@ -4121,8 +4123,7 @@ function SpecDDL_Triggers_Automated_FetchDistribute() {
             $dddst[$tpi][$row['table_id']][]=$details;
         }
     }
-   
-   
+    
    
    // NOTE: FETCH and EXTEND columns are sequenced on dependencies, as
    // one EXTEND may generate the foreign key for the next FETCH.  This
@@ -4356,6 +4357,7 @@ function SpecDDL_Triggers_Automated_FetchDistribute() {
          }       
       }
    }
+   return true;
 }
 
 function SpecDDL_Triggers_Automated_Aggregate()  {
