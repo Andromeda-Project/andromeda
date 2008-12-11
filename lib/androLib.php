@@ -3371,7 +3371,7 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
     else {
         $input = html('input');
     }
-
+    
     # Apply the readonly stuff we figured out first
     $input->ap['xRoIns'] = $xRoIns;
     $input->ap['xRoUpd'] = $xRoUpd;
@@ -3534,9 +3534,70 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
         $input->hp['xDefault'] = $colinfo['auto_formula'];
     }
 
-    
+    #  KFD 12/10/08  Major redirection if doing x6, call
+    #                out for possible wrapping of input
+    #
+    if($x6) return inputForX6($input,$colinfo,$options); 
+
     # For now that's all we are going to do.
     return $input;
+}
+
+function inputForX6($input,$colinfo,$options) {
+    # First decide what kind of input to do
+    
+    if(in_array($colinfo['type_id'],array('cbool','gender'))) {
+        $input->htype='input';
+        $input->hp['size'] = 1;
+        $input->hp['x6select'] = 'Y';
+        $input->children = array();  // wipe out options
+        $input->hp['xTitles'] = 'Value|Description';
+        if($colinfo['type_id'] == 'cbool') {
+            $input->hp['xValues'] = 'Y|Yes||N|No';
+            $input->hp['x6rowCount'] = 2;
+        }
+        else {
+            $input->hp['xValues'] 
+                = 'M|Male||F|Female||U|Unknown||H|Hermaphrodite';
+            $input->hp['x6rowCount'] = 4;
+        }
+    }
+    else if($colinfo['table_id_fko']<>'') {
+        $fko = $colinfo['table_id_fko'];
+        $ddpar = ddTable($fko);
+        $uis   = $ddpar['projections']['_uisearch'];
+        $ccols = arr($ddpar['projections'],'dropdown',$uis);
+        $cols  = explode(',',$ccols);
+        $titles= array();
+        foreach($cols as $col) {
+            $titles[] = $ddpar['flat'][$col]['description'];
+        }
+        $input->hp['x6select'] = 'Y';
+        $input->hp['xTitles'] = implode('|',$titles);
+        $input->hp['x6seltab'] = $fko;
+        if(arr($ddpar,'x6all','N')=='Y') {
+            $rows  = SQL_AllRows(
+                "Select $ccols
+                   from ".$ddpar['viewname']."
+                  order by ".$ddpar['pks']
+            );
+            $input->hp['x6rowCount'] = count($rows);
+            $values = array();
+            foreach($rows as $row) {
+                $values[] = implode('|',$row);
+            }
+            $input->hp['xValues'] = implode('||',$values);
+        }
+    }
+    return $input;
+}
+
+function x6select() {
+    $retval = html('div');
+    $input  = $retval->h('input');
+    $button = $retval->h('img');
+    $button->hp['src'] = 'clib/mouseTest.png';
+    return $retval;
 }
 
 /**
