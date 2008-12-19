@@ -270,7 +270,8 @@ column user_pwexp    { description: PW Exp; type_id: dtime; }
 table users {
 	description: Application Users;
 	module: system;
-    uisort: 109;
+    uisort: 100;
+    x6profile: twosides;
     group usermaint { nomenu: N; permsel: Y; permins: Y; permupd: Y; permdel: Y;}
 
 	column user_id { primary_key: Y; uisearch: Y; }
@@ -308,6 +309,7 @@ menu userssimple {
     description: User Migration;
     module: system;
     uisort: 110;
+    spaceafter: Y;
     x2: Y;
     group usermaint { permsel: Y; nomenu: N; }
 }
@@ -327,22 +329,23 @@ menu userssimple {
 menu skinJob {
     description: Generate Skins;
     module: system;
-    uisort: 111;
+    uisort: 600;
     group usermaint { permsel: Y; nomenu: N; }
 }
 menu skinShow {
     description: Show Current Skin CSS;
     module: system;
-    uisort: 112;
+    uisort: 605;
     group usermaint { permsel: Y; nomenu: N; }
 }
 
 //  TABLE: Cross-reference users to node groups
 //
 table usersxgroups {
-	description: User - Group Assignments;
+	description: Group Membership;
 	module: system;
 	nomenu: Y;
+    x6xref: checkbox;
     group usermaint { permsel: Y;permins: Y;permupd: Y;permdel: Y;}
 
 	foreign_key { table_id_par: users; primary_key: Y; uisearch: Y;
@@ -454,11 +457,13 @@ column loginbefore {
     type_id: text;
     description: Text at top of Login page;
     flagcarry: N;
+    uirows: 4;
 }
 column loginafter {
     type_id: text;
     description: Text at bottom of Login page;
     flagcarry: N;
+    uirows: 4;
 }
 column js_css_debug {
     type_id: cbool;
@@ -573,6 +578,7 @@ table configfw {
     column notes {
         suffix: footer;
         description: Page Footer Text;
+        uirows: 4;
     }
     column { smtpout; email_fromname; email_fromaddr; email_admin; }
     column { uisearchdash; }
@@ -604,18 +610,54 @@ table configapp {
 table configinst {
     module: system;
     uisort: 552;
-    description: Configuration - Instance;
+    description: System Configuration;
+    spaceafter: Y;
+    x6profile: onerow;
 
     group $LOGIN { permsel: "Y"; }
     group configadmin { permupd: "Y"; permsel: "Y"; nomenu: "N"; }
 
     column recnum  { primary_key: "Y"; uisearch: "Y"; }
     column { smtpout; }
+
+    projection login {
+        column { loginbefore; loginafter; notesfooter }
+    }
+    column description { suffix: _login; description: Login; }
+    projection email {
+        column { smtpout; email_fromname; email_fromaddr; email_admin; }
+    }
+    column description { suffix: _email; description: Sending Emails; }
+    projection searches {
+        column { uisearchdash; sql_limit; }
+    }
+    column description { suffix: _searches; description: Search Options; }
+    projection paypal {
+        column { paypal_site_url; paypal_image_url; paypal_payto;
+            paypal_noship; paypal_v2;
+            paypal_test_mode; paypal_fake;
+        }
+    }
+    column description { suffix:_paypal; description: Paypal; }
+    projection authdotnet {
+        column {
+            auth_net_debugging; auth_net_testing; auth_net_retries;
+            auth_net_login_id; auth_net_tran_key;
+        }
+    }
+    column description { suffix: _authdotnet; description: Authorize.net; }
+    projection debugging {
+        column {
+            js_css_debug; admin_logging; flag_syslog;   
+        }
+    }
+    column description { suffix: _debugging; description: Debugging; } 
 }
 table configuser {
     module: system;
     uisort: 553;
     description: My Configuration;
+    nomenu: Y;
 
     group $LOGIN { permsel: Y; permins: Y; permupd: Y;  nomenu: N; }
 
