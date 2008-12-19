@@ -356,9 +356,11 @@ if(gp('x4Page')=='' && gp('gp_page')=='') {
         if($x4menu=='Y' && LoggedIn()) {
             gpSet('x4Page','menu');
         }
+        if(configGet('flag_x6','N')=='Y' && !gp('x6page',false)) {
+            gpSet('x6page','menu');
+        }
     }
 }
-
 
 
 // Entries made in the command box can rewrite get/post 
@@ -377,6 +379,8 @@ $x6profile = '';
 $x6plugin  = '';
 $x6action  = '';
 
+# Slip in a menu command
+
 # Get a candidate page to use to figure out the resolution
 $x6cand = gp('x6page');
 if($x6cand=='') {
@@ -394,10 +398,11 @@ if(file_exists_incpath($x)) {
 }
 
 # a Yaml file for this page
-$x = $x6cand.'.x6.yaml';
-if(file_exists_incpath($x)) {
-    $x6yaml = $x;
-}
+# KFD 12/14/08, never implemented this, rem'd out
+#$x = $x6cand.'.x6.yaml';
+#if(file_exists_incpath($x)) {
+#    $x6yaml = $x;
+#}
 
 # A profile for this page specified either in the dd.yaml
 # or overridden in applib.
@@ -423,10 +428,15 @@ if(isset($GLOBALS['AG']['x6profiles'][$x6cand])) {
 $x6action = gp('x6action');
 $x6plugin = gp('x6plugIn');
 
+# KFD 12/14/08, MAJOR CHANGE.  As of now, only the presence of
+#               'x6page' forces us to x6 dispatching.  This works
+#               out fine if the template is x6, which builds a menu
+#               full of x6 stuff.  No more resolution.
 # Now if any of those were not empty, x6 it is
-if(gp('x6Page').$x6file.$x6yaml.$x6profile.$x6plugin.$x6action<>'') {
-    $x6page = $x6cand;
-}
+$x6page = gp('x6page');
+#if(gp('x6Page').$x6file.$x6yaml.$x6profile.$x6plugin.$x6action<>'') {
+#    $x6page = $x6cand;
+#}
 
 # Ken's debugging to make sure assignments worked
 #echo "candidate -$x6cand- page -$x6page- file -$x6file- yaml -$x6yaml-
@@ -494,12 +504,16 @@ function index_hidden_x6Dispatch(
         return;
     }
     
+    # Make hidden variables for x6page and module
+    hidden('x6page',$x6page);
+    hidden('x6module',gp('x6module','X'));
     
     # This little bit of magic loads up the CSS information
     # for the current template and skin, allowing downstream
     # code to determine how much space they have to work with
     #
-    $x6skin = arr($_COOKIE,'x6skin','win2k.gray.1024');
+    $x6skin = arr($_COOKIE,'x6skin','Default.Gray.1024');
+    setCookie('x6skin',$x6skin);
     if($x6skin!='') {
         $filename  = fsDirTop()."generated/x6skin.$x6skin.ser.txt";
         if(file_exists($filename)) {
@@ -524,18 +538,8 @@ function index_hidden_x6Dispatch(
     $MPPages['x_mpassword']="Member Password";
     $MPPages['x_paypalipn']='Paypal IPN';
     
-    #$debug=" page -$x6page- file -$x6file- yaml -$x6yaml-
-    #    profile -$x6profile- plugin -$x6plugin- action -$x6action-";
-    #echo $debug;
-    #exit;
-    #x4Debug($debug);
-    
     # Session timeouts.  Need to code for basic page access
     # and code for ajax timeouts.
-    #echo $x6page;
-    #hprint_r($MPPages);
-    #echo in_array($x6page,array_keys($MPPages));
-    
     if(!LoggedIn() && !in_array($x6page,array_keys($MPPages))){
         if(gpExists('json')) {
             x4Script("window.location='index.php?gp_page=x_login'");
@@ -561,13 +565,17 @@ function index_hidden_x6Dispatch(
     # and custom) plus calls from plugins to refresh, plus JSON
     # calls to do database stuff.
     if($x6plugin<>'') {
+        # DEFUNCT.  We don't use plugins, they were an early
+        #           idea, but profiles and androHTML classes
+        #           made them unecessary.
+        
         # A plugin always wins.  A call to a plugin assumes that
         # x6action is also specified.  We are going to instantiate
         # the plugin and call the method named by x6action.
-        $x6file  = '';
-        $x6class = 'x6plugin'.$x6plugin;
-        $x6method= $x6action;
-        include($x6class.'.php');
+        #$x6file  = '';
+        #$x6class = 'x6plugin'.$x6plugin;
+        #$x6method= $x6action;
+        #include($x6class.'.php');
     }
     else {
         # No plugin means we are either using the base andromeda
@@ -607,6 +615,14 @@ function index_hidden_x6Dispatch(
         }
     }
     
+    # Final trap.  If the class is androX6 and the method
+    # is x6main, this means an unprogrammed page: there is
+    # no custom program file and no profile in the yaml.
+    # So we default to the conventional profile.
+    if($x6method=='x6main' && $x6class=='androX6') {
+        $x6method = 'profile_conventional';
+    }
+    
     # Ken's debugging code to make sure resolution worked
     #echo "<br/>class -$x6class- method -$x6method-";
     #exit;
@@ -615,8 +631,9 @@ function index_hidden_x6Dispatch(
     # and what method to call, so go for it.
     ob_start();
     $obj = new $x6class();
-    $obj->dd   = ddTable($x6page);
-    $obj->view = arr($obj->dd,'viewname','');
+    $obj->dd    = ddTable($x6page);
+    $obj->x6page= $x6page;
+    $obj->view  = arr($obj->dd,'viewname','');
     $obj->$x6method();
     x6HTML('*MAIN*',ob_get_clean());
     
