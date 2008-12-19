@@ -592,16 +592,19 @@ column singular      {  type_id: vchar; colprec: 50; description: Singular Name;
 column x6profile     {  type_id: vchar; colprec: 20; description: X6 Profile; }
 column x6childwrites {  type_id:  char; colprec: 1;  description: X6 Child Writes; }
 column x6all         {  type_id:  char; colprec: 1;  description: x6select Preload All Rows; }
+column x6xref        {  type_id: vchar; colprec: 10; description: How to Display As Child; }
+column spaceafter    {  type_id:  char; colprec: 1;  description: Put spacer on menu after this entry; }
 table tables {
 	module:  datadict;
 	description: Table of Tables;
 	table_seq: 900;
 	
 	column table_id      { primary_key: Y; uisearch: Y; }
-    column  { singular; returnall; x6profile;x6childwrites;x6all }   
+    column  { singular; returnall; x6profile;x6childwrites;x6all;x6xref; }   
    // Removed KFD 5/24/07, not being used
 	//column column_prefix { primary_key: N; uisearch: Y; }
 	column description  { uisearch: Y; }
+    column { spaceafter; }
 
    // Removed KFD 5/24/07, not being used
 	//column { ins;risimple;table_seq;menuins }
@@ -1036,7 +1039,8 @@ column freejoin  {  type_id: char;  colprec: 1; description: No Admin required t
 table groups {
     module: datadict;
     description: Group Definitions;
-    risimple: Y;
+    x6profile: twosides;
+    uisort: 105;
     table_seq:1900;
         
     column group_id    { primary_key: Y; uisearch: Y; }
@@ -1151,6 +1155,7 @@ table uimenu {
     column menu_parms  { uisearch: Y; }
     column { uix2; }
     column { uisort; }
+    column { spaceafter; }
 
 	foreign_key {  modules; uisearch: Y; }
 	column { skey; skey_quiet; _agg; }
