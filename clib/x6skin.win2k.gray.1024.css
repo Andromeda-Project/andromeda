@@ -1,6 +1,6 @@
 /* ==================================================== *\
  * Andromeda Generated CSS file                         
- * Generated: Wed, 10 Dec 2008 13:58:20 -0500
+ * Generated: Thu, 11 Dec 2008 21:11:49 -0500
  * Skin, color, size: win2k, gray, 1024
 \* ==================================================== */
         
@@ -327,6 +327,17 @@ input[disabled],select[disabled],textarea[disabled] {
     outline:                 0;
 }
 
+div.thead div div {
+    padding-left:            3px;
+    padding-right:           3px;
+    float:                   left;
+    line-height:             24px;
+    border-top:              1px solid #ffFFff;
+    border-bottom:           1px solid #909090;
+    border-left:             1px solid #ffFFff;
+    border-right:            1px solid #909090;
+}
+
 div.tbody div.selected input {
     margin-left:             -2px;
 }
@@ -379,41 +390,6 @@ div.tbody div.hilight div {
     background-color:        #d0d0d0;
 }
 
-div.tbody div.hilight div input.readOnly {
-    border-top:              1px solid #d0d0d0;
-    border-bottom:           1px solid #d0d0d0;
-    border-left:             1px solid #d0d0d0;
-    border-right:            1px solid #d0d0d0;
-    background-color:        #d0d0d0;
-}
-
-div.tbody div.hilight div select.readOnly {
-    border-top:              1px solid #d0d0d0;
-    border-bottom:           1px solid #d0d0d0;
-    border-left:             1px solid #d0d0d0;
-    border-right:            1px solid #d0d0d0;
-    background-color:        #d0d0d0;
-}
-
-div.tbody div.hilight div textarea.readOnly {
-    border-top:              1px solid #d0d0d0;
-    border-bottom:           1px solid #d0d0d0;
-    border-left:             1px solid #d0d0d0;
-    border-right:            1px solid #d0d0d0;
-    background-color:        #d0d0d0;
-}
-
-div.thead div div {
-    padding-left:            3px;
-    padding-right:           3px;
-    float:                   left;
-    line-height:             24px;
-    border-top:              1px solid #ffFFff;
-    border-bottom:           1px solid #909090;
-    border-left:             1px solid #ffFFff;
-    border-right:            1px solid #909090;
-}
-
 div.x6select table tbody tr.hilight td {
     background-color:        #d0d0d0;
 }
@@ -448,10 +424,6 @@ a {
 
 a.button_disabled,a.button,div.thead div a {
     text-decoration:         none;
-}
-
-tbody tr td.style1 {
-    vertical-align:          top;
 }
 
 .x6menu ul.right {
