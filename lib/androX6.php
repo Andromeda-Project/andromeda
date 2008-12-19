@@ -263,6 +263,7 @@ class androX6 {
     #
     # ===================================================================
     function browseFetch() {
+        $time = microtime(true);
         $table_id = $this->dd['table_id'];
         
         #  This is the list of columns to return 
@@ -273,7 +274,10 @@ class androX6 {
         $vals = aFromGP('x6w_');
         $awhere = array();
         $tabPar = gp('tableIdPar');
-        if($tabPar<>'') {
+        if($tabPar=='') {
+            $vals2 = array();
+        }
+        else {
             $ddpar = ddTable(gp('tableIdPar'));
             $pks   = $ddpar['pks'];
             $stab  = ddView(gp('tableIdPar'));
@@ -385,7 +389,8 @@ class androX6 {
         $sortable  = gp('xSortable','N')=='Y';
         $gridHeight= gp('xGridHeight',500);
         $lookups   = gp('xLookups','N')=='Y';
-        $edit      = ($tabPar != '') && ($this->dd['x6childwrites'] == 'Y');
+        $edit      = 0;
+        if(($tabPar != '') && ($this->dd['x6childwrites'] == 'Y')) $edit = 1;
         x6Debug($tabPar);
         x6Debug($this->dd['x6childwrites']);
         x6Debug($edit);
@@ -395,8 +400,9 @@ class androX6 {
         $grid = new androHTMLTabDiv(
             $gridHeight,$table_id,$lookups,$sortable,$bb,$edit
         );
-        $this->tabDivGeneric($grid,$this->dd,$tabPar);
+        $this->tabDivGeneric($grid,$this->dd,$tabPar,$vals2);
         $grid->addData($answer);
+        $grid->hp['x6profile'] = 'x6tabDiv';
         
         # Put some important properties on the grid!
         $grid->ap['xGridHeight'] = $gridHeight;
@@ -404,23 +410,111 @@ class androX6 {
         if($tabPar<>'') {
             $grid->ap['x6tablePar']=$tabPar;
         }
-        #if(arr($this->dd,'x6childwrites','N')=='Y') {
-        #    $grid->editInPlace();
-        #}
         
         # If they asked for the entire grid, send it back
-        # as *MAIN* and let the browser put it where it belongs 
+        # as *MAIN* and let the browser put it where it belongs
         if(gp('sendGrid',0)==1) {
-            ob_start();
-            $grid->render();
-            x6html('*MAIN*',ob_get_clean());
+            #$grid->render();
+            #exit;
+            x6html('*MAIN*',$grid->bufferedRender());
+            return;
         }
         
         # ..otherwise just send the body back.  But kill
         #   any script they created.
-        x6ScriptKill();
-        x6Html('browseFetchHtml',$grid->dbody->bufferedRender());
-        return;
+        $grid->dbody->render();
+        exit;
+        #x6ScriptKill();
+        #x6Html('browseFetchHtml',$grid->dbody->bufferedRender());
+        #return;
+    }
+    # ===================================================================
+    #
+    # SERVER FUNCTION 7: compose list of checkboxes for child x-ref
+    #
+    # ===================================================================
+    function child_checkbox() {
+        $table_id  = gp('x6table');
+        $table_chd = gp('table_chd');
+        $skey      = gp('skey');
+        
+        # Load up dd's, get pk of parent, etc.
+        $dd       = ddTable($table_id);
+        $dd_chd   = ddTable($table_chd);
+        $view     = $dd['viewname'];
+        $view_chd = $dd_chd['viewname'];
+        $pk       = $dd['pks'];
+        $pk_chd   = $dd_chd['pks'];
+        $pkval    = SQL_OneValue($pk,
+            "Select $pk from $view where skey = ".SQLFC($skey)
+        );
+        
+        # Now work out the other parent table by assuming there
+        # are only two parents.  Drop one and the other must be
+        # our parent.
+        $parents = array_keys($dd_chd['fk_parents']);
+        unset($parents[ array_search($table_id,$parents) ]);
+        $table_par = array_shift($parents);
+        $dd_par  = ddTable($table_par);
+        $pk_par  = $dd_par['pks'];
+        $view_par= $dd_par['viewname'];
+        
+        # Now pull the list of descriptions from the other parent,
+        # and the list of values from the x-ref.  Use this to 
+        # build a set of checkboxes that are either checked or
+        # not.
+        $rows_par = SQL_AllRows(
+            "Select $pk_par,description from $view_par order by description"
+        );
+        $rows     = SQL_AllRows(
+            "Select $pk_par from $view_chd where $pk = ".SQLFC($pkval),$pk_par
+        );
+        
+        # Finally we are ready to build the list of checkboxes
+        # which are either checked or not
+        $pad0 = x6CssDefine('pad0');
+        $pad1 = $pad0 * 3;
+        echo "<p style='padding: {$pad1}px'
+          >When you check a box the change is saved immediately,
+          you do not have to click on the [SAVE] button.</p>";
+        foreach($rows_par as $idx=>$row_par) {
+            $div = html('div');
+            $div->hp['style'] = 'height: '.x6cssDefine('barheight').'px;'
+                ."padding-left: {$pad0}px"; 
+            $inp = $div->h('input');
+            $inp->hp['style'] = "float: left;";
+            $inp->hp['type'] = 'checkbox';
+            $inp->hp['value']= $row_par[$pk_par];
+            $strEvent = "xrefClick_$table_id";
+            $strArgs  
+                ="{inp:this,pkvalleft:'$pkval',pkl:'$pk',pkr:'$pk_par',"
+                ."x6table:'$table_chd'}";
+            $inp->hp['onclick'] = "x6events.fireEvent('$strEvent',$strArgs)";
+            if(isset($rows[$row_par[$pk_par]])) {
+                $inp->hp['checked'] = 'checked';
+            }
+            $div2 = $div->h('div',$row_par['description']);
+            $div2->hp['style'] = "float: left; padding-top: 1px";
+            $div->render();
+        }
+        
+        
+        #  NOTICE THE EXIT COMMAND.  This is because we are 
+        #  streaming back literal html that will dropped directly
+        #  into place.
+        exit;
+    }   
+    
+    function checkboxSave() {
+        $row      = aFromGP('cbval_');
+        x6Data('row',$row);
+        $table_id = gp('x6table');
+        if(gp('checked')=='true') {
+            SQLX_Insert($table_id,$row);
+        }
+        else {
+            SQLX_Delete($table_id,$row);
+        }
     }
     # ===================================================================
     # *******************************************************************
@@ -583,13 +677,34 @@ class androX6 {
         
         $box2  = $div->h('div');
         $box2->hp['style'] = "float: left; width: {$wInner}px;";
-        $box2->addDetail($table_id,true,$heightRemain-2);
+        $detail = $box2->addDetail($table_id,true,$heightRemain-2);
+        
+        # Generate a list of child xrefs.  The idea here is to
+        # work out the dimensions first, because we must tell the
+        # class how hight to make itself.  Then we generate the
+        # list.  If it comes back empty, we forget about it, otherwise
+        # we create a div of the correct position and put it into it.
+        $xrtop = ($detail->hp['xInnerHeight']-$detail->hp['xInnerEmpty'])
+            +(x6CssHeight('h1'));
+        $xrhgt = $detail->hp['xInnerEmpty'] 
+            - x6cssHeight('h1')
+            - ($pad0 * 10) ;      // total hack, don't know why 7 works
+        $xrwdth= $wInner - $detail->hp['xInnerWidthLost'];
+        $xrefs = new androHTMLxrefs($table_id,$xrhgt);
+        if($xrefs->hp['xCount']>0) {
+            $xrefParent = $detail->innerDiv->h('div');
+            $xrefParent->hp['style'] = 
+               "position: absolute;
+                width: {$xrwdth}px;
+                top: {$xrtop}px";
+            $xrefParent->addChild($xrefs);
+        }
+        //echo "$xrtop $xrhgt $xrwdth";
+        #$detail->innerDiv->addXRefs($table_id,$xrtop,$xrhgt,$xrwdth);
         
         # Render it!  That's it!
         $div->render();
     }
-    
-    
     
     # ===================================================================
     # *******************************************************************
@@ -639,7 +754,7 @@ class androX6 {
         
         # Begin with title and tabs
         $top->h('h1',$dd['description']);
-        $options = array('x6profile'=>'conventional');
+        $options = array('profile'=>'conventional','x6table'=>$table_id);
         $tabs = $top->addTabs('tabs_'.$table_id,$hpane1,$options);
         $lookup = $tabs->addTab('Lookup');
         $detail = $tabs->addTab('Detail',true);
@@ -674,8 +789,10 @@ class androX6 {
         # The div kids is a tabbar of child tables.  Notice that we
         # put nothing into them.  They are loaded dynamically when
         # the user picks them.
-        $options=array('slideup'=>$divDetail->hp['id']
-            ,'slideupinner'=>$divDetail->innerId
+        $options=array('slideUp'=>$divDetail->hp['id']
+            ,'slideUpInner'=>$divDetail->innerId
+            ,'parentTable'=>$table_id
+            ,'profile'=>'kids'
             ,'styles'=>array('overflow'=>'hidden')
         );
         $tabKids = $detail->addTabs('kids_'.$table_id,$hempty,$options);
@@ -694,6 +811,87 @@ class androX6 {
     }
 
     # ===================================================================
+    # *******************************************************************
+    #
+    # Profile 3: "onerow"
+    #
+    # *******************************************************************
+    # ===================================================================
+    function profile_onerow() {
+        
+        # Get started with the top of the page and
+        # a table controller
+        $top = htmlMacroTop($this->x6page);
+        $top->addTableController($this->x6page);
+        
+        # Make the tabs
+        $height = x6CssHeightLessH1();
+        $tabs = $top->addTabs($this->x6page,$height);
+        
+        $spacing = intval(x6CSSDefine('insidewidth')/25);
+        
+        # Get a list of projections, we will make a tab
+        # for each one of them
+        $projections = array_keys($this->dd['projections']);
+        foreach($projections as $idx=>$projection) {
+            if(substr($projection,0,1)=='_') unset($projections[$idx]);
+        }
+        
+        # Get the row from the table so we can populate
+        # the inputs
+        $row = SQL_OneRow("Select * from ".$this->dd['viewname']);
+
+        
+        # Make a tab for each projection, and put the inputs in there!
+        foreach($projections as $projection) {
+            $description = $projection;
+            $x = 'description_'.$projection;
+            if(isset($this->dd['flat'][$x])) {
+                $description=$this->dd['flat'][$x]['description'];
+            }
+            
+            $tab = $tabs->addTab($description);
+            $insidetab = $tab->h('div');
+            $insidetab->hp['style']="padding: {$spacing}px";
+            
+            $table = $insidetab->h('table');
+            $table->addClass('x6Detail');
+            $columns = explode(',',$this->dd['projections'][$projection]);
+            foreach($columns as $idx=>$column) {
+                $tabLoop=array();
+                
+                $tr = $table->h('tr');
+                $td = $tr->h('td',$this->dd['flat'][$column]['description']);
+                $td->addClass('x6Caption');
+                
+                $input=input($this->dd['flat'][$column],$tabLoop);
+                $input->hp['xSkey'] = $row['skey'];
+                $input->hp['value'] = htmlentities($row[$column]);
+                $input->hp['onchange']='oneRowSave(this)';
+                $td = $tr->h('td');
+                $td->setHtml($input->bufferedRender());
+                $td->addClass('x6Input');            
+            }
+        }
+        $top->render();
+        
+        ob_start();
+        ?>
+        <script>
+        window.oneRowSave = function(input) {
+            var json = new androJSON('x6page',u.p(input,'xTableId'));
+            json.addParm('x6action','save');
+            json.addParm('x6v_skey',u.p(input,'xSkey'));
+            json.addParm(input.id,input.value);
+            json.execute(false,true);
+            input.zOriginalValue = input.value;
+            x6inputs.setClass(input);
+        }
+        <?php
+        jqDocReady(ob_get_clean());
+    }
+    
+    # ===================================================================
     # -------------------------------------------------------------------
     #
     # Simple Library routines
@@ -702,11 +900,25 @@ class androX6 {
     # ===================================================================
     # Makes a generic tabdiv.  First created 11/3/08 so we can add
     # cells to it for a browseFetch and then pluck out the tbody html
-    function tabDivGeneric(&$grid,$dd,$tabPar='') {
+    function tabDivGeneric(&$grid,$dd,$tabPar='',$vals2=array()) {
         $table_id = $dd['table_id'];
-        #$grid->hp['x6table']      = $table_id;
-        #$grid->hp['id']           = "tabDiv_$table_id";
-        #$grid->hp['xSortable']    = 'Y';
+        
+        # KFD 12/18/08.  If we have a tablePar and $vals2, we will
+        #                put a set of options onto the grid that
+        #                it will respect when building the inputs
+        if($tabPar!='') {
+            $options = array();
+            foreach($vals2 as $colname=>$colvalue) {
+                $options[$colname] = array(
+                    'parentTable'=>$tabPar
+                    ,'attributes'=>array(
+                        'xDefault'=>$colvalue
+                    )
+                );
+            }
+            x6debug($options);
+            $grid->setColumnOptions($options);
+        }
         
         # KFD 11/15/08 
         # Nifty trick to allow different columns when viewed as 
