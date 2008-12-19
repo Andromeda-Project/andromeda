@@ -578,10 +578,15 @@ function x4HtmlDump($parm1) {
 * SOURCE
 */
 function x6script($parm1) { return x4script($parm1); }
-function x4SCRIPT($parm1) {
+function x4SCRIPT($parm1,$insert = false) {
     $parm1 = preg_replace("/<script>/i",'',$parm1);
     $parm1 = preg_replace("/<\/script>/i",'',$parm1);
-    $GLOBALS['AG']['x4']['script'][] = $parm1;
+    if($insert) {
+        array_unshift($GLOBALS['AG']['x4']['script'],$parm1);
+    }
+    else {
+        $GLOBALS['AG']['x4']['script'][] = $parm1;
+    }
 }
 /******/
 function x6scriptKill() {
@@ -857,12 +862,14 @@ function html($tag,&$parent=null,$innerHTML='') {
 *	androHtml DIV object with a title built in and having class "fadeIn".
 ******
 */
-function &htmlMacroTop($page) {
+function &htmlMacroTop($page,$center=false) {
     $retval = html('div');
     $retval->addClass('fadein');
-    $retval->h('h1',ddPageDescription($page));
+    $h1 = $retval->h('h1',ddPageDescription($page));
+    if($center) $h1->hp['style'] = 'text-align: center'; 
     return $retval;
 }
+
 
 /****f* HTML-Generation/htmlMacroGridWithData
 *
@@ -896,6 +903,7 @@ function &htmlMacroTop($page) {
 *   addChild() to add it into an existing HTML object.
 ******
 */
+/*
 function &htmlMacroGridWithData($dd,$cols,$rows) {
     # Make sure the list of columns is an array
     if(!is_array($cols)) {
@@ -917,7 +925,7 @@ function &htmlMacroGridWithData($dd,$cols,$rows) {
         $tabDiv->addColumn($dd['flat'][$col]);
     }
     $gwidth = $tabDiv->lastColumn();
-     
+    
     # Get the width of the grid and wiggle it over               
     $remain = x6cssDefine('insidewidth') - $gwidth;
     $remain = intval($remain/3);
@@ -938,12 +946,13 @@ function &htmlMacroGridWithData($dd,$cols,$rows) {
                 $inp->hp['value'] = arr($row,$col,'&nbsp;');
                 $tabDiv->addCell($inp);
             }
-            
         }
     }
     return $tabDiv;
 }
-    
+            */
+ 
+
 /****c* HTML-Generation/androHtml
 *
 * NAME
@@ -1554,6 +1563,12 @@ class androHtml {
         return $div;        
     }
     
+    function addXRefs($table_id,$top,$width,$height) {
+        $child = new androHTMLxrefs($table_id,$top,$width,$height);
+        $this->addChild($child);
+    }
+    
+    
     /****m* androHtml/addButtonBar
     *
     * NAME
@@ -1617,6 +1632,7 @@ class androHtml {
             $a->hp['style']    = 'float: left';
             $bb->buttons['new'] = $a;
             $a->initPlugin();
+            jqDocReady("x6events.fireEvent('disable_new_$table_id')");
 
             $a=$bb->h('a-void','Insert');
             $a->addClass('button');
@@ -1627,6 +1643,7 @@ class androHtml {
             $a->hp['style']    = 'float: left';
             $bb->buttons['ins'] = $a;
             $a->initPlugin();
+            jqDocReady("x6events.fireEvent('disable_ins_$table_id')");
         }
         if(in_array('save',$abuts)) {
             $a=$bb->h('a-void','Save');
@@ -1637,7 +1654,7 @@ class androHtml {
             $a->hp['style']    = 'float: left';
             $bb->buttons['save'] = $a;
             $a->initPlugin();
-            #jqDocReady("x6events.fireEvent('disable_save_$table_id')");
+            jqDocReady("x6events.fireEvent('disable_save_$table_id')");
         }
         if(in_array('remove',$abuts)) {
             $a=$bb->h('a-void','Delete');
@@ -1648,7 +1665,7 @@ class androHtml {
             $a->hp['style']    = "float: right; margin-right: {$pad0}px";
             $bb->buttons['remove'] = $a;
             $a->initPlugin();
-            #jqDocReady("x6events.fireEvent('disable_delete_$table_id')");
+            jqDocReady("x6events.fireEvent('disable_delete_$table_id')");
         }
         if(in_array('abandon',$abuts)) {
             $a=$bb->h('a-void','Cancel');
@@ -1659,7 +1676,7 @@ class androHtml {
             $a->hp['style']    = 'float: right';
             $bb->buttons['abandon'] = $a;
             $a->initPlugin();
-            #jqDocReady("x6events.fireEvent('disable_cancel_$table_id')");
+            jqDocReady("x6events.fireEvent('disable_cancel_$table_id')");
         }
             
         return $bb;
@@ -1943,7 +1960,7 @@ class androHtml {
     }
 
     /****m* androHtml/addTabDiv
-    *
+    *       
     * NAME
     *    addTabDiv
     *
@@ -2002,8 +2019,6 @@ class androHtml {
         return $newDetail;
     }
 
-    
-
     /****m* androHtml/addTabs
     *
     * NAME
@@ -2025,9 +2040,7 @@ class androHtml {
         $this->addChild($newTabs);
         return $newTabs;
     }
-
-
-
+    
     /****m* androHtml/addCheckList
     *
     * NAME
@@ -2202,9 +2215,9 @@ class androHtml {
     *
     * SOURCE
     */
-    function bufferedRender() {
+    function bufferedRender($parentId='',$singleQuotes=false) {
         ob_start();
-        $this->render();
+        $this->render($parentId,$singleQuotes);
         return ob_get_clean();
     }
     /******/
@@ -2227,7 +2240,7 @@ class androHtml {
     * INPUTS
     *	string $parentId - parent id for this androHtml object
     ******/
-    function render($parentId='') {
+    function render($parentId='',$singleQuotes=false,$x6wrapperPane='') {
         # Accept a parentId, maybe assign one to
         if($parentId <> '') {
             $this->ap['xParentId'] = $parentId;
@@ -2239,6 +2252,11 @@ class androHtml {
                 hprint_r($this);
                 exit;
             }
+        }
+        
+        # Set the x6 parent tab if exists
+        if(arr($this->hp,'x6plugin') == 'x6tabs') {
+            $this->hp['x6wrapperPane'] = $x6wrapperPane;
         }
 
         # Before we render, we are going to take the code
@@ -2279,14 +2297,15 @@ class androHtml {
             }
             $this->hp['style']=$style;
         }
+        $q = $singleQuotes ? "'" : '"';
         foreach($this->hp as $parmname=>$parmvalue) {
             if($parmname=='href') {
                 $parmvalue=preg_replace('/&([a-zA-z])/','&amp;$1',$parmvalue);
             }
-            $parms.="\n  $parmname=\"$parmvalue\"";
+            $parms.="\n  $parmname=$q$parmvalue$q";
         }
         foreach($this->ap as $parmname=>$parmvalue) {
-            $parms.="\n  $parmname=\"$parmvalue\"";
+            $parms.="\n  $parmname=$q$parmvalue$q";
         }
         echo "<".$this->htype.' '.$parms.'>'.$this->innerHtml;
         foreach($this->children as $child) {
@@ -2294,7 +2313,10 @@ class androHtml {
                 echo $child;
             }
             else {
-                $child->render($parentId);
+                if(arr($this->hp,'x6plugin')=='x6tabsPane') {
+                    $x6wrapperPane = $this->hp['id'];
+                }
+                $child->render($parentId,$singleQuotes,$x6wrapperPane);
             }
         }
         echo "</$this->htype \n>";
@@ -2437,8 +2459,9 @@ class androHTMLTabs extends androHTML {
         $this->height =$height;
         $this->htype  = 'div';
         $this->hp['x6plugin'] = 'x6tabs';
+        $this->hp['x6profile']= arr($options,'x6profile','');
         $this->hp['id']       = $id;
-        $this->hp['x6table']  = '*';
+        $this->hp['x6table']  = arr($options,'x6table','*');
         $this->ul = $this->h('ul');
         $this->ul->hp['id'] = $id."_tabs";
         $ts = $this->ts = "#$id > ul";
@@ -2447,35 +2470,9 @@ class androHTMLTabs extends androHTML {
         # Register the script to turn on the tabs
         jqDocReady(" \$('$ts').tabs(); ");
         
-        # If there is a slideup option set, set the function
-        if(isset($options['slideup'])) {
-            $topPane = $options['slideup'];
-            $tpi     = $options['slideupinner'];
-            $script="
-                $('$ts').bind('tabsselect',
-                    function(event, ui) { 
-                        return x6tabs.slideUp(event,ui,'$topPane','$tpi');
-                    }
-                );
-            ";
-            jqDocReady($script);
-        }
-        # If we are on a conventional profile, 
-        if(arr($options,'x6profile','')=='conventional') {
-            $script="
-                $('$ts').bind('tabsselect',
-                    function(event, ui) {
-                        // Turn on keyboard events
-                        if(ui.index==0) {
-                            var grid = $(ui.panel)
-                                .find('[x6profile=conventional]')[0];
-                            grid.keyboardOn();
-                        }
-                        setTimeout(function() {x6.initFocus();},100);
-                    }
-                );
-            ";
-            jqDocReady($script);
+        # Set various options on the tab itself
+        foreach($options as $option=>$value) {
+            $this->hp['x6'.$option]=$value;
         }
         
         # Now initialize the plugin. 
@@ -2521,6 +2518,8 @@ class androHTMLTabs extends androHTML {
         # Next really easy thing to do is make a div, give it
         # the id, and return it
         $div = $this->h('div');
+        $div->hp['xParentId'] = $this->hp['id'];
+        $div->hp['x6plugin']  = 'x6tabsPane';
         $this->tabs[] = $div;
         $div->hp['id'] = "$index";
         if(isset($this->options['styles'])) {
@@ -2665,6 +2664,7 @@ class androHTMLTabDiv extends androHTML {
     var $colWidths  = 0;
     var $rows       = array();
     var $buttonBar  = false;
+    var $colOptions = array();
     
     function androHTMLTabDiv(
         $height=300,$table,$lookups=false,$sortable=false,$bb=false,$edit=false
@@ -2675,8 +2675,7 @@ class androHTMLTabDiv extends androHTML {
         $this->addClass('tdiv box3');
         $this->hp['x6plugin'] = 'x6tabDiv';
         $this->hp['x6table']  = $table;
-        $this->hp['id']       = 'tabDiv_'.$table.'_'.rand(100,999);
-        $this->initPlugin();
+        $this->hp['id']       = 'tabDiv_'.$table;  #.'_'.rand(100,999);
         $this->hp['style'] = "height: {$height}px;";
         $this->height = $height;
         $cssLineHeight             = x6cssHeight('div.thead div div');
@@ -2700,6 +2699,10 @@ class androHTMLTabDiv extends androHTML {
         # create default options
         $this->hp['xGridHilight'] = 'Y';
         
+        # Very first thing we add is a style, we will
+        # overwrite it later
+        $this->h('style');
+        
         # notice: we slip one div inside of thead, 
         #         we assume there will always be
         #         only one row, the column headers
@@ -2715,14 +2718,11 @@ class androHTMLTabDiv extends androHTML {
         $this->hp['xButtonBar'] = $bb ? 'Y' : 'N';
         
         # Add features if editInPlace
+        $this->editable = false;
         if($edit) {
             $this->hp['uiNewRow' ] = 'Y'; // vs. nothing
             $this->hp['uiEditRow'] = 'Y'; // vs. nothing
-            
-            # Create a hidden object that contains inputs we will
-            # clone over to the grid on demand
-            $dd = ddTable($this->hp['x6table']);
-            $this->hiddenInputs($dd);
+            $this->editable = true;
         }
         
         # The body is empty, we have to add row by row
@@ -2736,8 +2736,50 @@ class androHTMLTabDiv extends androHTML {
         $x = $this->h('div');
         $this->dfoot= $x->h('div');
         $this->dfoot->addClass('tfoot');
-        
+
+        # KFD 12/18/08.  Figured that this should always be the last
+        #     command, never up in the middle.  Reason is that an object
+        #     may put other plugins onto itself and then expect them to
+        #     be active while it is initializing.  By putting this last,
+        #     we ensure that that is the case.
+        $this->initPlugin();
     }
+    
+    function setColumnOptions($options) {
+        $this->colOptions = $options;
+    }
+    
+    function inputsRow() {
+        $dd = ddTable($this->hp['x6table']);
+        
+        # Make an input for each column and build up 
+        # a string of HTML for these.
+        $html     = '';
+        $tabIndex = 1000;
+        $count    = 0;
+        $tabLoop  = null;
+        foreach($this->columnsById as $colname=>$colinfo) {
+            $options = a($this->colOptions,$colname,array());
+            $wrapper = html('div');
+            $wrapper->hp['gColumn'] = $count;
+            $count++;
+            $input   = input($dd['flat'][$colname],$tabLoop,$options);
+            $input->hp['tabindex'] = $tabIndex++;
+            $input->hp['value'] ="*VALUE_$colname*";
+            $input->hp['xClassRow'] = 0;
+            $input->hp['xTabGroup'] = 'rowEdit';
+            $wrapper->addClass('cell_'.$colname);
+            if(!in_array($colinfo['type_id'],array('cbool','gender'))) {
+                unset($input->hp['size']);
+            }
+            $wrapper->addChild($input);
+            $html.=$wrapper->bufferedRender(null,true);
+        }
+        $html    = str_replace("\n","",$html);
+        $strLeft = 'u.byId("'.$this->hp['id'].'").zRowEditHtml'; 
+        jqDocReady("$strLeft = \"$html\"",true);
+    }
+    
     
     /****m* androHtmlTabDiv/addColumn
     *
@@ -2758,6 +2800,7 @@ class androHTMLTabDiv extends androHTML {
     ******/
     function addColumn($options) {
         $column_id   = arr($options,'column_id' );
+        if($column_id=='') $column_id = rand(100000,999999);
         $dispsize    = arr($options,'dispsize'   ,10);
         $description = arr($options,'description','No Desc');
         $type_id     = arr($options,'type_id'    ,'char');
@@ -2796,21 +2839,33 @@ class androHTMLTabDiv extends androHTML {
         );
         $this->columns[]               = $colinfo;
         $this->columnsById[$column_id] = $colinfo;
+        $cssExtra = '';
+        if(in_array($type_id,array('int','numb','money'))) {
+            $cssExtra = 'text-align: right';
+        }
+        $this->colStyles['div.cell_'.$column_id] 
+            ="width: {$width}px; $cssExtra";
+        $iWidth = $width;
+        if(!in_array($type_id,array('cbool','gender'))) {
+            $this->colStyles['div.cell_'.$column_id.' input'] 
+                ="width: {$iWidth}px; $cssExtra";
+        }
         
         # Finally, generate the HTML.
         $div = $this->dhead->h('div',$description);
         $div->hp['xColumn'] = $column_id;
+        $div->addclass('cell_'.$column_id);
         $this->headers[] = $div;
         
-        $div->hp['style'] ="
-            max-width: {$width}px;
-            min-width: {$width}px;
-            width:     {$width}px;";
+        #$div->hp['style'] ="
+        #    max-width: {$width}px;
+        #    min-width: {$width}px;
+        #    width:     {$width}px;";
             
         # Numerics are right-justified
-        if(in_array($type_id,array('int','numb','money'))) {
-            $div->hp['style'].='text-align: right';
-        }
+        #if(in_array($type_id,array('int','numb','money'))) {
+        #    $div->hp['style'].='text-align: right';
+        #}
     }
     /****m* androHtmlTabDiv/lastColumn
     *
@@ -2861,6 +2916,11 @@ class androHTMLTabDiv extends androHTML {
             ,true
         );
         
+        # If editable, add in the invisible row of inputs
+        if($this->editable) {
+            $this->inputsRow();
+        }
+        
         # If the lookups flag is set, add that now
         if($this->lookups) {
             $this->addLookupInputs();
@@ -2870,6 +2930,13 @@ class androHTMLTabDiv extends androHTML {
         if($this->sortable) {
             $this->makeSortable();
         }
+        
+        # Generate the cell styles
+        $styles = "\n";
+        foreach($this->colStyles as $selector=>$rules) {
+            $styles.="$selector { ".$rules."}\n";
+        }
+        $this->children[0]->setHTML($styles);
         
         
         # Get the standard padding, we hardcoded
@@ -2964,15 +3031,17 @@ class androHTMLTabDiv extends androHTML {
         }
         if($class!='') $div->addClass($class);
         $div->hp['gColumn'] = $this->lastCell;
+        $div->addClass('cell_'.$this->columns[$this->lastCell]['column_id']);
+            /*
         $div->hp['style'] ="
             overflow: hidden;
             max-width: {$width}px;
             min-width: {$width}px;
             width:     {$width}px;";
-            
+            */
         # Now for numerics do right-justified
         if(in_array($info['type_id'],array('int','numb','money'))) {
-            $div->hp['style'].='text-align: right';
+            $div->hp['style']='text-align: right';
         }
         
         # up the cell counter
@@ -3023,8 +3092,10 @@ class androHTMLTabDiv extends androHTML {
             $inp->hp['autocomplete'] = 'off';
             $inp->hp['xValue']='';
             $inp->hp['xColumnId'] = $column;
-            $inp->hp['onkeyup'] = "u.byId('".$this->hp['id']."').fetch()";
-            $inp->hp['style'  ] = "width: {$width}px";
+            $inp->hp['xNoPassup'] = 'Y'; 
+            $inp->hp['onkeyup']   = "u.byId('".$this->hp['id']."').fetch()";
+            $inp->hp['style'  ]   = "width: {$width}px";
+            if(isset($inp->hp['x6select'])) unset($inp->hp['x6select']);
             #$inp->ap['xParentId'] = $t->hp['id'];
             #$inp->ap['xNoEnter'] = 'Y';
             $this->addCell($inp,'linput');
@@ -3060,6 +3131,7 @@ class androHTMLDetail extends androHTML {
         $this->hp['x6table']  = $table_id;
         $this->hp['id'] = 'ddisp_'.$table_id;
         $this->initPlugin();
+        $this->hp['xHeight'] = $height;
         if($complete) {
             $this->htype='div';
             $this->innerId  = "ddisp_{$table_id}_inner";
@@ -3081,6 +3153,15 @@ class androHTMLDetail extends androHTML {
         $this->hp['style'] = "height: {$height}px;
             padding-left: {$pad0}px;
             padding-right: {$pad0}px;";
+            
+        $this->hp['xInnerWidthLost'] 
+            = ($pad0 * 2)     // padding left and right
+            + x6cssRuleSize('.box2','border-left')
+            + x6cssRuleSize('.box2','border-right')
+            + x6cssRuleSize('.box1','border-left')    // see below, inner  
+            + x6cssRuleSize('.box1','border-right')   // box is box1
+            + ($pad0 * 7);  // padding left and right of box1
+        
         
         # Now for the display
         # Put some buttons on users
@@ -3102,7 +3183,7 @@ class androHTMLDetail extends androHTML {
                 $this->inputsTable->hp['style'] = 'float: left';
                 $this->inputsTable->addClass('x6Detail');
             }
-            $this->addInput($dd,$col);
+            $this->addTRInput($dd,$col);
         }
 
         # Calculate height of inner area
@@ -3116,16 +3197,28 @@ class androHTMLDetail extends androHTML {
             -x6cssRuleSize('.box1','padding-bottom')
             -x6cssHeight('div.x6buttonBar a.button');
         $div->hp['style'] = "height: {$hinner}px; clear: both; 
-            overflow-y: scroll;
+            overflow-y: scroll; position: relative;
             padding: {$pad0}px;";
             
+        # Keep track of the inner div for possible additions
         $div->hp['id'] = $this->innerId;
+        $lineheight = x6cssHeight('td.x6Caption');
+        $emptyHeight  
+            = $hinner
+            - $lineheight * (count($cols))  // computed height
+            - (count($cols)-1);              // borders between rows
+        $this->hp['xInnerHeight'] = $hinner;
+        $this->hp['xInnerEmpty']  = $emptyHeight;
+        
+        $this->innerDiv = $div;
         
         $sb = $this->h('div','status message here');
         $sb->addClass('statusBar');
+        
+        return $emptyHeight;
     }
     
-    /****m* androHtmlDetail/addInput
+    /****m* androHtml/addInput
     *
     * NAME
     *    androHtml.addInput
@@ -3145,7 +3238,7 @@ class androHTMLDetail extends androHTML {
     *
     * SOURCE
     */
-    function addInput(&$dd,$column,$options=array()) {
+    function addTrInput(&$dd,$column,$options=array()) {
         # something we need for b/w compatibility that is
         # easier to declare and ignore than it is to
         # try to get rid of. (Also, getting rid of it will
@@ -3167,6 +3260,80 @@ class androHTMLDetail extends androHTML {
         
     }
     /******/
+    
+}
+
+/****c* HTML-Generation/androHtmlxrefs
+*
+* NAME
+*    androHtmlxrefs
+*
+* FUNCTION
+*   The PHP class androHtmlxRefs generates a tabbed list of child
+*   tables to the named parent.  Only child tables with the
+*   "x6xref" property set are included.  The only supported value
+*   for "x6xref" at this time is "checkboxes".
+*
+*   The object is a subclass of androHtml, and supports all of its
+*   methods such as addChild, addClass, etc.
+*
+*   IMPORTANT! If there are no qualifying child tables, the object
+*   is still created and returned, but it will have "display: none"
+*   and will effectively not exist for the user.
+*
+* INPUTS
+*   * string table_id - the parent table
+*   * number height - the total height available for the display
+*
+* RETURNS
+*   object - androHTMLxrefs object.
+*
+******
+*/
+class androHTMLxrefs extends androHTML {
+    var $firstFocus = false;
+    
+    function androHTMLxrefs($table_id,$height = 300) {
+        # Extreme basics for child tables.
+        $this->htype         = 'div';
+        $this->hp['x6table'] = $table_id;
+        $this->hp['xCount']  = 0;
+
+        # First bit of business is to run through and find
+        # out if we actually have any kids.
+        $dd       = ddTable($table_id);
+        
+        $kids = array();
+        $atts = array();
+        foreach($dd['fk_children'] as $table_kid=>$info) {
+            if(arr($info,'x6xref','')<>'') {
+                $kids[$table_kid] = $info['x6xref'];
+                $atts[] = "$table_kid:{$info['x6xref']}";
+            }
+        }
+        
+        # If no kids, set ourselves to be invisible
+        if(count($kids)==0) {
+            $this->hp['style'] = 'display: none;';
+            return;
+        }
+        $this->hp['xCount'] = count($kids);
+        
+        $options = array(
+            'x6profile'=>'x6xrefs'
+            ,'x6table'=>$table_id
+            ,'styles'=>array(
+                'overflow-y'=>'scroll'
+            )
+        );
+        $tabs = $this->addTabs($table_id.'_xrefs',$height,$options);
+        $tabs->hp['kids'] = implode("|",$atts);
+        # If we are still here, we have at least one kid.  Let's
+        # put in a tab bar and start adding the kids.
+        foreach($kids as $kid=>$x) {
+            $pane = $tabs->addTab($dd['fk_children'][$kid]['description']);
+        }
+    }
 }
 
 
@@ -3256,6 +3423,10 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
                 'xClassRow'=>1
             )
             ,'tabIndex'=>true
+        );
+        $x6options['attributes'] = array_merge(
+            array('xClassRow'=>1)
+            ,arr($options,'attributes',array())
         );
         $options = array_merge($options,$x6options);
     }
@@ -3519,6 +3690,7 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
     # KFD 10/18/08, accept a set of attributes from the
     #               options array
     $atts = arr($options,'attributes',array());
+    if(count($atts)>0) x6data($column_id,$atts);
     foreach($atts as $name=>$value) {
         $input->hp[$name]=$value;
     }
@@ -3562,7 +3734,7 @@ function inputForX6($input,$colinfo,$options) {
             $input->hp['x6rowCount'] = 4;
         }
     }
-    else if($colinfo['table_id_fko']<>'') {
+    else if(arr($colinfo,'table_id_fko')<>'') {
         $fko = $colinfo['table_id_fko'];
         $ddpar = ddTable($fko);
         $uis   = $ddpar['projections']['_uisearch'];
@@ -4062,6 +4234,12 @@ function x6cssHeight($element) {
     echo "<br/>".x6CSSRuleSize($element,'margin-bottom' ,0);
     */
     return $height;
+}
+
+function x6cssHeightLessH1() {
+    $retval = x6cssDefine('insideheight');
+    $retval-= (x6cssHeight('h1')*2);
+    return $retval;
 }
 
 # ==============================================================
@@ -10571,7 +10749,7 @@ function jqDocReady($script,$insert=false) {
     # KFD 10/15/08. If we are in a json call, send this back
     #               as script instead
     if(gp('json')==1) {
-        x4Script($script);
+        x4Script($script,$insert);
     }
     return false;
 }
@@ -15713,6 +15891,7 @@ function scDBConn_Pop() {
 function SQL_CONNSTRING($tuid,$tpwd,$app="") {
 	global $AG;
 
+    /*
     if (file_exists( $AG['dirs']['application'] .'pg_overrides.php' ) ) {
         include( $AG['dirs']['application'] .'pg_overrides.php' );
         if ( isset( $pg_overrides ) ) {
@@ -15721,6 +15900,9 @@ function SQL_CONNSTRING($tuid,$tpwd,$app="") {
             }
         }
     }
+    */
+    $host = '';
+    unset($host);
     
     if ($app=="") { $app = $AG["application"]; }
 	return
