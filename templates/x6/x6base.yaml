@@ -34,12 +34,17 @@ overrides:
     a.button_disabled,a.button,div.thead div a:
         text-decoration: none
 
-    tbody tr td.style1:
-        vertical-align: top    
+    #tbody tr td.style1:
+    #    vertical-align: top    
 
     .x6main:
         position: relative
         
+    # ===================================================================
+    #
+    # Menu System, gets rid of glyphs on LI items, loses margins
+    #  
+    # ===================================================================
     .x6menu ul:
         float: left
         list-style-image:    none
@@ -64,38 +69,14 @@ overrides:
         z-index:  1000
         
     .x6menu ul.dropdown li:
-        cursor: pointer
+        cursor:   pointer
         position: relative
-        display: block
-        border: 0
+        display:  block
+        border:   0
         
     .x6menu ul.dropdown li a:
         text-decoration: none
-        width: 100%
-        
-    # ===================================================================
-    #
-    #  Template - wide definitions
-    #  11/11 JB: These can/will be altered by skins - moved to .skin.yaml
-    # ===================================================================
-    #.box1:
-    #    border-top:       *bor1t
-    #    border-bottom:    *bor1b
-    #    border-left:      *bor1l
-    #    border-right:     *bor1r
-    #    background-color: *bgclight
-    #.box2:
-    #    border-top:       *bor2t
-    #    border-bottom:    *bor2t
-    #    border-left:      *bor2t
-    #    border-right:     *bor2t
-    #    background-color: *bgcdark
-    #.box3: 
-    #    border-top:       *bor3t
-    #    border-bottom:    *bor3b
-    #    border-left:      *bor3l
-    #    border-right:     *bor3r
-    #    background-color: *bgclight
+        width:           100%
        
     # ===============================================================
     #
@@ -104,7 +85,7 @@ overrides:
     # ===============================================================
     # tables that contain detail elements
     table.x6Detail:
-        border-spacing: 0
+        border-spacing:  0
         border-collapse: collapse
     td.x6Caption:
         text-align:      right
@@ -140,13 +121,7 @@ overrides:
         clear:left
         outline: 0 
 
-    # IE6 trigger hasLayout (while maintaining valid CSS) 
-    # in IE6 to prevent margins pushed here from preceding elements 
-    #* html .ui-tabs-panel:
-    #    display: inline-block 
-
     .ui-tabs-hide:
-        # for accessible hiding: position: absolute left: -99999999px
         display: none  
 
     # ===============================================================
@@ -185,7 +160,7 @@ overrides:
     div.tbody:
         overflow-x: hidden
         overflow-y: scroll
-        clear: both
+        clear:      both
     div.tbody div div:
         float:               left
         overflow:            hidden
@@ -196,7 +171,7 @@ overrides:
     #
     # ===============================================================
     div.x6select table:
-        border-collapse: collapse
-        border-spacing:  0
+        border-collapse:   collapse
+        border-spacing:    0
         background-color: *white
 

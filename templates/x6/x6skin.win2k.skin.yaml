@@ -164,23 +164,23 @@ defines:
     # Boxes and all that good stuff
 
     .box1:
-        bort:       *bor1t
-        borb:    *bor1b
-        borl:      *bor1l
+        bort:     *bor1t
+        borb:     *bor1b
+        borl:     *bor1l
         borr:     *bor1r
-        bgc: *bgclight
+        bgc:      *bgclight
     .box2:
-        bort:       *bor2t
-        borb:    *bor2t
-        borl:      *bor2t
+        bort:     *bor2t
+        borb:     *bor2t
+        borl:     *bor2t
         borr:     *bor2t
-        bgc: *bgcdark
+        bgc:      *bgcdark
     .box3: 
-        bort:       *bor3t
-        borb:    *bor3b
-        borl:      *bor3l
+        bort:     *bor3t
+        borb:     *bor3b
+        borl:     *bor3l
         borr:     *bor3r
-        bgc: *bgclight
+        bgc:      *bgclight
 
 
 
@@ -262,7 +262,7 @@ defines:
     input.required:
          bgc:   *clrRequired
     input[disabled],select[disabled],textarea[disabled]:
-        bgc:   *bgclight
+        bgc:    *bgclight
         bort:   *bor1t
         borb:   *bor1b
         borl:   *bor1l
@@ -344,16 +344,12 @@ defines:
     #
     # ===============================================================
     # Tabdiv highlights and selected
-    #div.tbody div.selected div:
-        #bgc:     *histrongbgc
-        #borl:    *bw0 *bs0 *histrongbgc
-        #borr:    *bw0 *bs0 *histrongbgc
-        #padl:    *pad0
-        #padr:    *pad0
+    #   Bad, this is a hard-coded thing
+    div.thead div div:
+        padr:    *pad0
+        padl:    *pad0
+        
     div.tbody div.selected input:
-        #bgc:     *histrongbgc
-        #borl:    *bw0 *bs0 *histrongbgc
-        #borr:    *bw0 *bs0 *histrongbgc
         marl:    -2px
     div.tbody div.flavor0 div:
         bgc:     *flavor0
@@ -373,10 +369,10 @@ defines:
         borr:    *bw0 *bs0 *flavor3
 
     div.tbody div div:
-        bort:   0
-        borb:   0
-        borl:   *bw0 *bs0 *bgclight
-        borr:   *bw0 *bs0 *bgclight
+        bort:     0
+        borb:     0
+        borl:    *bw0 *bs0 *bgclight
+        borr:    *bw0 *bs0 *bgclight
         padr:    *pad0
         padl:    *pad0
         lh:      *barheight
@@ -391,37 +387,32 @@ defines:
         borl:   *bw0 *bs0 *bgcdark
         borr:   *bw0 *bs0 *bgcdark
 
-    div.tbody div.hilight div input.readOnly:
-        bort:   *bw0 *bs0 *bgcdark
-        borb:   *bw0 *bs0 *bgcdark
-        borl:   *bw0 *bs0 *bgcdark
-        borr:   *bw0 *bs0 *bgcdark
-        bgc:     *bgcdark
-    div.tbody div.hilight div select.readOnly:
-        bort:   *bw0 *bs0 *bgcdark
-        borb:   *bw0 *bs0 *bgcdark
-        borl:   *bw0 *bs0 *bgcdark
-        borr:   *bw0 *bs0 *bgcdark
-        bgc:     *bgcdark
-    div.tbody div.hilight div textarea.readOnly:
-        bort:   *bw0 *bs0 *bgcdark
-        borb:   *bw0 *bs0 *bgcdark
-        borl:   *bw0 *bs0 *bgcdark
-        borr:   *bw0 *bs0 *bgcdark
-        bgc:     *bgcdark
+    #div.tbody div.hilight div input.readOnly:
+    #    bort:   *bw0 *bs0 *bgcdark
+    #    borb:   *bw0 *bs0 *bgcdark
+    #    borl:   *bw0 *bs0 *bgcdark
+    #    borr:   *bw0 *bs0 *bgcdark
+    #    bgc:     *bgcdark
+    #div.tbody div.hilight div select.readOnly:
+    #    bort:   *bw0 *bs0 *bgcdark
+    #    borb:   *bw0 *bs0 *bgcdark
+    #    borl:   *bw0 *bs0 *bgcdark
+    #    borr:   *bw0 *bs0 *bgcdark
+    #    bgc:     *bgcdark
+    #div.tbody div.hilight div textarea.readOnly:
+    #    bort:   *bw0 *bs0 *bgcdark
+    #    borb:   *bw0 *bs0 *bgcdark
+    #    borl:   *bw0 *bs0 *bgcdark
+    #    borr:   *bw0 *bs0 *bgcdark
+    #    bgc:     *bgcdark
 
-        
-    div.thead div div:
-        padr:    *pad0
-        padl:    *pad0
-        
     # ===============================================================
     #
     #  X6 SELECT
     #
     # ===============================================================
     div.x6select table tbody tr.hilight td:
-        bgc:                *bgcdark
+        bgc:    *bgcdark
     div.x6select table thead tr th:
         bort:   *bor2t
         borb:   *bor2b
