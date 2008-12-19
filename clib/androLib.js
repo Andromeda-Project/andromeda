@@ -1131,10 +1131,12 @@ if(!Array.indexOf){
    SECTION 3: jQuery plugins and additions  
    
 \* ---------------------------------------------------- */
+/*
 jQuery.extend(
   jQuery.expr[ ":" ], 
   { reallyvisible : "!(jQuery(a).is(':hidden') || jQuery(a).parents(':hidden').length)" }
 );
+*/
 
 /*
 jQuery.fn.isVisible = function(obj){
@@ -4242,22 +4244,10 @@ function androJSON(parm,value) {
     *
     *******
     */
-    this.execute = function(autoProcess,async) {
+    this.execute = function(autoProcess,async,returnString) {
         this.hadErrors = false;
         if(async==null) async = false;
         if(autoProcess==null) autoProcess=false;
-        
-        // KFD 7/8/08, When the user is clicking on
-        //             search boxes, they can click faster
-        //             than we can get answers, so if
-        //             we notice we are running an action
-        //             that is already in progress, we
-        //             cancel the earlier action.
-        //var key = this.x4Page + this.x4Action;
-        //if( typeof(this.requests[key])!='undefined') {
-        //    this.requests[key].abort();
-        //}
-        //this.requests[key] = http;
         
         // If async, we have to do it a little differently
         // KFD 11/24, did nothing yet for async
@@ -4277,6 +4267,7 @@ function androJSON(parm,value) {
         // An asynchronous call now exits, but a
         // synchronous call continues            
         if (async) return;
+        else if(returnString) return this.http.responseText;
         else return this.processPre(autoProcess);
         
     }
