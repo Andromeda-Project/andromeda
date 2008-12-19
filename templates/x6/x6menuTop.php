@@ -24,7 +24,16 @@ foreach($menus as $menuid=>$menuinfo) {
     $ul->hp['id'] = 'x6menu_'.$menuid;
     $ul->addClass('dropdown');
     $ul->hp['style'] = 'display:none;';
+    $count = 0;
     foreach($menuinfo['items'] as $page=>$pageinfo) {
+        $count++;
+        
+        # Special hardcoded hack for x6 to remove some items
+        if(vgfGet('x6')) {
+            if($page == 'apppub') continue;
+            if($page == 'userssimple') continue;
+        }
+        
         $pd = $pageinfo['description'];
         $li = $ul->h('li',$pd);
         $li->hp['onmouseover']="this.className='selected'";
@@ -37,27 +46,30 @@ foreach($menus as $menuid=>$menuinfo) {
         }
         else {
             #$a->hp['href'] = "?x6page=$page";
-            $href = "?x6page=$page";
+            $href = "?x6page=$page&x6module=$menuid";
         }
         $li->hp['onclick'] = "window.location='$href'";
+        if(arr($pageinfo,'spaceafter','N')=='Y') {
+            if($count <> count($menuinfo['items'])) {
+                $li=$ul->h('li');
+                $li->hp['style'] = 'cursor: auto';
+                $li->hr();
+            }
+        }
     }
 }
-if(LoggedIn()) {
-    $pad = $ulpads->h('li');
-    $pad->hp['id'] = 'x6menupad_menu';
-    $span= $pad->h('span','Menu');
-    $span->hp['onmouseover'] = "x6menumouseover('menu')";
-    $span->hp['onclick']     = "window.location='?x4Page=menu'";
-    $span->addClass('x6menuspan'); // bogus, just for tracking
-
-    $pad = $ulpads->h('li');
-    $pad->hp['id'] = 'x6menupad_logout';
-    $span= $pad->h('span','Logout');
-    $span->hp['onmouseover'] = "x6menumouseover('logout')";
-    $span->hp['onclick']     = "window.location='?st2logout=1'";
-    $span->addClass('x6menuspan'); // bogus, just for tracking
-}
 $ulpads->render();
+if(LoggedIn()) {
+    ?>
+    <div style="float: right">
+      <a href="?x6page=menu">Menu</a>
+      &nbsp;&nbsp;
+      <a href="?x6page=useroptions">Options</a>
+      &nbsp;&nbsp;
+      <a href="?st2logout=1">Logout</a>
+    </div>
+    <?php
+}
 
 # ==================================================================
 # AREA 2: Some script
