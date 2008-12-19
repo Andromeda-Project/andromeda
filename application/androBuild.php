@@ -8803,39 +8803,48 @@ function CodeGenerate_Tables_FK($table_id,$column_id) {
 	$results = $this->SQLRead($sql);
 	if ($resall  = pg_fetch_all($results)) {
 		foreach ($resall as $row) {
-         // Get row and trim it down a little
-			$rowx = $this->zzArrayAssociative($row);
-         if(array_key_exists('skey_quiet',$rowx)) unset($rowx['skey_quiet']);
-         if(array_key_exists('skey'      ,$rowx)) unset($rowx['skey']);
-         if(array_key_exists('_agg'      ,$rowx)) unset($rowx['_agg']);
-         if(array_key_exists('skey_hn'   ,$rowx)) unset($rowx['skey_hn']);
-         if(array_key_exists('skey_s'    ,$rowx)) unset($rowx['skey_s']);
-         
-         // Get the "colsboth", we'll need that
-         $fk=$table_id.'_'.Trim($rowx[$col2]).'_'.trim($row['suffix']);
-         if(isset($this->ufks[$fk])) {
-            $ufk=$this->ufks[$fk];
-            $rowx['cols_chd']  = $ufk['cols_chd'];
-            $rowx['cols_par']  = $ufk['cols_par'];
-            $rowx['cols_both'] = $ufk['cols_both'];
-            $rowx['fkdisplay'] = $this->utabs[$rowx[$col2]]['fkdisplay'];
-         }
-         else {
-            $rowx['cols_chd']  = 'X';
-            $rowx['cols_par']  = 'X';
-            $rowx['cols_both'] = 'X';
-            $rowx['fkdisplay'] = '';
-         }
-         
-         $utab = $this->utabs[$row[$col2]];
-         $rowx['description'] = $utab['description'];
-         $rowx['module'] = $utab['module'];
-         
-	
-
-         // Establish key and save			
-			$key = $rowx["prefix"].$rowx[$col2].$rowx["suffix"];
-			$retval[$key] = $rowx;
+            // Get row and trim it down a little
+            $rowx = $this->zzArrayAssociative($row);
+            # KFD 12/13/08, add all properties of parent/child table
+            #               to listing
+            foreach($this->utabs[$row[$col2]] as $key=>$value) {
+                if(!is_array($value)) {
+                    $rowx[$key] = $value;
+                }
+            }
+            # KFD 12/13/08 (END)
+            if(array_key_exists('skey_quiet',$rowx)) unset($rowx['skey_quiet']);
+            if(array_key_exists('skey'      ,$rowx)) unset($rowx['skey']);
+            if(array_key_exists('_agg'      ,$rowx)) unset($rowx['_agg']);
+            if(array_key_exists('skey_hn'   ,$rowx)) unset($rowx['skey_hn']);
+            if(array_key_exists('skey_s'    ,$rowx)) unset($rowx['skey_s']);
+            
+            // Get the "colsboth", we'll need that
+            $fk=$table_id.'_'.Trim($rowx[$col2]).'_'.trim($row['suffix']);
+            if(isset($this->ufks[$fk])) {
+                $ufk=$this->ufks[$fk];
+                $rowx['cols_chd']  = $ufk['cols_chd'];
+                $rowx['cols_par']  = $ufk['cols_par'];
+                $rowx['cols_both'] = $ufk['cols_both'];
+                $rowx['fkdisplay'] = $this->utabs[$rowx[$col2]]['fkdisplay'];
+            }
+            else {
+                $rowx['cols_chd']  = 'X';
+                $rowx['cols_par']  = 'X';
+                $rowx['cols_both'] = 'X';
+                $rowx['fkdisplay'] = '';
+            }
+            
+            
+            $utab = $this->utabs[$row[$col2]];
+            $rowx['description'] = $utab['description'];
+            $rowx['module'] = $utab['module'];
+            
+            
+            
+            // Establish key and save			
+            $key = $rowx["prefix"].$rowx[$col2].$rowx["suffix"];
+            $retval[$key] = $rowx;
 		}
 	}
 	
@@ -8856,6 +8865,7 @@ SELECT  m.module,m.description as module_text,m.uisort,t.uisort
        ,t.nomenu,'N' as menuins
        ,t.linknew,t.linksearch
        ,'' as menu_parms
+       ,t.spaceafter
        ,t.uix2 as uix2
   FROM zdd.modules m
   JOIN zdd.tables t ON t.module = m.module
@@ -8867,6 +8877,7 @@ SELECT  m.module,m.description as module_text,m.uisort,t.uisort
         ,'N' as nomenu,'N' as menuins
         ,'N' as linknew,'N' as linksearch
         ,u.menu_parms
+        ,u.spaceafter
         ,u.uix2
  FROM zdd.modules m 
  JOIN zdd.uimenu u ON m.module = u.module  
@@ -8898,6 +8909,7 @@ SELECT  m.module,m.description as module_text,m.uisort,t.uisort
 				"#linknew#=>#".$row["linknew"]."#,".
 				"#linksearch#=>#".$row["linksearch"]."#,".
                 '#uix2#=>#'.$row['uix2']."#,".
+                '#spaceafter#=>#'.$row['spaceafter'].'#,'.
 				"#mode#=>#normal#);\n";
 
 	}	
