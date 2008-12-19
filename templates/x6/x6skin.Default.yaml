@@ -1,0 +1,779 @@
+# ================================================================== 
+#   (C) Copyright 2008 by Secure Data Software, Inc.
+#
+#   This file is part of Andromeda.
+#
+#   Andromeda is free software you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   Andromeda is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with Andromeda if not, write to the Free Software
+#   Foundation, Inc., 51 Franklin St, Fifth Floor,
+#   Boston, MA  02110-1301  USA
+#   or visit http://www.gnu.org/licenses/gpl.html
+# ================================================================== 
+# ================================================================== 
+#
+# How this file works:
+#
+# -> The top-level definition is "sections"
+# -> Each section can have any name
+# -> definitions occur
+#
+# How to make a new skin:
+#
+# -> make a copy of this file, name it x6.skin.<name>.yaml
+# -> Create as many color sections as you like
+# -> Delete anything you want to leave alone, it makes the
+#    file simpler and those things will be carried from
+#    the default skin.
+# -> change anything you want.  
+#
+# ================================================================== 
+
+# ===================================================================
+#
+# The "defines" section contains named properties.
+# You can make up any name for any property and then
+# use that name to assign specific values in the
+# "css" rules section below.
+#  
+# ===================================================================
+defines:
+    # ===================================================================
+    #
+    # Fonts.  Name any fonts you want to use here
+    #  
+    # ===================================================================
+    fonts:
+        ff0:    verdana
+
+    # ===================================================================
+    #
+    # Color variations.  If you override this in a skin file,
+    # be sure to maintain the structure: have a section named
+    # "colors" and each sub-section names the color family
+    #  
+    # ===================================================================
+    colors:
+        Gray:
+            # Default link color
+            link:           blue
+
+            # Two basic background colors we need
+            bgcdark:        @d0d0d0
+            bgclight:       @f0f0f0
+            
+            # the two colors that make 3d shadows
+            shadowlight:    @ffFFff
+            shadowdark:     @909090
+            
+            # Two text colors
+            black:          @000000
+            white:          @ffffff
+            
+            # The menu reverse color
+            bgcmenu:        @4A79B5
+        
+            # Colors we refer to by name
+            dark:           @5E71A2
+            selected:       @30FF30
+            flavor0:        @A0FFA0
+            flavor1:        @A0A0FF
+            flavor2:        @FFA0A0
+            flavor3:        @FF00FF
+        
+            # These colors were added to give some 'color' to objects
+            clrChanged:     @ffebcd
+            clrError:       @ff4500
+            clrOk:          @7fff00
+            clrRequired:    @abcdef        
+
+    # ===================================================================
+    #
+    # Sizes.  Define your sizes for a 1024x768 display.  
+    # The skin generator will automatically take them and
+    # refigure for 800x600, 1280x1024, 1400x900, 1400x1050, 1650x1050
+    #  
+    # The values in "fixed" will not be adjusted, the values
+    # in "scalable" will be adjusted.
+    # ===================================================================
+    sizes:
+        fixed:
+            bw0:    1px         # default border-width
+            zero:   0          
+        
+        scalable:
+            heights:
+                insideheight:    605px   # for .x6main specifically
+                tinpheight:      18px
+                # height of any one-line menu bar, command bar, status bar etc.
+                barheight:       24px
+                barlh:           25px
+
+                # The normal default font size
+                fs0:             12px
+                lh0:             18px
+                lh1:             16px
+                lhtab:           16px
+                
+                fsfoot:          10px
+                lhfoot:          16px
+                
+                lhstatus:        20px
+                
+                lhbutton:        12px
+    
+                lhmbar:          21px
+
+                fsh1:            18px
+                lhh1:            28px
+                
+                fsh2:            16px
+                lhh2:            24px
+                
+                menumartop:      2px
+                menupadb:        2px
+                menupost:        23px
+
+            widths:
+                outsidewidth:    991px
+                insidewidth:     990px   # for .x6main specifically
+    
+                # Specific padding on either side of entries in menu bar
+                menupad:         6px
+                tabpad:          12px
+
+            
+                # Default padding for anything that is padded
+                pad0:            3px
+                pad0more:        4px
+                pad0less:        2px
+                pad1:            6px
+
+                # Special sizes for inputs inside of a tabdiv
+                tinppadt:        3px
+                
+                # Some specific sizes for menu
+                dropdownwidth:      200px
+                dropdownshift:      -7px
+                dropdowninnerwidth: 188px
+        
+        
+    # ===================================================================
+    #
+    # Borders.  Define your border styles here
+    #
+    # ===================================================================
+    borders:
+        bs0:        solid
+
+        # Abstract border styles. 
+        # bor1 is "sunken" in default skin
+        # bor2 is "raised" in default skin
+        # bor3 is dark border all around
+        bor1t:     *bw0 *bs0 *shadowdark
+        bor1b:     *bw0 *bs0 *shadowlight
+        bor1l:     *bor1t
+        bor1r:     *bor1b
+        bor2t:     *bw0 *bs0 *shadowlight
+        bor2b:     *bw0 *bs0 *shadowdark
+        bor2l:     *bor2t
+        bor2r:     *bor2b
+        bor3t:     *bw0 *bs0 *shadowdark
+        bor3b:     *bor3t
+        bor3l:     *bor3t
+        bor3r:     *bor3t
+        bordr:     *bw0 *bs0 *bgclight    
+        bordr2:    *bw0 *bs0 *bgcdark
+        
+        
+        
+# ===================================================================
+#
+# The "css" section defines the actual styles that will
+# be generated.  All colors and sizes should be assigned
+# one of the named values from above.
+#  
+# ===================================================================
+css:        
+    # ===================================================================
+    #
+    # You do not normally want to change these, they define
+    # some universal stuff.
+    #  
+    # ===================================================================
+    universal:
+        # Page Control.  The top-level element in a page is
+        # often given class "fadein" so that it starts out
+        # invisible during initialization, and then x6 
+        # fades it in.
+        .fadein:
+            display: none
+
+        # Many objects inside of x6main need absolute 
+        # positioning, so it must be position: relative
+        # to allow that.
+        .x6main:
+            position: relative
+            
+        # Buttons
+        a.button_disabled:
+            cursor:  default
+            outline: *zero
+        a:
+            outline: *zero
+            
+        a.button_disabled,a.button,div.thead div a:
+            text-decoration: none
+
+    # ===================================================================
+    #            
+    # Flavor: body level 
+    #            
+    # ===================================================================
+    body_flavor:
+        body:
+            background-color:    *bgcdark
+            color:               *black
+            font-family:         *ff0
+            font-size:           *fs0
+            line-height:         *lh1
+            margin-top:           *zero
+            margin-bottom:        *zero
+            margin-left:         *pad0
+            margin-right:        *pad0
+        body a:
+            color:               *link
+              
+        # Title Elements
+        h1:
+            font-size:           *fsh1
+            line-height:         *lhh1
+            font-weight:         bolder
+            margin-top:          *zero
+            margin-bottom:       *zero
+            padding-top:         *pad0
+            padding-bottom:      *pad1
+        h2:
+            height:              *fsh2
+            font-weight:         bolder
+
+    # ===================================================================
+    #            
+    # Boxes 
+    #            
+    # ===================================================================
+    boxes:
+        .box1:
+            border-top:       *bor1t
+            border-bottom:    *bor1b
+            border-left:      *bor1l
+            border-right:     *bor1r
+            background-color: *bgclight
+        .box2:
+            border-top:       *bor2t
+            border-bottom:    *bor2b
+            border-left:      *bor2l
+            border-right:     *bor2r
+            background-color: *bgcdark
+        .box3:
+            border-top:    *bor3t
+            border-bottom: *bor3b
+            border-left:   *bor3l
+            border-right:  *bor3r
+            
+            
+    # ===================================================================
+    #            
+    # Main structural elements 
+    #            
+    # ===================================================================
+    structure_flavor:
+        # x6menu is the first element in the template.
+        # However it is very complex and has its own rules
+        # below
+    
+        # x6body comes after x6menu and is wrapped around
+        # the x6main element.  All content actually goes
+        # into x6main. 
+        .x6body:
+            background-color:  *bgclight
+            border-top:        *bor1t
+            border-bottom:     *bor1b
+            border-left:       *bor1l
+            border-right:      *bor1r
+            height:            *insideheight
+            width:             *insidewidth
+        .x6main:         
+            background-color:  *bgclight
+            padding-left:      *pad0
+            padding-right:     *pad0
+    
+        # A command bar, aka button bar, appears at the
+        # top of tabdivs, detail pains, anywhere where
+        # you want some buttons.
+        .x6commandBar:
+            background-color:  *bgcdark
+            border-top:        *bor2t
+            border-bottom:     *bor2b
+            border-left:       *bor2l
+            border-right:      *bor2r
+            padding-left:      *pad0
+
+        # The status bar
+        .statusBar:
+            line-height:         *lhstatus
+           
+        # The x6footer is the last of the three major
+        # elements, it comes after x6body.
+        .x6footer:
+            padding-top:       *pad0
+            font-size:         *fsfoot
+            line-height:       *lhfoot
+            background-color:  *bgcdark
+            width:             *outsidewidth
+            
+    # ===================================================================
+    #            
+    # Inputs 
+    #            
+    # ===================================================================
+    inputs:
+        # Base input definitions
+        select,input,textarea:
+            border-top:         *bor1t
+            border-bottom:      *bor1b
+            border-left:        *bor1l
+            border-right:       *bor1r
+            font-family:        *ff0
+            font-size:          *fs0
+        #select:
+        #    height:             *barheight
+            
+        # Input highlights and selecteds w/ conditionals
+        tr.selected:
+            background-color:   *dark
+            color:              *white
+    
+        input.changed,input.changedSelected:
+            background-color:  *clrChanged
+        
+        select.changed,select.changedSelected:
+            background-color:  *clrChanged
+        
+        textarea.changed,textarea.changedSelected:
+            background-color:  *clrChanged
+        
+        input.error:
+            background-color:  *clrError
+    
+        input.required:
+            background-color:  *clrRequired
+        
+        input[disabled],select[disabled],textarea[disabled]:
+            background-color:   *bgclight
+            border-top:         *bor1t
+            border-bottom:      *bor1b
+            border-left:        *bor1l
+            border-right:       *bor1r
+            color:              *black
+            
+            
+    # ===================================================================
+    #
+    # Core definitions of the menu system get rid of
+    # its ul/li properties so it looks like dropdowns
+    #  
+    # ===================================================================
+    x6menu_core:   
+        .x6menu ul:
+            float:               left
+            list-style-image:    none
+            list-style-position: outside
+            list-style-type:     none
+            # required to prevent normal padding of ul's
+            padding-left:        *zero
+            cursor:              pointer
+            
+        .x6menu ul.right:
+            float: right
+            
+        .x6menu ul li:
+            position: relative
+        
+        # Required to prevent list from going vertical
+        .x6menu li:
+            float: left
+            
+        ul.dropdown:
+            position: absolute
+            z-index:  1000
+            
+        .x6menu ul.dropdown li:
+            cursor:   pointer
+            position: relative
+            display:  block
+            border:   *zero
+            
+        .x6menu ul.dropdown li a:
+            text-decoration: none
+            width:           100%
+
+            
+    # ========================================================
+    #
+    # Menu definitions - put the flavor here
+    #
+    # ========================================================
+    x6menu_flavor:
+        # The bar itself
+        .x6menu: 
+            background-color:    *bgcdark
+            line-height:         *lhmbar
+            width:               *outsidewidth
+        # unselected entries
+        .x6menu ul:
+            margin-top:          *zero
+            margin-bottom:       *zero
+        # Selected entry top of menu
+        .x6menu > ul > li:
+            border-top:          *bw0 *bs0 *bgcdark
+            border-bottom:       *zero
+            border-left:         *bw0 *bs0 *bgcdark
+            border-right:        *bw0 *bs0 *bgcdark
+            padding-left:        *menupad
+            padding-right:       *menupad
+            margin-top:          *menumart
+            padding-bottom:      *menupadb
+        .x6menu > ul > li.selected:
+            background-color:    *bgcmenu
+            color:               *white
+            border-top:          *bw0 *bs0 *black
+            border-bottom:       *zero
+            border-left:         *bw0 *bs0 *black
+            border-right:        *bw0 *bs0 *black
+        .x6menu ul.dropdown:
+            border-top:          *bw0 *bs0 *black
+            border-bottom:       *bw0 *bs0 *black
+            border-left:         *bw0 *bs0 *black
+            border-right:        *bw0 *bs0 *black
+            background-color:    *white
+            width:               *dropdownwidth
+            margin-left:         *dropdownshift
+            margin-top:          *menumartop
+        .x6menu ul.dropdown > li:
+            color:               *black
+            width:               *dropdowninnerwidth
+            line-height:         *barlh
+            padding-left:        *menupad
+            padding-right:       *menupad
+            border-top:          *zero
+            border-bottom:       *zero
+            border-left:         *zero
+            border-right:        *zero
+        .x6menu ul.dropdown > li > hr
+            color:               *bgcdark
+            width:               100%
+            height:              1px
+               
+        .x6menu ul.dropdown > li.selected:
+            background-color:    *bgcmenu
+            color:               *white
+            
+    # ===================================================================
+    #
+    # Menu page definitions are for page x6menu
+    #  
+    # ===================================================================
+    x6menu_left:   
+        @x6menu_left div:
+            font-weight: bolder
+            font-size:   125%
+            cursor:      pointer
+        @x6menu_left div.hilight:
+            background-color: *bgcmenu
+            color:            white
+        @x6menu_right div div:
+            font-weight: bolder
+            font-size:   105%
+            cursor:      pointer
+            line-height: 200%
+            padding-left: *pad0
+            padding-right: *pad0
+        @x6menu_right div div.hilight:
+            background-color: *bgcdark
+            
+            
+    # ===============================================================
+    #
+    #  DETAIL PANES - CORE
+    #
+    # ===============================================================
+    # tables that contain detail elements
+    detail_core:
+        table.x6Detail:
+            border-spacing:  *zero
+            border-collapse: collapse
+        td.x6Caption:
+            text-align:      right
+            padding-left:   *pad0
+            padding-bottom: *pad0
+        
+    # ===============================================================
+    #
+    #  JQuery UI - Tabs - Core
+    #
+    # ===============================================================
+    jqtabs_core:
+        .ui-tabs-nav:
+            list-style: none
+            float:      left
+            position:   relative
+            bottom:    -1px
+            z-index:    1
+    
+        .ui-tabs-nav li:
+            text-decoration: none 
+            list-style:      none
+            float:           left
+    
+        .ui-tabs-nav li a:
+            list-style:      none
+            float:           left
+            text-decoration: none 
+            outline:         none
+    
+        .ui-tabs-panel:
+            text-decoration: none
+            list-style:      none
+            clear:           left
+            outline:         *zero 
+    
+        .ui-tabs-hide:
+            display: none  
+
+    # ===============================================================
+    #
+    #  JQuery UI - Tabs - Flavor
+    #
+    # ===============================================================
+    # This is the bar itself.  Border-right allows us to have
+    # no right-border for the items, avoiding border doubling
+    jqtabs_flavor:
+        .ui-tabs-nav:
+            margin-top:      *zero
+            margin-bottom:   *zero
+            margin-left:     *zero
+            margin-right:    *zero
+            padding-top:     *zero
+            padding-bottom:  *zero
+            padding-left:    *zero
+            padding-right:   *zero
+            border-right:    *bw0 *bs0 *shadowdark
+       
+        .ui-tabs-nav li:
+            line-height:     *lhtab
+            margin-top:      *zero
+            margin-bottom:   *zero
+            margin-left:     *zero
+            margin-right:    *zero
+            padding-top:     *menupad
+            padding-bottom:  *menupad
+            padding-left:    *tabpad
+            padding-right:   *tabpad
+            border-top:      *bor3t 
+            border-bottom:   *bor3t 
+            border-left:     *bor3t 
+            border-right:    *zero 
+            
+        .ui-tabs-nav li a:
+            color:           *black
+            margin-top:      *zero
+            margin-bottom:   *zero
+            margin-left:     *zero
+            margin-right:    *zero
+            border-top:      *zero 
+            border-bottom:   *zero 
+            border-left:     *zero 
+            border-right:    *zero 
+            
+        .ui-tabs-nav li.ui-tabs-selected a:
+            color:           *white
+    
+        .ui-tabs-nav li.ui-tabs-selected:
+            background-color:*dark
+         
+        .ui-tabs-panel:
+            margin-top:      *zero
+            margin-bottom:   *zero
+            margin-left:     *zero
+            margin-right:    *zero
+            padding-top:     *zero
+            padding-bottom:  *zero
+            padding-left:    *zero
+            padding-right:   *zero
+            border-top:      *bw0 *bs0 *shadowdark
+            border-bottom:   *bw0 *bs0 *shadowdark
+            border-left:     *bw0 *bs0 *shadowdark
+            border-right:    *bw0 *bs0 *shadowdark
+        
+            
+            
+    # ===============================================================
+    #
+    #  Buttons - core and flavor combined
+    #
+    # ===============================================================
+    buttons:
+        span.button:
+            border-top:        *bor2t
+            border-bottom:     *bor2b
+            border-left:       *bor2l
+            border-right:      *bor2r
+            cursor:            pointer
+        span.button_mousedown:
+            border-bottom:     *bor2t
+            border-top:        *bor2b
+            border-right:      *bor2l
+            border-left:       *bor2r
+            cursor:            pointer
+        
+        div.x6buttonBar a.button:
+            border-top:        *bor2t
+            border-bottom:     *bor2b
+            border-left:       *bor2l
+            border-right:      *bor2r
+            color:             *white
+            background-color:  *bgcmenu
+            margin-left:       *pad0
+            margin-top:        *pad0
+            margin-bottom:     *pad0
+            padding-top:       *pad0
+            padding-bottom:    *pad0
+            padding-left:      *pad0
+            padding-right:     *pad0
+            line-height:       *lhbutton
+        div.x6buttonBar a.button_mousedown:
+            # flip borders around to make it look pressed in
+            border-bottom:     *bor2t
+            border-top:        *bor2b
+            border-right:      *bor2l
+            border-left:       *bor2r
+    
+        div.x6buttonBar a.button_disabled:
+            border-top:        *bor3t
+            border-bottom:     *bor3t
+            border-left:       *bor3t
+            border-right:      *bor3t
+            color:             *shadowdark
+            
+            
+    # ===============================================================
+    #
+    #  TAB DIV
+    #
+    # ===============================================================
+    tabdiv_core:
+        div.thead div:
+            height:             *barheight
+            background-color:   *bgcdark
+        div.thead div div:
+            float: left
+            line-height:        *barheight
+            border-top:         *bor2t
+            border-bottom:      *bor2b
+            border-left:        *bor2l
+            border-right:       *bor2r
+        div.tbody:
+            overflow-x: hidden
+            overflow-y: scroll
+            clear:      both
+        div.tbody div div:
+            float:               left
+            overflow:            hidden
+
+    # ===============================================================
+    #
+    # Tab DIV FLavor
+    #
+    # ===============================================================
+    tabdiv_flavor:
+        div.thead div div:
+            padding-right:    *pad0
+            padding-left:     *pad0
+            
+        div.tbody div.selected input:
+            margin-left:     -2px
+            margin-right:    -2px
+        
+        div.tbody div.flavor0 div:
+            background-color:  *flavor0
+            border-left:       *bw0 *bs0 *flavor0
+            border-right:      *bw0 *bs0 *flavor0
+        div.tbody div.flavor1 div:
+            background-color:  *flavor1
+            border-left:       *bw0 *bs0 *flavor1
+            border-right:      *bw0 *bs0 *flavor1
+        div.tbody div.flavor2 div:
+            background-color:  *flavor2
+            border-left:       *bw0 *bs0 *flavor2
+            border-right:      *bw0 *bs0 *flavor2
+        div.tbody div.flavor3 div:
+            background-color:  *flavor3
+            border-left:       *bw0 *bs0 *flavor3
+            border-right:      *bw0 *bs0 *flavor3
+    
+        div.tbody div div:
+            border-top:        *zero
+            border-bottom:     *zero
+            border-left:       *bw0 *bs0 *bgclight
+            border-right:      *bw0 *bs0 *bgclight
+            padding-right:     *pad0
+            padding-left:      *pad0
+            line-height:       *barheight
+            height:            *barheight
+            
+        div.tbody input:
+            padding-top:       *tinppadt
+            height:            *tinpheight
+    
+        div.tbody div.hilight div:
+            background-color:  *bgcdark
+            border-left:       *bw0 *bs0 *bgcdark
+            border-right:      *bw0 *bs0 *bgcdark
+            
+            
+    # ===============================================================
+    #
+    # X6 Drop-down select, core and flavor combined
+    #
+    # ===============================================================
+    x6select:
+        div.x6select table:
+            border-collapse:     collapse
+            border-spacing:      *zero
+            background-color:    *white
+        
+        div.x6select table tbody tr.hilight td:
+            background-color:    *bgcdark
+        
+        div.x6select table thead tr th:
+            border-top:          *bor2t
+            border-bottom:       *bor2b
+            border-left:         *bor2l
+            border-right:        *bor2r
+            background-color:    *bgclight
+        div.x6select table tbody td:
+            border-top:          *bs0 *bw0 *bgcdark
+            border-bottom:       *bs0 *bw0 *bgcdark
+            border-left:         *bs0 *bw0 *bgcdark
+            border-right:        *bs0 *bw0 *bgcdark            
+            
