@@ -85,14 +85,14 @@ class androX6 {
         # KFD 12/20/08, prevent ui saves if dd does not allow them
         if(!isset($row['skey'])) {
             $perm = $this->uiPerm(gp('x6page'),'ins');
-            if($perm=='N') {
+            if(!$perm) {
                 x6Error("Inserts not allowed from this screen");
                 return;
             }
         }
         else {
             $perm = $this->uiPerm(gp('x6page'),'upd');
-            if($perm=='N') {
+            if(!$perm) {
                 x6Error("Updates not allowed from this screen");
                 return;
             }
@@ -242,7 +242,7 @@ class androX6 {
       */
     function delete() {
         $perm = $this->uiPerm(gp('x6page'),'del');
-        if($perm=='N') {
+        if(!$perm) {
             x6Error("Deletion not allowed from this screen");
             return;
         }
