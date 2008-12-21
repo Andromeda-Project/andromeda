@@ -183,7 +183,7 @@ class androX6 {
             }
         }
         if($errors) return;
-        
+
         if(!isset($row['skey'])) {
             $skey = SQLX_Insert($dd,$row);
             if(!errors()) {
@@ -202,6 +202,15 @@ class androX6 {
                 );
                 x6Debug($row);
                 x6Data('row',$row);
+            }
+        }
+        
+        if(vgfGet('x6')==true) {
+            if($table_id == 'configinst') {
+                configWrite('inst');
+            }
+            if($table_id == 'configapp') {
+                configWrite('app');
             }
         }
     }
@@ -835,6 +844,11 @@ class androX6 {
         $projections = array_keys($this->dd['projections']);
         foreach($projections as $idx=>$projection) {
             if(substr($projection,0,1)=='_') unset($projections[$idx]);
+        }
+        
+        # Say nothing to do if nothing to do
+        if(count($projections)==0) {
+            $top->h('p','Nothing to configure.');
         }
         
         # Get the row from the table so we can populate
