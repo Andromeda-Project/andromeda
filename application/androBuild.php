@@ -1948,7 +1948,20 @@ function specFlatten_Config() {
                             WHERE x.table_id = 'configapp'
                               AND x.column_id= zdd.tabflat.column_id)"
     );
+    $this->SQL("
+        insert into zdd.tabproj (projection,table_id) 
+         select projection,'configapp'
+           from zdd.tabproj
+           where zdd.tabproj.table_id = 'configapp_extra'"
+    );
+    $this->SQL("
+        insert into zdd.tabprojcols (projection,table_id,column_id) 
+         select projection,'configapp',column_id
+           from zdd.tabprojcols
+           where zdd.tabprojcols.table_id = 'configapp_extra'"
+    );
 
+    
     #  Define the sql
     $sq="INSERT INTO zdd.tabflat (table_id,$colslist)
          SELECT '*TABLEDEST*',$colslist
@@ -8743,7 +8756,7 @@ function CodeGenerate_Tables() {
 			" FROM zdd.tabprojcols p ".
 			" JOIN zdd.tabflat f ON p.table_id=f.table_id AND p.column_id = f.column_id ".
 			" WHERE p.table_id = '$table_id' ".
-			" ORDER BY p.uicolseq ");
+			" ORDER BY f.uicolseq ");
 		while ($row = pg_fetch_array($results)) {
 			$p = trim($row["projection"]);
 			if (!isset($table["projections"][$p])) $table["projections"][$p]="";
