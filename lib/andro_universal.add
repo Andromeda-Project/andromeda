@@ -599,9 +599,12 @@ table configfw {
 table configapp {
     module: system;
     uisort: 551;
-    description: Configuration - Application;
+    description: Application Configuration;
+    x6profile: onerow;
+    nomenu: N;
 
     group $LOGIN { permsel: "Y"; nomenu: "Y";  }
+    group configadmin { permupd: "Y"; permsel: "Y"; nomenu: "N"; }
 
     column recnum  { primary_key: "Y"; uisearch: "Y"; }
     column { cf_template; }
@@ -655,7 +658,7 @@ table configinst {
 }
 table configuser {
     module: system;
-    uisort: 553;
+    uisort: 555;
     description: My Configuration;
     nomenu: Y;
 
