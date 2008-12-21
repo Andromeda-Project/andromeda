@@ -674,6 +674,14 @@ css:
             border-left:       *bor3t
             border-right:      *bor3t
             color:             *shadowdark
+            margin-left:       *pad0
+            margin-top:        *pad0
+            margin-bottom:     *pad0
+            padding-top:       *pad0
+            padding-bottom:    *pad0
+            padding-left:      *pad0
+            padding-right:     *pad0
+            line-height:       *lhbutton
             
             
     # ===============================================================
@@ -776,4 +784,16 @@ css:
             border-bottom:       *bs0 *bw0 *bgcdark
             border-left:         *bs0 *bw0 *bgcdark
             border-right:        *bs0 *bw0 *bgcdark            
+            
+            
+    # ===============================================================
+    #
+    # Modal dialogs.  Right now only the "please wait" is considered
+    #
+    # ===============================================================
+    modals:
+        @dialogbox:
+            border: *pad1 *bs0 *bgcmenu
+            background-color: *white
+        
             
