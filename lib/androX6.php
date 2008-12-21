@@ -82,6 +82,22 @@ class androX6 {
         $row = array_merge($row0,$row1);
         if(a($row,'skey',0)==0) unset($row['skey']);
         
+        # KFD 12/20/08, prevent ui saves if dd does not allow them
+        if(!isset($row['skey'])) {
+            $perm = $this->uiPerm(gp('x6page'),'ins');
+            if($perm=='N') {
+                x6Error("Inserts not allowed from this screen");
+                return;
+            }
+        }
+        else {
+            $perm = $this->uiPerm(gp('x6page'),'upd');
+            if($perm=='N') {
+                x6Error("Updates not allowed from this screen");
+                return;
+            }
+        }            
+        
         # KFD 12/8/08, More generalized code to allow for
         #              inserts before or after a row.
         #
@@ -225,6 +241,12 @@ class androX6 {
       *
       */
     function delete() {
+        $perm = $this->uiPerm(gp('x6page'),'del');
+        if($perm=='N') {
+            x6Error("Deletion not allowed from this screen");
+            return;
+        }
+        
         $view = ddView(gp('x6page'));
         $skey = SQLFN(gp('skey'));
         $sq="Delete from $view where skey = $skey";
@@ -912,6 +934,11 @@ class androX6 {
     #
     # -------------------------------------------------------------------
     # ===================================================================
+    function uiPerm($table,$perm) {
+        $dd = ddTable($table);
+        return arr($dd,"ui$perm","Y") == 'N' ? false : true;
+    }
+    
     # Makes a generic tabdiv.  First created 11/3/08 so we can add
     # cells to it for a browseFetch and then pluck out the tbody html
     function tabDivGeneric(&$grid,$dd,$tabPar='',$vals2=array()) {

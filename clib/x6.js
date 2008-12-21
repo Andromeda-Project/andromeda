@@ -1714,15 +1714,28 @@ x6plugins.tableController = function(self,id,table) {
             x6events.fireEvent('buttonsOff_'+buttonsTable);
         }
         
+        // Establish table permissions
+        var permins = u.p(this,'xPermIns','Y')=='N' ? false : true;
+        var permupd = u.p(this,'xPermUpd','Y')=='N' ? false : true;
+        var permdel = u.p(this,'xPermDel','Y')=='N' ? false : true;
+        var permsave= permins || permupd;
+        console.log(permins,permupd,permdel,permsave);
+        
         // Now only turn buttons on if we have an skey
         var skey = u.bb.vgfGet('skey_'+this.zTable);
         //console.log("current skey is ",skey);
-        x6events.fireEvent('enable_new_' +this.zTable);
-        x6events.fireEvent('enable_ins_' +this.zTable);
+        if(permins) {
+            x6events.fireEvent('enable_new_' +this.zTable);
+            x6events.fireEvent('enable_ins_' +this.zTable);
+        }
         if(skey >= 0) {
-            x6events.fireEvent('enable_save_'   +this.zTable);
-            x6events.fireEvent('enable_cancel_' +this.zTable);
-            x6events.fireEvent('enable_delete_' +this.zTable);
+            if(permsave) {
+                x6events.fireEvent('enable_save_'   +this.zTable);
+                x6events.fireEvent('enable_cancel_' +this.zTable);
+            }
+            if(permdel) {
+                x6events.fireEvent('enable_delete_' +this.zTable);
+            }
         }
         u.bb.vgfSet('buttonsTable',this.zTable);
     }
@@ -1738,8 +1751,11 @@ x6plugins.tableController = function(self,id,table) {
     }
     x6events.subscribeToEvent('buttonsNew_'+table,id);
     self['receiveEvent_buttonsNew_'+table] = function() {
-        x6events.fireEvent('enable_new_' +this.zTable);
-        x6events.fireEvent('enable_ins_' +this.zTable);
+        var permins = u.p(this,'xPermIns','Y')=='N' ? false : true;
+        if(permins) {
+            x6events.fireEvent('enable_new_' +this.zTable);
+            x6events.fireEvent('enable_ins_' +this.zTable);
+        }
     }
 }
     

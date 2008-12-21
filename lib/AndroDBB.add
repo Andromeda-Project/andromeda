@@ -594,6 +594,10 @@ column x6childwrites {  type_id:  char; colprec: 1;  description: X6 Child Write
 column x6all         {  type_id:  char; colprec: 1;  description: x6select Preload All Rows; }
 column x6xref        {  type_id: vchar; colprec: 10; description: How to Display As Child; }
 column spaceafter    {  type_id:  char; colprec: 1;  description: Put spacer on menu after this entry; }
+column uiins         {  type_id:  char; colprec: 1;  description: Allow insert in/from UI; }
+column uiupd         {  type_id:  char; colprec: 1;  description: Allow update in/from UI; }
+column uidel         {  type_id:  char; colprec: 1;  description: Allow delete in/from UI; }
+
 table tables {
 	module:  datadict;
 	description: Table of Tables;
@@ -605,6 +609,7 @@ table tables {
 	//column column_prefix { primary_key: N; uisearch: Y; }
 	column description  { uisearch: Y; }
     column { spaceafter; }
+    column { uiins; uiupd; uidel; }
 
    // Removed KFD 5/24/07, not being used
 	//column { ins;risimple;table_seq;menuins }

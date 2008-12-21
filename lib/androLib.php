@@ -2335,12 +2335,20 @@ class androHTMLTableController extends androHTML {
         $this->hp['x6table']  = $table_id;
         $this->hp['id']       = 'tc_'.$table_id;
         
-        $this->ap['xPermIns'] = ddUserPerm($table_id,'ins');
-        $this->ap['xPermUpd'] = ddUserPerm($table_id,'upd');
-        $this->ap['xPermDel'] = ddUserPerm($table_id,'del');
         $this->ap['xPermSel'] = ddUserPerm($table_id,'sel');
+        $this->ap['xPermIns'] = $this->permResolve('ins');
+        $this->ap['xPermUpd'] = $this->permResolve('upd');
+        $this->ap['xPermDel'] = $this->permResolve('del');
         
         $this->initPlugin();
+    }
+    
+    function permResolve($perm) {
+        $tryfirst = ddUserPerm($this->hp['x6table'],$perm);
+        $dd = ddTable($this->hp['x6table']);
+        $trysecond= arr($dd,'ui'.$perm,'Y');
+        
+        return $trysecond=='N' ? 'N' : $tryfirst;
     }
 }
 
@@ -3532,6 +3540,7 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
             $tabdd = ddTable($table_id);
             $fetchdist = $table_id."_".$table_id_fko."_";
             if(isset($tabdd['FETCHDIST'][$fetchdist])) {
+                if(!isset($input->hp['onblur'])) $input->hp['onblur']='';
                 $input->hp['onblur']
                     .=";a.forms.fetch("
                     ."'$table_id','$column_id',this.value,x4.parent(this),this"
