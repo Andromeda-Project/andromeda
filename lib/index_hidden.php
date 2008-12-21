@@ -326,6 +326,31 @@ if(function_exists('app_after_db_connect')) {
     app_after_db_connect();
 }
 
+# KFD 12/20/08.  After we are connected, if we are root and
+#                firePHP is found, and this is a JSON call,
+#                then activate a few things.
+if(SessionGet('ROOT')==1) {
+    try {
+        require_once('FirePHPCore/FirePHP.class.php');
+    }
+    catch(Exception $e) {
+        # do nothing on error, we ignore
+    }
+    if(class_exists('FirePHP')) {
+        # notice this is a global
+        $firephp = FirePHP::getInstance(true);
+        #$firephp-> *
+ 
+        require_once('FirePHPCore/fb.php');
+        #FB:: *
+        
+        if(gp('json')==1) {
+            $firephp->registerErrorHandler();
+            $firephp->registerExceptionHandler();
+        }
+    }
+}
+
 # KFD 8/13/08 Hardcoded insurance that the config pages
 #             always come up as x4 pages, since that is
 #             how they were coded.  Must also set a flag
