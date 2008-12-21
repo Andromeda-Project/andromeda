@@ -2116,6 +2116,13 @@ var u = {
             this.answer = answer;
             this.currentDialog = false;
             u.events.unSuppress();
+            
+            // KFD 12/20/08, also notify x6 if it exists
+            if(typeof(x6events)!='undefined') {
+                x6.dialogsAllow = false;
+                x6events.enableEvents();
+            }
+            
             $('#dialogbox,#dialogoverlay').css('display','none');
         },
         /******/
@@ -2127,6 +2134,13 @@ var u = {
 
             // Suppress all events 
             u.events.suppressByPrefix('keyPress');
+            
+            // Put in a trap to also tell x6 not to respond
+            // to keyboard events.
+            if(typeof(x6events)!='undefined') {
+                x6.dialogsAllow = [ ];
+                x6events.disableEvents();
+            }
 
             // Get some basic heights and widths
             var wh = $(window).height();
@@ -2384,6 +2398,7 @@ var u = {
         ******
         */
         pleaseWait: function(msg) {
+            if(msg==null) msg = "Please Wait...";
             this.prepare('pleaseWait');
             
             // Create the content for the dialog itself
@@ -2391,7 +2406,7 @@ var u = {
                 "<center><br/>"
                 +"<img src='clib/ajax-loader.gif'>"
                 +"<br/><br/>"
-                +"Please Wait...<br/><br/>"
+                +msg+"<br/><br/>"
                 +"</center>";
 
             u.byId('dialogbox').innerHTML=html;
