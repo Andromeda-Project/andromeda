@@ -1,6 +1,6 @@
 /* ==================================================== *\
  * Andromeda Generated CSS file                         
- * Generated: Thu, 18 Dec 2008 21:31:38 -0500
+ * Generated: Sat, 20 Dec 2008 20:58:26 -0500
  * Skin, color, size: Default, Gray, 1400
 \* ==================================================== */
         
@@ -139,7 +139,7 @@ textarea.changed,textarea.changedSelected {
     background-color:        #ffebcd;
 }
 
-input.error,input.errorSelected,textarea.error,textarea.errorSelected {
+input.error {
     background-color:        #ff4500;
 }
 
@@ -365,11 +365,6 @@ td.x6Caption {
     display:                 none;
 }
 
-li.ui-tabs-disabled a {
-    color:                   #d0d0d0;
-    cursor:                  auto;
-}
-
 .ui-tabs-nav li.ui-tabs-selected a {
     color:                   #ffffff;
 }
@@ -532,5 +527,10 @@ div.x6select table tbody td {
     border-bottom:           solid 1px #d0d0d0;
     border-left:             solid 1px #d0d0d0;
     border-right:            solid 1px #d0d0d0;
+}
+
+#dialogbox {
+    border:                  8px solid #4A79B5;
+    background-color:        #ffffff;
 }
 
