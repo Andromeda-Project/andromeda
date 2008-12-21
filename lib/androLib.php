@@ -3966,7 +3966,6 @@ function inputFixupByType($input) {
 
 
 
-
 # ==============================================================
 #
 # SECTION: HTML RENDERING PART 2: Snippets
@@ -4087,6 +4086,10 @@ function configWrite($type) {
         $table_id = 'configinst';
         $file  = fsDirTop().'/dynamic/table_configinst.php';
     }
+    elseif($type=='app') {
+        $table_id = 'configapp';
+        $file  = fsDirTop().'/dynamic/table_configapp.php';
+    }
     else {
         $table_id = 'configuser';
         $uid = SessionGet('UID');
@@ -4174,6 +4177,100 @@ function configLayoutX4($container,$type) {
         $td = html('td',$tr,htmlEntities($row[$column_id]));
     }
 }
+
+# ==============================================================
+#
+# SECTION: Generate plaintext business reports
+#
+# ==============================================================
+class androText {
+    var $pages = array();
+    var $topMargin =  6;
+    var $leftMargin=  5;
+    var $cpi       = 10;
+    var $cpl       = 85;
+    var $lpp       = 66;
+    
+    function androText($topMargin=6,$leftMargin=5,$cpi=10) {
+        $this->topMargin = $topMargin;
+        $this->leftMargin= $leftMargin;
+        $this->cpi       = $cpi;
+        
+        $this->cpl       = ($this->cpi * 8.5) - $this->leftMargin;
+    }
+    
+    function newPage() {
+        $this->pages[] = array();
+    }
+    
+    function box($line,$position,$text,$orientation='L') {
+        # Adjust for margins
+        $line    += $this->topMargin;
+        if($orientation=='R' && $position==0) {
+            $position = $this->cpl;
+        }
+        else {
+            $position+= $this->leftMargin;
+        }
+        
+        # Always add a page if there is not one, then fetch
+        # the page number
+        if(count($this->pages)==0) {
+            $this->newPage();
+        }
+        $page = count($this->pages)-1;
+        
+        # Create the line if it is not there, retrieve it
+        if(!isset($this->pages[$page][$line])) {
+            $lineLength = $this->cpl - ($this->leftMargin*2);
+            $this->pages[$page][$line] = str_repeat(' ',$lineLength);
+        }
+        $lineText = $this->pages[$page][$line];
+        
+        # If centered, work out the position and then fake
+        # it as a left-oriented.
+        if($orientation == 'C') {
+            $position   = intval( ($this->cpl - strlen($text))/2 );
+            $orientation='L';
+        }
+        
+        # The only real switch is on orientation.  Otherwise
+        # we are doing straight string substitution
+        if($orientation=='L') {
+            $lineText = substr($lineText,0,$position-1)
+                .$text
+                .substr($lineText, ($position+strlen($text))-1);
+        }
+        else {
+            if($position==0) $position = $this->cpl;
+            #FB::send($position,'position');
+            #FB::send($lineText,'text before');
+            $lineText = substr($lineText,0,$position - strlen($text))
+                .$text
+                .substr($lineText,$position);
+            #FB::send($lineText,'text after');
+        }
+        $this->pages[$page][$line] = $lineText;
+        
+    }
+    
+    function renderAsText() {
+        $text = '';
+        foreach($this->pages as $pagelines) {
+            for($x=1;$x<=66;$x++) {
+                if(isset($pagelines[$x])) {
+                    $text.=$pagelines[$x];
+                }
+                else {
+                    $text.=str_repeat(' ',80);
+                }
+                $text.="\n";
+            }
+        }
+        return $text;
+    }
+}
+
 
 # ==============================================================
 #
