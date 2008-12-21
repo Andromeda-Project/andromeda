@@ -106,6 +106,14 @@ var x6events = {
     ******
     */
     subscribers: { },
+    
+    eventsDisabled: false,
+    disableEvents: function() {
+        this.eventsDisabled = true;
+    },
+    enableEvents: function() {
+        this.eventsDisabled = false;
+    },
 
     /****m* x6events/subscribeToEvent
     *
@@ -226,6 +234,8 @@ var x6events = {
     */
     retvals: { },
     fireEvent: function(eventName,arguments) {
+        if(this.eventsDisabled) return;
+        
         //console.group("fireEvent "+eventName);
         //console.log('arguments: ',arguments);
         // Find out if anybody is listening for this event
@@ -301,6 +311,11 @@ var x6dd = {
    
 \* **************************************************************** */
 var x6 = {
+    // A list of keyboard events that is allowed when a modal
+    // dialog is up.  False means allow all, an array would list
+    // what is allowed, and an empty array allows none.
+    dialogsAllow: false,
+    
     // Find all plugins in the x6plugins object.  Find all
     // DOM elements with property x6plugIn=xxx.  
     // Invoke the constructor for each one.
@@ -333,7 +348,7 @@ var x6 = {
     
     initFocus: function() {
         //var str   = '[x6firstFocus=Y]:not([disabled]):reallyvisible:first';
-        var str   = 'input:not([disabled]):reallyvisible:first';        
+        var str   = 'input:not([disabled]):first';        
         //var first = $('input:not([disabled])').isVisible().find(':first');
         var first = $(str);
         if(first.length>0) first.focus();
@@ -343,6 +358,15 @@ var x6 = {
     // Keyboard handler
     keyDispatcher: function(e) {
         var retval = u.keyLabel(e);
+        
+        // Possible trapping because of modal dialogs
+        if(typeof(x6.dialogsAllow)=='object') {
+            if(x6.dialogsAllow.indexOf(retval) == -1) {
+                e.stopPropagation();
+                return false;
+            }
+        }
+        
         
         // Make list of keys to stop no matter what
         var stopThem = [ 'CtrlF5', 'F10' ];
@@ -2912,6 +2936,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
                 // even if the server does not return anything,
                 // because we initialized to an empty object.
                 $(this).find(".tbody").replaceWith(html);
+                $(this).find('.tbody div:first').mouseover();
             }
         }
         delete json;
@@ -3187,7 +3212,7 @@ x6plugins.x6tabs = function(self,id,table) {
         self['receiveEvent_key_Ctrl'+x.toString()] = function(key) {
             //return;
             //console.time("tabs key");
-            console.time("checking for visible");
+            //console.time("checking for visible");
             // Abort if he is not really visible, this is the
             // easiest way to do this, and we don't have to 
             // keep track of whether or not it is visible.
@@ -3207,7 +3232,7 @@ x6plugins.x6tabs = function(self,id,table) {
                     return;
                 }
             }
-            console.timeEnd("checking for visible");
+            //console.timeEnd("checking for visible");
             
             // get the offset, the keystroke, 
             // and calculate the index.
