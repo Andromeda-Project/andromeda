@@ -3067,7 +3067,19 @@ class androHTMLTabDiv extends androHTML {
                 $column_id = trim($colinfo['column_id']);
                 if(isset($row[$column_id])) {
                     $type_id=$dd['flat'][$column_id]['type_id'];
-                    $value=hFormat($type_id,$row[$column_id]);
+                    if($type_id!='text') {
+                        $value=hFormat($type_id,$row[$column_id]);
+                    }
+                    else {
+                        $t = $this->hp['x6table'];
+                        $c = $column_id;
+                        $s = $row['skey'];
+                        $a = html('a');
+                        $a->setHtml('View');
+                        $a->hp['href']
+                            ="javascript:x6inputs.viewClob($s,'$t','$c')";
+                        $value = $a;
+                    }
                     $this->addCell($value);
                 }
                 else {
@@ -3470,6 +3482,13 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
     }
 
     # First decision is to work out what kind of control to make
+    if(arr($colinfo,'x6view','')=='window') {
+        $input = html('a');
+        $input->setHtml('View');
+        $input->hp['href'] 
+            ="javascript:x6inputs.viewClob(this,'$table_id','$column_id')";
+        return $input;
+    }
     if($type_id=='gender') {
         $input = html('select');
         $option = html('option',$input);  // this is a blank option
@@ -4231,7 +4250,7 @@ class androText {
         
         # Create the line if it is not there, retrieve it
         if(!isset($this->pages[$page][$line])) {
-            $lineLength = $this->cpl - ($this->leftMargin*2);
+            $lineLength = $this->cpl - $this->leftMargin;
             $this->pages[$page][$line] = str_repeat(' ',$lineLength);
         }
         $lineText = $this->pages[$page][$line];
@@ -4271,7 +4290,7 @@ class androText {
                     $text.=$pagelines[$x];
                 }
                 else {
-                    $text.=str_repeat(' ',80);
+                    $text.=str_repeat(' ',$this->cpl);
                 }
                 $text.="\n";
             }

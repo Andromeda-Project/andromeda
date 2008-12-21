@@ -1,6 +1,6 @@
 /* ==================================================== *\
  * Andromeda Generated CSS file                         
- * Generated: Sat, 20 Dec 2008 20:58:26 -0500
+ * Generated: Sat, 20 Dec 2008 22:30:47 -0500
  * Skin, color, size: Default, Gray, 1440
 \* ==================================================== */
         
@@ -154,6 +154,10 @@ input[disabled],select[disabled],textarea[disabled] {
     border-left:             1px solid #909090;
     border-right:            1px solid #ffFFff;
     color:                   #000000;
+}
+
+td.x6Input a {
+    padding-left:            4px;
 }
 
 .x6menu ul {

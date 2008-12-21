@@ -789,6 +789,12 @@ var x6inputs = {
     },
     
     setClass: function(inp) {
+        // If permupd for this table is "N", all controls
+        // become read only
+        if(u.bb.vgfGet('permupd_'+u.p(inp,'xTableId'),'')=='N') {
+            inp.disabled = true;
+        }
+        
         // Easiest is disabled controls, remove all classes
         if(u.p(inp,'disabled',false)) {
             inp.className='';
@@ -906,9 +912,27 @@ var x6inputs = {
         }
     },
     
+    viewClob: function(inp,table,column) {
+        if(typeof(inp)=='number') {
+            var skey = inp;
+        }
+        else {
+            var skey = u.bb.vgfGet('skey_'+table,-1);
+        }
+        if(skey==-1) return;
+        console.log(table,skey);
+        
+        ua.json.init('x6page',table);
+        ua.json.addParm('x6action','viewClob');
+        ua.json.addParm('skey'    ,skey);
+        ua.json.addParm('column'  ,column);
+        ua.json.newWindow();
+    },
+    
     ddClick: function(button) {
         var id = u.p(button,'xInputId');
         var inp = $('#'+id)[0];
+        if(inp.disabled) return;
         this.x6select.display(inp);
     },
     
@@ -1410,6 +1434,12 @@ x6plugins.tableController = function(self,id,table) {
             +"\n\nPlease assign xPermIns,xPermUpd,xPermDel,xPermSel"
         );
     }
+    else {
+        u.bb.vgfSet('permins_'+table,u.p(self,'xPermIns'));
+        u.bb.vgfSet('permupd_'+table,u.p(self,'xPermUpd'));
+        u.bb.vgfSet('permdel_'+table,u.p(self,'xPermDel'));
+        u.bb.vgfSet('permsel_'+table,u.p(self,'xPermSel'));
+    }
     
     /*
     *   Table controller accepts the request to
@@ -1719,7 +1749,6 @@ x6plugins.tableController = function(self,id,table) {
         var permupd = u.p(this,'xPermUpd','Y')=='N' ? false : true;
         var permdel = u.p(this,'xPermDel','Y')=='N' ? false : true;
         var permsave= permins || permupd;
-        console.log(permins,permupd,permdel,permsave);
         
         // Now only turn buttons on if we have an skey
         var skey = u.bb.vgfGet('skey_'+this.zTable);

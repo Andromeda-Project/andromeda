@@ -660,6 +660,7 @@ column uirows            {  type_id: int  ;                            descripti
 column uicols            {  type_id: int  ;                            description: TextArea Cols; }    
 column tooltip           {  type_id: vchar; colprec: 300; description: UI Tooltip; }
 column flagcarry         {  type_id: char;  colprec: 1; description: Used only For Configs; }
+column x6view            {  type_id: vchar; colprec: 10; description: x6 View Method; }
 table columns {
     module: datadict;
     description: Column Definitions;
@@ -681,7 +682,7 @@ table columns {
     column  { colprec;colscale;colres; }
     
     column  { ins;uiro;uino;required;dispsize;uiwithnext;prefix_table_name; }
-    column  { uiinline; }
+    column  { uiinline; x6view; }
     column { value_min; value_max; }
     column { uirows;uicols; tooltip; uisearch_ignore_dash; }
     column { alltables; }
@@ -717,7 +718,7 @@ table tabcol {
     column { uiwithnext; uisearch; description; }
     column { descshort; dispsize}
     column { range_from; range_to; }
-    column { value_min; value_max; uisearch_ignore_dash; }
+    column { value_min; value_max; x6view; uisearch_ignore_dash; }
     column { uirows;    uicols;    }
     column { table_id_fko; }
     
@@ -1348,7 +1349,7 @@ table tabflat {
     foreign_key tabflat { prefix: auto_; allow_empty: Y; }
     column { auto_formula; sqloffset; sqllimit; }
     column { range_from; range_to; }
-    column { value_min; value_max; uisearch_ignore_dash; }
+    column { value_min; value_max; x6view; uisearch_ignore_dash; }
     column { uirows;    uicols;    }
     
     column { uisearch; uicolseq; uiwithnext       }

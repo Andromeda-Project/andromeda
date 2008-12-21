@@ -1640,7 +1640,7 @@ function SpecFlatten_Runout() {
                 ,primary_key,uisearch
                 ,auto_prefix,auto_suffix
                 ,colprec,colscale,colres,type_id,inputmask
-                ,flagcarry
+                ,flagcarry,x6view
                 ,table_id_fko
                 ,uicolseq,uisearch_ignore_dash,uisearchsort
                 ,formula,formshort,dispsize
@@ -1661,6 +1661,9 @@ function SpecFlatten_Runout() {
                  ,case when coalesce(tc.flagcarry,'') <> '' 
                        then tc.flagcarry 
                        else c.flagcarry  end
+                 ,case when coalesce(tc.x6view,'') <> '' 
+                       then tc.x6view 
+                       else c.x6view  end
                  ,COALESCE(tc.table_id_fko,'') as table_id_fko
                  ,trim(uicolseq)
                  ,case when tc.uisearch_ignore_dash in ('Y','N')

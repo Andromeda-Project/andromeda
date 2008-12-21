@@ -422,9 +422,6 @@ class androX6 {
         $lookups   = gp('xLookups','N')=='Y';
         $edit      = 0;
         if(($tabPar != '') && ($this->dd['x6childwrites'] == 'Y')) $edit = 1;
-        x6Debug($tabPar);
-        x6Debug($this->dd['x6childwrites']);
-        x6Debug($edit);
         
         # Now make up the generic div and add all of the cells
         $bb = gp('xButtonBar','N')=='Y' || $edit;
@@ -547,6 +544,26 @@ class androX6 {
             SQLX_Delete($table_id,$row);
         }
     }
+    
+    # ===================================================================
+    #
+    # SERVER FUNCTION 8: Retrieve and display a CLOB field
+    #
+    # ===================================================================
+    function viewClob() {
+        $table_id = gp('x6page');
+        $skey     = SQLFC(gp('skey'));
+        $column   = gp('column');
+        
+        $sql='SELECT "'.$column.'" from "'.$table_id.'" where skey= '.$skey;
+        echo "<pre>";
+        $text= SQL_OneValue($column,$sql);
+        echo $text;
+        file_put_contents(fsDirTop().'tmp/viewClob.txt',$text);
+        echo "</pre>";
+        exit;
+    }
+    
     # ===================================================================
     # *******************************************************************
     #

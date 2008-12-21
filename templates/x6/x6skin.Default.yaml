@@ -386,7 +386,10 @@ css:
             border-right:       *bor1r
             color:              *black
             
+        td.x6Input a:
+            padding-left:       *pad0
             
+           
     # ===================================================================
     #
     # Core definitions of the menu system get rid of
