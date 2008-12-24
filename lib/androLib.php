@@ -1083,7 +1083,7 @@ class androHtml {
     */
     var $classes    = array();
 
-    /****v* androHtml/autoFormat
+    /***** androHtml/autoFormat
     *
     * NAME
     *    autoFormat
@@ -1930,7 +1930,7 @@ class androHtml {
         return $tbody;
     }
 
-    /****m* androHtml/addInput
+    /***** androHtml/addInput
     *
     * NAME
     *    addInput
@@ -2421,7 +2421,7 @@ class androHTMLTableController extends androHTML {
 ******
 */
 class androHTMLTabs extends androHTML {
-    /****v* androHtmlTabBar/tabs
+    /****v* androHtml/androHTMLTabs
     *
     * NAME
     *    tabs
@@ -2514,10 +2514,10 @@ class androHTMLTabs extends androHTML {
         $this->initPlugin();
     }
     
-    /****m* androHtml/addTab
+    /****m* androHtmlTabs/addTab
     *
     * NAME
-    *    androHtml.addTab
+    *    androHtmlTabs.addTab
     *
     * FUNCTION
     *   This PHP class method addTab is the basic method
