@@ -116,7 +116,10 @@ if(!$x6) {
 #
 #
 # =====================================================================
-jsInclude('clib/androLib.js');
+# KFD 12/23/08, see if they set a cookie for an
+#               alternate location.
+$xpath = arr($_COOKIE,'altjs','clib/');
+jsInclude($xpath.'androLib.js');
 if($deprecated && !$x6) {
     jsInclude('clib/androLibDeprecated.js');
 }

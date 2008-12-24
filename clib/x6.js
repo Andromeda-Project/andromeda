@@ -19,7 +19,337 @@
    or visit http://www.gnu.org/licenses/gpl.html
 \* ================================================================== */
 
+/* **************************************************************** *\
+
+   Cookie functions.
+   
+   Thanks to the amazing quirksmode site:
+   http://www.quirksmode.org/js/cookies.html
+   
+\* **************************************************************** */
+function createCookie(name,value,days) {
+	if (days) {
+		var date = new Date();
+		date.setTime(date.getTime()+(days*24*60*60*1000));
+		var expires = "; expires="+date.toGMTString();
+	}
+	else var expires = "";
+	document.cookie = name+"="+value+expires+"; path=/";
+}
+
+function readCookie(name) {
+	var nameEQ = name + "=";
+	var ca = document.cookie.split(';');
+	for(var i=0;i < ca.length;i++) {
+		var c = ca[i];
+		while (c.charAt(0)==' ') c = c.substring(1,c.length);
+		if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+	}
+	return null;
+}
+
+function eraseCookie(name) {
+	createCookie(name,"",-1);
+}
+
   
+/* **************************************************************** *\
+
+   X6 Object
+   
+\* **************************************************************** */
+var x6 = {
+    // A list of keyboard events that is allowed when a modal
+    // dialog is up.  False means allow all, an array would list
+    // what is allowed, and an empty array allows none.
+    dialogsAllow: false,
+    
+    // Find all plugins in the x6plugins object.  Find all
+    // DOM elements with property x6plugIn=xxx.  
+    // Invoke the constructor for each one.
+    init: function() {
+        // Activate a global keyboard handler
+        // SEE ALSO: input.keyDown(), it must also pass some
+        //           events to keyDispatcher that don't go to
+        //           the document.keypress from an input 
+        $(document).keypress(function(e) {
+                x6.console.group("Document Keypress");
+                x6.console.log("keypress ",e);
+                var retval= x6.keyDispatcher(e);
+                x6.console.groupEnd(); 
+                return retval;
+        });
+        
+        // Put little buttons next to stuff
+        $(':input').each(function() { x6inputs.x6select.addButton(this); });
+    },
+    
+    // Initialize an object that has been sent from the server
+    initOne: function(id) {
+        var obj = u.byId(id);
+        var pin = u.p(obj,'x6plugin');
+        obj.zTable = u.p(obj,'x6table');
+        x6.console.log(pin,obj.zTable);
+        x6.console.log(obj);
+        x6plugins[pin](obj,obj.id,obj.zTable);
+    },
+    
+    initFocus: function() {
+        //var str   = '[x6firstFocus=Y]:not([disabled]):reallyvisible:first';
+        var str   = ':input:not([disabled]):first';
+        //var first = $('input:not([disabled])').isVisible().find(':first');
+        var first = $(str);
+        if(first.length>0) first.focus();
+        else $('.x6main').focus();
+    },
+    
+    // Keyboard handler
+    keyDispatcher: function(e) {
+        var retval = u.keyLabel(e);
+        x6.console.log(retval);
+        
+        // Possible trapping because of modal dialogs
+        if(typeof(x6.dialogsAllow)=='object') {
+            if(x6.dialogsAllow.indexOf(retval) == -1) {
+                e.stopPropagation();
+                return false;
+            }
+        }
+        
+        
+        // Make list of keys to stop no matter what
+        var stopThem = [ 'CtrlF5', 'F10' ];
+        
+        var noPropagate = [
+            'CtrlS', 'CtrlN', 'CtrlI', 'CtrlD',
+            'CtrlL', 'CtrlO', 'CtrlW', 'CtrlP',
+            'CtrlQ', 'CtrlR', 'CtrlU', 'CtrlK',
+            'CtrlY'
+        ];
+        
+        // Set a flag now.  If user hit ESC, we are trying
+        // to exit the screen, unless somebody tells us we
+        // cannot do so.
+        if(retval=='Esc') {
+            x6.console.log("Esc key pressed, pre-seting exitApproved=true");
+            u.bb.vgfSet('exitApproved',true);
+        }
+        
+        // Now we have a complete key label, fire the event
+        x6.console.log("In x6.keyDispatch, code and event follow");
+        x6.console.log(retval);
+        x6.console.log(e);
+        if(stopThem.indexOf(retval)>0) {
+            x6.console.log("x6.keyDispatch: key is in force stop list, stopping propagation.");
+            e.stopPropagation();
+            return false;
+        }
+        else {
+            var eventRetVal = x6events.fireEvent('key_'+retval,retval);
+            // ESC key is special, we need to know the retval
+            // for that, because if it came back true we will exit,
+            // but otherwise we cannot.
+            if(retval=='Esc') {
+                var exitApproved = u.bb.vgfGet('exitApproved',false);
+                x6.console.log("Key dispatch, ESC, exitapproved: ",exitApproved);
+                if(exitApproved) {
+                    x6.console.log("exit for ESC was approved, going to menu");
+                    setTimeout(
+                        function() {
+                            var x6page_prior=u.p(u.byId('x6page'),'value');
+                            var x6mod_prior =u.p(u.byId('x6module'),'value');
+                            var str = '?x6page=menu'
+                                +'&x6page_prior='+x6page_prior
+                                +'&x6mod_prior='+x6mod_prior;
+                            window.location.replace(str);
+                        }
+                        ,10
+                    );
+                }
+            }
+            else {
+                // All othere keys in the no-propagate list are
+                // stopped here.
+                if(noPropagate.indexOf(retval)>=0) {
+                    e.stopPropagation();
+                    return false;
+                }
+                else {
+                    return true;
+                }
+            }
+        }
+    },
+    
+    /*
+    *  The console object starts out with do-nothing functions.
+    *  These are replaced if the console object exists.
+    */
+    console: {
+        enabled:       false, 
+        enableLog:     false,
+        enableWarn:    false,
+        enableInfo:    false,
+        enableError:   false,
+        enableTime:    false,
+        enableGroup:   false,
+        enableProfile: false,
+        enableOutline: function() {
+            this.enableTime  = true;
+            this.enableGroup = true;
+            this.enableProfile=true;
+        },
+        enableAll: function() {
+            this.enableLog   = true;
+            this.enableWarn  = true;
+            this.enableInfo  = true;
+            this.enableError = true;
+            this.enableTime  = true;
+            this.enableGroup = true;
+            this.enableProfile=true;
+        },
+        disableAll: function() {
+            this.enableLog   = false;
+            this.enableWarn  = false;
+            this.enableInfo  = false;
+            this.enableError = false;
+            this.enableTime  = false;
+            this.enableGroup = false;
+            this.enableProfile=false;
+        },
+        indent:  '',
+        log:     function(args) { },
+        warn:    function(args) { },   
+        info:    function(args) { },   
+        error:   function(args) { },
+        time:    function(args) { },
+        timeEnd: function(args) { },
+        group:   function(args) { },
+        groupEnd:function(args) { },
+        _log:     function(x1,x2,x3,x4,x5,x6,x7) {
+            if(typeof(x2)=='undefined') 
+                console.log(x1);
+            else if (typeof(x3)=='undefined')
+                console.log(x1,x2);
+            else if (typeof(x4)=='undefined')
+                console.log(x1,x2,x3);
+            else if (typeof(x5)=='undefined')
+                console.log(x1,x2,x3,x4);
+            else if (typeof(x6)=='undefined')
+                console.log(x1,x2,x3,x4,x5);
+            else if (typeof(x7)=='undefined')
+                console.log(x1,x2,x3,x4,x5,x6);
+            else
+                console.log(x1,x2,x3,x4,x5,x6,x7);
+        },   
+    }
+}
+
+/* **************************************************************** *\
+
+   Run-time creation of specialized functions on
+   the x6.console object.  These are cross-compatible between
+   firebug and 
+   
+\* **************************************************************** */
+function x6consoleActivate() {
+    if(typeof(console)=='undefined') {
+        x6.console.log=     function(args) { }
+        x6.console.warn=    function(args) { }   
+        x6.console.info=    function(args) { }   
+        x6.console.error=   function(args) { }
+        x6.console.time=    function(args) { }
+        x6.console.timeEnd= function(args) { }
+        x6.console.group=   function(args) { }
+        x6.console.groupEnd=function(args) { }
+        alert("No console devices found, logging is disabled");
+        return;
+    }
+        
+    // Firebug defines "x6.console.group", but blackbird does
+    // not.  So if we cannot find x6.console.group we create
+    // functions that do indenting instead.
+    //
+    if(typeof(x6.console.group)=='undefined') {
+        x6.console.group = function(x) {
+            if(!this.groupEnable) return;
+            this._log(x);
+            this.indent+='  ';   
+        }
+        x6.console.groupEnd = function(x) {
+            if(!this.groupEnable) return;
+            this._log(x);
+            if(this.indent.length > 0) {
+                if(this.indent.length==2) {
+                    this.indent = '';
+                }
+                else {
+                    this.indent = this.indent.slice(0,this.indent.length-2);
+                }
+            }
+        }
+        
+    
+        
+    }
+    
+    if(true) {
+        x6.console.log = function(x1,x2,x3,x4,x5,x6,x7) {
+            if(this.enableLog) {
+                this._log(this.indent+x1,x2,x3,x4,x5,x6,x7);    
+            }
+        }
+        x6.console.warn = function(x) {
+            if(this.enableWarn) console.warn(this.indent+x);   
+        }
+        x6.console.info = function(x) {
+            if(this.enableInfo) console.info(this.indent+x);   
+        }
+        x6.console.error = function(x) {
+            if(this.enableError) console.error(this.indent+x);   
+        }
+        
+
+        if(typeof(console.time)!='undefined') {
+            x6.console.time = function(x) {
+                if(this.enableTime) console.time(this.indent+x);
+            }
+            x6.console.timeEnd = function(str) {
+                if(this.enableTime) console.timeEnd(this.indent+x);
+            }
+        }
+    }
+    else {
+        x6.console.log = function(x) {
+            if(this.enableLog) console.log(x);   
+        }
+        x6.console.warn = function(x) {
+            if(this.enableWarn) console.warn(x);   
+        }
+        x6.console.info = function(x) {
+            if(this.enableInfo) console.info(x);   
+        }
+        x6.console.error = function(x) {
+            if(this.enableError) console.error(x);   
+        }
+        x6.console.group = function(x) {
+            if(this.enableGroup) console.group(x);
+        }
+        x6.console.groupEnd = function(x) {
+            if(this.enableGroup) console.groupEnd(x);
+        }
+        if(typeof(console.time)!='undefined') {
+            x6.console.time = function(x) {
+                if(this.enableTime) console.time(x);
+            }
+            x6.console.timeEnd = function(str) {
+                if(this.enableTime) console.timeEnd(x);
+            }
+        }
+    }
+}
+x6consoleActivate();
+
 /****O* Javascript-API/x6events
 *
 * NAME
@@ -267,290 +597,7 @@ var x6dd = {
     }
 }
 
-/* **************************************************************** *\
 
-   X6 Object
-   
-\* **************************************************************** */
-var x6 = {
-    // A list of keyboard events that is allowed when a modal
-    // dialog is up.  False means allow all, an array would list
-    // what is allowed, and an empty array allows none.
-    dialogsAllow: false,
-    
-    // Find all plugins in the x6plugins object.  Find all
-    // DOM elements with property x6plugIn=xxx.  
-    // Invoke the constructor for each one.
-    init: function() {
-        // Activate a global keyboard handler
-        // SEE ALSO: input.keyDown(), it must also pass some
-        //           events to keyDispatcher that don't go to
-        //           the document.keypress from an input 
-        $(document).keypress(function(e) {
-                x6.console.group("Document Keypress");
-                x6.console.log("keypress ",e);
-                var retval= x6.keyDispatcher(e);
-                x6.console.groupEnd(); 
-                return retval;
-        });
-        
-        // Put little buttons next to stuff
-        $(':input').each(function() { x6inputs.x6select.addButton(this); });
-    },
-    
-    // Initialize an object that has been sent from the server
-    initOne: function(id) {
-        var obj = u.byId(id);
-        var pin = u.p(obj,'x6plugin');
-        obj.zTable = u.p(obj,'x6table');
-        x6.console.log(pin,obj.zTable);
-        x6.console.log(obj);
-        x6plugins[pin](obj,obj.id,obj.zTable);
-    },
-    
-    initFocus: function() {
-        //var str   = '[x6firstFocus=Y]:not([disabled]):reallyvisible:first';
-        var str   = ':input:not([disabled]):first';
-        //var first = $('input:not([disabled])').isVisible().find(':first');
-        var first = $(str);
-        if(first.length>0) first.focus();
-        else $('.x6main').focus();
-    },
-    
-    // Keyboard handler
-    keyDispatcher: function(e) {
-        var retval = u.keyLabel(e);
-        x6.console.log(retval);
-        
-        // Possible trapping because of modal dialogs
-        if(typeof(x6.dialogsAllow)=='object') {
-            if(x6.dialogsAllow.indexOf(retval) == -1) {
-                e.stopPropagation();
-                return false;
-            }
-        }
-        
-        
-        // Make list of keys to stop no matter what
-        var stopThem = [ 'CtrlF5', 'F10' ];
-        
-        var noPropagate = [
-            'CtrlS', 'CtrlN', 'CtrlI', 'CtrlD',
-            'CtrlL', 'CtrlO', 'CtrlW', 'CtrlP',
-            'CtrlQ', 'CtrlR', 'CtrlU', 'CtrlK',
-            'CtrlY'
-        ];
-        
-        // Set a flag now.  If user hit ESC, we are trying
-        // to exit the screen, unless somebody tells us we
-        // cannot do so.
-        if(retval=='Esc') {
-            x6.console.log("Esc key pressed, pre-seting exitApproved=true");
-            u.bb.vgfSet('exitApproved',true);
-        }
-        
-        // Now we have a complete key label, fire the event
-        x6.console.log("In x6.keyDispatch, code and event follow");
-        x6.console.log(retval);
-        x6.console.log(e);
-        if(stopThem.indexOf(retval)>0) {
-            x6.console.log("x6.keyDispatch: key is in force stop list, stopping propagation.");
-            e.stopPropagation();
-            return false;
-        }
-        else {
-            var eventRetVal = x6events.fireEvent('key_'+retval,retval);
-            // ESC key is special, we need to know the retval
-            // for that, because if it came back true we will exit,
-            // but otherwise we cannot.
-            if(retval=='Esc') {
-                var exitApproved = u.bb.vgfGet('exitApproved',false);
-                x6.console.log("Key dispatch, ESC, exitapproved: ",exitApproved);
-                if(exitApproved) {
-                    x6.console.log("exit for ESC was approved, going to menu");
-                    setTimeout(
-                        function() {
-                            var x6page_prior=u.p(u.byId('x6page'),'value');
-                            var x6mod_prior =u.p(u.byId('x6module'),'value');
-                            var str = '?x6page=menu'
-                                +'&x6page_prior='+x6page_prior
-                                +'&x6mod_prior='+x6mod_prior;
-                            window.location.replace(str);
-                        }
-                        ,10
-                    );
-                }
-            }
-            else {
-                // All othere keys in the no-propagate list are
-                // stopped here.
-                if(noPropagate.indexOf(retval)>=0) {
-                    e.stopPropagation();
-                    return false;
-                }
-                else {
-                    return true;
-                }
-            }
-        }
-    },
-    
-    /*
-    *  The console object starts out with do-nothing functions.
-    *  These are replaced if the console object exists.
-    */
-    console: {
-        enabled:       false, 
-        enableLog:     false,
-        enableWarn:    false,
-        enableInfo:    false,
-        enableError:   false,
-        enableTime:    false,
-        enableGroup:   false,
-        enableProfile: false,
-        enableOutline: function() {
-            this.enableTime  = true;
-            this.enableGroup = true;
-            this.enableProfile=true;
-        },
-        enableAll: function() {
-            this.enableLog   = true;
-            this.enableWarn  = true;
-            this.enableInfo  = true;
-            this.enableError = true;
-            this.enableTime  = true;
-            this.enableGroup = true;
-            this.enableProfile=true;
-        },
-        disableAll: function() {
-            this.enableLog   = false;
-            this.enableWarn  = false;
-            this.enableInfo  = false;
-            this.enableError = false;
-            this.enableTime  = false;
-            this.enableGroup = false;
-            this.enableProfile=false;
-        },
-        indent:  '',
-        log:     function(args) { },
-        warn:    function(args) { },   
-        info:    function(args) { },   
-        error:   function(args) { },
-        time:    function(args) { },
-        timeEnd: function(args) { },
-        group:   function(args) { },
-        groupEnd:function(args) { },
-        _log:     function(x1,x2,x3,x4,x5,x6,x7) {
-            if(typeof(x2)=='undefined') 
-                console.log(x1);
-            else if (typeof(x3)=='undefined')
-                console.log(x1,x2);
-            else if (typeof(x4)=='undefined')
-                console.log(x1,x2,x3);
-            else if (typeof(x5)=='undefined')
-                console.log(x1,x2,x3,x4);
-            else if (typeof(x6)=='undefined')
-                console.log(x1,x2,x3,x4,x5);
-            else if (typeof(x7)=='undefined')
-                console.log(x1,x2,x3,x4,x5,x6);
-            else
-                console.log(x1,x2,x3,x4,x5,x6,x7);
-        },   
-    }
-}
-
-/* **************************************************************** *\
-
-   Run-time creation of specialized functions on
-   the x6.console object.  These are cross-compatible between
-   firebug and 
-   
-\* **************************************************************** */
-if(typeof(console)!='undefined') {
-    
-    // Firebug defines "x6.console.group", but blackbird does
-    // not.  So if we cannot find x6.console.group we create
-    // functions that do indenting instead.
-    //
-    if(typeof(x6.console.group)=='undefined') {
-        x6.console.group = function(x) {
-            if(!this.groupEnable) return;
-            this._log(x);
-            this.indent+='  ';   
-        }
-        x6.console.groupEnd = function(x) {
-            if(!this.groupEnable) return;
-            this._log(x);
-            if(this.indent.length > 0) {
-                if(this.indent.length==2) {
-                    this.indent = '';
-                }
-                else {
-                    this.indent = this.indent.slice(0,this.indent.length-2);
-                }
-            }
-        }
-        
-    
-        
-    }
-    
-    if(true) {
-        x6.console.log = function(x1,x2,x3,x4,x5,x6,x7) {
-            if(this.enableLog) {
-                this._log(this.indent+x1,x2,x3,x4,x5,x6,x7);    
-            }
-        }
-        x6.console.warn = function(x) {
-            if(this.enableWarn) console.warn(this.indent+x);   
-        }
-        x6.console.info = function(x) {
-            if(this.enableInfo) console.info(this.indent+x);   
-        }
-        x6.console.error = function(x) {
-            if(this.enableError) console.error(this.indent+x);   
-        }
-        
-
-        if(typeof(console.time)!='undefined') {
-            x6.console.time = function(x) {
-                if(this.enableTime) console.time(this.indent+x);
-            }
-            x6.console.timeEnd = function(str) {
-                if(this.enableTime) console.timeEnd(this.indent+x);
-            }
-        }
-    }
-    else {
-        x6.console.log = function(x) {
-            if(this.enableLog) console.log(x);   
-        }
-        x6.console.warn = function(x) {
-            if(this.enableWarn) console.warn(x);   
-        }
-        x6.console.info = function(x) {
-            if(this.enableInfo) console.info(x);   
-        }
-        x6.console.error = function(x) {
-            if(this.enableError) console.error(x);   
-        }
-        x6.console.group = function(x) {
-            if(this.enableGroup) console.group(x);
-        }
-        x6.console.groupEnd = function(x) {
-            if(this.enableGroup) console.groupEnd(x);
-        }
-        if(typeof(console.time)!='undefined') {
-            x6.console.time = function(x) {
-                if(this.enableTime) console.time(x);
-            }
-            x6.console.timeEnd = function(str) {
-                if(this.enableTime) console.timeEnd(x);
-            }
-        }
-    }
-}
-x6.console.enableAll();
 
 
 /* **************************************************************** *\

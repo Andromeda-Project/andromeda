@@ -641,7 +641,10 @@ function index_hidden_x6Dispatch(
             # and the first command in jqDocReady should be to
             # initialize the objects so downstrem code can make
             # them visible.
-            jsInclude('clib/x6.js');
+            # KFD 12/23/08, see if they set a cookie for an
+            #               alternate location.
+            $xpath = arr($_COOKIE,'altjs','clib/');
+            jsInclude($xpath.'x6.js');
             #jsInclude('clib/jquery.maskedinput-1.1.4.js');
             jqDocReady('x6.init()');
         }
