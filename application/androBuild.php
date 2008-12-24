@@ -1019,7 +1019,15 @@ function SpecLoad_ArrayToTables($arr,$cLoadSuffix,$parent_row=array(),$parent_pr
 
 		// Now use $keyword to get table name we will insert into
         //$this->LogEntry("$parent_prefix - $keyword");
-		$table     = $this->ddarr["meta"]["keyword"][$parent_prefix.$keyword]["table"];
+        if(!isset($this->ddarr["meta"]["keyword"][$parent_prefix.$keyword]["table"])) {
+            echo ">> ERROR <br/>";
+            echo ">> Invalide keyword combination<br/>";
+            echo "Parent prefix is: $parent_prefix<br/>";
+            echo "Keyword is $keyword<br/>";
+            print_r($arr);
+            return false;
+        }
+        $table= $this->ddarr["meta"]["keyword"][$parent_prefix.$keyword]["table"];
 		$pkcolname = $this->ddarr["meta"]["keyword"][$parent_prefix.$keyword]["keycol"];
 		$keystub   = $this->zzArray($this->ddarr["meta"]["keyword"][$parent_prefix.$keyword],"keystub");
 		//echo "TABLE is $table, pk and keystub are $pkcolname and $keystub <br>";
@@ -1337,6 +1345,7 @@ function SpecFlattenValidUser() {
         $this->LogEntry("");
 		$this->LogEntry("ERROR >> Table ".$row["table_id"]." names");
 		$this->LogEntry("ERROR >>    undefined column ".$row['column_id_src']);
+        $this->LogEntry("ERROR >>  Perhaps you missed a prefix or suffix?");
     }
     
     // Make sure all foreign key definitions name real tables.  
