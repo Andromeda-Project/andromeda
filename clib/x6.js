@@ -19,45 +19,7 @@
    or visit http://www.gnu.org/licenses/gpl.html
 \* ================================================================== */
 
-/* ================================================================== *\
- 
-   Debugging using Firebug.
-   
-   This file is full of commands that make use of firebugs 
-   very nice console facilities.  The up-side is that we get very
-   thorough event tracing when needed.  The down-side is that they
-   do not work at all on Internet Explorer and severely slow you 
-   down while running.
-   
-   Therefore, it is desirable to be able to turn them off andon
-   from time to time.  The best thing to do is comment them all
-   out completely, but that can be tedious.  The following two
-   Beanshell files show the jEdit commands for turning logging
-   on and off by commenting and uncommenting the relevant lines.
-   
-   If you want to do it manually, just replace all "//console."
-   with "//console." or vice-versa.
-   
-   # Beanshell: Turn logging off by commenting out lines
-    SearchAndReplace.setSearchString("//console.");
-    SearchAndReplace.setReplaceString("//console.");
-    SearchAndReplace.setBeanShellReplace(false);
-    SearchAndReplace.setIgnoreCase(true);
-    SearchAndReplace.setRegexp(false);
-    SearchAndReplace.setSearchFileSet(new CurrentBufferSet());
-    SearchAndReplace.replaceAll(view);
-
-   # Beanshell: Turn logging on by uncommenting the lines.
-    SearchAndReplace.setSearchString("//console.");
-    SearchAndReplace.setReplaceString("//console.");
-    SearchAndReplace.setBeanShellReplace(false);
-    SearchAndReplace.setIgnoreCase(true);
-    SearchAndReplace.setRegexp(false);
-    SearchAndReplace.setSearchFileSet(new CurrentBufferSet());
-    SearchAndReplace.replaceAll(view);
-\* ================================================================== */
-
-   
+  
 /****O* Javascript-API/x6events
 *
 * NAME
@@ -144,9 +106,9 @@ var x6events = {
     * SOURCE
     */
     subscribeToEvent: function(eventName,id) {
-        //console.group("subscribeToEvent "+eventName);
-        //console.log("event name: ",eventName)
-        //console.log("id subscbr: ",id);
+        x6.console.group("subscribeToEvent "+eventName);
+        x6.console.log("event name: ",eventName)
+        x6.console.log("id subscbr: ",id);
         if(id=='undefined') {
             u.error('x6events.subscribeToEvent.  Second parameter '
                 +' undefined.  First parameter: '+eventName
@@ -168,7 +130,7 @@ var x6events = {
         if(this.subscribers[eventName].indexOf(id)==-1) {
             this.subscribers[eventName].push(id);
         }
-        //console.groupEnd();
+        x6.console.groupEnd();
     },
     /******/
     
@@ -236,8 +198,8 @@ var x6events = {
     fireEvent: function(eventName,arguments) {
         if(this.eventsDisabled) return;
         
-        //console.group("fireEvent "+eventName);
-        //console.log('arguments: ',arguments);
+        x6.console.group("fireEvent "+eventName);
+        x6.console.log('arguments: ',arguments);
         // Find out if anybody is listening for this event
         var subscribers = this.getSubscribers(eventName);
         
@@ -246,7 +208,7 @@ var x6events = {
         this.retvals[eventName] = true;
         for(var x in subscribers) {
             var id = subscribers[x];
-            //console.log("subscriber: ",id);
+            x6.console.log("subscriber: ",id);
             var subscriber = u.byId(id);
             if(subscriber==null) {
                 u.error("There is no object with that ID, cannot dispatch");
@@ -258,19 +220,19 @@ var x6events = {
             var method = 'receiveEvent_'+eventName;
             if(typeof(subscriber[method])=='function') {
                 retval = subscriber[method](arguments);
-                //console.log(id,eventName,retval);
+                x6.console.log(id,eventName,retval);
             }
             else {
                 u.error("Subscriber has no method: ",method); 
             }
             if(retval==false) {
-                //console.log('id returned false, setting false');
+                x6.console.log('id returned false, setting false');
                 this.retvals[eventName] = false;
                 break;
             }
         }
-        //console.log("fireEvent ",eventName," RETURNING: ",this.retvals[eventName]);
-        //console.groupEnd();
+        x6.console.log("fireEvent ",eventName," RETURNING: ",this.retvals[eventName]);
+        x6.console.groupEnd();
         return this.retvals[eventName];
     }
 }
@@ -325,10 +287,10 @@ var x6 = {
         //           events to keyDispatcher that don't go to
         //           the document.keypress from an input 
         $(document).keypress(function(e) {
-                //console.group("Document Keypress");
-                //console.log("keypress ",e);
+                x6.console.group("Document Keypress");
+                x6.console.log("keypress ",e);
                 var retval= x6.keyDispatcher(e);
-                //console.groupEnd(); 
+                x6.console.groupEnd(); 
                 return retval;
         });
         
@@ -341,14 +303,14 @@ var x6 = {
         var obj = u.byId(id);
         var pin = u.p(obj,'x6plugin');
         obj.zTable = u.p(obj,'x6table');
-        //console.log(pin,obj.zTable);
-        //console.log(obj);
+        x6.console.log(pin,obj.zTable);
+        x6.console.log(obj);
         x6plugins[pin](obj,obj.id,obj.zTable);
     },
     
     initFocus: function() {
         //var str   = '[x6firstFocus=Y]:not([disabled]):reallyvisible:first';
-        var str   = 'input:not([disabled]):first';        
+        var str   = ':input:not([disabled]):first';
         //var first = $('input:not([disabled])').isVisible().find(':first');
         var first = $(str);
         if(first.length>0) first.focus();
@@ -358,6 +320,7 @@ var x6 = {
     // Keyboard handler
     keyDispatcher: function(e) {
         var retval = u.keyLabel(e);
+        x6.console.log(retval);
         
         // Possible trapping because of modal dialogs
         if(typeof(x6.dialogsAllow)=='object') {
@@ -382,16 +345,16 @@ var x6 = {
         // to exit the screen, unless somebody tells us we
         // cannot do so.
         if(retval=='Esc') {
-            //console.log("Esc key pressed, pre-seting exitApproved=true");
+            x6.console.log("Esc key pressed, pre-seting exitApproved=true");
             u.bb.vgfSet('exitApproved',true);
         }
         
         // Now we have a complete key label, fire the event
-        //console.log("In x6.keyDispatch, code and event follow");
-        //console.log(retval);
-        //console.log(e);
+        x6.console.log("In x6.keyDispatch, code and event follow");
+        x6.console.log(retval);
+        x6.console.log(e);
         if(stopThem.indexOf(retval)>0) {
-            //console.log("x6.keyDispatch: key is in force stop list, stopping propagation.");
+            x6.console.log("x6.keyDispatch: key is in force stop list, stopping propagation.");
             e.stopPropagation();
             return false;
         }
@@ -402,9 +365,9 @@ var x6 = {
             // but otherwise we cannot.
             if(retval=='Esc') {
                 var exitApproved = u.bb.vgfGet('exitApproved',false);
-                //console.log("Key dispatch, ESC, exitapproved: ",exitApproved);
+                x6.console.log("Key dispatch, ESC, exitapproved: ",exitApproved);
                 if(exitApproved) {
-                    //console.log("exit for ESC was approved, going to menu");
+                    x6.console.log("exit for ESC was approved, going to menu");
                     setTimeout(
                         function() {
                             var x6page_prior=u.p(u.byId('x6page'),'value');
@@ -430,8 +393,165 @@ var x6 = {
                 }
             }
         }
-    }    
+    },
+    
+    /*
+    *  The console object starts out with do-nothing functions.
+    *  These are replaced if the console object exists.
+    */
+    console: {
+        enabled:       false, 
+        enableLog:     false,
+        enableWarn:    false,
+        enableInfo:    false,
+        enableError:   false,
+        enableTime:    false,
+        enableGroup:   false,
+        enableProfile: false,
+        enableOutline: function() {
+            this.enableTime  = true;
+            this.enableGroup = true;
+            this.enableProfile=true;
+        },
+        enableAll: function() {
+            this.enableLog   = true;
+            this.enableWarn  = true;
+            this.enableInfo  = true;
+            this.enableError = true;
+            this.enableTime  = true;
+            this.enableGroup = true;
+            this.enableProfile=true;
+        },
+        disableAll: function() {
+            this.enableLog   = false;
+            this.enableWarn  = false;
+            this.enableInfo  = false;
+            this.enableError = false;
+            this.enableTime  = false;
+            this.enableGroup = false;
+            this.enableProfile=false;
+        },
+        indent:  '',
+        log:     function(args) { },
+        warn:    function(args) { },   
+        info:    function(args) { },   
+        error:   function(args) { },
+        time:    function(args) { },
+        timeEnd: function(args) { },
+        group:   function(args) { },
+        groupEnd:function(args) { },
+        _log:     function(x1,x2,x3,x4,x5,x6,x7) {
+            if(typeof(x2)=='undefined') 
+                console.log(x1);
+            else if (typeof(x3)=='undefined')
+                console.log(x1,x2);
+            else if (typeof(x4)=='undefined')
+                console.log(x1,x2,x3);
+            else if (typeof(x5)=='undefined')
+                console.log(x1,x2,x3,x4);
+            else if (typeof(x6)=='undefined')
+                console.log(x1,x2,x3,x4,x5);
+            else if (typeof(x7)=='undefined')
+                console.log(x1,x2,x3,x4,x5,x6);
+            else
+                console.log(x1,x2,x3,x4,x5,x6,x7);
+        },   
+    }
 }
+
+/* **************************************************************** *\
+
+   Run-time creation of specialized functions on
+   the x6.console object.  These are cross-compatible between
+   firebug and 
+   
+\* **************************************************************** */
+if(typeof(console)!='undefined') {
+    
+    // Firebug defines "x6.console.group", but blackbird does
+    // not.  So if we cannot find x6.console.group we create
+    // functions that do indenting instead.
+    //
+    if(typeof(x6.console.group)=='undefined') {
+        x6.console.group = function(x) {
+            if(!this.groupEnable) return;
+            this._log(x);
+            this.indent+='  ';   
+        }
+        x6.console.groupEnd = function(x) {
+            if(!this.groupEnable) return;
+            this._log(x);
+            if(this.indent.length > 0) {
+                if(this.indent.length==2) {
+                    this.indent = '';
+                }
+                else {
+                    this.indent = this.indent.slice(0,this.indent.length-2);
+                }
+            }
+        }
+        
+    
+        
+    }
+    
+    if(true) {
+        x6.console.log = function(x1,x2,x3,x4,x5,x6,x7) {
+            if(this.enableLog) {
+                this._log(this.indent+x1,x2,x3,x4,x5,x6,x7);    
+            }
+        }
+        x6.console.warn = function(x) {
+            if(this.enableWarn) console.warn(this.indent+x);   
+        }
+        x6.console.info = function(x) {
+            if(this.enableInfo) console.info(this.indent+x);   
+        }
+        x6.console.error = function(x) {
+            if(this.enableError) console.error(this.indent+x);   
+        }
+        
+
+        if(typeof(console.time)!='undefined') {
+            x6.console.time = function(x) {
+                if(this.enableTime) console.time(this.indent+x);
+            }
+            x6.console.timeEnd = function(str) {
+                if(this.enableTime) console.timeEnd(this.indent+x);
+            }
+        }
+    }
+    else {
+        x6.console.log = function(x) {
+            if(this.enableLog) console.log(x);   
+        }
+        x6.console.warn = function(x) {
+            if(this.enableWarn) console.warn(x);   
+        }
+        x6.console.info = function(x) {
+            if(this.enableInfo) console.info(x);   
+        }
+        x6.console.error = function(x) {
+            if(this.enableError) console.error(x);   
+        }
+        x6.console.group = function(x) {
+            if(this.enableGroup) console.group(x);
+        }
+        x6.console.groupEnd = function(x) {
+            if(this.enableGroup) console.groupEnd(x);
+        }
+        if(typeof(console.time)!='undefined') {
+            x6.console.time = function(x) {
+                if(this.enableTime) console.time(x);
+            }
+            x6.console.timeEnd = function(str) {
+                if(this.enableTime) console.timeEnd(x);
+            }
+        }
+    }
+}
+x6.console.enableAll();
+
 
 /* **************************************************************** *\
 
@@ -443,12 +563,12 @@ var x6inputs = {
     // you do not see an input's new value until the keyup 
     // event.  You do not see it in keypress or keydown.
     keyUp: function(e,inp) {
-        //console.group("Input keyUp");
-        //console.log(e);
-        //console.log(inp);
+        x6.x6.console.group("Input keyUp");
+        x6.console.log(e);
+        x6.console.log(inp);
         
         x6inputs.setClass(inp);
-        //console.groupEnd("Input keyUp");
+        x6.console.groupEnd("Input keyUp");
     },
     
     // Keydown is used only for tab or shift tab, to enforce
@@ -457,18 +577,18 @@ var x6inputs = {
     // current control
     //
     keyDown: function(e,inp) {
-        //console.group('Input keyDown ');
-        //console.log(inp);
+        x6.console.group('Input keyDown ');
+        x6.console.log(inp);
         var keyLabel=u.keyLabel(e);
         var isTab   =keyLabel=='Tab'    || keyLabel=='ShiftTab';
         var isEnter =keyLabel=='Enter'  || keyLabel=='ShiftEnter';  
         var isMeta  =u.keyIsMeta(e);
         var isNav   =isEnter || isTab;
-        //console.log("label ",keyLabel,' isTab ',isTab,' isEnter ',isEnter,' isMeta ',isMeta,' isNav ',isNav);
+        x6.console.log("label ",keyLabel,' isTab ',isTab,' isEnter ',isEnter,' isMeta ',isMeta,' isNav ',isNav);
         
         // All meta keys return true immediately except TAB and ENTER
         if(isMeta && !isNav) {
-            //console.log("input keydown key: ",keyLabel);
+            x6.console.log("input keydown key: ",keyLabel);
             var handUpList = ['UpArrow','DownArrow','PageUp','PageDown'];
             if(handUpList.indexOf(keyLabel)>=0) {
                 // An explicit flag can prevent handing events up
@@ -483,11 +603,11 @@ var x6inputs = {
                         }
                     }
                     else {
-                    //console.log("Weird key that we pass up to doc-level keyPress");
+                    x6.console.log("Weird key that we pass up to doc-level keyPress");
                         var retval= x6.keyDispatcher(e);
                     }
                 }
-                //console.groupEnd(); 
+                x6.console.groupEnd(); 
                 return retval;
             }
             else if(keyLabel=='CtrlLeftArrow') {
@@ -511,36 +631,36 @@ var x6inputs = {
                     this.firstInput(inp);
             }
             else if(keyLabel=='End') {
-                //console.log(inp);
+                x6.console.log(inp);
                 var ss = inp.selectionStart;
                 var se = inp.selectionEnd;
                 var ln = inp.value.toString().trim().length;
-                //console.log(ss,se,ln);
+                x6.console.log(ss,se,ln);
                 if(ss == se && se == ln) this.lastInput(inp);
             }
             else {
-                //console.log("meta but not nav, ret true");
+                x6.console.log("meta but not nav, ret true");
             }
-            //console.groupEnd();
+            x6.console.groupEnd();
             return true;
         }
         
         // Type validation for some types, only if not TAB or ENTER
         if(!isNav) {
-            //console.log("Not nav key, doing type validation");
+            x6.console.log("Not nav key, doing type validation");
             type = u.p(inp,'xtypeid');
             switch(type) {
             case 'int':
-                //console.log("type validation for int");
+                x6.console.log("type validation for int");
                 if(!u.keyIsNumeric(e)) return false;
                 break;
             case 'numb':
             case 'money':
-                //console.log("type validation for numb/money");
+                x6.console.log("type validation for numb/money");
                 if(!u.keyIsNumeric(e) && u.keyLabel(e)!='.') return false;
                 break;
             case 'date':
-                //console.log("type validation for date");
+                x6.console.log("type validation for date");
                 if(!u.keyIsNumeric(e)) {
                     if(keyLabel!='-' && keyLabel!='/') return false;
                 }
@@ -565,10 +685,10 @@ var x6inputs = {
                 var val = val.slice(0,inp.selectionStart)
                     +keyLabel
                     +val.slice(inp.selectionEnd);
-                //console.log("current value: ",inp.value)
-                //console.log("sel start: ",inp.selectionStart)
-                //console.log("sel end: ",inp.selectionEnd)
-                //console.log("computed value:",val);
+                x6.console.log("current value: ",inp.value)
+                x6.console.log("sel start: ",inp.selectionStart)
+                x6.console.log("sel end: ",inp.selectionEnd)
+                x6.console.log("computed value:",val);
                 json = new androJSON('x6page',u.p(inp,'x6seltab'));
                 json.addParm('x6select','Y');
                 json.addParm('gpletters',val);
@@ -577,8 +697,8 @@ var x6inputs = {
                 x6inputs.x6select.displayDynamic(inp,ua.data.x6select);
             }
             
-            //console.log("Type validation complete, returning true");
-            //console.groupEnd();
+            x6.console.log("Type validation complete, returning true");
+            x6.console.groupEnd();
             return true;
         }
         
@@ -622,16 +742,16 @@ var x6inputs = {
         // original behavior.
         if(inp==first && e.shiftKey) {
             var str ='[xTabGroup='+tg+']:not([disabled]):last';
-            //console.log(str);
+            x6.console.log(str);
             $(str).focus();
-            //console.log("First input, hit shift, going to last");
-            //console.groupEnd();
+            x6.console.log("First input, hit shift, going to last");
+            x6.console.groupEnd();
             return false;
         }
         if(inp==last && !e.shiftKey) {
             $('[xTabGroup='+tg+']:not([disabled]):first').focus();
-            //console.log("Last input, no shift, going to first");
-            //console.groupEnd();
+            x6.console.log("Last input, no shift, going to first");
+            x6.console.groupEnd();
             return false;
         }
         
@@ -640,8 +760,8 @@ var x6inputs = {
         // we have to work out the next control to give focus
         // to, either forward or backward
         if(isTab) {
-            //console.log("Tab key hit, returning true");
-            //console.groupEnd();
+            x6.console.log("Tab key hit, returning true");
+            x6.console.groupEnd();
             return true;
         }
         if(!e.shiftKey) {
@@ -650,8 +770,8 @@ var x6inputs = {
             var foundMe = false;
             $('[xTabGroup='+tg+']:not([disabled])').each(
                 function() {
-                    //console.log(this.id);
-                    //console.log(focusTo,foundMe);
+                    x6.console.log(this.id);
+                    x6.console.log(focusTo,foundMe);
                     if(focusTo) return;
                     if(foundMe) {
                         focusTo = this.id;
@@ -660,7 +780,7 @@ var x6inputs = {
                 }
             );
             if(focusTo) {
-                //console.log("Setting focus forward to ",focusTo);
+                x6.console.log("Setting focus forward to ",focusTo);
                 $('[zActive]#'+focusTo).focus().select();
             }
             
@@ -683,18 +803,18 @@ var x6inputs = {
                 }
             );
             if(focusTo) {
-                //console.log("Setting focus backward to ",focusTo);
+                x6.console.log("Setting focus backward to ",focusTo);
                 $('[zActive]#'+focusTo).focus().select();
             }
         }
-        //console.log("Returning True");
-        //console.groupEnd();
+        x6.console.log("Returning True");
+        x6.console.groupEnd();
         return true;
     },
     
     focus: function(inp) {
-        //console.group("Input focus ",inp.id);
-        //console.log("Input: ",inp);
+        x6.console.group("Input focus ",inp.id);
+        x6.console.log("Input: ",inp);
         this.x6select.checkForMe(inp);
         inp.zSelected = 1;
         inp.zOriginalValue = u.p(inp,'zOriginalValue','').trim();
@@ -703,8 +823,8 @@ var x6inputs = {
         if(u.p(inp,'zNew',0)==0) {
             u.bb.vgfSet('lastFocus_'+u.p(inp,'xTableId'),inp.id);
         }
-        //console.log("Input focus DONE");
-        //console.groupEnd();
+        x6.console.log("Input focus DONE");
+        x6.console.groupEnd();
         return true;
     },
     // KFD 11/29/08, not being called anywhere?
@@ -713,13 +833,13 @@ var x6inputs = {
     //},
     
     blur: function(inp) {
-        //console.group("Input blur ",inp.id);
+        x6.console.group("Input blur ",inp.id);
         inp.zSelected = 0;
         x6inputs.setClass(inp);
         x6inputs.afterBlurner(inp);
         x6inputs.x6select.hide();
-        //console.log("Input Blur DONE");
-        //console.groupEnd();
+        x6.console.log("Input Blur DONE");
+        x6.console.groupEnd();
         return true;
     },
     // KFD 11/29/08, not being called anywhere?
@@ -732,24 +852,24 @@ var x6inputs = {
     *  
     */
     afterBlurner: function(inp) {
-        //console.group("afterBlurner");
-        //console.log(inp);
+        x6.console.group("afterBlurner");
+        x6.console.log(inp);
         if(u.p(inp,'inblur',false)) {
-            //console.log("inblur flag set, no action");
-            //console.groupEnd();
+            x6.console.log("inblur flag set, no action");
+            x6.console.groupEnd();
             return false;
         }
         inp.inblur = true;
         // If method does not exist forget it
         if(!inp.afterBlur) {
-            //console.log("No afterBlur(), leaving flag set and returning");
-            //console.groupEnd();
+            x6.console.log("No afterBlur(), leaving flag set and returning");
+            x6.console.groupEnd();
             return true;
         }
         // If value has changed, fire it
         if(inp.lastBlurred==u.p(inp,'value','').trim()) {
-            //console.log("Input lastBlurred is current value, no action");
-            //console.groupEnd();
+            x6.console.log("Input lastBlurred is current value, no action");
+            x6.console.groupEnd();
             inp.inblur = false;
             return true;
         }
@@ -759,15 +879,15 @@ var x6inputs = {
             // is anything particularly "valid" or correct about the
             // value.
             if(inp.afterBlur()) {
-                //console.log("Afterblurner setting flag false, return true");
-                //console.groupEnd();
+                x6.console.log("Afterblurner setting flag false, return true");
+                x6.console.groupEnd();
                 inp.inblur = false;
                 inp.lastBlurred = u.p(inp,'value','').trim();
                 return true;
             }
             else {
-                //console.log("Afterblurner setting flag false, return false");
-                //console.groupEnd();
+                x6.console.log("Afterblurner setting flag false, return false");
+                x6.console.groupEnd();
                 inp.inblur = false;
                 return false;
             }
@@ -776,14 +896,14 @@ var x6inputs = {
     
     enable: function(inp) {
         if(typeof(inp)=='string') inp = u.byId(inp);
-        //console.log("Enabling input ",inp.id);
+        x6.console.log("Enabling input ",inp.id);
         inp.disabled = false;
         inp.zOriginalValue = u.p(inp,'value','');
         this.setClass(inp);
     },
     disable: function(inp) {
         if(typeof(inp)=='string') inp = u.byId(inp);
-        //console.log("Disabling input ",inp.id);
+        x6.console.log("Disabling input ",inp.id);
         inp.disabled = true;
         this.setClass(inp);
     },
@@ -806,8 +926,8 @@ var x6inputs = {
         }
         
         ux = u.uniqueId();
-        //console.group("setClass for an input  "+ux);
-        //console.log(inp);
+        x6.console.group("setClass for an input  "+ux);
+        x6.console.log(inp);
         if(u.p(inp,'zOriginalValue',null)==null) inp.zOriginalValue = '';
         if(inp.value==inp.zOriginalValue) {
             inp.zChanged = 0;
@@ -831,15 +951,15 @@ var x6inputs = {
         else if(zNew)     css = 'changed';
         else if(zChanged) css = 'changed';
         else              css = '';
-        //console.log("initial class is "+css);
+        x6.console.log("initial class is "+css);
         
         // Now pick the selected version if required
         if(zSelected) css += 'Selected';
-        //console.log("Final class is "+css);
+        x6.console.log("Final class is "+css);
         
         // Now do some stuff if it is read only
         //inp.disabled = zRO;
-        //console.log("Read Only Decision is",inp.disabled);
+        x6.console.log("Read Only Decision is",inp.disabled);
         
         // Flag to do the row
         doRow = u.p(inp,'xClassRow',0);
@@ -847,7 +967,7 @@ var x6inputs = {
         // Now set the class name
         inp.className = css;
         if(doRow!=0) {
-            //console.log('do row');
+            x6.console.log('do row');
             if(zSelected) {
                 inp.parentNode.parentNode.className = 'selected';
             }
@@ -855,12 +975,12 @@ var x6inputs = {
                 inp.parentNode.parentNode.className = '';
             }
         }
-        //console.groupEnd();
+        x6.console.groupEnd();
     },
     
     clearOut: function(inp) {
         if(inp.zSelected==1) {
-            //console.log("In clear out, blurring ",inp);
+            x6.console.log("In clear out, blurring ",inp);
             inp.blur();
         }
         inp.disabled       = true;
@@ -920,7 +1040,7 @@ var x6inputs = {
             var skey = u.bb.vgfGet('skey_'+table,-1);
         }
         if(skey==-1) return;
-        console.log(table,skey);
+        x6.console.log(table,skey);
         
         ua.json.init('x6page',table);
         ua.json.addParm('x6action','viewClob');
@@ -1079,7 +1199,7 @@ var x6inputs = {
             var svals = u.p(input,'xValues','');
             if(svals.trim()=='') return;
 
-            //console.log(svals);
+            x6.console.log(svals);
             retval = '';
             var rows   = svals.split('||');
             for(var idx in rows) {
@@ -1089,7 +1209,7 @@ var x6inputs = {
                     retval+= '<td>'+values[idx2];
                 }
             }
-            //console.log(retval);
+            x6.console.log(retval);
             this.tbody.innerHTML = retval;
         },
         
@@ -1183,7 +1303,7 @@ var x6inputs = {
             else {
                 if(direction == 'Up') {
                     var candidate = $(rowNow).prev();
-                    //console.log("Up candidate ",candidate);
+                    x6.console.log("Up candidate ",candidate);
                     var rowsBelow = $(rowNow).nextAll().length;
                     if(rowsBelow > 5) {
                         var stNow = $('.x6select tbody').scrollTop();
@@ -1192,15 +1312,15 @@ var x6inputs = {
                 }
                 else {
                     var candidate = $(rowNow).next();
-                    //console.log("Down candidate ",candidate);
+                    x6.console.log("Down candidate ",candidate);
                     var rowsAbove = $(rowNow).prevAll().length;
                     if(rowsAbove > 5) {
                         var stNow = $('.x6select tbody').scrollTop();
                         $(jqBody).scrollTop(stNow + this.lineHeight + 3);                        
                     }
                 }
-                //console.log("row now ",rowNow);
-                //console.log(direction);
+                x6.console.log("row now ",rowNow);
+                x6.console.log(direction);
                 if (candidate.length > 0) $(candidate[0].firstChild).mouseover();
             }
         }
@@ -1258,6 +1378,36 @@ var x6plugins = {
             return x6events.fireEvent('reqSaveRow_'+this.zTable);
         }
     },
+    buttonCustom: function(self,id,table) {
+        self.zTable = table;
+        // This is sort of the same as the predefined buttons
+        x6plugins.buttonStandard(self,id,u.p(self,'buttonKey'));
+        
+        // This is special for custom buttons
+        x6events.subscribeToEvent('buttonsOn_'+table,id);
+        self['receiveEvent_buttonsOn_'+table] = function() {
+            var skey = u.bb.vgfGet('skey_'+this.zTable);
+            var doit = false;
+            if(skey==0) {
+                doit = u.p(this,'permins','N')=='Y';
+            }
+            else {
+                doit = u.p(this,'permupd','N')=='Y';
+            }
+            if(doit) {
+                this.className = 'button';
+                this.zDisabled = false;
+            }
+            return true;
+        }
+        x6events.subscribeToEvent('buttonsOff_'+table,id);
+        self['receiveEvent_buttonsOff_'+table] = function() {
+            this.className = 'button_disabled';
+            this.zDisabled = true;
+            return true;
+        }
+    },
+    
     /****m* x6plugins/buttonStandard
     *
     * NAME
@@ -1345,11 +1495,6 @@ var x6plugins = {
         x6events.subscribeToEvent('key_'+key,self.id);
         self['receiveEvent_key_'+key] = function() {
             if(!this.zDisabled) this.main();
-            // if a key event is received, we *always* stop 
-            // propagation
-            // KFD 12/15/08, EXPERIMENTAL.  Do not do this here,
-            //               handle it in the top-level controller
-            //x6events.retvals['key_'+this.zKey] = false;
         }
         
         // finally of course set the onclick method
@@ -1449,12 +1594,12 @@ x6plugins.tableController = function(self,id,table) {
     */
     x6events.subscribeToEvent('reqSaveRow_'+table,id);
     self['receiveEvent_reqSaveRow_'+table] = function(dupe) {
-        //console.group("tableController reqSaveRow "+this.zTable);
+        x6.console.group("tableController reqSaveRow "+this.zTable);
         
         var result = this.saveOk();
         u.bb.vgfSet('lastSave_'+this.zTable,result);
-        //console.log('tableController reqSaveRow finished');
-        //console.groupEnd();
+        x6.console.log('tableController reqSaveRow finished');
+        x6.console.groupEnd();
     }
     
     
@@ -1469,14 +1614,14 @@ x6plugins.tableController = function(self,id,table) {
     */
     x6events.subscribeToEvent('reqNewRow_'    +table,id);
     self['receiveEvent_reqNewRow_'+table] = function(tabDivBefore) {
-        //console.group("tableController reqNewRow "+this.zTable);
+        x6.console.group("tableController reqNewRow "+this.zTable);
         
         var result = this.saveOk();
         u.bb.vgfSet('lastSave_'+this.zTable,result);
         if(result!='fail') {
             x6events.fireEvent('uiNewRow_'+this.zTable,tabDivBefore);
         }
-        //console.groupEnd();
+        x6.console.groupEnd();
     }
 
     /*
@@ -1489,10 +1634,10 @@ x6plugins.tableController = function(self,id,table) {
     */
     x6events.subscribeToEvent('reqEditRow_'+table,id);
     self['receiveEvent_reqEditRow_'+table] = function(skey) {
-        //console.group("tableController reqEditRow "+this.zTable);
+        x6.console.group("tableController reqEditRow "+this.zTable);
         var skeynow = u.bb.vgfGet('skey_'+this.zTable);
         if(skeynow == skey) {
-            //console.log("Request to edit same row, no action");
+            x6.console.log("Request to edit same row, no action");
         } 
         else {
             var result = this.saveOk();
@@ -1501,8 +1646,8 @@ x6plugins.tableController = function(self,id,table) {
                 x6events.fireEvent('uiEditRow_'+this.zTable,skey);
             }
         }
-        //console.log("tableController reqEditRow finished");
-        //console.groupEnd();
+        x6.console.log("tableController reqEditRow finished");
+        x6.console.groupEnd();
         return true;
     }
     
@@ -1514,12 +1659,12 @@ x6plugins.tableController = function(self,id,table) {
     *   'fail'.
     */
     self.saveOk = function() {
-        //console.group("tableController saveOK");
+        x6.console.group("tableController saveOK");
         var inpAll = { };
         var inpChg = { };
         var cntChg = 0;
         var jq = ':input[xtableid='+this.zTable+'][zActive]';
-        //console.log("Query string",jq);
+        x6.console.log("Query string",jq);
         $(jq).each(
         //$(this).find(jq).each(
             function() {
@@ -1532,25 +1677,25 @@ x6plugins.tableController = function(self,id,table) {
                 }
             }
         );
-        //console.log("All inputs: ",inpAll);
-        //console.log("Changed inputs: ",inpChg);
-        //console.log("Count of changes: ",cntChg);
+        x6.console.log("All inputs: ",inpAll);
+        x6.console.log("Changed inputs: ",inpChg);
+        x6.console.log("Count of changes: ",cntChg);
         
         // Only attempt a save if something changed
         if(cntChg == 0) {
             var retval = 'noaction';
             var skeynow=u.bb.vgfGet('skey_'+this.zTable)
             if(skeynow==0) {
-                //console.log(" ---- was editing new row, exit denied ---- ");
+                x6.console.log(" ---- was editing new row, exit denied ---- ");
                 u.bb.vgfSet('exitApproved',false);
             }
         }
         else {
-            //console.log(" ---- There were changes, not approving exit ----");
+            x6.console.log(" ---- There were changes, not approving exit ----");
             u.bb.vgfSet('exitApproved',false);
             
-            //console.log("attempting database save");
-            //console.log("Sending x4v_skey ",this.zSkey);
+            x6.console.log("attempting database save");
+            x6.console.log("Sending x4v_skey ",this.zSkey);
             ua.json.init('x6page',this.zTable);
             ua.json.addParm('x6action','save');
             ua.json.addParm('x6v_skey',u.bb.vgfGet('skey_'+this.zTable));
@@ -1576,8 +1721,8 @@ x6plugins.tableController = function(self,id,table) {
                         errors.push(ua.json.jdata.error[idx]);
                     }
                 }
-                //console.log("save failed, here are errors");
-                //console.log(errors);
+                x6.console.log("save failed, here are errors");
+                x6.console.log(errors);
                 x6events.fireEvent('uiShowErrors_'+this.zTable,errors);
             }
         }
@@ -1586,15 +1731,15 @@ x6plugins.tableController = function(self,id,table) {
         // If save went ok, notify any ui elements, then 
         // fire off a cache save also if required.
         if(retval=='success') {
-            //console.log(retval);
+            x6.console.log(retval);
             x6events.fireEvent('uiRowSaved_'+table,$a.data.row);
             if(this.zCache) {
                 this.zRows[$a.data.row.skey] = $a.data.row;
             }
         }            
         
-        //console.log("tableController saveOK RETURNING: ",retval);
-        //console.groupEnd();
+        x6.console.log("tableController saveOK RETURNING: ",retval);
+        x6.console.groupEnd();
         return retval;
     };
 
@@ -1608,10 +1753,10 @@ x6plugins.tableController = function(self,id,table) {
     */
     x6events.subscribeToEvent('reqUndoRow_'+table,id);
     self['receiveEvent_reqUndoRow_'+table] = function() {
-        //console.group("tableController reqUndoRow");
+        x6.console.group("tableController reqUndoRow");
         var skey = u.bb.vgfGet('skey_'+table);
         if(skey>=0) {
-            //console.log("Skey is >= 0, continuing ",skey);
+            x6.console.log("Skey is >= 0, continuing ",skey);
             $(this).find(":input:not([disabled])[zActive]").each( 
                 function() {
                     this.value = this.zOriginalValue;
@@ -1621,8 +1766,8 @@ x6plugins.tableController = function(self,id,table) {
             );
             x6events.fireEvent('uiUndoRow_'+this.zTable,skey);
         }
-        //console.log("tableController reqUndoRow Finished");
-        //console.groupEnd();
+        x6.console.log("tableController reqUndoRow Finished");
+        x6.console.groupEnd();
         return true;
     }
     
@@ -1635,14 +1780,14 @@ x6plugins.tableController = function(self,id,table) {
     */
     x6events.subscribeToEvent('reqDelRow_'    +table,id);
     self['receiveEvent_reqDelRow_'+table] = function() {
-        //console.group("tableController reqDelRow ",this.zTable);
+        x6.console.group("tableController reqDelRow ",this.zTable);
         var skey = u.bb.vgfGet('skey_'+this.zTable);
         if(this.zSkey<1) {
-            //console.log("nothing being edited, quietly ignoring");
+            x6.console.log("nothing being edited, quietly ignoring");
         }
         else {
             if(confirm("Delete current row?")) {
-                //console.log("sending delete to server");
+                x6.console.log("sending delete to server");
                 ua.json.init('x6page',this.zTable);
                 ua.json.addParm('x6action','delete');
                 ua.json.addParm('skey',skey);
@@ -1652,8 +1797,8 @@ x6plugins.tableController = function(self,id,table) {
                 }
             }
         }
-        //console.log("tableController reqDelRow finished");
-        //console.groupEnd();
+        x6.console.log("tableController reqDelRow finished");
+        x6.console.groupEnd();
         return true;
     }
     
@@ -1714,7 +1859,7 @@ x6plugins.tableController = function(self,id,table) {
     self['receiveEvent_dbFetchRow_'+table] = function(skey) {
         
         if(typeof(this.zRows[skey])=='undefined') {
-            //console.log("tableController bbRow, no row found, fetching");
+            x6.console.log("tableController bbRow, no row found, fetching");
             ua.json.init('x6page',this.zTable);
             ua.json.addParm('x6action','fetchRow');
             ua.json.addParm('x6w_skey',skey);
@@ -1723,8 +1868,8 @@ x6plugins.tableController = function(self,id,table) {
             }
         }
         else {
-            //console.log("tableController bbRow, publishing row "+skey);
-            //console.log("putting onto bb as dbRow_"+this.zTable);
+            x6.console.log("tableController bbRow, publishing row "+skey);
+            x6.console.log("putting onto bb as dbRow_"+this.zTable);
             u.bb.vgfSet('dbRow_'+this.zTable,this.zRows[skey]);
         }
     }
@@ -1752,7 +1897,7 @@ x6plugins.tableController = function(self,id,table) {
         
         // Now only turn buttons on if we have an skey
         var skey = u.bb.vgfGet('skey_'+this.zTable);
-        //console.log("current skey is ",skey);
+        x6.console.log("current skey is ",skey);
         if(permins) {
             x6events.fireEvent('enable_new_' +this.zTable);
             x6events.fireEvent('enable_ins_' +this.zTable);
@@ -1831,7 +1976,7 @@ x6plugins.detailDisplay = function(self,id,table) {
     // is unconditional, it will do what it is told
     x6events.subscribeToEvent('uiEditRow_'+table,id);
     self['receiveEvent_uiEditRow_'+table] = function(skey) {
-        //console.group("detailDisplay uiEditRow",skey);
+        x6.console.group("detailDisplay uiEditRow",skey);
         
         // Ask somebody to publish the row
         x6events.fireEvent('dbFetchRow_'+table,skey);
@@ -1842,8 +1987,8 @@ x6plugins.detailDisplay = function(self,id,table) {
         x6events.fireEvent('uiHideKids_'+this.zTable,this.zTable);
         x6events.fireEvent('uiEnableKids_'+this.zTable,this.zTable);
         
-        //console.log("detailDisplay uiEditRow FINISHED");
-        //console.groupEnd();
+        x6.console.log("detailDisplay uiEditRow FINISHED");
+        x6.console.groupEnd();
     }
         
     // Detail receives an addRow event and interprets it
@@ -1851,15 +1996,15 @@ x6plugins.detailDisplay = function(self,id,table) {
     // grids, a detail display ignores it.
     x6events.subscribeToEvent('uiNewRow_'+table,id);
     self['receiveEvent_uiNewRow_'+table] = function(tabDivBefore) {
-        //console.group("detailDisplay uiNewRow");
+        x6.console.group("detailDisplay uiNewRow");
         this.displayRow('new',{});
         
         // KFD 12/18/08. Fire an event to disable kid tabs
         x6events.fireEvent('uiHideKids_'+this.zTable,this.zTable);
         x6events.fireEvent('uiDisableKids_'+this.zTable,this.zTable);
         
-        //console.log("detailDisplay uiNewRow FINISHED");
-        //console.groupEnd();
+        x6.console.log("detailDisplay uiNewRow FINISHED");
+        x6.console.groupEnd();
     }
 
     /*
@@ -1868,11 +2013,11 @@ x6plugins.detailDisplay = function(self,id,table) {
     */
     x6events.subscribeToEvent('uiRowSaved_'+table,id);
     self['receiveEvent_uiRowSaved_'+table] = function(row) {
-        //console.group("detailDisplay uiRowSaved");
-        //console.log("parms: ",row);
+        x6.console.group("detailDisplay uiRowSaved");
+        x6.console.log("parms: ",row);
         this.displayRow('edit',row);
-        //console.log("detailDisplay uiRowSaved FINISHED");
-        //console.groupEnd();
+        x6.console.log("detailDisplay uiRowSaved FINISHED");
+        x6.console.groupEnd();
     }
     
     /*
@@ -1898,20 +2043,20 @@ x6plugins.detailDisplay = function(self,id,table) {
     */
     x6events.subscribeToEvent('uiDelRow_'+table,id);
     self['receiveEvent_uiDelRow_'+table] = function(skey) {
-        //console.group("detailDisplay uiDelRow",skey);
+        x6.console.group("detailDisplay uiDelRow",skey);
         $(this).find(':input').each(function() {
                 x6inputs.clearOut(this);
         });
         x6events.fireEvent('buttonsOff_'+this.zTable);
         x6events.fireEvent('uiHideKids_'+this.zTable,this.zTable);
         x6events.fireEvent('uiDisableKids_'+this.zTable,this.zTable);
-        //console.log("detailDisplay uiDelRow FINISHED");
-        //console.groupEnd();
+        x6.console.log("detailDisplay uiDelRow FINISHED");
+        x6.console.groupEnd();
     }
 
     self.displayRow = function(mode,row) { 
-        //console.group("detailDisplay displayRow ",mode);
-        //console.log(row);
+        x6.console.group("detailDisplay displayRow ",mode);
+        x6.console.log(row);
         if(mode!='new' && mode!='edit') {
             u.error("Object "+this.id+" has received a 'goMode' event "
                 +"for unhandled mode "+mode+".  Cannot process this "
@@ -1920,9 +2065,8 @@ x6plugins.detailDisplay = function(self,id,table) {
         }
 
         // Set values and remember skey value
-        x6events.fireEvent('buttonsOn_'+this.zTable);
         if(mode=='new')  {
-            //console.log("detail display going into new mode");
+            x6.console.log("detail display going into new mode");
             // For new rows, set defaults, otherwise blank
             // out.
             $(this).find(':input').each(function() {
@@ -1941,6 +2085,7 @@ x6plugins.detailDisplay = function(self,id,table) {
             this.populateInputs(row);
             u.bb.vgfSet('skey_'+this.zTable,row.skey);
         }
+        x6events.fireEvent('buttonsOn_'+this.zTable);
         
         
         // now set the readonly and new flags on all controls
@@ -1966,15 +2111,15 @@ x6plugins.detailDisplay = function(self,id,table) {
         // Now that all displays are done, if we have a tab
         // selector then select it
         var tabSelector = u.p(this,'xTabSelector','');
-        //console.log("tabSelector ",tabSelector);
+        x6.console.log("tabSelector ",tabSelector);
         if(tabSelector != '') {
             var tabIndex = u.p(this,'xTabIndex');
-            //console.log("Tab index ",tabIndex);
+            x6.console.log("Tab index ",tabIndex);
             $(tabSelector).tabs('select', Number(tabIndex));
         }
         
-        //console.log("detailDisplay displayRow FINISHED");
-        //console.groupEnd();
+        x6.console.log("detailDisplay displayRow FINISHED");
+        x6.console.groupEnd();
         return true;
     }
 
@@ -2123,8 +2268,8 @@ x6plugins.x6tabDiv = function(self,id,table) {
     }
     else {
         self['receiveEvent_uiNewRow_'+table] = function(tabDivBefore) {
-            //console.group("tabDiv uiNewRow "+this.zTable);
-            //console.time("tabDiv uiNewRow");
+            x6.console.group("tabDiv uiNewRow "+this.zTable);
+            x6.console.time("tabDiv uiNewRow");
             var skey = u.bb.vgfGet('skey_'+this.zTable,-1);
             
             /*
@@ -2133,8 +2278,8 @@ x6plugins.x6tabDiv = function(self,id,table) {
             */
             if(skey==0 && u.bb.vgfGet('lastSave_'+this.zTable)=='noaction') {
                 $(this.rowId(0)+" :input:first:not([disabled])").focus();
-                //console.log("On an empty new row, setting focus");
-                //console.groupEnd();
+                x6.console.log("On an empty new row, setting focus");
+                x6.console.groupEnd();
                 return;
             }
                                                                                          
@@ -2189,21 +2334,21 @@ x6plugins.x6tabDiv = function(self,id,table) {
             // top or bottom as the case may be
             if(jqRow.length==0) {
                 if(tabDivBefore) {
-                    //console.log("body prepend");
+                    x6.console.log("body prepend");
                     $(this).find('.tbody').prepend(html);                    
                 }
                 else {
-                    //console.log("body append");
+                    x6.console.log("body append");
                     $(this).find('.tbody').append(html);                    
                 }
             }
             else {
                 if(tabDivBefore) {
-                    //console.log("before this row: ",jqRow);
+                    x6.console.log("before this row: ",jqRow);
                     $(jqRow).before(html);
                 }
                 else {
-                    //console.log("after this row: ",jqRow);
+                    x6.console.log("after this row: ",jqRow);
                     $(jqRow).after(html);
                 }
             }
@@ -2225,22 +2370,22 @@ x6plugins.x6tabDiv = function(self,id,table) {
             u.bb.vgfSet('skey_'+this.zTable,0);
             x6events.fireEvent('buttonsOn_'+this.zTable);
             x6tabDiv.removeHighlight(this.zTable);
-            //console.log('New row created, ready to edit');
-            //console.timeEnd("tabDiv uiNewRow");
-            //console.groupEnd();
+            x6.console.log('New row created, ready to edit');
+            x6.console.timeEnd("tabDiv uiNewRow");
+            x6.console.groupEnd();
             return true;
         }
     }
     
    
     self.initInput = function(input,tabIndex,mode,tabGroup) {
-        //console.group("Initializing Input");
-        //console.log("tabindex, mode, tabgroup: ",tabIndex,mode,tabGroup);
-        //console.log(input);
+        x6.console.group("Initializing Input");
+        x6.console.log("tabindex, mode, tabgroup: ",tabIndex,mode,tabGroup);
+        x6.console.log(input);
         
         // Get the read-only decision
         if(mode=='new') {
-            //console.log("hello, ro ins");
+            x6.console.log("hello, ro ins");
             input.disabled = u.p(input,'xroins','N')=='Y';
             
             // Set a default if there
@@ -2248,7 +2393,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
             if(x !='') input.value = x;
         }
         else {
-            //console.log("hello, ro upd");
+            x6.console.log("hello, ro upd");
             input.disabled = u.p(input,'xroupd','N')=='Y';
         }
         
@@ -2273,7 +2418,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
         //      code still expects it.  There is a cleanup task
         //      
         input.zActive = 1;
-        //console.groupEnd();
+        x6.console.groupEnd();
     }
 
 
@@ -2290,19 +2435,19 @@ x6plugins.x6tabDiv = function(self,id,table) {
     }
     else {
         self['receiveEvent_uiEditRow_'+table] = function(skey) {
-            //console.group("tabDiv uiEditRow "+this.zTable);
+            x6.console.group("tabDiv uiEditRow "+this.zTable);
     
             if(u.byId(this.rowId(skey,false))==null) {
             //if( $(this).find('#row_'+skey).length == 0) {
-                //console.log("We don't have that row, cannot edit");
-                //console.groupEnd();
+                x6.console.log("We don't have that row, cannot edit");
+                x6.console.groupEnd();
                 return;
             }
 
             var skeynow = u.bb.vgfGet('skey_'+this.zTable);
             if(skeynow == skey) {
-                //console.log("Grid is already on the row, no action");
-                //console.groupEnd();
+                x6.console.log("Grid is already on the row, no action");
+                x6.console.groupEnd();
                 return;
             }
             
@@ -2319,15 +2464,15 @@ x6plugins.x6tabDiv = function(self,id,table) {
             // border/padding/margin adjusts.
             u.byId(this.rowId(skey,true)).className='selected';
 
-            //console.log("Putting inputs into div cells");
+            x6.console.log("Putting inputs into div cells");
             this.addInputs(skey);
             
             x6tabDiv.removeHighlight(this.zTable);
             u.bb.vgfSet('skey_'+this.zTable,skey);
             x6events.fireEvent('buttonsOn_'+this.zTable);
             //this.keyboardOff();
-            //console.log('uiEditRow Completed, returning true');
-            //console.groupEnd();
+            x6.console.log('uiEditRow Completed, returning true');
+            x6.console.groupEnd();
             return true;
         }
     }
@@ -2376,13 +2521,13 @@ x6plugins.x6tabDiv = function(self,id,table) {
     *
     */
     self.removeInputs = function() {
-        //console.group("tabDiv removeInputs");
+        x6.console.group("tabDiv removeInputs");
         var skey = u.bb.vgfGet('skey_'+this.zTable);
 
         //if( $(this).find('#row_'+skey+' :input').length==0 ) {
         if( $(this.rowId(skey)+' :input').length==0 ) {
-            //console.log("no inputs, doing nothing");
-            //console.groupEnd();
+            x6.console.log("no inputs, doing nothing");
+            x6.console.groupEnd();
             return;
         }
         
@@ -2393,7 +2538,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
         // it does not belong there anymore.
         u.byId(this.rowId(skey,true)).className = '';
 
-        //console.log("skey is ",skey);
+        x6.console.log("skey is ",skey);
         var grid = this;
         //$(this).find("#row_"+skey).removeClass('selected').find("div").each(
         //if( $(this.rowId(skey)+' :input').length==0 ) {
@@ -2406,7 +2551,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
                     var val    = inp.value;
                     var col    = u.p(inp,'xColumnId');
                     var typeid = grid.zColsById[col].type_id;
-                    //console.log(val);
+                    x6.console.log(val);
                     this.innerHTML = x6dd.display(typeid,val,'&nbsp;');
                 }
             }
@@ -2416,19 +2561,19 @@ x6plugins.x6tabDiv = function(self,id,table) {
         // and the last save had no action, kill the row
         if(skey==0) {
             if(u.bb.vgfGet('lastSave_'+this.zTable)=='noaction') {
-                //console.log("No action on last save, removing row ",skey);
+                x6.console.log("No action on last save, removing row ",skey);
                 $(this.rowId(0)).fadeOut(
                     function() { $(this).remove() }
                 );
             }
         }
         
-        //console.log("turning on keyboard events");
+        x6.console.log("turning on keyboard events");
         this.keyboardOn();
         
         // Since we are no longer editing, set skey appropriately
-        //console.log("tabDiv removeInputs Finished");
-        //console.groupEnd();
+        x6.console.log("tabDiv removeInputs Finished");
+        x6.console.groupEnd();
         return true;
     }
     
@@ -2439,9 +2584,9 @@ x6plugins.x6tabDiv = function(self,id,table) {
     if(uiEditRow=='Y' || uiNewRow=='Y') {
         x6events.subscribeToEvent('uiUndoRow_'+table,id);
         self['receiveEvent_uiUndoRow_'+table] = function(skey) {
-            //console.group('tabDiv uiUndoRow ',skey);
+            x6.console.group('tabDiv uiUndoRow ',skey);
             if(skey!=0) {
-                //console.log("Skey is not zero, resetting values");
+                x6.console.log("Skey is not zero, resetting values");
                 //$(this).find('#row_'+skey+' :input').each(
                 $(this.rowId(skey)+' :input').each(
                     function() {
@@ -2451,21 +2596,21 @@ x6plugins.x6tabDiv = function(self,id,table) {
                 );
             }
             else {
-                //console.log("Skey is zero, removing row");
+                x6.console.log("Skey is zero, removing row");
                 this.removeInputs();
                 var iBefore = u.bb.vgfGet('skeyBefore_'+this.zTable,-1);
                 var iAfter  = u.bb.vgfGet('skeyAfter_' +this.zTable,-1);
-                //console.log(iBefore,iAfter);
+                x6.console.log(iBefore,iAfter);
                 if     (iBefore!=-1) skeyNew = iBefore;
                 else if(iAfter !=-1) skeyNew = iAfter;
                 else skeyNew = -1;
                 if(skeyNew!=-1){
-                    //console.log("Picked this row to edit: ",skeyNew);
+                    x6.console.log("Picked this row to edit: ",skeyNew);
                     x6events.fireEvent('reqEditRow_'+this.zTable,skeyNew);
                     //$(this).find('#row_'+skeyNew).mouseover();
                 }
             }
-            //console.groupEnd();
+            x6.console.groupEnd();
         }
     }
     else if(self.kbOnEdit) {
@@ -2484,26 +2629,26 @@ x6plugins.x6tabDiv = function(self,id,table) {
     */
     x6events.subscribeToEvent('uiRowSaved_'+table,id);
     self['receiveEvent_uiRowSaved_'+table] = function(row) {
-        //console.group("tabDiv uiRowSaved: "+this.zTable);
+        x6.console.group("tabDiv uiRowSaved: "+this.zTable);
         // Replace the input values with server returned values
         skey = u.bb.vgfGet('skey_'+this.zTable);
         //if( $(this).find("#row_"+skey+" :input").length > 0) {
         if( $(this.rowId(skey)+' :input').length > 0) {
-            //console.log($(this).find("#row_"+skey+" :input"));
-            //console.log("found inputs, going rowSavedEdit");
+            x6.console.log($(this).find("#row_"+skey+" :input"));
+            x6.console.log("found inputs, going rowSavedEdit");
             this.uiRowSavedEdit(row);
             var skeyNew = skey==0 ? row.skey : skey;
             x6events.fireEvent('reqEditRow_'+this.zTable,skeyNew);
         }
         else {
-            //console.log("no inputs, going rowSavedNoEdit");
+            x6.console.log("no inputs, going rowSavedNoEdit");
             this.uiRowSavedNoEdit(row);
             if(this.kbOnEdit) {
                 this.keyboardOn();
             }
         }
-        //console.log("tabDiv uiRowSaved finished, returning TRUE");
-        //console.groupEnd();
+        x6.console.log("tabDiv uiRowSaved finished, returning TRUE");
+        x6.console.groupEnd();
     }
     
     self.uiRowSavedEdit = function(row) {
@@ -2514,7 +2659,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
             function() {
                 var col    = u.p(this,'xColumnId');
                 var typeid = grid.zColsById[col].type_id;
-                //console.log(col,row[col]);
+                x6.console.log(col,row[col]);
                 this.value = x6dd.display(typeid,row[col],'');
                 this.zOriginalValue = this.value;
             }
@@ -2525,7 +2670,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
         
         // If this was a new row, set it up
         if(skey==0) {
-            //console.log("Was new row, setting up the row for editing");
+            x6.console.log("Was new row, setting up the row for editing");
             table = this.zTable;
             /*
             $(this).find("#row_0").each(
@@ -2542,13 +2687,13 @@ x6plugins.x6tabDiv = function(self,id,table) {
         
     self.uiRowSavedNoEdit = function(row) {
         var skey = row.skey;
-        //console.log("in uirowsavednoedit ",row);
+        x6.console.log("in uirowsavednoedit ",row);
         
         // If a new row has been saved and we don't 
         // have it, create it now
         //if($(this).find('.tbody #row_'+skey).length==0) {
         if($(this.rowId(skey)).length==0) {   
-            //console.log("tabDiv does not have row, adding");
+            x6.console.log("tabDiv does not have row, adding");
             var newRow = 
                 "<div id='"+this.rowId(row.skey,true)+"'"
                 +" style='display:none'>";
@@ -2566,7 +2711,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
                 newRow+=row[colInfo.column_id]+"</div>";
             }
             newRow+="</div>";
-            //console.log(newRow);
+            x6.console.log(newRow);
             $(this).find('.tbody').prepend(newRow);
             this.initRow(skey);
             $(this.rowId(skey)).fadeIn();
@@ -2611,23 +2756,23 @@ x6plugins.x6tabDiv = function(self,id,table) {
     */
     x6events.subscribeToEvent('uiDelRow_'+table,id);
     self['receiveEvent_uiDelRow_'+table] = function() {
-        //console.group("tabDiv uiDelRow "+this.zTable);
+        x6.console.group("tabDiv uiDelRow "+this.zTable);
         skey = u.bb.vgfGet('skey_'+this.zTable);
-        //console.log("current skey ",skey);
+        x6.console.log("current skey ",skey);
         
         if(this.kbOnEdit) {
             this.keyboardOn();
             $(this.rowId(skey)).fadeOut('fast',function() { $(this).remove()});
             if(this.x6profile=='twosides') {
-                //console.log("Twosides profile, exiting after keyboardOn()");
-                //console.groupEnd();
+                x6.console.log("Twosides profile, exiting after keyboardOn()");
+                x6.console.groupEnd();
                 return;
             }
         }
         
         if(skey!=-1) {
             var hilightRow = false;
-            //console.log("Determining row to highlight afer removing");
+            x6.console.log("Determining row to highlight afer removing");
             var jqCandidate = $(this.rowId(skey)).next();
             if(jqCandidate.length>0) {
                 var hilightRow = jqCandidate;
@@ -2641,11 +2786,11 @@ x6plugins.x6tabDiv = function(self,id,table) {
         }
         
         if(skey==-1) {
-            //console.log("No row, ignoring");
+            x6.console.log("No row, ignoring");
             return;
         }
         else if(skey==0) {
-            //console.log("on a new row, firing cancelEdit command");
+            x6.console.log("on a new row, firing cancelEdit command");
             x6events.fireEvent('cancelEdit_'+this.zTable);
         }
         else {
@@ -2658,15 +2803,15 @@ x6plugins.x6tabDiv = function(self,id,table) {
             x6events.fireEvent('buttonsOff_'+this.zTable);
         }
         if(!hilightRow) {
-            //console.log("No candidate row to hilight");
+            x6.console.log("No candidate row to hilight");
         }
         else {
-            //console.log("Will hilight this row: ",hilightRow);
+            x6.console.log("Will hilight this row: ",hilightRow);
             var skey = this.skeyForRow(hilightRow[0]);
             x6events.fireEvent('reqEditRow_'+this.zTable,skey);
         }
-        //console.log("uiDelRow finished");
-        //console.groupEnd();
+        x6.console.log("uiDelRow finished");
+        x6.console.groupEnd();
     }
     
     /*
@@ -2676,13 +2821,13 @@ x6plugins.x6tabDiv = function(self,id,table) {
     if(uiEditRow=='Y' || uiNewRow=='Y') {
         x6events.subscribeToEvent('uiShowErrors_'+table,id);
         self['receiveEvent_uiShowErrors_'+table] = function(errors) {
-            //console.group("tabDiv uiShowErrors");
-            //console.log(errors);
+            x6.console.group("tabDiv uiShowErrors");
+            x6.console.log(errors);
             for(var idx in errors) {
-                //console.log(errors[idx]);
+                x6.console.log(errors[idx]);
                 var aError = errors[idx].split(':');
                 var column = aError[0];
-                //console.log("Setting zError for column ",column);
+                x6.console.log("Setting zError for column ",column);
                 $(this).find(":input[xColumnId="+column+"]").each(
                     function() {
                         this.zError = 1;
@@ -2690,8 +2835,8 @@ x6plugins.x6tabDiv = function(self,id,table) {
                     }
                 );
             }
-            //console.log("tabDiv uiShowErrors finished");
-            //console.groupEnd();
+            x6.console.log("tabDiv uiShowErrors finished");
+            x6.console.groupEnd();
             return true;
         }
     }
@@ -2700,36 +2845,36 @@ x6plugins.x6tabDiv = function(self,id,table) {
     *    Keyboard handling: row navigation
     */
     self.receiveEvent_key_UpArrow = function(e) {
-        //console.group("tabDiv key_UpArrow");
+        x6.console.group("tabDiv key_UpArrow");
         var jqCurrent = this.jqCurrentRow();
         var jqRowPrev = $(jqCurrent).prev();
         if(jqCurrent.length==0) {
-            //console.log("current is zero, going to top");
+            x6.console.log("current is zero, going to top");
             this.goRowTop();
         }
         else if(jqRowPrev.length!=0) {
-            //console.log("there is a previous, going to that");
+            x6.console.log("there is a previous, going to that");
             this.goRowJq(jqRowPrev);
             this.scrollMove(-1);
         }
         else {
             // KFD 12/8/08, if new rows are inline, do it
             if(u.p(this,'uiNewRow','N')=='Y') {
-                //console.log("requesting new row, forcing insert before");
+                x6.console.log("requesting new row, forcing insert before");
                 x6events.fireEvent('reqNewRow_'+this.zTable,true);
             }
         }
         return false;
         //x6events.retvals['key_UpArrow'] =false;
-        //console.log("tabDiv key_UpArrow finished");
-        //console.groupEnd();
+        x6.console.log("tabDiv key_UpArrow finished");
+        x6.console.groupEnd();
     }
     self.receiveEvent_key_DownArrow = function(e) {
-        //console.group("tabDiv key_DownArrow");
-        //console.log(e);
+        x6.console.group("tabDiv key_DownArrow");
+        x6.console.log(e);
         var jqCurrent = this.jqCurrentRow();
         var jqRowNext = $(jqCurrent).next();
-        //console.log(jqCurrent,jqRowNext);
+        x6.console.log(jqCurrent,jqRowNext);
         if(jqCurrent.length==0) {
             this.goRowTop();
         }
@@ -2744,12 +2889,12 @@ x6plugins.x6tabDiv = function(self,id,table) {
             }
         }
         //x6events.retvals['key_DownArrow'] =false;
-        //console.log("tabDiv key_DownArrow finished");
-        //console.groupEnd();
+        x6.console.log("tabDiv key_DownArrow finished");
+        x6.console.groupEnd();
         return false;
     }
     self.receiveEvent_key_PageUp = function(e) {
-        //console.group("tabDiv key_DownArrow");
+        x6.console.group("tabDiv key_DownArrow");
         var jqCurrent = this.jqCurrentRow();
         var jqRowPrev = $(jqCurrent).prevAll();
         if(jqCurrent.length==0) {
@@ -2766,11 +2911,11 @@ x6plugins.x6tabDiv = function(self,id,table) {
             this.scrollMove(-rowsChange);
         }
         x6events.retvals['key_PageUp'] =false;
-        //console.log("tabDiv key_DownArrow finished");
-        //console.groupEnd();
+        x6.console.log("tabDiv key_DownArrow finished");
+        x6.console.groupEnd();
     }
     self.receiveEvent_key_PageDown = function(e) {
-        //console.group("tabDiv key_DownArrow");
+        x6.console.group("tabDiv key_DownArrow");
         var jqCurrent = this.jqCurrentRow();
         var jqRowNext = $(jqCurrent).nextAll();
         if(jqCurrent.length==0) {
@@ -2788,8 +2933,8 @@ x6plugins.x6tabDiv = function(self,id,table) {
             this.scrollMove(rowsChange);
         }
         x6events.retvals['key_PageDown'] =false;
-        //console.log("tabDiv key_DownArrow finished");
-        //console.groupEnd();
+        x6.console.log("tabDiv key_DownArrow finished");
+        x6.console.groupEnd();
     }
     self.receiveEvent_key_CtrlHome = function(e) {
         this.goRowTop();
@@ -2803,14 +2948,14 @@ x6plugins.x6tabDiv = function(self,id,table) {
         $(this).find('.tbody').animate({scrollTop:stNew},400);
     }
     self.receiveEvent_key_Enter = function(e) {
-        //console.group("tabDiv key_Enter - clicking hilighted rows");
+        x6.console.group("tabDiv key_Enter - clicking hilighted rows");
         if(u.p(this,'x6profile')!='x6tabDiv') {
             $(this).find('.tbody div.hilight').click();
         }
         //var jqRow = $(this).find('div.hilight')[0];
         //var skey  = this.skeyForRow(jqRow);
         //x6events.fireEvent('reqEditRow_'+this.zTable,skey);
-        //console.groupEnd();
+        x6.console.groupEnd();
     }
     
     /*
@@ -2826,13 +2971,13 @@ x6plugins.x6tabDiv = function(self,id,table) {
         }
     }
     self.goRowBySkey = function(skey) {
-        //console.log('goRowBySkey ',skey);
+        x6.console.log('goRowBySkey ',skey);
         if( u.p(this,'uiEditRow','')=='Y') {
-            //console.log("We can edit, firing reqEditRow");
+            x6.console.log("We can edit, firing reqEditRow");
             x6events.fireEvent('reqEditRow_'+this.zTable,skey);
         }
         else {
-            //console.log("We do not edit, hilighting");
+            x6.console.log("We do not edit, hilighting");
             x6tabDiv.mouseover(u.byId(this.rowId(skey,true)));
             //$(this).find('.hilight').removeClass('.hilight');
             //$(this).find('#row_'+skey).addClass('.hilight');
@@ -2841,14 +2986,14 @@ x6plugins.x6tabDiv = function(self,id,table) {
     self.goRow = function(ordinal) {
         var row = $(this).find('.tbody > div')[ordinal];
         var skey= this.skeyForRow(row);
-        //console.log("goRow for ",ordinal,' has picked skey ',skey);
+        x6.console.log("goRow for ",ordinal,' has picked skey ',skey);
         this.goRowBySkey(skey);
     }
     self.goRowJq = function(jqRow) {
         var skey = this.skeyForRow(jqRow[0]);
-        //console.log("goRow by jQuery object ");
-        //console.log(jqRow);
-        //console.log(skey);
+        x6.console.log("goRow by jQuery object ");
+        x6.console.log(jqRow);
+        x6.console.log(skey);
         this.goRowBySkey(skey);
     }
     self.goRowTop = function() {
@@ -2890,7 +3035,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
             }
         }
         if(stAdjust!=0) {
-            //console.log(stAdjust);
+            x6.console.log(stAdjust);
             var stNew     = scrollNow + stAdjust;
             //$(this).find('.tbody').scrollTop(stNow + stAdjust);
             $(this).find('.tbody').animate({scrollTop:stNew},200);
@@ -2923,13 +3068,15 @@ x6plugins.x6tabDiv = function(self,id,table) {
         }
         this.keyboardStatus = 'Off';
     }
+    
+    
+    // This initialization code always runs
     this.keyboardStatus = 'Off'
-    //if(u.p(self,'xInitKeyboard','N')=='Y') {
-        self.keyboardOn();
-        if(uiEditRow=='Y') {
-            x6events.fireEvent('key_DownArrow'); 
-        }
-    //}
+    self.keyboardOn();
+    if(uiEditRow=='Y') {
+        x6events.fireEvent('key_DownArrow'); 
+    }
+    x6events.fireEvent('buttonsOn_'+table);
 
 
     
@@ -3179,7 +3326,7 @@ x6tabs = {
         json.addParm('xSortable' ,'Y'          );
         json.addParm('xReturnAll','Y'          );
         json.addParm('xGridHeight',newHeight-2  ); // assume borders
-        //console.log(json);
+        x6.console.log(json);
         //html = json.execute(false,false,true);
         //pane.innerHTML = html;
         //var tabDiv = $(pane).find('[x6plugin=x6tabDiv]')[0];
@@ -3222,7 +3369,7 @@ x6plugins.x6tabs = function(self,id,table) {
         x6events.subscribeToEvent('uiHideKids_'+table,id);
         self['receiveEvent_uiHideKids_'+table] = function(tableId) {
             var str = '#kids_'+tableId+" > ul";
-            //console.log(str);
+            x6.console.log(str);
             $(str).tabs("select",0);
         }
         
@@ -3256,8 +3403,8 @@ x6plugins.x6tabs = function(self,id,table) {
         x6events.subscribeToEvent('key_Ctrl'+x.toString(),self.id);
         self['receiveEvent_key_Ctrl'+x.toString()] = function(key) {
             //return;
-            //console.time("tabs key");
-            //console.time("checking for visible");
+            x6.console.time("tabs key");
+            x6.console.time("checking for visible");
             // Abort if he is not really visible, this is the
             // easiest way to do this, and we don't have to 
             // keep track of whether or not it is visible.
@@ -3277,7 +3424,7 @@ x6plugins.x6tabs = function(self,id,table) {
                     return;
                 }
             }
-            //console.timeEnd("checking for visible");
+            x6.console.timeEnd("checking for visible");
             
             // get the offset, the keystroke, 
             // and calculate the index.
@@ -3286,7 +3433,7 @@ x6plugins.x6tabs = function(self,id,table) {
             var index  = (key - offset);
             var str = '#'+this.id+' > ul';
             $(str).tabs('select',index);
-            //console.timeEnd("tabs key");
+            x6.console.timeEnd("tabs key");
         }
     }
     
@@ -3348,5 +3495,64 @@ x6plugins.x6tabs = function(self,id,table) {
             delete json;
         }
     }
+}
+
+/***im* x6plugins/androPage
+*
+* NAME
+*   x6plugins.androPage
+*
+* FUNCTION
+*   The Javascript method x6plugins.androPage implements
+*   all browser-side functionality for Andromeda's built-in
+*   'androPage' inquiry system.
+*
+*   This routine is called automatically by x6.init, there
+*   is not usually any reason for calling this routine
+*   directly.
+*
+* INPUTS
+*   self - the DOM object to be activated.
+*   id - the ID of the object to be 'activated'.
+*   table - the database table that the tabDiv is handling.
+*
+* RESULTS
+*   no return value.
+*
+******
+*/
+x6plugins.androPage = function(self,id,table) {
+    self.zTable    = table;
+    
+    x6events.subscribeToEvent('key_CtrlP',id);
+    self.receiveEvent_key_CtrlP = function(key) {
+        u.byId('gp_post').value='pdf';
+        ua.json.init('x6page',u.byId('x6page').value);
+        ua.json.inputs();
+        ua.json.windowLocation();
+        return false;
+    }
+
+    x6events.subscribeToEvent('key_CtrlE',id);
+    self.receiveEvent_key_CtrlE = function(key) {
+        u.byId('gp_post').value='csvexport';
+        ua.json.init('x6page',u.byId('x6page').value);
+        ua.json.inputs();
+        ua.json.windowLocation();
+        return false;
+    }
+
+    x6events.subscribeToEvent('key_CtrlO',id);
+    self.receiveEvent_key_CtrlO = function(key) {
+        this.tBody = null;
+        
+        u.byId('gp_post').value='onscreen';
+        ua.json.init('x6page',u.byId('x6page').value);
+        ua.json.inputs();
+        ua.json.execute();
+        $a.json.process('divOnScreen');
+        
+    }
+
 }
 
