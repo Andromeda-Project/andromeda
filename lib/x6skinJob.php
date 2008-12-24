@@ -13,9 +13,9 @@ class x6skinJob extends androX6 {
         </p>
         
         <p>The default skin is defined in 
-           /templates/x6/x6skin.Default.yaml.  Additional
+           /templates/x6/skinsources/x6skin.Default.yaml.  Additional
            skins that are included with Andromeda are
-           also in the /templates/x6 directory.
+           also in the /templates/x6/skinsources directory.
         </p>
         
         <p>You can define your own skins in your application
@@ -24,7 +24,7 @@ class x6skinJob extends androX6 {
            file, afterwhich you can change anything you like.
         
         <p>Finally, the program writes a serialized array
-           into apppub/skins.serialized.txt, which
+           into /templates/x6/skins/skins.serialized.txt, which
            contains the names and descriptions of all
            generated skins.  This is used by the template 
            to produce an HTML SELECT that displays the
@@ -55,12 +55,11 @@ class x6skinJob extends androX6 {
         
         # Define the directories
         $dirx6   = fsDirTop().'templates/x6/';
+        $dirx6src= $dirx6.'skinsources/';
         $dirapp  = fsDirTop().'application/';
-        $dirclib = fsDirTop().'clib/';
-        $dirgen  = fsDirTop().'generated/';
 
         # Now scan for other skins and process those
-        $dirs = array($dirx6,$dirapp);
+        $dirs = array($dirx6src,$dirapp);
         foreach($dirs as $dir) {
             $files = scandir($dir);
             
@@ -137,7 +136,7 @@ class x6skinJob extends androX6 {
         
         # Finally, write the list of skins out to apppub
         file_put_contents(
-            fsDirTop().'generated/x6skins.ser.txt'
+            fsDirTop().'templates/x6/skinsphp/x6skins.ser.txt'
             ,serialize($skinFiles)
         );
 
@@ -281,9 +280,9 @@ class x6skinJob extends androX6 {
             }
             echo "}\n\n";
         }
-        $filename = fsDirTop()."clib/x6skin.$skin.$color.$size.css";
+        $filename 
+            = fsDirTop()."templates/x6/skins/x6skin.$skin.$color.$size.css";
         $cssDone = ob_get_clean();
-        hprint_r($cssDone);
         file_put_contents($filename,$cssDone);
         
         # Another job, write out the CSS as a serialized
@@ -293,11 +292,17 @@ class x6skinJob extends androX6 {
         # constants by their nicknames.
         #
         $phpStuff = array('defines'=>$constants,'css'=>$cssFinal);
-        $filename = fsDirTop()."generated/x6skin.$skin.$color.$size.ser.txt";
+        $filename = fsDirTop()
+            ."templates/x6/skinsphp/x6skin.$skin.$color.$size.ser.txt";
         file_put_contents($filename,serialize($phpStuff));
     }
 
     
+    # ==================================================================
+    #
+    # Earlier version of code, throw away after Jan 1, 2008
+    #
+    # ==================================================================
     
     
     function throwaway() {

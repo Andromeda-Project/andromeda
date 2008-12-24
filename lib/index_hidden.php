@@ -339,10 +339,8 @@ if(SessionGet('ROOT')==1) {
     if(class_exists('FirePHP')) {
         # notice this is a global
         $firephp = FirePHP::getInstance(true);
-        #$firephp-> *
  
         require_once('FirePHPCore/fb.php');
-        #FB:: *
         
         if(gp('json')==1) {
             $firephp->registerErrorHandler();
@@ -381,9 +379,6 @@ if(gp('x4Page')=='' && gp('gp_page')=='') {
         if($x4menu=='Y' && LoggedIn()) {
             gpSet('x4Page','menu');
         }
-        if(configGet('flag_x6','N')=='Y' && !gp('x6page',false)) {
-            gpSet('x6page','menu');
-        }
     }
 }
 
@@ -397,6 +392,9 @@ if(    gpExists('gp_command')) index_hidden_command();
 # KFD 10/17/08.  x6 Page Resolution
 #
 #
+$x6template= configGet('x6_template','');
+$x6group   = configGet('x6_group'   ,'');
+
 $x6page    = '';
 $x6file    = '';
 $x6yaml    = '';
@@ -409,7 +407,22 @@ $x6action  = '';
 # Get a candidate page to use to figure out the resolution
 $x6cand = gp('x6page');
 if($x6cand=='') {
-    $x6cand= gp('x4Page',gp('gp_page'));
+    # If the x6template setting has been made, this is an
+    # x6 system.  The lack of a page for a non-public
+    # logged in user means menu
+    $x6template= configGet('x6_template','');
+    $x6group   = configGet('x6_group'   ,'');
+    if($x6template!='') {
+        if(LoggedIn() && !inGroup($x6group)) {
+            $x6cand= gp('x4Page',gp('gp_page'));
+            if($x6cand=='') {
+                $x6cand='menu';
+            }
+        }
+    }
+}
+if($x6cand!='') {
+    $x6page = $x6cand;
 }
 
 # Work out if any x6 factor has been specified or exists.
@@ -421,13 +434,6 @@ $x = "x6$x6cand.php";
 if(file_exists_incpath($x)) {
     $x6file = $x;
 }
-
-# a Yaml file for this page
-# KFD 12/14/08, never implemented this, rem'd out
-#$x = $x6cand.'.x6.yaml';
-#if(file_exists_incpath($x)) {
-#    $x6yaml = $x;
-#}
 
 # A profile for this page specified either in the dd.yaml
 # or overridden in applib.
@@ -442,11 +448,6 @@ if(function_exists('app_x6profiles')) {
 if(isset($GLOBALS['AG']['x6profiles'][$x6cand])) {
     $x6profile = $GLOBALS['AG']['x6profiles'][$x6cand];
 }
-#else {
-#    if(configGet('flag_x6','N')=='Y' && $x6cand!='menu') {
-#        $x6profile = 'conventional';
-#    }
-#}
 
 # the action is always taken directly from request variables,
 # 
@@ -458,7 +459,7 @@ $x6plugin = gp('x6plugIn');
 #               out fine if the template is x6, which builds a menu
 #               full of x6 stuff.  No more resolution.
 # Now if any of those were not empty, x6 it is
-$x6page = gp('x6page');
+#$x6page = gp('x6page');
 #if(gp('x6Page').$x6file.$x6yaml.$x6profile.$x6plugin.$x6action<>'') {
 #    $x6page = $x6cand;
 #}
@@ -540,7 +541,7 @@ function index_hidden_x6Dispatch(
     $x6skin = arr($_COOKIE,'x6skin','Default.Gray.1024');
     setCookie('x6skin',$x6skin);
     if($x6skin!='') {
-        $filename  = fsDirTop()."generated/x6skin.$x6skin.ser.txt";
+        $filename  = fsDirTop()."templates/x6/skinsphp/x6skin.$x6skin.ser.txt";
         if(file_exists($filename)) {
             $serialized=file_get_contents($filename);
             $GLOBALS['AG']['x6skin'] = unserialize($serialized);
@@ -575,8 +576,6 @@ function index_hidden_x6Dispatch(
         }
         return;
     }
-    
- 
 
     # Include the basic x6 class, and set a default for
     # the class and the method call
@@ -619,15 +618,23 @@ function index_hidden_x6Dispatch(
             $x6method = $x6action;
         }
         else {
-            # Now we must be loading a page, because no plugin was
-            # specified and no action.  At this point all that is
-            # left to figure out is whether we load a profile or
-            # go for the default "x6main" routine.
-            if($x6profile<>'') {
-                $x6method = 'profile_'.$x6profile;
+            # KFD 12/22/08.  Support for androPage! Extremely important!
+            if(file_exists("application/$x6page.page.yaml")) {
+                $x6class = 'androPage';
+                $x6method= 'x6main';
+                include('androPage.php');
             }
             else {
-                $x6method = 'x6main';
+                # Now we must be loading a page, because no plugin was
+                # specified and no action.  At this point all that is
+                # left to figure out is whether we load a profile or
+                # go for the default "x6main" routine.
+                if($x6profile<>'') {
+                    $x6method = 'profile_'.$x6profile;
+                }
+                else {
+                    $x6method = 'x6main';
+                }
             }
             
             # If we are loading a page, we need the x6 javascript
@@ -647,10 +654,6 @@ function index_hidden_x6Dispatch(
     if($x6method=='x6main' && $x6class=='androX6') {
         $x6method = 'profile_conventional';
     }
-    
-    # Ken's debugging code to make sure resolution worked
-    #echo "<br/>class -$x6class- method -$x6method-";
-    #exit;
     
     # Now everything is resolved.  We know what class to instantiate
     # and what method to call, so go for it.
@@ -1664,9 +1667,26 @@ function index_hidden_page() {
 
 
 function index_hidden_template($mode) {
-    # KFD 7/23/08.  Pull a configuration setting if they
-    #               made one
-    $candidate = configGet('cf_template');
+    # KFD 12/22/08. The "x6_template" setting will override
+    #               the older "cf_template" setting.  The idea
+    #               is to pick that template if we have a public
+    #               user, but pick x6 if not.
+    $x6template= configGet('x6_template','');
+    $x6group   = configGet('x6_group'   ,'');
+    if($x6template != '') {
+        if(LoggedIn() && !inGroup($x6group)) {
+            $candidate = 'x6';
+        }
+        else {
+            $candidate = $x6template;
+        }
+    }
+    else {
+        
+        # KFD 7/23/08.  Pull a configuration setting if they
+        #               made one
+        $candidate = configGet('cf_template');
+    }
     
     # KFD 7/23/08. Give application a chance to 
     #              play with setting

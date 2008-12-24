@@ -8,7 +8,7 @@ $cookie = arr($_COOKIE,'x6skin','Default.Gray.1024');
 ?>
 <link    rel="stylesheet"
        x6skin="Y"
-        href="clib/x6skin.<?=$cookie?>.css" />
+        href="templates/x6/skins/x6skin.<?=$cookie?>.css" />
         
 <?php include 'androHTMLHead.php' ?>
 </head>
