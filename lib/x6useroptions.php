@@ -89,16 +89,53 @@ JS;
         );
         
         $a = $tab2->h('a-void','Detect console devices');
-        $a->code['onclick'] = "x6consoleActivate()";
-        $tab2->hr(2);
+        $a->code['click'] = <<<JS
+        function(input) {
+            var msg = x6consoleActivate();
+            if(msg==false) {
+                alert("No console devices found, logging is disabled");
+            }
+            else {
+                alert(msg);
+            }
+        }
+JS;
+        $tab2->br(2);
         
-        
+        $loptions = array(
+            'Group'=>'Grouping of Logging Messages'
+            ,'Log'=>'Detail Logging Messages'
+            ,'Warn'=>'Warnings'
+            ,'Info'=>'Informational'
+            ,'Error'=>'Errors'
+            ,'Time'=>'Time start/end (requires firebug)'
+        );
+        foreach($loptions as $loption=>$description) {
+            $input = html('input');
+            $input->hp['type'] = 'checkbox';
+            $input->hp['command']= $loption;
+            $input->code['click'] = <<<JS
+            function(input) {
+                var command = u.p(input,'command');
+                var checked = input.checked;
+                if(checked) {
+                    x6.console['enable'+command] = true;
+                    createCookie('log_'+command,1);
+                }
+                else {
+                    x6.console['enable'+command] = false;
+                    eraseCookie('log_'+command);
+                }
+            }
+JS;
+            if(arr($_COOKIE,'log_'.$loption,0)==1) {
+                $input->hp['checked'] = 'checked';
+            }
+            $tab2->addChild($input);
+            $tab2->h('span',$description);
+            $tab2->br();
             
-        
-
-        
-        
-        
+        }
         # --------------------------------------------------------------
         # End of the line
         # --------------------------------------------------------------

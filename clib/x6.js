@@ -226,21 +226,22 @@ var x6 = {
         timeEnd: function(args) { },
         group:   function(args) { },
         groupEnd:function(args) { },
-        _log:     function(x1,x2,x3,x4,x5,x6,x7) {
+        _log:     function(fnname,x1,x2,x3,x4,x5,x6,x7) {
+            if(typeof(x1)=='string') x1 = this.indent + x1;
             if(typeof(x2)=='undefined') 
-                console.log(x1);
+                console[fnname](x1);
             else if (typeof(x3)=='undefined')
-                console.log(x1,x2);
+                console[fnname](x1,x2);
             else if (typeof(x4)=='undefined')
-                console.log(x1,x2,x3);
+                console[fnname](x1,x2,x3);
             else if (typeof(x5)=='undefined')
-                console.log(x1,x2,x3,x4);
+                console[fnname](x1,x2,x3,x4);
             else if (typeof(x6)=='undefined')
-                console.log(x1,x2,x3,x4,x5);
+                console[fnname](x1,x2,x3,x4,x5);
             else if (typeof(x7)=='undefined')
-                console.log(x1,x2,x3,x4,x5,x6);
+                console[fnname](x1,x2,x3,x4,x5,x6);
             else
-                console.log(x1,x2,x3,x4,x5,x6,x7);
+                console[fnname](x1,x2,x3,x4,x5,x6,x7);
         },   
     }
 }
@@ -249,7 +250,7 @@ var x6 = {
 
    Run-time creation of specialized functions on
    the x6.console object.  These are cross-compatible between
-   firebug and 
+   firebug and blackbird.
    
 \* **************************************************************** */
 function x6consoleActivate() {
@@ -262,15 +263,17 @@ function x6consoleActivate() {
         x6.console.timeEnd= function(args) { }
         x6.console.group=   function(args) { }
         x6.console.groupEnd=function(args) { }
-        alert("No console devices found, logging is disabled");
-        return;
+        return false;
     }
+    
+    var retval = 'Found: console (yes), '
         
     // Firebug defines "x6.console.group", but blackbird does
     // not.  So if we cannot find x6.console.group we create
     // functions that do indenting instead.
     //
-    if(typeof(x6.console.group)=='undefined') {
+    if(typeof(console.group)=='undefined') {
+        retval+=" console.group (no), ";
         x6.console.group = function(x) {
             if(!this.groupEnable) return;
             this._log(x);
@@ -288,67 +291,66 @@ function x6consoleActivate() {
                 }
             }
         }
-        
-    
-        
-    }
-    
-    if(true) {
-        x6.console.log = function(x1,x2,x3,x4,x5,x6,x7) {
-            if(this.enableLog) {
-                this._log(this.indent+x1,x2,x3,x4,x5,x6,x7);    
-            }
-        }
-        x6.console.warn = function(x) {
-            if(this.enableWarn) console.warn(this.indent+x);   
-        }
-        x6.console.info = function(x) {
-            if(this.enableInfo) console.info(this.indent+x);   
-        }
-        x6.console.error = function(x) {
-            if(this.enableError) console.error(this.indent+x);   
-        }
-        
-
-        if(typeof(console.time)!='undefined') {
-            x6.console.time = function(x) {
-                if(this.enableTime) console.time(this.indent+x);
-            }
-            x6.console.timeEnd = function(str) {
-                if(this.enableTime) console.timeEnd(this.indent+x);
-            }
-        }
     }
     else {
-        x6.console.log = function(x) {
-            if(this.enableLog) console.log(x);   
-        }
-        x6.console.warn = function(x) {
-            if(this.enableWarn) console.warn(x);   
-        }
-        x6.console.info = function(x) {
-            if(this.enableInfo) console.info(x);   
-        }
-        x6.console.error = function(x) {
-            if(this.enableError) console.error(x);   
-        }
+        retval+=" console.group (yes), ";
         x6.console.group = function(x) {
             if(this.enableGroup) console.group(x);
         }
         x6.console.groupEnd = function(x) {
             if(this.enableGroup) console.groupEnd(x);
         }
-        if(typeof(console.time)!='undefined') {
-            x6.console.time = function(x) {
-                if(this.enableTime) console.time(x);
-            }
-            x6.console.timeEnd = function(str) {
-                if(this.enableTime) console.timeEnd(x);
-            }
+    }
+
+    if(typeof(console.time)=='undefined') {
+        retval+=" console.time/console.timeEnd (no) ";
+        x6.console.time    = function(x) { }
+        x6.console.timeEnd = function(x) { }
+    }
+    else {
+        retval+=" console.time/console.timeEnd (yes) ";
+        x6.console.time = function(x) {
+            if(this.enableTime) console.time(x);
+        }
+        x6.console.timeEnd = function(x) {
+            if(this.enableTime) console.timeEnd(x);
         }
     }
+    
+    
+    // These are the normal ones.  They all route to 
+    // a function that figures out how many parameters
+    // were passed in executes the appropriate commands.
+    x6.console.log = function(x1,x2,x3,x4,x5,x6,x7) {
+        if(this.enableLog) {
+            this._log('log',x1,x2,x3,x4,x5,x6,x7);    
+        }
+    }
+    x6.console.warn = function(x1,x2,x3,x4,x5,x6,x7) {
+       if(this.enableWarn) {
+            this._log('warn',x1,x2,x3,x4,x5,x6,x7);    
+        }
+     }
+    x6.console.info = function(x1,x2,x3,x4,x5,x6,x7) {
+       if(this.enableInfo) {
+            this._log('info',x1,x2,x3,x4,x5,x6,x7);    
+        }
+     }
+    x6.console.error = function(x1,x2,x3,x4,x5,x6,x7) {
+       if(this.enableError) {
+            this._log('error',x1,x2,x3,x4,x5,x6,x7);    
+        }
+     }
+    return retval;
 }
 x6consoleActivate();
+if(readCookie('log_Group')==1) x6.console.enableGroup = true;
+if(readCookie('log_Time') ==1) x6.console.enableTime  = true;
+if(readCookie('log_Log')  ==1) x6.console.enableLog   = true;
+if(readCookie('log_Info') ==1) x6.console.enableInfo  = true;
+if(readCookie('log_Warn') ==1) x6.console.enableWarn  = true;
+if(readCookie('log_Error')==1) x6.console.enableError = true;
+
 
 /****O* Javascript-API/x6events
 *
