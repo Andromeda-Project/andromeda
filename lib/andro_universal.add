@@ -213,10 +213,18 @@ column amt    { description: Amount;   type_id: money; }
 column pct    {
     description: Percent;
     type_id: numb;
-    colprec: 5;
-    colscale: 2;
+    colprec: 7;
+    colscale: 4;
     value_min: 0;
     value_max: 100;
+}
+column pct99   {
+    description: Percent 1-99;
+    type_id: numb;
+    colprec: 2;
+    colscale: 0;
+    value_min: 0;
+    value_max: 99;
 }
 
 // Columns for dates
@@ -497,6 +505,24 @@ column cf_template {
     description: Default Template;
     flagcarry: N;
 }
+column x6_template {
+    type_id: vchar;
+    colprec: 40;
+    description: Public Default Template;
+    flagcarry: N;
+}
+column x6_group {
+    type_id: vchar;
+    colprec: 40;
+    description: Go to x6 if not in this group;
+    flagcarry: N;
+}
+column x6_jssource {
+    type_id: vchar;
+    colprec: 100;
+    description: Alternate Path for JS Files;
+    flagcarry: N;
+}
 column deprecated {
     type_id: cbool;
     description: Load Deprecated Features;
@@ -585,7 +611,7 @@ table configfw {
     column { x4menu; x4padmenu; x4menutitle; x4menutext }
     column flag { suffix: _x6; description: Use x6 by default; }
     column { js_css_debug; admin_logging; deprecated; sql_limit }
-    column flag { suffix: _syslog; description: Log SQL to syslog }
+    column flag { suffix: _syslog; description: Log SQL to syslog; }
     column { logout_clear; }
     column { paypal_site_url; paypal_image_url; paypal_payto;
         paypal_noship; paypal_v2;
@@ -594,6 +620,9 @@ table configfw {
     column {
         auth_net_debugging; auth_net_testing; auth_net_retries;
         auth_net_login_id; auth_net_tran_key;
+    }
+    column {
+        x6_template; x6_group; x6_jssource; 
     }
 }
 table configapp {
@@ -623,38 +652,51 @@ table configinst {
     column recnum  { primary_key: "Y"; uisearch: "Y"; }
     column { smtpout; }
 
+    column description { suffix: _login; description: Login; }
     projection login {
         column { loginbefore; loginafter; notesfooter }
     }
-    column description { suffix: _login; description: Login; }
+
+    column description { suffix: _email; description: Sending Emails; }
     projection email {
         column { smtpout; email_fromname; email_fromaddr; email_admin; }
     }
-    column description { suffix: _email; description: Sending Emails; }
+
+    column description { suffix: _searches; description: Search Options; }
     projection searches {
         column { uisearchdash; sql_limit; }
     }
-    column description { suffix: _searches; description: Search Options; }
+
+    column description { suffix:_paypal; description: Paypal; }
     projection paypal {
         column { paypal_site_url; paypal_image_url; paypal_payto;
             paypal_noship; paypal_v2;
             paypal_test_mode; paypal_fake;
         }
     }
-    column description { suffix:_paypal; description: Paypal; }
+
+    column description { suffix: _authdotnet; description: Authorize.net; }
     projection authdotnet {
         column {
             auth_net_debugging; auth_net_testing; auth_net_retries;
             auth_net_login_id; auth_net_tran_key;
         }
     }
-    column description { suffix: _authdotnet; description: Authorize.net; }
+
+    column description { suffix: _x6; description: X6 Settings; }
+    projection x6 {
+        column {
+            x6_template; x6_group; x6_jssource; 
+        }
+    }
+
+
+    column description { suffix: _debugging; description: Debugging; } 
     projection debugging {
         column {
             js_css_debug; admin_logging; flag_syslog;   
         }
     }
-    column description { suffix: _debugging; description: Debugging; } 
 }
 table configuser {
     module: system;

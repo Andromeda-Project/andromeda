@@ -1012,7 +1012,8 @@ class androHtml {
     ******
     */
     var $code = array();
-
+    var $functions=array();
+    
     /****v* androHtml/ap
     *
     * NAME
@@ -1682,6 +1683,29 @@ class androHtml {
         return $bb;
     }
     
+    # overrides default addButtonbar
+    function addCustomButtons($obj) {
+        if($obj===false) return;
+        
+        $this->buttonBar->addChild($obj);
+    }
+    
+    function &addCustomButton($table,$action,$key,$caption,$permins,$permupd){
+        $b = $this->h('a-void',$caption);
+        $b->addClass('button');
+        $b->hp['buttonKey'] = $key;
+        $b->hp['x6table'] = $table;
+        $b->hp['x6plugin']= 'buttonCustom';
+        $b->hp['action'] =$action;
+        $b->hp['id']     =$action;
+        $b->hp['permins']=$permins;
+        $b->hp['permupd']=$permupd;
+        $b->initPlugin();
+        jqDocReady("x6events.fireEvent('disable_{$action}_$table')");
+        return $b;
+    }
+    
+    
     
     function &addButtonBarOld($table_id,$buts=null) {
         if(is_null($buts)) {
@@ -2273,6 +2297,9 @@ class androHtml {
                 $this->hp['on'.$event] = "$fname(this,event)";
             else
                 $this->hp['on'.$event] = "$fname(this)";
+        }
+        foreach($this->functions as $name=>$snippet) {
+            jqDocReady("u.byId('{$this->hp['id']}').$name = $snippet");
         }
         
         # KFD 10/7/08 if data has been attached, send it as json
@@ -3718,7 +3745,7 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
     # KFD 10/18/08, accept a set of attributes from the
     #               options array
     $atts = arr($options,'attributes',array());
-    if(count($atts)>0) x6data($column_id,$atts);
+    #if(count($atts)>0) x6data($column_id,$atts);
     foreach($atts as $name=>$value) {
         $input->hp[$name]=$value;
     }

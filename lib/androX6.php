@@ -39,6 +39,8 @@ class androX6 {
     ******
     */
     function x6main() { 
+        $this->profile_conventional();
+        return;
         ?>
         <h1>Unprogrammed page</h1>
         
@@ -46,6 +48,10 @@ class androX6 {
            profile and no custom code.  
         </p>
         <?php
+    }
+    
+    function customButtons() {
+        return false;
     }
     # ===================================================================
     #
@@ -795,11 +801,6 @@ class androX6 {
         # nested one), and $hempty, and a double padding
         $hdetail = $hpane1 - $htabs - $hempty - ($pad0 * 2);
         
-        #echo "<br/>inside height available ".x6cssDefine('insideheight');
-        #echo "<br/>Height of tabs main: $height";
-        #echo "<br/>Total height kids tabs and panes: $kidsheight";
-        #echo "<br/>Pane height kids: $kidpaneheight";
-        
         # Begin with title and tabs
         $top->h('h1',$dd['description']);
         $options = array('profile'=>'conventional','x6table'=>$table_id);
@@ -831,6 +832,7 @@ class androX6 {
         # a different profile.
         #
         $divDetail = $detail->addDetail($dd['table_id'],true,$hdetail);
+        $divDetail->addCustomButtons($this->customButtons());
         $divDetail->ap['xTabSelector'] = $tabs->ts;
         $divDetail->ap['xTabIndex']    = 1;
         
@@ -996,5 +998,6 @@ class androX6 {
         $gridWidth=$grid->lastColumn();
         return $gridWidth;
     }
+    
 }
 ?>

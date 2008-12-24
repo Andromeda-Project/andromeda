@@ -835,7 +835,8 @@ class androPageReport extends fpdf {
            header(
              'Content-disposition: attachment; filename="export.csv"'
            );
-           header('Content-Type: text/plain');
+           #header('Content-Type: text/plain');
+           header('Content-Type: application/vnd.ms-excel');           
             echo $this->csvexport;
             exit;
             return;

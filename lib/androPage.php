@@ -45,6 +45,10 @@ class androPage {
      */
     var $page = '';
 
+    function x6main() {
+        $this->main($this->x6page);
+    }
+    
     /**
      *  Entry point for all processing.  Assumes a file
      *  named "$page.page.yaml" is in the application
@@ -221,6 +225,8 @@ class androPage {
      *  @access private
      */
     private function x3HTML() {
+        $x6 = vgfGet('x6',false);
+        
         $yamlP2 = $this->yamlP2;
         if(isset($yamlP2['options']['title'])) {
             # This is for classic x2 displays
@@ -235,6 +241,13 @@ class androPage {
         $top = html('div');
         $top->hp['id'] = 'x4Top';
         $top->autoFormat(true);
+        if($x6) {
+            $top->hp['id'] = 'x4Top';
+            $top->addClass('fadein');
+            $top->hp['x6plugin'] = 'androPage';
+            jqDocReady("var plugin = u.byId('x4Top');");
+            jqDocReady("x6plugins.androPage(plugin,'x4Top','*');");
+        }
         
         # Hidden variables so posts will come back here
         if($x4) {
@@ -291,7 +304,15 @@ class androPage {
         $div->hp['id']='divOnScreen';
 
         # Put out the inputs
-        $table = html('table',$td1);
+        if(!$x6) {
+            $table = html('table',$td1);
+        }
+        else {
+            $form = $td1->form();
+            $table= $form->h('table');
+            $table->addClass('x6Detail');
+            $table->hp['style'] = 'float: left';
+        }
         $filters = ArraySafe($this->yamlP2,'uifilter',array());
         foreach($filters as $id=>$options) {
             if(isset($options['table'])) {
@@ -312,10 +333,20 @@ class androPage {
 
             $tr = html('tr',$table);
             $td = html('td',$tr);
-            $td->hp['style']="text-align: right";
+            if($x6) {
+                $td->addClass('x6Caption');
+            }
+            else {
+                $td->hp['style']="text-align: right";
+            }
             $td->setHTML($options['description']);
             $td = html('td',$tr);
-            $td->hp['style']="text-align: left";
+            if($x6) {
+                $td->addClass('x6Input');
+            }
+            else {
+                $td->hp['style']="text-align: left";
+            }
             $input = input($options);
             $input->hp['autocomplete'] = 'off';
             $td->setHTML($input->bufferedRender());
@@ -339,7 +370,10 @@ class androPage {
             $inp->ap['xLabel'] = 'CtrlP';
             $inp->hp['id'] = $ids['pdf'];
             $inp->addClass('button');
-            if(gpExists('x4Page')) {
+            if($x6) {
+                $inp->hp['onclick'] = "x6events.fireEvent('key_CtrlP')";
+            }
+            elseif(gpExists('x4Page')) {
                 $inp->hp['onclick'] = "\$a.byId('x4AndroPage').printNow()";
             }
             else {
@@ -352,7 +386,10 @@ class androPage {
             $inp->hp['id'] = $ids['onscreen'];
             $inp->ap['xLabel'] = 'CtrlO';
             $inp->addClass('button');
-            if(gpExists('x4Page')) {
+            if($x6) {
+                $inp->hp['onclick'] = "x6events.fireEvent('key_CtrlO')";
+            }
+            elseif(gpExists('x4Page')) {
                 $inp->hp['onclick'] = "\$a.byId('x4AndroPage').showOnScreen()";
             }
             else {
@@ -361,11 +398,14 @@ class androPage {
 
             # KFD 9/20/08, new option: export to csv
             $td1->br(2);
-            $inp = html('a-void',$td1,'Export as CSV');
+            $inp = html('a-void',$td1,'<u>E</u>xport as CSV');
             $inp->hp['id'] = $ids['csv'];
-            $inp->ap['xLabel'] = 'CtrlO';
+            $inp->ap['xLabel'] = 'CtrlE';
             $inp->addClass('button');
-            if(gpExists('x4Page')) {
+            if($x6) {
+                $inp->hp['onclick'] = "x6events.fireEvent('key_CtrlE')";
+            }
+            else if(gpExists('x4Page')) {
                 $inp->hp['onclick'] = "\$a.byId('x4AndroPage').csvExport()";
             }
             else {

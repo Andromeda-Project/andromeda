@@ -1,7 +1,7 @@
 <?php
 class x6useroptions extends androX6 {
     function x6main() {
-        $file = fsDirTop().'generated/x6skins.ser.txt';
+        $file = fsDirTop().'templates/x6/skinsphp/x6skins.ser.txt';
         $skins = unserialize(file_get_contents($file));
         $select = html('select');
         #hprint_r($GLOBALS);
