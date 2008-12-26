@@ -17032,7 +17032,12 @@ function RowsForSelect($table_id,$firstletters='',$matches=array(),$distinct='',
    }
    else {
        if(ArraySafe($table['projections'],'dropdown')=='') {
-          $proj=$table['pks'];
+           if(!vgfGet('x6')) {
+               $proj=$table['pks'];
+           }
+           else {
+               $proj=$table['projections']['_uisearch'];
+           }
        }
        else {
           $proj=$table['projections']['dropdown'];
