@@ -329,6 +329,12 @@ class androX6 {
         $this->flat = $this->dd['flat'];
         foreach($vals as $column_id=>$colvalue) {
             if(!isset($this->flat[$column_id])) continue;
+            if($colvalue=='*') {
+                $awhere=array();
+                gpSet('xReturnAll','Y');
+                break;
+            }
+            
             $colinfo = $this->flat[$column_id];
             $exact = isset($vals2[$column_id]);
             

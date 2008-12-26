@@ -695,8 +695,12 @@ var x6inputs = {
         }
         
         // Type validation for some types, only if not TAB or ENTER
-        if(!isNav) {
+        if(!isNav ) {
             x6.console.log("Not nav key, doing type validation");
+            if(u.p(inp,'xLookup','N')=='Y') {
+                x6.console.log("This is a lookup input, allowing everything");
+                return true;
+            }
             type = u.p(inp,'xtypeid');
             switch(type) {
             case 'int':
