@@ -612,7 +612,7 @@ var x6inputs = {
     // you do not see an input's new value until the keyup 
     // event.  You do not see it in keypress or keydown.
     keyUp: function(e,inp) {
-        x6.x6.console.group("Input keyUp");
+        x6.console.group("Input keyUp");
         x6.console.log(e);
         x6.console.log(inp);
         
@@ -2190,6 +2190,10 @@ x6plugins.detailDisplay = function(self,id,table) {
             }
         }
     }
+    
+    if(u.p(self,'x6profile')=='twosides') {
+        x6events.fireEvent('buttonsNew_'+table);
+    }
 }
 
 x6tabDiv = {
@@ -3515,7 +3519,7 @@ x6plugins.x6tabs = function(self,id,table) {
                 var pieces = kids[kid].split(':');
                 var table_chd = pieces[0];
                 var display   = pieces[1];  // assume 'checkbox'
-                var json = new androJSON('x6table',this.zTable);
+                var json = new androJSON('x6page',this.zTable);
                 json.addParm('skey',u.bb.vgfGet('skey_'+this.zTable));
                 json.addParm('table_chd',pieces[0]);
                 json.addParm('x6action' ,'child_checkbox');
