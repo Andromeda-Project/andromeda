@@ -310,7 +310,7 @@ table users {
 	projection email     { column { user_name; }}
 	projection emailaddr { column { email; }}
 
-   index email { idx_unique: Y; column { email; }}
+   index email { column { email; }}
 }
 
 menu userssimple {
