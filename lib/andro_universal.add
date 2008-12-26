@@ -1523,11 +1523,11 @@ table states {
 
 	column state { primary_key: Y; uisearch: Y; }
 	column state_name { uisearch: Y; }
-   foreign_key countries { uisearch: Y; }
+    foreign_key countries { uisearch: Y; }
 
 	group $LOGIN { permsel: Y; }
 
-   projection dropdown { column { country; state_name; }}
+    projection dropdown { column { state; state_name; country; }}
 }
 
 content states {
