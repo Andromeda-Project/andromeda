@@ -3803,7 +3803,10 @@ function inputForX6($input,$colinfo,$options) {
         $input->hp['x6select'] = 'Y';
         $input->hp['xTitles'] = implode('|',$titles);
         $input->hp['x6seltab'] = $fko;
-        if(arr($ddpar,'x6all','N')=='Y') {
+        $input->hp['x6profilePar'] = arr($ddpar,'x6profile','conventional');
+        $x6profile = arr($ddpar,'x6profile','conventional');
+        $pfs = array('tabDiv','twosides');
+        if(arr($ddpar,'x6all','N')=='Y' || in_array($x6profile,$pfs)) {
             $rows  = SQL_AllRows(
                 "Select $ccols
                    from ".$ddpar['viewname']."
@@ -3812,6 +3815,9 @@ function inputForX6($input,$colinfo,$options) {
             $input->hp['x6rowCount'] = count($rows);
             $values = array();
             foreach($rows as $row) {
+                foreach($row as $colname=>$colvalue) {
+                    if(is_null($colvalue)) $row[$colname]='&nbsp;';
+                }
                 $values[] = implode('|',$row);
             }
             $input->hp['xValues'] = implode('||',$values);

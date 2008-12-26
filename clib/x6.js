@@ -749,6 +749,12 @@ var x6inputs = {
                 //x6inputs.x6select.display(inp);
                 x6inputs.x6select.displayDynamic(inp,ua.data.x6select);
             }
+          
+            // Yet another possibility is a lookup on a set
+            // of fixed values.  
+            if(u.p(inp,'x6select','N')=='Y' && u.p(inp,'xValues',null)!=null) {
+                x6inputs.x6select.display(inp);
+            }
             
             x6.console.log("Type validation complete, returning true");
             x6.console.groupEnd();
@@ -1106,6 +1112,13 @@ var x6inputs = {
         var id = u.p(button,'xInputId');
         var inp = $('#'+id)[0];
         if(inp.disabled) return;
+        if(u.p(inp,'xValues','')=='') {
+            u.dialogs.alert("To see values, please click on the input"
+                +" and type in one or two letters to activate an"
+                +" automatic search."
+            );
+            return;
+        }
         this.x6select.display(inp);
     },
     
