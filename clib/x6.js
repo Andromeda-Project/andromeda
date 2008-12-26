@@ -1287,7 +1287,12 @@ var x6inputs = {
                 retval += '<tr>';
                 var values = rows[idx];
                 for(var idx2 in values) {
-                    retval+= '<td>'+values[idx2];
+                    if(values[idx2] == null) {
+                        retval+= '<td>&nbsp;';
+                    }
+                    else {
+                        retval+= '<td>'+values[idx2];
+                    }
                 }
             }
             var lh = this.lineHeight + 3;
