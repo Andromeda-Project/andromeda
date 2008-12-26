@@ -462,7 +462,14 @@ class androX6 {
         
         # ..otherwise just send the body back.  But kill
         #   any script they created.
-        $grid->dbody->render();
+        if(count($answer)==0) {
+            echo "<div class='tbody'>"
+            ."<div style='text-align:center; padding-top: 20px'>"
+            ."<b>No results found</b></div></div>";
+        }
+        else {
+            $grid->dbody->render();
+        }
         exit;
         #x6ScriptKill();
         #x6Html('browseFetchHtml',$grid->dbody->bufferedRender());
