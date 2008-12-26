@@ -1,6 +1,6 @@
 /* ==================================================== *\
  * Andromeda Generated CSS file                         
- * Generated: Fri, 26 Dec 2008 09:05:41 -0500
+ * Generated: Fri, 26 Dec 2008 15:25:37 -0500
  * Skin, color, size: Default, Gray, 1650
 \* ==================================================== */
         
@@ -375,6 +375,10 @@ td.x6Caption {
 
 .ui-tabs-nav li.ui-tabs-selected {
     background-color:        #5E71A2;
+}
+
+.ui-tabs-nav li.ui-tabs-disabled a {
+    color:                   #d0d0d0;
 }
 
 span.button {

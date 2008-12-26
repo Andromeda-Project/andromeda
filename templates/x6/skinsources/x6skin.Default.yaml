@@ -613,7 +613,11 @@ css:
     
         .ui-tabs-nav li.ui-tabs-selected:
             background-color:*dark
-         
+
+        .ui-tabs-nav li.ui-tabs-disabled a:
+            color:          *bgcdark
+
+            
         .ui-tabs-panel:
             margin-top:      *zero
             margin-bottom:   *zero
