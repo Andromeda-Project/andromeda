@@ -468,7 +468,7 @@ class androX6 {
     #
     # ===================================================================
     function child_checkbox() {
-        $table_id  = gp('x6table');
+        $table_id  = gp('x6page');
         $table_chd = gp('table_chd');
         $skey      = gp('skey');
         
@@ -732,6 +732,7 @@ class androX6 {
         $box2  = $div->h('div');
         $box2->hp['style'] = "float: left; width: {$wInner}px;";
         $detail = $box2->addDetail($table_id,true,$heightRemain-2);
+        $detail->ap['x6profile'] = 'twosides';
         
         # Generate a list of child xrefs.  The idea here is to
         # work out the dimensions first, because we must tell the
@@ -835,6 +836,7 @@ class androX6 {
         $divDetail->addCustomButtons($this->customButtons());
         $divDetail->ap['xTabSelector'] = $tabs->ts;
         $divDetail->ap['xTabIndex']    = 1;
+        $divDetail->ap['x6profile'] = 'conventional';
         
         # The div kids is a tabbar of child tables.  Notice that we
         # put nothing into them.  They are loaded dynamically when
