@@ -413,7 +413,7 @@ if($x6cand=='') {
     $x6template= configGet('x6_template','');
     $x6group   = configGet('x6_group'   ,'');
     if($x6template!='') {
-        if(LoggedIn() && !inGroup($x6group)) {
+        if(LoggedIn() && (!inGroup($x6group) || SessionGet('ROOT')==1)) {
             $x6cand= gp('x4Page',gp('gp_page'));
             if($x6cand=='') {
                 $x6cand='menu';
