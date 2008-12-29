@@ -600,7 +600,7 @@ class androPage {
 
         # Build the sql
         $sql = implode("\nUNION ALL\n",$sql);        
-        if(gp('gp_post')=='onscreen') $sql.= " LIMIT 300";
+        if(gp('gp_post')=='onscreen') $sql.= " LIMIT ".configGet('sql_limit');
         return $sql;
     }   
    
