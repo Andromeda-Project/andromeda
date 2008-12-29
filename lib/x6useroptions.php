@@ -21,7 +21,7 @@ class x6useroptions extends androX6 {
         $file = fsDirTop().'templates/x6/skinsphp/x6skins.ser.txt';
         $skins = unserialize(file_get_contents($file));
         $select = html('select');
-        $cookie = $_COOKIE['x6skin'];
+        $cookie = arr($_COOKIE,'x6skin','Default.Gray.1024');
         foreach($skins as $name=>$stats) {
             $option = $select->h('option',$name);
             $option->hp['value'] = $stats;
