@@ -12,7 +12,7 @@
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-               s            
+                           
    You should have received a copy of the GNU General Public License
    along with Andromeda; if not, write to the Free Software
    Foundation, Inc., 51 Franklin St, Fifth Floor,
@@ -1651,6 +1651,7 @@ function SpecFlatten_Runout() {
                 ,colprec,colscale,colres,type_id,inputmask
                 ,flagcarry,x6view
                 ,table_id_fko
+                ,fkioffset,fkilimit,table_id_fki
                 ,uicolseq,uisearch_ignore_dash,uisearchsort
                 ,formula,formshort,dispsize
              )
@@ -1674,6 +1675,7 @@ function SpecFlatten_Runout() {
                        then tc.x6view 
                        else c.x6view  end
                  ,COALESCE(tc.table_id_fko,'') as table_id_fko
+                 ,tc.fkioffset,tc.fkilimit,tc.table_id_fki
                  ,trim(uicolseq)
                  ,case when tc.uisearch_ignore_dash in ('Y','N')
                        then tc.uisearch_ignore_dash
@@ -2848,6 +2850,22 @@ function SpecDDL_Indexes_keys() {
 			}
 		}
 	}
+    
+    # KFD 12/27/08.  Pull list of FKINCLUDE columns, these must be 
+    #                indexed with the fk for rapid updating of
+    #                large child sets
+    $pgr = $this->SQLREAD("Select table_id,column_id,table_id_fki
+        from zdd.tabflat where coalesce(table_id_fki,'')<>''"
+    );
+    $fki_pre = pg_fetch_all($pgr);
+    $fki = array();
+    if(is_array($fki_pre)) {
+        foreach($fki_pre as $fki_one) {
+            $key = trim($fki_one['table_id'])
+                .'_'.trim($fki_one['table_id_fki']);
+            $fki[$key][] = $fki_one['column_id'];
+        }
+    }
 	
 	foreach ($this->ufks as $ufk) {
 		$index = $ufk["table_id_chd"]."_".$ufk["table_id_par"].$ufk["suffix"];
@@ -2859,6 +2877,27 @@ function SpecDDL_Indexes_keys() {
 			"(object_id,definition,def_short,sql_create,sql_drop)".
 			" values ".
 			"('$index','$def_short','$def_short','$sql','')");
+        
+        # KFD 12/27/08.  Create the indexes for any fki columns between
+        #                these tables.  We are indexing on the child
+        #                table on the foreign key + the fki column
+        if(isset($fki[$index])) {
+            foreach($fki[$index] as $column) {
+                $f_index = $index."_fki_".$column;
+                $cols_chd= $ufk['cols_chd'].','.$column;
+                $f_sql   = "CREATE INDEX ".$f_index .
+                " ON ".$ufk["table_id_chd"]." ($cols_chd)";
+                $f_def_short 
+                    ="idx:".strtolower($ufk["table_id_chd"])
+                    .":".strtolower($cols_chd);
+                $this->SQL(
+                    "Insert into zdd.ns_objects ".
+                    "(object_id,definition,def_short,sql_create,sql_drop)".
+                    " values ".
+                    "('$f_index','$f_def_short','$f_def_short','$f_sql','')");
+            }
+        }
+        
 	}
 }
 
@@ -4084,6 +4123,7 @@ function SpecDDL_Triggers_Automated() {
     $retval = $retval && $this->specddl_triggers_automated_queuepos();
     $retval = $retval && $this->specddl_triggers_automated_dominant();
     $retval = $retval && $this->specddl_triggers_automated_dominant_agg();
+    $retval = $retval && $this->specddl_triggers_automated_fki();
     return $retval;	
 }
 
@@ -5036,6 +5076,130 @@ function SpecDDL_Triggers_Automated_Dominant_agg()  {
                 $this->SpecDDL_TriggerFragment($tab_chd,"UPDATE","AFTER" ,"4001",$sq);
             }
         }
+    }
+    return true;
+}
+
+# KFD 12/27/08.  Completely new function to add trigger code
+#                for the fkinclude automation
+function specDDL_Triggers_Automated_fki() {
+    $this->LogEntry("Building fkinclude AFTER trigger fragments");
+    
+    #  Fetch the rows
+    #
+    $pgr = $this->SQLREAD(
+        "SELECT table_id,column_id,fkioffset,fkilimit,table_id_fki
+           FROM zdd.tabflat
+          where coalesce(table_id_fki,'') <> ''"
+    );
+    $fkis = pg_fetch_all($pgr);
+    
+    # <----- EARLY RETURN.  If no rows, go back
+    if(!is_array($fkis)) return true;
+    
+    # Loop through for each one.
+    foreach($fkis as $fki) {
+        # Get the basics
+        $tchd= trim($fki['table_id']);
+        $cid = trim($fki['column_id']);
+        $fkio=      $fki['fkioffset'];
+        $fkil=      $fki['fkilimit'];
+        $tpar= trim($fki['table_id_fki']);
+        
+        # Determine if there is a specified sort order,
+        # otherwise we go with skey which does not usually
+        # make any sense
+        $proj = "child_$tpar";
+        $pgr = $this->SQLREAD(
+            "Select column_id,sortasc
+               FROM zdd.tabprojcols
+              WHERE table_id = '$tchd'
+                and projection='$proj'
+                and coalesce(sortasc,'') <> ''
+              ORDER BY uicolseq"
+        );
+        $pres = pg_fetch_all($pgr);
+        if(!is_array($pres)) {
+            $ORDER_BY='skey';
+        }
+        else {
+            $aob = array();
+            foreach($pres as $row) {
+                if($row['sortasc']=='Y') {
+                    $aob[] = trim($row['column_id']);
+                }
+                else {
+                    $aob[] = trim($row['column_id'])." desc";
+                }
+            }
+            $ORDER_BY = implode(',',$aob);
+        }
+       
+              
+        
+        
+        # Get the fk information
+        $fk  = $this->ufks[$tchd.'_'.$tpar.'_'];
+        $mtchins = str_replace('par.','new.',$fk['cols_match']);
+        $mtchdel = str_replace('par.','old.',$fk['cols_match']);
+        
+        # before we get into the "after" stuff, make sure the
+        # value always defaults to zero.
+        $sql="
+    -- AUTOMATION fkinclude, default the column to zero
+    IF new.$cid IS NULL THEN new.$cid = 0; END IF;\n";
+        $this->SpecDDL_TriggerFragment($tchd,"INSERT","BEFORE" ,"1012",$sql);         
+    
+        
+        # This is the core trigger fragment.  We will do six
+        # different permutations, three each for insert and
+        # delete.
+        $sqlbase="
+    -- AUTOMATION fkinclude, three update statements
+    update $tchd
+       set $cid = --CIDNEW--
+      from (select skey 
+              from $tchd chd
+             where --MATCH--
+             order by $ORDER_BY
+            offset --OFFSET--
+             limit --LIMIT--
+           ) second
+     where $tchd.skey = second.skey
+       AND $cid = --CIDOLD--;\n";
+     
+         # Now the first two permutations turn the flag
+         # off for rows before the OFFSET
+         $sql    = str_replace('--CIDNEW--','0'     ,$sqlbase);
+         $sql    = str_replace('--CIDOLD--','1'     ,$sql);
+         $sql    = str_replace('--OFFSET--','0'     ,$sql);
+         $sql    = str_replace('--LIMIT--' ,$fkio   ,$sql);
+         $sqlins = str_replace('--MATCH--' ,$mtchins,$sql);
+         $sqldel = str_replace('--MATCH--' ,$mtchdel,$sql);
+         $this->SpecDDL_TriggerFragment($tchd,"INSERT","AFTER" ,"4001",$sqlins);         
+         $this->SpecDDL_TriggerFragment($tchd,"DELETE","AFTER" ,"4001",$sqldel);         
+
+         # The second two permutations turn the flag
+         # on for rows between offset and limit
+         $sql    = str_replace('--CIDNEW--','1'     ,$sqlbase);
+         $sql    = str_replace('--CIDOLD--','0'     ,$sql);
+         $sql    = str_replace('--OFFSET--',$fkio   ,$sql);
+         $sql    = str_replace('--LIMIT--' ,$fkil   ,$sql);
+         $sqlins = str_replace('--MATCH--' ,$mtchins,$sql);
+         $sqldel = str_replace('--MATCH--' ,$mtchdel,$sql);
+         $this->SpecDDL_TriggerFragment($tchd,"INSERT","AFTER" ,"4001",$sqlins);         
+         $this->SpecDDL_TriggerFragment($tchd,"DELETE","AFTER" ,"4001",$sqldel);         
+         
+         # The third two permutations turn the flag
+         # off for rows after the offset + limit
+         $sql    = str_replace('--CIDNEW--','0'     ,$sqlbase);
+         $sql    = str_replace('--CIDOLD--','1'     ,$sql);
+         $sql    = str_replace('--OFFSET--',$fkio+$fkil,$sql);
+         $sql    = str_replace('--LIMIT--' ,'ALL'   ,$sql);
+         $sqlins = str_replace('--MATCH--' ,$mtchins,$sql);
+         $sqldel = str_replace('--MATCH--' ,$mtchdel,$sql);
+         $this->SpecDDL_TriggerFragment($tchd,"INSERT","AFTER" ,"4001",$sqlins);         
+         $this->SpecDDL_TriggerFragment($tchd,"DELETE","AFTER" ,"4001",$sqldel);
     }
     return true;
 }
@@ -8764,15 +8928,20 @@ function CodeGenerate_Tables() {
 		$table["fk_children"]= $this->CodeGenerate_Tables_FK($table_id,"table_id_par");
 		
 		// Now do projections
-		$results = $this->SQLRead("Select p.projection,p.table_id,p.column_id ".
+		$results = $this->SQLRead(
+            "Select p.projection,p.table_id,p.column_id,p.sortasc ".
 			" FROM zdd.tabprojcols p ".
-			" JOIN zdd.tabflat f ON p.table_id=f.table_id AND p.column_id = f.column_id ".
+			" JOIN zdd.tabflat f ON p.table_id=f.table_id ".
+            "  AND p.column_id = f.column_id ".
 			" WHERE p.table_id = '$table_id' ".
 			" ORDER BY f.uicolseq ");
 		while ($row = pg_fetch_array($results)) {
 			$p = trim($row["projection"]);
 			if (!isset($table["projections"][$p])) $table["projections"][$p]="";
 			$table["projections"][$p].=$this->AddComma($table["projections"][$p]).trim($row["column_id"]);
+            
+            $table['projdetails'][$p][trim($row['column_id'])] 
+                = trim($row['sortasc']);            
 		}
 		
       // Copy out the row definitions for views, if there are any

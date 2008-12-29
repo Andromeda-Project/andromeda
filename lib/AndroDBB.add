@@ -523,6 +523,7 @@ content automations {
     values { FETCH_DOM;    Pull value from Dominant child row; }
     values { UID_UPD_PG ; Update User ignoring postgres }
     values { TS_UPD_PG ; Update Timestamp ignoring postgres }
+    values { FKINCLUDE  ; Make 1 if inside fkioffset and fkilimit; }
 }
 
 // ---------------------------------------------------------
@@ -701,6 +702,9 @@ column pk_change    { type_id: char;   colprec:  1;  colscale: 0; description: A
 column uisearch     { type_id: char;  colprec: 1;  colscale: 0; description: Display in Search Results; }
 column uicolseq     { type_id: char;  colprec: 30; colscale: 0; description: Column Sequence; }
 column uisearchsort { type_id: char; colprec: 1; description: Default Search Sort; }
+column fkioffset    { type_id: int; description: FK Include Offset; }
+column fkilimit     { type_id: int; description: FK Include Limit;  }
+column table_id_fki { type_id: char; colprec: 50; description: FK Include Foreign Key; }
 table tabcol {
     module: datadict;
     description: Column Placements;
@@ -721,6 +725,7 @@ table tabcol {
     column { value_min; value_max; x6view; uisearch_ignore_dash; }
     column { uirows;    uicols;    }
     column { table_id_fko; }
+    column { fkioffset; fkilimit; table_id_fki; }
     
     foreign_key automations { allow_empty: Y; }
     column { prefix: auto_;  table_id; column_id; }
@@ -1019,6 +1024,7 @@ table tabproj {
 	column { skey; skey_quiet; _agg; }
 }
 
+column sortasc { type_id: char; colprec: 1; description: Sort Ascending; }
 table tabprojcols {
 	module: datadict;
 	description: Table Projections;
@@ -1026,6 +1032,7 @@ table tabprojcols {
 
 	foreign_key {  tabproj; primary_key: Y; uisearch: Y; }
 	column column_id  { primary_key: Y; uisearch: Y; }
+    column { sortasc; }
 	column { uicolseq; skey; skey_quiet; _agg; }
 }
 
@@ -1342,6 +1349,7 @@ table tabflat {
 	column { column_id_src;table_id_src;column_id_src; }
 	column { suffix; prefix; auto_suffix; auto_prefix; table_id_par_comp; }
 	column { table_id_fko; column_id_fko; }
+    column { fkioffset; fkilimit; table_id_fki; }
 
 
     // Automations, defined as a foreign key	

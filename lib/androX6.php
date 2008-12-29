@@ -311,6 +311,7 @@ class androX6 {
         $vals = aFromGP('x6w_');
         $awhere = array();
         $tabPar = gp('tableIdPar');
+        $projSort= '';
         if($tabPar=='') {
             $vals2 = array();
         }
@@ -322,6 +323,24 @@ class androX6 {
             $vals2 = SQL_OneRow("SELECT $pks FROM $stab WHERE skey = $skey");
             if(!$vals2) $vals2=array();
             $vals  = array_merge($vals,$vals2);
+            
+            # KFD 12/27/08, if the sortdesc flag has been set on any
+            #               columns in the projection, those columns
+            #               become the default sort.  Work it up here
+            #               and set them aside.
+            $proj = 'child_'.$tabPar;
+            $aprojSort = array();
+            if(isset($this->dd['projdetails'][$proj])) {
+                foreach($this->dd['projdetails'][$proj] as $column=>$sortasc){
+                    if($sortasc=='Y') {
+                        $aprojSort[] = "+$column";
+                    }
+                    if($sortasc=='N') {
+                        $aprojSort[] = "-$column";
+                    }
+                }
+            }
+            $projSort = implode(",",$aprojSort);
         }
         
         # Build the where clause        
@@ -372,7 +391,11 @@ class androX6 {
             $aorder[] = gp('sortCol').' '.gp('sortAD');
         }
         else {
-            $searchsort = trim(a($this->dd,'uisearchsort',''));
+            # KFD 12/27/08, Use the search sort that was 
+            #               set aside above if it is there
+            $searchsort = $projSort==''
+              ? trim(arr($this->dd,'uisearchsort',''))
+              : $projSort;
         }
         if($searchsort <> '') {
             $aocols = explode(",",$searchsort);
