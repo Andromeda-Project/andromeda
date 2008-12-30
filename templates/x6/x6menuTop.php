@@ -115,10 +115,11 @@ function x6menuclick(menuid) {
     $('#x6menupad_'+menuid).addClass('selected');
 }
 
+// If the menu is active and we click on anywhere else on the page, we want to deactivate it. 
 document.onclick = function(e) {
-    e = (e) ? e : ((window.event) ? window.event : "");
-    var tg = e.target;
-    if(!$(tg).hasClass('dropdown') && !$(tg).hasClass('x6menuspan')){    
+    // Internet explorer does not pass a parameter to the onClick event. 
+    var tg = e ? e.target : window.event.srcElement;
+    if(tg != null && !$(tg).hasClass('dropdown') && !$(tg).hasClass('x6menuspan')){
         if(window.x6menu) {
             var pad = u.byId('x6menu_'+window.x6menu);
             pad.style.display = 'none';
