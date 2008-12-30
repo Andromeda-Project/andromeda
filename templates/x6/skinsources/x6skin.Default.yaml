@@ -411,6 +411,7 @@ css:
             
         .x6menu ul li:
             position: relative
+            z-index:  900
         
         # Required to prevent list from going vertical
         .x6menu li:

@@ -1,6 +1,6 @@
 /* ==================================================== *\
  * Andromeda Generated CSS file                         
- * Generated: Fri, 26 Dec 2008 15:25:37 -0500
+ * Generated: Tue, 30 Dec 2008 12:28:00 -0500
  * Skin, color, size: Default, Gray, 1650
 \* ==================================================== */
         
@@ -177,6 +177,7 @@ td.x6Input a {
 
 .x6menu ul li {
     position:                relative;
+    z-index:                 900;
 }
 
 .x6menu li {

@@ -95,6 +95,7 @@ function x6menumouseover(menuid) {
     //var pad = u.byId('x6menu_'+menuid);
     //pad.style.display = '';
     $("#x6menu_"+window.x6menu).css('display','');
+    $("#x6menu_"+window.x6menu).css('z-index','1000');
     $('#x6menupad_'+menuid).addClass('selected');
 }
 
