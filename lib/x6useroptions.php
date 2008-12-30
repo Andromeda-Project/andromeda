@@ -103,7 +103,8 @@ JS;
         $tab2->br(2);
         
         $loptions = array(
-            'Group'=>'Grouping of Logging Messages'
+            'FBLite'=>'I am on IE, load Firebug Lite for me'
+            ,'Group'=>'Grouping of Logging Messages'
             ,'Log'=>'Detail Logging Messages'
             ,'Warn'=>'Warnings'
             ,'Info'=>'Informational'

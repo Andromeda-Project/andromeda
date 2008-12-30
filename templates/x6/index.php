@@ -9,8 +9,19 @@ $cookie = arr($_COOKIE,'x6skin','Default.Gray.1024');
 <link    rel="stylesheet"
        x6skin="Y"
         href="templates/x6/skins/x6skin.<?=$cookie?>.css" />
-        
 <?php include 'androHTMLHead.php' ?>
+
+<?php
+# KFD 12/30/08, A cookie-controlled script to load firebug lite
+$loadFBLite = arr($_COOKIE,'log_FBLite',0);
+if($loadFBLite == 1) {
+    ?>
+    <script type='text/javascript' 
+        src='http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js'
+           ></script>        
+    <?php
+}
+?>
 </head>
 <body>
 <div class="x6menu">

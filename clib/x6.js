@@ -73,6 +73,7 @@ var x6 = {
         //           events to keyDispatcher that don't go to
         //           the document.keypress from an input 
         $(document).keypress(function(e) {
+                //e = e ? e : window.event;
                 x6.console.group("Document Keypress");
                 x6.console.log("keypress ",e);
                 var retval= x6.keyDispatcher(e);
@@ -272,22 +273,25 @@ function x6consoleActivate() {
     // not.  So if we cannot find x6.console.group we create
     // functions that do indenting instead.
     //
-    if(typeof(console.group)=='undefined') {
+    var fblite = readCookie('log_FBLite');
+    if(typeof(console.group)=='undefined' || fblite==1) {
         retval+=" console.group (no), ";
-        x6.console.group = function(x) {
-            if(!this.groupEnable) return;
-            this._log(x);
-            this.indent+='  ';   
+        x6.console.group = function(x) { 
+            if(!this.enableGroup) return;
+            this._log('log',x);
+            this.indent+='     ';   
         }
         x6.console.groupEnd = function(x) {
-            if(!this.groupEnable) return;
-            this._log(x);
+            if(!this.enableGroup) return;
+            if(x!=null) {
+                this._log('log',x);
+            }
             if(this.indent.length > 0) {
-                if(this.indent.length==2) {
+                if(this.indent.length==5) {
                     this.indent = '';
                 }
                 else {
-                    this.indent = this.indent.slice(0,this.indent.length-2);
+                    this.indent = this.indent.slice(0,this.indent.length-5);
                 }
             }
         }
@@ -538,8 +542,9 @@ var x6events = {
         // loop through subscribers.  Note at the bottom of the list
         // that if an event handler returns false we must stop.
         this.retvals[eventName] = true;
-        for(var x in subscribers) {
+        for(var x=0; x<(subscribers.length-1);x++) {
             var id = subscribers[x];
+            x6.console.log("type of id: ",typeof(id));
             x6.console.log("subscriber: ",id);
             var subscriber = u.byId(id);
             if(subscriber==null) {
@@ -630,8 +635,11 @@ var x6inputs = {
     keyDown: function(inp,e) {
         // KFD/JD IE event compatibility
         e = e ? e : window.event;
+        inp = inp ? inp : e.srcElement;
         x6.console.group('Input keyDown ');
+        x6.console.log("I am in input keydown ",inp,e);
         x6.console.log(inp);
+        x6.console.log(e);
         var keyLabel=u.keyLabel(e);
         var isTab   =keyLabel=='Tab'    || keyLabel=='ShiftTab';
         var isEnter =keyLabel=='Enter'  || keyLabel=='ShiftEnter';  
