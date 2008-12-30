@@ -3463,8 +3463,8 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
     $x6 = vgfGet('x6');
     if($x6) {
         $x6options = array(
-            'onkeyup'=>'x6inputs.keyUp(event,this)'
-            ,'onkeydown'=>'return x6inputs.keyDown(event,this)'
+            'onkeyup'=>'x6inputs.keyUp(this,event)'
+            ,'onkeydown'=>'return x6inputs.keyDown(this,event)'
             ,'onfocus'=>'x6inputs.focus(this)'
             ,'onblur'=>'x6inputs.blur(this)'
             ,'attributes'=>array(

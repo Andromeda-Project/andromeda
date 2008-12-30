@@ -611,7 +611,10 @@ var x6inputs = {
     // Key up is used to look for changed values because
     // you do not see an input's new value until the keyup 
     // event.  You do not see it in keypress or keydown.
-    keyUp: function(e,inp) {
+    keyUp: function(inp,e) {
+        // KFD/JD IE event compatibility
+        e = e ? e : window.event;
+        
         x6.console.group("Input keyUp");
         x6.console.log(e);
         x6.console.log(inp);
@@ -624,8 +627,9 @@ var x6inputs = {
     // the concept of a "tab loop".  This function only does
     // anything if there are no enabled controls after the
     // current control
-    //
-    keyDown: function(e,inp) {
+    keyDown: function(inp,e) {
+        // KFD/JD IE event compatibility
+        e = e ? e : window.event;
         x6.console.group('Input keyDown ');
         x6.console.log(inp);
         var keyLabel=u.keyLabel(e);
@@ -3251,6 +3255,8 @@ x6plugins.x6tabDiv = function(self,id,table) {
    
 \* **************************************************************** */
 x6tabs = {
+    // IE/Firefox Event handling.  This event comes from 
+    // jQuery so we can trust it is ok.
     tabsShow: function(tabsUl,event,ui) {
         var tabs = tabsUl.parentNode;
         var profile = u.p(tabs,'x6profile','');
