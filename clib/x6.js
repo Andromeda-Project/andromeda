@@ -75,8 +75,14 @@ var x6 = {
         $(document).keypress(function(e) {
                 //e = e ? e : window.event;
                 x6.console.group("Document Keypress");
-                x6.console.log("Here is keypress event: ",e);
-                var retval= x6.keyDispatcher(e);
+                if(u.bb.vgfGet('noKeyPress',false)==true) {
+                    x6.console.log("noKeyPress was set, ignoring");
+                    u.bb.vgfSet('noKeyPress',false);
+                }
+                else {
+                    // no log entry, key dispatcher does that
+                    var retval= x6.keyDispatcher(e);
+                }
                 x6.console.groupEnd(); 
                 return retval;
         });
@@ -106,8 +112,8 @@ var x6 = {
     
     // Keyboard handler
     keyDispatcher: function(e) {
-        var retval = u.keyLabel(e);
-        x6.console.log(retval);
+        x6.console.group("Document Level Key Dispatching");
+        var retval = x6.keyLabel(e);
         
         // Possible trapping because of modal dialogs
         if(typeof(x6.dialogsAllow)=='object') {
@@ -137,11 +143,9 @@ var x6 = {
         }
         
         // Now we have a complete key label, fire the event
-        x6.console.log("In x6.keyDispatch, code and event follow");
-        x6.console.log(retval);
-        x6.console.log(e);
         if(stopThem.indexOf(retval)>0) {
             x6.console.log("x6.keyDispatch: key is in force stop list, stopping propagation.");
+            x6.console.groupEnd();
             e.stopPropagation();
             return false;
         }
@@ -172,14 +176,21 @@ var x6 = {
                 // All othere keys in the no-propagate list are
                 // stopped here.
                 if(noPropagate.indexOf(retval)>=0) {
+                    x6.console.log("In no propagate list, stopping");
+                    x6.console.groupEnd();
                     e.stopPropagation();
                     return false;
                 }
                 else {
+                    x6.console.log("Key dispatch returning true");
+                    x6.console.groupEnd();
                     return true;
                 }
             }
         }
+        x6.console.log("key dispatch finished, returning true");
+        x6.console.groupEnd();
+        return true;
     },
     
     /*
@@ -244,7 +255,189 @@ var x6 = {
             else
                 console[fnname](x1,x2,x3,x4,x5,x6,x7);
         }   
-    }
+    },
+    
+    /* KFD 11/26/08
+       EXPERIMENTAL
+       Put here because there is already one in ua, where it
+       really does not belong.
+       Originally used by x6inputs.keydown to figure things out
+    */
+    metaKeys: {
+        8: 'BackSpace',
+        9: 'Tab',
+        13: 'Enter',
+        16: 'Shift',
+        17: 'Ctrl',
+        18: 'Alt',
+        20: 'CapsLock',
+        27: 'Esc',
+        33: 'PageUp',
+        34: 'PageDown',
+        35: 'End',
+        36: 'Home',
+        37: 'LeftArrow',
+        38: 'UpArrow',
+        39: 'RightArrow',
+        40: 'DownArrow',
+        45: 'Insert',
+        46: 'Delete',
+        112: 'F1' ,
+        113: 'F2' ,
+        114: 'F3' ,
+        115: 'F4' ,
+        116: 'F5' ,
+        117: 'F6' ,
+        118: 'F7' ,
+        119: 'F8' ,
+        120: 'F9' ,
+        121: 'F10',
+        122: 'F11',
+        123: 'F12'
+    },
+    keyLabel: function(e) {
+        x6.console.group("Key Label processing, event follows");
+        x6.console.log(e);
+        // if e.originalEvent is defined, this is a jQuery event.
+        // jQuery events have charCode for non-meta keys, and they
+        // shift the alphabet up by 32 characters for no good reason
+        // at all.  
+        if(e.originalEvent) {
+            x6.console.log("e.originalEvent exists, this is jQuery");
+            if(e.charCode >= 97 && e.charCode <= 122) {
+                var x = e.charCode - 32;
+                x6.console.log(
+                    "Taking charCode and subtracting 32:",e.charCode,x
+                );
+            }
+            else if(e.charCode != 0) {
+                x6.console.log("Taking charCode ",e.charCode);
+                var x = e.charCode
+            }
+            else {
+                x6.console.log("Taking keyCode ",e.keyCode);
+                var x = e.keyCode;
+            }
+        }
+        else {
+            x6.console.log("Taking keyCode ",e.keyCode);
+            var x = e.keyCode;
+        }
+        x6.console.log("Proceeding with this code: ",x);
+        
+        x4Keys = this.metaKeys;
+    
+        // If they hit one of the control keys, check for
+        // Shift, Ctrl, or Alt
+        var retval = '';
+        if(typeof(x4Keys[x])!='undefined') {
+            retval = x4Keys[x];
+            if(e.ctrlKey)  retval = 'Ctrl'  + retval;
+            if(e.altKey)   retval = 'Alt'   + retval;
+            if(e.shiftKey) retval = 'Shift' + retval;
+            x6.console.log("Found meta-key, returning: ",retval);
+            x6.console.groupEnd();
+            return retval;
+        }
+        
+        // If letters we look at shift key and return
+        // upper or lower case
+        if(x >= 65 && x <= 90) {
+            if(e.shiftKey || e.ctrlKey || e.altKey) {
+                var letters = 
+                    [ 'A', 'B', 'C', 'D', 'E', 'F', 'G',
+                      'H', 'I', 'J', 'K', 'L', 'M', 'N',
+                      'O', 'P', 'Q', 'R', 'S', 'T', 'U',
+                      'V', 'W', 'X', 'Y', 'Z' ];
+            }
+            else {
+                var letters = 
+                    [ 'a', 'b', 'c', 'd', 'e', 'f', 'g',
+                      'h', 'i', 'j', 'k', 'l', 'm', 'n',
+                      'o', 'p', 'q', 'r', 's', 't', 'u',
+                      'v', 'w', 'x', 'y', 'z' ];
+            }
+            var retval = letters[x - 65];
+            if(e.ctrlKey)  retval = 'Ctrl'  + retval;
+            if(e.altKey)   retval = 'Alt'   + retval;
+            x6.console.log("Found letter, returning: ",retval);
+            x6.console.groupEnd();
+            return retval;
+        }
+        
+        // Numbers or the corresponding codes go here
+        if(x >= 48 && x <= 57) {
+            if(e.shiftKey) {
+                var numbers = [ ')','!','@','#','$','%','^','&','*','(' ];
+            }
+            else {
+                var numbers = [ '0','1','2','3','4','5','6','7','8','9' ];
+            }
+            var retval = numbers[x - 48];
+            if(e.ctrlKey)  retval = 'Ctrl'  + retval;
+            if(e.altKey)   retval = 'Alt'   + retval;
+            if(e.shiftKey) retval = 'Shift' + retval;
+            x6.console.log("Found number, returning: ",retval);
+            x6.console.groupEnd();
+            return retval;
+        }
+        if(retval!='') {
+            if(e.ctrlKey)  retval = 'Ctrl'  + retval;
+            if(e.altKey)   retval = 'Alt'   + retval;
+            if(e.shiftKey) retval = 'Shift' + retval;
+            x6.console.log("Found letter or number, returning: ",retval);
+            x6.console.groupEnd();
+            return retval;            
+        }
+        
+        var lastChance = {
+            192: '`',
+            109: '-',
+            61:  '=',
+            219: '[',
+            221: ']',
+            220: '\\',
+            188: ',',
+            190: '.',
+            191: '/',
+            59:  ';',
+            222: "'"
+        }
+        if(typeof(lastChance[x])!='undefined') {
+            if(e.shiftKey) {
+                var lastChance = {
+                    192: '~',
+                    109: '_',
+                    61:  '+',
+                    219: '{',
+                    221: '}',
+                    220: '|',
+                    188: '<',
+                    190: '>',
+                    191: '?',
+                    59:  ':',
+                    222: '"'
+                }
+            }
+            var retval = lastChance[x];
+            x6.console.log("Found 'last chance' character, returning: ",retval);
+            x6.console.groupEnd();
+            return retval;
+        }
+        // otherwise put on any prefixes and return
+        return retval;
+    },
+    
+    keyIsNumeric: function(e) {
+        var keyLabel = this.keyLabel(e);
+        var numbers = [ '0','1','2','3','4','5','6','7','8','9' ];
+        return numbers.indexOf(keyLabel)>=0;
+    },
+    
+    keyIsMeta: function(e) {
+        var code = e.keyCode || e.charCode;
+        return typeof(this.metaKeys[code])!='undefined';
+    }    
 }
 
 /* **************************************************************** *\
@@ -549,7 +742,6 @@ var x6events = {
         this.retvals[eventName] = true;
         for(var x=0; x<subscribers.length;x++) {
             var id = subscribers[x];
-            x6.console.log("type of id: ",typeof(id));
             x6.console.log("subscriber: ",id);
             var subscriber = u.byId(id);
             if(subscriber==null) {
@@ -641,25 +833,27 @@ var x6inputs = {
         // KFD/JD IE event compatibility
         e = e ? e : window.event;
         inp = inp ? inp : e.srcElement;
-        x6.console.group('Input keyDown ');
-        x6.console.log("I am in input keydown ",inp,e);
+        x6.console.group('Input keyDown, input and event follow.');
         x6.console.log(inp);
         x6.console.log(e);
-        var keyLabel=u.keyLabel(e);
+        var keyLabel=x6.keyLabel(e);
         var isTab   =keyLabel=='Tab'    || keyLabel=='ShiftTab';
         var isEnter =keyLabel=='Enter'  || keyLabel=='ShiftEnter';  
         var isMeta  =u.keyIsMeta(e);
         var isNav   =isEnter || isTab;
-        x6.console.log("label ",keyLabel,' isTab ',isTab,' isEnter ',isEnter,' isMeta ',isMeta,' isNav ',isNav);
+        x6.console.log("label: "  ,keyLabel);
+        x6.console.log('isTab: '  ,isTab   );
+        x6.console.log('isEnter: ',isEnter );
+        x6.console.log('isMeta: ' ,isMeta  );
+        x6.console.log('isNav: '  ,isNav   );
         
         // All meta keys return true immediately except TAB and ENTER
         if(isMeta && !isNav) {
-            x6.console.log("input keydown key: ",keyLabel);
             var handUpList = ['UpArrow','DownArrow','PageUp','PageDown'];
             if(handUpList.indexOf(keyLabel)>=0) {
+                x6.console.log("This key may be passed up to doc handler.");
                 // An explicit flag can prevent handing events up
                 if(u.p(inp,'xNoPassup','N')=='N') {
-                    // If there is an open x6select, do not hand up
                     if(x6inputs.x6select.div) {
                         if(keyLabel == 'DownArrow') {
                             x6inputs.x6select.display(inp,'Down');
@@ -669,10 +863,12 @@ var x6inputs = {
                         }
                     }
                     else {
-                    x6.console.log("Weird key that we pass up to doc-level keyPress");
+                        u.bb.vgfSet('noKeyPress',true);
+                        x6.console.log("Going to doc keypress dispatcher.");
                         var retval= x6.keyDispatcher(e);
                     }
                 }
+                console.log("About to call groupEnd");
                 x6.console.groupEnd(); 
                 return retval;
             }
@@ -716,6 +912,7 @@ var x6inputs = {
             x6.console.log("Not nav key, doing type validation");
             if(u.p(inp,'xLookup','N')=='Y') {
                 x6.console.log("This is a lookup input, allowing everything");
+                x6.console.groupEnd();
                 return true;
             }
             type = u.p(inp,'xtypeid');
@@ -727,7 +924,7 @@ var x6inputs = {
             case 'numb':
             case 'money':
                 x6.console.log("type validation for numb/money");
-                if(!u.keyIsNumeric(e) && u.keyLabel(e)!='.') return false;
+                if(!u.keyIsNumeric(e) && x6.keyLabel(e)!='.') return false;
                 break;
             case 'date':
                 x6.console.log("type validation for date");
@@ -1252,7 +1449,7 @@ var x6inputs = {
             // If still here, we have values and descriptions
             var retval = '<table><thead><tr>';
             var descs  = u.p(input,'xTitles').split('|');
-            for(var idx in descs) {
+            for(var idx=0; idx<descs.length; idx++) {
                 retval+='<th>'+descs[idx]+'</th>';
             }
             retval+='<th>&nbsp;&nbsp;&nbsp;&nbsp;';
@@ -1285,10 +1482,10 @@ var x6inputs = {
             x6.console.log(svals);
             retval = '';
             var rows   = svals.split('||');
-            for(var idx in rows) {
+            for(var idx=0;idx<rows.length;idx++) {
                 retval += '<tr>';
                 var values = rows[idx].split('|');
-                for(var idx2 in values) {
+                for(var idx2=0;idx2 < values.length; idx2++) {
                     retval+= '<td>'+values[idx2];
                 }
             }
@@ -1313,10 +1510,10 @@ var x6inputs = {
                 curVal = jqCandidate[0].innerHTML;
             }
             
-            for(var idx in rows) {
+            for(var idx=0; idx < rows.length; idx++) {
                 retval += '<tr>';
                 var values = rows[idx];
-                for(var idx2 in values) {
+                for(var idx2=0; idx2 < values.length; idx2++) {
                     if(values[idx2] == null) {
                         retval+= '<td>&nbsp;';
                     }
@@ -1804,7 +2001,7 @@ x6plugins.tableController = function(self,id,table) {
             else {
                 var retval = 'fail';
                 var errors = [ ];
-                for(var idx in ua.json.jdata.error) {
+                for(var idx = 0; idx < ua.json.jdata.error.length; idx++) {
                     if(ua.json.jdata.error[idx].slice(0,8)!='(ADMIN):') {
                         errors.push(ua.json.jdata.error[idx]);
                     }
@@ -2389,6 +2586,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
             var html = "<div id='"+this.zTable+"_0' style='display:none'>"
                 + this.zRowEditHtml
                 + "</div>";
+            // Here we have an object, not an array, so we iterate by name?
             for(var idx in this.zColsById) {
                 html = html.replace('*VALUE_'+idx+'*','');
             }
@@ -2790,7 +2988,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
                 "<div id='"+this.rowId(row.skey,true)+"'"
                 +" style='display:none'>";
             var numbers = [ 'int', 'numb', 'money' ];
-            for (var idx in this.zColsInfo) {
+            for (var idx=0; idx<this.zColsInfo.length; idx++) {
                 var colInfo = this.zColsInfo[idx];
                 if(colInfo.column_id == '') continue;
 
@@ -2809,7 +3007,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
             $(this.rowId(skey)).fadeIn();
         }
         else {
-            for(var idx in this.zColsInfo) {
+            for (var idx=0; idx<this.zColsInfo.length;idx++) {
                 var col = this.zColsInfo[idx].column_id;
                 if(col!='') {
                     //var str="#row_"+skey+" div[gColumn="+idx+"]";
@@ -2915,7 +3113,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
         self['receiveEvent_uiShowErrors_'+table] = function(errors) {
             x6.console.group("tabDiv uiShowErrors");
             x6.console.log(errors);
-            for(var idx in errors) {
+            for(var idx=0; idx<errors.length; idx++) {
                 x6.console.log(errors[idx]);
                 var aError = errors[idx].split(':');
                 var column = aError[0];
@@ -2956,10 +3154,10 @@ x6plugins.x6tabDiv = function(self,id,table) {
                 x6events.fireEvent('reqNewRow_'+this.zTable,true);
             }
         }
-        return false;
         //x6events.retvals['key_UpArrow'] =false;
         x6.console.log("tabDiv key_UpArrow finished");
         x6.console.groupEnd();
+        return false;
     }
     self.receiveEvent_key_DownArrow = function(e) {
         x6.console.group("tabDiv key_DownArrow");
@@ -3145,7 +3343,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
     ];
     self.keyboardOn = function() {
         if(this.keyboardStatus=='On') return;
-        for(var key in this.keyList) {
+        for(var key=0; key<this.keyList.length; key++) {
             var keyLabel = this.keyList[key];
             x6events.subscribeToEvent('key_'+keyLabel,id);
         }
@@ -3154,7 +3352,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
     }
     self.keyboardOff = function() {
         if(this.keyboardStatus=='Off') return;
-        for(var key in this.keyList) {
+        for(var key=0; key<this.keyList.length; key++) {
             var keyLabel = this.keyList[key];
             x6events.unsubscribeToEvent('key_'+keyLabel,id);
         }
@@ -3556,7 +3754,7 @@ x6plugins.x6tabs = function(self,id,table) {
         x6events.subscribeToEvent('uiEditRow_'+table,id);
         self['receiveEvent_uiEditRow_'+table] = function(x) {
             var kids = u.p(this,'kids').split('|');
-            for(var kid in kids) {
+            for(var kid=0; kid < kids.length; kid++) {
                 var pieces = kids[kid].split(':');
                 var table_chd = pieces[0];
                 var display   = pieces[1];  // assume 'checkbox'
