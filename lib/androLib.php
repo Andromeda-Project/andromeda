@@ -2278,6 +2278,22 @@ class androHtml {
             }
         }
         
+        # KFD 12/30/08, IE Compatibility.  All inputs, selects and
+        #               so forth must have an ID.  This is actually
+        #               due to jQuery returning strange items with
+        #               the :input selector, and we can only distinguish
+        #               real from bogus by looking for IDs
+        if(in_array($this->htype,array('input','select','checkbox'))) {
+            if(arr($this->hp,'id','')=='') {
+                $id = rand(1000,9999);
+                while(isset($GLOBALS['AG']['id'][$id])) {
+                    $id = rand(1000,9999);
+                }
+                $this->hp['id'] = 'id_'.$id;
+                $GLOBALS['AG']['id'][$id] = 1;
+            }
+        }
+        
         # Set the x6 parent tab if exists
         if(arr($this->hp,'x6plugin') == 'x6tabs') {
             $this->hp['x6wrapperPane'] = $x6wrapperPane;

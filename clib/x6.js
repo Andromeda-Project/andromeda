@@ -19,6 +19,14 @@
    or visit http://www.gnu.org/licenses/gpl.html
 \* ================================================================== */
 
+// KFD 12/30/08, establish the browser's name
+if(navigator.appName=='Microsoft Internet Explorer') {
+    window.androIsIE = true;
+}
+else {
+    window.androIsIE = false;
+}
+
 /* **************************************************************** *\
 
    Cookie functions.
@@ -72,9 +80,9 @@ var x6 = {
         // SEE ALSO: input.keyDown(), it must also pass some
         //           events to keyDispatcher that don't go to
         //           the document.keypress from an input 
-        $(document).keypress(function(e) {
+        $(document).keydown(function(e) {
                 //e = e ? e : window.event;
-                x6.console.group("Document Keypress");
+                x6.console.group("Document Keydown");
                 if(u.bb.vgfGet('noKeyPress',false)==true) {
                     x6.console.log("noKeyPress was set, ignoring");
                     u.bb.vgfSet('noKeyPress',false);
@@ -102,12 +110,32 @@ var x6 = {
     },
     
     initFocus: function() {
-        //var str   = '[x6firstFocus=Y]:not([disabled]):reallyvisible:first';
-        var str   = ':input:not([disabled]):first';
-        //var first = $('input:not([disabled])').isVisible().find(':first');
-        var first = $(str);
-        if(first.length>0) first.focus();
-        else $('.x6main').focus();
+        var str   = ':input:not([disabled]):not([type=hidden])';
+        this.jqSetFocus(str);
+    },
+    
+    jqSetFocus: function(jqString) {
+        x6.console.log("in jqSetFocus, string: ",jqString);
+        var x = $(jqString);
+        if(x.length>0) {
+            // KFD 12/30/08, awful IE hack for grids, we get some
+            //               inputs in there that are not real,
+            //               probably related to the zRowEditHtml
+            //               property, who knows really;
+            if(!window.androIsIE) {
+                x[0].focus();
+            }
+            else {
+                var z=0;
+                while(z < x.length) {
+                    if(u.p(x[z],'id','').trim()!='') break;
+                    z++;
+                }
+                if(u.p(x[z],'id','').trim() !='') {
+                    x[z].focus();
+                }
+            }
+        }
     },
     
     // Keyboard handler
@@ -310,7 +338,7 @@ var x6 = {
                     "Taking charCode and subtracting 32:",e.charCode,x
                 );
             }
-            else if(e.charCode != 0) {
+            else if(e.charCode != 0 && e.charCode != null) {
                 x6.console.log("Taking charCode ",e.charCode);
                 var x = e.charCode
             }
@@ -1015,14 +1043,14 @@ var x6inputs = {
         // original behavior.
         if(inp==first && e.shiftKey) {
             var str ='[xTabGroup='+tg+']:not([disabled]):last';
-            x6.console.log(str);
-            $(str).focus();
+            x6.jqSetFocus(str);
             x6.console.log("First input, hit shift, going to last");
             x6.console.groupEnd();
             return false;
         }
         if(inp==last && !e.shiftKey) {
-            $('[xTabGroup='+tg+']:not([disabled]):first').focus();
+            var str = '[xTabGroup='+tg+']:not([disabled]):first';
+            x6.jqSetFocus(str);
             x6.console.log("Last input, no shift, going to first");
             x6.console.groupEnd();
             return false;
@@ -1054,7 +1082,9 @@ var x6inputs = {
             );
             if(focusTo) {
                 x6.console.log("Setting focus forward to ",focusTo);
-                $('[zActive]#'+focusTo).focus().select();
+                var str = '[zActive]#'+focusTo;
+                x6.jqFocus(str);
+                //$('[zActive]#'+focusTo).focus().select();
             }
             
         }
@@ -1077,7 +1107,9 @@ var x6inputs = {
             );
             if(focusTo) {
                 x6.console.log("Setting focus backward to ",focusTo);
-                $('[zActive]#'+focusTo).focus().select();
+                var str = '[zActive]#'+focusTo;
+                x6.jqFocus(str);
+                //$('[zActive]#'+focusTo).focus().select();
             }
         }
         x6.console.log("Returning True");
@@ -1266,7 +1298,8 @@ var x6inputs = {
     
     findFocus: function(obj) {
         if(typeof(obj)=='string') {
-            $(obj+" :input:first:not([disabled])").focus();
+            x6.jqFocus(obj+" :input:first:not([disabled])");
+            //$(obj+" :input:first:not([disabled])").focus();
         }
         else {
             $(obj).find(":input:first:not([disabled])").focus();
@@ -1275,11 +1308,11 @@ var x6inputs = {
     
     firstInput: function(inp) {
         var xtg = u.p(inp,'xTabGroup','tgdefault');
-        $(":input[xtabgroup="+xtg+"]:not([disabled]):first").focus();
+        x6.jqFocus(":input[xtabgroup="+xtg+"]:not([disabled]):first");
     },
     lastInput: function(inp) {
         var xtg = u.p(inp,'xTabGroup','tgdefault');
-        $(":input[xtabgroup="+xtg+"]:not([disabled]):last").focus();
+        x6.jqFocus(":input[xtabgroup="+xtg+"]:not([disabled]):last");
     },
     
     jqFocusString: function() {
@@ -1441,7 +1474,8 @@ var x6inputs = {
                 this.moveUpOrDown(fromKeyboard);
             }
             else {
-                $(input).focus();
+                //$(input).focus();
+                u.byId(input.id).focus();
             }
         },
         
@@ -2566,7 +2600,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
             *   focus on it.
             */
             if(skey==0 && u.bb.vgfGet('lastSave_'+this.zTable)=='noaction') {
-                $(this.rowId(0)+" :input:first:not([disabled])").focus();
+                x6.jqFocus(this.rowId(0)+" :input:first:not([disabled])");
                 x6.console.log("On an empty new row, setting focus");
                 x6.console.groupEnd();
                 return;
@@ -2795,11 +2829,11 @@ x6plugins.x6tabDiv = function(self,id,table) {
         var focusCandidate = u.bb.vgfGet('lastFocus_'+this.zTable,'');
         if(focusCandidate!='') {
             var str = this.rowId(skey)+' #'+focusCandidate;
-            $(str).focus();
+            x6.jqFocus(str);
         }
         else {
             var str = this.rowId(skey)+" :input:not([disabled]):first"; 
-            $(str).focus();   
+            x6.jqFocus(str);
         }
     }
     
@@ -3525,7 +3559,7 @@ x6tabs = {
         */
         var str = '#' + ui.panel.id;
         str+=' :input:not([disabled]):first';
-        $(str).focus();
+        x6.jqFocus(str);
         
         /*
         *  Save the id and index of the newly shown tab
