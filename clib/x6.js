@@ -75,7 +75,7 @@ var x6 = {
         $(document).keypress(function(e) {
                 //e = e ? e : window.event;
                 x6.console.group("Document Keypress");
-                x6.console.log("keypress ",e);
+                x6.console.log("Here is keypress event: ",e);
                 var retval= x6.keyDispatcher(e);
                 x6.console.groupEnd(); 
                 return retval;
@@ -444,7 +444,7 @@ var x6events = {
     subscribeToEvent: function(eventName,id) {
         x6.console.group("subscribeToEvent "+eventName);
         x6.console.log("event name: ",eventName)
-        x6.console.log("id subscbr: ",id);
+        x6.console.log("id subscriber: ",id);
         if(id=='undefined') {
             u.error('x6events.subscribeToEvent.  Second parameter '
                 +' undefined.  First parameter: '+eventName
@@ -538,11 +538,16 @@ var x6events = {
         x6.console.log('arguments: ',arguments);
         // Find out if anybody is listening for this event
         var subscribers = this.getSubscribers(eventName);
+        if(subscribers.length==0) {
+            x6.console.log("No subscribers to this event, no action");
+            x6.console.groupEnd();
+            return;
+        }
         
         // loop through subscribers.  Note at the bottom of the list
         // that if an event handler returns false we must stop.
         this.retvals[eventName] = true;
-        for(var x=0; x<(subscribers.length-1);x++) {
+        for(var x=0; x<subscribers.length;x++) {
             var id = subscribers[x];
             x6.console.log("type of id: ",typeof(id));
             x6.console.log("subscriber: ",id);
