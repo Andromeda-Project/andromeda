@@ -16132,7 +16132,10 @@ function SQL2($sql,$dbconn,&$error=false)
 	}
 	global $AG;
 	$errlevel = error_reporting(0);
-	$debug = trim(ConfigGet('js_css_debug','N'));
+    # KFD 12/31/08, Control by cookie and group setting
+    $debug = inGroup('debugging') && arr($_COOKIE,'log_Server',0)==1;
+	#$debug = trim(ConfigGet('js_css_debug','N'));
+    # KFD 12/31/08  (END)
 	if ( $debug =='Y') {
     	$mtime = microtime();
         $mtime = explode(" ",$mtime);
