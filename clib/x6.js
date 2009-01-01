@@ -60,6 +60,78 @@ function eraseCookie(name) {
 	createCookie(name,"",-1);
 }
 
+/* **************************************************************** *\
+
+
+   Cross Browser selectionStart/selectionEnd
+   Version 0.2
+   Copyright (c) 2005-2007 KOSEKI Kengo
+ 
+   This script is distributed under the MIT licence.
+   http://www.opensource.org/licenses/mit-license.php
+   
+   Notes from KFD:
+   Explained at: http://www.teria.com/~koseki/memo/xbselection/
+   Download    : http://www.teria.com/~koseki/memo/xbselection/Selection.js
+
+\* **************************************************************** */
+
+function Selection(textareaElement) {
+    this.element = textareaElement;
+}
+
+Selection.prototype.create = function() {
+    if (document.selection != null && this.element.selectionStart == null) {
+        return this._ieGetSelection();
+    } else {
+        return this._mozillaGetSelection();
+    }
+}
+
+Selection.prototype._mozillaGetSelection = function() {
+    return { 
+        start: this.element.selectionStart, 
+        end: this.element.selectionEnd 
+    };
+}
+
+Selection.prototype._ieGetSelection = function() {
+    this.element.focus();
+
+    var range = document.selection.createRange();
+    var bookmark = range.getBookmark();
+
+    var contents = this.element.value;
+    var originalContents = contents;
+    var marker = this._createSelectionMarker();
+    while(contents.indexOf(marker) != -1) {
+        marker = this._createSelectionMarker();
+    }
+
+    var parent = range.parentElement();
+    if (parent == null || parent.type != "textarea") {
+        return { start: 0, end: 0 };
+    }
+    range.text = marker + range.text + marker;
+    contents = this.element.value;
+
+    var result = {};
+    result.start = contents.indexOf(marker);
+    contents = contents.replace(marker, "");
+    result.end = contents.indexOf(marker);
+
+    this.element.value = originalContents;
+    range.moveToBookmark(bookmark);
+    range.select();
+
+    return result;
+}
+
+Selection.prototype._createSelectionMarker = function() {
+    return "##SELECTION_MARKER_" + Math.random() + "##";
+}
+
+
   
 /* **************************************************************** *\
 
@@ -1083,7 +1155,7 @@ var x6inputs = {
             if(focusTo) {
                 x6.console.log("Setting focus forward to ",focusTo);
                 var str = '[zActive]#'+focusTo;
-                x6.jqFocus(str);
+                x6.jqSetFocus(str);
                 //$('[zActive]#'+focusTo).focus().select();
             }
             
@@ -1108,7 +1180,7 @@ var x6inputs = {
             if(focusTo) {
                 x6.console.log("Setting focus backward to ",focusTo);
                 var str = '[zActive]#'+focusTo;
-                x6.jqFocus(str);
+                x6.jqSetFocus(str);
                 //$('[zActive]#'+focusTo).focus().select();
             }
         }
@@ -1298,7 +1370,7 @@ var x6inputs = {
     
     findFocus: function(obj) {
         if(typeof(obj)=='string') {
-            x6.jqFocus(obj+" :input:first:not([disabled])");
+            x6.jqSetFocus(obj+" :input:first:not([disabled])");
             //$(obj+" :input:first:not([disabled])").focus();
         }
         else {
@@ -1308,11 +1380,11 @@ var x6inputs = {
     
     firstInput: function(inp) {
         var xtg = u.p(inp,'xTabGroup','tgdefault');
-        x6.jqFocus(":input[xtabgroup="+xtg+"]:not([disabled]):first");
+        x6.jqSetFocus(":input[xtabgroup="+xtg+"]:not([disabled]):first");
     },
     lastInput: function(inp) {
         var xtg = u.p(inp,'xTabGroup','tgdefault');
-        x6.jqFocus(":input[xtabgroup="+xtg+"]:not([disabled]):last");
+        x6.jqSetFocus(":input[xtabgroup="+xtg+"]:not([disabled]):last");
     },
     
     jqFocusString: function() {
@@ -2600,7 +2672,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
             *   focus on it.
             */
             if(skey==0 && u.bb.vgfGet('lastSave_'+this.zTable)=='noaction') {
-                x6.jqFocus(this.rowId(0)+" :input:first:not([disabled])");
+                x6.jqSetFocus(this.rowId(0)+" :input:first:not([disabled])");
                 x6.console.log("On an empty new row, setting focus");
                 x6.console.groupEnd();
                 return;
@@ -2829,11 +2901,11 @@ x6plugins.x6tabDiv = function(self,id,table) {
         var focusCandidate = u.bb.vgfGet('lastFocus_'+this.zTable,'');
         if(focusCandidate!='') {
             var str = this.rowId(skey)+' #'+focusCandidate;
-            x6.jqFocus(str);
+            x6.jqSetFocus(str);
         }
         else {
             var str = this.rowId(skey)+" :input:not([disabled]):first"; 
-            x6.jqFocus(str);
+            x6.jqSetFocus(str);
         }
     }
     
@@ -3559,7 +3631,7 @@ x6tabs = {
         */
         var str = '#' + ui.panel.id;
         str+=' :input:not([disabled]):first';
-        x6.jqFocus(str);
+        x6.jqSetFocus(str);
         
         /*
         *  Save the id and index of the newly shown tab
