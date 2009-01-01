@@ -44,6 +44,13 @@ class x6useroptions extends androX6 {
         <?php
         $tab1->setHtml(ob_get_clean());
         
+        # <------- EARLY RETURN
+        #
+        if(!inGroup('debugging')) {
+            $top->render();
+            return;
+        }
+        
         # --------------------------------------------------------------
         # Now for javascript and logging
         # --------------------------------------------------------------
@@ -103,9 +110,10 @@ JS;
         $tab2->br(2);
         
         $loptions = array(
-            'FBLite'=>'I am on IE, load Firebug Lite for me'
-            ,'Group'=>'Grouping of Logging Messages'
-            ,'Log'=>'Detail Logging Messages'
+            'Server'=>'Server-Side Query Log'
+            ,'FBLite'=>'I am on IE, load Firebug Lite for me'
+            ,'Group'=>'Javascript Log Outline'
+            ,'Log'=>'Javascript Log Detail'
             ,'Warn'=>'Warnings'
             ,'Info'=>'Informational'
             ,'Error'=>'Errors'
@@ -135,6 +143,9 @@ JS;
             $tab2->addChild($input);
             $tab2->h('span',$description);
             $tab2->br();
+            if($loption=='Server') {
+                $tab2->br();
+            }
             
         }
         # --------------------------------------------------------------

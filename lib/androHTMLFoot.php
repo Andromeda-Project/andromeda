@@ -89,10 +89,11 @@ if(configGet('deprecated','Y')=='Y') {
 <div id="dialogbox"     style="display:none"></div>
 
 <?php
-    $configJS = trim(configGet('js_css_debug' ,'N'));
-    $configAL = trim(configGet('admin_logging','N'));
-    $ROOT     = SessionGet('ROOT');
-    if ( ($configJS == 'Y' || ($configAL=='Y' && $ROOT)) && !vgfGet('x6')) {
+    # KFD 12/31/08.  Restrict the query log to people who have
+    #                set the cookie and are in the 'debuggers' group
+    $debugging = inGroup('debugging');
+    $cookie    = arr($_COOKIE,'log_Server',0);
+    if($debugging && $cookie) {
         echo( '<br /><div class="androQueryLog">' );
         echo( '<div class="androQueryLogTitle">
             <div style="float:left;height:20px;">Query Log</div><div style="float:right;height:20px;cursor:pointer;" onclick="showHide(\'androQueryLogItems\');">Show/Hide</div></div>' );

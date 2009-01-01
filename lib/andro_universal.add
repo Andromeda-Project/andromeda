@@ -66,6 +66,11 @@ group usermaint {
    }
 }
 
+// Group of users allowed to see debugging information
+group debugging {
+    description: Program Debuggers;
+}
+
 // People here can
 group filemaint {
    description: File Maintenance;
