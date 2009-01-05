@@ -2779,6 +2779,7 @@ class androHTMLTabDiv extends androHTML {
         # The body is empty, we have to add row by row
         $this->dbody= $this->h('div');
         $this->dbody->addClass('tbody');
+        $this->dbody->hp['id'] = 'tbody_'.$table;
         $this->dbody->hp['style'] = "height: {$height}px;";
         
         # The footer is like the header, we go ahead
@@ -3132,6 +3133,12 @@ class androHTMLTabDiv extends androHTML {
         }
     }
     
+    function noResults() {
+        $div = $this->dbody->h('div');
+        $div->hp['style'] = 'text-align: center; padding-top: 20px';
+        $div->setHTML('<b>No results found</b>');
+    }
+    
     function addLookupInputs() {
         $fakeCI = array('colprec'=>'10');
         
@@ -3230,6 +3237,7 @@ class androHTMLDetail extends androHTML {
         # Now for the display
         # Put some buttons on users
         $this->addButtonBar();
+        
                 
         # Put in a div that will be the inner box
         #
@@ -3241,13 +3249,39 @@ class androHTMLDetail extends androHTML {
         $table->addClass('x6Detail');
         $this->inputsTable = $table;
         $cols  = projectionColumns($dd,'');
+
+        # KFD 1/2/08.  Loop through columns and try to find anything
+        #              with an x6breakafter.  If found, do not break
+        #              every 17, use the instructions in x6breakafter.
+        $break17 = true;
         foreach($cols as $idx=>$col) {
-            if($idx>0 && $idx % 17 == 0) {
-                $this->inputsTable=$div->h('table');
-                $this->inputsTable->hp['style'] = 'float: left';
-                $this->inputsTable->addClass('x6Detail');
+            if(arr($dd['flat'][$col],'x6breakafter','')<>'') {
+                $break17 = false;
+                break;
+            }
+        }
+
+        foreach($cols as $idx=>$col) {
+            if($break17) {
+                if($idx>0 && $idx % 17 == 0) {
+                    $this->inputsTable=$div->h('table');
+                    $this->inputsTable->hp['style'] = 'float: left';
+                    $this->inputsTable->addClass('x6Detail');
+                }
             }
             $this->addTRInput($dd,$col);
+            $x6ba = trim(arr($dd['flat'][$col],'x6breakafter',''));
+            if($x6ba=='column') {
+                $this->inputsTable=$div->h('table');
+                $this->inputsTable->hp['style'] 
+                    = 'float: left';
+                $this->inputsTable->addClass('x6Detail');
+            }
+            if($x6ba=='line') {
+                $tr = $this->inputsTable->h('tr');
+                $td = $tr->h('td','&nbsp;');
+                $td->hp['colspan'] = 2;
+            }
         }
 
         # Calculate height of inner area
@@ -3276,8 +3310,14 @@ class androHTMLDetail extends androHTML {
         
         $this->innerDiv = $div;
         
-        $sb = $this->h('div','status message here');
+        $sb = $this->h('div');
         $sb->addClass('statusBar');
+        $sbl = $sb->h('div');
+        $sbl->addClass('sbleft');
+        $sbl->hp['id'] = 'sbl_'.$table_id;
+        $sbr = $sb->h('div');
+        $sbr->addClass('sbright');
+        $sbr->hp['id'] = 'sbr_'.$table_id;
         
         return $emptyHeight;
     }
@@ -3945,12 +3985,19 @@ function projectionColumns($dd,$projection='') {
     }
     else {
         if($projection == '') {
+            $x6      = vgfGet('x6',false);
             $columns = array();
             foreach($dd['flat'] as $column_id=>$colinfo) {
                 if($colinfo['uino']=='Y'   ) continue;
                 if($column_id=='skey'      ) continue;
                 if($column_id=='_agg'      ) continue;
                 if($column_id=='skey_quiet') continue;
+                if($x6) {
+                    if($column_id=='ts_ins' ) continue;
+                    if($column_id=='ts_upd' ) continue;
+                    if($column_id=='uid_ins') continue;
+                    if($column_id=='uid_upd') continue;
+                }
                 $columns[]=$column_id;
             }
         }
