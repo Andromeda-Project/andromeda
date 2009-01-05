@@ -705,6 +705,7 @@ column uisearchsort { type_id: char; colprec: 1; description: Default Search Sor
 column fkioffset    { type_id: int; description: FK Include Offset; }
 column fkilimit     { type_id: int; description: FK Include Limit;  }
 column table_id_fki { type_id: char; colprec: 50; description: FK Include Foreign Key; }
+column x6breakafter { type_id: char; colprec: 10; description: x6 Detail Break Instructions; }
 table tabcol {
     module: datadict;
     description: Column Placements;
@@ -722,7 +723,7 @@ table tabcol {
     column { uiwithnext; uisearch; description; }
     column { descshort; dispsize}
     column { range_from; range_to; }
-    column { value_min; value_max; x6view; uisearch_ignore_dash; }
+    column { value_min; value_max; x6view; x6breakafter; uisearch_ignore_dash; }
     column { uirows;    uicols;    }
     column { table_id_fko; }
     column { fkioffset; fkilimit; table_id_fki; }
@@ -763,6 +764,7 @@ column allow_orphans { type_id: char; colprec: 1;  description: Allow Orphans;  
 column delete_cascade    { type_id: char; colprec: 1;  description: Parent Delete Cascades; }
 column prevent_fk_change { type_id: char; colprec: 1;  description: Prevent FK Changes; }
 column uidisplay      { type_id: char; colprec: 10; description: UI Display Method;  }
+column x6display      { type_id: char; colprec: 10; description: x6 UI display method; }
 column uifiltercolumn { type_id: char; colprec: 35; description: UI Filter Column;  }
 
 table tabfky {
@@ -781,8 +783,8 @@ table tabfky {
 
 	column { auto_insert; copysamecols; }
 	column { uicolseq; nocolumns; allow_empty; allow_orphans; }
-   column { delete_cascade; prevent_fk_change; }
-	column { uidisplay; uifiltercolumn;}
+    column { delete_cascade; prevent_fk_change; }
+    column { uidisplay; x6display; uifiltercolumn;}
 	column { skey; skey_quiet; _agg; }
 }
 
@@ -1360,8 +1362,8 @@ table tabflat {
     column { value_min; value_max; x6view; uisearch_ignore_dash; }
     column { uirows;    uicols;    }
     
-    column { uisearch; uicolseq; uiwithnext       }
-    column { ins;uiro;uino;dispsize;uiinline; uisearchsort}	
+    column { uisearch; uicolseq; uiwithnext; x6breakafter  }
+    column { ins;uiro;uino;dispsize;uiinline; uisearchsort }	
     column { type_id;colprec;colscale; colres; formula;formshort }
     column { uicolseq; tooltip }
     column { required; }
