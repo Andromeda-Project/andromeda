@@ -22,6 +22,8 @@
 ******
 */
 class androX6 {
+    var $appTabs = array();
+    
     # ===================================================================
     #
     # Major Area 0: User overridable functions 
@@ -300,17 +302,23 @@ class androX6 {
     #
     # ===================================================================
     function browseFetch() {
-        $time = microtime(true);
+        $mtime=microtime(true);
         $table_id = $this->dd['table_id'];
+        $tabPar   = gp('tableIdPar');
         
-        #  This is the list of columns to return 
+        #  This is the list of columns to return.  Maybe override
+        #  if there is something specific named for this table
         $acols = explode(',',$this->dd['projections']['_uisearch']);
+        if($tabPar<>'') {
+            if(isset($this->dd['projections']['child_'.$tabPar])) {
+                $acols=explode(',',$this->dd['projections']['child_'.$tabPar]);
+            }
+        }
 
         #  By default the search criteria come from the 
         #  variables, unless it is a child table search
         $vals = aFromGP('x6w_');
         $awhere = array();
-        $tabPar = gp('tableIdPar');
         $projSort= '';
         if($tabPar=='') {
             $vals2 = array();
@@ -477,8 +485,9 @@ class androX6 {
         # If they asked for the entire grid, send it back
         # as *MAIN* and let the browser put it where it belongs
         if(gp('sendGrid',0)==1) {
-            #$grid->render();
-            #exit;
+            if(count($answer)==0) {
+                $grid->noResults();
+            }
             x6html('*MAIN*',$grid->bufferedRender());
             return;
         }
@@ -486,17 +495,15 @@ class androX6 {
         # ..otherwise just send the body back.  But kill
         #   any script they created.
         if(count($answer)==0) {
-            echo "<div class='tbody'>"
-            ."<div style='text-align:center; padding-top: 20px'>"
-            ."<b>No results found</b></div></div>";
+            $grid->noResults();
         }
-        else {
-            $grid->dbody->render();
-        }
+        $mtimer = microtime(true);
+        $grid->dbody->render();
         exit;
-        #x6ScriptKill();
-        #x6Html('browseFetchHtml',$grid->dbody->bufferedRender());
-        #return;
+    }
+    
+    function timeDiff($mtime,$str) {
+        FB::Send(number_format(microtime(true)-$mtime,4),$str);        
     }
     # ===================================================================
     #
@@ -627,7 +634,7 @@ class androX6 {
         foreach($dd['flat'] as $colname=>$colinfo) {
             if(strtolower($colinfo['automation_id'])=='queuepos') {
                 $queuepos = $colname;
-                jqDocReady("u.bb.vgfSet('queuepos_$table_id',$colname)");
+                jqDocReady("u.bb.vgfSet('queuepos_$table_id','$colname')");
                 break;
             }
         }
@@ -887,10 +894,19 @@ class androX6 {
         $tabKids->hp['xOffset'] = 2;
         $tab = $tabKids->addTab("Hide");
         foreach($dd['fk_children'] as $child=>$info) {
-            #$tc = new androHTMLTableController($child);
-            #$top->addChild($tc);
+            # KFD 1/2/08.  If x6display is 'none', skip it
+            if(trim(arr($info,'x6display',''))=='none') continue;
+            
             $top->addTableController($child);
             $tab = $tabKids->addTab($info['description']);
+            $tab->ap['x6tablePar'] = $table_id;
+            $tab->ap['x6table'   ] = $child;
+        }
+        
+        # And then loop through extra tabs
+        foreach($this->appTabs as $child=>$caption) {
+            $top->addTableController($child);
+            $tab = $tabKids->addTab($caption);
             $tab->ap['x6tablePar'] = $table_id;
             $tab->ap['x6table'   ] = $child;
         }
