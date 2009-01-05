@@ -1,6 +1,6 @@
 /* ==================================================== *\
  * Andromeda Generated CSS file                         
- * Generated: Tue, 30 Dec 2008 12:28:00 -0500
+ * Generated: Fri, 02 Jan 2009 10:19:41 -0500
  * Skin, color, size: Default, Gray, 1650
 \* ==================================================== */
         
@@ -103,6 +103,15 @@ h2 {
 
 .statusBar {
     line-height:             27px;
+    font-size:               80%;
+}
+
+.statusBar .sbright {
+    float:                   right;
+}
+
+.statusBar .sbleft {
+    float:                   left;
 }
 
 .x6footer {
@@ -193,6 +202,8 @@ ul.dropdown {
     cursor:                  pointer;
     position:                relative;
     display:                 block;
+    float:                   left;
+    clear:                   left;
     border:                  0;
 }
 

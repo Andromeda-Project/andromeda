@@ -91,7 +91,7 @@ defines:
             flavor3:        @FF00FF
         
             # These colors were added to give some 'color' to objects
-            clrChanged:     @ffebcd
+            clrChanged:     yellow
             clrError:       @ff4500
             clrOk:          @7fff00
             clrRequired:    @abcdef        
@@ -331,6 +331,12 @@ css:
         # The status bar
         .statusBar:
             line-height:         *lhstatus
+            font-size:           80%
+        .statusBar .sbright:
+            float:               right
+        .statusBar .sbleft:
+            float:               left
+          
            
         # The x6footer is the last of the three major
         # elements, it comes after x6body.
@@ -425,6 +431,8 @@ css:
             cursor:   pointer
             position: relative
             display:  block
+            float:    left
+            clear:    left
             border:   *zero
             
         .x6menu ul.dropdown li a:
