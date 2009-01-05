@@ -3333,25 +3333,32 @@ window.a = window.ua = window.$a = {
                 var jqObjects = $(obj).find(":input");
             }
             jqObjects.each( function() {
-                    if(direct) 
-                        var id = 'x4c_'+u.p(this,'xColumnId');
-                    else
-                        var id = this.id;
-                        
+                if(direct) 
+                    var id = 'x4c_'+u.p(this,'xColumnId');
+                else
+                    var id = this.id;
                     
-                    if(this.type=='checkbox') {
-                        if(this.checked) {
-                            $a.json.addParm(id,'Y');
-                        }
-                        else {
-                            $a.json.addParm(id,'N');
-                        }
+                
+                if(this.type=='checkbox') {
+                    if(this.checked) {
+                        $a.json.addParm(id,'Y');
                     }
                     else {
+                        $a.json.addParm(id,'N');
+                    }
+                }
+                else {
+                    if(typeof(x6)=='undefined') {
                         if(this.value!='') {
                             $a.json.addParm(id,this.value);
                         }
                     }
+                    else {
+                        if(this.value.trim()!=this.zOriginalValue.trim()) {
+                            $a.json.addParm(id,this.value);
+                        }
+                    }
+                }
             });
         },
         /******/
