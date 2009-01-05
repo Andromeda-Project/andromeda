@@ -895,6 +895,25 @@ var x6dd = {
             if(value=='null') return '';
             return Number(value);
             break;
+        case 'dtime':
+            // if value contains decimal seconds, get rid of them
+            if(value.indexOf('.')!=-1) {
+                value = value.slice(0,value.indexOf('.'));
+            }
+            var retval = new Date(value);
+            var hours  = retval.getHours();
+            var ampm   = 'am'; 
+            if(hours >= 12) {
+                ampm = 'pm';
+            }
+            if(hours > 12) hours-=12;
+            return retval.getMonth()
+                +"/"+retval.getDate()
+                +"/"+retval.getFullYear()
+                +" "+hours.toString()
+                +":"+retval.getMinutes().toString().pad(2,'0',STR_PAD_LEFT)
+                +" "+ampm;
+            break;
         default:
             return value;
         }
@@ -968,7 +987,6 @@ var x6inputs = {
                         var retval= x6.keyDispatcher(e);
                     }
                 }
-                console.log("About to call groupEnd");
                 x6.console.groupEnd(); 
                 return retval;
             }
@@ -1286,11 +1304,14 @@ var x6inputs = {
     },
     
     setClass: function(inp) {
+        if(u.p(inp,'xLookup')=='Y') return;
+
         // If permupd for this table is "N", all controls
         // become read only
         if(u.bb.vgfGet('permupd_'+u.p(inp,'xTableId'),'')=='N') {
             inp.disabled = true;
         }
+        
         
         // Easiest is disabled controls, remove all classes
         if(u.p(inp,'disabled',false)) {
@@ -1306,7 +1327,7 @@ var x6inputs = {
         x6.console.group("setClass for an input  "+ux);
         x6.console.log(inp);
         if(u.p(inp,'zOriginalValue',null)==null) inp.zOriginalValue = '';
-        if(inp.value==inp.zOriginalValue) {
+        if(inp.value.trim()==inp.zOriginalValue.trim()) {
             inp.zChanged = 0;
         }
         else {
@@ -1565,6 +1586,7 @@ var x6inputs = {
             // is 15 for data and one for titles.
             if(u.p(input,'x6rowCount',null)!=null) {
                 var rowCount = Number(u.p(input,'x6rowCount'));
+                if(rowCount > this.dynRowCount) rowCount = this.dynRowCount;
             }
             else {
                 var rowCount = this.dynRowCount;
@@ -2057,7 +2079,6 @@ x6plugins.tableController = function(self,id,table) {
         var jq = ':input[xtableid='+this.zTable+'][zActive]';
         x6.console.log("Query string",jq);
         $(jq).each(
-        //$(this).find(jq).each(
             function() {
                 var col = u.p(this,'xcolumnid');
                 inpAll[col] = this.value;
@@ -2509,6 +2530,29 @@ x6plugins.detailDisplay = function(self,id,table) {
             $(tabSelector).tabs('select', Number(tabIndex));
         }
         
+        // Create a status message on right if the item exists
+        var sbRight = u.byId('sbr_'+this.zTable);
+        if(sbRight!=null) {
+            var status = '';
+            if(typeof(row.ts_ins)!='undefined') {
+                if(row.uid_ins==null) row.uid_ins = '';
+                status+=typeof(row.uid_ins)!='undefined'
+                    ? 'Created ('+row.uid_ins.trim()+'): '
+                    : 'Created: ';
+                status += x6dd.display('dtime',row.ts_ins);
+            }
+            if(typeof(row.ts_upd)!='undefined') {
+                if(row.uid_upd==null) row.uid_upd = '';
+                status+=typeof(row.uid_upd)!='undefined'
+                    ? ' Changed ('+row.uid_upd.trim()+'): '
+                    : ' Changed: ';
+                status += x6dd.display('dtime',row.ts_upd);
+            }
+            sbRight.innerHTML = status;
+        }
+        
+        
+        
         x6.console.log("detailDisplay displayRow FINISHED");
         x6.console.groupEnd();
         return true;
@@ -2525,8 +2569,8 @@ x6plugins.detailDisplay = function(self,id,table) {
             var jqobj =$(this).find(':input[xcolumnid='+colname+']');
             if(jqobj.length>0) {
                 if(val==null) val='';
-                jqobj[0].value          = val;
-                jqobj[0].zOriginalValue = val;
+                jqobj[0].value          = val.trim();
+                jqobj[0].zOriginalValue = val.trim();
                 jqobj[0].zChanged       = false;
                 jqobj[0].zActive        = 1;
             }
@@ -3517,8 +3561,9 @@ x6plugins.x6tabDiv = function(self,id,table) {
             json.addParm('xReturnAll' ,'N');
             json.addParm('xGridHeight',u.p(this,'xGridHeight',500));
             json.addParm('xLookups'   ,u.p(this,'xLookups'   ,'N'));
+            
             if( html = json.execute(false,false,true)) {
-                json.process();
+                //json.process();
                 // The standard path is to take data returned
                 // by the server and render it.  This is safe
                 // even if the server does not return anything,
@@ -3581,6 +3626,11 @@ x6tabs = {
         // A "kids" profile must do slideup, and get busy turning
         // buttons on and off for other tabs.
         if(profile=='kids') {
+            // disable all other tabs until we are finished, this is
+            // the easiest way to prevent user from clicking on some
+            // other tab while processing is going on.
+            tabsUl.parentNode.disableAll([ui.index]);
+
             // First job for kids is to turn parent stuff on/off
             var tablePar = u.p(tabs,'x6parentTable');
             if(ui.index > 0) {
@@ -3598,29 +3648,37 @@ x6tabs = {
                 var jqTable = $('#'+previousTabId+' [xtableid]:first');
                 var oldTable = u.p(jqTable[0],'xTableId','');
                 x6events.fireEvent('buttonsOff_'+oldTable,true);
-                $('#'+previousTabId).html('');
+                $('#'+previousTabId+' div[x6plugin=x6tabDiv]').each(
+                    function() { this.keyboardOff(); }
+                );
             }
-            
-            
             
             var topPane = u.p(tabs,'x6slideUp');
             var tpi     = u.p(tabs,'x6slideUpInner');
-            x6tabs.slideUp(event,ui,topPane,tpi);
+            x6tabs.slideUp(tabsUl,event,ui,topPane,tpi);
         }
         
         // A conventional profile assumes two tabs, first one
         // is grid, second one is detail
         if(profile=='conventional') {
             var table = u.p(tabs,'x6table');
+            var grid = $(tabs).find("div:first div[x6plugin=x6tabDiv]")[0];
             if(ui.index==0) {
-                var grid = $(ui.panel)
-                    .find('[x6profile=conventional]')[0];
                 grid.keyboardOn();
-                
                 x6events.fireEvent('buttonsOff_'+table,true);
+                
+                // Turn keyboard off for all grids found over on detail side
+                $('#kids_'+table+' div[x6plugin=x6tabDiv]').each(
+                    function() { this.keyboardOff(); }
+                );
             }
             else {
+                grid.keyboardOff();
                 x6events.fireEvent('buttonsNew_'+table);
+                
+                // KFD 1/2/08.  Always hide the child tabs when
+                //              going back to 
+                $("#kids_"+table+" > ul").tabs('select',0);
             }
         }
 
@@ -3642,17 +3700,13 @@ x6tabs = {
     
     },
     
-    slideUp: function(event,ui,topPane,topPaneI) {
+    slideUp: function(tabsUl,event,ui,topPane,topPaneI) {
         var obj = u.byId(topPane);
         if(typeof(obj.currentChild)=='undefined') obj.currentChild='*';
         var currentChild = obj.currentChild
         var newChild     = ui.panel.id;
         
-        // if UI.index = 0, they clicked hide.  We do not have to
-        // shrink up the tab because jQuery appears to reset heights
-        // on a tab when it is hidden from view.  So when the user
-        // picks the "hide" tab,  all we have to do is pull down
-        // the top pane
+        // if UI.index = 0, they clicked hide.  Make the
         if(ui.index==0) {
             if(currentChild!='*') {
                 var newHeight = $('#'+topPane).height()+350;
@@ -3662,9 +3716,15 @@ x6tabs = {
                 );
                 $('#'+topPane).animate( {height: newHeight},500);
                 obj.currentChild = '*';
+                tabsUl.parentNode.enableAll();
+                $('#'+currentChild).css('overflow','hidden').height(3);
                 return true;
             }
         }
+        
+        // Make the current tab effectively invisible
+        $(ui.panel).css('overflow','hidden').height(3);
+        
         
         // If no tab, slide up and slide down 
         if(currentChild=='*') {
@@ -3678,18 +3738,12 @@ x6tabs = {
                 );
             },100);
             $('#'+topPane).animate( {height: newHeight},500 );
-            //$('#'+topPane).animate( {height: newHeight},500,null
-            //    ,function() { 
-            //        $(this).css('overflow-y','scroll');
-            //    }
-            //);
-            // Originally I had this in after the toppane scrolled
-            // up, but it looks cooler if it happens a little bit
-            // after.
             var newHeight=$(ui.panel).height()+350;
             setTimeout(function() {
                     $(ui.panel).animate({height: newHeight},500,null
-                        ,function() { x6tabs.slideUpData(newChild,newHeight) }
+                        ,function() { 
+                            x6tabs.slideUpData(tabsUl,newChild,newHeight);
+                        }
                     );
             },200);
             u.byId(topPane).currentChild = newChild;
@@ -3704,35 +3758,53 @@ x6tabs = {
         var newHeight=$(ui.panel).height()+350;
         setTimeout(function() {
                 $(ui.panel).animate({height: newHeight},500,null
-                    ,function() { x6tabs.slideUpData(newChild,newHeight) } 
+                    ,function() { 
+                        x6tabs.slideUpData(tabsUl,newChild,newHeight); 
+                    } 
                 );
+                $('#'+currentChild).css('overflow','hidden').height(3);
         },100);
         u.byId(topPane).currentChild = newChild;
         return true;
     },
     
-    slideUpData: function(paneId,newHeight) {
+    slideUpData: function(tabsUl,paneId,newHeight) {
         var pane     = u.byId(paneId);
         var tablePar = u.p(pane,'x6tablePar');
         var table    = u.p(pane,'x6table'   );
         var skeyPar  = u.bb.vgfGet('skey_'+tablePar);
-        var json = new androJSON(   'x6page'    ,table        );
-        json.addParm('x6action'  ,'browseFetch');
-        json.addParm('tableIdPar',tablePar     );
-        json.addParm('skeyPar'   ,skeyPar      );
-        json.addParm('sendGrid'  ,1            );
-        json.addParm('xSortable' ,'Y'          );
-        json.addParm('xReturnAll','Y'          );
-        json.addParm('xGridHeight',newHeight-2  ); // assume borders
-        x6.console.log(json);
-        //html = json.execute(false,false,true);
-        //pane.innerHTML = html;
-        //var tabDiv = $(pane).find('[x6plugin=x6tabDiv]')[0];
-        //x6plugins.x6tabDiv(tabDiv,tabDiv.id,table);
-        if(json.execute()) {
-            json.process(paneId);
-            //var id = $(pane).find("div")[0].id;
-            //x6.initOne(id);
+        
+        // KFD 1/2/08.  Get smarter.  If we already loaded a grid
+        //              for a child table for current skey, don't
+        //              bother doing it again.
+        var skeyDid = u.bb.vgfGet('skey_'+tablePar+'_'+table,0);
+        if(skeyDid==skeyPar) {
+            tabsUl.parentNode.enableAll();
+            x6events.fireEvent('buttonsOn_'+table,true);
+        }
+        else {
+            var json = new androJSON(   'x6page'    ,table        );
+            json.addParm('x6action'   ,'browseFetch');
+            json.addParm('tableIdPar' ,tablePar     );
+            json.addParm('skeyPar'    ,skeyPar      );
+            json.addParm('sendGrid'   ,1            );
+            json.addParm('xSortable'  ,'Y'          );
+            json.addParm('xReturnAll' ,'Y'          );
+            json.addParm('xGridHeight',newHeight-2  ); // assume borders
+            x6.console.log(json);
+            //html = json.execute(false,false,true);
+            //pane.innerHTML = html;
+            //var tabDiv = $(pane).find('[x6plugin=x6tabDiv]')[0];
+            //x6plugins.x6tabDiv(tabDiv,tabDiv.id,table);
+            u.dialogs.pleaseWait("Retrieving Data...");
+            if(json.execute()) {
+                json.process(paneId);
+                //var id = $(pane).find("div")[0].id;
+                //x6.initOne(id);
+            }
+            u.bb.vgfSet('skey_'+tablePar+'_'+table,skeyPar);
+            tabsUl.parentNode.enableAll();
+            u.dialogs.clear();
         }
     }
 }
@@ -3743,6 +3815,26 @@ x6plugins.x6tabs = function(self,id,table) {
     self.jqId          = '#'+id+' > ul';
 
     var x6profile = u.p(self,'x6profile');
+    
+    self.disableAll = function(exceptions) {
+        if(exceptions==null) exceptions = [ ];
+        var count = $(this.jqId+" > li").length;
+        for(x = 0;x < count; x++) {
+            if(exceptions.indexOf(x)==-1) {
+                $(this.jqId).tabs('disable',x);
+            }
+        }
+    }
+    self.enableAll = function(exceptions) {
+        if(exceptions==null) exceptions = [ ];
+        var count = $(this.jqId+" > li").length;
+        for(x = 0;x < count; x++) {
+            if(exceptions.indexOf(x)==-1) {
+                $(this.jqId).tabs('enable',x);
+            }
+        }
+    }
+    
 
     /*
     *   Always bind the tabsshow event to a generic
