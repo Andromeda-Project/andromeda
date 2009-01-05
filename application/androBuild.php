@@ -1649,7 +1649,7 @@ function SpecFlatten_Runout() {
                 ,primary_key,uisearch
                 ,auto_prefix,auto_suffix
                 ,colprec,colscale,colres,type_id,inputmask
-                ,flagcarry,x6view
+                ,flagcarry,x6view,x6breakafter
                 ,table_id_fko
                 ,fkioffset,fkilimit,table_id_fki
                 ,uicolseq,uisearch_ignore_dash,uisearchsort
@@ -1674,6 +1674,7 @@ function SpecFlatten_Runout() {
                  ,case when coalesce(tc.x6view,'') <> '' 
                        then tc.x6view 
                        else c.x6view  end
+                 ,tc.x6breakafter
                  ,COALESCE(tc.table_id_fko,'') as table_id_fko
                  ,tc.fkioffset,tc.fkilimit,tc.table_id_fki
                  ,trim(uicolseq)
@@ -8934,7 +8935,7 @@ function CodeGenerate_Tables() {
 			" JOIN zdd.tabflat f ON p.table_id=f.table_id ".
             "  AND p.column_id = f.column_id ".
 			" WHERE p.table_id = '$table_id' ".
-			" ORDER BY f.uicolseq ");
+			" ORDER BY p.uicolseq ");
 		while ($row = pg_fetch_array($results)) {
 			$p = trim($row["projection"]);
 			if (!isset($table["projections"][$p])) $table["projections"][$p]="";
@@ -8989,11 +8990,17 @@ function CodeGenerate_Tables_FK($table_id,$column_id) {
 	// The other foreign key column	
 	$col2 = ($column_id=="table_id") ? "table_id_par" : "table_id";
 
-	// First the basic foreign key	
-	$sql = 
-		"SELECT * ".
-		"  FROM zdd.tabfky ".
-		" WHERE ".$column_id ."= '".$table_id."'";
+	# KFD 1/2/08, change to sort by module/table
+	#$sql = 
+	#	"SELECT * ".
+	#	"  FROM zdd.tabfky ".
+	#	" WHERE ".$column_id ."= '".$table_id."'";
+    $sql="select fk.*
+            from zdd.tabfky  fk
+            join zdd.tables  t   on t.table_id = fk.table_id
+            join zdd.modules m   on t.module   = m.module
+           where fk.$column_id = '$table_id' 
+           order by m.uisort,t.uisort";
 	$results = $this->SQLRead($sql);
 	if ($resall  = pg_fetch_all($results)) {
 		foreach ($resall as $row) {
