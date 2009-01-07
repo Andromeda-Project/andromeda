@@ -4774,7 +4774,7 @@ function sqlFilter($colinfo,$tcv,$table = '') {
             elseif( strpos($tcv,'%')!==false) {
                 # user has requested wildcard, cannot avoid a like
                 $sval = SQLFC(trim($tcv));
-                $new = "$c LIKE $sval";
+                $new = "LOWER($c) LIKE LOWER($sval)";
             }
             else {
                 if(strlen(trim($tcv))>0) {
@@ -4782,7 +4782,8 @@ function sqlFilter($colinfo,$tcv,$table = '') {
                     $send = SQLFC(trim($tcv).'z');
                     # The greater-equal allows us to avoid a like
                     # and make use of indexes for much faster performance
-                    $new = "($c >= $sbeg AND $c < $send)";
+                    $new = "(LOWER($c) >= LOWER($sbeg)"
+                        ." AND LOWER($c) < LOWER($send))";
                 }
             }
             break;
@@ -12237,6 +12238,7 @@ function rowsFromFilters(&$table,$filters,$cols,$matches=array()) {
       }
     }
     $sql_where= implode(' AND ',$sw);
+    echo "<div style='display: hidden'>".$sql_where."</div>";
 
 
     // Set identity-security filters
