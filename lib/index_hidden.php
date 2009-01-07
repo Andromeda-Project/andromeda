@@ -408,10 +408,15 @@ $x6action  = '';
 $x6cand = gp('x6page');
 if($x6cand=='') {
     # If the x6template setting has been made, this is an
-    # x6 system.  The lack of a page for a non-public
-    # logged in user means menu
+    # x6 system.  If a user logs in and is in "x6_group", they
+    # will still see that public template.  If they are not in
+    # that group, they get sent to the x6 admin interface.
     $x6template= configGet('x6_template','');
     $x6group   = configGet('x6_group'   ,'');
+    #echo "<pre>";
+    #echo LoggedIn()." ".$x6template." -".$x6group."- ".inGroup($x6group)
+    #    ." -".SessionGet('ROOT',0).'-';
+    #echo "</pre>";
     if($x6template!='') {
         if(LoggedIn() && (!inGroup($x6group) || SessionGet('ROOT')==1)) {
             $x6cand= gp('x4Page',gp('gp_page'));
@@ -421,6 +426,7 @@ if($x6cand=='') {
         }
     }
 }
+#echo "The candidate is -$x6cand-";
 if($x6cand!='') {
     $x6page = $x6cand;
 }
