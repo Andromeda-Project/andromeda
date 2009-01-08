@@ -2857,15 +2857,28 @@ class androHTMLTabDiv extends androHTML {
         $description = arr($options,'description','No Desc');
         $type_id     = arr($options,'type_id'    ,'char');
         $forcelong   = arr($options,'forcelong'  ,false);
+        $table_id_fko= arr($options,'table_id_fko','');
 
         # Permanently store the column information, 
         # and increment the running total
         $width1 = max($dispsize,strlen(trim($description)));
-        #if($this->sortable) $width1+=2;
+        $width1++;
+
+        # KFD 1/8/09, expand width (maybe) if this column 
+        #             gets an x6select
+        if($table_id_fko<>'') {
+            if($type_id=='cbool' || $type_id=='gender') {
+                if($width1 < 5) $width1 = 5;
+            }
+            else {
+                $width1+=3;
+            }
+        }
         
         # Now that we have what we need from description,
         # turn spaces into &nbsp;
         $description = str_replace(' ','&nbsp;',$description);
+        
         
         # KFD Calculated width of 14 12px chars is 110px
         #     This means avg width is 7.85 pixels
@@ -2888,6 +2901,7 @@ class androHTMLTabDiv extends androHTML {
             ,'width'      =>$width
             ,'colprec'    =>arr($options,'colprec' ,$dispsize)
             ,'colscale'   =>arr($options,'colscale',$dispsize)
+            ,'uiro'       =>arr($options,'uiro'    ,'N')
         );
         $this->columns[]               = $colinfo;
         $this->columnsById[$column_id] = $colinfo;
@@ -2898,7 +2912,12 @@ class androHTMLTabDiv extends androHTML {
         $this->colStyles['div.cell_'.$column_id] 
             ="width: {$width}px; $cssExtra";
         $iWidth = $width;
-        if(!in_array($type_id,array('cbool','gender'))) {
+        if($table_id_fko <> '') {
+            $iWidth -= x6cssdefine('bodyfs','12px')*.67*5;
+            $this->colStyles['div.cell_'.$column_id.' input'] 
+                ="width: {$iWidth}px; $cssExtra";
+        }
+        else if(!in_array($type_id,array('cbool','gender'))) {
             $this->colStyles['div.cell_'.$column_id.' input'] 
                 ="width: {$iWidth}px; $cssExtra";
         }
@@ -2908,16 +2927,6 @@ class androHTMLTabDiv extends androHTML {
         $div->hp['xColumn'] = $column_id;
         $div->addclass('cell_'.$column_id);
         $this->headers[] = $div;
-        
-        #$div->hp['style'] ="
-        #    max-width: {$width}px;
-        #    min-width: {$width}px;
-        #    width:     {$width}px;";
-            
-        # Numerics are right-justified
-        #if(in_array($type_id,array('int','numb','money'))) {
-        #    $div->hp['style'].='text-align: right';
-        #}
     }
     /****m* androHtmlTabDiv/lastColumn
     *
@@ -3322,10 +3331,10 @@ class androHTMLDetail extends androHTML {
         return $emptyHeight;
     }
     
-    /****m* androHtml/addInput
+    /****m* androHtml/addTRInput
     *
     * NAME
-    *    androHtml.addInput
+    *    androHtml.addTRInput
     *
     * FUNCTION
     *	The PHP method androHtml.addInput adds a TR and two TD elements
@@ -3540,15 +3549,15 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
     # Begin with unconditional
     $xRoIns = '';
     $xRoUpd = '';
-    if( ($parent = a($options,'parentTable'))<>'') {
+    if( ($parent = arr($options,'parentTable'))<>'') {
         if($colinfo['table_id_fko']==$parent) {
             $xRoIns = 'Y';
             $xRoUpd = 'Y';
         }
     }
     if(!$xRoIns) {
-        $xRoIns = a($colinfo,'uiro','N');
-        $xRoUpd = a($colinfo,'uiro','N');
+        $xRoIns = arr($colinfo,'uiro','N');
+        $xRoUpd = arr($colinfo,'uiro','N');
         $autos = array('SUM','COUNT','FETCH','DISTRIBUTE','SEQUENCE'
             ,'TS_INS','TS_UPD','UID_INS','UID_UPD','EXTEND'
         );
@@ -6118,8 +6127,7 @@ function &ddTable($table_id) {
         $table_id = $table_id['table_id'];
     }
     if(isset($GLOBALS['AG']['tables'][$table_id])) {
-        $retval = &$GLOBALS['AG']['tables'][$table_id];
-        return $retval;
+        return $GLOBALS['AG']['tables'][$table_id];
     }
 
     # First run the include and get a reference
@@ -6239,7 +6247,8 @@ function &ddTable($table_id) {
         }
     }
 
-    return $GLOBALS['AG']['tables'][$table_id];
+    #return &$GLOBALS['AG']['tables'][$table_id];
+    return $tabdd;
 }
 
 /****f* Data-Dictionary-Routines/ddView
@@ -12238,8 +12247,6 @@ function rowsFromFilters(&$table,$filters,$cols,$matches=array()) {
       }
     }
     $sql_where= implode(' AND ',$sw);
-    echo "<div style='display: hidden'>".$sql_where."</div>";
-
 
     // Set identity-security filters
     // NOPE, Rem'd out 10/26/06 when moved server-side
