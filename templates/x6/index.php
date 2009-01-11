@@ -9,6 +9,7 @@ $cookie = arr($_COOKIE,'x6skin','Default.Gray.1024');
 <link    rel="stylesheet"
        x6skin="Y"
         href="templates/x6/skins/x6skin.<?=$cookie?>.css" />
+<?php cssInclude('clib/jwysiwyg/jquery.wysiwyg.css'); ?>
 <?php include 'androHTMLHead.php' ?>
 
 <?php
@@ -38,6 +39,7 @@ if($loadFBLite == 1) {
   <span style="float: left">Produced by Secure Data Software</span>
   <span style="float: right">Server time: <?=date('h:i:s a',time())?></span>
 </div>
+<?php jsInclude( 'clib/jwysiwyg/jquery.wysiwyg.pack.js' ); ?>
 <?php include 'androHTMLFoot.php' ?>
 </body>
 </html>
