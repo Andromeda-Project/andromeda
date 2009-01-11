@@ -2382,6 +2382,24 @@ x6plugins.detailDisplay = function(self,id,table) {
                 x6inputs.disable(this);
             }
         );
+        $(self).find("textarea").each(
+            function() {
+                if  ($(this).attr('xtypeid') == 'mime-h-f' || $(this).attr('xtypeid') == 'mime-h' ) {
+                    var el = '#' + $(this).attr('id');
+                    $(el).wysiwyg({
+                        controls: {
+                            separator09: { visible : true },
+                            html : {visible : true},
+                            separator10: { visible : true },                            
+                            cut : {visible : true},
+                            copy : { visible : true },
+                            paste : { visible : true },
+                            separator07 : { visible : true }
+                        }
+                    });
+                }
+            }
+        );
     }
     
     // detail receives a request to go to a mode which
@@ -2575,6 +2593,17 @@ x6plugins.detailDisplay = function(self,id,table) {
                 jqobj[0].zActive        = 1;
             }
         }
+
+        $(self).find("textarea").each(
+            function() {
+                if  ($(this).attr('xtypeid') == 'mime-h-f' || $(this).attr('xtypeid') == 'mime-h' ) {
+                    var elIFrame = '#' + $(this).attr('id') + 'IFrame';
+                    var el = '#' + $(this).attr('id');
+                     $($(elIFrame).document()).find('body').html($(el).val());
+                }
+            }
+        );
+
     }
     
     if(u.p(self,'x6profile')=='twosides') {
