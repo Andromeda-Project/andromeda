@@ -2384,8 +2384,9 @@ x6plugins.detailDisplay = function(self,id,table) {
         );
         $(self).find("textarea").each(
             function() {
+                var el = '#' + $(this).attr('id');
+                var wysiwyg = el + '_WYSIWYG';
                 if  ($(this).attr('xtypeid') == 'mime-h-f' ) {
-                    var el = '#' + $(this).attr('id');
                     $(el).wysiwyg({
                         controls: {
                             separator09: { visible : true },
@@ -2398,9 +2399,9 @@ x6plugins.detailDisplay = function(self,id,table) {
                         }
                     });
                 } else if ( $(this).attr('xtypeid') == 'mime-h' ) {
-                    var el = '#' + $(this).attr('id');
                     $(el).wysiwyg();
                 }
+                $(wysiwyg).block({message: null});
             }
         );
     }
@@ -2602,7 +2603,8 @@ x6plugins.detailDisplay = function(self,id,table) {
                 if  ($(this).attr('xtypeid') == 'mime-h-f' || $(this).attr('xtypeid') == 'mime-h' ) {
                     var elIFrame = '#' + $(this).attr('id') + 'IFrame';
                     var el = '#' + $(this).attr('id');
-                     $($(elIFrame).document()).find('body').html($(el).val());
+                    $($(elIFrame).document()).find('body').html($(el).val());
+                    $(el + '_WYSIWYG').unblock();
                 }
             }
         );
