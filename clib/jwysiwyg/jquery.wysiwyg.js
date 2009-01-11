@@ -323,7 +323,7 @@
 
             var newX = element.width || element.clientWidth;
             var newY = element.height || element.clientHeight;
-
+            
             if ( element.nodeName.toLowerCase() == 'textarea' )
             {
                 this.original = element;
@@ -361,6 +361,7 @@
             this.element = $('<div></div>').css({
                 width : ( newX > 0 ) ? ( newX ).toString() + 'px' : '100%'
             }).addClass('wysiwyg')
+              .attr('id', element.id + '_WYSIWYG')
               .append(panel)
               .append( $('<div><!-- --></div>').css({ clear : 'both' }) )
               .append(editor);
