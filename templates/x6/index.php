@@ -40,6 +40,7 @@ if($loadFBLite == 1) {
   <span style="float: right">Server time: <?=date('h:i:s a',time())?></span>
 </div>
 <?php jsInclude( 'clib/jwysiwyg/jquery.wysiwyg.pack.js' ); ?>
+<?php jsInclude( 'clib/jquery.block.js' ); ?>
 <?php include 'androHTMLFoot.php' ?>
 </body>
 </html>
