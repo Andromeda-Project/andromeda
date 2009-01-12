@@ -33,9 +33,9 @@ if($x6) {
     #   has no getter, only a setter.
     #jsInclude('clib/jquery.rule-1.0.1-min.js');
     
-    cssInclude('clib/jwysiwyg/jquery.wysiwyg.css');
-    jsInclude( 'clib/jwysiwyg/jquery.wysiwyg.pack.js' );
-    jsInclude( 'clib/jquery.block.js' );
+    cssInclude('clib/jquery.wysiwyg.css');
+    jsInclude( 'clib/jquery.wysiwyg.pack.js' );
+    jsInclude( 'clib/jquery.blockui.js' );
    
 }
 
