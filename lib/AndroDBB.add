@@ -481,7 +481,12 @@ column sqllimit {
     type_id: vchar;
     colprec: 50;
 }
-    
+column sqlnozero {
+    description: Aggregate Skip Zero Values;
+    type_id: char;
+    colprec: 1;
+}    
+
 
 table automations {
 	module: datadict;
@@ -730,7 +735,7 @@ table tabcol {
     
     foreign_key automations { allow_empty: Y; }
     column { prefix: auto_;  table_id; column_id; }
-    column { auto_formula; sqloffset; sqllimit; }
+    column { auto_formula; sqloffset; sqllimit; sqlnozero; }
     
     column { uiinline; }
     column { required; }
@@ -1357,7 +1362,7 @@ table tabflat {
     // Automations, defined as a foreign key	
     foreign_key { automations; }
     foreign_key tabflat { prefix: auto_; allow_empty: Y; }
-    column { auto_formula; sqloffset; sqllimit; }
+    column { auto_formula; sqloffset; sqllimit; sqlnozero; }
     column { range_from; range_to; }
     column { value_min; value_max; x6view; uisearch_ignore_dash; }
     column { uirows;    uicols;    }

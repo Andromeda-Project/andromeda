@@ -1652,6 +1652,7 @@ function SpecFlatten_Runout() {
                 ,flagcarry,x6view,x6breakafter
                 ,table_id_fko
                 ,fkioffset,fkilimit,table_id_fki
+                ,sqlnozero
                 ,uicolseq,uisearch_ignore_dash,uisearchsort
                 ,formula,formshort,dispsize
              )
@@ -1677,6 +1678,7 @@ function SpecFlatten_Runout() {
                  ,tc.x6breakafter
                  ,COALESCE(tc.table_id_fko,'') as table_id_fko
                  ,tc.fkioffset,tc.fkilimit,tc.table_id_fki
+                 ,tc.sqlnozero
                  ,trim(uicolseq)
                  ,case when tc.uisearch_ignore_dash in ('Y','N')
                        then tc.uisearch_ignore_dash
@@ -4439,7 +4441,7 @@ function SpecDDL_Triggers_Automated_Aggregate()  {
 	$results = $this->SQLRead(
 		"SELECT tf.table_id,tf.column_id
                ,tf.automation_id,tf.auto_formula
-               ,tf.sqllimit,tf.sqloffset
+               ,tf.sqllimit,tf.sqloffset,tf.sqlnozero
 		   FROM zdd.tabflat tf  
 		  WHERE tf.automation_id IN ('SUM','COUNT','LATEST','MIN','MAX')
           ORDER BY tf.table_id"
@@ -4522,6 +4524,10 @@ function SpecDDL_Triggers_Automated_Aggregate()  {
                 # update, or delete, the parent table is given a completely
                 # new value
                 
+                $sqlnozero = $row['sqlnozero'] <> 'Y'
+                    ? ''
+                    : "\n                   AND $column_chd <> 0";
+                
                 # Now we take the column name and write a query
                 # that pulls offset and limit from parent
                 $sqloffset = $row['sqloffset'];
@@ -4538,7 +4544,7 @@ function SpecDDL_Triggers_Automated_Aggregate()  {
             SELECT COALESCE(SUM(x1.$column_chd),0) FROM (
                 SELECT $column_chd
                   FROM $table_chd
-                 WHERE --MATCH--CHD--
+                 WHERE --MATCH--CHD-- $sqlnozero
                  ORDER BY $column_chd
                 OFFSET AnyInt
                  LIMIT AnyInt2
