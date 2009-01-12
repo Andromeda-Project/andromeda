@@ -3606,11 +3606,15 @@ function SpecDDL_Triggers_Defaults() {
 			$this->SpecDDL_TriggerFragment($table_id,"UPDATE","BEFORE","1011",$s1);
                 }
 		
-		if ($automation_id=="BLANK" || $automation_id=='QUEUEPOS') {
+        # KFD 1/12/08, for eBlue (PROMAT), no longer make queuepos
+        #              columns default to zero, have them stay null
+		if ($automation_id=="BLANK" /* || $automation_id=='QUEUEPOS' */) {
 			$def = $this->SQLFormatBLank($row["type_id"],true,true);
+            #$def = "(Select max(COALESCE($column_id,0)+100 from $table_id)";
 			$s1 = "\n".
 				"    -- 1020 Blank/queuepos default\n".
-				"    IF new.". $column_id . " IS NULL THEN new.". $column_id . " = ". $def . "; END IF;\n";
+				"    IF new.". $column_id . " IS NULL THEN new."
+                . $column_id . " = ". $def . "; END IF;\n";
 			$this->SpecDDL_TriggerFragment($table_id,"INSERT","BEFORE","1020",$s1);
 		}
 
