@@ -7736,7 +7736,15 @@ function ContentLoad() {
         );
         if($count[0]['cnt']==0) {
             $this->LogEntry("Adding a row to $table_id");
-            $this->SQL("insert into $table_id (skey_quiet) values ('Y')");
+            if($table_id == 'configfw') {
+                $this->SQL("insert into $table_id (skey_quiet) values ('Y')");
+            }
+            else {
+                $this->SQL(
+                    "insert into $table_id (description_comp,skey_quiet)
+                      values ('x','Y')"
+                );
+            }
         }
     }
     
