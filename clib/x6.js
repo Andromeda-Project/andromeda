@@ -2387,17 +2387,7 @@ x6plugins.detailDisplay = function(self,id,table) {
                 var el = '#' + $(this).attr('id');
                 var wysiwyg = el + '_WYSIWYG';
                 if  ($(this).attr('xtypeid') == 'mime-h-f' ) {
-                    $(el).wysiwyg({
-                        controls: {
-                            separator09: { visible : true },
-                            html : {visible : true},
-                            separator10: { visible : true },                            
-                            cut : {visible : true},
-                            copy : { visible : true },
-                            paste : { visible : true },
-                            separator07 : { visible : true }
-                        }
-                    });
+                    $(el).wysiwyg();
                 } else if ( $(this).attr('xtypeid') == 'mime-h' ) {
                     $(el).wysiwyg();
                 }
