@@ -3354,7 +3354,8 @@ window.a = window.ua = window.$a = {
                         }
                     }
                     else {
-                        if(this.value.trim()!=this.zOriginalValue.trim()) {
+                        var zOrig = u.p(this,'zOriginalValue','').trim();
+                        if(this.value.trim()!=zOrig) {
                             $a.json.addParm(id,this.value);
                         }
                     }
