@@ -32,6 +32,11 @@ if($x6) {
     # Not so nifty, does not extract rules like 'padding-top',
     #   has no getter, only a setter.
     #jsInclude('clib/jquery.rule-1.0.1-min.js');
+    
+    cssInclude('clib/jwysiwyg/jquery.wysiwyg.css');
+    jsInclude( 'clib/jwysiwyg/jquery.wysiwyg.pack.js' );
+    jsInclude( 'clib/jquery.block.js' );
+   
 }
 
 # EXPERIMENTAL: jquery ui full boat
