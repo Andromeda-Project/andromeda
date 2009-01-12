@@ -1453,6 +1453,12 @@ class androHtml {
         return $a;
     }
     /******/
+    
+    function link($href,$innerHTML) {
+        $a = $this->h('a',$innerHTML);
+        $a->hp['href'] = $href;
+        return $a;
+    }
 
     /****m* androHtml/br
     *
