@@ -266,7 +266,7 @@ var x6 = {
                             var str = '?x6page=menu'
                                 +'&x6page_prior='+x6page_prior
                                 +'&x6mod_prior='+x6mod_prior;
-                            window.location.replace(str);
+                            //window.location.replace(str);
                         }
                         ,10
                     );
@@ -476,7 +476,7 @@ var x6 = {
             var retval = numbers[x - 48];
             if(e.ctrlKey)  retval = 'Ctrl'  + retval;
             if(e.altKey)   retval = 'Alt'   + retval;
-            if(e.shiftKey) retval = 'Shift' + retval;
+            //if(e.shiftKey) retval = 'Shift' + retval;
             x6.console.log("Found number, returning: ",retval);
             x6.console.groupEnd();
             return retval;
@@ -845,7 +845,9 @@ var x6events = {
             x6.console.log("subscriber: ",id);
             var subscriber = u.byId(id);
             if(subscriber==null) {
-                u.error("There is no object with that ID, cannot dispatch");
+                x6.console.error(
+                    "There is no object with that ID, cannot dispatch"
+                );
                 continue;
             }
             
@@ -857,7 +859,7 @@ var x6events = {
                 x6.console.log(id,eventName,retval);
             }
             else {
-                u.error("Subscriber has no method: ",method); 
+                u.error("Subscriber "+subscriber.id+" has no method: "+method); 
             }
             if(retval==false) {
                 x6.console.log('id returned false, setting false');
@@ -970,6 +972,9 @@ var x6inputs = {
         if(isMeta && !isNav) {
             var handUpList = ['UpArrow','DownArrow','PageUp','PageDown'];
             if(handUpList.indexOf(keyLabel)>=0) {
+                // If we are passing it up or not, it should not be
+                // handled by the doc level, so we suppress it.
+                u.bb.vgfSet('noKeyPress',true);
                 x6.console.log("This key may be passed up to doc handler.");
                 // An explicit flag can prevent handing events up
                 if(u.p(inp,'xNoPassup','N')=='N') {
@@ -982,7 +987,6 @@ var x6inputs = {
                         }
                     }
                     else {
-                        u.bb.vgfSet('noKeyPress',true);
                         x6.console.log("Going to doc keypress dispatcher.");
                         var retval= x6.keyDispatcher(e);
                     }
@@ -1066,6 +1070,7 @@ var x6inputs = {
             // fetch from the server.
             if(u.p(inp,'x6select','N')=='Y' && u.p(inp,'xValues',null)==null) {
                 // Generate the value to send back
+                x6.console.group("An x6select, fetching from Server");
                 var val = inp.value;
                 var val = val.slice(0,inp.selectionStart)
                     +keyLabel
@@ -1080,6 +1085,7 @@ var x6inputs = {
                 json.execute(true);
                 //x6inputs.x6select.display(inp);
                 x6inputs.x6select.displayDynamic(inp,ua.data.x6select);
+                x6.console.groupEnd();
             }
           
             // Yet another possibility is a lookup on a set
@@ -1172,7 +1178,9 @@ var x6inputs = {
             );
             if(focusTo) {
                 x6.console.log("Setting focus forward to ",focusTo);
-                var str = '[zActive]#'+focusTo;
+                // KFD 1/8/08. zActive MARK
+                //var str = '[zActive]#'+focusTo;
+                var str = '#'+focusTo;
                 x6.jqSetFocus(str);
                 //$('[zActive]#'+focusTo).focus().select();
             }
@@ -1622,11 +1630,17 @@ var x6inputs = {
         },
         
         displayDynamic: function(input,rows) {
+            x6.console.group("In x6input.s6select.displayDynamic");
+            x6.console.log(input);
+            x6.console.log(rows);
+            window.rows = rows;
             // Begin by determining if we will show or hide
             retval = ''
             if(rows.length==0) {
+                x6.console.log("There are no rows, hiding display");
                 this.hide();
                 //this.tbody.innerHTML = '';
+                x6.console.groupEnd();
                 return;
             }
             this.display(input);  
@@ -1638,10 +1652,11 @@ var x6inputs = {
                 curVal = jqCandidate[0].innerHTML;
             }
             
-            for(var idx=0; idx < rows.length; idx++) {
+            var rows_length = rows.length;
+            for(var idx in rows) {
                 retval += '<tr>';
                 var values = rows[idx];
-                for(var idx2=0; idx2 < values.length; idx2++) {
+                for(var idx2 in values) {
                     if(values[idx2] == null) {
                         retval+= '<td>&nbsp;';
                     }
@@ -1676,6 +1691,7 @@ var x6inputs = {
                 window.x = this.tbody;
                 $(this.tbody).find('td:first').mouseover();
             }
+            x6.console.groupEnd();
         },
         
         mouseEvents: function(input) {
@@ -2078,10 +2094,12 @@ x6plugins.tableController = function(self,id,table) {
         var cntChg = 0;
         var jq = ':input[xtableid='+this.zTable+'][zActive]';
         x6.console.log("Query string",jq);
+        var rowOld = { };
         $(jq).each(
             function() {
                 var col = u.p(this,'xcolumnid');
                 inpAll[col] = this.value;
+                rowOld[col] = u.p(this,'zOriginalValue','').trim();
                 var oval = u.p(this,'zOriginalValue','').trim();
                 if(this.value.trim()!= oval) {
                     inpChg[col] = this.value.trim();
@@ -2089,6 +2107,7 @@ x6plugins.tableController = function(self,id,table) {
                 }
             }
         );
+        u.bb.vgfSet('rowOld_'+this.zTable,rowOld);
         x6.console.log("All inputs: ",inpAll);
         x6.console.log("Changed inputs: ",inpChg);
         x6.console.log("Count of changes: ",cntChg);
@@ -2143,6 +2162,13 @@ x6plugins.tableController = function(self,id,table) {
         // If save went ok, notify any ui elements, then 
         // fire off a cache save also if required.
         if(retval=='success') {
+            // KFD 1/8/09, fire a delta of the row
+            x6events.fireEvent(
+                'rowDelta_'+this.zTable
+                ,{rowOld:rowOld, rowNew:$a.data.row}
+            );
+            
+            
             x6.console.log(retval);
             x6events.fireEvent('uiRowSaved_'+table,$a.data.row);
             if(this.zCache) {
@@ -2269,7 +2295,6 @@ x6plugins.tableController = function(self,id,table) {
     */
     x6events.subscribeToEvent('dbFetchRow_'+table,id);
     self['receiveEvent_dbFetchRow_'+table] = function(skey) {
-        
         if(typeof(this.zRows[skey])=='undefined') {
             x6.console.log("tableController bbRow, no row found, fetching");
             ua.json.init('x6page',this.zTable);
@@ -2277,12 +2302,14 @@ x6plugins.tableController = function(self,id,table) {
             ua.json.addParm('x6w_skey',skey);
             if(ua.json.execute(true)) {
                 u.bb.vgfSet('dbRow_'+this.zTable,a.data.row);
+                var rowNew = a.data.row;
             }
         }
         else {
             x6.console.log("tableController bbRow, publishing row "+skey);
             x6.console.log("putting onto bb as dbRow_"+this.zTable);
             u.bb.vgfSet('dbRow_'+this.zTable,this.zRows[skey]);
+            var rowNew = this.zRows[skey];
         }
     }
     
@@ -2381,8 +2408,8 @@ x6plugins.detailDisplay = function(self,id,table) {
             function() {
                 x6inputs.disable(this);
             }
-        );
-        $(self).find("textarea").each(
+        )
+        .find("textarea").each(
             function() {
                 var el = '#' + $(this).attr('id');
                 var wysiwyg = el + '_WYSIWYG';
@@ -2626,6 +2653,7 @@ x6tabDiv = {
     },
     
     mouseover: function(rowDiv) {
+        if(rowDiv == null) return;
         if(!this.mouseEnabled) return false;
         if(!rowDiv.id) return false;
         if(rowDiv.className=='selected') return false;
