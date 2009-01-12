@@ -173,16 +173,16 @@
             bold          : { visible : true, tags : ['b', 'strong'], css : { fontWeight : 'bold' } },
             italic        : { visible : true, tags : ['i', 'em'], css : { fontStyle : 'italic' } },
             strikeThrough : { visible : false, tags : ['s', 'strike'], css : { textDecoration : 'line-through' } },
-            underline     : { visible : false, tags : ['u'], css : { textDecoration : 'underline' } },
+            underline     : { visible : true, tags : ['u'], css : { textDecoration : 'underline' } },
 
-            separator00 : { visible : false, separator : true },
+            separator00 : { visible : true, separator : true },
 
-            justifyLeft   : { visible : false, css : { textAlign : 'left' } },
-            justifyCenter : { visible : false, tags : ['center'], css : { textAlign : 'center' } },
-            justifyRight  : { visible : false, css : { textAlign : 'right' } },
-            justifyFull   : { visible : false, css : { textAlign : 'justify' } },
+            justifyLeft   : { visible : true, css : { textAlign : 'left' } },
+            justifyCenter : { visible : true, tags : ['center'], css : { textAlign : 'center' } },
+            justifyRight  : { visible : true, css : { textAlign : 'right' } },
+            justifyFull   : { visible : true, css : { textAlign : 'justify' } },
 
-            separator01 : { visible : false, separator : true },
+            separator01 : { visible : true, separator : true },
 
             indent  : { visible : false },
             outdent : { visible : false },
@@ -199,8 +199,8 @@
 
             separator04 : { visible : false, separator : true },
 
-            insertOrderedList    : { visible : false, tags : ['ol'] },
-            insertUnorderedList  : { visible : false, tags : ['ul'] },
+            insertOrderedList    : { visible : true, tags : ['ol'] },
+            insertUnorderedList  : { visible : true, tags : ['ul'] },
             insertHorizontalRule : { visible : false, tags : ['hr'] },
 
             separator05 : { separator : true },
@@ -263,9 +263,9 @@
 
             separator07 : { visible : false, separator : true },
 
-            cut   : { visible : false },
-            copy  : { visible : false },
-            paste : { visible : false },
+            cut   : { visible : true },
+            copy  : { visible : true},
+            paste : { visible : true },
 
             separator08 : { separator : true && !( $.browser.msie ) },
 
@@ -275,7 +275,7 @@
             separator09 : { separator : true },
 
             html : {
-                visible : false,
+                visible : true,
                 exec    : function()
                 {
                     if ( this.viewHTML )
@@ -329,10 +329,10 @@
                 this.original = element;
 
                 if ( newX == 0 && element.cols )
-                    newX = ( element.cols * 8 ) + 21;
+                    newX = ( element.cols * 12 ) + 21;
 
                 if ( newY == 0 && element.rows )
-                    newY = ( element.rows * 16 ) + 16;
+                    newY = ( element.rows * 25 ) + 16;
 
                 var editor = this.editor = $('<iframe></iframe>').css({
                     minHeight : ( newY - 6 ).toString() + 'px',
