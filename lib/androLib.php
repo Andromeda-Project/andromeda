@@ -15110,7 +15110,7 @@ function ahColFromACol(&$acol) {
       // Says we want an info button next to it
       if($acol['mode']<>'search') {
          $acol['html_right']
-            ="<a tabindex=999 href=\"javascript:Info2('"
+            .="<a tabindex=999 href=\"javascript:Info2('"
             .$acol['table_id_fko']."'"
             .",'--NAME--')\">Info</a>";
       }
