@@ -782,7 +782,7 @@ css:
     # ===============================================================
     x6select:
         div.x6select table:
-            border-collapse:     collapse
+            #border-collapse:     collapse
             border-spacing:      *zero
             background-color:    *white
         
@@ -795,11 +795,11 @@ css:
             border-left:         *bor2l
             border-right:        *bor2r
             background-color:    *bgclight
-        div.x6select table tbody td:
-            border-top:          *bs0 *bw0 *bgcdark
-            border-bottom:       *bs0 *bw0 *bgcdark
-            border-left:         *bs0 *bw0 *bgcdark
-            border-right:        *bs0 *bw0 *bgcdark            
+        #div.x6select table tbody td:
+        #    border-top:          *bs0 *bw0 *bgcdark
+        #    border-bottom:       *bs0 *bw0 *bgcdark
+        #    border-left:         *bs0 *bw0 *bgcdark
+        #    border-right:        *bs0 *bw0 *bgcdark            
             
             
     # ===============================================================
