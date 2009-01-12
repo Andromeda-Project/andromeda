@@ -392,6 +392,7 @@ if(    gpExists('gp_command')) index_hidden_command();
 # KFD 10/17/08.  x6 Page Resolution
 #
 #
+$flagx6    = configGet('flag_x6','N');
 $x6template= configGet('x6_template','');
 $x6group   = configGet('x6_group'   ,'');
 
@@ -402,41 +403,21 @@ $x6profile = '';
 $x6plugin  = '';
 $x6action  = '';
 
-# Slip in a menu command
-
-# Get a candidate page to use to figure out the resolution
-$x6cand = gp('x6page');
-if($x6cand=='') {
-    # If the x6template setting has been made, this is an
-    # x6 system.  If a user logs in and is in "x6_group", they
-    # will still see that public template.  If they are not in
-    # that group, they get sent to the x6 admin interface.
-    $x6template= configGet('x6_template','');
-    $x6group   = configGet('x6_group'   ,'');
-    #echo "<pre>";
-    #echo LoggedIn()." ".$x6template." -".$x6group."- ".inGroup($x6group)
-    #    ." -".SessionGet('ROOT',0).'-';
-    #echo "</pre>";
-    if($x6template!='') {
-        if(LoggedIn() && (!inGroup($x6group) || SessionGet('ROOT')==1)) {
-            $x6cand= gp('x4Page',gp('gp_page'));
-            if($x6cand=='') {
-                $x6cand='menu';
-            }
-        }
+# KFD 1/10/09.  Completely reworked to run off of 'flag_x6'
+#               instead of template.
+$x6page = gp('x6page');
+if($flagx6=='Y' && $x6page=='') {
+    if(function_exists('app_nopage')) {
+        $x6page = app_noPage();
+    }
+    else {
+        $x6page = 'menu';
     }
 }
-#echo "The candidate is -$x6cand-";
-if($x6cand!='') {
-    $x6page = $x6cand;
-}
 
-# Work out if any x6 factor has been specified or exists.
-# If any of them do, it forces dispatching to go to x6.
-# The x6 dispatcher will then resolve what action to take.
 
 # A custom file for this page
-$x = "x6$x6cand.php";
+$x = "x6$x6page.php";
 if(file_exists_incpath($x)) {
     $x6file = $x;
 }
@@ -451,14 +432,14 @@ if(file_exists($fx6profiles)) {
 if(function_exists('app_x6profiles')) {
     app_x6profiles();
 }
-if(isset($GLOBALS['AG']['x6profiles'][$x6cand])) {
-    $x6profile = $GLOBALS['AG']['x6profiles'][$x6cand];
+if(isset($GLOBALS['AG']['x6profiles'][$x6page])) {
+    $x6profile = $GLOBALS['AG']['x6profiles'][$x6page];
 }
 
 # the action is always taken directly from request variables,
 # 
 $x6action = gp('x6action');
-$x6plugin = gp('x6plugIn');
+#$x6plugin = gp('x6plugIn');
 
 # KFD 12/14/08, MAJOR CHANGE.  As of now, only the presence of
 #               'x6page' forces us to x6 dispatching.  This works
@@ -1676,47 +1657,66 @@ function index_hidden_page() {
 
 
 function index_hidden_template($mode) {
-    # KFD 12/22/08. The "x6_template" setting will override
-    #               the older "cf_template" setting.  The idea
-    #               is to pick that template if we have a public
-    #               user, but pick x6 if not.
+    # KFD 1/10/08.  If x6 is set, we follow a completely different
+    #               path, x6 settings win out.
+    $flagx6    = configGet('flag_x6','N');
     $x6template= configGet('x6_template','');
     $x6group   = configGet('x6_group'   ,'');
-    if($x6template != '') {
-        if(LoggedIn() && !inGroup($x6group)) {
-            $candidate = 'x6';
+    if($flagx6=='Y') {
+        # In x6, we consider the "app_template()" function first,
+        # if it returns something it always wins.
+        if(function_exists('app_template')) {
+            vgfSet('template',app_template());
         }
+        
+        # If app_template() does not exist, we have to figure
+        # it ourselves.  If they have not given us a template,
+        # we just go with x6.
+        else if($x6template=='') {
+            vgfSet('template','x6');
+        }
+        
+        # Now we know they have specified a template, which
+        # we will use if the user is not logged in, or is 
+        # in the group they specified as still getting
+        # the public template.
+        else if(!LoggedIn() || inGroup($x6group)) {
+            vgfSet('template',$x6template);
+        }
+        
+        # Final result, they are logged in, and not in the
+        # public group, so they see the x6 template
         else {
-            $candidate = $x6template;
+            vgfSet('template','x6');
         }
     }
     else {
+   
+        # this is old x2/x4 mode, begin by obtaining a 
+        # 'candidate' they may have been set
+        $candidate = vgfGet('template');
         
-        # KFD 7/23/08.  Pull a configuration setting if they
-        #               made one
-        $candidate = configGet('cf_template');
-    }
-    
-    # KFD 7/23/08. Give application a chance to 
-    #              play with setting
-    if(function_exists('app_template')) {
-        vgfSet('template',app_template($candidate));
-    }
-    
-    # KFD 7/23/08. If no template has been set by vgfSet,
-    #              and the candidate is not empty, pick it
-    if($candidate!='' && vgfGet('template')=='') {
-        vgfSet('template',$candidate);
-    }
-    
-    # KFD 7/23/08. Finally, if we still don't have something,
-    #              pick according to mode
-    if(vgfGet('template')=='') {
-        if($mode=='x4') {
-            vgfSet('template','pixel2');
+        # KFD 7/23/08. Give application a chance to 
+        #              play with setting
+        if(function_exists('app_template')) {
+            vgfSet('template',app_template($candidate));
         }
-        else {
-            vgfSet('template','rt_pixel');
+        
+        # KFD 7/23/08. If no template has been set by vgfSet,
+        #              and the candidate is not empty, pick it
+        if($candidate!='' && vgfGet('template')=='') {
+            vgfSet('template',$candidate);
+        }
+        
+        # KFD 7/23/08. Finally, if we still don't have something,
+        #              pick according to mode
+        if(vgfGet('template')=='') {
+            if($mode=='x4') {
+                vgfSet('template','pixel2');
+            }
+            else {
+                vgfSet('template','rt_pixel');
+            }
         }
     }
     
