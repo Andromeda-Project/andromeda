@@ -124,7 +124,9 @@ if(!$x6) {
 # KFD 12/23/08, see if they set a cookie for an
 #               alternate location.
 $xpath = arr($_COOKIE,'altjs','clib/');
-jsInclude($xpath.'androLib.js');
+if(!$x6) {
+    jsInclude($xpath.'androLib.js');
+}
 if($deprecated && !$x6) {
     jsInclude('clib/androLibDeprecated.js');
 }
@@ -140,7 +142,7 @@ if ( $configJS == 'Y' ) {
     cssInclude( 'clib/debug.css' );
 }
 // DHTML Goodies calendar
-if(vgfGet('suppress_goodies_calendar')!==true) { 
+if(vgfGet('suppress_goodies_calendar')!==true && !$x6) { 
     cssInclude('clib/dhtmlgoodies_calendar.css');
     jsInclude('clib/dhtmlgoodies_calendar.js');
 }
