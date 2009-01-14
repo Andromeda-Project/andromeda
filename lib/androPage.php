@@ -245,7 +245,7 @@ class androPage {
             $top->hp['id'] = 'x4Top';
             $top->addClass('fadein');
             $top->hp['x6plugin'] = 'androPage';
-            jqDocReady("var plugin = u.byId('x4Top');");
+            jqDocReady("var plugin = x6.byId('x4Top');");
             jqDocReady("x6plugins.androPage(plugin,'x4Top','*');");
         }
         
@@ -434,7 +434,12 @@ class androPage {
             $inp->hp['id'] = $ids['showSql'];
             $inp->hp['name'] = 'showsql';  // For x2
             $inp->addClass('button');
-            $inp->hp['onclick'] = "\$a.byId('x4AndroPage').showSql()";
+            if($x6) {
+                $inp->hp['onclick'] = "x6events.fireEvent('key_CtrlQ')";
+            }
+            else {
+                $inp->hp['onclick'] = "\$a.byId('x4AndroPage').showSql()";
+            }
         }
         
         # Put in the spot where we display the SQL
