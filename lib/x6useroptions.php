@@ -125,7 +125,7 @@ JS;
             $input->hp['command']= $loption;
             $input->code['click'] = <<<JS
             function(input) {
-                var command = u.p(input,'command');
+                var command = x6.p(input,'command');
                 var checked = input.checked;
                 if(checked) {
                     x6.console['enable'+command] = true;
