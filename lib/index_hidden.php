@@ -396,6 +396,13 @@ $flagx6    = configGet('flag_x6','N');
 $x6template= configGet('x6_template','');
 $x6group   = configGet('x6_group'   ,'');
 
+# KFD 1/13/09.  If there is a "gp_page" and x2=1, turn off
+#               x6 processing
+if(gp('gp_page',false) && gp('x2')==1) {
+    $flagx6 = 'N';
+}
+    
+
 $x6page    = '';
 $x6file    = '';
 $x6yaml    = '';
@@ -559,7 +566,7 @@ function index_hidden_x6Dispatch(
             echo json_encode($GLOBALS['AG']['x4']);
         }
         else {
-            echo "<script>window.location='index.php?gp_page=x_login'</script>";
+            echo "<script>window.location='index.php?gp_page=x_login&x2=1'</script>";
         }
         return;
     }
@@ -696,7 +703,6 @@ function index_hidden_x6Dispatch(
         # The absolute very last command is the fade in
         $fadeIn = "$('.fadein').fadeIn('slow',function() { x6.initFocus(); });";
         jqDocReady($fadeIn);
-        
         
         # DUPLICATE ALERT: This code copied from 
         #                  index_hidden_page() below
