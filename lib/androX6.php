@@ -23,6 +23,20 @@
 */
 class androX6 {
     var $appTabs = array();
+    # ===================================================================
+    #
+    # Major Area Pre-1: Constructor 
+    #
+    # ===================================================================
+    function androX6() {
+        # KFD 1/14/09. copied this from androX4
+        # KFD 8/7/08.  Grab any "hold" variables and
+        # attach them to the current object.  This was
+        # put in for the wholdist application to carry
+        # context from screen to screen.
+        #
+        $this->hld = aFromGp('hld_');
+    }
     
     # ===================================================================
     #
@@ -717,6 +731,7 @@ class androX6 {
         }
         
         # always at the end, render it
+        $this->hldOut($top);
         $top->render();
         
         # And a final doo-dad, broadcast a focus event
@@ -805,6 +820,7 @@ class androX6 {
         #$detail->innerDiv->addXRefs($table_id,$xrtop,$xrhgt,$xrwdth);
         
         # Render it!  That's it!
+        $this->hldOut($div);
         $div->render();
     }
     
@@ -914,7 +930,8 @@ class androX6 {
             $tab->ap['x6tablePar'] = $table_id;
             $tab->ap['x6table'   ] = $child;
         }
-        
+
+        $this->hldOut($top);
         $top->render();
     }
 
@@ -1014,6 +1031,15 @@ class androX6 {
     function uiPerm($table,$perm) {
         $dd = ddTable($table);
         return arr($dd,"ui$perm","Y") == 'N' ? false : true;
+    }
+    
+    function hldOut(&$top) {
+        foreach($this->hld as $name=>$value) {
+            $inp = $top->h('input');
+            $inp->hp['type'] = 'hidden';
+            $inp->hp['name'] = $inp->hp['id'] = 'hld_'.$name;
+            $inp->hp['value'] = $value;
+        }
     }
     
     # Makes a generic tabdiv.  First created 11/3/08 so we can add

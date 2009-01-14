@@ -3180,6 +3180,7 @@ class androHTMLTabDiv extends androHTML {
             $inp->hp['onkeyup']   = "x6.byId('".$this->hp['id']."').fetch()";
             $inp->hp['style'  ]   = "width: {$width}px";
             $inp->hp['xLookup']   = 'Y';
+            $inp->hp['value']     = gp('pre_'.$column,'');
             if(isset($inp->hp['x6select'])) unset($inp->hp['x6select']);
             #$inp->ap['xParentId'] = $t->hp['id'];
             #$inp->ap['xNoEnter'] = 'Y';
