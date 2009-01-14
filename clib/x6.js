@@ -27,6 +27,7 @@ else {
     window.androIsIE = false;
 }
 
+
 /* **************************************************************** *\
 
    Cookie functions.
@@ -131,6 +132,340 @@ Selection.prototype._createSelectionMarker = function() {
     return "##SELECTION_MARKER_" + Math.random() + "##";
 }
 
+/* **************************************************************** *\
+
+   Javasript Language Extensions
+   
+\* **************************************************************** */
+
+
+/****M* Javascript-API/Date-Extensions
+*
+* NAME
+*   Date-Extensions
+*
+* FUNCTION
+*   Javascript lacks a handful of useful date functions, 
+*   such as returning the day of the week as a string.
+*   These extensions to the Date object provide those
+*   facilities.
+*
+******
+*/
+
+/****m* Date-Extensions/getDow
+*
+* NAME
+*   Date.getDow
+*
+* FUNCTION
+*   The Javascript method Date.getDow returns the day of
+*   the week as a string.
+*
+*   If logical true is passed for the first parameter,
+*   a 3-digit abbreviation is returned, using 'Thu' for
+*   Thursday.
+*
+* INPUTS
+*   boolean - If true, returns a 3-digit abbreviation
+*
+*
+* SOURCE
+*
+*/
+Date.prototype.getDow = function(makeItShort) {
+    var days = ['Sunday','Monday','Tuesday','Wednesday'
+        ,'Thursday','Friday','Saturday'
+    ];
+    var retval = days[this.getDay()];
+    if(makeItShort) {
+        return retval.slice(0,3);
+    }
+    return retval;
+}
+/******/
+
+
+/****M* Javascript-API/String-Extensions
+*
+* NAME
+*   String-Extensions
+*
+* FUNCTION
+*   Javascript lacks a handful of useful string functions, 
+*   such as padding and trimming, which we have added
+*   to our standard library.
+*
+******
+*/
+
+
+/****m* String-Extensions/trim
+*
+* NAME
+*   String.trim
+*
+* FUNCTION
+*   The Javascript function trim removes leading and trailing
+*   spaces from a string.
+*
+* EXAMPLE
+*   Example usage:
+*     var x = '  abc  ';
+*     var y = x.trim();  // returns 'abc'
+*
+* SOURCE
+*/
+String.prototype.trim = function() {
+	return this.replace(/^\s+|\s+$/g,"");
+}
+/******/
+
+/****m* String-Extensions/ltrim
+*
+* NAME
+*   String.ltrim
+*
+* FUNCTION
+*   The Javascript function ltrim removes leading spaces
+*   from a string (spaces on the left side).
+*
+* EXAMPLE
+*   Example usage:
+*     var x = '  abc  ';
+*     var y = x.ltrim();  // returns 'abc  '
+*
+* SOURCE
+*/
+String.prototype.ltrim = function() {
+	return this.replace(/^\s+/,"");
+}
+/******/
+
+/****m* String-Extensions/rtrim
+*
+* NAME
+*   String.rtrim
+*
+* FUNCTION
+*   The Javascript function rtrim removes trailing spaces
+*   from a string (spaces on the right side).
+*
+* EXAMPLE
+*   Example usage:
+*     var x = '  abc  ';
+*     var y = x.ltrim();  // returns '  abc'
+*
+* SOURCE
+*/
+String.prototype.rtrim = function() {
+	return this.replace(/\s+$/,"");
+}
+/******/
+
+
+/****m* String-Extensions/pad
+*
+* NAME
+*   String.pad
+*
+* FUNCTION
+*   The Javascript function pad pads out a string to a given
+*   length on either left or right with any character.
+*
+* INPUTS
+*   int - the size of the resulting string
+*
+*   string - the string that should be added.  You can provide
+*   a string of more than one character.  The resulting string
+*   will be clipped to ensure it is returned at the requested
+*   size.
+*
+*   character - either an 'L' or left padding or an 'R' for
+*   right padding.
+*
+* EXAMPLE
+*   Example usage:
+*     var x = 'abc';
+*     var y = x.pad(6,'0','L');  // returns '000abc';
+*
+* SOURCE
+*/
+String.prototype.pad = function(size,character,where) {
+    var val = this;
+    while(val.length < size) {
+        if(where == 'L') 
+            val = character + val;
+        else
+            val += character;
+        if(val.length > size) {
+            val = val.slice(0,size);
+        }
+    }
+    return val;
+}
+/******/
+
+
+// Taken from http://www.sourcesnippets.com/javascript-string-pad.html
+var STR_PAD_LEFT = 1;
+var STR_PAD_RIGHT = 2;
+var STR_PAD_BOTH = 3;
+ 
+String.prototype.strpad = function(str, len, pad, dir) {
+ 
+    str = String(str);
+	if (typeof(len) == "undefined") { var len = 0; }
+	if (typeof(pad) == "undefined") { var pad = ' '; }
+	if (typeof(dir) == "undefined") { var dir = STR_PAD_RIGHT; }
+ 
+	if (len + 1 >= str.length) {
+ 
+		switch (dir){
+ 
+			case STR_PAD_LEFT:
+				str = Array(len + 1 - str.length).join(pad) + str;
+			break;
+ 
+			case STR_PAD_BOTH:
+				var right = Math.ceil((padlen = len - str.length) / 2);
+				var left = padlen - right;
+				str = Array(left+1).join(pad) + str + Array(right+1).join(pad);
+			break;
+ 
+			default:
+				str = str + Array(len + 1 - str.length).join(pad);
+			break;
+ 
+		} // switch
+ 
+	}
+ 
+	return str;
+ 
+}
+
+String.prototype.pad = function(len, pad, dir) {
+ 
+    str = this.toString();
+	if (typeof(len) == "undefined") { var len = 0; }
+	if (typeof(pad) == "undefined") { var pad = ' '; }
+	if (typeof(dir) == "undefined") { var dir = STR_PAD_RIGHT; }
+ 
+	if (len + 1 >= str.length) {
+ 
+		switch (dir){
+ 
+			case STR_PAD_LEFT:
+				str = Array(len + 1 - str.length).join(pad) + str;
+			break;
+ 
+			case STR_PAD_BOTH:
+				var right = Math.ceil((padlen = len - str.length) / 2);
+				var left = padlen - right;
+				str = Array(left+1).join(pad) + str + Array(right+1).join(pad);
+			break;
+ 
+			default:
+				str = str + Array(len + 1 - str.length).join(pad);
+			break;
+ 
+		} // switch
+ 
+	}
+ 
+	return str;
+ 
+}
+
+/****m* String-Extensions/repeat
+*
+* NAME
+*   String.repeat
+*
+* FUNCTION
+*   The Javascript function repeat returns the input string
+*   repeated any number of times
+*
+* INPUTS
+*   * int - the number of times to repeat the string.
+*
+*
+* EXAMPLE
+*   Example usage:
+*     alert( 'abc'.repeat(3));
+*
+* SOURCE
+*/
+String.prototype.repeat = function(count) {
+    if(count==null) count = 1;
+    retval = '';
+    for(var x = 1; x<= count; x++) {
+        retval+= this;
+    }
+    return retval;
+}
+/******/
+
+/****m* String-Extensions/htmlDisplay
+*
+* NAME
+*   String.htmlDisplay
+*
+* FUNCTION
+*   The Javascript function htmlDisplay converts the HTML
+*   characters ampersand '&amp;', less than '&lt;' and
+*   greater-than '&gt;' to their HTML entities equivalents
+*   for safe display.
+*
+*   The reverse function is htmlEdit.
+*
+* SOURCE
+*/
+String.prototype.htmlDisplay = function() {
+    return this.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+/******/
+
+/****m* String-Extensions/htmlEdit
+*
+* NAME
+*   String.htmlEdit
+*
+* FUNCTION
+*   The Javascript function htmlEdit removes HTML entities 
+*   from a string and replaces them with literal characters,
+*   suitable for editing in an input.  The characters replaced
+*   are ampersand '&amp;', less-than '&lt;', greater-than '&gt;'
+*   and non-breaking space '&amp;nbsp;'.
+*
+* SOURCE
+*/
+String.prototype.htmlEdit = function() {
+    return this.replace(/&amp;/g,'&')
+        .replace(/&lt;/g,'<')
+        .replace(/&gt;/g,'>')
+        .replace(/&nbsp;/g,' ');
+}
+/******/
+
+/* ---------------------------------------------------- *\
+
+   FIX BRAIN-DAMAGED INTERNET EXPLORER  
+   
+\* ---------------------------------------------------- */
+
+if(!Array.indexOf){
+    Array.prototype.indexOf = function(obj){
+        for(var i=0; i<this.length; i++){
+            if(this[i]==obj){
+                return i;
+            }
+        }
+        return -1;
+    }
+}
+
 
   
 /* **************************************************************** *\
@@ -155,9 +490,9 @@ var x6 = {
         $(document).keydown(function(e) {
                 //e = e ? e : window.event;
                 x6.console.group("Document Keydown");
-                if(u.bb.vgfGet('noKeyPress',false)==true) {
+                if(x6bb.fwGet('noKeyPress',false)==true) {
                     x6.console.log("noKeyPress was set, ignoring");
-                    u.bb.vgfSet('noKeyPress',false);
+                    x6bb.fwSet('noKeyPress',false);
                 }
                 else {
                     // no log entry, key dispatcher does that
@@ -173,9 +508,9 @@ var x6 = {
     
     // Initialize an object that has been sent from the server
     initOne: function(id) {
-        var obj = u.byId(id);
-        var pin = u.p(obj,'x6plugin');
-        obj.zTable = u.p(obj,'x6table');
+        var obj = x6.byId(id);
+        var pin = x6.p(obj,'x6plugin');
+        obj.zTable = x6.p(obj,'x6table');
         x6.console.log(pin,obj.zTable);
         x6.console.log(obj);
         x6plugins[pin](obj,obj.id,obj.zTable);
@@ -200,10 +535,10 @@ var x6 = {
             else {
                 var z=0;
                 while(z < x.length) {
-                    if(u.p(x[z],'id','').trim()!='') break;
+                    if(x6.p(x[z],'id','').trim()!='') break;
                     z++;
                 }
-                if(u.p(x[z],'id','').trim() !='') {
+                if(x6.p(x[z],'id','').trim() !='') {
                     x[z].focus();
                 }
             }
@@ -223,6 +558,15 @@ var x6 = {
             }
         }
         
+        // Trap IE/Firefox refresh buttons so they work
+        // the same on both platforms.
+        if(retval=='ShiftF5' && !window.androIsIE) {
+            window.location.reload(true);
+        }
+        if(retval=='CtrlF5' && window.androIsIE) {
+            window.location.reload(true);
+        }
+        
         
         // Make list of keys to stop no matter what
         var stopThem = [ 'CtrlF5', 'F10' ];
@@ -231,7 +575,8 @@ var x6 = {
             'CtrlS', 'CtrlN', 'CtrlI', 'CtrlD',
             'CtrlL', 'CtrlO', 'CtrlW', 'CtrlP',
             'CtrlQ', 'CtrlR', 'CtrlU', 'CtrlK',
-            'CtrlY'
+            'CtrlY',
+            'DownArrow','UpArrow'
         ];
         
         // Set a flag now.  If user hit ESC, we are trying
@@ -239,7 +584,7 @@ var x6 = {
         // cannot do so.
         if(retval=='Esc') {
             x6.console.log("Esc key pressed, pre-seting exitApproved=true");
-            u.bb.vgfSet('exitApproved',true);
+            x6bb.fwSet('exitApproved',true);
         }
         
         // Now we have a complete key label, fire the event
@@ -255,18 +600,18 @@ var x6 = {
             // for that, because if it came back true we will exit,
             // but otherwise we cannot.
             if(retval=='Esc') {
-                var exitApproved = u.bb.vgfGet('exitApproved',false);
+                var exitApproved = x6bb.fwGet('exitApproved',false);
                 x6.console.log("Key dispatch, ESC, exitapproved: ",exitApproved);
                 if(exitApproved) {
                     x6.console.log("exit for ESC was approved, going to menu");
                     setTimeout(
                         function() {
-                            var x6page_prior=u.p(u.byId('x6page'),'value');
-                            var x6mod_prior =u.p(u.byId('x6module'),'value');
+                            var x6page_prior=x6.p(x6.byId('x6page'),'value');
+                            var x6mod_prior =x6.p(x6.byId('x6module'),'value');
                             var str = '?x6page=menu'
                                 +'&x6page_prior='+x6page_prior
                                 +'&x6mod_prior='+x6mod_prior;
-                            //window.location.replace(str);
+                            window.location.replace(str);
                         }
                         ,10
                     );
@@ -292,6 +637,8 @@ var x6 = {
         x6.console.groupEnd();
         return true;
     },
+    
+    
     
     /*
     *  The console object starts out with do-nothing functions.
@@ -537,7 +884,728 @@ var x6 = {
     keyIsMeta: function(e) {
         var code = e.keyCode || e.charCode;
         return typeof(this.metaKeys[code])!='undefined';
-    }    
+    },
+    
+    /****m* x6/uniqueId
+    * NAME
+    *   x6.uniqueId
+    *
+    * FUNCTION
+    *   Generates a random number between 1 and 1,000,000 that is
+    *   not being used as the ID for any DOM object.  Useful for
+    *   generating unique and content-free Id's for DOM objects.
+    *
+    * EXAMPLE
+    *   Example usage would be:
+    *
+    *     var x = document.createElement('div');
+    *     x.id = x6.uniqueId();
+    *
+    * RESULT
+    *   id - returns the id
+    *
+    * SOURCE
+    */
+    uniqueId: function() {
+        var retval = 0;
+        while( $('#'+retval).length > 1  || retval==0) {
+            var retval=Math.floor(Math.random()*1000000);
+        }
+        return retval;
+    },
+    /******/
+    
+    /*
+    *  KFD 1/13/09.  We put this here so we do not have to
+    *                load up androLib.js anymore.  We will
+    *                gradually eliminate use of this function
+    *                and make it go away.  We will use
+    *                $(id)... instead.
+    */
+    byId: function(id) {
+        return document.getElementById(id );
+    },
+    
+    p: function(obj,propname,defvalue) {
+        if(typeof(obj)!='object') {
+            return defvalue;
+        }
+        
+        // First try, maybe it is a direct property
+        if(typeof(obj[propname])!='undefined') {
+            return obj[propname];
+        }
+        // Second try, maybe it is an attribute
+        if(obj.getAttribute) {
+            if(obj.getAttribute(propname)!=null) {
+                return obj.getAttribute(propname);
+            }
+        }
+        // Give up, return the defvalue
+        return defvalue;
+    },
+    
+    openWindow: function(url) {
+        window.open(url);
+    },
+    
+    /****O* ua/json
+    *
+    * NAME
+    *   x6.json
+    *
+    * FUNCTION
+    *   The Javascript object x6.json is used to send any request
+    *   to the web server, either for a new complete page or for
+    *   data and HTML fragments.
+    *   Examples include requesting a single row from a table,
+    *   requesting search results, fetching HTML fragments, or
+    *   popping up a new window.
+    *
+    *   Andromeda uses the term JSON instead of AJAX because 
+    *   the term AJAX does not describe how Andromeda works.
+    *   Specifically, Andromeda PHP pages return JSON data
+    *   instead of XML (hence no "X" in AJA"X"), and many calls
+    *   are actually synchronous (hence no "A" in "A"JAX).
+    *
+    *   The x6.json object is always present on all pages, and
+    *   you can use it in Javascript code on any custom page.
+    *
+    * NOTES
+    *   Andromeda handles all of the values returned in the
+    *   request automatically.  On custom pages you do not have
+    *   to code a response handler because Andromeda handles
+    *   the response for you.
+    *
+    *   The PHP code that handles a JSON request sends data back
+    *   by using the routines x4Debug, x4Data, x4HTML, x4Script,
+    *   x4Error.  While the complete PHP-API documentation on
+    *   those functions will give you most of what you need, we
+    *   must note here how the returned data is handled:
+    *   * x4Debug - ignored, but you can examine the results in
+    *     firebug.
+    *   * x4Error - any errors sent back by this function are reported
+    *     to the user and x6.json.execute returns false.
+    *   * x4HTML - calls to this function in PHP code provide an 
+    *     element Id and a fragment of HTML.  The HTML replaces the
+    *     innerHTML of the specific item.
+    *   * x4Data - calls to this function in PHP code provide a name
+    *     and some data value (including arrays and objects).  The
+    *     result can be examined when the call completes in x6.data.<name>.
+    *   * x4Script - provides script that should execute on the browser
+    *     when the call returns.
+    *
+    * EXAMPLE
+    *
+    *   The basic usage of x6.json is to initialize a call 
+    *   with x6.json.init, and then to add parameters with
+    *   x6.json.addParm, and finally to execute and process the
+    *   call with x6.json.execute and x6.json.process.
+    *
+    *   There are also special-purpose methods like x6.json.inputs
+    *   that will take all of the inputs inside of an object and
+    *   add them to the request.
+    *
+    *   You can also use the function x6.json.windowLocation to
+    *   execute the call as a new page request, and x6.json.newWindow
+    *   to execute the call as a new page request in a tab.
+    *  
+    *      <script>
+    *      // Initialize the call
+    *      x6.json.init('x4Page','myCustomPage'); 
+    *      // Name the server-side PHP method to call
+    *      x6.json.addParm('x4Action','getSomething'); 
+    *      // Add some parms
+    *      x6.json.addParm('parm1','value');
+    *      x6.json.addParm('parm2','value');
+    *      // Execute and process in one step.  Note that this
+    *      // is synchronous, there is no need for a callback
+    *      // function.
+    *      x6.json.execute(true);
+    *     
+    *      for(var x in x6.data.returnedStuff) {
+    *        ....
+    *      }
+    *      </script>
+    *
+    *  This call requires an Extended-Desktop page to be defined
+    *  in PHP that will service the request.  A super-simple example
+    *  is here, more information is provided in the
+    *  Extended-Desktop documentation.
+    *
+    *      <?php
+    *      # This is file application/x4MyCustomPage.php
+    *      class x4MyCustomPage extends androX4 {
+    *          # this function handles the call given above
+    *          function getSomething() {
+    *               $parm1 = gp('parm1');
+    *               $parm2 = gp('parm2');
+    *               $sql = "Select blah blah blah";
+    *               $rows = SQL_AllRows($sql);
+    *               x4Data('returnedStuff',$rows
+    *          }
+    *      }
+    *      ?>
+    *
+    *   Sometimes you make a call that returns replacement HTML
+    *   for a single object.  In this case your PHP code supplies
+    *   the HTML by calling x4HTML with the value of '*MAIN*' for
+    *   the first parameter, as in x4HTML('*MAIN*',$html);
+    *   Such a call is handled this way in script:
+    *
+    *      <script>
+    *      x6.json.init('x4Page','myCustomPage');
+    *
+    *      // We need the conditional in case the server returns
+    *      // an error and we should not replace the html
+    *      if(x6.json.execute()) {
+    *         x6.json.process('nameofItemToReplace');
+    *      }
+    *      </script>
+    *
+    ******
+    */
+    data: { },  // required for json
+    json: {
+        callString: '',
+        http:       false,
+        active:     false,
+        jdata:      { },
+        data:       { dd: {} },
+        requests:   { },
+        parms:      { },
+        reportErrors: true,
+        x4Page:     '',
+        x4Action:   '',
+        explicitParms: '',
+        hadErrors: false,
+        
+        /****m* json/init
+        *
+        * NAME
+        *   x6.json.init
+        *
+        * FUNCTION
+        *   The Javascript method x6.json.init initiates a new 
+        *   JSON request.
+        *
+        *   Optionally you can pass two inputs and eliminate one
+        *   call to x6.json.addParm.
+        *
+        * INPUTS
+        *   string - if provided, a parameter name
+        *   mixed - if provided, the value for the parameter
+        *
+        * EXAMPLE
+        *   Here are two examples for initiating a JSON request
+        *
+        *      <script>
+        *      // The short way
+        *      x6.json.init('x4Page','myCustomPage');
+        * 
+        *      // Passing w/o parameters requires at least one
+        *      // call to x6.json.addParm.
+        *      x6.json.init();
+        *      x6.json.addParm('x4Page','myCustomPage');
+        *      </script>
+        *
+        * SOURCE
+        */
+        init: function(name,value) {
+            this.x4Page     = '';
+            this.x4Action   = '';
+            this.callString = '';
+            this.parms      = { };
+            this.reportErrors=true;
+            this.explicitParms= '';
+            if(name!=null) {
+                this.addParm(name,value);
+            }
+        },
+        /******/
+
+        /****** json/addParm
+        *
+        * NAME
+        *   x6.json.addParm
+        *
+        * FUNCTION
+        *   The Javascript method x6.json.addParm adds one parameter
+        *   to a JSON call previously initiated with x6.json.init.
+        *
+        * INPUTS
+        *   string - required, a parameter name
+        *   mixed - required, the value for the parameter
+        *
+        * EXAMPLE
+        *   Here are two examples for initiating a JSON request
+        *
+        *      <script>
+        *      x6.json.init();
+        *      // Name the server-side page to call
+        *      x6.json.addParm('x4Page','myCustomPage');
+        *      // Name the server-side method to call
+        *      x6.json.addParm('x4Action','fetchSomething');
+        *      </script>
+        *
+        * SOURCE
+        */
+        addParm: function(name,value) {
+            this.parms[name] = value;
+            if(name=='x4Page')   this.x4Page = value;
+            if(name=='x4Action') this.x4Action = value;
+        },
+        /******/
+        
+        makeString: function() {
+            if(this.explicitParms!='') {
+                return this.explicitParms;
+            }
+            var list = [ ];
+            for(var x in this.parms) {
+                list[list.length] = x + "=" +encodeURIComponent(this.parms[x]);
+            }
+            return list.join('&');
+        },
+        //addValue: function(name,value) {
+        //    if(this.callString!='') this.callString+="&";
+        //    this.callString += 'x4c_' + name + '=' + encodeURIComponent(value);
+        //},
+        
+        /****** json/inputs
+        *
+        * NAME
+        *   x6.json.inputs
+        *
+        * FUNCTION
+        *   The Javascript method x6.json.inputs adds inputs to
+        *   a JSON call previously initiated with x6.json.init.
+        *
+        *   This method accepts an object as its parameter, and
+        *   will add every input that is a child (at any level)
+        *   of that object.
+        *
+        *   This method uses the "id" property of the input to
+        *   name the parameter, not the "name" property.  Andromeda
+        *   makes no use of the "name" property.
+        *
+        *   This method is equivalent to use x6.json.addParm
+        *   for each of the desired inputs.
+        *
+        *   Checkboxes receive special treatment.  If the box is 
+        *   checked a value of 'Y' is sent, and if the box is not
+        *   checked a value of 'N' is sent.
+        *
+        *   The name of each parameter is normally the Id of the
+        *   input.  If the inputs were generated by Andromeda
+        *   on an Extended-Desktop page, they will have the names
+        *   'x4inp_<tableId>_<columnId>.  
+        *
+        * INPUTS
+        *   object - optional, the object to recurse.  You must
+        *   pass the object itself, not its Id.  If no object is
+        *   passed the Extended-Desktop top-level object x4Top
+        *   is used, which means you get every input on the page,
+        *   whether or not it is visible or
+        *
+        *   direct - a special flag that says to name the parameters
+        *   'x4c_<columnId>'.  This is required when you are sending
+        *   Direct-Database-Access calls.
+        *
+        *
+        * SOURCE
+        */
+        inputs: function(obj,direct) {
+            if(direct==null) direct=false;
+            if(obj==null) {
+                if(x6.byId('x4Top')!=null) {
+                    obj = x6.byId('x4Top');
+                }
+                else {
+                    obj = $('.x6main')[0];
+                }
+            }
+            if(typeof(obj)=='string') {
+                if(obj.indexOf('input')==-1) {
+                    var jqObjects = $(obj).find(':input');
+                }
+                else {
+                    var jqObjects = $(obj);
+                }
+            }
+            else {
+                var jqObjects = $(obj).find(":input");
+            }
+            jqObjects.each( function() {
+                if(direct) 
+                    var id = 'x4c_'+x6.p(this,'xColumnId');
+                else
+                    var id = this.id;
+                    
+                
+                if(this.type=='checkbox') {
+                    if(this.checked) {
+                        x6.json.addParm(id,'Y');
+                    }
+                    else {
+                        x6.json.addParm(id,'N');
+                    }
+                }
+                else {
+                    if(typeof(x6)=='undefined') {
+                        if(this.value!='') {
+                            x6.json.addParm(id,this.value);
+                        }
+                    }
+                    else {
+                        var zOrig = x6.p(this,'zOriginalValue','').trim();
+                        if(this.value.trim()!=zOrig) {
+                            x6.json.addParm(id,this.value);
+                        }
+                    }
+                }
+            });
+        },
+        /******/
+        
+        /****** json/serialize
+        *
+        * NAME
+        *   x6.json.serialize
+        *
+        * FUNCTION
+        *   The Javascript method x6.json.serialize takes a
+        *   Javascript Object or Array and serializes it and
+        *   adds the values to a JSON request previously
+        *   initialized with x6.json.init.
+        *
+        *   This method accepts an object as its parameter.
+        *
+        *   When you call this function, the parameters sent
+        *   back take the form of an associative array.
+        *
+        * INPUTS
+        *   prefix - The base name of the parameter
+        *
+        *   object - the object to serialize.
+        *
+        * EXAMPLE
+        *   Consider the following object that is serialized
+        *
+        *      <script>
+        *      var x = {
+        *         parm1: [ 1, 2, 3],
+        *         parm2: 'hello',
+        *         parm3: {
+        *             x: 5,
+        *             y: 10,
+        *         }
+        *      x6.json.init('x4Page','myCustomPage');
+        *      x6.json.addParm('x4Action','serialHandler');
+        *      x6.json.serialize('example',x);
+        *      <script>
+        *
+        *   Then on the server, you can grab the "example" parameter
+        *   and you will get the following associative array:
+        *
+        *      <?php
+        *      # this is file x4myCustomPage.php
+        *      class x4myCustomPage extends androX4 {
+        * 
+        *          # this handles the 'x4Action' specified above
+        *          function serialHandler() {
+        *              $example = gp('example');
+        *            
+        *              # ...the following code shows how 
+        *              #    the values that are in x4
+        *              $example['parm1'][0] = 1;
+        *              $example['parm1'][1] = 2;
+        *              $example['parm1'][2] = 3;
+        *              $example['parm2'] = 'hello';
+        *              $example['parm3']['x'] = 5;
+        *              $example['parm3']['y'] = 10;
+        *          }
+        *      }
+        *      ?>
+        *
+        * SOURCE
+        */
+        serialize: function(prefix,obj) {
+            for(var x in obj) {
+                if(typeof(obj[x])=='object') {
+                    this.serialize(prefix+'['+x+']',obj[x]);
+                }
+                else {
+                    this.addParm(prefix+'['+x+']',obj[x]);
+                }
+            }
+        },
+        /******/
+        
+        /****** json/windowLocation
+        *
+        * NAME
+        *   x6.json.windowLocation
+        *
+        * FUNCTION
+        *   The Javascript method x6.json.windowLocation takes a
+        *   JSON request and executes it as a page request.
+        *
+        * EXAMPLE
+        *   The following example loads a new page
+        *
+        *      <script>
+        *      x6.json.init('x4Page','calendar');
+        *      x6.json.windowLocation();
+        *      </script>
+        *
+        * SOURCE
+        */
+        windowLocation: function() {
+            var entireGet = 'index.php?'+this.makeString()
+            window.location = entireGet;
+        },
+        /******/
+        
+        /****** json/newWindow
+        *
+        * NAME
+        *   x6.json.newWindow
+        *
+        * FUNCTION
+        *   The Javascript method x6.json.newWindow takes a
+        *   JSON request and executes it as a page request, popping
+        *   the result up in a new tab or window.
+        *
+        *   When the user exits the resulting tab or window, it
+        *   will close.  
+        *
+        * EXAMPLE
+        *   The following example loads a new page
+        *
+        *      <script>
+        *      x6.json.init('x4Page','calendar');
+        *      x6.json.newWindow();
+        *      </script>
+        *
+        * SOURCE
+        */
+        newWindow: function() {
+            var entireGet = 'index.php?'+this.makeString()+'&x4Return=exit';
+            $a.openWindow(entireGet);
+        },
+        /******/
+
+        /****** json/executeAsync
+        *
+        * NAME
+        *   x6.json.executeAsync
+        *
+        * FUNCTION
+        *   By default Andromeda sends JSON requests synchronously,
+        *   which is more appropriate for business database applications
+        *   than asynchronous requests.
+        *
+        *   There are however some times when you do not want the user
+        *   to wait, and so you can make asynchronous calls. 
+        *
+        *   Andromeda does not make use of response handlers, see the
+        *   above section on x6.json for more details.
+        *
+        * SOURCE
+        */
+        executeAsync: function() {
+            this.execute(true,true);
+        },
+        /******/
+        
+        /****** json/execute
+        *
+        * NAME
+        *   x6.json.execute
+        *
+        * FUNCTION
+        *   The Javascript method x6.json.execute sends a request to
+        *   the server that has been initialized with x6.json.init
+        *   and has received parameters with any of x6.json.addParm,
+        *   x6.json.inputs and x6.json.serialize.
+        *
+        *   In normal usage, you call this routine and check for
+        *   a return value of true.  If the routine returns true
+        *   you call x6.json.process to process the returned
+        *   results.
+        *
+        * RESULTS
+        *   This routine returns true if the server reports no 
+        *   errors.
+        *
+        *   If the server reports errors, they are displayed to the
+        *   user using u.dialogs.alert, and this routine returns
+        *   false.
+        *
+        *******
+        */
+        execute: function(autoProcess,async) {
+            this.hadErrors = false;
+            if(async==null) async = false;
+            if(autoProcess==null) autoProcess=false;
+            
+            // Create an object
+            var browser = navigator.appName;
+            if(browser == "Microsoft Internet Explorer"){
+                // KFD 11/24
+                var http = new ActiveXObject("Microsoft.XMLHTTP");
+            }
+            else {
+                // KFD 11/24
+                var http = new XMLHttpRequest();
+            }
+            // KFD 7/8/08, When the user is clicking on
+            //             search boxes, they can click faster
+            //             than we can get answers, so if
+            //             we notice we are running an action
+            //             that is already in progress, we
+            //             cancel the earlier action.
+            var key = this.x4Page + this.x4Action;
+            if( typeof(this.requests[key])!='undefined') {
+                this.requests[key].abort();
+            }
+            this.requests[key] = http;
+            
+            // If async, we have to do it a little differently
+            // KFD 11/24, did nothing yet for async
+            if(async) {
+                http.onreadystatechange = function() {
+                    if(this.readyState!=4) return;
+                    x6.json.processPre(this,key,false);
+                    x6.json.process();
+                }
+            }
+            
+            // Execute the call
+            var entireGet = 'index.php?json=1&'+this.makeString();
+            http.open('POST' , entireGet, async);
+            http.send(null);
+
+            // KFD 11/24A
+            this.active = false;
+            
+            
+            // An asynchronous call now exits, but a
+            // synchronous call continues            
+            if (async) return;
+            else return this.processPre(http,key,autoProcess);
+            
+        },
+        
+        processPre: function(http,key,autoProcess) {
+            // Attempt to evaluate the JSON
+            try {
+                eval('this.jdata = '+http.responseText);
+            }
+            catch(e) { 
+                x6dialogs.alert("Could not process server response!");
+                if(x6.byId('x6Log')) {
+                    x6.byId('x6Log').innerHTML = http.responseText;
+                    x6.byId('x6Log').style.display='block';
+                }
+                return false;
+            }
+            
+            // KFD 7/8/08, additional housekeeping, throw away
+            //             references to the object  
+            delete this.requests[key];
+            delete http;
+
+            // If there were server errors, report those
+            if(this.jdata.error.length>0 && this.reportErrors) {
+                this.hadErrors = true;
+                $a.dialogs.alert(this.jdata.error.join("\n\n"));
+                return false;
+            }
+            if(this.jdata.notice.length>0 && this.reportErrors) {
+                $a.dialogs.alert(this.jdata.notice.join("\n\n"));
+            }
+            
+            if(autoProcess) {
+                this.process();
+            }
+            
+            return true;
+        },
+        
+        /****** json/process
+        *
+        * NAME
+        *   x6.json.process
+        *
+        * FUNCTION
+        *   The Javascript method x6.json.execute is the final
+        *   step in sending and receiving JSON requests.  This
+        *   routine does the following:
+        *   * Any HTML sent back via PHP x4HTML replaces the 
+        *     innerHTML of the named items (actually item Ids are used).
+        *   * Any script sent back via PHP x4Script is executed.
+        *   * Any data sent back via PHP x4Data is placed into
+        *     x6.data.
+        *
+        * EXAMPLE
+        *   This example shows how you can retrieve table data and
+        *   then process it:
+        *
+        *      <script>
+        *      x6.json.init('x4Page','myCustomPage');
+        *      x6.json.addParm('x4Action','getStates');
+        *      // x6.json.execute will return false on errors
+        *      if(x6.json.execute()) {
+        *         // x6.json.process puts everything in its place...
+        *         x6.json.process();
+        *         // ...so that we can handle the returned data
+        *         for (var idx in x6.data.states) {
+        *            // do something
+        *         }
+        *      }
+        *      <script>
+        *
+        *   This code requires the following PHP code on the server:
+        *
+        *      <?php
+        *      # this is file application/x4myCustomPage.php
+        *      class x4myCustomPage extends androX4 {
+        *          function getStates() {
+        *              $states = SQL("Select * from states");
+        *              x4Data('states',$states);
+        *          }
+        *      }
+        *
+        *******
+        */
+        process: function(divMain) {
+            for(var x in this.jdata.html) {
+                if(x=='*MAIN*') {
+                    $('#'+divMain).html(this.jdata.html[x]);
+                }
+                else {
+                    var obj = x6.byId(x);
+                    if(obj) {
+                        if (obj.tagName =='INPUT') {
+                            obj.value = this.jdata.html[x];
+                        }
+                        else {
+                            obj.innerHTML = this.jdata.html[x];
+                        }
+                    }
+                }
+            }
+            
+            // Execute any script that was provided
+            for(var x in this.jdata.script) {
+                eval(this.jdata.script[x]); 
+            }
+            
+            return true;
+        }
+    },
 }
 
 /* **************************************************************** *\
@@ -648,6 +1716,431 @@ if(readCookie('log_Info') ==1) x6.console.enableInfo  = true;
 if(readCookie('log_Warn') ==1) x6.console.enableWarn  = true;
 if(readCookie('log_Error')==1) x6.console.enableError = true;
 
+/****O* Javascript-API/x6dialogs
+*
+* NAME
+*   Javascript-API/x6dialogs
+*
+* FUNCTION
+*   The two Javascript dialogs x6dialogs.alert and
+*   x6dialogs.confirm replace the Javascript native functions
+*   alert() and confirm().
+*
+*   The third dialog, x6dialogs.pleaseWait, puts up a 
+*   suitable notice if your application must do something that
+*   will take more than 1-2 seconds.
+*
+*   They are all fully modal, respond to appropriate keystrokes
+*   like 'Y', 'N', 'Enter' and 'Esc', and maintain the same
+*   style as the rest of the template.
+*
+* PORTABILITY
+*   The x6dialogs object expects your HTML to contain two
+*   invisible (display:none) divs.  One is called "dialogoverlay"
+*   and the other is called "dialogbox".  These two divs are 
+*   provided by default on Andromeda templates.  If you make
+*   your own template and include androHTMLFoot.php at the bottom
+*   then your templates will also have these divs.
+*
+*   Making a page fully modal is difficult, because if an INPUT
+*   has focus it will be possible for the user to use the keyboard
+*   to navigate around.  Therefore the code in x4 checks
+*   the x6dialogs.currentDialog property, and disallow all activity
+*   if that property is not false.  If you make your own 
+*   custom pages that are not Extended Desktop pages, you must have
+*   your input's onkeyPress methods also check this property.
+*
+*   If this object is used outside of Andromeda, you must have
+*   the file phpWait.php in your public web root, otherwise the
+*   x6dialogs.confirm function will not work.
+*
+******
+*/
+x6dialogs = {
+    /** NO DOC **/
+    id: 'u_dialogs',
+    answer: null,
+    json: null,
+    
+    /****v* dialogs/currentDialog
+    *
+    * NAME
+    *    u.events.currentDialog   
+    *
+    * FUNCTION
+    *    This Javascript property will hold any of the value of:
+    *    * false, no dialog is active
+    *    * alert, an alert dialog is active
+    *    * confirm, a confirm dialog is active
+    *    * pleaseWait, a "Please Wait" box is being displayed
+    *
+    ******
+    */
+    currentDialog: false,
+    
+    /****v* dialogs/clear
+    *
+    * NAME
+    *   u.events.clear
+    *
+    * FUNCTION
+    *   The Javascript Method u.events.clear
+    *   clears the current modal dialog.  
+    *
+    *   The two dialogs x6dialogs.alert and x6dialogs.confirm are
+    *   cleared by user action.  But the x6dialogs.pleaseWait 
+    *   dialog will remain on the screen until your application
+    *   Javascript code clears it by calling this method.
+    *
+    * INPUTS
+    *   ignore - This method accepts a paremeter that is useful
+    *   only to the framework when managing a confirm dialog.
+    *
+    * SOURCE
+    */
+    clear: function(answer) {
+        this.answer = answer;
+        this.currentDialog = false;
+        
+        $('#dialogbox,#dialogoverlay').css('display','none');
+    },
+    /******/
+    
+    prepare: function(type) {
+        // Tell the master what we are doing, 
+        // and suppress all keystrokes except ENTER and ESC
+        this.currentDialog = type;
+
+        // Get some basic heights and widths
+        var wh = $(window).height();
+        var ww = $(window).width();
+        
+        // Make complete assignment to the overlay
+        $('#dialogoverlay')
+            .css('position','absolute')
+            .css('top',0)
+            .css('left',0)
+            .css('width' ,ww)
+            .css('height',wh)
+            .css('background-color','black')
+            .css('opacity',0)
+            .css('display','')
+            .css('z-index',500);
+
+        // Get height and width of the inner guy and center him
+        var ch = $('#dialogbox').height();
+        $('#dialogbox').css('width',300);
+        cw = 300;
+        
+        // Center and otherwise prepare the box
+        $('#dialogbox')
+            .css('position','absolute')
+            .css('top' , 300)
+            .css('left', (ww - cw)/2)
+            .css('opacity',0)
+            .css('display','')
+            .css('z-index',501)
+            .addClass('dialog');
+        x6.byId('dialogbox').notify = function(eventName,args) {
+            if(this.currentDialog == 'alert') {
+                if(eventName == 'keyPress_Enter') {
+                    this.clear();
+                    return true;
+                }
+                if(eventName == 'keyPress_Esc')  {
+                    this.clear();
+                    return true;
+                }
+            }
+            if(x6dialogs.currentDialog == 'confirm') {
+                if(eventName == 'keyPress_Y') {
+                    this.clear(true);
+                    return true;
+                }
+                if(eventName == 'keyPress_N') {
+                    this.clear(false);
+                    return true;
+                }
+            }
+            return false;
+        }
+    },
+    
+    /****m* dialogs/alert
+    *
+    * NAME
+    *   x6dialogs.alert
+    *
+    * FUNCTION
+    *   The Javascript method x6dialogs.alert replaces the native
+    *   Javascript alert() function with one that is stylistically
+    *   consistent with the rest of the application.
+    *
+    *   Unlike Javascript's native alert() function, execution 
+    *   continues after you call this function.  The user must
+    *   clear it by clicking the OK button, hitting Enter, or
+    *   hitting Esc.
+    *
+    *   When this alert is active, all keyboard events are
+    *   suppressed except Enter and Esc.
+    *
+    * EXAMPLE
+    *   Here is a usage example:
+    *
+    *       x6dialogs.alert("New data has been saved");
+    *       // maybe do some other stuff while 
+    *       // waiting for the user
+    *       u.events.notify('myEventName',objParms);
+    *
+    ******
+    */
+    alert: function(msg) {
+        alert(msg);
+        return;
+    },
+    
+    /****m* dialogs/confirm
+    *
+    * NAME
+    *   x6dialogs.confirm
+    *
+    * FUNCTION
+    *   The Javascript method x6dialogs.confirm replaces the native
+    *   Javascript confirm() function with one that is stylistically
+    *   consistent with the rest of the application.
+    *
+    *   Like Javascript's native confirm() function, execution 
+    *   *stops* until the user answers the question.  This makes
+    *   coding far easier because you do not have to code
+    *   anonymous callback functions.
+    *
+    *   When this alert is active, all keyboard events are
+    *   suppressed except 'Y' and 'N'.
+    *
+    * EXAMPLE
+    *   Here is a usage example:
+    *
+    *       if(x6dialogs.confirm("Do you really want to delete?")) {
+    *           // code to delete
+    *       }
+    *       else {
+    *           u.events.debug("user chose not to delete");
+    *       }
+    *
+    * PORTABILITY
+    *    Javascript does not natively support an elegant way to
+    *    pause execution.  For instance, it does not have a 
+    *    "sleep" function that would allow a low-CPU idefinite
+    *    loop to be executing while waiting for user input.
+    *
+    *    We could solve this by throwing caution to the wind and
+    *    doing an indefinite loop anyway, which checks over and over
+    *    to see if the user has responded, but this spikes CPU usage
+    *    and is very bad form.
+    *
+    *    The technique used by x6dialogs.confirm is unusual, but it
+    *    has the benefit of being extremely low on CPU power and
+    *    extremely low on network bandwidth.  The approach contains
+    *    an indefinite loop that makes a call to the program
+    *    phpWait.php, which does a sleep for 1/4 second and returns.
+    *    Even at four calls per second, the overall CPU and network
+    *    bandwidth is practically zero.
+    *
+    *    Therefore, x6dialogs.confirm has a dependency that the
+    *    php file phpWait.php be present in the web server's public
+    *    root.  This is handled automatically by Andromeda, but you
+    *    must provide such a file if you use this object in 
+    *    a non-Andromeda application.
+    *
+    ******
+    */
+    confirm: function(msg,options) {
+        return confirm(msg);
+    },
+    
+    /****m* dialogs/pleaseWait
+    *
+    * NAME
+    *   x6dialogs.pleaseWait
+    *
+    * FUNCTION
+    *   The Javascript method x6dialogs.pleaseWait is not,
+    *   strictly speaking, a dialog, because it does not require
+    *   any user feedback, and in fact does not even allow it.
+    *
+    *   When you call x6dialogs.pleaseWait, a modal box pops up
+    *   that is stylistically consistent with the overall template
+    *   and which has an animated gif and the message "Please Wait".
+    *
+    *   Use this method when you are executing a long-running
+    *   (greater than 2-3 seconds) process and you must let the
+    *   user know the program is working on something.
+    *
+    *   The user cannot clear this display.  You must clear it
+    *   yourself when work has been completed by calling
+    *   x6dialogs.clear().
+    *
+    *  EXAMPLE
+    *    Here is a usage example:
+    *
+    *         x6dialogs.pleaseWait();
+    *         for(var x in rowsToSave()) {
+    *            // some actions to save to server
+    *         }
+    *         x6dialogs.clear();
+    *  
+    ******
+    */
+    pleaseWait: function(msg) {
+        if(msg==null) msg = "Please Wait...";
+        this.prepare('pleaseWait');
+        
+        // Create the content for the dialog itself
+        var html =
+            "<center><br/>"
+            +"<img src='clib/ajax-loader.gif'>"
+            +"<br/><br/>"
+            +msg+"<br/><br/>"
+            +"</center>";
+
+        x6.byId('dialogbox').innerHTML=html;
+        
+        // Finally, display the dialog
+        $('#dialogoverlay').css('opacity',0.4);
+        $('#dialogbox').css(    'opacity',1);
+    }
+}
+
+/****O* u/bb
+* NAME
+*   x6bb
+*
+* FUNCTION
+*   "Bulletin Board" object that lets you "stick" values on it
+*   and "grab" them from elsewhere.
+*
+*   x6bb methods should be used instead of global variables
+*   because they allow you to avoid collisions with framework
+*   globals.  The framework uses the methods x6bb.fwGet
+*   and x6bb.fwSet, and your application should use x6bb.appGet
+*   and x6bb.appSet.
+*
+* EXAMPLE:
+*   Example usage:
+*      x6bb.appSet('myvar','value');
+*      var myvar = x6bb.appGet('myvar','acceptableDefault');
+*
+******
+*/
+x6bb = {
+    /****v* x6bb/fwvars
+    * NAME
+    *   x6bb.fwvars
+    *
+    * FUNCTION
+    *   Global bulletin board framework variables.  Not intended
+    *   for direct access, manipulate at your own risk!
+    ******
+    */
+    fwvars: { },
+    /****v* x6bb/appvars
+    * NAME
+    *   x6bb.appvars
+    *
+    * FUNCTION
+    *   Global bulletin board application variables.  Not intended
+    *   for direct access, manipulate at your own risk!
+    ******
+    */
+    appvars: { },
+    /****m* x6bb/vgfSet
+    * NAME
+    *   x6bb.vgfSet
+    *
+    * FUNCTION
+    *   Used by the Andromeda framework to save global variables
+    *   for later use.  Application code should never use this,
+    *   or you risk overwriting framework values and disrupting
+    *   normal performance.
+    *
+    * INPUTS
+    *   varName - The name of your variable
+    *   varValue   - The value to store
+    *
+    * SOURCE
+    */
+    fwSet: function(varName,value) {
+        this.fwvars[varName] = value;
+    },
+    /******/
+    
+    /****m* x6bb/vgfGet
+    * NAME
+    *   x6bb.vgfGet
+    *
+    * FUNCTION
+    *   Retrieves a variable saved by the framework.
+    *
+    *   Unlike vfgSet, which application code should never call,
+    *   it may be appropriate from time-to-time to call this
+    *   function to find out what the framework is up to.
+    *
+    * INPUTS
+    *   varName - the variable you wish to retrieve
+    *   defValue - the value to return if the variable does not exist.
+    *
+    * SOURCE
+    */
+    fwGet: function(varName,defValue) {
+        var retval = x6.p(this.fwvars,varName,defValue);
+        //if(typeof(console)!='undefined') {
+        //    console.log("vgfGet",varName,retval,defValue);
+        //}
+        return retval;
+    },
+    /******/
+
+    /****m* x6bb/vgaSet
+    * NAME
+    *   x6bb.vgaSet
+    *
+    * FUNCTION
+    *   Sets a global variable.  Globals saved with this method
+    *   will not collide with any framework globals.
+    *
+    * INPUTS
+    *   varName - the variable you wish to save
+    *   varValue - the value to save
+    *
+    * SOURCE
+    */
+    appSet: function(varName,value) {
+        this.appvars[varName] = value;
+    },
+    /******/
+    
+    
+    /****m* bb/vgaGet
+    * NAME
+    *   x6bb.vgaGet
+    *
+    * FUNCTION
+    *   Retrieves a global variable, or the default value
+    *   if the global has not been set.
+    *
+    * INPUTS
+    *   varName - the variable you wish to save
+    *   defValue - the value to return if the global does
+    *              not exist.
+    *
+    * SOURCE
+    */
+    appGet: function(varName,defValue) {
+        return x6.p(this.appvars,varName,defValue);
+    }
+    /******/
+}
+
 
 /****O* Javascript-API/x6events
 *
@@ -739,13 +2232,13 @@ var x6events = {
         x6.console.log("event name: ",eventName)
         x6.console.log("id subscriber: ",id);
         if(id=='undefined') {
-            u.error('x6events.subscribeToEvent.  Second parameter '
+            x6.console.error('x6events.subscribeToEvent.  Second parameter '
                 +' undefined.  First parameter: '+eventName
             );
             return;
         }
         if(id==null) {
-            u.error('x6events.subscribeToEvent.  Second parameter '
+            x6.console.error('x6events.subscribeToEvent.  Second parameter '
                 +' null.  First parameter: '+eventName
             );
             return;
@@ -753,7 +2246,7 @@ var x6events = {
         
         // First determine if we have any listeners for this
         // event at all.  If not, make up the empty object
-        if( u.p(this.subscribers,eventName,null)==null) {
+        if( x6.p(this.subscribers,eventName,null)==null) {
             this.subscribers[eventName] = [ ];
         }
         if(this.subscribers[eventName].indexOf(id)==-1) {
@@ -764,7 +2257,7 @@ var x6events = {
     /******/
     
     unsubscribeToEvent: function(eventName,id) {
-        var subs = u.p(this.subscribers,eventName);
+        var subs = x6.p(this.subscribers,eventName);
         if( subs!=null) {
             var i = this.subscribers[eventName].indexOf(id);
             if(i >= 0) {
@@ -792,7 +2285,7 @@ var x6events = {
     * SOURCE
     */
     getSubscribers: function(eventName) {
-        return u.p(this.subscribers,eventName,[]);
+        return x6.p(this.subscribers,eventName,[]);
     },
     /******/
 
@@ -823,9 +2316,35 @@ var x6events = {
     *
     ******
     */
+    makeMap: false,
+    map: [ ],
+    mapStack: [ ],
+    mapClear: function() {
+        this.map = [ { name: 'root', kids: [ ] } ];
+        this.mapStack = [ this.map[0] ];
+    },
+    mapWrite: function(map,indent,level) {
+        if(map   ==null) map   = this.map;
+        if(level ==null) level = 0;
+        if(indent==null) indent='';
+        var maplen = map.length;
+        for(var x=0; x<maplen; x++) {
+            this.mapWrite(map[x].kids,indent+'  ',level+1)
+        }
+        
+    },
+    
     retvals: { },
     fireEvent: function(eventName,arguments) {
         if(this.eventsDisabled) return;
+        
+        if(this.makeMap) {
+            if(this.map.length==0) this.mapClear();
+            var spot = this.mapStack[this.mapStack.length-1];
+            var len  = spot.kids.length;
+            spot.kids[len] = { name: eventName, kids: [ ] };
+            this.mapStack.push(spot.kids[len]);
+        }
         
         x6.console.group("fireEvent "+eventName);
         x6.console.log('arguments: ',arguments);
@@ -843,7 +2362,7 @@ var x6events = {
         for(var x=0; x<subscribers.length;x++) {
             var id = subscribers[x];
             x6.console.log("subscriber: ",id);
-            var subscriber = u.byId(id);
+            var subscriber = x6.byId(id);
             if(subscriber==null) {
                 x6.console.error(
                     "There is no object with that ID, cannot dispatch"
@@ -855,11 +2374,26 @@ var x6events = {
             var retval = false;
             var method = 'receiveEvent_'+eventName;
             if(typeof(subscriber[method])=='function') {
+                /*
+                if(this.makeMap) {
+                    var spot = this.mapStack[this.mapStack.length-1];
+                    var len  = spot.length;
+                    spot[len] = { name: id, kids: [ ] };
+                    this.mapStack.push(spot[len].kids);
+                }
+                */
+                
                 retval = subscriber[method](arguments);
                 x6.console.log(id,eventName,retval);
+                
+                //if(this.makeMap) {
+                //    this.mapStack.pop();
+                //}
             }
             else {
-                u.error("Subscriber "+subscriber.id+" has no method: "+method); 
+                x6.console.error(
+                    "Subscriber "+subscriber.id+" has no method: "+method
+                ); 
             }
             if(retval==false) {
                 x6.console.log('id returned false, setting false');
@@ -867,11 +2401,501 @@ var x6events = {
                 break;
             }
         }
+
+        if(this.makeMap) {
+            this.mapStack.pop();
+        }
+        
         x6.console.log("fireEvent ",eventName," RETURNING: ",this.retvals[eventName]);
         x6.console.groupEnd();
         return this.retvals[eventName];
     }
 }
+
+
+/* ----------------------------------------------------- *\
+   EXPERIMENTAL, json constructor
+\* ----------------------------------------------------- */
+function x6JSON(parm,value) {
+    
+    this.callString = '';
+    this.http       =  false,
+    this.active     =false,
+    this.jdata      ={ },
+    this.data       ={ dd: {} },
+    this.requests   ={ },
+    this.parms      ={ },
+    this.reportErrors= true,
+    this.x4Page     ='',
+    this.x4Action   ='',
+    this.explicitParms= '',
+    this.hadErrors= false,
+
+    /****m* json/addParm
+    *
+    * NAME
+    *   x6.json.addParm
+    *
+    * FUNCTION
+    *   The Javascript method x6.json.addParm adds one parameter
+    *   to a JSON call previously initiated with x6.json.init.
+    *
+    * INPUTS
+    *   string - required, a parameter name
+    *   mixed - required, the value for the parameter
+    *
+    * EXAMPLE
+    *   Here are two examples for initiating a JSON request
+    *
+    *      <script>
+    *      x6.json.init();
+    *      // Name the server-side page to call
+    *      x6.json.addParm('x4Page','myCustomPage');
+    *      // Name the server-side method to call
+    *      x6.json.addParm('x4Action','fetchSomething');
+    *      </script>
+    *
+    * SOURCE
+    */
+    this.addParm = function(name,value) {
+        this.parms[name] = value;
+        if(name=='x4Page')   this.x4Page = value;
+        if(name=='x4Action') this.x4Action = value;
+    }
+    /******/
+    
+    // Original init code
+    this.x4Page     = '';
+    this.x4Action   = '';
+    this.callString = '';
+    this.parms      = { };
+    this.reportErrors=true;
+    this.explicitParms= '';
+    if(parm!=null) {
+        this.addParm(parm,value);
+    }
+    // Create an object
+    var browser = navigator.appName;
+    if(browser == "Microsoft Internet Explorer"){
+        // KFD 11/24
+        this.http = new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    else {
+        // KFD 11/24
+        this.http = new XMLHttpRequest();
+    }
+    
+    this.makeString = function() {
+        if(this.explicitParms!='') {
+            return this.explicitParms;
+        }
+        var list = [ ];
+        for(var x in this.parms) {
+            list[list.length] = x + "=" +encodeURIComponent(this.parms[x]);
+        }
+        return list.join('&');
+    }
+    //addValue: function(name,value) {
+    //    if(this.callString!='') this.callString+="&";
+    //    this.callString += 'x4c_' + name + '=' + encodeURIComponent(value);
+    //},
+    
+    /****m* json/inputs
+    *
+    * NAME
+    *   x6.json.inputs
+    *
+    * FUNCTION
+    *   The Javascript method x6.json.inputs adds inputs to
+    *   a JSON call previously initiated with x6.json.init.
+    *
+    *   This method accepts an object as its parameter, and
+    *   will add every input that is a child (at any level)
+    *   of that object.
+    *
+    *   This method uses the "id" property of the input to
+    *   name the parameter, not the "name" property.  Andromeda
+    *   makes no use of the "name" property.
+    *
+    *   This method is equivalent to use x6.json.addParm
+    *   for each of the desired inputs.
+    *
+    *   Checkboxes receive special treatment.  If the box is 
+    *   checked a value of 'Y' is sent, and if the box is not
+    *   checked a value of 'N' is sent.
+    *
+    *   The name of each parameter is normally the Id of the
+    *   input.  If the inputs were generated by Andromeda
+    *   on an Extended-Desktop page, they will have the names
+    *   'x4inp_<tableId>_<columnId>.  
+    *
+    * INPUTS
+    *   object - optional, the object to recurse.  You must
+    *   pass the object itself, not its Id.  If no object is
+    *   passed the Extended-Desktop top-level object x4Top
+    *   is used, which means you get every input on the page,
+    *   whether or not it is visible or
+    *
+    *   direct - a special flag that says to name the parameters
+    *   'x4c_<columnId>'.  This is required when you are sending
+    *   Direct-Database-Access calls.
+    *
+    *
+    * SOURCE
+    */
+    this.inputs= function(obj,direct) {
+        if(direct==null) direct=false;
+        if(obj==null) {
+            obj = $a.byId('x4Top');
+        }
+        if(typeof(obj)=='string') {
+            var jqObjects = $(obj);
+        }
+        else {
+            var jqObjects = $(obj).find(":input");
+        }
+        jqObjects.each( function() {
+                if(direct) 
+                    var id = 'x4c_'+x6.p(this,'xColumnId');
+                else
+                    var id = this.id;
+                    
+                
+                if(this.type=='checkbox') {
+                    if(this.checked) {
+                        x6.json.addParm(id,'Y');
+                    }
+                    else {
+                        x6.json.addParm(id,'N');
+                    }
+                }
+                else {
+                    if(this.value!='') {
+                        x6.json.addParm(id,this.value);
+                    }
+                }
+        });
+    }
+    /******/
+    
+    /****m* json/serialize
+    *
+    * NAME
+    *   x6.json.serialize
+    *
+    * FUNCTION
+    *   The Javascript method x6.json.serialize takes a
+    *   Javascript Object or Array and serializes it and
+    *   adds the values to a JSON request previously
+    *   initialized with x6.json.init.
+    *
+    *   This method accepts an object as its parameter.
+    *
+    *   When you call this function, the parameters sent
+    *   back take the form of an associative array.
+    *
+    * INPUTS
+    *   prefix - The base name of the parameter
+    *
+    *   object - the object to serialize.
+    *
+    * EXAMPLE
+    *   Consider the following object that is serialized
+    *
+    *      <script>
+    *      var x = {
+    *         parm1: [ 1, 2, 3],
+    *         parm2: 'hello',
+    *         parm3: {
+    *             x: 5,
+    *             y: 10,
+    *         }
+    *      x6.json.init('x4Page','myCustomPage');
+    *      x6.json.addParm('x4Action','serialHandler');
+    *      x6.json.serialize('example',x);
+    *      <script>
+    *
+    *   Then on the server, you can grab the "example" parameter
+    *   and you will get the following associative array:
+    *
+    *      <?php
+    *      # this is file x4myCustomPage.php
+    *      class x4myCustomPage extends androX4 {
+    * 
+    *          # this handles the 'x4Action' specified above
+    *          function serialHandler() {
+    *              $example = gp('example');
+    *            
+    *              # ...the following code shows how 
+    *              #    the values that are in x4
+    *              $example['parm1'][0] = 1;
+    *              $example['parm1'][1] = 2;
+    *              $example['parm1'][2] = 3;
+    *              $example['parm2'] = 'hello';
+    *              $example['parm3']['x'] = 5;
+    *              $example['parm3']['y'] = 10;
+    *          }
+    *      }
+    *      ?>
+    *
+    * SOURCE
+    */
+    this.serialize = function(prefix,obj) {
+        for(var x in obj) {
+            if(typeof(obj[x])=='object') {
+                this.serialize(prefix+'['+x+']',obj[x]);
+            }
+            else {
+                this.addParm(prefix+'['+x+']',obj[x]);
+            }
+        }
+    }
+    /******/
+    
+    /****m* json/windowLocation
+    *
+    * NAME
+    *   x6.json.windowLocation
+    *
+    * FUNCTION
+    *   The Javascript method x6.json.windowLocation takes a
+    *   JSON request and executes it as a page request.
+    *
+    * EXAMPLE
+    *   The following example loads a new page
+    *
+    *      <script>
+    *      x6.json.init('x4Page','calendar');
+    *      x6.json.windowLocation();
+    *      </script>
+    *
+    * SOURCE
+    */
+    this.windowLocation = function() {
+        var entireGet = 'index.php?'+this.makeString()
+        window.location = entireGet;
+    }
+    /******/
+    
+    /****m* json/newWindow
+    *
+    * NAME
+    *   x6.json.newWindow
+    *
+    * FUNCTION
+    *   The Javascript method x6.json.newWindow takes a
+    *   JSON request and executes it as a page request, popping
+    *   the result up in a new tab or window.
+    *
+    *   When the user exits the resulting tab or window, it
+    *   will close.  
+    *
+    * EXAMPLE
+    *   The following example loads a new page
+    *
+    *      <script>
+    *      x6.json.init('x4Page','calendar');
+    *      x6.json.newWindow();
+    *      </script>
+    *
+    * SOURCE
+    */
+    this.newWindow = function() {
+        var entireGet = 'index.php?'+this.makeString()+'&x4Return=exit';
+        $a.openWindow(entireGet);
+    }
+    /******/
+
+    /****m* json/executeAsync
+    *
+    * NAME
+    *   x6.json.executeAsync
+    *
+    * FUNCTION
+    *   By default Andromeda sends JSON requests synchronously,
+    *   which is more appropriate for business database applications
+    *   than asynchronous requests.
+    *
+    *   There are however some times when you do not want the user
+    *   to wait, and so you can make asynchronous calls. 
+    *
+    *   Andromeda does not make use of response handlers, see the
+    *   above section on x6.json for more details.
+    *
+    * SOURCE
+    */
+    this.executeAsync = function() {
+        this.execute(true,true);
+    }
+    /******/
+    
+    /****m* json/execute
+    *
+    * NAME
+    *   x6.json.execute
+    *
+    * FUNCTION
+    *   The Javascript method x6.json.execute sends a request to
+    *   the server that has been initialized with x6.json.init
+    *   and has received parameters with any of x6.json.addParm,
+    *   x6.json.inputs and x6.json.serialize.
+    *
+    *   In normal usage, you call this routine and check for
+    *   a return value of true.  If the routine returns true
+    *   you call x6.json.process to process the returned
+    *   results.
+    *
+    * RESULTS
+    *   This routine returns true if the server reports no 
+    *   errors.
+    *
+    *   If the server reports errors, they are displayed to the
+    *   user using u.dialogs.alert, and this routine returns
+    *   false.
+    *
+    *******
+    */
+    this.execute = function(autoProcess,async,returnString) {
+        this.hadErrors = false;
+        if(async==null) async = false;
+        if(autoProcess==null) autoProcess=false;
+        
+        // If async, we have to do it a little differently
+        // KFD 11/24, did nothing yet for async
+        if(async) {
+            http.onreadystatechange = function() {
+                if(this.readyState!=4) return;
+                x6.json.processPre(this,key,false);
+                x6.json.process();
+            }
+        }
+        
+        // Execute the call
+        var entireGet = 'index.php?json=1&'+this.makeString();
+        this.http.open('POST' , entireGet, async);
+        this.http.send(null);
+        
+        // An asynchronous call now exits, but a
+        // synchronous call continues            
+        if (async) return;
+        else if(returnString) return this.http.responseText;
+        else return this.processPre(autoProcess);
+        
+    }
+    
+    this.processPre = function(autoProcess) {
+        // Attempt to evaluate the JSON
+        try {
+            eval('this.jdata = '+this.http.responseText);
+        }
+        catch(e) { 
+            $a.dialogs.alert("Could not process server response!");
+            if(typeof(x4)!='undefined') {
+                x4.debug(this.http.responseText);
+            }
+            if(x6.byId('x6Log')) {
+                x6.byId('x6Log').innerHTML = http.responseText;
+                x6.byId('x6Log').style.display='block';
+            }
+            this.http = false;
+            return false;
+        }
+        
+        // KFD 7/8/08, additional housekeeping, throw away
+        //             references to the object
+        this.http = false;
+
+        // If there were server errors, report those
+        if(this.jdata.error.length>0 && this.reportErrors) {
+            this.hadErrors = true;
+            $a.dialogs.alert(this.jdata.error.join("\n\n"));
+            return false;
+        }
+        if(this.jdata.notice.length>0 && this.reportErrors) {
+            $a.dialogs.alert(this.jdata.notice.join("\n\n"));
+        }
+        
+        if(autoProcess) {
+            this.process();
+        }
+        
+        return true;
+    }
+    
+    /****m* json/process
+    *
+    * NAME
+    *   x6.json.process
+    *
+    * FUNCTION
+    *   The Javascript method x6.json.execute is the final
+    *   step in sending and receiving JSON requests.  This
+    *   routine does the following:
+    *   * Any HTML sent back via PHP x4HTML replaces the 
+    *     innerHTML of the named items (actually item Ids are used).
+    *   * Any script sent back via PHP x4Script is executed.
+    *   * Any data sent back via PHP x4Data is placed into
+    *     x6.data.
+    *
+    * EXAMPLE
+    *   This example shows how you can retrieve table data and
+    *   then process it:
+    *
+    *      <script>
+    *      x6.json.init('x4Page','myCustomPage');
+    *      x6.json.addParm('x4Action','getStates');
+    *      // x6.json.execute will return false on errors
+    *      if(x6.json.execute()) {
+    *         // x6.json.process puts everything in its place...
+    *         x6.json.process();
+    *         // ...so that we can handle the returned data
+    *         for (var idx in x6.data.states) {
+    *            // do something
+    *         }
+    *      }
+    *      <script>
+    *
+    *   This code requires the following PHP code on the server:
+    *
+    *      <?php
+    *      # this is file application/x4myCustomPage.php
+    *      class x4myCustomPage extends androX4 {
+    *          function getStates() {
+    *              $states = SQL("Select * from states");
+    *              x4Data('states',$states);
+    *          }
+    *      }
+    *
+    *******
+    */
+    this.process = function(divMain) {
+        for(var x in this.jdata.html) {
+            if(x=='*MAIN*') {
+                $('#'+divMain).html(this.jdata.html[x]);
+            }
+            else {
+                var obj = x6.byId(x);
+                if(obj) {
+                    if (obj.tagName =='INPUT') {
+                        obj.value = this.jdata.html[x];
+                    }
+                    else {
+                        obj.innerHTML = this.jdata.html[x];
+                    }
+                }
+            }
+        }
+        
+        // Execute any script that was provided
+        for(var x in this.jdata.script) {
+            eval(this.jdata.script[x]); 
+        }
+        
+        return true;
+    }
+}
+
+
 /* **************************************************************** *\
 
    X6 Data Dictionary and general functions that require knowledge
@@ -960,7 +2984,7 @@ var x6inputs = {
         var keyLabel=x6.keyLabel(e);
         var isTab   =keyLabel=='Tab'    || keyLabel=='ShiftTab';
         var isEnter =keyLabel=='Enter'  || keyLabel=='ShiftEnter';  
-        var isMeta  =u.keyIsMeta(e);
+        var isMeta  =x6.keyIsMeta(e);
         var isNav   =isEnter || isTab;
         x6.console.log("label: "  ,keyLabel);
         x6.console.log('isTab: '  ,isTab   );
@@ -974,10 +2998,10 @@ var x6inputs = {
             if(handUpList.indexOf(keyLabel)>=0) {
                 // If we are passing it up or not, it should not be
                 // handled by the doc level, so we suppress it.
-                u.bb.vgfSet('noKeyPress',true);
+                x6bb.fwSet('noKeyPress',true);
                 x6.console.log("This key may be passed up to doc handler.");
                 // An explicit flag can prevent handing events up
-                if(u.p(inp,'xNoPassup','N')=='N') {
+                if(x6.p(inp,'xNoPassup','N')=='N') {
                     if(x6inputs.x6select.div) {
                         if(keyLabel == 'DownArrow') {
                             x6inputs.x6select.display(inp,'Down');
@@ -1001,12 +3025,12 @@ var x6inputs = {
                 this.lastInput(inp);
             }
             else if(keyLabel=='ShiftDownArrow') {
-                if(u.p(inp,'x6select','N')=='Y') {
+                if(x6.p(inp,'x6select','N')=='Y') {
                     x6inputs.x6select.display(inp,'Down');
                 }
             }
             else if(keyLabel=='ShiftUpArrow') {
-                if(u.p(inp,'x6select','N')=='Y') {
+                if(x6.p(inp,'x6select','N')=='Y') {
                     x6inputs.x6select.display(inp,'Up');
                 }
             }
@@ -1032,25 +3056,25 @@ var x6inputs = {
         // Type validation for some types, only if not TAB or ENTER
         if(!isNav ) {
             x6.console.log("Not nav key, doing type validation");
-            if(u.p(inp,'xLookup','N')=='Y') {
+            if(x6.p(inp,'xLookup','N')=='Y') {
                 x6.console.log("This is a lookup input, allowing everything");
                 x6.console.groupEnd();
                 return true;
             }
-            type = u.p(inp,'xtypeid');
+            type = x6.p(inp,'xtypeid');
             switch(type) {
             case 'int':
                 x6.console.log("type validation for int");
-                if(!u.keyIsNumeric(e)) return false;
+                if(!x6.keyIsNumeric(e)) return false;
                 break;
             case 'numb':
             case 'money':
                 x6.console.log("type validation for numb/money");
-                if(!u.keyIsNumeric(e) && x6.keyLabel(e)!='.') return false;
+                if(!x6.keyIsNumeric(e) && x6.keyLabel(e)!='.') return false;
                 break;
             case 'date':
                 x6.console.log("type validation for date");
-                if(!u.keyIsNumeric(e)) {
+                if(!x6.keyIsNumeric(e)) {
                     if(keyLabel!='-' && keyLabel!='/') return false;
                 }
                 break;
@@ -1068,7 +3092,7 @@ var x6inputs = {
             
             // Next possibility is a lookup that requires a
             // fetch from the server.
-            if(u.p(inp,'x6select','N')=='Y' && u.p(inp,'xValues',null)==null) {
+            if(x6.p(inp,'x6select','N')=='Y' && x6.p(inp,'xValues',null)==null) {
                 // Generate the value to send back
                 x6.console.group("An x6select, fetching from Server");
                 var val = inp.value;
@@ -1079,18 +3103,18 @@ var x6inputs = {
                 x6.console.log("sel start: ",inp.selectionStart)
                 x6.console.log("sel end: ",inp.selectionEnd)
                 x6.console.log("computed value:",val);
-                json = new androJSON('x6page',u.p(inp,'x6seltab'));
+                json = new x6JSON('x6page',x6.p(inp,'x6seltab'));
                 json.addParm('x6select','Y');
                 json.addParm('gpletters',val);
                 json.execute(true);
                 //x6inputs.x6select.display(inp);
-                x6inputs.x6select.displayDynamic(inp,ua.data.x6select);
+                x6inputs.x6select.displayDynamic(inp,x6.data.x6select);
                 x6.console.groupEnd();
             }
           
             // Yet another possibility is a lookup on a set
             // of fixed values.  
-            if(u.p(inp,'x6select','N')=='Y' && u.p(inp,'xValues',null)!=null) {
+            if(x6.p(inp,'x6select','N')=='Y' && x6.p(inp,'xValues',null)!=null) {
                 x6inputs.x6select.display(inp);
             }
             
@@ -1104,7 +3128,7 @@ var x6inputs = {
         //
         // Do this *before* the afterBlurner command below, so that
         // the value is set when afterBlurner fires.
-        if(u.p(inp,'x6select','N')=='Y') {
+        if(x6.p(inp,'x6select','N')=='Y') {
             x6inputs.x6select.assignToMe(inp);
             x6inputs.x6select.hide();
         }
@@ -1126,7 +3150,7 @@ var x6inputs = {
         
         // Get the first and last controls for easier
         // logic immediately below
-        var tg       = u.p(inp,'xTabGroup','tgdefault');
+        var tg       = x6.p(inp,'xTabGroup','tgdefault');
         var jqString = '[xTabGroup='+tg+']:not([disabled])';
         var jqObj = $(jqString);
         var inpCount = jqObj.length;
@@ -1220,11 +3244,11 @@ var x6inputs = {
         x6.console.log("Input: ",inp);
         this.x6select.checkForMe(inp);
         inp.zSelected = 1;
-        inp.zOriginalValue = u.p(inp,'zOriginalValue','').trim();
+        inp.zOriginalValue = x6.p(inp,'zOriginalValue','').trim();
         inp.lastBlurred    = '';
         x6inputs.setClass(inp);
-        if(u.p(inp,'zNew',0)==0) {
-            u.bb.vgfSet('lastFocus_'+u.p(inp,'xTableId'),inp.id);
+        if(x6.p(inp,'zNew',0)==0) {
+            x6bb.fwSet('lastFocus_'+x6.p(inp,'xTableId'),inp.id);
         }
         x6.console.log("Input focus DONE");
         x6.console.groupEnd();
@@ -1257,7 +3281,7 @@ var x6inputs = {
     afterBlurner: function(inp) {
         x6.console.group("afterBlurner");
         x6.console.log(inp);
-        if(u.p(inp,'inblur',false)) {
+        if(x6.p(inp,'inblur',false)) {
             x6.console.log("inblur flag set, no action");
             x6.console.groupEnd();
             return false;
@@ -1270,7 +3294,7 @@ var x6inputs = {
             return true;
         }
         // If value has changed, fire it
-        if(inp.lastBlurred==u.p(inp,'value','').trim()) {
+        if(inp.lastBlurred==x6.p(inp,'value','').trim()) {
             x6.console.log("Input lastBlurred is current value, no action");
             x6.console.groupEnd();
             inp.inblur = false;
@@ -1285,7 +3309,7 @@ var x6inputs = {
                 x6.console.log("Afterblurner setting flag false, return true");
                 x6.console.groupEnd();
                 inp.inblur = false;
-                inp.lastBlurred = u.p(inp,'value','').trim();
+                inp.lastBlurred = x6.p(inp,'value','').trim();
                 return true;
             }
             else {
@@ -1298,43 +3322,43 @@ var x6inputs = {
     },
     
     enable: function(inp) {
-        if(typeof(inp)=='string') inp = u.byId(inp);
+        if(typeof(inp)=='string') inp = x6.byId(inp);
         x6.console.log("Enabling input ",inp.id);
         inp.disabled = false;
-        inp.zOriginalValue = u.p(inp,'value','');
+        inp.zOriginalValue = x6.p(inp,'value','');
         this.setClass(inp);
     },
     disable: function(inp) {
-        if(typeof(inp)=='string') inp = u.byId(inp);
+        if(typeof(inp)=='string') inp = x6.byId(inp);
         x6.console.log("Disabling input ",inp.id);
         inp.disabled = true;
         this.setClass(inp);
     },
     
     setClass: function(inp) {
-        if(u.p(inp,'xLookup')=='Y') return;
+        if(x6.p(inp,'xLookup')=='Y') return;
 
         // If permupd for this table is "N", all controls
         // become read only
-        if(u.bb.vgfGet('permupd_'+u.p(inp,'xTableId'),'')=='N') {
+        if(x6bb.fwGet('permupd_'+x6.p(inp,'xTableId'),'')=='N') {
             inp.disabled = true;
         }
         
         
         // Easiest is disabled controls, remove all classes
-        if(u.p(inp,'disabled',false)) {
+        if(x6.p(inp,'disabled',false)) {
             inp.className='';
-            doRow = u.p(inp,'xClassRow',0);
+            doRow = x6.p(inp,'xClassRow',0);
             if(doRow!=0) {
                 inp.parentNode.parentNode.className = '';
             }
             return;
         }
         
-        ux = u.uniqueId();
+        ux = x6.uniqueId();
         x6.console.group("setClass for an input  "+ux);
         x6.console.log(inp);
-        if(u.p(inp,'zOriginalValue',null)==null) inp.zOriginalValue = '';
+        if(x6.p(inp,'zOriginalValue',null)==null) inp.zOriginalValue = '';
         if(inp.value.trim()==inp.zOriginalValue.trim()) {
             inp.zChanged = 0;
         }
@@ -1344,11 +3368,11 @@ var x6inputs = {
         
         // First grab the flags that determine
         // what we will do
-        var zSelected = u.p(inp,'zSelected',0);
-        var zChanged  = u.p(inp,'zChanged', 0);
-        var zError    = u.p(inp,'zError'  , 0);
-        //var zRO       = u.p(inp,'zRO'     , 0);
-        var zNew      = u.p(inp,'zNew'    , 0);
+        var zSelected = x6.p(inp,'zSelected',0);
+        var zChanged  = x6.p(inp,'zChanged', 0);
+        var zError    = x6.p(inp,'zError'  , 0);
+        //var zRO       = x6.p(inp,'zRO'     , 0);
+        var zNew      = x6.p(inp,'zNew'    , 0);
         
         // now pick them in order of preference,
         // we only pick one stem.
@@ -1368,7 +3392,7 @@ var x6inputs = {
         x6.console.log("Read Only Decision is",inp.disabled);
         
         // Flag to do the row
-        doRow = u.p(inp,'xClassRow',0);
+        doRow = x6.p(inp,'xClassRow',0);
             
         // Now set the class name
         inp.className = css;
@@ -1408,11 +3432,11 @@ var x6inputs = {
     },
     
     firstInput: function(inp) {
-        var xtg = u.p(inp,'xTabGroup','tgdefault');
+        var xtg = x6.p(inp,'xTabGroup','tgdefault');
         x6.jqSetFocus(":input[xtabgroup="+xtg+"]:not([disabled]):first");
     },
     lastInput: function(inp) {
-        var xtg = u.p(inp,'xTabGroup','tgdefault');
+        var xtg = x6.p(inp,'xTabGroup','tgdefault');
         x6.jqSetFocus(":input[xtabgroup="+xtg+"]:not([disabled]):last");
     },
     
@@ -1444,24 +3468,24 @@ var x6inputs = {
             var skey = inp;
         }
         else {
-            var skey = u.bb.vgfGet('skey_'+table,-1);
+            var skey = x6bb.fwGet('skey_'+table,-1);
         }
         if(skey==-1) return;
         x6.console.log(table,skey);
         
-        ua.json.init('x6page',table);
-        ua.json.addParm('x6action','viewClob');
-        ua.json.addParm('skey'    ,skey);
-        ua.json.addParm('column'  ,column);
-        ua.json.newWindow();
+        x6.json.init('x6page',table);
+        x6.json.addParm('x6action','viewClob');
+        x6.json.addParm('skey'    ,skey);
+        x6.json.addParm('column'  ,column);
+        x6.json.newWindow();
     },
     
     ddClick: function(button) {
-        var id = u.p(button,'xInputId');
+        var id = x6.p(button,'xInputId');
         var inp = $('#'+id)[0];
         if(inp.disabled) return;
-        if(u.p(inp,'xValues','')=='') {
-            u.dialogs.alert("To see values, please click on the input"
+        if(x6.p(inp,'xValues','')=='') {
+            x6dialogs.alert("To see values, please click on the input"
                 +" and type in one or two letters to activate an"
                 +" automatic search."
             );
@@ -1476,7 +3500,7 @@ var x6inputs = {
         div:         false,
         
         addButton: function(input) {
-            if(u.p(input,'x6select','N')=='Y') {
+            if(x6.p(input,'x6select','N')=='Y') {
                 var str= '<span '
                     + 'class="button" '
                     + 'xInputId="'+input.id+'" '
@@ -1576,14 +3600,14 @@ var x6inputs = {
             }
             else {
                 //$(input).focus();
-                u.byId(input.id).focus();
+                x6.byId(input.id).focus();
             }
         },
         
         displayTitles: function(input) {
             // If still here, we have values and descriptions
             var retval = '<table><thead><tr>';
-            var descs  = u.p(input,'xTitles').split('|');
+            var descs  = x6.p(input,'xTitles').split('|');
             for(var idx=0; idx<descs.length; idx++) {
                 retval+='<th>'+descs[idx]+'</th>';
             }
@@ -1592,8 +3616,8 @@ var x6inputs = {
             // Now work out the height.  If static, go by
             // the number of rows, otherwise set it to 16, which
             // is 15 for data and one for titles.
-            if(u.p(input,'x6rowCount',null)!=null) {
-                var rowCount = Number(u.p(input,'x6rowCount'));
+            if(x6.p(input,'x6rowCount',null)!=null) {
+                var rowCount = Number(x6.p(input,'x6rowCount'));
                 if(rowCount > this.dynRowCount) rowCount = this.dynRowCount;
             }
             else {
@@ -1612,7 +3636,7 @@ var x6inputs = {
         },
         
         displayFixed: function(input) {
-            var svals = u.p(input,'xValues','');
+            var svals = x6.p(input,'xValues','');
             if(svals.trim()=='') return;
 
             x6.console.log(svals);
@@ -1810,18 +3834,18 @@ var x6plugins = {
     buttonCustom: function(self,id,table) {
         self.zTable = table;
         // This is sort of the same as the predefined buttons
-        x6plugins.buttonStandard(self,id,u.p(self,'buttonKey'));
+        x6plugins.buttonStandard(self,id,x6.p(self,'buttonKey'));
         
         // This is special for custom buttons
         x6events.subscribeToEvent('buttonsOn_'+table,id);
         self['receiveEvent_buttonsOn_'+table] = function() {
-            var skey = u.bb.vgfGet('skey_'+this.zTable);
+            var skey = x6bb.fwGet('skey_'+this.zTable);
             var doit = false;
             if(skey==0) {
-                doit = u.p(this,'permins','N')=='Y';
+                doit = x6.p(this,'permins','N')=='Y';
             }
             else {
-                doit = u.p(this,'permupd','N')=='Y';
+                doit = x6.p(this,'permupd','N')=='Y';
             }
             if(doit) {
                 this.className = 'button';
@@ -1892,9 +3916,9 @@ var x6plugins = {
     *
     ******/
     buttonStandard: function(self,action,key) {
-        // Assume everything starts out enabled
-        self.zDisabled = false;
-        self.zTable    = u.p(self,'x6table');
+        // Assume everything starts out disabled
+        self.zDisabled = true;
+        self.zTable    = x6.p(self,'x6table');
         self.zAction   = action;
         self.zKey      = key;
         
@@ -1914,9 +3938,10 @@ var x6plugins = {
         
         // Create an empty main routine to be replaced
         // button by button.  Put out a useful error message
-        // when they have not 
+        // when they have not made their main function.
         self.main = function() {
-            u.error("Button "+this.id+", handling action "+this.zAction
+            x6.console.error(
+                "Button "+this.id+", handling action "+this.zAction
                 +" and keypress "+this.zKey+" has no main() function."
             );
         }
@@ -1997,22 +4022,22 @@ var x6plugins = {
 */
 x6plugins.tableController = function(self,id,table) {
     // Initialize new properties
-    u.bb.vgfSet('skey_'+table,-1);
+    x6bb.fwSet('skey_'+table,-1);
     self.zTable   = table;
     self.zSortCol = false;
     self.zSortAsc = false;
-    self.zCache   = u.p(self,'xCache')=='Y' ? true : false;
+    self.zCache   = x6.p(self,'xCache')=='Y' ? true : false;
     
-    if(u.p(self,'xPermIns','*')=='*') {
+    if(x6.p(self,'xPermIns','*')=='*') {
         alert("Program Error!  Table Controller was not assigned permissions!"
             +"\n\nPlease assign xPermIns,xPermUpd,xPermDel,xPermSel"
         );
     }
     else {
-        u.bb.vgfSet('permins_'+table,u.p(self,'xPermIns'));
-        u.bb.vgfSet('permupd_'+table,u.p(self,'xPermUpd'));
-        u.bb.vgfSet('permdel_'+table,u.p(self,'xPermDel'));
-        u.bb.vgfSet('permsel_'+table,u.p(self,'xPermSel'));
+        x6bb.fwSet('permins_'+table,x6.p(self,'xPermIns'));
+        x6bb.fwSet('permupd_'+table,x6.p(self,'xPermUpd'));
+        x6bb.fwSet('permdel_'+table,x6.p(self,'xPermDel'));
+        x6bb.fwSet('permsel_'+table,x6.p(self,'xPermSel'));
     }
     
     /*
@@ -2026,7 +4051,7 @@ x6plugins.tableController = function(self,id,table) {
         x6.console.group("tableController reqSaveRow "+this.zTable);
         
         var result = this.saveOk();
-        u.bb.vgfSet('lastSave_'+this.zTable,result);
+        x6bb.fwSet('lastSave_'+this.zTable,result);
         x6.console.log('tableController reqSaveRow finished');
         x6.console.groupEnd();
     }
@@ -2046,7 +4071,7 @@ x6plugins.tableController = function(self,id,table) {
         x6.console.group("tableController reqNewRow "+this.zTable);
         
         var result = this.saveOk();
-        u.bb.vgfSet('lastSave_'+this.zTable,result);
+        x6bb.fwSet('lastSave_'+this.zTable,result);
         if(result!='fail') {
             x6events.fireEvent('uiNewRow_'+this.zTable,tabDivBefore);
         }
@@ -2064,13 +4089,13 @@ x6plugins.tableController = function(self,id,table) {
     x6events.subscribeToEvent('reqEditRow_'+table,id);
     self['receiveEvent_reqEditRow_'+table] = function(skey) {
         x6.console.group("tableController reqEditRow "+this.zTable);
-        var skeynow = u.bb.vgfGet('skey_'+this.zTable);
+        var skeynow = x6bb.fwGet('skey_'+this.zTable);
         if(skeynow == skey) {
             x6.console.log("Request to edit same row, no action");
         } 
         else {
             var result = this.saveOk();
-            u.bb.vgfSet('lastSave_'+this.zTable,result);
+            x6bb.fwSet('lastSave_'+this.zTable,result);
             if(result!='fail') {
                 x6events.fireEvent('uiEditRow_'+this.zTable,skey);
             }
@@ -2097,17 +4122,17 @@ x6plugins.tableController = function(self,id,table) {
         var rowOld = { };
         $(jq).each(
             function() {
-                var col = u.p(this,'xcolumnid');
+                var col = x6.p(this,'xcolumnid');
                 inpAll[col] = this.value;
-                rowOld[col] = u.p(this,'zOriginalValue','').trim();
-                var oval = u.p(this,'zOriginalValue','').trim();
+                rowOld[col] = x6.p(this,'zOriginalValue','').trim();
+                var oval = x6.p(this,'zOriginalValue','').trim();
                 if(this.value.trim()!= oval) {
                     inpChg[col] = this.value.trim();
                     cntChg++;
                 }
             }
         );
-        u.bb.vgfSet('rowOld_'+this.zTable,rowOld);
+        x6bb.fwSet('rowOld_'+this.zTable,rowOld);
         x6.console.log("All inputs: ",inpAll);
         x6.console.log("Changed inputs: ",inpChg);
         x6.console.log("Count of changes: ",cntChg);
@@ -2115,41 +4140,41 @@ x6plugins.tableController = function(self,id,table) {
         // Only attempt a save if something changed
         if(cntChg == 0) {
             var retval = 'noaction';
-            var skeynow=u.bb.vgfGet('skey_'+this.zTable)
+            var skeynow=x6bb.fwGet('skey_'+this.zTable)
             if(skeynow==0) {
                 x6.console.log(" ---- was editing new row, exit denied ---- ");
-                u.bb.vgfSet('exitApproved',false);
+                x6bb.fwSet('exitApproved',false);
             }
         }
         else {
             x6.console.log(" ---- There were changes, not approving exit ----");
-            u.bb.vgfSet('exitApproved',false);
+            x6bb.fwSet('exitApproved',false);
             
             x6.console.log("attempting database save");
             x6.console.log("Sending x4v_skey ",this.zSkey);
-            ua.json.init('x6page',this.zTable);
-            ua.json.addParm('x6action','save');
-            ua.json.addParm('x6v_skey',u.bb.vgfGet('skey_'+this.zTable));
-            ua.json.inputs(jq);
+            x6.json.init('x6page',this.zTable);
+            x6.json.addParm('x6action','save');
+            x6.json.addParm('x6v_skey',x6bb.fwGet('skey_'+this.zTable));
+            x6.json.inputs(jq);
             // Look for an "skey after" to send back 
-            var queuepos  = u.bb.vgfGet('queuepos_'+this.zTable,false);
+            var queuepos  = x6bb.fwGet('queuepos_'+this.zTable,false);
             if(queuepos) {
-                var skeyAfter = u.bb.vgfGet('skeyAfter_' +this.zTable,-1);
-                var skeyBefore= u.bb.vgfGet('skeyBefore_'+this.zTable,-1);
-                ua.json.addParm('queuepos'  ,queuepos);
-                ua.json.addParm('skeyAfter' ,skeyAfter);
-                ua.json.addParm('skeyBefore',skeyBefore);
+                var skeyAfter = x6bb.fwGet('skeyAfter_' +this.zTable,-1);
+                var skeyBefore= x6bb.fwGet('skeyBefore_'+this.zTable,-1);
+                x6.json.addParm('queuepos'  ,queuepos);
+                x6.json.addParm('skeyAfter' ,skeyAfter);
+                x6.json.addParm('skeyBefore',skeyBefore);
             }
-            if(ua.json.execute()) {
+            if(x6.json.execute()) {
                 var retval = 'success';
-                ua.json.process();
+                x6.json.process();
             }
             else {
                 var retval = 'fail';
                 var errors = [ ];
-                for(var idx = 0; idx < ua.json.jdata.error.length; idx++) {
-                    if(ua.json.jdata.error[idx].slice(0,8)!='(ADMIN):') {
-                        errors.push(ua.json.jdata.error[idx]);
+                for(var idx = 0; idx < x6.json.jdata.error.length; idx++) {
+                    if(x6.json.jdata.error[idx].slice(0,8)!='(ADMIN):') {
+                        errors.push(x6.json.jdata.error[idx]);
                     }
                 }
                 x6.console.log("save failed, here are errors");
@@ -2157,7 +4182,7 @@ x6plugins.tableController = function(self,id,table) {
                 x6events.fireEvent('uiShowErrors_'+this.zTable,errors);
             }
         }
-        u.bb.vgfSet('lastSave_'+this.zTable,retval);
+        x6bb.fwSet('lastSave_'+this.zTable,retval);
         
         // If save went ok, notify any ui elements, then 
         // fire off a cache save also if required.
@@ -2165,14 +4190,14 @@ x6plugins.tableController = function(self,id,table) {
             // KFD 1/8/09, fire a delta of the row
             x6events.fireEvent(
                 'rowDelta_'+this.zTable
-                ,{rowOld:rowOld, rowNew:$a.data.row}
+                ,{rowOld:rowOld, rowNew:x6.data.row}
             );
             
             
             x6.console.log(retval);
-            x6events.fireEvent('uiRowSaved_'+table,$a.data.row);
+            x6events.fireEvent('uiRowSaved_'+table,x6.data.row);
             if(this.zCache) {
-                this.zRows[$a.data.row.skey] = $a.data.row;
+                this.zRows[x6.data.row.skey] = x6.data.row;
             }
         }            
         
@@ -2192,7 +4217,7 @@ x6plugins.tableController = function(self,id,table) {
     x6events.subscribeToEvent('reqUndoRow_'+table,id);
     self['receiveEvent_reqUndoRow_'+table] = function() {
         x6.console.group("tableController reqUndoRow");
-        var skey = u.bb.vgfGet('skey_'+table);
+        var skey = x6bb.fwGet('skey_'+table);
         if(skey>=0) {
             x6.console.log("Skey is >= 0, continuing ",skey);
             $(this).find(":input:not([disabled])[zActive]").each( 
@@ -2219,18 +4244,18 @@ x6plugins.tableController = function(self,id,table) {
     x6events.subscribeToEvent('reqDelRow_'    +table,id);
     self['receiveEvent_reqDelRow_'+table] = function() {
         x6.console.group("tableController reqDelRow ",this.zTable);
-        var skey = u.bb.vgfGet('skey_'+this.zTable);
+        var skey = x6bb.fwGet('skey_'+this.zTable);
         if(this.zSkey<1) {
             x6.console.log("nothing being edited, quietly ignoring");
         }
         else {
             if(confirm("Delete current row?")) {
                 x6.console.log("sending delete to server");
-                ua.json.init('x6page',this.zTable);
-                ua.json.addParm('x6action','delete');
-                ua.json.addParm('skey',skey);
-                ua.json.addParm('json',1);
-                if(ua.json.execute()) {
+                x6.json.init('x6page',this.zTable);
+                x6.json.addParm('x6action','delete');
+                x6.json.addParm('skey',skey);
+                x6.json.addParm('json',1);
+                if(x6.json.execute()) {
                     x6events.fireEvent('uiDelRow_'+table,skey);
                 }
             }
@@ -2297,18 +4322,18 @@ x6plugins.tableController = function(self,id,table) {
     self['receiveEvent_dbFetchRow_'+table] = function(skey) {
         if(typeof(this.zRows[skey])=='undefined') {
             x6.console.log("tableController bbRow, no row found, fetching");
-            ua.json.init('x6page',this.zTable);
-            ua.json.addParm('x6action','fetchRow');
-            ua.json.addParm('x6w_skey',skey);
-            if(ua.json.execute(true)) {
-                u.bb.vgfSet('dbRow_'+this.zTable,a.data.row);
+            x6.json.init('x6page',this.zTable);
+            x6.json.addParm('x6action','fetchRow');
+            x6.json.addParm('x6w_skey',skey);
+            if(x6.json.execute(true)) {
+                x6bb.fwSet('dbRow_'+this.zTable,a.data.row);
                 var rowNew = a.data.row;
             }
         }
         else {
             x6.console.log("tableController bbRow, publishing row "+skey);
             x6.console.log("putting onto bb as dbRow_"+this.zTable);
-            u.bb.vgfSet('dbRow_'+this.zTable,this.zRows[skey]);
+            x6bb.fwSet('dbRow_'+this.zTable,this.zRows[skey]);
             var rowNew = this.zRows[skey];
         }
     }
@@ -2323,19 +4348,19 @@ x6plugins.tableController = function(self,id,table) {
         *   If another table has its buttons on, they
         *   must be turned off. 
         */
-        var buttonsTable = u.bb.vgfGet('buttonsTable','');
+        var buttonsTable = x6bb.fwGet('buttonsTable','');
         if(buttonsTable!='' && buttonsTable != this.zTable) {
             x6events.fireEvent('buttonsOff_'+buttonsTable);
         }
         
         // Establish table permissions
-        var permins = u.p(this,'xPermIns','Y')=='N' ? false : true;
-        var permupd = u.p(this,'xPermUpd','Y')=='N' ? false : true;
-        var permdel = u.p(this,'xPermDel','Y')=='N' ? false : true;
+        var permins = x6.p(this,'xPermIns','Y')=='N' ? false : true;
+        var permupd = x6.p(this,'xPermUpd','Y')=='N' ? false : true;
+        var permdel = x6.p(this,'xPermDel','Y')=='N' ? false : true;
         var permsave= permins || permupd;
         
         // Now only turn buttons on if we have an skey
-        var skey = u.bb.vgfGet('skey_'+this.zTable);
+        var skey = x6bb.fwGet('skey_'+this.zTable);
         x6.console.log("current skey is ",skey);
         if(permins) {
             x6events.fireEvent('enable_new_' +this.zTable);
@@ -2350,7 +4375,7 @@ x6plugins.tableController = function(self,id,table) {
                 x6events.fireEvent('enable_delete_' +this.zTable);
             }
         }
-        u.bb.vgfSet('buttonsTable',this.zTable);
+        x6bb.fwSet('buttonsTable',this.zTable);
     }
     x6events.subscribeToEvent('buttonsOff_'+table,id);
     self['receiveEvent_buttonsOff_'+table] = function(forceAll) {
@@ -2364,7 +4389,7 @@ x6plugins.tableController = function(self,id,table) {
     }
     x6events.subscribeToEvent('buttonsNew_'+table,id);
     self['receiveEvent_buttonsNew_'+table] = function() {
-        var permins = u.p(this,'xPermIns','Y')=='N' ? false : true;
+        var permins = x6.p(this,'xPermIns','Y')=='N' ? false : true;
         if(permins) {
             x6events.fireEvent('enable_new_' +this.zTable);
             x6events.fireEvent('enable_ins_' +this.zTable);
@@ -2403,7 +4428,7 @@ x6plugins.detailDisplay = function(self,id,table) {
     self.zTable = table;
     
     // If we are supposed to start out disabled, do it
-    if(u.p(self,'xInitDisabled','N')=='Y') {
+    if(x6.p(self,'xInitDisabled','N')=='Y') {
         $(self).find(":input").each(
             function() {
                 x6inputs.disable(this);
@@ -2431,7 +4456,7 @@ x6plugins.detailDisplay = function(self,id,table) {
         
         // Ask somebody to publish the row
         x6events.fireEvent('dbFetchRow_'+table,skey);
-        var row = u.bb.vgfGet('dbRow_'+table);
+        var row = x6bb.fwGet('dbRow_'+table);
         
         // Branch out to display in edit mode
         this.displayRow('edit',row);
@@ -2483,7 +4508,7 @@ x6plugins.detailDisplay = function(self,id,table) {
                 x6inputs.clearOut(this);
             }
         );
-        u.bb.vgfSet('skey_'+this.zTable,-1);
+        x6bb.fwSet('skey_'+this.zTable,-1);
         x6events.fireEvent('uiHideKids_'+this.zTable,this.zTable);
         x6events.fireEvent('uiDisableKids_'+this.zTable,this.zTable);
     }
@@ -2509,7 +4534,8 @@ x6plugins.detailDisplay = function(self,id,table) {
         x6.console.group("detailDisplay displayRow ",mode);
         x6.console.log(row);
         if(mode!='new' && mode!='edit') {
-            u.error("Object "+this.id+" has received a 'goMode' event "
+            x6.console.error(
+                "Object "+this.id+" has received a 'goMode' event "
                 +"for unhandled mode "+mode+".  Cannot process this "
                 +"request."
             );
@@ -2521,7 +4547,7 @@ x6plugins.detailDisplay = function(self,id,table) {
             // For new rows, set defaults, otherwise blank
             // out.
             $(this).find(':input').each(function() {
-                this.value=u.p(this,'xdefault','');
+                this.value=x6.p(this,'xdefault','');
                 this.zOriginalValue = this.value;
                 this.zChanged = 0;
                 this.zActive  = 1;
@@ -2530,11 +4556,11 @@ x6plugins.detailDisplay = function(self,id,table) {
             //    u.debug("detail display populating inputs");
             //    this.populateInputs(row);
             //}
-            u.bb.vgfSet('skey_'+this.zTable,0);
+            x6bb.fwSet('skey_'+this.zTable,0);
         }
         else {
             this.populateInputs(row);
-            u.bb.vgfSet('skey_'+this.zTable,row.skey);
+            x6bb.fwSet('skey_'+this.zTable,row.skey);
         }
         x6events.fireEvent('buttonsOn_'+this.zTable);
         
@@ -2543,10 +4569,10 @@ x6plugins.detailDisplay = function(self,id,table) {
         $(this).find(':input').each(function() {
             this.zNew = mode=='new' ? 1 : 0;
             if(mode=='new') {
-                var ro = u.p(this,'xroins','N');
+                var ro = x6.p(this,'xroins','N');
             }
             else {
-                var ro = u.p(this,'xroupd','N');
+                var ro = x6.p(this,'xroupd','N');
             }
             if(ro=='Y') {
                 this.disabled = true;
@@ -2561,16 +4587,16 @@ x6plugins.detailDisplay = function(self,id,table) {
         
         // Now that all displays are done, if we have a tab
         // selector then select it
-        var tabSelector = u.p(this,'xTabSelector','');
+        var tabSelector = x6.p(this,'xTabSelector','');
         x6.console.log("tabSelector ",tabSelector);
         if(tabSelector != '') {
-            var tabIndex = u.p(this,'xTabIndex');
+            var tabIndex = x6.p(this,'xTabIndex');
             x6.console.log("Tab index ",tabIndex);
             $(tabSelector).tabs('select', Number(tabIndex));
         }
         
         // Create a status message on right if the item exists
-        var sbRight = u.byId('sbr_'+this.zTable);
+        var sbRight = x6.byId('sbr_'+this.zTable);
         if(sbRight!=null) {
             var status = '';
             if(typeof(row.ts_ins)!='undefined') {
@@ -2628,7 +4654,7 @@ x6plugins.detailDisplay = function(self,id,table) {
 
     }
     
-    if(u.p(self,'x6profile')=='twosides') {
+    if(x6.p(self,'x6profile')=='twosides') {
         x6events.fireEvent('buttonsNew_'+table);
     }
 }
@@ -2646,9 +4672,9 @@ x6tabDiv = {
     },
     
     removeHighlight: function(table) {
-        var rowNow = u.bb.vgfGet('highlight_'+table,'');
+        var rowNow = x6bb.fwGet('highlight_'+table,'');
         if(rowNow!='') $('#'+rowNow).removeClass('hilight');
-        u.bb.vgfSet('highlight_'+table,'');
+        x6bb.fwSet('highlight_'+table,'');
         this.mouseDisable();
     },
     
@@ -2659,12 +4685,12 @@ x6tabDiv = {
         if(rowDiv.className=='selected') return false;
         var pieces = rowDiv.id.split('_');
         
-        var rowNow = u.bb.vgfGet('highlight_'+pieces[0],'');
-        if(rowNow!='' && u.byId(rowNow)!=null) u.byId(rowNow).className = '';
-        var row = u.byId(rowDiv.id);
+        var rowNow = x6bb.fwGet('highlight_'+pieces[0],'');
+        if(rowNow!='' && x6.byId(rowNow)!=null) x6.byId(rowNow).className = '';
+        var row = x6.byId(rowDiv.id);
         if(row.id != 'selected') {
-            u.byId(rowDiv.id).className = 'hilight';
-            u.bb.vgfSet('highlight_'+pieces[0],rowDiv.id);
+            x6.byId(rowDiv.id).className = 'hilight';
+            x6bb.fwSet('highlight_'+pieces[0],rowDiv.id);
         }
         
         //$(rowDiv).siblings('.hilight').removeClass('hilight');
@@ -2699,8 +4725,37 @@ x6tabDiv = {
 */
 x6plugins.x6tabDiv = function(self,id,table) {
     self.zTable    = table;
-    self.x6profile = u.p(self,'x6profile','none');
+    self.x6profile = x6.p(self,'x6profile','none');
     self.kbOnEdit  = ['x6tabDiv','twosides'].indexOf(self.x6profile)>=0;
+
+    /*
+    *   Many plugins can receive the objectFocus event
+    *   and either turn themselves on or off
+    */
+    x6events.subscribeToEvent('objectFocus',id);
+    self.receiveEvent_objectFocus = function(id) {
+        x6.console.group("Object Focus: ",id,this.id);
+        // If it is NOT us, turn everything off
+        if(id!=this.id) {
+            this.keyboardOff();
+        }
+        // If it IS us, turn everything on, and set
+        // the bulletin board.  But if we already have
+        // focus then do nothing.
+        else {
+            if(x6bb.fwGet('objectFocus','')!=id) {
+                this.keyboardOn();
+                x6events.fireEvent('buttonsOn_'+this.zTable);
+                
+                if(this.x6profile == 'x6tabDiv') {
+                    x6events.fireEvent('key_DownArrow','DownArrow');
+                }
+                
+                x6bb.fwSet('objectFocus',id);
+            }
+        }
+        x6.console.groupEnd();
+    }
     
     
     /*
@@ -2708,8 +4763,8 @@ x6plugins.x6tabDiv = function(self,id,table) {
     *    displays inputs for new rows and allows 
     *    inline editing of rows
     */
-    var uiNewRow  = u.p(self,'uiNewRow' ,'');
-    var uiEditRow = u.p(self,'uiEditRow','');
+    var uiNewRow  = x6.p(self,'uiNewRow' ,'');
+    var uiEditRow = x6.p(self,'uiEditRow','');
  
     /*
     *  A grid may be set to receive a cacheRows event.
@@ -2717,7 +4772,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
     *  data that has been provided.
     */
     /* SUSPICIOUS, probably do not need this
-    if(u.p(self,'xCacheRows','')=='Y') {
+    if(x6.p(self,'xCacheRows','')=='Y') {
         x6events.subscribeToEvent('cacheRows_'+table,id);
         
         self['receiveEvent_cacheRows_'+table] = function(rows) {
@@ -2761,13 +4816,13 @@ x6plugins.x6tabDiv = function(self,id,table) {
         self['receiveEvent_uiNewRow_'+table] = function(tabDivBefore) {
             x6.console.group("tabDiv uiNewRow "+this.zTable);
             x6.console.time("tabDiv uiNewRow");
-            var skey = u.bb.vgfGet('skey_'+this.zTable,-1);
+            var skey = x6bb.fwGet('skey_'+this.zTable,-1);
             
             /*
             *   If we are currently editing a new row, just
             *   focus on it.
             */
-            if(skey==0 && u.bb.vgfGet('lastSave_'+this.zTable)=='noaction') {
+            if(skey==0 && x6bb.fwGet('lastSave_'+this.zTable)=='noaction') {
                 x6.jqSetFocus(this.rowId(0)+" :input:first:not([disabled])");
                 x6.console.log("On an empty new row, setting focus");
                 x6.console.groupEnd();
@@ -2806,19 +4861,19 @@ x6plugins.x6tabDiv = function(self,id,table) {
             if(skey!=0) {
                 iRelative = skey;
                 if(tabDivBefore) {
-                    u.bb.vgfSet('skeyBefore_'+this.zTable,skey);
-                    u.bb.vgfSet('skeyAfter_' +this.zTable,-1);
+                    x6bb.fwSet('skeyBefore_'+this.zTable,skey);
+                    x6bb.fwSet('skeyAfter_' +this.zTable,-1);
                 }
                 else {
-                    u.bb.vgfSet('skeyAfter_' +this.zTable,skey);
-                    u.bb.vgfSet('skeyBefore_'+this.zTable,-1);
+                    x6bb.fwSet('skeyAfter_' +this.zTable,skey);
+                    x6bb.fwSet('skeyBefore_'+this.zTable,-1);
                 }
                 //var jqRow = $('#row_'+skey);
                 var jqRow = $(this.rowId(skey));
             }
             else {
-                u.bb.vgfSet('skeyBefore_'+this.zTable,-1);
-                u.bb.vgfSet('skeyAfter_'+this.zTable, -1);
+                x6bb.fwSet('skeyBefore_'+this.zTable,-1);
+                x6bb.fwSet('skeyAfter_'+this.zTable, -1);
                 var jqRow = this.jqCurrentRow();
             }
             
@@ -2859,7 +4914,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
             );
             
             // Send a message and get lost
-            u.bb.vgfSet('skey_'+this.zTable,0);
+            x6bb.fwSet('skey_'+this.zTable,0);
             x6events.fireEvent('buttonsOn_'+this.zTable);
             x6tabDiv.removeHighlight(this.zTable);
             x6.console.log('New row created, ready to edit');
@@ -2878,21 +4933,21 @@ x6plugins.x6tabDiv = function(self,id,table) {
         // Get the read-only decision
         if(mode=='new') {
             x6.console.log("hello, ro ins");
-            input.disabled = u.p(input,'xroins','N')=='Y';
+            input.disabled = x6.p(input,'xroins','N')=='Y';
             
             // Set a default if there
-            var x = u.p(input,'xDefault','');
+            var x = x6.p(input,'xDefault','');
             if(x !='') input.value = x;
         }
         else {
             x6.console.log("hello, ro upd");
-            input.disabled = u.p(input,'xroupd','N')=='Y';
+            input.disabled = x6.p(input,'xroupd','N')=='Y';
         }
         
         input.inGrid = 1;
         
         // Set original value and class
-        input.zOriginalValue = u.p(input,'value','').trim();
+        input.zOriginalValue = x6.p(input,'value','').trim();
         if(mode=='new') {
             input.zNew = 1;
         }
@@ -2929,14 +4984,14 @@ x6plugins.x6tabDiv = function(self,id,table) {
         self['receiveEvent_uiEditRow_'+table] = function(skey) {
             x6.console.group("tabDiv uiEditRow "+this.zTable);
     
-            if(u.byId(this.rowId(skey,false))==null) {
+            if(x6.byId(this.rowId(skey,false))==null) {
             //if( $(this).find('#row_'+skey).length == 0) {
                 x6.console.log("We don't have that row, cannot edit");
                 x6.console.groupEnd();
                 return;
             }
 
-            var skeynow = u.bb.vgfGet('skey_'+this.zTable);
+            var skeynow = x6bb.fwGet('skey_'+this.zTable);
             if(skeynow == skey) {
                 x6.console.log("Grid is already on the row, no action");
                 x6.console.groupEnd();
@@ -2947,20 +5002,20 @@ x6plugins.x6tabDiv = function(self,id,table) {
             *   If editing some other row, we know it was saved
             *   and is ok, convert it back to display
             */
-            if(u.bb.vgfGet('skey_'+this.zTable)>=0) {
+            if(x6bb.fwGet('skey_'+this.zTable)>=0) {
                 this.removeInputs();
             }
 
             // Set this before adding inputs.  If you
             // do it afterward we get "jumpies" as the
             // border/padding/margin adjusts.
-            u.byId(this.rowId(skey,true)).className='selected';
+            x6.byId(this.rowId(skey,true)).className='selected';
 
             x6.console.log("Putting inputs into div cells");
             this.addInputs(skey);
             
             x6tabDiv.removeHighlight(this.zTable);
-            u.bb.vgfSet('skey_'+this.zTable,skey);
+            x6bb.fwSet('skey_'+this.zTable,skey);
             x6events.fireEvent('buttonsOn_'+this.zTable);
             //this.keyboardOff();
             x6.console.log('uiEditRow Completed, returning true');
@@ -2983,18 +5038,18 @@ x6plugins.x6tabDiv = function(self,id,table) {
                 var div = this;
                 // Get the name of the column so we can                                   
                 // replace the value.
-                var colnum = u.p(div,'gColumn');
+                var colnum = x6.p(div,'gColumn');
                 var colid  = grid.zColsInfo[colnum].column_id;
                 var search = '*VALUE_'+colid+'*';
                 var replace= this.innerHTML.htmlEdit();
                 html = html.replace(search,replace);
             }
         );
-        u.byId(this.rowId(skey,true)).innerHTML = html;
+        x6.byId(this.rowId(skey,true)).innerHTML = html;
         $(this.rowId(skey)+" :input").each(
             function() { grid.initInput(this); }
         );
-        var focusCandidate = u.bb.vgfGet('lastFocus_'+this.zTable,'');
+        var focusCandidate = x6bb.fwGet('lastFocus_'+this.zTable,'');
         if(focusCandidate!='') {
             var str = this.rowId(skey)+' #'+focusCandidate;
             x6.jqSetFocus(str);
@@ -3014,7 +5069,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
     */
     self.removeInputs = function() {
         x6.console.group("tabDiv removeInputs");
-        var skey = u.bb.vgfGet('skey_'+this.zTable);
+        var skey = x6bb.fwGet('skey_'+this.zTable);
 
         //if( $(this).find('#row_'+skey+' :input').length==0 ) {
         if( $(this.rowId(skey)+' :input').length==0 ) {
@@ -3028,7 +5083,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
         
         // Remove the "selected" class from the inputs row,
         // it does not belong there anymore.
-        u.byId(this.rowId(skey,true)).className = '';
+        x6.byId(this.rowId(skey,true)).className = '';
 
         x6.console.log("skey is ",skey);
         var grid = this;
@@ -3041,7 +5096,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
                 //var inp    = $(this).find(":input")[0];
                 if(inp != null) {
                     var val    = inp.value;
-                    var col    = u.p(inp,'xColumnId');
+                    var col    = x6.p(inp,'xColumnId');
                     var typeid = grid.zColsById[col].type_id;
                     x6.console.log(val);
                     this.innerHTML = x6dd.display(typeid,val,'&nbsp;');
@@ -3052,7 +5107,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
         // If we are removing inputs from the 0 row
         // and the last save had no action, kill the row
         if(skey==0) {
-            if(u.bb.vgfGet('lastSave_'+this.zTable)=='noaction') {
+            if(x6bb.fwGet('lastSave_'+this.zTable)=='noaction') {
                 x6.console.log("No action on last save, removing row ",skey);
                 $(this.rowId(0)).fadeOut(
                     function() { $(this).remove() }
@@ -3090,8 +5145,8 @@ x6plugins.x6tabDiv = function(self,id,table) {
             else {
                 x6.console.log("Skey is zero, removing row");
                 this.removeInputs();
-                var iBefore = u.bb.vgfGet('skeyBefore_'+this.zTable,-1);
-                var iAfter  = u.bb.vgfGet('skeyAfter_' +this.zTable,-1);
+                var iBefore = x6bb.fwGet('skeyBefore_'+this.zTable,-1);
+                var iAfter  = x6bb.fwGet('skeyAfter_' +this.zTable,-1);
                 x6.console.log(iBefore,iAfter);
                 if     (iBefore!=-1) skeyNew = iBefore;
                 else if(iAfter !=-1) skeyNew = iAfter;
@@ -3123,7 +5178,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
     self['receiveEvent_uiRowSaved_'+table] = function(row) {
         x6.console.group("tabDiv uiRowSaved: "+this.zTable);
         // Replace the input values with server returned values
-        skey = u.bb.vgfGet('skey_'+this.zTable);
+        skey = x6bb.fwGet('skey_'+this.zTable);
         //if( $(this).find("#row_"+skey+" :input").length > 0) {
         if( $(this.rowId(skey)+' :input').length > 0) {
             x6.console.log($(this).find("#row_"+skey+" :input"));
@@ -3144,12 +5199,12 @@ x6plugins.x6tabDiv = function(self,id,table) {
     }
     
     self.uiRowSavedEdit = function(row) {
-        var skey = u.bb.vgfGet('skey_'+this.zTable);
+        var skey = x6bb.fwGet('skey_'+this.zTable);
         var grid = this;
         //$(this).find("#row_"+skey+" :input").each(
         $(this.rowId(skey)+" :input").each(
             function() {
-                var col    = u.p(this,'xColumnId');
+                var col    = x6.p(this,'xColumnId');
                 var typeid = grid.zColsById[col].type_id;
                 x6.console.log(col,row[col]);
                 this.value = x6dd.display(typeid,row[col],'');
@@ -3158,7 +5213,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
         );
         this.removeInputs();
         //x6events.fireEvent('buttonsOff_'+this.zTable);
-        u.bb.vgfSet('skey_'+this.zTable,-1);
+        x6bb.fwSet('skey_'+this.zTable,-1);
         
         // If this was a new row, set it up
         if(skey==0) {
@@ -3171,7 +5226,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
                 }
             );
             */
-            u.byId(this.zTable+'_0').id = this.zTable+'_'+row.skey;
+            x6.byId(this.zTable+'_0').id = this.zTable+'_'+row.skey;
             this.initRow(row.skey);
             
         }
@@ -3249,7 +5304,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
     x6events.subscribeToEvent('uiDelRow_'+table,id);
     self['receiveEvent_uiDelRow_'+table] = function() {
         x6.console.group("tabDiv uiDelRow "+this.zTable);
-        skey = u.bb.vgfGet('skey_'+this.zTable);
+        skey = x6bb.fwGet('skey_'+this.zTable);
         x6.console.log("current skey ",skey);
         
         if(this.kbOnEdit) {
@@ -3291,7 +5346,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
                     $(this).remove();
                 }
             );
-            u.bb.vgfSet('skey_'+this.zTable,-1);
+            x6bb.fwSet('skey_'+this.zTable,-1);
             x6events.fireEvent('buttonsOff_'+this.zTable);
         }
         if(!hilightRow) {
@@ -3351,7 +5406,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
         }
         else {
             // KFD 12/8/08, if new rows are inline, do it
-            if(u.p(this,'uiNewRow','N')=='Y') {
+            if(x6.p(this,'uiNewRow','N')=='Y') {
                 x6.console.log("requesting new row, forcing insert before");
                 x6events.fireEvent('reqNewRow_'+this.zTable,true);
             }
@@ -3376,7 +5431,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
         }
         else {
             // KFD 12/8/08, if new rows are inline, do it
-            if(u.p(this,'uiNewRow','N')=='Y') {
+            if(x6.p(this,'uiNewRow','N')=='Y') {
                 x6events.fireEvent('reqNewRow_'+this.zTable);
             }
         }
@@ -3394,7 +5449,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
         }
         else if(jqRowPrev.length!=0) {
             var cntAbove  = jqRowPrev.length;
-            var cntJump   = Number(u.p(this,'xRowsVisible')) - 2;
+            var cntJump   = Number(x6.p(this,'xRowsVisible')) - 2;
             
             // Figure out how far to go up, then figure the row
             var rowsChange = cntAbove < cntJump ? cntAbove : cntJump;
@@ -3416,7 +5471,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
         else if(jqRowNext.length!=0) {
             // before doing anything, figure how many rows above
             var cntBelow = jqRowNext.length;
-            var cntJump  = Number(u.p(this,'xRowsVisible')) - 2;
+            var cntJump  = Number(x6.p(this,'xRowsVisible')) - 2;
             
             // Figure out how far to go up, then figure the row
             var rowsChange = cntBelow < cntJump ? cntBelow : cntJump;
@@ -3434,14 +5489,14 @@ x6plugins.x6tabDiv = function(self,id,table) {
     }
     self.receiveEvent_key_CtrlEnd = function(e) {
         this.goRowJq( $(this).find('.tbody > div:last') ); 
-        var rowHeight = Number(u.p(this,'cssLineHeight'));
+        var rowHeight = Number(x6.p(this,'cssLineHeight'));
         var rowCount  = $(this).find('.tbody > div').length;
         var stNew = rowHeight * rowCount;
         $(this).find('.tbody').animate({scrollTop:stNew},400);
     }
     self.receiveEvent_key_Enter = function(e) {
         x6.console.group("tabDiv key_Enter - clicking hilighted rows");
-        if(u.p(this,'x6profile')!='x6tabDiv') {
+        if(x6.p(this,'x6profile')!='x6tabDiv') {
             $(this).find('.tbody div.hilight').click();
         }
         //var jqRow = $(this).find('div.hilight')[0];
@@ -3455,7 +5510,7 @@ x6plugins.x6tabDiv = function(self,id,table) {
     *
     */
     self.jqCurrentRow = function() {
-        if(u.p(this,'uiEditRow','N')=='Y') {
+        if(x6.p(this,'uiEditRow','N')=='Y') {
             return $(this).find('.selected');
         }
         else {
@@ -3464,13 +5519,13 @@ x6plugins.x6tabDiv = function(self,id,table) {
     }
     self.goRowBySkey = function(skey) {
         x6.console.log('goRowBySkey ',skey);
-        if( u.p(this,'uiEditRow','')=='Y') {
+        if( x6.p(this,'uiEditRow','')=='Y') {
             x6.console.log("We can edit, firing reqEditRow");
             x6events.fireEvent('reqEditRow_'+this.zTable,skey);
         }
         else {
             x6.console.log("We do not edit, hilighting");
-            x6tabDiv.mouseover(u.byId(this.rowId(skey,true)));
+            x6tabDiv.mouseover(x6.byId(this.rowId(skey,true)));
             //$(this).find('.hilight').removeClass('.hilight');
             //$(this).find('#row_'+skey).addClass('.hilight');
         }
@@ -3499,8 +5554,8 @@ x6plugins.x6tabDiv = function(self,id,table) {
         var cntAbove  = $(jqRow).prevAll().length;
         var cntBelow  = $(jqRow).nextAll().length;
         var cntAll    = cntAbove + cntBelow + 1;
-        var cntVisible= Number(u.p(this,'xRowsVisible'));
-        var cssHeight = Number(u.p(this,'cssLineHeight')) - 2;
+        var cntVisible= Number(x6.p(this,'xRowsVisible'));
+        var cssHeight = Number(x6.p(this,'cssLineHeight')) - 2;
         var scrollNow = $(this).find('.tbody').scrollTop();
         var limitBot  = cntVisible - 2;
         var limitTop  = 3;
@@ -3561,17 +5616,6 @@ x6plugins.x6tabDiv = function(self,id,table) {
         this.keyboardStatus = 'Off';
     }
     
-    
-    // This initialization code always runs
-    this.keyboardStatus = 'Off'
-    self.keyboardOn();
-    if(uiEditRow=='Y') {
-        x6events.fireEvent('key_DownArrow'); 
-    }
-    x6events.fireEvent('buttonsOn_'+table);
-
-
-    
     /*
     *    Lookup stuff.  If we have a row of input lookups on the
     *    grid, they will all route to here.
@@ -3582,8 +5626,8 @@ x6plugins.x6tabDiv = function(self,id,table) {
         var cntNoBlank = 0;
         
         // Initialize and then scan
-        //ua.json.init('x6page',this.zTable);
-        var json = new androJSON('x6page',this.zTable);        
+        //x6.json.init('x6page',this.zTable);
+        var json = new x6JSON('x6page',this.zTable);        
         $(this).find(".thead :input").each(function() {
             if(typeof(this.zValue)=='undefined') 
                 this.zValue = this.getAttribute('xValue');
@@ -3594,25 +5638,25 @@ x6plugins.x6tabDiv = function(self,id,table) {
                 cntNoBlank++;
             }
             this.zValue = this.value;
-            //ua.json.addParm('x6w_'+u.p(this,'xColumnId'),this.value);
-            json.addParm('x6w_'+u.p(this,'xColumnId'),this.value);
+            //x6.json.addParm('x6w_'+x6.p(this,'xColumnId'),this.value);
+            json.addParm('x6w_'+x6.p(this,'xColumnId'),this.value);
         });
         
         if(doFetch) {
             // Clear the previous results
-            ua.data.browseFetchHtml = '';
+            x6.data.browseFetchHtml = '';
             if(cntNoBlank==0) {
                 $(this).find('.tbody').html('');
                 return;
             }
-            //ua.json.addParm('x6action'   ,'browseFetch');
-            //ua.json.addParm('xSortable'  ,'N');
-            //ua.json.addParm('xReturnAll' ,'N');
+            //x6.json.addParm('x6action'   ,'browseFetch');
+            //x6.json.addParm('xSortable'  ,'N');
+            //x6.json.addParm('xReturnAll' ,'N');
             json.addParm('x6action'   ,'browseFetch');
-            json.addParm('xSortable'  ,u.p(this,'xSortable'  ,'N'));
+            json.addParm('xSortable'  ,x6.p(this,'xSortable'  ,'N'));
             json.addParm('xReturnAll' ,'N');
-            json.addParm('xGridHeight',u.p(this,'xGridHeight',500));
-            json.addParm('xLookups'   ,u.p(this,'xLookups'   ,'N'));
+            json.addParm('xGridHeight',x6.p(this,'xGridHeight',500));
+            json.addParm('xLookups'   ,x6.p(this,'xLookups'   ,'N'));
             
             if( html = json.execute(false,false,true)) {
                 //json.process();
@@ -3634,31 +5678,31 @@ x6plugins.x6tabDiv = function(self,id,table) {
     */    
     x6events.subscribeToEvent('uiSort_'+table,id);
     self['receiveEvent_uiSort_'+table] = function(args) {
-        u.bb.vgfSet('skey_'+this.zTable,-1);
-        json = new androJSON('x6page',this.zTable);
-        //ua.json.init('x6page',this.zTable);
+        x6bb.fwSet('skey_'+this.zTable,-1);
+        json = new x6JSON('x6page',this.zTable);
+        //x6.json.init('x6page',this.zTable);
 
-        var tablePar = u.p(this,'x6tablePar','');
+        var tablePar = x6.p(this,'x6tablePar','');
         if(tablePar!='') {
-            var skeyPar = u.bb.vgfGet('skey_'+tablePar);
+            var skeyPar = x6bb.fwGet('skey_'+tablePar);
             json.addParm('tableIdPar',tablePar     );
             json.addParm('skeyPar'   ,skeyPar      );
         }
             
         json.addParm('x6action','browseFetch');
-        json.addParm('xGridHeight',u.p(this,'xGridHeight'));
-        json.addParm('xSortable'  ,u.p(this,'xSortable'  ));
-        json.addParm('xReturnAll' ,u.p(this,'xReturnAll' ));
-        json.addParm('xButtonBar' ,u.p(this,'xButtonBar','N'));
+        json.addParm('xGridHeight',x6.p(this,'xGridHeight'));
+        json.addParm('xSortable'  ,x6.p(this,'xSortable'  ));
+        json.addParm('xReturnAll' ,x6.p(this,'xReturnAll' ));
+        json.addParm('xButtonBar' ,x6.p(this,'xButtonBar','N'));
         json.addParm('sortCol',args.sortCol);
         json.addParm('sortAsc',args.sortAsc);
-        u.dialogs.pleaseWait();
+        x6dialogs.pleaseWait();
         if(html = json.execute(false,false,true)) {
-            //var html = ua.json.jdata.html['browseFetchHtml'];
+            //var html = x6.json.jdata.html['browseFetchHtml'];
             $(this).find('.tbody').replaceWith(html);
         }
         delete json;
-        u.dialogs.clear();
+        x6dialogs.clear();
     }
 }
 
@@ -3673,7 +5717,7 @@ x6tabs = {
     // jQuery so we can trust it is ok.
     tabsShow: function(tabsUl,event,ui) {
         var tabs = tabsUl.parentNode;
-        var profile = u.p(tabs,'x6profile','');
+        var profile = x6.p(tabs,'x6profile','');
         
         // A "kids" profile must do slideup, and get busy turning
         // buttons on and off for other tabs.
@@ -3684,7 +5728,7 @@ x6tabs = {
             tabsUl.parentNode.disableAll([ui.index]);
 
             // First job for kids is to turn parent stuff on/off
-            var tablePar = u.p(tabs,'x6parentTable');
+            var tablePar = x6.p(tabs,'x6parentTable');
             if(ui.index > 0) {
                 x6events.fireEvent('buttonsOff_'+tablePar,true);
             }
@@ -3695,25 +5739,25 @@ x6tabs = {
             // Next job is to turn previous tab's buttons on/off.
             // Find the first item with a tableid property and
             // assume that is the culprit.
-            var previousTabId = u.p(tabs,'zCurrentId','');
+            var previousTabId = x6.p(tabs,'zCurrentId','');
             if(previousTabId != '') {
                 var jqTable = $('#'+previousTabId+' [xtableid]:first');
-                var oldTable = u.p(jqTable[0],'xTableId','');
+                var oldTable = x6.p(jqTable[0],'xTableId','');
                 x6events.fireEvent('buttonsOff_'+oldTable,true);
                 $('#'+previousTabId+' div[x6plugin=x6tabDiv]').each(
                     function() { this.keyboardOff(); }
                 );
             }
             
-            var topPane = u.p(tabs,'x6slideUp');
-            var tpi     = u.p(tabs,'x6slideUpInner');
+            var topPane = x6.p(tabs,'x6slideUp');
+            var tpi     = x6.p(tabs,'x6slideUpInner');
             x6tabs.slideUp(tabsUl,event,ui,topPane,tpi);
         }
         
         // A conventional profile assumes two tabs, first one
         // is grid, second one is detail
         if(profile=='conventional') {
-            var table = u.p(tabs,'x6table');
+            var table = x6.p(tabs,'x6table');
             var grid = $(tabs).find("div:first div[x6plugin=x6tabDiv]")[0];
             if(ui.index==0) {
                 grid.keyboardOn();
@@ -3753,7 +5797,7 @@ x6tabs = {
     },
     
     slideUp: function(tabsUl,event,ui,topPane,topPaneI) {
-        var obj = u.byId(topPane);
+        var obj = x6.byId(topPane);
         if(typeof(obj.currentChild)=='undefined') obj.currentChild='*';
         var currentChild = obj.currentChild
         var newChild     = ui.panel.id;
@@ -3798,7 +5842,7 @@ x6tabs = {
                         }
                     );
             },200);
-            u.byId(topPane).currentChild = newChild;
+            x6.byId(topPane).currentChild = newChild;
             return true;
         }
 
@@ -3816,26 +5860,26 @@ x6tabs = {
                 );
                 $('#'+currentChild).css('overflow','hidden').height(3);
         },100);
-        u.byId(topPane).currentChild = newChild;
+        x6.byId(topPane).currentChild = newChild;
         return true;
     },
     
     slideUpData: function(tabsUl,paneId,newHeight) {
-        var pane     = u.byId(paneId);
-        var tablePar = u.p(pane,'x6tablePar');
-        var table    = u.p(pane,'x6table'   );
-        var skeyPar  = u.bb.vgfGet('skey_'+tablePar);
+        var pane     = x6.byId(paneId);
+        var tablePar = x6.p(pane,'x6tablePar');
+        var table    = x6.p(pane,'x6table'   );
+        var skeyPar  = x6bb.fwGet('skey_'+tablePar);
         
         // KFD 1/2/08.  Get smarter.  If we already loaded a grid
         //              for a child table for current skey, don't
         //              bother doing it again.
-        var skeyDid = u.bb.vgfGet('skey_'+tablePar+'_'+table,0);
+        var skeyDid = x6bb.fwGet('skey_'+tablePar+'_'+table,0);
         if(skeyDid==skeyPar) {
             tabsUl.parentNode.enableAll();
             x6events.fireEvent('buttonsOn_'+table,true);
         }
         else {
-            var json = new androJSON(   'x6page'    ,table        );
+            var json = new x6JSON(   'x6page'    ,table        );
             json.addParm('x6action'   ,'browseFetch');
             json.addParm('tableIdPar' ,tablePar     );
             json.addParm('skeyPar'    ,skeyPar      );
@@ -3848,15 +5892,15 @@ x6tabs = {
             //pane.innerHTML = html;
             //var tabDiv = $(pane).find('[x6plugin=x6tabDiv]')[0];
             //x6plugins.x6tabDiv(tabDiv,tabDiv.id,table);
-            u.dialogs.pleaseWait("Retrieving Data...");
+            x6dialogs.pleaseWait("Retrieving Data...");
             if(json.execute()) {
                 json.process(paneId);
                 //var id = $(pane).find("div")[0].id;
                 //x6.initOne(id);
             }
-            u.bb.vgfSet('skey_'+tablePar+'_'+table,skeyPar);
+            x6bb.fwSet('skey_'+tablePar+'_'+table,skeyPar);
             tabsUl.parentNode.enableAll();
-            u.dialogs.clear();
+            x6dialogs.clear();
         }
     }
 }
@@ -3866,7 +5910,7 @@ x6plugins.x6tabs = function(self,id,table) {
     self.zCurrentIndex = 0;  // Assume it starts with zeroth
     self.jqId          = '#'+id+' > ul';
 
-    var x6profile = u.p(self,'x6profile');
+    var x6profile = x6.p(self,'x6profile');
     
     self.disableAll = function(exceptions) {
         if(exceptions==null) exceptions = [ ];
@@ -3915,7 +5959,7 @@ x6plugins.x6tabs = function(self,id,table) {
             $(str).tabs("select",0);
         }
         
-        var parTab = u.p(self,'x6parentTable');
+        var parTab = x6.p(self,'x6parentTable');
         x6events.subscribeToEvent('uiDisableKids_'+parTab,id);
         self['receiveEvent_uiDisableKids_'+parTab] = function() {
             var count = $(this.jqId+" > li").length;
@@ -3939,7 +5983,7 @@ x6plugins.x6tabs = function(self,id,table) {
     // The count and offset variables determine which
     // keystrokes to listen for.
     var count = Number($('#'+id+' > ul > li').length);
-    var offset= Number(u.p(self,'xOffset',0));
+    var offset= Number(x6.p(self,'xOffset',0));
 
     for(var x = offset; x<(offset+count); x++) {
         x6events.subscribeToEvent('key_Ctrl'+x.toString(),self.id);
@@ -3952,17 +5996,17 @@ x6plugins.x6tabs = function(self,id,table) {
             // keep track of whether or not it is visible.
             var subject = this;
             while(true) {
-                var wrapperPaneId = u.p(subject,'x6wrapperPane','');
+                var wrapperPaneId = x6.p(subject,'x6wrapperPane','');
                 // First break is not wrapped, its at the top of
                 // the screen, so break out of here and allow 
                 // the keystroke to select the tab.
                 if(wrapperPaneId=='') break;
                 
                 var wrapperIndex  = Number(wrapperPaneId.slice(-1)) - 1;
-                var wrapperTabsId = u.p(u.byId(wrapperPaneId),'xParentId','');
+                var wrapperTabsId = x6.p(x6.byId(wrapperPaneId),'xParentId','');
                 // Here we re-assing the subject to one tab higher
-                var subject = u.byId(wrapperTabsId);
-                if(u.p(subject,'zCurrentIndex',-1)!=wrapperIndex) {
+                var subject = x6.byId(wrapperTabsId);
+                if(x6.p(subject,'zCurrentIndex',-1)!=wrapperIndex) {
                     return;
                 }
             }
@@ -3970,7 +6014,7 @@ x6plugins.x6tabs = function(self,id,table) {
             
             // get the offset, the keystroke, 
             // and calculate the index.
-            var offset = Number(u.p(this,'xOffset',0));
+            var offset = Number(x6.p(this,'xOffset',0));
             var key    = Number(key.slice(-1));
             var index  = (key - offset);
             var str = '#'+this.id+' > ul';
@@ -4003,13 +6047,13 @@ x6plugins.x6tabs = function(self,id,table) {
         
         x6events.subscribeToEvent('uiEditRow_'+table,id);
         self['receiveEvent_uiEditRow_'+table] = function(x) {
-            var kids = u.p(this,'kids').split('|');
+            var kids = x6.p(this,'kids').split('|');
             for(var kid=0; kid < kids.length; kid++) {
                 var pieces = kids[kid].split(':');
                 var table_chd = pieces[0];
                 var display   = pieces[1];  // assume 'checkbox'
-                var json = new androJSON('x6page',this.zTable);
-                json.addParm('skey',u.bb.vgfGet('skey_'+this.zTable));
+                var json = new x6JSON('x6page',this.zTable);
+                json.addParm('skey',x6bb.fwGet('skey_'+this.zTable));
                 json.addParm('table_chd',pieces[0]);
                 json.addParm('x6action' ,'child_checkbox');
                 html = json.execute(false,false,true);
@@ -4026,7 +6070,7 @@ x6plugins.x6tabs = function(self,id,table) {
             // Here we have all of the values we need to make
             // a literal command to the back to either insert
             // or delete a row.
-            var json = new androJSON('x6table',args.x6table);
+            var json = new x6JSON('x6table',args.x6table);
             json.addParm('x6action','checkboxSave');
             json.addParm('checked',inp.checked);
             json.addParm('cbval_'+args.pkl,args.pkvalleft);
@@ -4068,19 +6112,19 @@ x6plugins.androPage = function(self,id,table) {
     
     x6events.subscribeToEvent('key_CtrlP',id);
     self.receiveEvent_key_CtrlP = function(key) {
-        u.byId('gp_post').value='pdf';
-        ua.json.init('x6page',u.byId('x6page').value);
-        ua.json.inputs();
-        ua.json.windowLocation();
+        x6.byId('gp_post').value='pdf';
+        x6.json.init('x6page',x6.byId('x6page').value);
+        x6.json.inputs();
+        x6.json.windowLocation();
         return false;
     }
 
     x6events.subscribeToEvent('key_CtrlE',id);
     self.receiveEvent_key_CtrlE = function(key) {
-        u.byId('gp_post').value='csvexport';
-        ua.json.init('x6page',u.byId('x6page').value);
-        ua.json.inputs();
-        ua.json.windowLocation();
+        x6.byId('gp_post').value='csvexport';
+        x6.json.init('x6page',x6.byId('x6page').value);
+        x6.json.inputs();
+        x6.json.windowLocation();
         return false;
     }
 
@@ -4088,13 +6132,25 @@ x6plugins.androPage = function(self,id,table) {
     self.receiveEvent_key_CtrlO = function(key) {
         this.tBody = null;
         
-        u.byId('gp_post').value='onscreen';
-        ua.json.init('x6page',u.byId('x6page').value);
-        ua.json.inputs();
-        ua.json.execute();
-        $a.json.process('divOnScreen');
+        x6.byId('gp_post').value='onscreen';
+        x6.json.init('x6page',x6.byId('x6page').value);
+        x6.json.inputs();
+        x6.json.execute();
+        x6.json.process('divOnScreen');
         
     }
 
+    x6events.subscribeToEvent('key_CtrlQ',id);
+    self.receiveEvent_key_CtrlQ = function(key) {
+        this.tBody = null;
+        
+        x6.byId('gp_post').value='showsql';
+        x6.json.init('x6page',x6.byId('x6page').value);
+        x6.json.inputs();
+        x6.json.addParm('showsql',1);
+        x6.json.execute();
+        x6.json.process('divOnScreen');
+        
+    }
 }
 
