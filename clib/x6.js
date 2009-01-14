@@ -1392,7 +1392,7 @@ var x6 = {
         */
         newWindow: function() {
             var entireGet = 'index.php?'+this.makeString()+'&x4Return=exit';
-            $a.openWindow(entireGet);
+            x6.openWindow(entireGet);
         },
         /******/
 
@@ -4326,8 +4326,8 @@ x6plugins.tableController = function(self,id,table) {
             x6.json.addParm('x6action','fetchRow');
             x6.json.addParm('x6w_skey',skey);
             if(x6.json.execute(true)) {
-                x6bb.fwSet('dbRow_'+this.zTable,a.data.row);
-                var rowNew = a.data.row;
+                x6bb.fwSet('dbRow_'+this.zTable,x6.data.row);
+                var rowNew = x6.data.row;
             }
         }
         else {
@@ -5703,6 +5703,22 @@ x6plugins.x6tabDiv = function(self,id,table) {
         }
         delete json;
         x6dialogs.clear();
+    }
+    
+    // Initialization. If we see "search_" inputs that are 
+    // not empty, execute the search and pick the first one.
+    if( $(self).find("[id^=search][value!=]").length > 0) {
+        self.fetch();
+        var jqRow = self.jqCurrentRow();
+        if(jqRow.length>0) {
+            var rowId = jqRow[0].id;
+            var aRowId = rowId.split('_');
+            var skey = aRowId.pop();
+            console.log(rowId,aRowId,skey);
+            setTimeout(function() {
+                    x6events.fireEvent('reqEditRow_'+table,skey);
+            },900);
+        }
     }
 }
 
