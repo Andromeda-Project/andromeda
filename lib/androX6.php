@@ -718,6 +718,10 @@ class androX6 {
         
         # always at the end, render it
         $top->render();
+        
+        # And a final doo-dad, broadcast a focus event
+        # to turn on the grid
+        jqDocReady("x6events.fireEvent('objectFocus','".$grid->hp['id']."');");
     }    
     # ===================================================================
     # *******************************************************************
