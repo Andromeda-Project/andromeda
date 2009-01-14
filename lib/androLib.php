@@ -613,8 +613,12 @@ function x6scriptKill() {
 *
 * SOURCE
 */
-function x6Data($name,$data) { x4data($name,$data); }
+function x6Data($name,$data) { 
+    $script = "\nx6.data.$name = ".json_encode_safe($data).";";
+    x6Script($script);
+}
 function x4Data($name,$data) {
+    if(vgfGet('x6',false)) return x6Data($name,$data);
     $script = "\n\$a.data.$name = ".json_encode_safe($data).";";
     x4Script($script);
 }
@@ -1631,7 +1635,7 @@ class androHtml {
         $bb->addClass('x6buttonBar');
         if(in_array('new',$abuts)) {
             $a=$bb->h('a-void','New');
-            $a->addClass('button button-first');
+            $a->addClass('button_disabled button-first');
             $a->hp['style'] = 'margin-left: 0px';
             $a->hp['x6table']  = $table_id;
             $a->hp['x6plugin'] = 'buttonNew';
@@ -1639,10 +1643,9 @@ class androHtml {
             $a->hp['style']    = 'float: left';
             $bb->buttons['new'] = $a;
             $a->initPlugin();
-            jqDocReady("x6events.fireEvent('disable_new_$table_id')");
 
             $a=$bb->h('a-void','Insert');
-            $a->addClass('button');
+            $a->addClass('button_disabled');
             $a->hp['style'] = 'margin-left: 0px';
             $a->hp['x6table']  = $table_id;
             $a->hp['x6plugin'] = 'buttonInsert';
@@ -1650,40 +1653,36 @@ class androHtml {
             $a->hp['style']    = 'float: left';
             $bb->buttons['ins'] = $a;
             $a->initPlugin();
-            jqDocReady("x6events.fireEvent('disable_ins_$table_id')");
         }
         if(in_array('save',$abuts)) {
             $a=$bb->h('a-void','Save');
-            $a->addClass('button');
+            $a->addClass('button_disabled');
             $a->hp['x6table']  = $table_id;
             $a->hp['x6plugin'] = 'buttonSave';
             $a->hp['id']       = 'buttonSave_'.$table_id;
             $a->hp['style']    = 'float: left';
             $bb->buttons['save'] = $a;
             $a->initPlugin();
-            jqDocReady("x6events.fireEvent('disable_save_$table_id')");
         }
         if(in_array('remove',$abuts)) {
             $a=$bb->h('a-void','Delete');
-            $a->addClass('button');
+            $a->addClass('button_disabled');
             $a->hp['x6table']  = $table_id;
             $a->hp['x6plugin'] = 'buttonDelete';
             $a->hp['id']       = 'buttonDelete_'.$table_id;
             $a->hp['style']    = "float: right; margin-right: {$pad0}px";
             $bb->buttons['remove'] = $a;
             $a->initPlugin();
-            jqDocReady("x6events.fireEvent('disable_delete_$table_id')");
         }
         if(in_array('abandon',$abuts)) {
             $a=$bb->h('a-void','Cancel');
-            $a->addClass('button');
+            $a->addClass('button_disabled');
             $a->hp['x6table']  = $table_id;
             $a->hp['x6plugin'] = 'buttonCancel';
             $a->hp['id']       = 'buttonCancel_'.$table_id;
             $a->hp['style']    = 'float: right';
             $bb->buttons['abandon'] = $a;
             $a->initPlugin();
-            jqDocReady("x6events.fireEvent('disable_cancel_$table_id')");
         }
             
         return $bb;
@@ -2161,7 +2160,7 @@ class androHtml {
     function initPlugin() {
         $plugin = $this->hp['x6plugin'];
         $table  = $this->hp['x6table'];
-        jqDocReady("var plugin = u.byId('{$this->hp['id']}');");
+        jqDocReady("var plugin = x6.byId('{$this->hp['id']}');");
         jqDocReady("x6plugins.$plugin(plugin,plugin.id,'$table')");
     }
 
@@ -2321,12 +2320,12 @@ class androHtml {
                 $this->hp['on'.$event] = "$fname(this)";
         }
         foreach($this->functions as $name=>$snippet) {
-            jqDocReady("u.byId('{$this->hp['id']}').$name = $snippet");
+            jqDocReady("x6.byId('{$this->hp['id']}').$name = $snippet");
         }
         
         # KFD 10/7/08 if data has been attached, send it as json
         if(isset($this->data)) {
-            $js = "u.byId('".$this->hp['id']."').zData = "
+            $js = "x6.byId('".$this->hp['id']."').zData = "
                 .json_encode($this->data);
             jqDocReady($js);
         }
@@ -2834,7 +2833,7 @@ class androHTMLTabDiv extends androHTML {
             $html.=$wrapper->bufferedRender(null,true);
         }
         $html    = str_replace("\n","",$html);
-        $strLeft = 'u.byId("'.$this->hp['id'].'").zRowEditHtml'; 
+        $strLeft = 'x6.byId("'.$this->hp['id'].'").zRowEditHtml'; 
         jqDocReady("$strLeft = \"$html\"",true);
     }
     
@@ -2973,12 +2972,12 @@ class androHTMLTabDiv extends androHTML {
         
         # Send the column structure back as JSON
         jqDocReady(
-            "u.byId('".$this->hp['id']."').zColsInfo="
+            "x6.byId('".$this->hp['id']."').zColsInfo="
             .json_encode($this->columns)
             ,true
         );
         jqDocReady(
-            "u.byId('".$this->hp['id']."').zColsById="
+            "x6.byId('".$this->hp['id']."').zColsById="
             .json_encode($this->columnsById)
             ,true
         );
@@ -3178,7 +3177,7 @@ class androHTMLTabDiv extends androHTML {
             $inp->hp['xValue']='';
             $inp->hp['xColumnId'] = $column;
             $inp->hp['xNoPassup'] = 'Y'; 
-            $inp->hp['onkeyup']   = "u.byId('".$this->hp['id']."').fetch()";
+            $inp->hp['onkeyup']   = "x6.byId('".$this->hp['id']."').fetch()";
             $inp->hp['style'  ]   = "width: {$width}px";
             $inp->hp['xLookup']   = 'Y';
             if(isset($inp->hp['x6select'])) unset($inp->hp['x6select']);
@@ -4383,12 +4382,9 @@ class androText {
         }
         else {
             if($position==0) $position = $this->cpl;
-            #FB::send($position,'position');
-            #FB::send($lineText,'text before');
             $lineText = substr($lineText,0,$position - strlen($text))
                 .$text
                 .substr($lineText,$position);
-            #FB::send($lineText,'text after');
         }
         $this->pages[$page][$line] = $lineText;
         
@@ -15898,6 +15894,7 @@ function jsOutput() {
     // Loop through each file and either add it to list of
     // files to minify or output it directly
     $debug = trim(ConfigGet('js_css_debug','N'));
+    if(vgfGet('x6')) $debug = 'Y';
     foreach($ajs as $js) {
         $external = false;
         if(substr($js['file'],0,7)=='http://') {
