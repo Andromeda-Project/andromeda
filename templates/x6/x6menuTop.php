@@ -6,7 +6,7 @@ defined( '_VALID_MOS' )
     or die( 'Direct Access to this location is not allowed.' );
 
 # ==================================================================
-# AREA 1: Render the menu.  Note we directly output it
+# AREA 1: Render the menx6.  Note we directly output it
 # ==================================================================
 $menus=SessionGET("AGMENU",array());
 #if(count($menus)==0) return;
@@ -85,14 +85,14 @@ function x6menumouseover(menuid) {
     if(window.x6menu == menuid) return;
 
     // Turn off the old one
-    //var pad = u.byId('x6menu_'+window.x6menu);
+    //var pad = x6.byId('x6menu_'+window.x6menu);
     //pad.style.display = 'none';
     $("#x6menu_"+window.x6menu).css('display','none');
     $('#x6menupad_'+window.x6menu).removeClass('selected');
     
     // Turn on the new one
     window.x6menu = menuid;
-    //var pad = u.byId('x6menu_'+menuid);
+    //var pad = x6.byId('x6menu_'+menuid);
     //pad.style.display = '';
     $("#x6menu_"+window.x6menu).css('display','');
     $("#x6menu_"+window.x6menu).css('z-index','1000');
@@ -104,14 +104,14 @@ function x6menumouseover(menuid) {
 function x6menuclick(menuid) {
     // if an old one exists, clear it out
     if(window.x6menu) {
-        var pad = u.byId('x6menu_'+window.x6menu);
+        var pad = x6.byId('x6menu_'+window.x6menu);
         pad.style.display = 'none';
         $('#x6menupad_'+window.x6menu).removeClass('selected');
     }
 
     // Turn on the new one
     window.x6menu = menuid;
-    var pad = u.byId('x6menu_'+menuid);
+    var pad = x6.byId('x6menu_'+menuid);
     pad.style.display = '';
     $('#x6menupad_'+menuid).addClass('selected');
 }
@@ -122,7 +122,7 @@ document.onclick = function(e) {
     var tg = e ? e.target : window.event.srcElement;
     if(tg != null && !$(tg).hasClass('dropdown') && !$(tg).hasClass('x6menuspan')){
         if(window.x6menu) {
-            var pad = u.byId('x6menu_'+window.x6menu);
+            var pad = x6.byId('x6menu_'+window.x6menu);
             pad.style.display = 'none';
             $('#x6menupad_'+window.x6menu).removeClass('selected')
             window.x6menu = false;
