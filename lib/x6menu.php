@@ -62,7 +62,7 @@ class x6menu extends androX6 {
             $h2->hp['xMenuId'] = $menuid;
             $h2->hp['style']   = "padding: {$width2}px";
             $h2->hp['onclick'] =
-                "u.byId('x6menu_outer').clicked('module_$menuid');";
+                "x6.byId('x6menu_outer').clicked('module_$menuid');";
             $h2->hp['onmouseover'] = "this.style.textDecoration='underline'";
             $h2->hp['onmouseout']  = "this.style.textDecoration=''";
             
@@ -107,16 +107,16 @@ class x6menu extends androX6 {
         ?>
         <script>
         var id   = 'x6menu_outer';
-        var self = u.byId(id);
+        var self = x6.byId(id);
         
         self.clicked = function(id) {
             var moduleNow = $("#x6menu_left div.hilight");
             if(moduleNow.length > 0) {
-                var moduleId = u.p(moduleNow[0],'xMenuId');
+                var moduleId = x6.p(moduleNow[0],'xMenuId');
                 $(moduleNow).removeClass('hilight');
                 $('#items_'+moduleId).fadeOut('fast');
             }
-            var moduleId = u.p(u.byId(id),'xMenuId');
+            var moduleId = x6.p(x6.byId(id),'xMenuId');
             $('#'+id).addClass('hilight');
             var crString = '#items_'+moduleId+" div:first";
             this.clickedRight($(crString)[0].id);
