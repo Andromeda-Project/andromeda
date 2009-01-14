@@ -18,7 +18,7 @@ class androPageReport extends fpdf {
      *  @access private
      */
     var $lastCol = -1;
-
+    
     /**
      *  An array of derived column information such
      *  as start position and width.
@@ -94,6 +94,7 @@ class androPageReport extends fpdf {
     function androPageReport($ori='l',$uom='pt',$paper='letter') {
         // Tab Stops
         $this->cols  = array();
+        $this->x6    = vgfGet('x6');
         
         $this->FPDF($ori,$uom,$paper);
     }
@@ -705,7 +706,12 @@ class androPageReport extends fpdf {
                if($this->source <>'') {
                    $href.='&gp_source='.$this->source;
                }
-               if(gpExists('x4Page')) {
+               if($this->x6) {
+                   $ahref = "?x6page=$link$href&x6return=exit";
+                   $text="<a href='javascript:x6.openWindow(\"$ahref\")'
+                        >$text</a>";
+               }
+               else if(gpExists('x4Page')) {
                    $ahref = "?x4Page=$link$href&x4Return=exit";
                    $text="<a href='javascript:\$a.openWindow(\"$ahref\")'
                         >$text</a>";
