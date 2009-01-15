@@ -56,7 +56,14 @@ $paypal['cancel_url']="?gpt=pp&flag=0";   // after ipn has finished
 if(configGet('paypal_v2','N')=='Y') {
     $paypal['success_url'] = '?gp_page=x_paypalfinal&flag=success';
     $paypal['cancel_url'] = '?gp_page=x_paypalfinal&flag=cancel';
-}    
+}
+# KFD 1/15/09, allow program to dynamically generate a return
+#              page that will specify 
+if(vgfGet('paypal_return_url',false)) {
+    $pprurl = vgfGet('paypal_return_url');
+    $paypal['success_url'] = $pprurl.'&flag=success';
+    $paypal['cancel_url']  = $pprurl.'&flag=cancel';
+}
 
 // -----------------------------------------------------------------
 // FLIP BETWEEN THESE TWO FOR LIVE/TEST 
