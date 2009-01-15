@@ -398,7 +398,7 @@ $x6group   = configGet('x6_group'   ,'');
 
 # KFD 1/13/09.  If there is a "gp_page" and x2=1, turn off
 #               x6 processing
-if(gp('gp_page',false) && gp('x2')==1) {
+if(gp('gp_page',false) || gp('x2')==1) {
     $flagx6 = 'N';
 }
     
