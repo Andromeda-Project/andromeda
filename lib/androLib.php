@@ -16798,7 +16798,6 @@ function SQLX_Update($table,$colvals,$errrow=array()) {
     }
     if ($sql <> '') {
         $sql = "UPDATE ".$view_id." SET ".$sql." WHERE skey = ".$st_skey;
-        x4Debug($sql);
 
         // ERRORROW CHANGE 5/30/07, big change, SQLX_* routines now save
         //  the row for the table if there was an error
