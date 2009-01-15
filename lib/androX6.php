@@ -238,7 +238,6 @@ class androX6 {
                 $row=SQL_OneRow(
                     "Select * FROM {$dd['viewname']} WHERE skey = $skey"
                 );
-                x6Debug($row);
                 x6Data('row',$row);
             }
         }
@@ -997,7 +996,6 @@ class androX6 {
                 $input=input($this->dd['flat'][$column],$tabLoop);
                 $input->hp['xSkey'] = $row['skey'];
                 $input->hp['value'] = htmlentities($row[$column]);
-                $input->hp['onchange']='oneRowSave(this)';
                 $td = $tr->h('td');
                 $td->setHtml($input->bufferedRender());
                 $td->addClass('x6Input');            
@@ -1008,15 +1006,21 @@ class androX6 {
         ob_start();
         ?>
         <script>
-        window.oneRowSave = function(input) {
-            var json = new androJSON('x6page',u.p(input,'xTableId'));
-            json.addParm('x6action','save');
-            json.addParm('x6v_skey',u.p(input,'xSkey'));
-            json.addParm(input.id,input.value);
-            json.execute(false,true);
-            input.zOriginalValue = input.value;
-            x6inputs.setClass(input);
-        }
+        $('input,textarea').each(
+            function() {
+                this.zOriginalValue = $(this).attr('value');
+                this.afterBlur = function() {
+                    if(this.zOriginalValue.trim()==this.value.trim()) return;
+                    var json = new x6JSON('x6page',x6.p(this,'xTableId'));
+                    json.addParm('x6action','save');
+                    json.addParm('x6v_skey',x6.p(this,'xSkey'));
+                    json.addParm(this.id,this.value);
+                    json.execute(false,true);
+                    this.zOriginalValue = this.value;
+                    x6inputs.setClass(this);
+                }
+            }
+        );
         <?php
         jqDocReady(ob_get_clean());
     }

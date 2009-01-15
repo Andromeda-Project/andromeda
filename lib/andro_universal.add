@@ -691,7 +691,7 @@ table configinst {
     column description { suffix: _x6; description: X6 Settings; }
     projection x6 {
         column {
-            x6_template; x6_group; x6_jssource; 
+            flag_x6; x6_template; x6_group; x6_jssource; 
         }
     }
 
