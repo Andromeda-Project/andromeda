@@ -4524,8 +4524,11 @@ x6plugins.detailDisplay = function(self,id,table) {
             function() {
                 x6inputs.disable(this);
             }
-        )
-        .find("textarea").each(
+        );
+        
+        // DO 1-15-2009 For some reason chaining
+        // this to the above doesnt work
+        $(self).find("textarea").each(
             function() {
                 var el = '#' + $(this).attr('id');
                 var wysiwyg = el + '_WYSIWYG';
