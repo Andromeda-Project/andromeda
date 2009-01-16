@@ -329,7 +329,7 @@
                 this.original = element;
 
                 if ( newX == 0 && element.cols )
-                    newX = ( element.cols * 12 ) + 21;
+                    newX = ( element.cols * 10 ) + 100;
 
                 if ( newY == 0 && element.rows )
                     newY = ( element.rows * 25 ) + 16;
