@@ -15,10 +15,17 @@ $first = 0;
 foreach($menus as $menuid=>$menuinfo) {
     $pad = $ulpads->h('li');
     $pad->hp['id'] = 'x6menupad_'.$menuid;
-    $span= $pad->h('span',$menuinfo['description']);
-    $span->hp['onmouseover'] = "x6menumouseover('$menuid')";
-    $span->hp['onclick']     = "x6menuclick('$menuid')";
-    $span->addClass('x6menuspan'); // bogus, just for tracking
+    #$pad->addClass('x6menupad');
+    
+    # IE 6
+    $a = $pad->h('a',$menuinfo['description']);
+    $a->hp['href'] = "javascript:x6menuclick('$menuid')";
+    #$span= $pad->h('span',$menuinfo['description']);
+    #$span->hp['onmouseover'] = "x6menumouseover('$menuid')";
+    #$span->hp['onclick']     = "x6menuclick('$menuid')";
+    $a->hp['onmouseover'] = "x6menumouseover('$menuid')";
+    #$a->hp['onclick']     = "x6menuclick('$menuid')";
+    #$span->addClass('x6menuspan'); // bogus, just for tracking
 
     $ul  = $pad->h('ul');
     $ul->hp['id'] = 'x6menu_'.$menuid;
@@ -34,12 +41,13 @@ foreach($menus as $menuid=>$menuinfo) {
             if($page == 'userssimple') continue;
         }
         
+        
         $pd = $pageinfo['description'];
-        $li = $ul->h('li',$pd);
-        $li->hp['onmouseover']="this.className='selected'";
-        $li->hp['onmouseout'] ="this.className=''";
-        #$a  = html('a',$li,$pd);
-        #$ul->br();
+        $li = $ul->h('li');
+        $a = $li->h('a',$pd);
+        #$li->hp['onmouseover']="$(this).addClass('selected')";
+        #$li->hp['onmouseout'] ="$(this).removeClass('selected')";
+        
         if($pageinfo['uix2'] == 'Y') {
             #$a->hp['href'] = "?gp_page=$page&x2=1";
             $href = "?gp_page=$page&amp;x2=1";
@@ -48,10 +56,12 @@ foreach($menus as $menuid=>$menuinfo) {
             #$a->hp['href'] = "?x6page=$page";
             $href = "?x6page=$page&x6module=$menuid";
         }
-        $li->hp['onclick'] = "window.location='$href'";
+        #$li->hp['onclick'] = "window.location='$href'";
+        $a->hp['href'] = "$href";
         if(arr($pageinfo,'spaceafter','N')=='Y') {
             if($count <> count($menuinfo['items'])) {
                 $li=$ul->h('li');
+                $li->addClass('dropdown');
                 $li->hp['style'] = 'cursor: auto';
                 $li->hr();
             }
@@ -97,6 +107,8 @@ function x6menumouseover(menuid) {
     $("#x6menu_"+window.x6menu).css('display','');
     $("#x6menu_"+window.x6menu).css('z-index','1000');
     $('#x6menupad_'+menuid).addClass('selected');
+    
+    
 }
 
 // Clicking a menu pad activates the menu and causes
