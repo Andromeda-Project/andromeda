@@ -3432,14 +3432,12 @@ var x6inputs = {
         }
         if(inpId != '') {
             $('#'+inpId).focus();
-            /*
             setTimeout(
                 function() {
                     x6.byId(inpId).focus();
                 }
-                ,150
+                ,50
             );
-            */
         }
     },
     // KFD 11/29/08, not being called anywhere?
