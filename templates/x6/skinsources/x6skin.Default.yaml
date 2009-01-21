@@ -233,6 +233,7 @@ css:
             
         a.button_disabled,a.button,div.thead div a:
             text-decoration: none
+            display: block
 
     # ===================================================================
     #            
@@ -402,103 +403,100 @@ css:
     # its ul/li properties so it looks like dropdowns
     #  
     # ===================================================================
-    x6menu_core:   
-        .x6menu ul:
-            float:               left
-            list-style-image:    none
-            list-style-position: outside
-            list-style-type:     none
-            # required to prevent normal padding of ul's
-            padding-left:        *zero
-            cursor:              pointer
+    x6menu_core:  
+        # top bar
+        div.x6menu:
+            background-color:   *bgcdark
+            line-height:        *lhmbar
+            height:             *menupost
+            width:              *outsidewidth
             
-        .x6menu ul.right:
-            float: right
+        # top menu of pads
+        div.x6menu ul:
+            margin:        0
+            padding:       0 
+            z-index:    1000
             
-        .x6menu ul li:
-            position: relative
-            z-index:  900
-        
-        # Required to prevent list from going vertical
-        .x6menu li:
-            float: left
-            
-        ul.dropdown:
-            position: absolute
-            z-index:  1000
-            
-        .x6menu ul.dropdown li:
-            cursor:   pointer
-            position: relative
-            display:  block
-            float:    left
-            clear:    left
-            border:   *zero
-            
-        .x6menu ul.dropdown li a:
+        div.x6menu ul a:
             text-decoration: none
-            width:           100%
+            color:           *black
+            display:         block
+            z-index:    1000
+            
+        #    
+        div.x6menu ul li:
+            #    # static
+            display:                inline
+            float:                  left
+            height:                 auto
+            z-index:                1000
+            cursor:                 pointer
+            #    # flavor
+            border-top:             1px solid *bgcdark
+            border-bottom:          1px solid *bgcdark
+            border-left:            1px solid *bgcdark
+            border-right:           1px solid *bgcdark
+            padding-left:          *pad1
+            padding-right:         *pad1
+            padding-bottom:        *pad0less
+        div.x6menu ul li.selected:
+            background-color:       *bgcmenu
+            color:                  *white
+            border-top:              1px solid *black
+            border-bottom:           0
+            border-left:             1px solid *black
+            border-right:            1px solid *black
+        div.x6menu ul li.selected a:
+            color:                  *white
+
+        #div.x6menu ul li a:
+        #    text-decoration:        none
+        #    color:                 *black
+        #div.x6menu ul li.selected a:
+        #    # flavor
+        #    color:                  *white
 
             
-    # ========================================================
-    #
-    # Menu definitions - put the flavor here
-    #
-    # ========================================================
-    x6menu_flavor:
-        # The bar itself
-        .x6menu: 
-            background-color:    *bgcdark
-            line-height:         *lhmbar
-            width:               *outsidewidth
-        # unselected entries
-        .x6menu ul:
-            margin-top:          *zero
-            margin-bottom:       *zero
-        # Selected entry top of menu
-        .x6menu > ul > li:
-            border-top:          *bw0 *bs0 *bgcdark
-            border-bottom:       *zero
-            border-left:         *bw0 *bs0 *bgcdark
-            border-right:        *bw0 *bs0 *bgcdark
-            padding-left:        *menupad
-            padding-right:       *menupad
-            margin-top:          *menumart
-            padding-bottom:      *menupadb
-        .x6menu > ul > li.selected:
-            background-color:    *bgcmenu
-            color:               *white
-            border-top:          *bw0 *bs0 *black
-            border-bottom:       *zero
-            border-left:         *bw0 *bs0 *black
-            border-right:        *bw0 *bs0 *black
-        .x6menu ul.dropdown:
-            border-top:          *bw0 *bs0 *black
-            border-bottom:       *bw0 *bs0 *black
-            border-left:         *bw0 *bs0 *black
-            border-right:        *bw0 *bs0 *black
-            background-color:    *white
-            width:               *dropdownwidth
-            margin-left:         *dropdownshift
-            margin-top:          *menumartop
-        .x6menu ul.dropdown > li:
-            color:               *black
-            width:               *dropdowninnerwidth
-            line-height:         *barlh
-            padding-left:        *menupad
-            padding-right:       *menupad
-            border-top:          *zero
-            border-bottom:       *zero
-            border-left:         *zero
-            border-right:        *zero
-        .x6menu ul.dropdown > li > hr
-            color:               *bgcdark
-            width:               100%
-            height:              1px
-               
-        .x6menu ul.dropdown > li.selected:
-            background-color:    *bgcmenu
-            color:               *white
+        # Positioning of dropdown 
+        div.x6menu ul ul:
+            # always the same
+            display:     block
+            position:    absolute
+        div.x6menu ul ul.dropdown:
+            # static
+            z-index:     1000
+            # flavor
+            border-top:  1px solid *black 
+        #    # varies with skin
+        #    top:        *menupost
+            border-top:              1px solid *black
+            border-bottom:           1px solid *black
+            border-left:             1px solid *black
+            border-right:            1px solid *black
+            background-color:        *white
+            width:                   *dropdownwidth
+            margin-left:             *dropdownshift
+            margin-top:              *pad0less
+
+            
+        div.x6menu ul li li:
+            display:     block
+            float:       none
+            z-index:     1000
+        div.x6menu ul li ul li:
+            text-indent:    0
+            margin:         0
+            padding:        0
+            border:         0
+        div.x6menu ul li ul li a:
+            padding:        *pad0
+        div.x6menu ul li.selected ul li a:
+            padding:        *pad0
+            color:          *black
+            
+        div.x6menu ul li ul li a;hover: {
+            background-color:       *bgcmenu
+            color:                  *white
             
     # ===================================================================
     #
@@ -536,8 +534,10 @@ css:
             border-collapse: collapse
         td.x6Caption:
             text-align:      right
+            padding-top:    *pad0
             padding-left:   *pad0
             padding-bottom: *pad0
+            vertical-align:  top
         
     # ===============================================================
     #
@@ -617,14 +617,14 @@ css:
             border-left:     *zero 
             border-right:    *zero 
             
-        .ui-tabs-nav li.ui-tabs-selected a:
+        .ui-tabs-nav li.ui-state-active a:
             color:           *white
-    
-        .ui-tabs-nav li.ui-tabs-selected:
+        .ui-tabs-nav li.ui-state-active:
             background-color:*dark
 
-        .ui-tabs-nav li.ui-tabs-disabled a:
+        .ui-tabs-nav li.ui-state-disabled a:
             color:          *bgcdark
+            cursor:          default
 
             
         .ui-tabs-panel:
@@ -705,7 +705,7 @@ css:
     #  TAB DIV
     #
     # ===============================================================
-    tabdiv_core:
+    grid_core:
         div.thead div:
             height:             *barheight
             background-color:   *bgcdark
@@ -729,7 +729,7 @@ css:
     # Tab DIV FLavor
     #
     # ===============================================================
-    tabdiv_flavor:
+    grid_flavor:
         div.thead div div:
             padding-right:    *pad0
             padding-left:     *pad0

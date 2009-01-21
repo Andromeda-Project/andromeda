@@ -13,6 +13,8 @@ $menus=SessionGET("AGMENU",array());
 $ulpads = html('ul');
 $first = 0;
 foreach($menus as $menuid=>$menuinfo) {
+    if(count($menuinfo['items'])==0) continue;
+    
     $pad = $ulpads->h('li');
     $pad->hp['id'] = 'x6menupad_'.$menuid;
     #$pad->addClass('x6menupad');
