@@ -57,13 +57,6 @@ class androX6 {
     function x6main() { 
         $this->profile_conventional();
         return;
-        ?>
-        <h1>Unprogrammed page</h1>
-        
-        <p>The programmer has made a call to a page that has no
-           profile and no custom code.  
-        </p>
-        <?php
     }
     
     function customButtons() {
@@ -149,30 +142,6 @@ class androX6 {
             }
         }
             
-        /*
-        if(gp('skeyAfter',false)!==false) {
-            foreach($dd['flat'] as $colname=>$colinfo) {
-                if(strtolower($colinfo['automation_id'])=='queuepos') {
-                    $queuepos = $colname;
-                    break;
-                }
-            }
-
-            if(gp('skeyAfter')==0) {
-                $row[$queuepos] = 1;
-            }
-            else {
-                $qpvalue = SQL_OneValue($queuepos,
-                    "Select $queuepos from {$dd['viewname']}
-                    where skey = ".sqlfc(gp('skeyAfter'))
-                );
-                $qpvalue++;
-                $row[$queuepos] = $qpvalue;
-            }
-        }
-        */
-        
-
         # KFD 6/28/08, a non-empty date must be valid
         $errors = false;
         foreach($row as $col => $value) {
@@ -481,12 +450,12 @@ class androX6 {
         
         # Now make up the generic div and add all of the cells
         $bb = gp('xButtonBar','N')=='Y' || $edit;
-        $grid = new androHTMLTabDiv(
+        $grid = new androHTMLGrid(
             $gridHeight,$table_id,$lookups,$sortable,$bb,$edit
         );
-        $this->tabDivGeneric($grid,$this->dd,$tabPar,$vals2);
+        $this->gridGeneric($grid,$this->dd,$tabPar,$vals2);
         $grid->addData($answer);
-        $grid->hp['x6profile'] = 'x6tabDiv';
+        $grid->hp['x6profile'] = 'grid';
         
         # Put some important properties on the grid!
         $grid->ap['xGridHeight'] = $gridHeight;
@@ -629,11 +598,11 @@ class androX6 {
     # ===================================================================
     # *******************************************************************
     #
-    # Profile 0: "tabDiv"  editable!
+    # Profile 0: "grid"  editable!
     #
     # *******************************************************************
     # ===================================================================
-    function profile_tabDiv() {
+    function profile_grid() {
         # these were provided by the code that instantiated
         # and initialized the object.
         $dd       = $this->dd;
@@ -670,10 +639,10 @@ class androX6 {
         # Work out a height by finding out inside height
         # and subtracing line height a few times
         $gridHeight = $hremain - x6cssHeight('h1');
-        $grid       = $top->addTabDiv(
+        $grid       = $top->addGrid(
             $gridHeight,$table_id,false,$sortable,true,true
         );
-        $grid->hp['x6profile'] = 'x6tabDiv';
+        $grid->hp['x6profile'] = 'grid';
         
         # More features specific to this profile, these will 
         # allow browseFetch not to have to figure this all out
@@ -767,9 +736,9 @@ class androX6 {
         $area0->hp['style'] = "float: left; 
             padding-left: {$pad0}px;
             padding-right: {$pad0}px;";
-        $x6grid = $area0->addTabDiv($heightRemain,$table_id,false,true,false);
+        $x6grid = $area0->addGrid($heightRemain,$table_id,false,true,false);
         $x6grid->hp['x6profile'] = 'twosides';
-        $this->tabDivGeneric($x6grid,$this->dd);
+        $this->gridGeneric($x6grid,$this->dd);
         
         # Now put the data over there
         $uisearch = $this->dd['projections']['_uisearch'];
@@ -817,6 +786,10 @@ class androX6 {
         }
         //echo "$xrtop $xrhgt $xrwdth";
         #$detail->innerDiv->addXRefs($table_id,$xrtop,$xrhgt,$xrwdth);
+
+        # tell the screen to start out by focusing on
+        # the browse
+        jqDocReady("x6events.fireEvent('objectFocus','{$x6grid->hp['id']}')");
         
         # Render it!  That's it!
         $this->hldOut($div);
@@ -866,20 +839,20 @@ class androX6 {
         
         # Begin with title and tabs
         $top->h('h1',$dd['description']);
-        $options = array('profile'=>'conventional','x6table'=>$table_id);
+        $options = array('x6profile'=>'conventional','x6table'=>$table_id);
         $tabs = $top->addTabs('tabs_'.$table_id,$hpane1,$options);
         $lookup = $tabs->addTab('Lookup');
         $detail = $tabs->addTab('Detail',true);
 
-        # Make a generic tabDiv, which will show all uisearch 
+        # Make a generic grid, which will show all uisearch 
         # columns, and add a row of lookup inputs to it.  
         # Enclose it in a div that gives some padding on top
         # and bottom.  Divide up the left-right free space to
         # put 1/3 on the left and the remaining on the right.
         $divgrid = $lookup->h('div');
-        $grid = $divgrid->addTabDiv($hpane1 - ($hlh*2),$table_id,true,true);
+        $grid = $divgrid->addGrid($hpane1 - ($hlh*2),$table_id,true,true);
         $grid->hp['x6profile'] = 'conventional';
-        $gridWidth = $this->tabDivGeneric($grid,$dd);
+        $gridWidth = $this->gridGeneric($grid,$dd);
         # Work out the available free width after making the grid
         $wAvail = x6cssDefine('insidewidth')
             - 2 // hardcoded assumption of border of tab container
@@ -888,6 +861,8 @@ class androX6 {
         $divgrid->hp['style']=
             "padding-left: ".intval($wAvail/3)."px;
              padding-top: ".x6CSSDefine('lh0')."px;";
+        # tell the browse tab object to focus when it is selected
+        $lookup->hp['x6objectFocusId'] = $grid->hp['id']; 
 
         # We are making
         # the assumption that there will *always* be child tables
@@ -896,21 +871,23 @@ class androX6 {
         #
         $divDetail = $detail->addDetail($dd['table_id'],true,$hdetail);
         $divDetail->addCustomButtons($this->customButtons());
-        $divDetail->ap['xTabSelector'] = $tabs->ts;
+        $divDetail->ap['xTabSelector'] = $tabs->ul->hp['id'];
         $divDetail->ap['xTabIndex']    = 1;
         $divDetail->ap['x6profile'] = 'conventional';
+        $detail->hp['x6objectFocusId'] = $divDetail->hp['id']; 
         
         # The div kids is a tabbar of child tables.  Notice that we
         # put nothing into them.  They are loaded dynamically when
         # the user picks them.
-        $options=array('slideUp'=>$divDetail->hp['id']
-            ,'slideUpInner'=>$divDetail->innerId
-            ,'parentTable'=>$table_id
-            ,'profile'=>'kids'
+        $options=array('x6slideUp'=>$divDetail->hp['id']
+            ,'x6slideUpInner'=>$divDetail->innerId
+            ,'x6parentTable'=>$table_id
+            ,'x6profile'=>'kids'
+            ,'x6table'=>$table_id
             ,'styles'=>array('overflow'=>'hidden')
         );
         $tabKids = $detail->addTabs('kids_'.$table_id,$hempty,$options);
-        $tabKids->hp['xOffset'] = 2;
+        $tabKids->ul->hp['xOffset'] = 2;
         $tab = $tabKids->addTab("Hide");
         foreach($dd['fk_children'] as $child=>$info) {
             # KFD 1/2/08.  If x6display is 'none', skip it
@@ -926,9 +903,13 @@ class androX6 {
         foreach($this->appTabs as $child=>$caption) {
             $top->addTableController($child);
             $tab = $tabKids->addTab($caption);
-            $tab->ap['x6tablePar'] = $table_id;
-            $tab->ap['x6table'   ] = $child;
+            $tab->hp['x6tablePar'] = $table_id;
+            $tab->hp['x6table'   ] = $child;
         }
+        
+        # tell the screen to start out by focusing on
+        # the browse
+        jqDocReady("x6events.fireEvent('objectFocus','{$grid->hp['id']}')");
 
         $this->hldOut($top);
         $top->render();
@@ -1038,17 +1019,19 @@ class androX6 {
     }
     
     function hldOut(&$top) {
-        foreach($this->hld as $name=>$value) {
-            $inp = $top->h('input');
-            $inp->hp['type'] = 'hidden';
-            $inp->hp['name'] = $inp->hp['id'] = 'hld_'.$name;
-            $inp->hp['value'] = $value;
+        if(isset($this->hld)) {
+            foreach($this->hld as $name=>$value) {
+                $inp = $top->h('input');
+                $inp->hp['type'] = 'hidden';
+                $inp->hp['name'] = $inp->hp['id'] = 'hld_'.$name;
+                $inp->hp['value'] = $value;
+            }
         }
     }
     
-    # Makes a generic tabdiv.  First created 11/3/08 so we can add
+    # Makes a generic grid.  First created 11/3/08 so we can add
     # cells to it for a browseFetch and then pluck out the tbody html
-    function tabDivGeneric(&$grid,$dd,$tabPar='',$vals2=array()) {
+    function gridGeneric(&$grid,$dd,$tabPar='',$vals2=array()) {
         $table_id = $dd['table_id'];
         
         # KFD 12/18/08.  If we have a tablePar and $vals2, we will

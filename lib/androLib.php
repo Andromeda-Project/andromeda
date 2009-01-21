@@ -924,7 +924,7 @@ function &htmlMacroGridWithData($dd,$cols,$rows) {
     $gheight = $hinside - ($hh1 * 2);
     
     # create a tabdiv and add the columns
-    $tabDiv = new androHTMLTabDiv($gheight,$table_id);
+    $tabDiv = new androHTMLGrid($gheight,$table_id);
     foreach($cols as $col) {
         $tabDiv->addColumn($dd['flat'][$col]);
     }
@@ -1622,7 +1622,7 @@ class androHtml {
         # slipped in above the titles.
         $this->buttonBar = html('div');
         $this->buttonBar->hp['style'] = "height: {$bbHeight}px;";
-        if(arr($this->hp,'x6plugin','')=='x6tabDiv') {
+        if(arr($this->hp,'x6plugin','')=='grid') {
             array_unshift($this->dhead0->children,$this->buttonBar);
         }
         else {
@@ -1988,15 +1988,15 @@ class androHtml {
         return $retval;
     }
 
-    /****m* androHtml/addTabDiv
+    /****m* androHtml/addGrid
     *       
     * NAME
-    *    addTabDiv
+    *    addTabGrid
     *
     * FUNCTION
-    *	The PHP method androHtml::addTabDiv adds an instance of 
-    *   class androHTMLTabDiv as a child node.  
-    *   A "TabDiv" is a simulated HTML table that uses divs 
+    *	The PHP method androHtml::addGrid adds an instance of 
+    *   class androHTMLGrid as a child node.  
+    *   A "Grid" is a simulated HTML table that uses divs 
     *   instead of TD elements.  The two main reasons for doing
     *   this are that you cannot put an onclick() routine onto
     *   a TR in Internet Explorer (as of IE7 oct 2008) and
@@ -2012,10 +2012,10 @@ class androHtml {
     *   androHtmlTable
     *  
     ******/
-    function &addTabDiv(
+    function &addGrid(
         $height,$table_id,$lookups=false,$sortable=false,$bb=false,$edit=false
     ) {
-        $newTable = new androHTMLTabDiv(
+        $newTable = new androHTMLGrid(
             $height,$table_id,$lookups,$sortable,$bb,$edit
         );
         $this->addChild($newTable);
@@ -2511,28 +2511,31 @@ class androHTMLTabs extends androHTML {
         */
 
         # Build the HTML that looks like the sample above
-        $this->options=$options;
-        $this->height =$height;
+        # We actually bind all of the options and stuff to the
+        #  UL, not the parent div, because that is what the
+        #  jQuery stuff is operating on
         $this->htype  = 'div';
-        $this->hp['x6plugin'] = 'x6tabs';
-        $this->hp['x6profile']= arr($options,'x6profile','');
-        $this->hp['id']       = $id;
-        $this->hp['x6table']  = arr($options,'x6table','*');
+        $this->height =$height;
+        $this->options=$options;
+
         $this->ul = $this->h('ul');
-        $this->ul->hp['id'] = $id."_tabs";
-        $ts = $this->ts = "#$id > ul";
+        $this->ul->hp['x6plugin'] = 'tabs';
+        $this->ul->hp['id']       = $id;
         $this->tabs = array();
-        
-        # Register the script to turn on the tabs
-        jqDocReady(" \$('$ts').tabs(); ");
-        
+
         # Set various options on the tab itself
         foreach($options as $option=>$value) {
-            $this->hp['x6'.$option]=$value;
+            $this->ul->hp[$option]=$value;
+        }
+        if(!isset($this->ul->hp['x6table'])) {
+            $this->ul->hp['x6table'] = '*';
         }
         
+        # Register the script to turn on the tabs
+        jqDocReady(" \$('#$id').tabs(); ");
+        
         # Now initialize the plugin. 
-        $this->initPlugin();
+        $this->ul->initPlugin();
     }
     
     /****m* androHtmlTabs/addTab
@@ -2556,11 +2559,11 @@ class androHTMLTabs extends androHTML {
     ******/
     function &addTab($caption,$disable=false) {
         # Make an index, and add it in.
-        $index = $this->hp['id'].'-'.(count($this->tabs)+1);
+        $index = $this->ul->hp['id'].'-'.(count($this->tabs)+1);
         
         # Get the offset, if they gave one, for setting
         # CTRL+Number key activation
-        $offset = arr($this->hp,'xOffset',0);
+        $offset = arr($this->ul->hp,'xOffset',0);
         $key    = $offset + count($this->tabs);
         
         # Make a style setting just for this element, otherwise
@@ -2574,7 +2577,7 @@ class androHTMLTabs extends androHTML {
         # Next really easy thing to do is make a div, give it
         # the id, and return it
         $div = $this->h('div');
-        $div->hp['xParentId'] = $this->hp['id'];
+        $div->hp['xParentId'] = $this->ul->hp['id'];
         $div->hp['x6plugin']  = 'x6tabsPane';
         $this->tabs[] = $div;
         $div->hp['id'] = "$index";
@@ -2696,13 +2699,13 @@ class androHTMLTable extends androHTML {
     }    
 }
 
-/****c* HTML-Generation/androHtmlTabDiv
+/****c* HTML-Generation/androHtmlGrid
 *
 * NAME
-*    androHtmlTabDiv
+*    androHtmlGrid
 *
 * FUNCTION
-*   The PHP class androHtmlTable simulates an HTML Table element
+*   The PHP class androHtmlGrid simulates an HTML Table element
 *   using only Divs.  
 *
 *   The object is a subclass of androHtml, and supports all of its
@@ -2711,7 +2714,7 @@ class androHTMLTable extends androHTML {
 *
 ******
 */
-class androHTMLTabDiv extends androHTML {
+class androHTMLGrid extends androHTML {
     var $columns    = array();
     var $headers    = array();
     var $lastRow    = false;
@@ -2722,16 +2725,16 @@ class androHTMLTabDiv extends androHTML {
     var $buttonBar  = false;
     var $colOptions = array();
     
-    function androHTMLTabDiv(
+    function androHTMLGrid(
         $height=300,$table,$lookups=false,$sortable=false,$bb=false,$edit=false
     ) {
         $this->lookups = $lookups;
         $this->sortable= $sortable;
         $this->htype = 'div';
         $this->addClass('tdiv box3');
-        $this->hp['x6plugin'] = 'x6tabDiv';
+        $this->hp['x6plugin'] = 'grid';
         $this->hp['x6table']  = $table;
-        $this->hp['id']       = 'tabDiv_'.$table;  #.'_'.rand(100,999);
+        $this->hp['id']       = 'grid_'.$table;  #.'_'.rand(100,999);
         $this->hp['style'] = "height: {$height}px;";
         $this->height = $height;
         $cssLineHeight             = x6cssHeight('div.thead div div');
@@ -2838,7 +2841,7 @@ class androHTMLTabDiv extends androHTML {
     }
     
     
-    /****m* androHtmlTabDiv/addColumn
+    /****m* androHtmlGrid/addColumn
     *
     * NAME
     *    addColumn
@@ -2933,7 +2936,7 @@ class androHTMLTabDiv extends androHTML {
         $div->addclass('cell_'.$column_id);
         $this->headers[] = $div;
     }
-    /****m* androHtmlTabDiv/lastColumn
+    /****m* androHTMLGrid/lastColumn
     *
     * NAME
     *    lastColumn
@@ -3062,7 +3065,7 @@ class androHTMLTabDiv extends androHTML {
         if($this->hp['xGridHilight'] == 'Y') {
             # Removes hilight from any other row, and hilights
             # this one if it is not selected (edited)
-            $this->lastRow->hp['onmouseover']='x6tabDiv.mouseover(this)';
+            $this->lastRow->hp['onmouseover']='x6grid.mouseover(this)';
             #    "$(this).siblings('.hilight').removeClass('hilight');
             #    $('#row_$id:not(.selected)').addClass('hilight')";
             if(!$thead) {

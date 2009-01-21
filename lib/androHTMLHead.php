@@ -17,11 +17,20 @@ echo "\n<title>".vgfGet('pageTitle')."</title>\n";
 #
 # =====================================================================
 # The jQuery library always comes first
-jsInclude('clib/jquery-1.2.6.pack.js','JQuery is distributed under the GPL
-      license, written by a team of programmers led by John Resig,
-      more info at http://www.jquery.com'
-      ,'Y'
-);
+if(!$x6) {
+    jsInclude('clib/jquery-1.2.6.pack.js','JQuery is distributed under the GPL
+          license, written by a team of programmers led by John Resig,
+          more info at http://www.jquery.com'
+          ,'Y'
+    );
+}
+else {
+    jsInclude('clib/jquery-1.3.min.js','JQuery is distributed under the GPL
+          license, written by a team of programmers led by John Resig,
+          more info at http://www.jquery.com'
+          ,'Y'
+    );
+}
 
 # LOADS SPECIFIC TO x6
 if($x6) {
@@ -36,14 +45,21 @@ if($x6) {
     cssInclude('clib/jquery.wysiwyg.css');
     jsInclude( 'clib/jquery.wysiwyg.pack.js' );
     jsInclude( 'clib/jquery.blockui.js' );
-   
 }
 
 # EXPERIMENTAL: jquery ui full boat
 #   This seems to be the annointed king of jQuery UI
 #   facilities, so we may as well load the entire thing
 #   and have it available for experiments
-jsInclude('clib/jquery-ui-1.5.2.js');
+if(!$x6) {
+    jsInclude('clib/jquery-ui-1.5.2.js');
+}
+else {
+    # X6 will get only the jquery-ui elements we are actually
+    # using, which at the moment is only tabs. 
+    jsInclude('clib/jquery-ui-andro-1.6rc5.min.js');
+    #jsInclude('clib/jquery-ui-core-1.5.3.min.js');
+}
 if(vgfGet('x6')) {
     #cssInclude('clib/jquery-ui-themeroller.css');
 }

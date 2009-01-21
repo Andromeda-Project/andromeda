@@ -55,6 +55,7 @@ class x6menu extends androX6 {
         $AGMENU = SessionGet('AGMENU');
         $countLeft = 1;
         foreach($AGMENU as $menuid=>$menuinfo) {
+            if(count(arr($menuinfo,'items',array()))==0) continue;
             $h2 = $leftDiv->h('div',$countLeft.": ".$menuinfo['description']);
             $h2->hp['xKey'] = $countLeft;
             $countLeft++;

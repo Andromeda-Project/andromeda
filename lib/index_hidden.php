@@ -518,6 +518,11 @@ function index_hidden_x6Dispatch(
         $rows=RowsForSelect($table_id,$gpletters,$matches,'',true);
         foreach($rows as $idx=>$row) {
             unset($rows[$idx]['skey']);
+            foreach($row as $col=>$val) {
+                if($col<>'skey') {
+                    $rows[$idx][$col] = trim($val);
+                }
+            }
         }
         x6Data('x6select',$rows);
         echo json_encode_safe($GLOBALS['AG']['x4']);
