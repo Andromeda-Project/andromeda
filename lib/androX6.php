@@ -766,7 +766,7 @@ class androX6 {
         
         # Generate a list of child xrefs.  The idea here is to
         # work out the dimensions first, because we must tell the
-        # class how hight to make itself.  Then we generate the
+        # class how high to make itself.  Then we generate the
         # list.  If it comes back empty, we forget about it, otherwise
         # we create a div of the correct position and put it into it.
         $xrtop = ($detail->hp['xInnerHeight']-$detail->hp['xInnerEmpty'])
@@ -781,14 +781,13 @@ class androX6 {
             $xrefParent->hp['style'] = 
                "position: absolute;
                 width: {$xrwdth}px;
-                top: {$xrtop}px";
+                top: {$xrtop}px;
+                left: {$pad0}px;";
             $xrefParent->addChild($xrefs);
         }
-        //echo "$xrtop $xrhgt $xrwdth";
-        #$detail->innerDiv->addXRefs($table_id,$xrtop,$xrhgt,$xrwdth);
 
-        # tell the screen to start out by focusing on
-        # the browse
+        # tell the screen to start out by 
+        # focusing on the browse
         jqDocReady("x6events.fireEvent('objectFocus','{$x6grid->hp['id']}')");
         
         # Render it!  That's it!

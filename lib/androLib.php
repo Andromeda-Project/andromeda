@@ -3279,6 +3279,7 @@ class androHTMLDetail extends androHTML {
             }
         }
 
+        $options = array('xTabGroup'=>'ddisp_'.$table_id);
         foreach($cols as $idx=>$col) {
             if($break17) {
                 if($idx>0 && $idx % 17 == 0) {
@@ -3287,7 +3288,7 @@ class androHTMLDetail extends androHTML {
                     $this->inputsTable->addClass('x6Detail');
                 }
             }
-            $this->addTRInput($dd,$col);
+            $this->addTRInput($dd,$col,$options);
             $x6ba = trim(arr($dd['flat'][$col],'x6breakafter',''));
             if($x6ba=='column') {
                 $this->inputsTable=$div->h('table');
@@ -3449,7 +3450,7 @@ class androHTMLxrefs extends androHTML {
             )
         );
         $tabs = $this->addTabs($table_id.'_xrefs',$height,$options);
-        $tabs->hp['kids'] = implode("|",$atts);
+        $tabs->ul->hp['kids'] = implode("|",$atts);
         # If we are still here, we have at least one kid.  Let's
         # put in a tab bar and start adding the kids.
         foreach($kids as $kid=>$x) {
@@ -3679,7 +3680,8 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
     
     # Assign all inputs to a tab group.  If no optional
     # value was provided, use a default
-    $input->hp['xTabGroup'] = arr($options,'tabGroup','tgdefault');
+    $input->hp['xTabGroup'] 
+        = arr($options,'xTabGroup',arr($options,'tabGroup','tgdefault'));
 
     #  If we ended up with an INPUT above, set the size
     if($input->htype=='input') {

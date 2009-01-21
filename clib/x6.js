@@ -3316,7 +3316,6 @@ var x6inputs = {
         var inpCount = jqObj.length;
         var first    = jqObj[0];
         var last     = jqObj[inpCount-1];
-
                 
         // If we are on first or last, Enter/Tab dichotomy does not matter,
         // we just send focus where we want and return false to kill
@@ -6211,19 +6210,19 @@ x6plugins.tabs = function(self,id,table) {
     *   is uiEditRow, which turns it back on.
     */
     if(x6profile=='x6xrefs') {
-        self.style.display='none';
+        $(self.parentNode).css('display','none');
         
         x6events.subscribeToEvent('uiNewRow_'+table,id);
         self['receiveEvent_uiNewRow_'+table] = function(x) {
-            $(this).fadeOut('fast');
+            $(this.parentNode).fadeOut('fast');
         }
         x6events.subscribeToEvent('uiUndoRow_'+table,id);
         self['receiveEvent_uiUndoRow_'+table] = function(x) {
-            $(this).fadeOut('fast');
+            $(this.parentNode).fadeOut('fast');
         }
         x6events.subscribeToEvent('uiDelRow_'+table,id);
         self['receiveEvent_uiDelRow_'+table] = function(x) {
-            $(this).fadeOut('fast');
+            $(this.parentNode).fadeOut('fast');
         }
         
         x6events.subscribeToEvent('uiEditRow_'+table,id);
@@ -6241,7 +6240,7 @@ x6plugins.tabs = function(self,id,table) {
                 var str = '#'+this.id+'-'+(Number(kid)+1);
                 $(str).html(html);                
             }
-            $(this).fadeIn('fast');
+            $(this.parentNode).fadeIn('fast');
         }
         
         x6events.subscribeToEvent('xrefClick_'+table,id);
