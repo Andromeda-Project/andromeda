@@ -76,6 +76,15 @@ else {
     $paypal['url']="https://www.paypal.com/cgi-bin/webscr";    
 }
 
+# KFD 1/21/09, Another test system, "one dollar mode".  If 
+#              this flag is set, the trx is switched to
+#              one dollar only.  Intended for final run-throughs
+#              on live system.
+if(configGet('paypal_onedollar','N')=='Y') {
+    $paypal['amount'] = 1;
+}
+
+
 // -----------------------------------------------------------------
 // MANY SETTINGS BELOW ARE REM'D OUT IN THE STANDARD ARRANGEMENT,
 // ADD BACK IN ANYTHING YOU NEED FOR AN APPLICATION
