@@ -297,7 +297,9 @@ class androPage {
         $tabtop = html('table',$x4D);
         $tr = html('tr',$tabtop);
         $td1 = html('td',$tr);
+        $td1->hp['style'] = 'vertical-align: top';
         $td2 = html('td',$tr);
+        $td2->hp['style'] = 'vertical-align: top';
         
         # Do right-hand side first actually, the on-screen display area 
         $div = html('div',$td2);
@@ -349,6 +351,9 @@ class androPage {
             }
             $input = input($options);
             $input->hp['autocomplete'] = 'off';
+            if($x6) {
+                $input->hp['xNoPassup'] ='Y';
+            }
             $td->setHTML($input->bufferedRender());
         }
         $h = $top->h('input');
@@ -457,9 +462,9 @@ class androPage {
      *  @access private
      */
     private function pageReport() {
-        // Create the PDF object
+        // Create the reporting object
         require_once('androPageReport.php');
-        $pdf = new androPageReport();
+        $oReport = new androPageReport();
         
         // For each section, run the output
         foreach($this->yamlP2['section'] as $secname=>$secinfo) {
@@ -476,7 +481,7 @@ class androPage {
             }
 
             // Now pass the SQL resource to the reporting engine
-            $pdf->main($dbres,$this->yamlP2,$secinfo);
+            $oReport->main($dbres,$this->yamlP2,$secinfo);
         }
     }
 

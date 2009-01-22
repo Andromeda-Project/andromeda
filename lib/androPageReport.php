@@ -122,6 +122,7 @@ class androPageReport extends fpdf {
         $bottom = $this->setupBottom($yamlP2);
         $break  = $this->setupBreak($yamlP2);
         
+        
         // Begin by adding the first page
         if($this->format=='onscreen') {
             $this->headerOnScreen();
@@ -459,6 +460,7 @@ class androPageReport extends fpdf {
      *
      */
     function headerOnScreen() {
+        if($this->x6) return $this->headerOnScreenx6();
         if(!gpExists('x4Page')) {
             echo "<br/><hr/><br/>";
         }
@@ -466,6 +468,28 @@ class androPageReport extends fpdf {
         echo "\n<thead><tr class=\"dark\">";
         $this->outFromArray($this->captions,true);
         echo "\n</tr></thead><tbody><tr id='row_0'>";
+    }
+    function headerOnScreenx6() {
+        # Obtain height as insideheight less two h1 
+        $gheight = x6cssDefine('insideheight') - (x6cssHeight('h1')*2);
+        
+        # Make the grid with a fake table name
+        $this->grid = new androHTMLGrid($gheight,'androPage');
+        
+        # androPage does not at this point have the original 
+        # dictionary info available, but we can "fake it" by
+        # looking at its information
+        foreach($this->cols as $idx=>$info) {
+            $colinfo = array(
+                'type_id' => ($info['align']=='L') ? 'char' : 'numb'
+                ,'colprec'=> $info['clip']
+                ,'description'=>$this->captions[$idx]
+                ,'column_id'=>'apCol'.$idx
+            );
+            $this->grid->addColumn($colinfo);
+        }
+        $this->grid->lastColumn();
+        $this->grid->addRow($this->rowCount++);
     }
 
 
@@ -570,9 +594,14 @@ class androPageReport extends fpdf {
         $this->Ln($this->lineheight);
         $this->lastCol=-1;
         if($this->format=='onscreen') {
-            if(!$titles) {
-                $this->rowNumber++;
-                echo "\n<tr id='row_$this->rowNumber'>";
+            if($this->x6) {
+                $this->grid->addRow($this->rowNumber++);
+            }
+            else {
+                if(!$titles) {
+                    $this->rowNumber++;
+                    echo "\n<tr id='row_$this->rowNumber'>";
+                }
             }
         }
         # KFD 9/20/08, put out a newline
@@ -721,7 +750,13 @@ class androPageReport extends fpdf {
                }
            }
            $align=($align=='R') ? 'right' : 'left';
-           echo "<td $class style=\"text-align: $align\">$text</td>";
+           $final= "<td $class style=\"text-align: $align\">$text</td>";
+           if($this->x6) {
+               $this->grid->addCell($final,'','',false);
+           }
+           else {
+               echo $final;
+           }
        }
        else {
            $this->Setx($xposition);
@@ -834,21 +869,27 @@ class androPageReport extends fpdf {
      */
     function overAndOut($name="report.pdf",$nature='I') {
         if($this->format=='csvexport') {
-           header('Cache-Control: maxage=3600'); //Adjust maxage appropriately
-           header('Pragma:',true);  // required to prevent caching
-        
-           // These are the normal ones
-           header(
-             'Content-disposition: attachment; filename="export.csv"'
-           );
-           #header('Content-Type: text/plain');
-           header('Content-Type: application/vnd.ms-excel');           
+            header('Cache-Control: maxage=3600'); //Adjust maxage appropriately
+            header('Pragma:',true);  // required to prevent caching
+            
+            // These are the normal ones
+            header(
+                'Content-disposition: attachment; filename="export.csv"'
+            );
+            #header('Content-Type: text/plain');
+            header('Content-Type: application/vnd.ms-excel');           
             echo $this->csvexport;
             exit;
             return;
         }
         elseif($this->format=='onscreen') {
-            echo "\n</table> <!-- androPageReport end -->";
+            if($this->x6) {
+                #x4HTML('*MAIN*','message from ken');
+                x6html('*MAIN*',$this->grid->bufferedRender());
+            }
+            else {
+                echo "\n</table> <!-- androPageReport end -->";
+            }
             return;
         }
         header('Pragma:',true);

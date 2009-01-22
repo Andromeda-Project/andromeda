@@ -5042,7 +5042,7 @@ x6plugins.grid = function(self,id,table) {
     self.skeyForRow = function(row) {
         if(typeof(row)!='undefined') {
             var pieces = row.id.split('_');
-            return pieces[1];
+            return pieces.pop();
         }
     }
     
@@ -6315,14 +6315,26 @@ x6plugins.androPage = function(self,id,table) {
         x6.byId('gp_post').value='onscreen';
         x6.json.init('x6page',x6.byId('x6page').value);
         x6.json.inputs();
+        x6dialogs.pleaseWait();
         x6.json.execute();
         x6.json.process('divOnScreen');
+        x6events.fireEvent('objectFocus','grid_androPage');
+        x6dialogs.clear();
         
     }
+    x6events.subscribeToEvent('key_Enter',id);
+    self.receiveEvent_key_Enter = self.receiveEvent_key_CtrlO;
 
     x6events.subscribeToEvent('key_CtrlQ',id);
     self.receiveEvent_key_CtrlQ = function(key) {
         this.tBody = null;
+        
+        // When displaying SQL, we throw away the grid.  If it
+        // had focus we should turn it off so we don't get 
+        // errors when users start hitting keys.
+        if($('#grid_androPage').length>0) {
+            x6events.fireEvent('objectFocus','');
+        }
         
         x6.byId('gp_post').value='showsql';
         x6.json.init('x6page',x6.byId('x6page').value);
