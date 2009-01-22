@@ -642,10 +642,13 @@ function index_hidden_x6Dispatch(
             # them visible.
             # KFD 12/23/08, see if they set a cookie for an
             #               alternate location.
-            $xpath = arr($_COOKIE,'altjs','clib/');
-            jsInclude($xpath.'x6.js');
-            #jsInclude('clib/jquery.maskedinput-1.1.4.js');
-            jqDocReady('x6.init()');
+            # KFD 1/22/09 , Yikes! Don't do this if JSON was passed
+            if(gp('json','')<>'1') {
+                $xpath = arr($_COOKIE,'altjs','clib/');
+                jsInclude($xpath.'x6.js');
+                #jsInclude('clib/jquery.maskedinput-1.1.4.js');
+                jqDocReady('x6.init()');
+            }
         }
     }
     
@@ -705,6 +708,9 @@ function index_hidden_x6Dispatch(
             jqDocReady($script);
         }
 
+        # Just before the absolute very last command is the 
+        # firing of our (currently) one and only queue
+        jqDocReady('x6events.fireQueue("afterInit")');
         # The absolute very last command is the fade in
         $fadeIn = "$('.fadein').fadeIn('slow',function() { x6.initFocus(); });";
         jqDocReady($fadeIn);
