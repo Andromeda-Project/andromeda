@@ -4084,26 +4084,35 @@ var x6plugins = {
         x6plugins.buttonStandard(self,id,x6.p(self,'buttonKey'));
         
         // This is special for custom buttons
-        x6events.subscribeToEvent('buttonsOn_'+table,id);
-        self['receiveEvent_buttonsOn_'+table] = function() {
-            var skey = x6bb.fwGet('skey_'+this.zTable);
-            var doit = false;
-            if(skey==0) {
-                doit = x6.p(this,'permins','N')=='Y';
+        x6events.subscribeToEvent('buttonsNew_'+table,id);
+        self['receiveEvent_buttonsNew_'+table] = function(turnOn) {
+            if(turnOn) {
+                if($(this).prop('permins','N')=='Y') {
+                    this.className = 'button';
+                    this.zDisabled = false;
+                }
             }
             else {
-                doit = x6.p(this,'permupd','N')=='Y';
-            }
-            if(doit) {
-                this.className = 'button';
-                this.zDisabled = false;
+                this.className = 'button_disabled';
+                this.zDisabled = true;
             }
             return true;
         }
-        x6events.subscribeToEvent('buttonsOff_'+table,id);
-        self['receiveEvent_buttonsOff_'+table] = function() {
-            this.className = 'button_disabled';
-            this.zDisabled = true;
+        x6events.subscribeToEvent('buttonsEdit_'+table,id);
+        self['receiveEvent_buttonsEdit_'+table] = function(turnOn) {
+            console.log('buttonsedit ',table);
+            console.log(turnOn);
+            console.log($(this).prop('permupd','N'));
+            if(turnOn) {
+                if($(this).prop('permupd','N')=='Y') {
+                    this.className = 'button';
+                    this.zDisabled = false;
+                }
+            }
+            else {
+                this.className = 'button_disabled';
+                this.zDisabled = true;
+            }
             return true;
         }
     },

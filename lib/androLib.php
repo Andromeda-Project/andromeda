@@ -1628,13 +1628,21 @@ class androHtml {
         else {
             $this->addChild($this->buttonBar);
         }
+        $bb = $this->buttonBar;
+        $bb->addClass('x6buttonBar');
         
         $pad0 = x6cssDefine('pad0');
         
-        $bb = $this->buttonBar;
-        $bb->addClass('x6buttonBar');
+        # KFD 1/22/09, create two divs, drop buttons into them
+        #              this makes it possible to drop in 
+        #              custom buttons in a new div that is float:left
+        $sl = $bb->h('div');
+        $sl->hp['style'] = 'float: left';
+        $sr = $bb->h('div');
+        $sr->hp['style'] = 'float: right';
+
         if(in_array('new',$abuts)) {
-            $a=$bb->h('a-void','New');
+            $a=$sl->h('a-void','New');
             $a->addClass('button_disabled button-first');
             $a->hp['style'] = 'margin-left: 0px';
             $a->hp['x6table']  = $table_id;
@@ -1644,7 +1652,7 @@ class androHtml {
             $bb->buttons['new'] = $a;
             $a->initPlugin();
 
-            $a=$bb->h('a-void','Insert');
+            $a=$sl->h('a-void','Insert');
             $a->addClass('button_disabled');
             $a->hp['style'] = 'margin-left: 0px';
             $a->hp['x6table']  = $table_id;
@@ -1655,7 +1663,7 @@ class androHtml {
             $a->initPlugin();
         }
         if(in_array('save',$abuts)) {
-            $a=$bb->h('a-void','Save');
+            $a=$sl->h('a-void','Save');
             $a->addClass('button_disabled');
             $a->hp['x6table']  = $table_id;
             $a->hp['x6plugin'] = 'buttonSave';
@@ -1665,7 +1673,7 @@ class androHtml {
             $a->initPlugin();
         }
         if(in_array('remove',$abuts)) {
-            $a=$bb->h('a-void','Delete');
+            $a=$sr->h('a-void','Delete');
             $a->addClass('button_disabled');
             $a->hp['x6table']  = $table_id;
             $a->hp['x6plugin'] = 'buttonDelete';
@@ -1675,7 +1683,7 @@ class androHtml {
             $a->initPlugin();
         }
         if(in_array('abandon',$abuts)) {
-            $a=$bb->h('a-void','Cancel');
+            $a=$sr->h('a-void','Cancel');
             $a->addClass('button_disabled');
             $a->hp['x6table']  = $table_id;
             $a->hp['x6plugin'] = 'buttonCancel';
@@ -1705,6 +1713,7 @@ class androHtml {
         $b->hp['id']     =$action;
         $b->hp['permins']=$permins;
         $b->hp['permupd']=$permupd;
+        $b->hp['style'  ]='float: left;';
         $b->initPlugin();
         jqDocReady("x6events.fireEvent('disable_{$action}_$table')");
         return $b;
