@@ -94,13 +94,8 @@ class x6menu extends androX6 {
                 if(arr($pageinfo,'spaceafter','N')=='Y') {
                     $itemsDiv->h('hr');
                 }
-                
-                
             }
-            
         }
-            
-             
         $top->render();
     }
     
