@@ -3076,12 +3076,14 @@ class androHTMLGrid extends androHTML {
         
         return $this->lastRow;
     }
-    function addCell($child='',$class='',$id='') {
+    function addCell($child='',$class='',$id='',$convert=true) {
         if(is_object($child)) {
             $child=$child->bufferedRender();
         }
         else {
-            $child=str_replace(' ','&nbsp;',$child);
+            if($convert) {
+                $child=str_replace(' ','&nbsp;',$child);
+            }
         }
         if(trim($child)=='') $child = '&nbsp;';
         # figure out if we need a new row
