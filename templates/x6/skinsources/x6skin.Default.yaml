@@ -489,9 +489,12 @@ css:
             padding:        0
             border:         0
         div.x6menu ul li ul li a:
-            padding:        *pad0
+            padding-top:     *pad0
+            padding-bottom:  *pad0
+            padding-left:    *pad1
+            padding-right:   *zero
         div.x6menu ul li.selected ul li a:
-            padding:        *pad0
+            #padding:        *pad1
             color:          *black
             
         div.x6menu ul li ul li a;hover: {

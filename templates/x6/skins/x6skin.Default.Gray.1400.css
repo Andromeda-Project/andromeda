@@ -1,6 +1,6 @@
 /* ==================================================== *\
  * Andromeda Generated CSS file                         
- * Generated: Tue, 20 Jan 2009 16:37:08 -0500
+ * Generated: Thu, 22 Jan 2009 07:48:07 -0500
  * Skin, color, size: Default, Gray, 1400
 \* ==================================================== */
         
@@ -249,11 +249,13 @@ div.x6menu ul li ul li {
 }
 
 div.x6menu ul li ul li a {
-    padding:                 4px;
+    padding-top:             4px;
+    padding-bottom:          4px;
+    padding-left:            8px;
+    padding-right:           0;
 }
 
 div.x6menu ul li.selected ul li a {
-    padding:                 4px;
     color:                   #000000;
 }
 
