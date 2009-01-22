@@ -346,14 +346,17 @@ class androX6 {
             
             $colinfo = $this->flat[$column_id];
             $exact = isset($vals2[$column_id]);
+            $expre = gp('x6exactPre',0);
             
             //$tcv  = trim($colvalue);
             $tcv = $colvalue;
             $type = $colinfo['type_id'];
             if ($tcv != "") {
+                if($exact) gpSet('x6exactPre',1);
                 // trap for a % sign in non-string
                 $xwhere = sqlFilter($this->flat[$column_id],$tcv);
                 if($xwhere<>'') $awhere[] = "($xwhere)";
+                if($exact && $expre==0) gpUnset('x6exactpre');
             }
         }
         
@@ -743,7 +746,16 @@ class androX6 {
         # Now put the data over there
         $uisearch = $this->dd['projections']['_uisearch'];
         $ob       = $this->dd['pks'];
-        $rows = SQL_AllRows("Select skey,$uisearch from $table_id $ob");
+        # KFD 1/22/09, allow filtering on "pre" values
+        $pre = aFromGp('pre_');
+        $awhere = array();
+        $where = '';
+        foreach($pre as $colname=>$value) {
+            $awhere[] = sqlfilter($this->dd['flat'][$colname],$value);
+        }
+        if(count($awhere)>0) $where = 'WHERE '.implode(' AND ',$awhere);
+        $sql = "Select skey,$uisearch from $table_id $where ORDER BY $ob";
+        $rows = SQL_AllRows($sql);
         $aColumns = explode(',',$uisearch);
         foreach($rows as $row) {
             $x6grid->addRow($row['skey']);
@@ -861,7 +873,11 @@ class androX6 {
             "padding-left: ".intval($wAvail/3)."px;
              padding-top: ".x6CSSDefine('lh0')."px;";
         # tell the browse tab object to focus when it is selected
-        $lookup->hp['x6objectFocusId'] = $grid->hp['id']; 
+        $lookup->hp['x6objectFocusId'] = $grid->hp['id'];
+        
+        # This is kind of a hack for forcing exact matches when
+        # a maintenance screen is invoked with pre-set parameters
+        if(gp('x6exactPre')==1) $grid->hp['x6exactPre'] = 1;
 
         # We are making
         # the assumption that there will *always* be child tables

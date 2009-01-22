@@ -4797,12 +4797,17 @@ function sqlFilter($colinfo,$tcv,$table = '') {
             }
             else {
                 if(strlen(trim($tcv))>0) {
-                    $sbeg = SQLFC(trim($tcv));
-                    $send = SQLFC(trim($tcv).'z');
-                    # The greater-equal allows us to avoid a like
-                    # and make use of indexes for much faster performance
-                    $new = "(LOWER($c) >= LOWER($sbeg)"
-                        ." AND LOWER($c) < LOWER($send))";
+                    if(gp('x6exactPre',false)) {
+                        $new = "LOWER($c) = LOWER(".SQLFC(trim($tcv)).")";
+                    }
+                    else {
+                        $sbeg = SQLFC(trim($tcv));
+                        $send = SQLFC(trim($tcv).'z');
+                        # The greater-equal allows us to avoid a like
+                        # and make use of indexes for much faster performance
+                        $new = "(LOWER($c) >= LOWER($sbeg)"
+                            ." AND LOWER($c) < LOWER($send))";
+                    }
                 }
             }
             break;

@@ -588,9 +588,24 @@ var x6 = {
         x6plugins[pin](obj,obj.id,obj.zTable);
     },
     
+    /*
+    *  This routine at the very end of a page load, after the
+    *  visual display has been faded in.  It is invoked in
+    *  index_hidden.php, function ..dispatch_x6().
+    */
     initFocus: function() {
         var str   = ':input:not([disabled]):not([type=hidden])';
-        this.jqSetFocus(str);
+        var objFocus = x6bb.fwGet('objectFocus','');
+        if(objFocus=='') {
+            this.jqSetFocus(str);
+        }
+        else {
+            var inpFocus = x6bb.fwGet('lastFocus_'+objFocus,'');
+            if(inpFocus=='') {
+                var str = '#'+objFocus+" "+str;
+                this.jqSetFocus(str);
+            }
+        }
     },
     
     jqSetFocus: function(jqString) {
@@ -2446,6 +2461,28 @@ var x6events = {
         if(iAmRoot) {
             x6.console.disableAll(conEnabled);
         }
+    },
+    
+    queue: { },
+    queueEvent: function(queueName,eventName,arguments) {
+        if(typeof(this.queue[queueName])=='undefined') {
+            this.queue[queueName] = [ ];
+        }
+        this.queue[queueName].push({eventName:eventName,arguments:arguments});
+    },
+    fireQueue: function(queueName) {
+        x6.console.group("Firing Queue: "+queueName);
+        if(typeof(this.queue[queueName])=='undefined') {
+            x6.console.info('Request to fire non-existent queue: ',queueName);
+        }
+        else {
+            var len = this.queue[queueName].length;
+            for(var x = 0;x < len;x++) {
+                var event = this.queue[queueName][x];
+                x6events.fireEvent(event.eventName,event.arguments);
+            }
+        }
+        x6.console.groupEnd();
     },
     
     retvals: { },
@@ -5809,7 +5846,6 @@ x6plugins.grid = function(self,id,table) {
         var cntNoBlank = 0;
         
         // Initialize and then scan
-        //x6.json.init('x6page',this.zTable);
         var json = new x6JSON('x6page',this.zTable);        
         $(this).find(".thead :input").each(function() {
             if(typeof(this.zValue)=='undefined') 
@@ -5839,6 +5875,13 @@ x6plugins.grid = function(self,id,table) {
             json.addParm('xReturnAll' ,'N');
             json.addParm('xGridHeight',x6.p(this,'xGridHeight',500));
             json.addParm('xLookups'   ,x6.p(this,'xLookups'   ,'N'));
+            
+            // Add the "exact match" parm if it is part of the
+            // the grid.  Notice it is a one-timer
+            if($(this).attr('x6exactPre')==1) {
+                json.addParm('x6exactPre',1);
+                $(this).attr('x6exactPre',0);
+            }
             
             if( html = json.execute(false,false,true)) {
                 //json.process();
@@ -5893,14 +5936,18 @@ x6plugins.grid = function(self,id,table) {
     // not empty, execute the search and pick the first one.
     if( $(self).find("[id^=search][value!=]").length > 0) {
         self.fetch();
-        var jqRow = self.jqCurrentRow();
-        if(jqRow.length>0) {
-            var rowId = jqRow[0].id;
-            var aRowId = rowId.split('_');
-            var skey = aRowId.pop();
-            setTimeout(function() {
-                    x6events.fireEvent('reqEditRow_'+table,skey);
-            },500);
+        var jqStr = '#tbody_'+self.zTable+">div";
+        if($(jqStr).length==1) {
+            var jqRow = self.jqCurrentRow();
+            if(jqRow.length>0) {
+                var rowId = jqRow[0].id;
+                var aRowId = rowId.split('_');
+                var skey = aRowId.pop();
+                x6events.queueEvent('afterInit','reqEditRow_'+table,skey);
+                //setTimeout(function() {
+                //        x6events.fireEvent('reqEditRow_'+table,skey);
+                //},250);
+            }
         }
     }
 }
