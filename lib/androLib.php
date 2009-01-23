@@ -2573,14 +2573,15 @@ class androHTMLTabs extends androHTML {
         # Get the offset, if they gave one, for setting
         # CTRL+Number key activation
         $offset = arr($this->ul->hp,'xOffset',0);
-        $key    = $offset + count($this->tabs);
+        $key    = $offset + count($this->tabs).': ';
+        if($key>9) $key='';
         
         # Make a style setting just for this element, otherwise
         # jquery ui clobbers the height setting
         $this->h('style',"#$index { height: {$this->height}px;}");
         
         # First easy thing is to do the li entry
-        $inner = "<a href='#$index'><span>$key: $caption</span></a></li>";
+        $inner = "<a href='#$index'><span>$key$caption</span></a></li>";
         $this->ul->h('li',$inner);
         
         # Next really easy thing to do is make a div, give it
@@ -3139,7 +3140,8 @@ class androHTMLGrid extends androHTML {
                 $column_id = trim($colinfo['column_id']);
                 if(isset($row[$column_id])) {
                     $type_id=$dd['flat'][$column_id]['type_id'];
-                    if($type_id!='text') {
+                    $x6view =arr($dd['flat'][$column_id],'x6view','text');
+                    if(!($type_id=='text' && $x6view=='window')) {
                         $value=hFormat($type_id,$row[$column_id]);
                     }
                     else {
@@ -3181,7 +3183,9 @@ class androHTMLGrid extends androHTML {
             
             $width = $colinfo['width'] - (2* x6cssDefine('pad0')) - 2;
             
-            $inp= input($colinfo);
+            $nothing= array();
+            $options = array('forceinput'=>true);
+            $inp= input($colinfo,$nothing,$options);
             if($idx==0) {
                 $inp->ap['x6firstFocus']='Y';
             }
@@ -3623,7 +3627,8 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
         $option = html('option',$input,'N');
         $option->hp['value']='N';
     }
-    elseif($type_id=='text' || $type_id=='mime-h' || $type_id=='mime-h-f') {
+    elseif(($type_id=='text' || $type_id=='mime-h' || $type_id=='mime-h-f')
+            && arr($options,'forceinput',false)==false) {
         $input = html('textarea');
         $rows = a($colinfo,'uirows',10);
         $rows = $rows == 0 ? 10 : $rows;
@@ -3709,10 +3714,10 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
         }
 
         $input->hp['size'] = min(
-            a($colinfo,'dispsize',30)
+            arr($colinfo,'dispsize',30)
             ,OptionGet('dispsize',30)
         );
-        $input->hp['maxlength'] = a($colinfo,'dispsize',10);
+        $input->hp['maxlength'] = arr($colinfo,'dispsize',10);
     }
 
     # Add classes that jquery recognizes to
