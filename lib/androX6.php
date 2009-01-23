@@ -1079,6 +1079,11 @@ class androX6 {
         }
         $aColumns = explode(',',$uisearch);
         foreach($aColumns as $column) {
+            $type_id = $dd['flat'][$column]['type_id'];
+            $x6view  = arr($dd['flat'][$column],'x6view','');
+            if($type_id=='text' && $x6view=='') {
+                $dd['flat'][$column]['dispsize'] = 20;
+            }
             $grid->addColumn($dd['flat'][$column]);
         }
         $gridWidth=$grid->lastColumn();
