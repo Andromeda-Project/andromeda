@@ -106,19 +106,35 @@ class x6menu extends androX6 {
         var self = x6.byId(id);
         
         self.clicked = function(id) {
+            // First work out if we are changing, otherwise
+            // nothing to do
             var moduleNow = $("#x6menu_left div.hilight");
+            var idNow = moduleNow.length > 0 ? moduleNow[0].id : '';
+            if(idNow == id) {
+                return;
+            }
+            
+            // Very first thing, deactivate right-side so it
+            // won't get keystrokes.
+            $('#x6menu_right div[xActive=Y]').attr('xActive','N');
+            
+            // Notice we do the fade out and then put the fadein
+            // below.  This causes them to overlap each other,
+            // which I kind of like.
             if(moduleNow.length > 0) {
                 var moduleId = x6.p(moduleNow[0],'xMenuId');
                 $(moduleNow).removeClass('hilight');
-                $('#items_'+moduleId).fadeOut('fast');
+                $('#items_'+moduleId).fadeOut(300);
             }
             var moduleId = x6.p(x6.byId(id),'xMenuId');
             $('#'+id).addClass('hilight');
             var crString = '#items_'+moduleId+" div:first";
             this.clickedRight($(crString)[0].id);
-            $('#x6menu_left div div').attr('xActive','N');
-            $('#items_'+moduleId+' div').attr('xActive','Y');
-            $('#items_'+moduleId).fadeIn('fast');
+            $('#items_'+moduleId).fadeIn(300,
+                function() {
+                    $('#items_'+moduleId+' div').attr('xActive','Y');
+                }
+            );
         }
         self.clickedRight = function(id) {
             $('#x6menu_right div div.hilight').removeClass('hilight');
