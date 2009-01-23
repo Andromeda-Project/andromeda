@@ -602,8 +602,10 @@ css:
             margin-right:    *zero
             padding-top:     *menupad
             padding-bottom:  *menupad
-            padding-left:    *tabpad
-            padding-right:   *tabpad
+            #padding-left:    *tabpad
+            #padding-right:   *tabpad
+            padding-left:    *pad1
+            padding-right:   *pad1
             border-top:      *bor3t 
             border-bottom:   *bor3t 
             border-left:     *bor3t 
