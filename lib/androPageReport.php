@@ -482,7 +482,7 @@ class androPageReport extends fpdf {
         foreach($this->cols as $idx=>$info) {
             $colinfo = array(
                 'type_id' => ($info['align']=='L') ? 'char' : 'numb'
-                ,'colprec'=> $info['clip']
+                ,'dispsize'=> $info['clip']
                 ,'description'=>$this->captions[$idx]
                 ,'column_id'=>'apCol'.$idx
             );
@@ -699,8 +699,10 @@ class androPageReport extends fpdf {
        $width     = $this->cols[$col]['width'];
        $align     = $this->cols[$col]['align'];
        if($this->cols[$col]['clip']<>0) {
-           //$max = intval($this->cols[$col]['clip']/$this->cpi);
-           $text = substr($text,0,$this->cols[$col]['clip']);
+           # KFD 1/23/09, do not clip if x6 and onscreen
+           if( !($this->format=='onscreen' && $this->x6)) {
+               $text = substr($text,0,$this->cols[$col]['clip']);
+           }
        }
        
        // if a money column, reformat value, unless it
