@@ -4100,9 +4100,6 @@ var x6plugins = {
         }
         x6events.subscribeToEvent('buttonsEdit_'+table,id);
         self['receiveEvent_buttonsEdit_'+table] = function(turnOn) {
-            console.log('buttonsedit ',table);
-            console.log(turnOn);
-            console.log($(this).prop('permupd','N'));
             if(turnOn) {
                 if($(this).prop('permupd','N')=='Y') {
                     this.className = 'button';
@@ -4310,17 +4307,22 @@ x6plugins.tableController = function(self,id,table) {
     self['receiveEvent_reqEditRow_'+table] = function(skey) {
         x6.console.group("tableController reqEditRow "+this.zTable+", "+skey);
         var skeynow = this.zSkey;
-        if(skeynow == skey) {
-            x6.console.log("Request to edit same row, no action");
-        } 
-        else {
+        // KFD 1/23/09.  Big change.  Table Controller must not 
+        //               decide what to do, must let the UI elements
+        //               decide, because they may have to change
+        //               tabs, set focus, etc.
+        //if(skeynow == skey) {
+        //    x6.console.log("Request to edit same row, no action");
+        //} 
+        //else {
             var result = this.saveOk();
             x6bb.fwSet('lastSave_'+this.zTable,result);
             if(result!='fail') {
                 x6events.fireEvent('uiEditRow_'+this.zTable,skey);
                 this.zSkey = skey;
             }
-        }
+        //}
+        // KFD 1/23/09 (END)
         x6.console.groupEnd();
         return true;
     }
