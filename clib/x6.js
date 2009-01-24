@@ -514,6 +514,16 @@ if(!Array.indexOf){
    X6 Object
    
 \* **************************************************************** */
+/****o* Javascript-API/x6
+*
+* NAME
+*   x6
+*
+* PURPOSE
+*   The javascript object x6 is the basic general utility
+*   object for client-side x6 features.
+*
+******/
 var x6 = {
     // KFD 1/15/09. The options sub-object will control
     //              various behaviors.  The PHP code must
@@ -1065,7 +1075,7 @@ var x6 = {
         window.open(url);
     },
     
-    /****O* ua/json
+    /****O* x6/json
     *
     * NAME
     *   x6.json
@@ -1880,7 +1890,7 @@ x6dialogs = {
     answer: null,
     json: null,
     
-    /****v* dialogs/currentDialog
+    /****v* x6dialogs/currentDialog
     *
     * NAME
     *    u.events.currentDialog   
@@ -1896,7 +1906,7 @@ x6dialogs = {
     */
     currentDialog: false,
     
-    /****v* dialogs/clear
+    /****v* x6dialogs/clear
     *
     * NAME
     *   u.events.clear
@@ -1984,7 +1994,7 @@ x6dialogs = {
         }
     },
     
-    /****m* dialogs/alert
+    /****m* x6dialogs/alert
     *
     * NAME
     *   x6dialogs.alert
@@ -2017,7 +2027,7 @@ x6dialogs = {
         return;
     },
     
-    /****m* dialogs/confirm
+    /****m* x6dialogs/confirm
     *
     * NAME
     *   x6dialogs.confirm
@@ -2076,7 +2086,7 @@ x6dialogs = {
         return confirm(msg);
     },
     
-    /****m* dialogs/pleaseWait
+    /****m* x6dialogs/pleaseWait
     *
     * NAME
     *   x6dialogs.pleaseWait
@@ -2129,7 +2139,7 @@ x6dialogs = {
     }
 }
 
-/****O* u/bb
+/****O* Javascript-API/x6bb
 * NAME
 *   x6bb
 *
@@ -2235,7 +2245,7 @@ x6bb = {
     /******/
     
     
-    /****m* bb/vgaGet
+    /****m* x6bb/vgaGet
     * NAME
     *   x6bb.vgaGet
     *
@@ -2278,7 +2288,7 @@ x6bb = {
 ******
 */
 var x6events = {
-    /****iv* events/subscribers
+    /****iv* x6events/subscribers
     *
     * NAME
     *   u.events.subscribers
@@ -2388,7 +2398,7 @@ var x6events = {
         }
     },
         
-    /****m* events/getSubscribers
+    /****m* x6events/getSubscribers
     *
     * NAME
     *   x6events.getSubscribers

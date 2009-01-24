@@ -1436,33 +1436,32 @@ class androHtml {
     }
     /******/
 
-    /****m* androHtml/a
-    *
-    * NAME
-    *    a
-    *
-    * FUNCTION
-    *	The method a adds a hyperlink to his androHtml object.
-    *
-    * INPUTS
-    *	mixed $innerHTML - inner html for the 'a' tag
-    *	string $href - Hypertext reference
-    *	string $class - Css class for the element
-    *
-    * SOURCE
-    */
     function a($innerHTML,$href,$class='') {
         $a = $this->h('a',$innerHTML,$class);
         $a->hp['href'] = $href;
         return $a;
     }
-    /******/
     
+    /****m* androHtml/link
+    *
+    * NAME
+    *    androHtml.link
+    *
+    * FUNCTION
+    *	The PHP method link adds a hyperlink to his androHtml object.
+    *
+    * INPUTS
+    *	string $href - Hypertext reference
+    *	string $innerHTML - inner html for the 'a' tag
+    *
+    * SOURCE
+    */
     function link($href,$innerHTML) {
         $a = $this->h('a',$innerHTML);
         $a->hp['href'] = $href;
         return $a;
     }
+    /******/
 
     /****m* androHtml/br
     *
@@ -2946,7 +2945,7 @@ class androHTMLGrid extends androHTML {
         $div->addclass('cell_'.$column_id);
         $this->headers[] = $div;
     }
-    /****m* androHTMLGrid/lastColumn
+    /****m* androHtmlGrid/lastColumn
     *
     * NAME
     *    lastColumn
