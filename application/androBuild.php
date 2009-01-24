@@ -9484,7 +9484,7 @@ function FS_Prepare() {
 function FS_PrepareCheck() {
 	$this->LogStage("Confirming server has proper file permissions");
 	$grp = $this->ShellWhoAmI();
-   global $parm;
+    global $parm;
 	$app = $GLOBALS["parm"]["APP"];
 	$scn = "/tmp/andro_fix_$app.sh";
 	
@@ -9681,7 +9681,34 @@ function FS_PrepareMake() {
       `rm $dir_pubx/htaccess`;
    }
    
-   return true;
+    # KFD 1/24/09, copy any skeleton files found if not 
+    #              an instance
+    if(!isset($parm['IVER'])) {
+        $this->LogEntry("");
+        $this->LogEntry("This is not an instance, looking for skeleton files");
+        # Pull all files named "skeleton" out of the andro library
+        $raw = scandir($dirl.'lib/');
+        foreach($raw as $onefile) {
+            if(substr($onefile,0,9)<>'skeleton.') continue;
+            $filedest = substr($onefile,9);
+            if($filedest=='dd.yaml') 
+                $filedest = $GLOBALS["parm"]["APP"].".dd.yaml";
+            if(file_exists("$dir_pubx/application/$filedest")) {
+                $this->LogEntry(
+                    " -> File $filedest is already in application, no action"
+                );
+            }
+            else {
+                $this->LogEntry(
+                    " -> Creating $filedest from skeleton file"
+                );
+                $fc = file_get_contents($dirl."lib/$onefile");
+                file_put_contents("$dir_pubx/application/$filedest",$fc);
+            }
+        }
+    }
+   
+    return true;
 }
 
 function FSCopyTree($src,$tgt,$name) {
@@ -9835,7 +9862,9 @@ function FS_PUT_CONTENTS($file,$text,$changequotes=false) {
 	fclose($FILEOUT);
 }
 
-
+function fs_Skeleton_copy($src,$dst) {
+    
+}
 
 // ==========================================================
 // Wrappers to PHP functions.  The general idea is to wrap
