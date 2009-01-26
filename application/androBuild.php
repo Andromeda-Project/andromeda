@@ -863,6 +863,7 @@ function SpecLoad() {
         $ta["data"]
         ,$sfx
     );
+
     $this->LogEntry("Setting aside content for loading after build");
     $this->content = array_merge($this->content,$ta['content']);
     
@@ -899,7 +900,7 @@ function SpecLoad() {
                     $this->DBB_LoadAddFile($spec,$ta);
                 }
                 else {
-                    $retval = $this->DBB_LoadYAMLFile($spec,$ta);
+                    $retval = $retval && $this->DBB_LoadYAMLFile($spec,$ta);
                 }
                 if($retval) {
                     $this->LogEntry("Loading spec to main series");
@@ -928,22 +929,6 @@ function SpecLoad() {
                         else {
                             $this->content[$table_id] = $values;
                         }
-                        
-                        // KFD 3/1/08, major fix to content loading on YAML
-                        # KFD 6/30/08, try remming this out
-                        #$colnames = $values[1];
-                        #$colnames['__type']='columns';
-                        #$this->content[$table_id][] = $colnames;
-                        
-                        #unset($values[2]['__type']);
-                        #foreach($values[2] as $colvalues) {
-                        #    $this->content[$table_id][]=array_merge(
-                        #        array('__type'=>'values')
-                        #        ,$colvalues
-                        #    );
-                        #    $this->content[$table_id][]=$colvalues;
-                        #}
-                        // KFD 3/1/8 END CHANGES
                     }
                 }
             }
@@ -1117,8 +1102,8 @@ function SpecLoad_ArrayToTables($arr,$cLoadSuffix,$parent_row=array(),$parent_pr
             
 			// Finally, execute it
          $row['srcfile']=$srcfile;
-			$retval = $retval &&
-                $this->DBB_Insert("zdd.",$table,$cLoadSuffix,$row);
+         $return = $this->DBB_Insert("zdd.",$table,$cLoadSuffix,$row);
+         $retval = $retval && $return;
 		}
 	}
 	return $retval;
@@ -8716,6 +8701,31 @@ function DBB_LoadContentComplex($arr,$prefix,$suffix) {
 function DBB_Insert($prefix,$table,$suffix,$colvals,$noblanks=false) {
 	$cols = '';
 	$vals = '';
+    
+    # KFD 1/26/09, SF BUG 1948051, trap bad properties
+    $insert_error = false;
+    foreach($colvals as $name=>$value) {
+        if(!isset($this->utabs[$table]['flat'][$name])) {
+            # Don't stop on our hardcoded meta values
+            if($name=='__keystub') continue;
+            if($name=='uicolseq')  continue;
+            if($name=='srcfile')   continue;
+            if($name=='auto')      continue;
+            if($name=='columns' && $value=='values') continue;
+            if($table=='colchainargs')  continue;
+            if($table=='colchaintests') continue;
+            if($table=='colchains')     continue;
+            
+            
+            x_EchoFlush("");
+            x_EchoFlush(" >>> ERROR: BAD PROPERTY NAME");
+            x_EchoFlush(" >>> Cannot set '$name' on '$table' to value '$value'");
+            x_EchoFlush("");
+            hprint_r($colvals);
+            $insert_error = true;
+        }
+    }
+    if($insert_error) return false;
 	
 	foreach ($this->utabs[$table]["flat"] as $colname=>$colinfo) {
 		if (isset($colvals[$colname])) { $val = $colvals[$colname]; }
@@ -8752,7 +8762,11 @@ function DBB_Insert($prefix,$table,$suffix,$colvals,$noblanks=false) {
 	}
 	
 	$sql = "INSERT INTO ".$prefix.$table.$suffix." ( ".$cols." ) VALUES ( ".$vals." )";
-	return $this->SQL($sql);
+	$retval = $this->SQL($sql);
+    if(!$retval) {
+        hprint_r($colvals);
+    }
+    return $retval;
 }
 
 function DBB_SQLBlank($formshort) {
