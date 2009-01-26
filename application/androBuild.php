@@ -8712,9 +8712,14 @@ function DBB_Insert($prefix,$table,$suffix,$colvals,$noblanks=false) {
             if($name=='srcfile')   continue;
             if($name=='auto')      continue;
             if($name=='columns' && $value=='values') continue;
+            if($name=='suffix'  && $table=='perm_cols') continue;
+            if($name=='prefix'  && $table=='perm_cols') continue;
             if($table=='colchainargs')  continue;
             if($table=='colchaintests') continue;
             if($table=='colchains')     continue;
+            if($table=='tabchainargs')  continue;
+            if($table=='tabchaintests') continue;
+            if($table=='tabchains')     continue;
             
             
             x_EchoFlush("");
