@@ -551,7 +551,7 @@ content automations {
 // (we want SUN;MON;TUE...; not alpha); or timezones; stuff
 // like that
 // 
-column uisort { Description: Sort Ranking; type_id: int;   colprec: 0;  colscale: 0;  }
+column uisort { description: Sort Ranking; type_id: int;   colprec: 0;  colscale: 0;  }
 
 // *********************************************************
 // Every table must be entered into a module
@@ -576,7 +576,6 @@ table modules {
 // *********************************************************
 // Table of tables. 
 
-//column risimple      {  type_id: char;  colprec: 1;  description: Assume Simple RI; }
 column nomenu        {  type_id: char;  colprec: 1;  description: Keep off menu; }
 column returnall     {  type_id: char;  colprec: 1;  description: Return All; }
 //column menuins       {  type_id: char;  colprec: 1;  description: Rapid-Entry Insert; }
@@ -589,7 +588,6 @@ column table_id_row  {  type_id: vchar; colprec: 50; colscale: 0; description: T
 column table_id_res  {  type_id: vchar; colprec: 50; colscale: 0; description: Table ID (Row); }
 column table_id_par_comp
                      {  type_id: vchar; colprec: 50; colscale: 0; description: FK Composite Identifier; }
-column column_prefix {  type_id: vchar; colprec: 50;   colscale: 0;  description: Column Prefix; }
 column fkdisplay     {  type_id: vchar; colprec: 10; description: FK Display;}
 column linknew       {  type_id:  char; colprec: 1;  description: New Link;   }
 column linksearch    {  type_id:  char; colprec: 1;  description: Search Link;}
@@ -612,13 +610,10 @@ table tables {
 	column table_id      { primary_key: Y; uisearch: Y; }
     column  { singular; returnall; x6profile;x6childwrites;x6all;x6xref; }   
    // Removed KFD 5/24/07, not being used
-	//column column_prefix { primary_key: N; uisearch: Y; }
 	column description  { uisearch: Y; }
     column { spaceafter; }
     column { uiins; uiupd; uidel; }
 
-   // Removed KFD 5/24/07, not being used
-	//column { ins;risimple;table_seq;menuins }
    column { capspk; table_seq; nomenu; }
     column { uix2; }
    // KFD 5/24/07, this can also be removed, but you have to remove some

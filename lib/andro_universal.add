@@ -323,7 +323,7 @@ menu userssimple {
     module: system;
     uisort: 110;
     spaceafter: Y;
-    x2: Y;
+    uix2: Y;
     group usermaint { permsel: Y; nomenu: N; }
 }
 
@@ -410,7 +410,6 @@ column email_subject { description: SUBJECT;  type_id: char; colprec: 200; }
 column email_message { description: MESSAGE;  type_id: text; }
 table adm_emails {
 	description: Emails Sent by System;
-	column_prefix: adm_email;
     uisort: 100;
 	module: system;
 
@@ -1133,8 +1132,6 @@ column timezone_mins  { description: Offset Minutes; type_id: int; }
 table timezones {
 	description: Time Zones;
 	module: reference;
-	risimple: Y;
-	column_prefix: reference;
 
    column timezone { primary_key: Y; uisearch: Y; }
 	column description { uisearch: Y; }
@@ -1242,7 +1239,6 @@ column weekday_desc {
 table weekdays {
 	description: Week Days;
 	module: reference;
-	risimple: Y;
 
 	column weekday     { primary_key: Y; uisearch: Y; }
 	column description {                 uisearch: Y; }
@@ -1526,7 +1522,6 @@ column state_name { description: State Name;     type_id: char; colprec: 30; }
 column country    { description: Country;        type_id: char; colprec: 20; }
 table states {
 	description: States and Provinces;
-	risimple: Y;
 	module: reference;
 
 	column state { primary_key: Y; uisearch: Y; }
