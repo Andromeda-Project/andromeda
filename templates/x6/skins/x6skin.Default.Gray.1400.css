@@ -1,6 +1,6 @@
 /* ==================================================== *\
  * Andromeda Generated CSS file                         
- * Generated: Fri, 23 Jan 2009 09:53:23 -0500
+ * Generated: Mon, 26 Jan 2009 15:09:36 -0500
  * Skin, color, size: Default, Gray, 1400
 \* ==================================================== */
         
@@ -540,5 +540,47 @@ div.x6select table thead tr th {
 #dialogbox {
     border:                  8px solid #4A79B5;
     background-color:        #ffffff;
+}
+
+.x6modalblock {
+    z-index:                 10000;
+    background-color:        #000000;
+    cursor:                  wait;
+    display:                 none;
+    position:                absolute;
+    top:                     -5000px;
+    left:                    -5000px;
+    width:                   20000px;
+    height:                  20000px;
+}
+
+.x6modal {
+    position:                absolute;
+    display:                 none;
+    z-index:                 10001;
+    border-top:              1px solid #ffFFff;
+    border-bottom:           1px solid #909090;
+    border-left:             1px solid #ffFFff;
+    border-right:            1px solid #909090;
+    background-color:        #d0d0d0;
+    padding:                 4px;
+}
+
+.x6modaltop {
+    height:                  32px;
+    line-height:             32px;
+}
+
+.x6modaltop a {
+    text-decoration:         none;
+}
+
+.x6modalinner {
+    border-top:              1px solid #909090;
+    border-bottom:           1px solid #ffFFff;
+    border-left:             1px solid #909090;
+    border-right:            1px solid #ffFFff;
+    padding:                 4px;
+    background-color:        #f0f0f0;
 }
 

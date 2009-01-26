@@ -1,0 +1,299 @@
+# =======================================================
+#
+# ABOUT THIS FILE
+#
+# This is a SKELETON .dd.yaml file for your application.
+# It contains *live* definitions that you must remove
+# or they will become part of your application.
+#
+# If you are a veteran Andromeda programmer and do 
+# not wish to work through the file, simply delete 
+# the entire contents and start from scratch.
+#
+# =======================================================
+
+
+# =======================================================
+#
+# MODULE EXAMPLE
+#
+# Andromeda organizes tables into modules, with
+# the following behaviors:
+#
+#  -> Each module becomes a top-level menu entry
+#     on the admin interface
+#  -> Security permissions assigned to module
+#     cascade to all tables in that module
+#  -> Security permissions can be overridden at
+#     the table level.
+#
+# =======================================================
+module example:
+    # This becomes the caption on the menu
+    description: Example
+    
+    # UISORT is optional.  If you use it, it 
+    # determines the order that the modules appear
+    # on the menu.  If you leave it out, they 
+    # appear in the order they were defined.
+    uisort: 100
+# -------------------------------------------------------
+# MODULE EXAMPLE (END)
+# -------------------------------------------------------
+    
+# =======================================================
+#
+#  GROUP EXAMPLE  
+#
+#  Andromeda is a DENY BY DEFAULT system.  All users
+#  are denied all access to all tables.  
+#
+#  You give users permissions by creating groups.  
+#  Then the system administrator puts users into groups
+#  to give them access.
+#
+#  Access is ADDITIVE.  A user gets the cumulative
+#  permissions of all groups he/she is in.
+#
+#  There are several groups created automatically 
+#  for all Andromeda applications:
+#
+#   -> $LOGIN    - a group that is named after the
+#                  application.
+#      -> If your app is 'example', there will
+#         be a group called 'example'
+#      -> A user must be in the $LOGIN group to
+#         be able to login (that is why we call
+#         it $LOGIN in the spec files).
+#      -> When users are surfing the site w/o logging
+#         in, Andromeda logs in as this group,
+#         so you must grant this group access to all
+#         public tables.
+#
+#   -> usermaint - anybody in this group can create
+#                  and maintain users.
+#
+# =======================================================
+group admins:
+    description: Administrators
+    
+    #  Permissions assigned here become the default
+    #  for this group on all modules and tables
+    permsel: "Y"
+    permins: "Y"
+    permupd: "Y"
+    permdel: "Y"
+    
+    #  You can also specify the permissions a group
+    #  will have within a specific module.  You can
+    #  have as many of these blocks as you wish.
+    module example:
+        permsel: "Y"
+        permins: "N"
+        permupd: "N"
+        permdel: "N"
+# -------------------------------------------------------
+# GROUP EXAMPLE (END)
+# -------------------------------------------------------
+        
+        
+# =======================================================
+#
+#  COLUMN EXAMPLE
+#
+#  Andromeda handles column definitions differently
+#  from hand-coded SQL.  In hand-coded SQL you define
+#  the column inside a table, like this:
+#
+#  CREATE TABLE example (
+#      some_column char(10)
+#  );
+#
+#  But in Andromeda you define a column's stats 
+#  *outside* of a table.  You then *place* the 
+#  column in one or more tables.  This has the nice
+#  advantage of preventing two columns in different
+#  tables having different types or sizes.
+#
+#  Andromeda provides a few dozen pre-defined columns
+#  that are listed here:
+#
+#     http://localhost/~kfd/adocsrobo/pages/cms/predefinedcolumns.html
+#
+# =======================================================
+column customer_code:
+    type_id: char
+    colprec: 10
+    description: Customer Code
+
+# -------------------------------------------------------
+#  COLUMN EXAMPLE (END)
+# -------------------------------------------------------
+
+# =======================================================
+# 
+#  TABLE EXAMPLE
+# 
+#  The core of the database is of course the tables.
+#  A table definition contains many many features,
+#  just a few are listed here to get you started.
+#
+# =======================================================
+table customers:
+    # The module is *required*
+    module: example
+    
+    # UISORT is optional.  If provided, it sets the
+    # order that tables are displayed in the menu.
+    # If left out, tables are displayed in the order
+    # they are defined.
+    uisort: 100
+    
+    # This causes a line to be put onto the menu
+    # after this table
+    spaceafter: "Y"
+    
+    # This becomes the text on the menu
+    description: Customers
+    
+    # Sometimes you do not want a table to appear on 
+    # the menu.  This optional flag takes a table
+    # off the menu.  This is most often used for
+    # transaction child tables like order_lines, or
+    # for lookup tables that you provide pre-populated
+    # that the user cannot modify.
+    nomenu: "Y"
+    
+    # This optional property tells the admin interface
+    # what kind of screen to use to let users do 
+    # direct table maintenance.  It is only relevant
+    # for the admin interface.
+    #   Allowed values:
+    #     conventional:   default, complex 1:m, good for
+    #                     master tables and transactions
+    #     twosides:       shows grid on left, detail on right
+    #                     good for large lookup tables.
+    #     grid:           shows grid, useful for lookup tables
+    x6profile: grid
+    
+    # You can override group-level and module-level
+    # security here by assigning specific permissions
+    # to one or more groups for this table
+    group $LOGIN:
+        permsel: "N"
+        permins: "N"
+        permupd: "N"
+        permdel: "N"
+    group admin:
+        permsel: "Y"
+        permins: "N"
+        permupd: "Y"
+        permdel: "N"
+    
+    # Now we place columns.  These columns must have
+    # been defined already outside of the table
+    column customer_code:
+        # At least one column must be the primary key
+        primary_key: "Y"
+        # this makes this column one of the search
+        # columns on the user interface
+        uisearch: "Y"
+        
+    # This is a predefined column 
+    column description:
+        # override the description
+        description: Company Name
+        uisearch: "Y"
+        
+    # A few other pre-defined columns
+    column add1:
+    column add2:
+    column city:
+    
+    # Andromeda contains a pre-populated table of
+    # US States.  We want a foreign key to that
+    # table.  When we use the foreign_key definition,
+    # we DO NOT have to specify the columns, they
+    # are placed automatically.
+    foreign_key states:
+    
+    # One more predefined column
+    column zip9:
+    
+    # You can make indexes as well if you like
+    index customers_name:
+        # An optional flag.  If you make this
+        # setting it becomes a unique constraint.
+        # If you leave it out it is just an index.
+        idx_unique: "Y"
+        # You can list as many columns as you need
+        # for the index.  In this example there is
+        # only one.
+        column description:
+    
+    # These are pre-defined columns that can be
+    # very useful:
+    #  INSERT TIMESTAMP
+    column ts_ins:
+    #  INSERT USER
+    column uid_ins:
+    #  UPDATE TIMESTAMP
+    column ts_upd:
+    #  UPDATE USER
+    column uid_upd:
+# -------------------------------------------------------
+#  TABLE EXAMPLE (END)
+# -------------------------------------------------------
+
+
+# =======================================================
+# 
+#  MENU EXAMPLE
+# 
+#  Andromeda provides a "free" admin interface that
+#  shows one menu entry for each table.
+#
+#  Sometimes you need special programs on the admin
+#  interface.  You create these with an "menu" entry.
+#
+#  This menu entry must of course connect to an
+#  actual program.  That program would be:
+#
+#   ->  Note the menu entry is named "myoperation"
+#   ->  Create file x6myoperation.php in dir application/
+#   ->  Name the class x6myoperation
+#   ->  See the skeleton file x6example.php for more
+#       information, and this page on the docs:
+#
+#    http://www.andromeda-project.org/pages/cms/web+programming.html
+#       
+#
+# =======================================================
+menu myoperation:
+    # the module is *required*
+    module: example
+    
+    # this is the caption on the menu
+    description: Processing Program
+    
+    # Like a table, you can provide "uisort" to fix
+    # the sequence of this entry on the menu, or you
+    # can leave it out and the menu will be built in
+    # the order that the tables/menu entries were
+    # defined
+    uisort: 110
+    
+    # You can put a separator after this entry
+    # on the menu
+    spaceafter: "Y"
+    
+    # Permissions are very important.  Any user with
+    # "permsel" permissions will see
+    # this menu entry.  You can also specify overrides:
+    group admin:
+        permsel: "Y"
+    
+# -------------------------------------------------------
+#  MENU EXAMPLE (END)
+# -------------------------------------------------------
+

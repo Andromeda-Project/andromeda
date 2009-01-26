@@ -87,7 +87,11 @@ if(configGet('deprecated','Y')=='Y') {
 </div>
 <div id="dialogoverlay" style="display:none"></div>
 <div id="dialogbox"     style="display:none"></div>
-
+<div    id = "x6modalblock"  
+     style = "display:none;" 
+     class = "x6modalblock"
+   onclick = "return false">&nbsp;</div>
+<div id="x6modal"       style="display:none;" class="x6modal">&nbsp;</div>
 <?php
     # KFD 12/31/08.  Restrict the query log to people who have
     #                set the cookie and are in the 'debuggers' group

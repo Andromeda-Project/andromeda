@@ -668,7 +668,7 @@ function index_hidden_x6Dispatch(
     $obj->x6page= $x6page;
     $obj->view  = arr($obj->dd,'viewname','');
     $obj->$x6method();
-    x6HTML('*MAIN*',ob_get_clean());
+    $HTML = ob_get_clean();
     
     # Now if they made a "main" call, see if they want us to
     # send back some script as well
@@ -679,6 +679,15 @@ function index_hidden_x6Dispatch(
             x6script(ob_get_clean());
         }
     }
+    # And again see if they are sending out any popups
+    if($x6method=='x6main') {
+        if(method_exists($obj,'x6modals')) {
+            ob_start();
+            $obj->x6modals();
+            $HTML.=ob_get_clean();
+        }
+    }
+    x6HTML('*MAIN*',$HTML);
 
     # Put errors in that were reported by database operations
     if(Errors()) {

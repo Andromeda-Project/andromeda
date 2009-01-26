@@ -4705,7 +4705,9 @@ x6plugins.detailDisplay = function(self,id,table) {
         // the bulletin board.  But if we already have
         // focus then do nothing.
         else {
-            if(x6bb.fwGet('objectFocus','')!=id) {
+            var curObj = x6bb.fwGet('objectFocus','');
+            x6.console.log("current focus is "+curObj);
+            if(curObj!=id) {
                 x6events.fireEvent('buttonsNew_'+this.zTable,true);
                 x6events.fireEvent('uiHideKids_'+this.zTable,this.zTable);
 
@@ -4722,7 +4724,7 @@ x6plugins.detailDisplay = function(self,id,table) {
             }
         }
         x6.console.groupEnd();
-    }
+   }
     
     /* ------------------------------------------------------------ */
     
@@ -6414,3 +6416,168 @@ x6plugins.androPage = function(self,id,table) {
     }
 }
 
+/***im* x6plugins/modal
+*
+* NAME
+*   x6plugins.modal
+*
+* FUNCTION
+*   The Javascript method x6plugins.modal implements
+*   all browser-side functionality for Andromeda's built-in
+*   system for modal detail popups.
+*
+*   This routine is called automatically by x6.init, there
+*   is not usually any reason for calling this routine
+*   directly.
+*
+* INPUTS
+*   self - the DOM object to be activated.
+*   id - the ID of the object to be 'activated'.
+*   table - the database table that the grid is handling.
+*
+* RESULTS
+*   no return value.
+*
+******
+*/
+x6plugins.modal = function(self,id,table) {
+    self.currentObject = '';
+
+    /*
+    *   Core function: receive focus
+    */
+    x6events.subscribeToEvent('objectFocus',id);
+    self.receiveEvent_objectFocus = function(id) {
+        if(id!=this.id) {
+            x6events.unsubscribeToEvent('key_Esc',this.id);
+        }
+        else {
+            x6events.subscribeToEvent('key_Esc',this.id);
+            x6bb.fwSet('objectFocus',this.id);
+        }
+    }
+    
+    /*
+    *   Key event: esc
+    */
+    self.receiveEvent_key_Esc = function(key) {
+        x6bb.fwSet('exitApproved',false);
+        this.close();
+    }
+ 
+    
+    /*
+    *   Core function: display myself
+    */
+    self.display = function(title) {
+        if(title==null) title = '';
+        
+        // save current object, we must send focus back to it
+        // when we are done.
+        this.currentObject = x6bb.fwGet('objectFocus');
+        x6events.fireEvent('objectFocus',this.id);
+        
+        // Now begin the process of making everything invisible
+        var blocker = x6.byId('x6modalblock');
+        // Turn scrolling off for the body
+        $('body')
+            .css('overflow','hidden')
+            .height($(window).height())
+            .width( $(window).width());
+        
+        // ...establish the blocker and fade in the modal
+        var mObj = this;
+        $(blocker)
+            .css('opacity',0)
+            .css('display','block')
+            .animate({opacity:0.5},'fast',null
+                ,function() {
+                    // Transfer the HTML to our universal modal
+                    $('#x6modal').html( $(mObj).html() );
+                    
+                    // Replace title if required
+                    if(title!='') {
+                        $('#x6modal .x6modaltop>div>b').html(title);
+                    }
+                    
+                    // First put the modal way off to the side
+                    // clear any previous width and height settings
+                    // and now we can figure out how to size it.
+                    $('#x6modal')
+                        .css('left',-500)
+                        .css('display','block')
+                        .css('width','')
+                        .css('height','')
+                    $('#x6modal .x6modalinner')
+                        .css('width','')
+                        .css('height','');
+                    var mh = $('#x6modal').height();
+                    var mw = $('#x6modal').width();
+                    var ih = $('#x6modal .x6modalinner').height();
+                    var ww = $(window).width();
+                    var wh = $(window).height();
+                    
+                    // Make sure the width is at least the title 
+                    // and the link
+                    var h1w = $('#x6modal .x6modaltop b').width();
+                    var aw  = $('#x6modal .x6modaltop a').width();
+                    if(mw < (h1w + aw +40)) {
+                        mw = h1w + aw + 40;
+                        $('#x6modal').css('width',mw);
+                    }
+
+                    // Make sure the height is at least 1/2 of the window
+                    if(mh < (wh/2)) {
+                        mh = Math.floor(wh/2);
+                        $('#x6modal').css('height',mh);
+                    }
+                    // Make sure height is notmore than window less 100
+                    if(mh > (wh - 100)) {
+                        mh = wh - 100;
+                        $('#x6modal').css('height',mh);
+                    }
+                    
+                    // Unconditionally set the inner height, who knows
+                    // where its gone off to.
+                    var ihNew  = mh - $('#x6modal .x6modaltop').height();
+                    ihNew -= Number($(mObj).attr('xSpacing'));
+                    
+                    if(ih > ihNew) {
+                        $('#x6modal .x6modalinner').css('overflow-y','scroll');
+                    }
+                    $('#x6modal .x6modalinner').css('height',ihNew);
+
+
+                    
+                    // now center this guy.
+                    var left = Math.floor( (ww-mw)/2 );
+                    $('#x6modal')
+                        .css('display','none')
+                        .css('left',left)
+                        .css('top',50)
+                        .fadeIn('fast',
+                            function() {
+                                x6events.fireEvent('objectFocus',mObj.id);
+                            }
+                        )
+                }
+            );
+    }
+    
+    /*
+    *   Core function: close up myself
+    */
+    self.close = function() {
+        var co = this.currentObject;
+        $('#x6modal').fadeOut('fast'
+            ,function() {
+                $('#x6modalblock').animate({opacity:0},'fast',null
+                    ,function() {
+                        $(this).css('display','none');
+                        x6events.fireEvent('objectFocus',co);
+                    }
+                );
+            }
+        );
+    }
+}

@@ -3473,6 +3473,39 @@ class androHTMLxrefs extends androHTML {
     }
 }
 
+class androHTMLModal extends androHTML {
+    function androHTMLModal($id,$title='') {
+        # First stuff is basic stuff for any plugin
+        $this->htype='div';
+        $this->addClass('x6modal');
+        $this->hp['id'] = $id;
+        $this->hp['x6plugin'] = 'modal';
+        $this->hp['x6table']  = '*';
+        $this->initPlugin();
+        
+        # Ugly hack, tell the javascript how much padding to
+        # take away.
+        $this->hp['xSpacing'] = x6CssDefine('pad0')*3;
+        
+        # Title and link go across top      
+        $top = $this->h('div');
+        $top->addClass('x6modaltop');
+        $left = $top->h('div');
+        $left->hp['style'] = 'float: left';
+        $title = $left->h('b',$title);
+        $right= $top->h('div');
+        $right->hp['style'] = 'float:right';
+        $a=$right->h('a','ESC: Exit');
+        $a->hp['href'] = "javascript:x6.byId('$id').close();";
+
+        $x = $this->h('div');
+        $x->hp['style'] = 'clear:both';
+        $this->inner = $this->h('div');
+        $this->inner->addClass('x6modalinner');
+
+    }
+}
+
 
 /**
 * Create a form with parent html element $parent.

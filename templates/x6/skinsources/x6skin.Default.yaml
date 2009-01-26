@@ -817,4 +817,45 @@ css:
             border: *pad1 *bs0 *bgcmenu
             background-color: *white
         
+
+    # ===============================================================
+    #
+    # Modal detail panes
+    #
+    # ===============================================================
+    x6modal:
+        .x6modalblock:
+            z-index: 10000
+            background-color: *black
+            cursor: wait
+            display: none
+            position: absolute
+            top: -5000px
+            left: -5000px
+            width: 20000px
+            height: 20000px
+            
+        .x6modal:
+            position: absolute
+            display: none
+            z-index: 10001
+            border-top:          *bor2t
+            border-bottom:       *bor2b
+            border-left:         *bor2l
+            border-right:        *bor2r
+            background-color:    *bgcdark
+            padding:             *pad0
+        .x6modaltop:
+            height:               *barheight
+            line-height:          *barheight
+        .x6modaltop a:
+            text-decoration:      none
+        .x6modalinner:
+            border-top:          *bor1t
+            border-bottom:       *bor1b
+            border-left:         *bor1l
+            border-right:        *bor1r
+            padding:             *pad0
+            background-color:    *bgclight
+         
             
