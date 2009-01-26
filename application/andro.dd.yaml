@@ -8,7 +8,6 @@ group admin:
     permins: "Y"
     permupd: "Y"
     permdel: "Y"
-    nomenu: "N"
    
     module docs:
         permsel: "Y"
