@@ -199,13 +199,16 @@ function DB_Connect()
 	// it otherwise
 	//
 	$cnx = 
-		" dbname=".$parm["APP"].
+		" dbname=".strtolower($parm["APP"]).
 		" user=".$parm["UID"].
 		" password=".$pw;
 	$con2 = pg_connect($cnx,PGSQL_CONNECT_FORCE_NEW);
 	if (!$con2) {
 		$this->LogEntry("Database does not exist, creating it now.");
-      pg_query($GLOBALS["dbconna"],"create database ".$parm["APP"]);
+        # KFD 1/27/09, case insensitivity
+        pg_query($GLOBALS["dbconna"]
+            ,"create database ".strtolower($parm["APP"])
+        );
 		
 		$con2 = pg_connect($cnx,PGSQL_CONNECT_FORCE_NEW);
 		if (!$con2) {
@@ -218,7 +221,7 @@ function DB_Connect()
 	// Load driver and establish connection
 	// Wow that comment "load driver" is from the java version!
 	$cnx = 
-		" dbname=".$parm["APP"].
+		" dbname=".strtolower($parm["APP"]).
 		" user=".$parm["UID"].
 		" password=".$pw;
 	$this->LogEntry(preg_replace('/password=.*/','password=***',$cnx));
@@ -999,6 +1002,9 @@ function SpecLoad_ArrayToTables($arr,$cLoadSuffix,$parent_row=array(),$parent_pr
 	$retval = true;
 	
 	foreach ($arr as $keyword=>$object) {
+        # KFD 1/27/09, put all keywords into lowercase
+        $keyword = strtolower($keyword);
+        
 		// Ignore prop/value pairs at even-numbered rows
 		if (! is_array($object)) { continue; }
 
@@ -1033,6 +1039,8 @@ function SpecLoad_ArrayToTables($arr,$cLoadSuffix,$parent_row=array(),$parent_pr
 			
 			// Whatever is not a child object is a property/value pair
 			foreach ($properties as $colname=>$colvalue) {
+                # KFD 1/27/09, case insensitivity
+                $colname = strtolower($colname);
 				if (! is_array($colvalue)) {
 					$row[$colname] = $colvalue;
 					if ($keystub <> "" && $colname == "__keystub") { 
@@ -7731,15 +7739,7 @@ function ContentLoad() {
         );
         if($count[0]['cnt']==0) {
             $this->LogEntry("Adding a row to $table_id");
-            if($table_id == 'configfw') {
-                $this->SQL("insert into $table_id (skey_quiet) values ('Y')");
-            }
-            else {
-                $this->SQL(
-                    "insert into $table_id (description_comp,skey_quiet)
-                      values ('x','Y')"
-                );
-            }
+            $this->SQL("insert into $table_id (skey_quiet) values ('Y')");
         }
     }
     
@@ -8707,19 +8707,19 @@ function DBB_Insert($prefix,$table,$suffix,$colvals,$noblanks=false) {
     foreach($colvals as $name=>$value) {
         if(!isset($this->utabs[$table]['flat'][$name])) {
             # Don't stop on our hardcoded meta values
-            if($name=='__keystub') continue;
-            if($name=='uicolseq')  continue;
-            if($name=='srcfile')   continue;
-            if($name=='auto')      continue;
-            if($name=='columns' && $value=='values') continue;
+            if($name=='__keystub') continue; // generated
+            if($name=='uicolseq')  continue; // generated
+            if($name=='srcfile')   continue; // generated
+            if($name=='auto')      continue; // shortcut, gets parsed
+            if($name=='columns')   continue; // for content
             if($name=='suffix'  && $table=='perm_cols') continue;
             if($name=='prefix'  && $table=='perm_cols') continue;
-            if($table=='colchainargs')  continue;
-            if($table=='colchaintests') continue;
-            if($table=='colchains')     continue;
-            if($table=='tabchainargs')  continue;
-            if($table=='tabchaintests') continue;
-            if($table=='tabchains')     continue;
+            if($table=='colchainargs')  continue; // derived tables
+            if($table=='colchaintests') continue; // derived tables
+            if($table=='colchains')     continue; // derived tables
+            if($table=='tabchainargs')  continue; // derived tables
+            if($table=='tabchaintests') continue; // derived tables
+            if($table=='tabchains')     continue; // derived tables
             
             
             x_EchoFlush("");
@@ -9950,7 +9950,7 @@ function LogStart()
 			return false;
 		}
 	}
-	
+    
 	// clear the log
 	// no need to depend on external system calls
     $handle = fopen($pLogPath, 'w');
@@ -9998,6 +9998,11 @@ function LogStart()
    }
 	
     $parm = &$GLOBALS["parm"];
+    # KFD 1/27/09, convert app and instance to lower case
+    $parm['APP'] = strtolower($parm['APP']);
+    if(isset($parm['INST'])) $parm['INST'] = strtolower($parm['INST']);
+	
+
     if($this->zzArraySafe($parm,'ROLE_LOGIN','')=='') {
         $parm['ROLE_LOGIN']='Y';
     }
@@ -10013,7 +10018,7 @@ function LogStart()
 	$this->LogEntry(" ANDROMEDA CLIENT UPGRADE PROGRAM ");
 	$this->LogEntry("===================================================");
 	$this->LogEntry("Starting Log at ".date("r"));
-   $this->LogEntry("This program: ".__FILE__);
+    $this->LogEntry("This program: ".__FILE__);
 	$this->LogEntry("===================================================");
 	$this->LogEntry("Parameters: ");
 	$this->LogEntry("Application Code       : ". $parm["APP"]);
@@ -10022,9 +10027,9 @@ function LogStart()
 	$this->LogEntry("Application Description: ". $parm["APPDSC"]);
 	$this->LogEntry("Node Public Directory  : ". $parm["DIR_PUBLIC"]);
 	$this->LogEntry("App Public SubDir      : ". $parm["DIR_PUBLIC_APP"]);
-   $this->LogEntry("App Public Directory   : ". $parm["DIR_PUB"]);
-   $this->LogEntry("Library Symlink Source : ". $this->zzArray($parm,"DIR_LINK_LIB"));
-   $this->LogEntry("Application Symlink Src: ". $this->zzArray($parm,"DIR_LINK_APP"));
+    $this->LogEntry("App Public Directory   : ". $parm["DIR_PUB"]);
+    $this->LogEntry("Library Symlink Source : ". $this->zzArray($parm,"DIR_LINK_LIB"));
+    $this->LogEntry("Application Symlink Src: ". $this->zzArray($parm,"DIR_LINK_APP"));
 	$this->LogEntry("Database Server        : ". $parm["DBSERVER_URL"]);
 	$this->LogEntry("Connecting as user     : ". $parm["UID"]);
 	$this->LogEntry("Password               : *** NOT DISPLAYED ***");
@@ -10032,8 +10037,8 @@ function LogStart()
 	$this->LogEntry("Bootstrap Dictionary   : ". $parm["SPEC_BOOT"]);
 	$this->LogEntry("Universal Dictionary   : ". $parm["SPEC_LIB"]);
 	$this->LogEntry("Application Dictionary : ". $parm["SPEC_LIST"]);
-   $this->LogEntry("ROLE Logins allowed    : ". $parm['ROLE_LOGIN']);
-   $this->LogEntry("Hardened PW Security   : ". $parm['FLAG_PWMD5']);
+    $this->LogEntry("ROLE Logins allowed    : ". $parm['ROLE_LOGIN']);
+    $this->LogEntry("Hardened PW Security   : ". $parm['FLAG_PWMD5']);
 	$this->LogEntry("Log File: ".$pLogFile);
 	$this->LogEntry("---------------------------------------------------");
 	$parm["DIR_WORKING"]=dirname(__FILE__);
