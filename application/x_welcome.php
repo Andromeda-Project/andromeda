@@ -1,6 +1,28 @@
 <?php
 class x_welcome extends x_table2 {
     function main() {
+        /* FUTURE X6 VERSION OF NODE MANAGER
+        ?>
+        <h1>Node Manager Upgrade Required</h1>
+        
+        <p>The new version of the Node Manager uses the "x6" 
+           interface to provide a richer experience.  Please click
+           the link below to upgrade your Node Manager.  Once the
+           upgrade is complete, log out and back in.
+        </p>
+        
+        <p><a href="javascript:Popup('index.php?gp_page=a_builder&gp_out=none&x2=1&txt_application=andro','Build')"
+            >Upgrade Node Manager Now</a>.</p>
+            
+        <p><a href="?st2logout=1">Logout After Upgrade</a>.</p>
+        
+        <?php
+        return;
+        */
+        # <------- EARLY RETURN.
+        # KFD 1/10/08, The old x_welcome screen is not used anymore,
+        #              we have the new 'cpanel' now in x6.
+        # ===============================================================
         ?>
         <h1>Welcome to the Andromeda Node Manager</h1>
         <?php
@@ -62,7 +84,7 @@ class x_welcome extends x_table2 {
 
     If you want to start programming a new application right away, 
     <a target="_blank"  href=
-    "http://www.andromeda-project.org/pages/cms/Starting+A+New+Application"
+    "http://www.andromeda-project.org/pages/cms/creating+an+application.html"
     >The instructions are here</a>, or you can just 
     <a href="?gp_page=applications&gp_mode=ins">define a new application here.</a>
     <br/>
