@@ -36,6 +36,9 @@ class androX6 {
         # context from screen to screen.
         #
         $this->hld = aFromGp('hld_');
+        
+        # If the x6exit variable was passed in, put it out
+        hidden('x6exit',gp('x6exit','N'));
     }
     
     # ===================================================================
@@ -95,7 +98,7 @@ class androX6 {
         $row0 = aFromGP('x6v_');
         $row1 = aFromgp('x6inp_'.$table_id.'_');
         $row = array_merge($row0,$row1);
-        if(a($row,'skey',0)==0) unset($row['skey']);
+        if(arr($row,'skey',0)==0) unset($row['skey']);
         
         # KFD 12/20/08, prevent ui saves if dd does not allow them
         if(!isset($row['skey'])) {
@@ -111,8 +114,15 @@ class androX6 {
                 x6Error("Updates not allowed from this screen");
                 return;
             }
-        }            
+        }    
+
+        # Add in values from parent
+        if(gp('tableIdPar',false)) {
+            $vals2 = $this->fetchParent();
+            $row = array_merge($row,$vals2);
+        }
         
+
         # KFD 12/8/08, More generalized code to allow for
         #              inserts before or after a row.
         #
@@ -306,12 +316,7 @@ class androX6 {
             $vals2 = array();
         }
         else {
-            $ddpar = ddTable(gp('tableIdPar'));
-            $pks   = $ddpar['pks'];
-            $stab  = ddView(gp('tableIdPar'));
-            $skey  = SQLFN(gp('skeyPar'));
-            $vals2 = SQL_OneRow("SELECT $pks FROM $stab WHERE skey = $skey");
-            if(!$vals2) $vals2=array();
+            $vals2 = $this->fetchParent();
             $vals  = array_merge($vals,$vals2);
             
             # KFD 12/27/08, if the sortdesc flag has been set on any
@@ -619,7 +624,7 @@ class androX6 {
         foreach($dd['flat'] as $colname=>$colinfo) {
             if(strtolower($colinfo['automation_id'])=='queuepos') {
                 $queuepos = $colname;
-                jqDocReady("u.bb.vgfSet('queuepos_$table_id','$colname')");
+                jqDocReady("x6bb.fwSet('queuepos_$table_id','$colname')");
                 break;
             }
         }
@@ -904,11 +909,17 @@ class androX6 {
         $tabKids = $detail->addTabs('kids_'.$table_id,$hempty,$options);
         $tabKids->ul->hp['xOffset'] = 2;
         $tab = $tabKids->addTab("Hide");
+        $idx = 0;
         foreach($dd['fk_children'] as $child=>$info) {
-            # KFD 1/2/08.  If x6display is 'none', skip it
+            # KFD 1/2/09.  If x6display is 'none', skip it
             if(trim(arr($info,'x6display',''))=='none') continue;
             
-            $top->addTableController($child);
+            # KFD 1/28/09,  Hardcoded hack to limit entries.
+            #               Will have to come out eventually.
+            if($idx++ > 6) continue;
+            
+            $tc = $top->addTableController($child);
+            $tc->hp['x6tablepar'] = $table_id;
             $tab = $tabKids->addTab($info['description']);
             $tab->ap['x6tablePar'] = $table_id;
             $tab->ap['x6table'   ] = $child;
@@ -1042,6 +1053,16 @@ class androX6 {
                 $inp->hp['value'] = $value;
             }
         }
+    }
+    
+    function fetchParent() {
+        $ddpar = ddTable(gp('tableIdPar'));
+        $pks   = $ddpar['pks'];
+        $stab  = ddView(gp('tableIdPar'));
+        $skey  = SQLFN(gp('skeyPar'));
+        $vals2 = SQL_OneRow("SELECT $pks FROM $stab WHERE skey = $skey");
+        if(!$vals2) $vals2=array();
+        return $vals2;
     }
     
     # Makes a generic grid.  First created 11/3/08 so we can add
