@@ -1344,8 +1344,10 @@ class androHtml {
         $form->hp['name']   = $name;
         $form->hp['method'] = $method;
         $form->hp['action'] = $action;
+        $form->hp['enctype']="multipart/form-data";
         if($x6page <> '') {
-            $form->hp['action'].="?x6page=".$x6page;
+            $symbol = strpos($action,'?')===false ? '?' : '&';
+            $form->hp['action'].=$symbol."x6page=".$x6page;
         }
         return $form;
     }
@@ -2106,7 +2108,7 @@ class androHtml {
         $thead = html('thead',$this);
         $tr    = html('tr',$thead);
         foreach($thvalues as $th) {
-            $tr->h('td',$th,$class);
+            $tr->h('th',$th,$class);
         }
         return $thead;
     }
@@ -2838,7 +2840,7 @@ class androHTMLGrid extends androHTML {
             $input->hp['xClassRow'] = 0;
             $input->hp['xTabGroup'] = 'rowEdit';
             $wrapper->addClass('cell_'.$colname);
-            if(!in_array($colinfo['type_id'],array('cbool','gender'))) {
+            if(!in_array($colinfo['type_id'],array('cbool','gender'))){
                 unset($input->hp['size']);
             }
             $wrapper->addChild($input);
@@ -2931,6 +2933,11 @@ class androHTMLGrid extends androHTML {
         $iWidth = $width;
         if($table_id_fko <> '') {
             $iWidth -= x6cssdefine('bodyfs','12px')*.67*5;
+            $this->colStyles['div.cell_'.$column_id.' input'] 
+                ="width: {$iWidth}px; $cssExtra";
+        }
+        else if($type_id = 'mime-f') {
+            $iWidth -= x6cssdefine('bodyfs','12px')*.67*20;
             $this->colStyles['div.cell_'.$column_id.' input'] 
                 ="width: {$iWidth}px; $cssExtra";
         }
@@ -3163,7 +3170,9 @@ class androHTMLGrid extends androHTML {
     }
     
     function noResults() {
+        return;
         $div = $this->dbody->h('div');
+        $div->hp['id'] = $this->hp['x6table'].'_noresults';
         $div->hp['style'] = 'text-align: center; padding-top: 20px';
         $div->setHTML('<b>No results found</b>');
     }
@@ -3639,7 +3648,12 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
             ="javascript:x6inputs.viewClob(this,'$table_id','$column_id')";
         return $input;
     }
-    if($type_id=='gender') {
+    if(trim($type_id)=='mime-f' && $x6) {
+        $input = html('input');
+        $input->hp['type'] = 'file';
+        $input->addClass('x6fileupload');
+    }
+    elseif($type_id=='gender') {
         $input = html('select');
         $option = html('option',$input);  // this is a blank option
         $option = html('option',$input,'M');
@@ -4592,6 +4606,7 @@ function SQL_FORMAT($t,$v,$clip=0) {
     case 'ssn':
     case 'ph12':
     case "gender":
+    case 'mime-f':
         if($clip>0 && strlen($v) > $clip) $v = substr($v,0,$clip);
         // KFD 9/10/07, one of the doctors wants all caps
         if(configGet('ALLCAPS')=='Y') {
