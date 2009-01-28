@@ -1,6 +1,6 @@
 /* ==================================================== *\
  * Andromeda Generated CSS file                         
- * Generated: Mon, 26 Jan 2009 15:09:36 -0500
+ * Generated: Wed, 28 Jan 2009 13:46:54 -0500
  * Skin, color, size: Default, Gray, 1280
 \* ==================================================== */
         
@@ -27,6 +27,18 @@ a {
 a.button_disabled,a.button,div.thead div a {
     text-decoration:         none;
     display:                 block;
+}
+
+.flavor1 {
+    background-color:        #A0A0FF;
+}
+
+.flavor2 {
+    background-color:        #FFA0A0;
+}
+
+.flavor3 {
+    background-color:        #FF00FF;
 }
 
 body {
@@ -582,5 +594,21 @@ div.x6select table thead tr th {
     border-right:            1px solid #ffFFff;
     padding:                 3px;
     background-color:        #f0f0f0;
+}
+
+table.x6standard {
+    max-height:              806px;
+    border-top:              1px solid #909090;
+    border-bottom:           1px solid #909090;
+    border-left:             1px solid #909090;
+    border-right:            1px solid #909090;
+}
+
+table.x6standard thead tr th {
+    background-color:        #d0d0d0;
+}
+
+table.x6standard tbody tr td {
+    vertical-align:          top;
 }
 

@@ -234,6 +234,13 @@ css:
         a.button_disabled,a.button,div.thead div a:
             text-decoration: none
             display: block
+            
+        .flavor1:
+            background-color:  *flavor1
+        .flavor2:
+            background-color:  *flavor2
+        .flavor3:
+            background-color:  *flavor3
 
     # ===================================================================
     #            
@@ -858,4 +865,22 @@ css:
             padding:             *pad0
             background-color:    *bgclight
          
+            
+    # ===================================================================
+    #
+    # A set of styles for an old-fashioned HTMLT TABLE
+    #  
+    # ===================================================================
+    tables:
+        table.x6standard:
+            max-height:     *insideheight
+            border-top:     *bor3t
+            border-bottom:  *bor3b
+            border-left:    *bor3l
+            border-right:   *bor3r
+        table.x6standard thead tr th:
+            background-color: *bgcdark
+        table.x6standard tbody tr td:
+            vertical-align:   top
+            
             
