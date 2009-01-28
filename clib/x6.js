@@ -722,18 +722,23 @@ var x6 = {
                 var exitApproved = x6bb.fwGet('exitApproved',false);
                 x6.console.log("Key dispatch, ESC, exitapproved: ",exitApproved);
                 if(exitApproved) {
-                    x6.console.log("exit for ESC was approved, going to menu");
-                    setTimeout(
-                        function() {
-                            var x6page_prior=x6.p(x6.byId('x6page'),'value');
-                            var x6mod_prior =x6.p(x6.byId('x6module'),'value');
-                            var str = '?x6page=menu'
-                                +'&x6page_prior='+x6page_prior
-                                +'&x6mod_prior='+x6mod_prior;
-                            window.location.replace(str);
-                        }
-                        ,10
-                    );
+                    x6.console.log("exit for ESC was approved");
+                    if($('#x6exit').val()=='Y') {
+                        window.close();
+                    }
+                    else {
+                        setTimeout(
+                            function() {
+                                var x6page_prior=x6.p(x6.byId('x6page'),'value');
+                                var x6mod_prior =x6.p(x6.byId('x6module'),'value');
+                                var str = '?x6page=menu'
+                                    +'&x6page_prior='+x6page_prior
+                                    +'&x6mod_prior='+x6mod_prior;
+                                window.location.replace(str);
+                            }
+                            ,10
+                        );
+                    }
                 }
             }
             else {
@@ -4317,22 +4322,12 @@ x6plugins.tableController = function(self,id,table) {
     self['receiveEvent_reqEditRow_'+table] = function(skey) {
         x6.console.group("tableController reqEditRow "+this.zTable+", "+skey);
         var skeynow = this.zSkey;
-        // KFD 1/23/09.  Big change.  Table Controller must not 
-        //               decide what to do, must let the UI elements
-        //               decide, because they may have to change
-        //               tabs, set focus, etc.
-        //if(skeynow == skey) {
-        //    x6.console.log("Request to edit same row, no action");
-        //} 
-        //else {
-            var result = this.saveOk();
-            x6bb.fwSet('lastSave_'+this.zTable,result);
-            if(result!='fail') {
-                x6events.fireEvent('uiEditRow_'+this.zTable,skey);
-                this.zSkey = skey;
-            }
-        //}
-        // KFD 1/23/09 (END)
+        var result = this.saveOk();
+        x6bb.fwSet('lastSave_'+this.zTable,result);
+        if(result!='fail') {
+            x6events.fireEvent('uiEditRow_'+this.zTable,skey);
+            this.zSkey = skey;
+        }
         x6.console.groupEnd();
         return true;
     }
@@ -4432,6 +4427,16 @@ x6plugins.tableController = function(self,id,table) {
             x6.json.addParm('x6action','save');
             x6.json.addParm('x6v_skey',this.zSkey);
             x6.json.inputs(jq);
+            
+            // If we have a parent assigned, add that and the skey
+            var tp = $(this).prop('x6tablepar','');
+            if(tp != '') {
+                var skeypar = x6bb.fwGet('skey_'+tp+'_'+this.zTable);
+                x6.console.log("Setting parent table skey: "+tp+" "+skeypar);
+                x6.json.addParm('tableIdPar',tp);
+                x6.json.addParm('skeyPar',skeypar);
+            }
+            
             // Look for an "skey after" to send back 
             var queuepos  = x6bb.fwGet('queuepos_'+this.zTable,false);
             if(queuepos) {
@@ -4506,6 +4511,7 @@ x6plugins.tableController = function(self,id,table) {
                 x6.json.addParm('json',1);
                 if(x6.json.execute()) {
                     x6events.fireEvent('uiDelRow_'+table,skey);
+                    this.zSkey = -1;
                 }
             }
         }
@@ -5060,6 +5066,11 @@ x6plugins.grid = function(self,id,table) {
         if(id!=this.id) {
             this.keyboardOff();
             x6inputs.objectFocusBlur(this.id);
+            
+            if(this.x6profile=='grid') {
+                x6events.fireEvent('buttonsNew_'+this.zTable,false);
+                x6events.fireEvent('buttonsEdit_'+this.zTable,false);
+            }
         }
         // If it IS us, turn everything on, and set
         // the bulletin board.  But if we already have
@@ -5069,10 +5080,12 @@ x6plugins.grid = function(self,id,table) {
                 x6bb.fwSet('objectFocus',id);
 
                 this.keyboardOn();
-                x6events.fireEvent('buttonsNew_'+this.zTable,true);
                 
                 if(this.x6profile == 'grid') {
                     x6events.fireEvent('key_DownArrow','DownArrow');
+                    if($(this).prop('uiEditRow','N')=='Y') {
+                        x6events.fireEvent('buttonsNew_'+this.zTable,true);
+                    }
                 }
                 if(this.x6profile == 'conventional') {
                     x6inputs.objectFocusFocus(this.id,':input[id^=search]');
@@ -5201,7 +5214,7 @@ x6plugins.grid = function(self,id,table) {
         
             // Send a message and get lost
             this.zSkey = 0;
-            x6events.fireEvent('buttonsOnEdit_'+this.zTable);
+            x6events.fireEvent('buttonsEdit_'+this.zTable,true);
             x6grid.removeHighlight(this.zTable);
             x6.console.log('New row created, ready to edit');
             x6.console.groupEnd();
@@ -5774,8 +5787,13 @@ x6plugins.grid = function(self,id,table) {
     self.goRow = function(ordinal) {
         var row = $(this).find('.tbody > div')[ordinal];
         var skey= this.skeyForRow(row);
-        x6.console.log("goRow for ",ordinal,' has picked skey ',skey);
-        this.goRowBySkey(skey);
+        if(skey==undefined || skey=='') {
+            x6.console.log('goRow for '+ordinal+' found no skey, no action');
+        }
+        else {
+            x6.console.log("goRow for ",ordinal,' has picked skey ',skey);
+            this.goRowBySkey(skey);
+        }
     }
     self.goRowJq = function(jqRow) {
         var skey = this.skeyForRow(jqRow[0]);
@@ -5985,38 +6003,28 @@ x6tabs = {
     // IE/Firefox Event handling.  This event comes from 
     // jQuery so we can trust it is ok.
     tabsShow: function(tabsUl,event,ui) {
-        x6.console.group("x6tabs tabsShow");
+        x6.console.group("x6tabs tabsShow "+tabsUl.id+", "+ui.tab.text);
         var tabs = tabsUl;
         var profile = x6.p(tabs,'x6profile','');
         
-        // A "kids" profile must do slideup, and get busy turning
-        // buttons on and off for other tabs.
+        // A "kids" profile must do slideup, and get 
+        // busy setting object focus
         if(profile=='kids') {
             // disable all other tabs until we are finished, this is
             // the easiest way to prevent user from clicking on some
             // other tab while processing is going on.
             tabs.disableAll([ui.index]);
 
-            // First job for kids is to turn parent stuff on/off
+            // If we set objectfocus to '--null--', we turn off events
+            // for all objects, which is good, user can't go clicking
+            // things during animations.  But if they clicked 'hide'
+            // we turn the parent back on.
             var tablePar = x6.p(tabs,'x6parentTable');
             if(ui.index > 0) {
-                x6events.fireEvent('buttonsOff_'+tablePar,true);
+                x6events.fireEvent('objectFocus','--null--');
             }
             else {
-                x6events.fireEvent('buttonsOn_'+tablePar,true);
-            }
-            
-            // Next job is to turn previous tab's buttons on/off.
-            // Find the first item with a tableid property and
-            // assume that is the culprit.
-            var previousTabId = x6.p(tabs,'zCurrentId','');
-            if(previousTabId != '') {
-                var jqTable = $('#'+previousTabId+' [xtableid]:first');
-                var oldTable = x6.p(jqTable[0],'xTableId','');
-                x6events.fireEvent('buttonsOff_'+oldTable,true);
-                $('#'+previousTabId+' div[x6plugin=x6grid]').each(
-                    function() { this.keyboardOff(); }
-                );
+                x6events.fireEvent('objectFocus','ddisp_'+tablePar);
             }
             
             var topPane = x6.p(tabs,'x6slideUp');
@@ -6024,26 +6032,22 @@ x6tabs = {
             x6tabs.slideUp(tabsUl,event,ui,topPane,tpi);
         }
         
-        /*
-        *   Nice little trick, always set focus to first item
-        *
-        */
-        var id = $(ui.panel).attr('x6ObjectFocusId');
-        if( id != '') {
-            x6events.fireEvent('objectFocus',id);
-        }
         else {
-            // this is a fallback thing, you should really
-            // assign an object in the tab to get focus.
-            var str = '#' + ui.panel.id;
-            str+=' :input:not([disabled]):first';
-            x6.jqSetFocus(str);
+            // Set focus to the first object if it has been named
+            var id = $(ui.panel).attr('x6ObjectFocusId');
+            if( id != '') {
+                x6events.fireEvent('objectFocus',id);
+            }
+            else {
+                // this is a fallback thing, you should really
+                // assign an object in the tab to get focus.
+                var str = '#' + ui.panel.id;
+                str+=' :input:not([disabled]):first';
+                x6.jqSetFocus(str);
+            }
         }
         
-        /*
-        *  Save the id and index of the newly shown tab
-        *
-        */
+        // Save some state information
         tabs.zCurrentId    = ui.panel.id;
         tabs.zCurrentIndex = ui.index;
         x6.console.groupEnd();
@@ -6055,7 +6059,7 @@ x6tabs = {
         var currentChild = obj.currentChild
         var newChild     = ui.panel.id;
         
-        // if UI.index = 0, they clicked hide.  Make the
+        // if UI.index = 0, they clicked hide.
         if(ui.index==0) {
             if(currentChild!='*') {
                 var newHeight = $('#'+topPane).height()+350;
@@ -6132,7 +6136,8 @@ x6tabs = {
         var skeyDid = x6bb.fwGet('skey_'+tablePar+'_'+table,0);
         if(skeyDid==skeyPar) {
             tabsUl.enableAll();
-            x6events.fireEvent('buttonsOn_'+table,true);
+            x6events.fireEvent('objectFocus','grid_'+table);
+            //x6events.fireEvent('buttonsOn_'+table,true);
         }
         else {
             var json = new x6JSON(   'x6page'    ,table        );
