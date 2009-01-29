@@ -8712,6 +8712,7 @@ function DBB_Insert($prefix,$table,$suffix,$colvals,$noblanks=false) {
             if($name=='srcfile')   continue; // generated
             if($name=='auto')      continue; // shortcut, gets parsed
             if($name=='columns')   continue; // for content
+            if($name=='x6xrefdesc')    continue;
             if($name=='suffix'  && $table=='perm_cols') continue;
             if($name=='prefix'  && $table=='perm_cols') continue;
             if($table=='colchainargs')  continue; // derived tables
