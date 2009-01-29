@@ -63,6 +63,13 @@
    * @package Spyc
    */
   class Spyc {
+    # KFD 1/28/09, store a list of errors that the
+    #              calling program can examine
+    /**
+     * @access public
+     * @var bool
+     */
+    var $errors = array();
 
     /**
      * Load YAML into a PHP array statically
@@ -143,13 +150,13 @@
       $this->_nodeId     = 2;
 
       foreach ($yaml as $linenum => $line) {
+        $ln = $linenum + 1;
         $ifchk = trim($line);
 
         // If the line starts with a tab (instead of a space), throw a fit.
         if (preg_match('/^(\t)+(\w+)/', $line)) {
-          $err = 'ERROR: Line '. ($linenum + 1) .' in your input YAML begins'.
-                 ' with a tab.  YAML only recognizes spaces.  Please reformat.';
-          die($err);
+          $this->errors[]="Line $ln TAB detected, only spaces are supported.";
+          continue;
         }
 
         if ($this->_inBlock === false && empty($ifchk)) {
@@ -161,8 +168,19 @@
           // Create a new node and get its indent
           $node         = new YAMLNode ($this->_nodeId);
 		  $this->_nodeId++;
+          
+          ## KFD 1/28/09, Modified 
+          $node->lineNumber = $ln;
 
           $node->indent = $this->_getIndent($line);
+ 
+          ## KFD 1/28/09, disallow odd-numbered indentations
+          if($node->indent > 0 && ($node->indent % 2!=0)) {
+              $this->errors[]="Line $ln indented by odd number of spaces: "
+                .$node->indent;
+            continue;
+          }
+          
 
           // Check where the node lies in the hierarchy
           if ($this->_lastIndent == $node->indent) {
@@ -589,11 +607,13 @@
       } elseif (preg_match ('/^[0-9]+$/', $value)) {
       // Cheeky change for compartibility with PHP < 4.2.0
         $value = (int)$value;
+        # KFD 1/28/09, remove 'y' from the list of array values
       } elseif (in_array(strtolower($value),
-                  array('true', 'on', '+', 'yes', 'y'))) {
+                  array('true', 'on', '+', 'yes' /*, 'y'*/))) {
         $value = true;
+        # KFD 1/28/09, remove 'n' from the list of array values
       } elseif (in_array(strtolower($value),
-                  array('false', 'off', '-', 'no', 'n'))) {
+                  array('false', 'off', '-', 'no' /*, 'n'*/))) {
         $value = false;
       } elseif (is_numeric($value)) {
         $value = (float)$value;
@@ -791,6 +811,8 @@
       if (is_array($node->data) && $node->children == true) {
         // This node has children, so we need to find them
         $childs = $this->_gatherChildren($node->id);
+        # KFD Line number in final output
+        $childs['__yaml_line'] = $node->lineNumber;
         // We've gathered all our children's data and are ready to use it
         $key = key($node->data);
         $key = empty($key) ? 0 : $key;
@@ -855,13 +877,39 @@
     function _array_kmerge($arr1,$arr2) {
       if(!is_array($arr1)) $arr1 = array();
       if(!is_array($arr2)) $arr2 = array();
+      
 
       $keys  = array_merge(array_keys($arr1),array_keys($arr2));
       $vals  = array_merge(array_values($arr1),array_values($arr2));
       $ret   = array();
+      /*
+       * KFD: This code shows how the 2nd overwrites the first
+      if(isset($arr2['column geomatrixcd'])) {
+          if(!isset($GLOBALS['geo'])) $GLOBALS['geo'] = 0;
+          $GLOBALS['geo']++;
+          if($GLOBALS['geo']==2) {
+              hprint_r($keys);
+              hprint_r($vals);
+              exit;
+          }
+      }
+      */
       foreach($keys as $key) {
         list($unused,$val) = each($vals);
-        if (isset($ret[$key]) and is_int($key)) $ret[] = $val; else $ret[$key] = $val;
+        if (isset($ret[$key]) and is_int($key)) {
+            $ret[] = $val; 
+        }
+        else {
+          # KFD 1/28/09, Trap for duplicate keys here and record 
+          #              the error.
+          if(isset($ret[$key])) {
+            $l1 = $arr1[$key]['__yaml_line'];
+            $l2 = $arr2[$key]['__yaml_line'];
+            $this->errors[] 
+                = "Entry '$key' duplicated on lines $l1 and $l2 ";
+          }
+          $ret[$key] = $val;
+        }
       }
       return $ret;
     }
