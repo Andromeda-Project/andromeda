@@ -366,12 +366,6 @@ menu a_pullcode:
     uisort: 100
     description: Pull Software Updates (Deprecated)
 
-    
-column version:
-    description: Version Code
-    type_id: char
-    colprec: 10
-
 table appversions:
     description: Application Versions
     uisort: 200
