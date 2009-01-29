@@ -1001,14 +1001,14 @@ function SpecLoad_ArrayToTables($arr,$cLoadSuffix,$parent_row=array(),$parent_pr
     global $parm;
 	$retval = true;
 	
-	foreach ($arr as $keyword=>$object) {
+    foreach ($arr as $keyword=>$object) {
         # KFD 1/27/09, put all keywords into lowercase
         $keyword = strtolower($keyword);
         
-		// Ignore prop/value pairs at even-numbered rows
-		if (! is_array($object)) { continue; }
-
-		// Now use $keyword to get table name we will insert into
+        // Ignore prop/value pairs at even-numbered rows
+        if (! is_array($object)) { continue; }
+        
+        // Now use $keyword to get table name we will insert into
         //$this->LogEntry("$parent_prefix - $keyword");
         if(!isset($this->ddarr["meta"]["keyword"][$parent_prefix.$keyword]["table"])) {
             echo ">> ERROR <br/>";
@@ -1019,102 +1019,108 @@ function SpecLoad_ArrayToTables($arr,$cLoadSuffix,$parent_row=array(),$parent_pr
             return false;
         }
         $table= $this->ddarr["meta"]["keyword"][$parent_prefix.$keyword]["table"];
-		$pkcolname = $this->ddarr["meta"]["keyword"][$parent_prefix.$keyword]["keycol"];
-		$keystub   = $this->zzArray($this->ddarr["meta"]["keyword"][$parent_prefix.$keyword],"keystub");
-		//echo "TABLE is $table, pk and keystub are $pkcolname and $keystub <br>";
-
-		$dd = &$this->ddarr["data"]["table"][$table];
-		if ($table=="") {
-			$this->LogEntry("ERROR: Could not find table to match keyword ".$parent_prefix.$keyword);
-			$retval = false;
-			continue;
-		}
-		
-		foreach ($object as $pkvalue=>$properties) {
-			$row=array();
-			// Use $keyword to get name of one of the columns at least
-			if (!is_numeric($pkvalue)) {
-				$row[ $pkcolname ] = $pkvalue;
-			}
-			
-			// Whatever is not a child object is a property/value pair
-			foreach ($properties as $colname=>$colvalue) {
+        $pkcolname = $this->ddarr["meta"]["keyword"][$parent_prefix.$keyword]["keycol"];
+        $keystub   = $this->zzArray($this->ddarr["meta"]["keyword"][$parent_prefix.$keyword],"keystub");
+        //echo "TABLE is $table, pk and keystub are $pkcolname and $keystub <br>";
+        
+        $dd = &$this->ddarr["data"]["table"][$table];
+        if ($table=="") {
+            $this->LogEntry("ERROR: Could not find table to match keyword ".$parent_prefix.$keyword);
+            $retval = false;
+            continue;
+        }
+        
+        foreach ($object as $pkvalue=>$properties) {
+            $row=array();
+            // Use $keyword to get name of one of the columns at least
+            if (!is_numeric($pkvalue)) {
+                $row[ $pkcolname ] = $pkvalue;
+            }
+            
+            // Whatever is not a child object is a property/value pair
+            foreach ($properties as $colname=>$colvalue) {
                 # KFD 1/27/09, case insensitivity
                 $colname = strtolower($colname);
-				if (! is_array($colvalue)) {
-					$row[$colname] = $colvalue;
-					if ($keystub <> "" && $colname == "__keystub") { 
-						$row[$keystub] = $colvalue;
-					}
-				}
-			}
-			
-			// Add/override any col/values from parent object if nested
-			foreach ($parent_row as $colname=>$colvalue) {
-				$row[$colname] = $colvalue;
-			}
-         
-			// HARDCODED BREAK POINT.  Anything we want to do 
-			// to deal with the spec has to be done here 
-			//
-			if ($table=="tabchaintests" || $table=="colchaintests") {
-            // For chain tests, parse out the expressions
-				$pfx = substr($table,0,3);
-				$this->SpecLoad_ArrayToTables_HC_cargs($row,"compare","compoper",$cLoadSuffix,$pfx);
-				$this->SpecLoad_ArrayToTables_HC_cargs($row,"return" ,"funcoper",$cLoadSuffix,$pfx);				
-			}
-         if ($keyword=='child_table') {
-            // Flip two columns to make this property of child table instead
-            $x = $row['table_id'];
-				$row['table_id'] = $row['table_id_par'];
-            $row['table_id_par'] = $x;
-         }
-
-			// Add the primary key columns for this object into the "parent_row"
-			// array, then recurse child objects.
-			$pr = $parent_row;
-			foreach ($row as $colname=>$colvalue) {
-				if (isset($this->ddflat[$table][$colname])) {
-					if ($this->zzArray($this->ddflat[$table][$colname],"primary_key")=="Y") {
-						$pr[$colname] = $colvalue;
-					}
-				}
-			}
-			$retval = $retval && 
-				$this->SpecLoad_ArrayToTables($properties,$cLoadSuffix,$pr,$parent_prefix.$keyword."_");
-				
-
-         // MORE HARDCODE STUFF.  These are any hardcoded things that
-         //    must occur immediately before writing to file, but should
-         //    not propagate through to child tables because the action
-         //    would be repeated in the child table.
-         //
-         if (isset($row['group_id'])) {
-            if($row['group_id']<>$parm['APP']) {
-               $row['group_id']=$parm['APP'].'_'.$row['group_id'];
+                if (! is_array($colvalue)) {
+                    $row[$colname] = $colvalue;
+                    if ($keystub <> "" && $colname == "__keystub") { 
+                        $row[$keystub] = $colvalue;
+                    }
+                }
             }
-         }
-         // KFD 5/22/08, support the "auto" keyword for shorter automations
-         if(isset($row['auto'])) {
-             $auto = explode(',',$row['auto']);
-             $row['automation_id'] = strtoupper($auto[0]);
-             if(isset($auto[1])) {
-                 $row['auto_formula'] = $auto[1];
-             }
-         }
-         // KFD 4/9/08, support for lowercase automations by uppercasing
-         // them on the way in
-         if(isset($row['automation_id'])) {
-             $row['automation_id'] = strtoupper($row['automation_id']);
-         }
             
-			// Finally, execute it
-         $row['srcfile']=$srcfile;
-         $return = $this->DBB_Insert("zdd.",$table,$cLoadSuffix,$row);
-         $retval = $retval && $return;
-		}
-	}
-	return $retval;
+            // Add/override any col/values from parent object if nested
+            foreach ($parent_row as $colname=>$colvalue) {
+                $row[$colname] = $colvalue;
+            }
+         
+            // HARDCODED BREAK POINT.  Anything we want to do 
+            // to deal with the spec has to be done here 
+            //
+            if ($table=="tabchaintests" || $table=="colchaintests") {
+            // For chain tests, parse out the expressions
+                $pfx = substr($table,0,3);
+                $this->SpecLoad_ArrayToTables_HC_cargs($row,"compare","compoper",$cLoadSuffix,$pfx);
+                $this->SpecLoad_ArrayToTables_HC_cargs($row,"return" ,"funcoper",$cLoadSuffix,$pfx);				
+            }
+            if ($keyword=='child_table') {
+                // Flip two columns to make this property of child table instead
+                $x = $row['table_id'];
+                $row['table_id'] = $row['table_id_par'];
+                $row['table_id_par'] = $x;
+            }
+        
+            // Add the primary key columns for this object into the "parent_row"
+            // array, then recurse child objects.
+            $pr = $parent_row;
+            foreach ($row as $colname=>$colvalue) {
+                if (isset($this->ddflat[$table][$colname])) {
+                    if ($this->zzArray($this->ddflat[$table][$colname],"primary_key")=="Y") {
+                        $pr[$colname] = $colvalue;
+                    }
+                }
+            }
+            $retval = $retval && 
+                $this->SpecLoad_ArrayToTables($properties,$cLoadSuffix,$pr,$parent_prefix.$keyword."_");
+                
+        
+            // MORE HARDCODE STUFF.  These are any hardcoded things that
+            //    must occur immediately before writing to file, but should
+            //    not propagate through to child tables because the action
+            //    would be repeated in the child table.
+            //
+            if (isset($row['group_id'])) {
+                if($row['group_id']<>$parm['APP']) {
+                   $row['group_id']=$parm['APP'].'_'.$row['group_id'];
+                }
+            }
+            // KFD 5/22/08, support the "auto" keyword for shorter automations
+            if(isset($row['auto'])) {
+                $auto = explode(',',$row['auto']);
+                $row['automation_id'] = strtoupper($auto[0]);
+                if(isset($auto[1])) {
+                    $row['auto_formula'] = $auto[1];
+                }
+            }
+            // KFD 4/9/08, support for lowercase automations by uppercasing
+            // them on the way in
+            if(isset($row['automation_id'])) {
+             $row['automation_id'] = strtoupper($row['automation_id']);
+            }
+            
+            // Finally, execute it
+            $row['srcfile']=$srcfile;
+            $return = $this->DBB_Insert("zdd.",$table,$cLoadSuffix,$row);
+            if($return == '') {
+                x_echoFlush(
+                 "    Parent object defined at line ".$properties['__yaml_line']
+                 );
+                hprint_r($properties);
+            }
+            $retval = $retval && $return;
+        }
+    }
+    return $retval;
 }
 
 function SpecLoad_ArrayToTables_HC_cargs(&$row,$element,$rowcol,$cLoadSuffix,$pfx) {
@@ -8170,7 +8176,20 @@ function DBB_LoadYAMLFile($filename,&$retarr) {
     
     // Now convert to YAML and dump
     include_once("spyc.php");
-    $temparray=Spyc::YAMLLoad($filename);
+    $parser = new Spyc;
+    $temparray = $parser->load($filename);
+    #$temparray=Spyc::YAMLLoad($filename);
+    if(count($parser->errors)>0) {
+        x_echoFlush(" >>> ");
+        x_echoFlush(" >>> Parse errors in the YAML File");
+        x_echoFlush(" >>> ");
+        foreach($parser->errors as $idx=>$err) {
+            $idx = str_pad($idx+1,4,' ',STR_PAD_LEFT);
+            x_EchoFlush("$idx) $err");
+        }
+        return false;
+    }
+    
     $this->YAMLError=false;
     
     $this->YAMLPrevious=array("no entries yet, look at top of file");
@@ -8183,6 +8202,9 @@ function DBB_LoadYAMLFile($filename,&$retarr) {
 
 // Scan for indentation errors
 function DBB_LoadYAMLFile_Prescan($filename) {
+    # KFD 1/28/09, moved this stuff into the spyc.php file,
+    #              do not need this routine anymore.
+    return true;
     $this->LogEntry("Scanning file for correct formatting");
     
     // Load file, get rid of carriage returns, explode into lines
@@ -8280,8 +8302,17 @@ function YAMLWalk($source) {
                
                 $values = array();
                 foreach($item as $key=>$stuff) {
-                    foreach($stuff as $array) {
-                        $values[]=array_merge(array('__type'=>$key),$array);
+                    # KFD 1/28/09.  After we put line numbers 
+                    #               into things, we get non-array 
+                    #               entries.  Just skip 'em
+                    if(is_array($stuff)) {
+                        foreach($stuff as $idx=>$array) {
+                            if(is_array($array)) {
+                                $values[]=array_merge(
+                                    array('__type'=>$key),$array
+                                );
+                            }
+                        }
                     }
                 }
                    
@@ -8707,11 +8738,12 @@ function DBB_Insert($prefix,$table,$suffix,$colvals,$noblanks=false) {
     foreach($colvals as $name=>$value) {
         if(!isset($this->utabs[$table]['flat'][$name])) {
             # Don't stop on our hardcoded meta values
-            if($name=='__keystub') continue; // generated
-            if($name=='uicolseq')  continue; // generated
-            if($name=='srcfile')   continue; // generated
-            if($name=='auto')      continue; // shortcut, gets parsed
-            if($name=='columns')   continue; // for content
+            if($name=='__yaml_line') continue; // generated
+            if($name=='__keystub')   continue; // generated
+            if($name=='uicolseq')    continue; // generated
+            if($name=='srcfile')     continue; // generated
+            if($name=='auto')        continue; // shortcut, gets parsed
+            if($name=='columns')     continue; // for content
             if($name=='x6xrefdesc')    continue;
             if($name=='suffix'  && $table=='perm_cols') continue;
             if($name=='prefix'  && $table=='perm_cols') continue;
@@ -8723,11 +8755,9 @@ function DBB_Insert($prefix,$table,$suffix,$colvals,$noblanks=false) {
             if($table=='tabchains')     continue; // derived tables
             
             
-            x_EchoFlush("");
-            x_EchoFlush(" >>> ERROR: BAD PROPERTY NAME");
-            x_EchoFlush(" >>> Cannot set '$name' on '$table' to value '$value'");
-            x_EchoFlush("");
-            hprint_r($colvals);
+            x_EchoFlush(
+                ">>> ERROR: No Property Named '$name' (value '$value')"
+            );
             $insert_error = true;
         }
     }
