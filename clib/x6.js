@@ -464,7 +464,7 @@ String.prototype.repeat = function(count) {
 * SOURCE
 */
 String.prototype.htmlDisplay = function() {
-    if(this==null) { console.log('null'); return ''; }
+    if(this==null)  return '';
     return this.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 /******/
@@ -2601,7 +2601,6 @@ var x6events = {
     },
     
     priorFocus: function() {
-        console.log(this.priorObjectFocus);
         this.fireEvent('objectFocus',this.priorObjectFocus);
     }
 }
@@ -4883,7 +4882,6 @@ x6plugins.detailDisplay = function(self,id,table) {
             // tells us where to pull defaults from
             $(this).find(':input[xdefsrc]').each(
                 function() {
-                    console.log(this.id);
                     var info = $(this).prop('xdefsrc').split('.');
                     var row  = x6bb.fwGet('dbRow_'+info[0]);
                     var val  = row[info[1]];
@@ -5473,7 +5471,6 @@ x6plugins.grid = function(self,id,table) {
     }
     
     self.uiRowSaved_readOnly = function(row) {
-        console.log(row);
         var skey = row.skey;
         // DUPLICATE CODE ALERT
         // This code is also present in PHP androLib.php
