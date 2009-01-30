@@ -29,6 +29,7 @@ group admin:
         permupd: "Y"
         permdel: "Y"
         nomenu: "N"
+
         
 # ========================================================================
 # Options
@@ -294,6 +295,7 @@ column dirname:
     colprec: 15
     description: Top Directory
 
+    
 table appdirs:
     description: Application Directories
     module: thisnode
