@@ -727,7 +727,7 @@
               $line = $node->lineNumber;
               if(isset($keyslines[$key])) {
                   $this->errors[] =
-                    "<br/>Definition '$key' at line $line "
+                    "Definition '$key' at line $line "
                     ."duplicates line {$keyslines[$key]}";
               }
               else {
