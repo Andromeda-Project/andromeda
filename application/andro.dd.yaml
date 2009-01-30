@@ -50,9 +50,11 @@ module apps:
     group admin:
         nomenu: "N"
 
+# DO 1-30-2009 Increasing column to accomodate true application name
+# when instance is specified
 column application:
     type_id: char
-    colprec: 10
+    colprec: 25
     description: Application
 column appspec:
     description: Specification File
