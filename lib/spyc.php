@@ -709,6 +709,35 @@
       if (!isset($this->_indentSort[0])) {
         return $trunk;
       }
+      
+      # KFD 1/30/09, Moved Duplication check to top, before
+      #              attempting to build tree.
+      #
+      foreach($this->_allParent as $parId=>$childs) {
+          # Make a blank array of keys and line numbers
+          $keyslines = array();
+          foreach($childs as $id) {
+              $node = $this->_allNodes[$id];
+              # Data seems to always be an array of one entry
+              list($key,$notused) = each($node->data);
+              # This is necessary or downstream code is all messed up
+              reset($node->data);
+              # Numeric entries should not be de-duped
+              if(is_numeric($key)) continue;
+              $line = $node->lineNumber;
+              if(isset($keyslines[$key])) {
+                  $this->errors[] =
+                    "<br/>Definition '$key' at line $line "
+                    ."duplicates line {$keyslines[$key]}";
+              }
+              else {
+                  $keyslines[$key] = $line;
+              }
+          }
+      }
+      if(count($this->errors)>0) return $trunk;
+      #
+      # KFD 1/30/09  (END)
 
       foreach ($this->_indentSort[0] as $n) {
         if (empty($n->parent)) {
@@ -882,34 +911,9 @@
       $keys  = array_merge(array_keys($arr1),array_keys($arr2));
       $vals  = array_merge(array_values($arr1),array_values($arr2));
       $ret   = array();
-      /*
-       * KFD: This code shows how the 2nd overwrites the first
-      if(isset($arr2['column geomatrixcd'])) {
-          if(!isset($GLOBALS['geo'])) $GLOBALS['geo'] = 0;
-          $GLOBALS['geo']++;
-          if($GLOBALS['geo']==2) {
-              hprint_r($keys);
-              hprint_r($vals);
-              exit;
-          }
-      }
-      */
       foreach($keys as $key) {
         list($unused,$val) = each($vals);
-        if (isset($ret[$key]) and is_int($key)) {
-            $ret[] = $val; 
-        }
-        else {
-          # KFD 1/28/09, Trap for duplicate keys here and record 
-          #              the error.
-          if(isset($ret[$key])) {
-            $l1 = $arr1[$key]['__yaml_line'];
-            $l2 = $arr2[$key]['__yaml_line'];
-            $this->errors[] 
-                = "Entry '$key' duplicated on lines $l1 and $l2 ";
-          }
-          $ret[$key] = $val;
-        }
+        if (isset($ret[$key]) and is_int($key)) $ret[] = $val; else $ret[$key] = $val;
       }
       return $ret;
     }
