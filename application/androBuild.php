@@ -218,7 +218,7 @@ function checkDBFilesForChanges() {
             $this->LogEntry( 'Entry for ' .$checksum['file']  .' not found' );
             $checksum_entry = array(
                 'application'=>$parm['APP'],
-                'instance'=>( isset( $parm['ISTANCE'] ) ? $parm['INST'] : '' ),
+                'instance'=>( isset( $parm['INST'] ) ? $parm['INST'] : '' ),
                 'spec_name'=>$checksum['file'],
                 'checksum'=>md5_file( $checksum['fullpath'] )
             );
