@@ -594,7 +594,7 @@ column linksearch    {  type_id:  char; colprec: 1;  description: Search Link;}
 column permcol       {  type_id:  char; colprec: 1;  description: Has Column Security; }
 column singular      {  type_id: vchar; colprec: 50; description: Singular Name; }
 column x6profile     {  type_id: vchar; colprec: 20; description: X6 Profile; }
-column x6childwrites {  type_id:  char; colprec: 1;  description: X6 Child Writes; }
+column x6childwrites {  type_id: vchar; colprec: 10; description: X6 Child Writes; }
 column x6all         {  type_id:  char; colprec: 1;  description: x6select Preload All Rows; }
 column x6xref        {  type_id: vchar; colprec: 10; description: How to Display As Child; }
 column spaceafter    {  type_id:  char; colprec: 1;  description: Put spacer on menu after this entry; }

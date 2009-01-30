@@ -1614,10 +1614,17 @@ class androHtml {
     ******/
     # overrides default addButtonbar
     function bbHeight() { return x6cssHeight('div.x6buttonBar a.button');} 
-    function addButtonBar() {
+    function addButtonBar($list='new,ins,save,cancel,delete') {
         $bbHeight = $this->bbHeight();
         $table_id = $this->hp['x6table'];
-        $abuts = array('new','save','remove','abandon');
+        $abuts = explode(',',$list);
+        
+        # Tell us which buttons it has, default to none
+        $this->hp['butnew']    = 'N';
+        $this->hp['butins']    = 'N';
+        $this->hp['butsave']   = 'N';
+        $this->hp['butcancel'] = 'N';
+        $this->hp['butdelete'] = 'N';
         
         # First trick is to create the div that will be
         # slipped in above the titles.
@@ -1643,6 +1650,7 @@ class androHtml {
         $sr->hp['style'] = 'float: right';
 
         if(in_array('new',$abuts)) {
+            $this->hp['butnew'] = 'Y';
             $a=$sl->h('a-void','New');
             $a->addClass('button_disabled button-first');
             $a->hp['style'] = 'margin-left: 0px';
@@ -1653,17 +1661,21 @@ class androHtml {
             $bb->buttons['new'] = $a;
             $a->initPlugin();
 
-            $a=$sl->h('a-void','Insert');
-            $a->addClass('button_disabled');
-            $a->hp['style'] = 'margin-left: 0px';
-            $a->hp['x6table']  = $table_id;
-            $a->hp['x6plugin'] = 'buttonInsert';
-            $a->hp['id']       = 'buttonInsert_'.$table_id;
-            $a->hp['style']    = 'float: left';
-            $bb->buttons['ins'] = $a;
-            $a->initPlugin();
+            if(in_array('ins',$abuts)) {
+                $this->hp['butins'] = 'Y';
+                $a=$sl->h('a-void','Insert');
+                $a->addClass('button_disabled');
+                $a->hp['style'] = 'margin-left: 0px';
+                $a->hp['x6table']  = $table_id;
+                $a->hp['x6plugin'] = 'buttonInsert';
+                $a->hp['id']       = 'buttonInsert_'.$table_id;
+                $a->hp['style']    = 'float: left';
+                $bb->buttons['ins'] = $a;
+                $a->initPlugin();
+            }
         }
         if(in_array('save',$abuts)) {
+            $this->hp['butsave'] = 'Y';
             $a=$sl->h('a-void','Save');
             $a->addClass('button_disabled');
             $a->hp['x6table']  = $table_id;
@@ -1673,7 +1685,8 @@ class androHtml {
             $bb->buttons['save'] = $a;
             $a->initPlugin();
         }
-        if(in_array('remove',$abuts)) {
+        if(in_array('cancel',$abuts)) {
+            $this->hp['butcancel'] = 'Y';
             $a=$sr->h('a-void','Delete');
             $a->addClass('button_disabled');
             $a->hp['x6table']  = $table_id;
@@ -1683,7 +1696,8 @@ class androHtml {
             $bb->buttons['remove'] = $a;
             $a->initPlugin();
         }
-        if(in_array('abandon',$abuts)) {
+        if(in_array('delete',$abuts)) {
+            $this->hp['butdelete'] = 'Y';
             $a=$sr->h('a-void','Cancel');
             $a->addClass('button_disabled');
             $a->hp['x6table']  = $table_id;
@@ -2783,7 +2797,12 @@ class androHTMLGrid extends androHTML {
         
         # Again, add button bar if required
         if($bb) {
-            $this->addButtonBar();
+            if(is_string($bb)) {
+                $this->addButtonBar($bb);
+            }
+            else {
+                $this->addButtonBar();
+            }
         }
         $this->hp['xButtonBar'] = $bb ? 'Y' : 'N';
         
@@ -3238,7 +3257,7 @@ class androHTMLGrid extends androHTML {
 class androHTMLDetail extends androHTML {
     var $firstFocus = false;
     
-    function androHTMLDetail($table_id,$complete=false,$height=300) {
+    function androHTMLDetail($table_id,$complete=false,$height=300,$p=''){
         $this->hp['x6plugin'] = 'detailDisplay';
         $this->hp['x6table']  = $table_id;
         $this->hp['id'] = 'ddisp_'.$table_id;
@@ -3247,7 +3266,7 @@ class androHTMLDetail extends androHTML {
         if($complete) {
             $this->htype='div';
             $this->innerId  = "ddisp_{$table_id}_inner";
-            $this->makeComplete($table_id,$height);
+            $this->makeComplete($table_id,$height,$p);
         }
         else {
             $this->htype='table';
@@ -3256,7 +3275,7 @@ class androHTMLDetail extends androHTML {
         }
     }
     
-    function makeComplete($table_id,$height) {
+    function makeComplete($table_id,$height,$parTable) {
         # The complete track is much more involved, adds
         # buttons and a status bar at bottom.
         $this->addClass('box2');
@@ -3273,18 +3292,34 @@ class androHTMLDetail extends androHTML {
             + x6cssRuleSize('.box1','border-left')    // see below, inner  
             + x6cssRuleSize('.box1','border-right')   // box is box1
             + ($pad0 * 7);  // padding left and right of box1
-        
+
+        # Always need this
+        $dd = ddTable($table_id);
         
         # Now for the display
         # Put some buttons on users
         $this->addButtonBar();
+        
+        # KFD 1/29/09 break out pk/fk columns
+        if($parTable == '') {
+            $colsFK = array();
+        }
+        else {
+            #echo $table_id;
+            #hprint_r($dd['fk_parents']);
+            $x = $dd['fk_parents'][$parTable]['cols_both'];
+            $x = explode(',',$x);
+            foreach($x as $pair) {
+                list($chd,$par) = explode(':',$pair);
+                $colsFK[$chd] = $par;
+            }
+        }
         
                 
         # Put in a div that will be the inner box
         #
         $div = $this->h('div');
         $div->addClass('box1');
-        $dd = ddTable($table_id);
         $table = $div->h('table');
         $table->hp['style']='float: left; margin-right: 20px';
         $table->addClass('x6Detail');
@@ -3302,7 +3337,9 @@ class androHTMLDetail extends androHTML {
             }
         }
 
-        $options = array('xTabGroup'=>'ddisp_'.$table_id);
+        $options = array(
+            'xTabGroup'=>'ddisp_'.$table_id
+        );
         foreach($cols as $idx=>$col) {
             if($break17) {
                 if($idx>0 && $idx % 17 == 0) {
@@ -3311,7 +3348,22 @@ class androHTMLDetail extends androHTML {
                     $this->inputsTable->addClass('x6Detail');
                 }
             }
-            $this->addTRInput($dd,$col,$options);
+            
+            # KFD 1/29/09.  If detail that is child of a parent,
+            #               see if this column needs to pull
+            if(!isset($colsFK[$col])) 
+                $xoptions = $options;
+            else {
+                $xoptions = array_merge(
+                    $options
+                    ,array('attributes'=>array(
+                        'xdefsrc'=>$parTable.'.'.$colsFK[$col])
+                    )
+                );
+            }
+                
+            
+            $this->addTRInput($dd,$col,$xoptions);
             $x6ba = trim(arr($dd['flat'][$col],'x6breakafter',''));
             if($x6ba=='column') {
                 $this->inputsTable=$div->h('table');
@@ -3482,12 +3534,29 @@ class androHTMLxrefs extends androHTML {
     }
 }
 
+function addModal($modal) {
+    $modal->hp['x6modal'] = 'Y';
+    if(!isset($GLOBALS['AG']['modals'])) {
+        $GLOBALS['AG']['modals'] = array();
+    }
+    $GLOBALS['AG']['modals'][] = $modal;
+}
+
+/*
 class androHTMLModal extends androHTML {
     function androHTMLModal($id,$title='') {
         # First stuff is basic stuff for any plugin
         $this->htype='div';
         $this->addClass('x6modal');
         $this->hp['id'] = $id;
+        
+        # look for a global list of modals
+        if(!isset($GLOBALS['AG']['modals'])) {
+            $GLOBALS['AG']['modals'] = array();
+        }
+        $GLOBALS['AG']['modals'][] = $this;
+        return;
+        
         $this->hp['x6plugin'] = 'modal';
         $this->hp['x6table']  = '*';
         $this->initPlugin();
@@ -3511,9 +3580,9 @@ class androHTMLModal extends androHTML {
         $x->hp['style'] = 'clear:both';
         $this->inner = $this->h('div');
         $this->inner->addClass('x6modalinner');
-
     }
 }
+*/
 
 
 /**
@@ -3887,6 +3956,10 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
     #if(count($atts)>0) x6data($column_id,$atts);
     foreach($atts as $name=>$value) {
         $input->hp[$name]=$value;
+        if($name=='xdefsrc') {
+            $input->hp['xRoIns'] = 'Y';
+            $input->hp['xRoUpd'] = 'Y';
+        }
     }
     
     # KFD 10/18/08, add any classes named in options

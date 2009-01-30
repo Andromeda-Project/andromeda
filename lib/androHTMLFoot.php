@@ -91,7 +91,14 @@ if(configGet('deprecated','Y')=='Y') {
      style = "display:none;" 
      class = "x6modalblock"
    onclick = "return false">&nbsp;</div>
-<div id="x6modal"       style="display:none;" class="x6modal">&nbsp;</div>
+<div id="x6modal"       style="display:none;" class="x6modal">
+<?php 
+    $modals = arr($GLOBALS['AG'],'modals',array());
+    foreach($modals as $modal) {
+        $modal->render();
+    }
+?>    
+</div>
 <?php
     # KFD 12/31/08.  Restrict the query log to people who have
     #                set the cookie and are in the 'debuggers' group

@@ -464,6 +464,7 @@ String.prototype.repeat = function(count) {
 * SOURCE
 */
 String.prototype.htmlDisplay = function() {
+    if(this==null) { console.log('null'); return ''; }
     return this.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 /******/
@@ -2453,6 +2454,7 @@ var x6events = {
     *
     ******
     */
+    priorObjectFocus: '',
     makeMap: false,
     map: [ ],
     mapStack: [ ],
@@ -2522,14 +2524,27 @@ var x6events = {
             return;
         }
         
-        // Hardcoded handling of objectFocus, pull out the object
-        // getting focus and put it at end
+        // Hardcoded handling of objectFocus, we fire only to
+        // the object that has focus and the object receving it
         if(eventName=='objectFocus') {
-            var idx = subscribers.indexOf(arguments);
-            if(idx >= 0) {
-                subscribers.splice(idx,1);
-                subscribers.push(arguments);
+            x6.console.log("Event objectFocus handling is hardcoded");
+            var objNowId = x6bb.fwGet('objectFocus','');
+            if(objNowId != arguments) {
+                this.priorObjectFocus = objNowId;
+                if(objNowId != '' && objNowId !='--null--') {
+                    retval = x6.byId(objNowId)
+                        .receiveEvent_objectFocus(arguments);
+                }
+                if(arguments != '--null--') {
+                    retval = x6.byId(arguments)
+                        .receiveEvent_objectFocus(arguments);
+                }
+                
             }
+            x6inputs.objectFocusFocus(arguments);
+            
+            // This causes no events to fire below
+            subscribers = [];
         }
         
         // loop through subscribers.  Note at the bottom of the list
@@ -2583,6 +2598,11 @@ var x6events = {
         x6.console.log("fireEvent ",eventName," RETURNING: ",this.retvals[eventName]);
         x6.console.groupEnd();
         return this.retvals[eventName];
+    },
+    
+    priorFocus: function() {
+        console.log(this.priorObjectFocus);
+        this.fireEvent('objectFocus',this.priorObjectFocus);
     }
 }
 
@@ -3573,7 +3593,6 @@ var x6inputs = {
     },
     
     setClass: function(inp) {
-        x6.console.group("setClass for input "+inp.id);
         if(x6.p(inp,'xLookup')=='Y') {
             x6.console.groupEnd();
             return;
@@ -3646,7 +3665,6 @@ var x6inputs = {
                 inp.parentNode.parentNode.className = '';
             }
         }
-        x6.console.groupEnd();
     },
     
     clearOut: function(inp) {
@@ -4695,39 +4713,39 @@ x6plugins.tableController = function(self,id,table) {
 ******
 */
 x6plugins.detailDisplay = function(self,id,table) {
-    self.zTable = table;
-    self.zSkey  = -1;
+    self.zTable       = table;
+    self.zSkey        = -1;
     
     x6events.subscribeToEvent('objectFocus',id);
     self.receiveEvent_objectFocus = function(id) {
         x6.console.group("Object Focus for: "+id+", we are "+this.id);
         if(id!=this.id) {
             x6events.fireEvent('buttonsNew_'+this.zTable,false);
-            x6events.fireEvent('buttonsEdit_'+this.zTable,false); 
-            
+            x6events.fireEvent('buttonsEdit_'+this.zTable,false);
             x6inputs.objectFocusBlur(this.id);
         }
         // If it IS us, turn everything on, and set
         // the bulletin board.  But if we already have
         // focus then do nothing.
         else {
-            var curObj = x6bb.fwGet('objectFocus','');
-            x6.console.log("current focus is "+curObj);
-            if(curObj!=id) {
-                x6events.fireEvent('buttonsNew_'+this.zTable,true);
-                x6events.fireEvent('uiHideKids_'+this.zTable,this.zTable);
+            x6events.fireEvent('buttonsNew_'+this.zTable,true);
+            x6events.fireEvent('uiHideKids_'+this.zTable,this.zTable);
 
-                // turn on edit buttons if new or edit
-                if(this.zSkey >= 0) {
-                    x6events.fireEvent('buttonsEdit_'+this.zTable,true);
-                }
-                
-                // Tell the bb who has focus, and only then at the
-                // end find out which control to set.
-                x6bb.fwSet('objectFocus',id);
-                var jqStr = ':input[id^=x6inp]:not([disabled])';
-                x6inputs.objectFocusFocus(this.id,jqStr);
+            // turn on edit buttons if new or edit
+            if(this.zSkey >= 0) {
+                x6events.fireEvent('buttonsEdit_'+this.zTable,true);
             }
+            
+            // If we are inside a modal, display it
+            if($(this).prop('x6modal','N')=='Y') {
+                x6modals.display(this.id);
+            }
+            
+            // Tell the bb who has focus, and only then at the
+            // end find out which control to set.
+            x6bb.fwSet('objectFocus',id);
+            var jqStr = ':input[id^=x6inp]:not([disabled])';
+            x6inputs.objectFocusFocus(this.id,jqStr);
         }
         x6.console.groupEnd();
    }
@@ -4816,9 +4834,7 @@ x6plugins.detailDisplay = function(self,id,table) {
         x6events.fireEvent('buttonsNew_'+this.zTable,true);
         x6events.fireEvent('buttonsEdit_'+this.zTable,true);
 
-        
         x6events.fireEvent('objectFocus',this.id);
-        x6inputs.objectFocusFocus(this.id);
         
         x6.console.groupEnd();
     }
@@ -4831,6 +4847,9 @@ x6plugins.detailDisplay = function(self,id,table) {
     self['receiveEvent_uiRowSaved_'+table] = function(row) {
         x6.console.group("detailDisplay uiRowSaved");
         this.displayRow('edit',row);
+        if($(this).prop('x6modal','N')=='Y') {
+            x6modals.close();
+        }
         x6.console.groupEnd();
     }
 
@@ -4859,6 +4878,18 @@ x6plugins.detailDisplay = function(self,id,table) {
                 this.zActive  = 1;
             });
             this.zSkey = 0;
+            
+            // Alternate method, find inputs with xdefsrc, which
+            // tells us where to pull defaults from
+            $(this).find(':input[xdefsrc]').each(
+                function() {
+                    console.log(this.id);
+                    var info = $(this).prop('xdefsrc').split('.');
+                    var row  = x6bb.fwGet('dbRow_'+info[0]);
+                    var val  = row[info[1]];
+                    $(this).val(val);
+                }
+            );
         }
         else {
             this.populateInputs(row);
@@ -4963,6 +4994,11 @@ x6plugins.detailDisplay = function(self,id,table) {
         if($(this).prop('x6profile','')=='twosides') {
             x6events.fireEvent('objectFocus','grid_'+this.zTable);
         }
+        
+        // KFD 1/29/09, if we are on a modal, clear it
+        if($(this).prop('x6modal','N')=='Y') {
+            x6modals.close();
+        }
         x6bb.fwSet('exitApproved',false);
     }
     
@@ -4980,6 +5016,10 @@ x6plugins.detailDisplay = function(self,id,table) {
         x6events.fireEvent('buttonsEdit_'+this.zTable,false);
         x6events.fireEvent('uiHideKids_'+this.zTable,this.zTable);
         x6events.fireEvent('uiDisableKids_'+this.zTable,this.zTable);
+        // KFD 1/29/09, if we are on a modal, clear it
+        if($(this).prop('x6modal','N')=='Y') {
+            x6modals.close();
+        }
         x6.console.groupEnd();
     }
     
@@ -5056,6 +5096,7 @@ x6plugins.grid = function(self,id,table) {
     self.zSkey     = -1;
     self.zTable    = table;
     self.x6profile = $(self).prop('x6profile','none');
+    self.x6childwrites=$(self).prop('x6childwrites','N');
 
     /*
     *   grid can receive object focus
@@ -5081,9 +5122,12 @@ x6plugins.grid = function(self,id,table) {
 
                 this.keyboardOn();
                 
-                if(this.x6profile == 'grid') {
+                if(this.x6profile == 'grid' || this.x6childwrites!='N') {
                     x6events.fireEvent('key_DownArrow','DownArrow');
                     if($(this).prop('uiEditRow','N')=='Y') {
+                        x6events.fireEvent('buttonsNew_'+this.zTable,true);
+                    }
+                    if(this.x6childwrites=='detail') {
                         x6events.fireEvent('buttonsNew_'+this.zTable,true);
                     }
                 }
@@ -5429,6 +5473,7 @@ x6plugins.grid = function(self,id,table) {
     }
     
     self.uiRowSaved_readOnly = function(row) {
+        console.log(row);
         var skey = row.skey;
         // DUPLICATE CODE ALERT
         // This code is also present in PHP androLib.php
@@ -5441,12 +5486,18 @@ x6plugins.grid = function(self,id,table) {
             var info = this.zColsInfo[idx];
             var col  = info.column_id;
             if(col=='') continue;
+            if(row[col]==null) row[col] = '';
             html+='<div class="cell_'+col+'"'
                 +' gcolumn = "'+idx+'">'
                 +row[col].htmlDisplay()
                 +'</div>';
         }
-        $(this).find('.tbody').prepend(html);
+        if( $(this).find(this.rowId(skey)).length == 1) {
+            $(this).find(this.rowId(skey)).replaceWith(html);
+        }
+        else {
+            $(this).find('.tbody').prepend(html);
+        }
         $('#'+this.zTable+'_'+skey).mouseover();
     }
     
@@ -6569,20 +6620,109 @@ x6plugins.modal = function(self,id,table) {
             );
     }
     
+}
+
+
+x6modals = {
+    /*
+    *   Core function: display one of them
+    */
+    display: function(id) {
+        x6.console.group("x6modals.display: "+id);
+        // start by making everybody inside the modal
+        // invisible, then make the one we are interested
+        // in visible later on
+        $('#x6modal div.x6modal').css('display:none');
+        
+        // Turn scrolling off for the body
+        $('body')
+            .css('overflow','hidden')
+            .height($(window).height())
+            .width( $(window).width());
+        
+        // ...establish the blocker and fade in the modal
+        $('#x6modalblock')
+            .css('opacity',0)
+            .css('display','block')
+            .animate({opacity:0.5},'fast',null
+                ,function() {
+                    // First put the modal way off to the side
+                    // clear any previous width and height settings
+                    // and now we can figure out how to size it.
+                    $('#x6modal')
+                        .css('left',-5000)
+                        .css('display','block')
+                        .css('width','')
+                        .css('height','')
+                    var mh = $('#x6modal').height();
+                    var mw = $('#x6modal').width();
+                    var ww = $(window).width();
+                    var wh = $(window).height();
+                    
+                    /*
+                    // Make sure the width is at least the title 
+                    // and the link
+                    var h1w = $('#x6modal .x6modaltop b').width();
+                    var aw  = $('#x6modal .x6modaltop a').width();
+                    if(mw < (h1w + aw +40)) {
+                        mw = h1w + aw + 40;
+                        $('#x6modal').css('width',mw);
+                    }
+
+                    // Make sure the height is at least 1/2 of the window
+                    if(mh < (wh/2)) {
+                        mh = Math.floor(wh/2);
+                        $('#x6modal').css('height',mh);
+                    }
+                    // Make sure height is notmore than window less 100
+                    if(mh > (wh - 100)) {
+                        mh = wh - 100;
+                        $('#x6modal').css('height',mh);
+                    }
+                    
+                    // Unconditionally set the inner height, who knows
+                    // where its gone off to.
+                    var ihNew  = mh - $('#x6modal .x6modaltop').height();
+                    ihNew -= Number($(mObj).attr('xSpacing'));
+                    
+                    if(ih > ihNew) {
+                        $('#x6modal .x6modalinner').css('overflow-y','scroll');
+                    }
+                    $('#x6modal .x6modalinner').css('height',ihNew);
+                    */
+
+                    // now center this guy.
+                    var left = Math.floor( (ww-mw)/2 );
+                    $('#x6modal')
+                        .css('display','none')
+                        .css('left',left)
+                        .css('top',50)
+                        .fadeIn('fast',
+                            function() {
+                                x6events.fireEvent('objectFocus',id);
+                            }
+                        )
+                }
+            );
+        x6.console.groupEnd();
+    },
+    
     /*
     *   Core function: close up myself
     */
-    self.close = function() {
-        var co = this.currentObject;
+    close: function() {
+        x6.console.group("x6modals.close");
         $('#x6modal').fadeOut('fast'
             ,function() {
                 $('#x6modalblock').animate({opacity:0},'fast',null
                     ,function() {
                         $(this).css('display','none');
-                        x6events.fireEvent('objectFocus',co);
+                        x6events.priorFocus();
                     }
                 );
             }
         );
+        x6.console.groupEnd("x6modals.close");
     }
+    
 }

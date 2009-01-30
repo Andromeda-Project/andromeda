@@ -454,10 +454,18 @@ class androX6 {
         $gridHeight= gp('xGridHeight',500);
         $lookups   = gp('xLookups','N')=='Y';
         $edit      = 0;
-        if(($tabPar != '') && ($this->dd['x6childwrites'] == 'Y')) $edit = 1;
+        $childedit = in_array($this->dd['x6childwrites']
+            ,array('Y','grid')
+        );
+        if(($tabPar != '') && $childedit) $edit = 1;
         
-        # Now make up the generic div and add all of the cells
+        # The button bar is either a 1/0 or a list of buttons.
+        # Make the simple setting first, then possibly override
         $bb = gp('xButtonBar','N')=='Y' || $edit;
+        if(($tabPar != '') && ($this->dd['x6childwrites'] == 'detail'))
+            $bb = 'new';
+
+        # Now grab us a grid
         $grid = new androHTMLGrid(
             $gridHeight,$table_id,$lookups,$sortable,$bb,$edit
         );
@@ -923,6 +931,11 @@ class androX6 {
             $tab = $tabKids->addTab($info['description']);
             $tab->ap['x6tablePar'] = $table_id;
             $tab->ap['x6table'   ] = $child;
+            
+            if($info['x6childwrites']=='detail') {
+                $modal = new androHTMLDetail($child,true,700,$table_id);
+                addModal($modal);
+            }
         }
         
         # And then loop through extra tabs
@@ -1085,6 +1098,12 @@ class androX6 {
             }
             x6debug($options);
             $grid->setColumnOptions($options);
+        }
+        
+        # KFD 1/29/09 tell us the x6childwrites setting
+        $grid->hp['x6childwrites'] = trim($this->dd['x6childwrites']);
+        if(trim($this->dd['x6childwrites'])=='Y') {
+            $grid->hp['x6childwrites'] = 'grid';
         }
         
         # KFD 11/15/08 
