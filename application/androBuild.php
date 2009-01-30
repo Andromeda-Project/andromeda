@@ -174,6 +174,13 @@ function checkDBFilesForChanges() {
         'md5'=>md5_file( $parm['DIR_PUB']."lib/".$specboot ),
         'fullpath'=>$parm['DIR_PUB']."lib/".$specboot
     );
+    
+    if ( isset( $parm['INST'] ) ) {
+        $app = str_replace( '_' .$parm['INST'], '', $parm['APPLICATION'] );
+    } else {
+        $app = $parm['APPLICATION'];
+    }
+    
     if ($parm["SPEC_LIST"]<>"") {
         $speclist = explode(",",$parm["SPEC_LIST"]);
         foreach ($speclist as $spec) {
@@ -195,10 +202,9 @@ function checkDBFilesForChanges() {
         $this->LogEntry("Instance tracking table doesnt exist yet...ignoring until next build");
         return true;
     }
-
     foreach( $checksums as $checksum ) {
         $query = "SELECT checksum,skey FROM " .ddTable_idResolve( 'instance_spec_checksums' ) ." WHERE 
-            application=" .SQLFC( $parm['APP'] ) ." AND spec_name=" .SQLFC( $checksum['file'] )
+            application=" .SQLFC( $app ) ." AND spec_name=" .SQLFC( $checksum['file'] )
             .( isset( $parm['INST'] ) ? " AND instance=" .SQLFC( $parm['INST'] ) : '' );
         $row = SQL_OneRow( $query );
 
@@ -217,7 +223,7 @@ function checkDBFilesForChanges() {
         } else {
             $this->LogEntry( 'Entry for ' .$checksum['file']  .' not found' );
             $checksum_entry = array(
-                'application'=>$parm['APP'],
+                'application'=>$app,
                 'instance'=>( isset( $parm['INST'] ) ? $parm['INST'] : '' ),
                 'spec_name'=>$checksum['file'],
                 'checksum'=>md5_file( $checksum['fullpath'] )
