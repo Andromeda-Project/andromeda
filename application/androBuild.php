@@ -176,9 +176,9 @@ function checkDBFilesForChanges() {
     );
     
     if ( isset( $parm['INST'] ) ) {
-        $app = str_replace( '_' .$parm['INST'], '', $parm['APPLICATION'] );
+        $app = str_replace( '_' .$parm['INST'], '', $parm['APP'] );
     } else {
-        $app = $parm['APPLICATION'];
+        $app = $parm['APP'];
     }
     
     if ($parm["SPEC_LIST"]<>"") {
