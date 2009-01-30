@@ -36,7 +36,7 @@ group admin:
 content configapp:
     columns: [ x4menu, deprecated ]
     update:
-        - [ "N","N" ]
+        - [ N, N ]
         
 
 # ========================================================================
@@ -145,6 +145,7 @@ column template:
     description: Preferred Template
     type_id: vchar
     colprec: 40
+    
 table instances:
     module: apps
     description: Instances
@@ -177,7 +178,28 @@ column version:
     description: Version Code
     type_id: char
     colprec: 10
+
+column checksum:
+    description: Checksum
+    type_id: vchar
+    colprec: 100
     
+table instance_spec_checksums:
+    module: apps
+    description: Instance Spec Checksums
+    nomenu: "Y"
+
+    foreign_key instances:
+        primary_key: "Y"
+        allow_empty: "Y"
+    column spec_name:
+        prefix: spec_
+        description: Spec File
+        uisearch: "Y"
+    column checksum:
+        primary_key: "Y"
+        uisearch: "Y"
+        
 table instbuilds:
     module: apps
     description: Instance Builds

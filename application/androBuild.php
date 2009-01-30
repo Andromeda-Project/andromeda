@@ -87,7 +87,11 @@ class x_builder {
         // always reduces.        
         #$retval = $retval && $this->JSMinify();
         
-        if ( !isset( $_REQUEST['code_only'] ) ) {
+        // DO 1-29-2009 trying to make the builder a little smarter
+        // this way a full build will only happen if the db spec files
+        // have been changed
+        $dbFilesChanges = $this->checkDBFilesForChanges();
+        if ( $dbFilesChanges ) {
             // If we passed most basic, we prepare the database
             // by loading stored procedures and making the zdd
             // schema to use during build.
@@ -152,6 +156,85 @@ class x_builder {
 // MAIN (END)
 // ===================================================================
 // ===================================================================
+
+// ==========================================================
+// Routines to check db building files for changes
+// ==========================================================
+
+function checkDBFilesForChanges() {
+    global $parm;
+    
+    $this->LogStage("Checking spec files for changes");
+    
+    $changed = false;
+    $checksums = array();    
+    $specboot = $parm["SPEC_BOOT"].".add";
+    $checksums[] = array( 
+        'file'=>$specboot, 
+        'md5'=>md5_file( $parm['DIR_PUB']."lib/".$specboot ),
+        'fullpath'=>$parm['DIR_PUB']."lib/".$specboot
+    );
+    if ($parm["SPEC_LIST"]<>"") {
+        $speclist = explode(",",$parm["SPEC_LIST"]);
+        foreach ($speclist as $spec) {
+            if(substr($spec,-5)<>'.yaml') { 
+                $file = $spec.".add";
+            } else {
+                $file = $spec;
+            }
+            $checksums[] = array( 
+                'file'=>$file, 
+                'md5'=>md5_file( $parm["DIR_PUB"]."application/".$file ),
+                'fullpath'=>$parm["DIR_PUB"]."application/".$file
+            );
+        }
+    }
+    $checkqry = "SELECT relname FROM pg_class WHERE relname='instance_spec_checksums'";
+    $checkrslts = SQL_AllRows( $checkqry );
+    if ( count( $checkrslts ) == 0 ) {
+        $this->LogEntry("Instance tracking table doesnt exist yet...ignoring until next build");
+        return true;
+    }
+
+    foreach( $checksums as $checksum ) {
+        $query = "SELECT checksum,skey FROM " .ddTable_idResolve( 'instance_spec_checksums' ) ." WHERE 
+            application=" .SQLFC( $parm['APP'] ) ." AND spec_name=" .SQLFC( $checksum['file'] )
+            .( isset( $parm['INST'] ) ? " AND instance=" .SQLFC( $parm['INST'] ) : '' );
+        $row = SQL_OneRow( $query );
+
+        if ( $row ) {
+            $this->LogEntry( 'Entry for ' .$checksum['file']  .' file found' );
+            if ( $row['checksum'] != $checksum['md5'] ) {
+                $this->LogEntry("Spec File Changed: " .$checksum['file'] );
+                $changed = true;
+                $checksum_update = array(
+                    'skey'=>$row['skey'],
+                    'checksum'=>md5_file( $checksum['fullpath'] )
+                );
+                SQLX_Update( 'instance_spec_checksums', $checksum_update );
+                $this->LogEntry( "Updating Entry" );
+            }
+        } else {
+            $this->LogEntry( 'Entry for ' .$checksum['file']  .' not found' );
+            $checksum_entry = array(
+                'application'=>$parm['APP'],
+                'instance'=>( isset( $parm['ISTANCE'] ) ? $parm['INST'] : '' ),
+                'spec_name'=>$checksum['file'],
+                'checksum'=>md5_file( $checksum['fullpath'] )
+            );
+            SQLX_Insert( 'instance_spec_checksums', $checksum_entry );
+            $this->LogEntry("Spec File Change:" .$checksum['file'] );
+            $changed = true;
+        }
+        
+    }
+    if ( $changed ) {
+        $this->LogEntry( 'One or more spec files have changed: Proceeding with full build' );
+    } else {
+        $this->LogEntry( 'Spec files have not changed: Proceeding with mini build' );
+    }
+    return $changed;
+}
 
 // ==========================================================
 // Database Connect Routines

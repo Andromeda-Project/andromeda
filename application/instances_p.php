@@ -97,21 +97,6 @@ class instances_p extends x_table2 {
                    ,'gp_ver'=>$verx
                 )
             );
-            echo( '<br />' );
-            echo hLinkPopup(
-            '',
-            'Deploy code from
-            version '.$verx
-                ,array(
-                   'gp_app'=>gp('gp_app')
-                   ,'gp_inst'=>gp('gp_inst')
-                   ,'gp_posted'=>1
-                   ,'gp_page'=>'instances_p2'
-                   ,'gp_out'=>'none'
-                   ,'gp_ver'=>$verx
-                   ,'code_only'=>1
-                )
-            );
         }
     }
    
