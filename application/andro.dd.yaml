@@ -186,7 +186,10 @@ column checksum:
     description: Checksum
     type_id: vchar
     colprec: 100
-    
+column spec_name:
+    description: Spec File
+    type_id:vchar
+    colprec: 25
 table instance_spec_checksums:
     module: apps
     description: Instance Spec Checksums
@@ -195,9 +198,8 @@ table instance_spec_checksums:
     foreign_key instances:
         primary_key: "Y"
         allow_empty: "Y"
+        uisearch: "Y"
     column spec_name:
-        prefix: spec_
-        description: Spec File
         uisearch: "Y"
     column checksum:
         primary_key: "Y"
