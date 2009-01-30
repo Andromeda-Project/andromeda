@@ -223,7 +223,7 @@ function checkDBFilesForChanges() {
                 'checksum'=>md5_file( $checksum['fullpath'] )
             );
             SQLX_Insert( 'instance_spec_checksums', $checksum_entry );
-            $this->LogEntry("Spec File Change:" .$checksum['file'] );
+            $this->LogEntry("Spec File Changed: " .$checksum['file'] );
             $changed = true;
         }
         
