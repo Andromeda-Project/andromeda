@@ -24,7 +24,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-	<title><?=ValueGet("PageTitle")?></title>
+	<title><?php echo ValueGet("PageTitle")?></title>
 	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 	<link   type="text/css"        href="templates/andro_classic/skin-tc.css" rel="stylesheet" />
 	<link   type="text/css"        href="templates/andro_classic/x2.css"      rel="stylesheet" />
@@ -90,7 +90,7 @@
          </table>
       </td>
       <td id="tc-right">
-        <?=ehStandardContent()?>
+        <?php echo ehStandardContent()?>
       </td>
    </tr>
 </table>
@@ -104,7 +104,7 @@ if($gm<>'') {
    $gp='menu_' .($gm<>'' ? $gm : gp('gp_page'));
    ?>
    <script>
-     ob("<?=$gp?>").className="menuselected";
+     ob("<?php echo $gp?>").className="menuselected";
    </script>
    <?php
 }
@@ -112,7 +112,7 @@ if($gm<>'') {
 if (vgfGet("HTML_focus")<>"") {
    ?>
    <script>
-   ob('<?=vgfGet("HTML_focus")?>').focus();
+   ob('<?php echo vgfGet("HTML_focus")?>').focus();
    </script>
    <?php
 }

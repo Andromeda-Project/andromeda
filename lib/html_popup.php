@@ -22,7 +22,7 @@
 include("html_minheader.php"); 
 ?>
 
-<?=ehStandardContent()?>
+<?php echo ehStandardContent()?>
 
 </body>
 </html>

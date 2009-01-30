@@ -51,17 +51,17 @@ class a_scontrol extends x_table2 {
       ?>
       <h1>Source Code Operations</h1>
       <p>For application 
-         <a href="?gp_page=applications&gp_skey=<?=$skey?>"><?=$App?></a>.
+         <a href="?gp_page=applications&gp_skey=<?php echo $skey?>"><?php echo $App?></a>.
       </p>
-      <?=sourceDeprecated()?>
+      <?php echo sourceDeprecated()?>
       <?php
       if(!$this->CheckRemoteUID($node['node'])) return;
       ?>
 
       <p><a href="javascript:formPostString('x=y')">Refresh This Page</a></p>
       <p>The Authoritative Node for this application is 
-         <?=$node['node']?> at <?=$node['node_url']?>.
-         You are using username <b><?=SessionGet('remoteUID')?></b> on
+         <?php echo $node['node']?> at <?php echo $node['node_url']?>.
+         You are using username <b><?php echo SessionGet('remoteUID')?></b> on
          the remote node.
          <a href="javascript:formPostString('gp_clearremote=1')">Connect as New User</a>.
       </p>
@@ -72,7 +72,7 @@ class a_scontrol extends x_table2 {
         <tr><td class="dhead" width=100>Function</td>
             <td class="dhead">Details</td>
         <tr><td>
-            <a href="javascript:Popup('<?=$h1?>')">
+            <a href="javascript:Popup('<?php echo $h1?>')">
                Update Reference</a>
             <td>Pulls the latest code from the Authoritative Node and puts
                 it into the "ref" directory of the application.  Does not
@@ -247,19 +247,19 @@ class a_scontrol extends x_table2 {
 
       ?>
       <p>
-      The authoritative node for this application is <b><?=$node?></b>.
+      The authoritative node for this application is <b><?php echo $node?></b>.
       Please provide your user id and password for that node.
       </p>
       <table>
       <tr><td style="text-align: right">Remote user id
           <td style="text-align: left"><input name="remoteUID" id="remoteUID" 
-                                        tabindex="<?=hpTabIndexNext(100)?>">
+                                        tabindex="<?php echo hpTabIndexNext(100)?>">
       <tr><td style="text-align: right">Remote password
           <td style="text-align: left"><input name="remotePWD" type="password"
-                     tabindex="<?=hpTabIndexNext(100)?>">
+                     tabindex="<?php echo hpTabIndexNext(100)?>">
       </table>
       <br/>
-      <input type="submit" value="Save" tabindex="<?=hpTabIndexNext(100)?>">
+      <input type="submit" value="Save" tabindex="<?php echo hpTabIndexNext(100)?>">
       
       <?php
       vgfSet('HTML_focus','remoteUID');

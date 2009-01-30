@@ -5465,8 +5465,8 @@ function fwModuleMenuRight() {
     }
     ?>
     <ul class='right'>
-        <?=$extra?>
-        <li><a href='?st2logout=1'>Logout <?=SessionGet('UID')?></a></li>
+        <?php echo $extra?>
+        <li><a href='?st2logout=1'>Logout <?php echo SessionGet('UID')?></a></li>
     </ul>
     <?php
     return false;
@@ -8616,8 +8616,8 @@ assignment.
 * !>example
 * !>php
 * <div class="moduletable">
-*   <?=hLink('bolder','Link1','?explicit=links&parm=value')?>
-*   <?=hLink('','Second Link','?second=example&parm=value')?>
+*   <?php echo hLink('bolder','Link1','?explicit=links&parm=value')?>
+*   <?php echo hLink('','Second Link','?second=example&parm=value')?>
 * </div>
 * !<
 * !<
@@ -8659,7 +8659,7 @@ function ddPageDescription($page) {
 * !>example
 * !>php
 * <div>
-*   You can jump straight to <?=hLinkPage('orders')?> from here.
+*   You can jump straight to <?php echo hLinkPage('orders')?> from here.
 * </div>
 * !<
 * !<
@@ -8717,7 +8717,7 @@ function hjxCheckFirst($caption,$href) {
 * !>php:Literal HTML should wrap HREFs
 * <div id="someid">
 * Please proceed to the
-* <a href="<?=hpHREF('?gp_page=somepage')?>">Ordering Page</a>
+* <a href="<?php echo hpHREF('?gp_page=somepage')?>">Ordering Page</a>
 * so that we can process your order.
 * </div>
 * !<
@@ -9012,13 +9012,13 @@ function ehStandardContent($dotitle=false) {
       <script type="text/javascript">
       function fieldsSet() {
          alert('Ran fieldsset');
-         <?=$scr1?>
+         <?php echo $scr1?>
          alert("end of fieldsSet");
       }
 
       function fieldsReset() {
          alert('Ran FieldsReset');
-         <?=$scr2?>
+         <?php echo $scr2?>
          alert("end of fieldsReset");
       }
       </script>
@@ -9061,9 +9061,9 @@ function ehStandardFormOpen($id='Form1') {
    $x=$id; //annoying jedit compiler warning
    $style = vgfGet('x6') ? '' : 'style="height:100%"';
    ?>
-   <form method="post" action="index.php" id="<?=$x?>"
+   <form method="post" action="index.php" id="<?php echo $x?>"
                  enctype="multipart/form-data"
-                 name="Form1" <?=$style?> >
+                 name="Form1" <?php echo $style?> >
    <?php
 }
 
@@ -9207,14 +9207,14 @@ function ehFWLogin($class='login',$id='',$username='') {
    // Continue with original, the horizontal
    if(LoggedIn()) {
    ?>
-   <table border=0 <?=$hclass?> >
+   <table border=0 <?php echo $hclass?> >
     <tr>
-    <td align="center" <?=$hclass?>>
+    <td align="center" <?php echo $hclass?>>
      <div style="height:3px"></div>
      <span>
       <span style="font-size: 1.2em;" class="login">
       Welcome<br>
-      <?=SessionGet('UID')?>!
+      <?php echo SessionGet('UID')?>!
       </span>
     <span>
     <br><br>
@@ -9227,19 +9227,19 @@ function ehFWLogin($class='login',$id='',$username='') {
    else {
    ?>
    <form action="?gp_page=x_login&gp_posted=1" method="post">
-   <table <?=$hclass?>>
+   <table <?php echo $hclass?>>
      <tr>
-      <td <?=$hclass?>>User Login:</td>
+      <td <?php echo $hclass?>>User Login:</td>
      </tr>
      <tr>
-      <td ><input type="text" name="loginUID" <?=$hValue?>
+      <td ><input type="text" name="loginUID" <?php echo $hValue?>
             style="width:100%; background:ffffff;
                    color: #333333;
                    font-family: Geneva, Arial, Helvetica, san-serif;
                    font-size: 11px; Border: solid 1px1 #BABABA;"></td>
      </tr>
      <tr>
-      <td <?=$hclass?>>Password:</td>
+      <td <?php echo $hclass?>>Password:</td>
      </tr>
      <tr>
       <td ><input type="password" name="loginPWD" style="width:100%; background:ffffff; color: #333333; font-family: Geneva, Arial, Helvetica, san-serif; font-size: 11px; Border: solid 1px1 #BABABA;"></td>
@@ -9278,9 +9278,9 @@ function ehLoginHorizontal() {
       <input type="submit" value=" Login " name="submit" />
       </form>
       <br/>
-      <a href="<?=tmpPathInsert()?>?gp_page=x_password">Help with Password</a>
+      <a href="<?php echo tmpPathInsert()?>?gp_page=x_password">Help with Password</a>
    <?php } else { ?>
-      <a href="?st2logout=1">Logout <?=SessionGet("UID")?></a>
+      <a href="?st2logout=1">Logout <?php echo SessionGet("UID")?></a>
    <?php } ?>
    <?php
 }
@@ -9323,7 +9323,7 @@ function ehModuleCommands() {
    <input size=20 maxlength=30
             id="object_for_f2"
           name="object_for_f2"
-          value="<?=gp('gp_command')?>"
+          value="<?php echo gp('gp_command')?>"
           onclick="this.focus()"
           onkeyup="DoCommand(event)"
       tabindex="0">
@@ -9338,22 +9338,22 @@ function ehModuleCommands() {
        >F6: New Window</a>
    <?php } ?>
 
-   <span style="color: red"><?="&nbsp;&nbsp;".vgfGet('command_error')?></span>
+   <span style="color: red"><?php echo "&nbsp;&nbsp;".vgfGet('command_error')?></span>
    <?php
    if(gpExists('gp_gbt')) {
       ?>
       &nbsp;&nbsp;
-      <a href="<?=gp('gp_gbrl')?>"><?=gp('gp_gbt')?></a>
+      <a href="<?php echo gp('gp_gbrl')?>"><?php echo gp('gp_gbt')?></a>
       <?php
    }
    ?>
    </span>
 
    <span style="padding-right: 10px">
-   <?=vgfGet('html_buttonbar')?>&nbsp;&nbsp;&nbsp;&nbsp;
-   <?=vgfGet('html_navbar')?>
+   <?php echo vgfGet('html_buttonbar')?>&nbsp;&nbsp;&nbsp;&nbsp;
+   <?php echo vgfGet('html_navbar')?>
    <?php if(vgfGet('x4')===true) { ?>
-       <?=ehLoginHorizontal()?>
+       <?php echo ehLoginHorizontal()?>
    <?php } ?>
    </span>
    </div>
@@ -13480,9 +13480,9 @@ function XML_RPC($callcode,$arr_inputs) {
 function ehFCKEditor($name,&$value) {
    $x=$name;$x=$value; //annoying jedit compile warning
    ?>
-   <textarea rows=15 cols=50 style="width: 100%" name="<?=$name?>" id="<?=$name?>"><?=$value?></textarea>
+   <textarea rows=15 cols=50 style="width: 100%" name="<?php echo $name?>" id="<?php echo $name?>"><?php echo $value?></textarea>
     <script language="javascript">
-      editor_generate('<?=$name?>'); // field, width, height
+      editor_generate('<?php echo $name?>'); // field, width, height
     </script>
 
    <?php
@@ -15952,7 +15952,7 @@ function cssInclude($file,$force_immediate=false) {
     if ( !in_array( $file, $cssExcludes ) ) {
         if(configGet('js_css_debug','Y')=='Y' || $force_immediate) {
             ?>
-            <link rel='stylesheet' href='<?=tmpPathInsert().$file?>' />
+            <link rel='stylesheet' href='<?php echo tmpPathInsert().$file?>' />
             <?php
         }
         else {
@@ -15991,7 +15991,7 @@ function cssOutput() {
     // Finally, put out the file
     ?>
     <link rel='stylesheet'
-         href='<?=tmpPathInsert()."clib/css-min-$md5.css"?>' />
+         href='<?php echo tmpPathInsert()."clib/css-min-$md5.css"?>' />
     <?php
 }
 /**
@@ -16054,7 +16054,7 @@ function jsOutput() {
             if($js['comments']<>'') {
                 ?>
                 <!--
-                <?=$js['comments']?>
+                <?php echo $js['comments']?>
                 -->
                 <?php
             }
@@ -16063,8 +16063,8 @@ function jsOutput() {
             $insert = $external ? '' : tmpPathInsert();
             ?>
             <script type="text/javascript"
-                     src="<?=$insert.$js['file']?>" >
-            <?=$js['comments']?>
+                     src="<?php echo $insert.$js['file']?>" >
+            <?php echo $js['comments']?>
             </script>
             <?php
         }
@@ -16113,7 +16113,7 @@ function jsOutput() {
     // Finally, put out the file
     ?>
     <script type="text/javascript"
-             src="<?=tmpPathInsert()."clib/js-min-$md5.js"?>" >
+             src="<?php echo tmpPathInsert()."clib/js-min-$md5.js"?>" >
     </script>
     <?php
 }

@@ -108,7 +108,7 @@ class install extends x_table2 {
       </table>
 
       <br>
-      <h2>Next Step: <?=$steps[$current_step][1]?></h2>
+      <h2>Next Step: <?php echo $steps[$current_step][1]?></h2>
       <?php
       if($this->error) {
          echo "<div class='errorbox'>".$this->error."</div>";      
@@ -126,7 +126,7 @@ class install extends x_table2 {
       <p>Install mode is triggered by the presence of the file 
          'install.php' in the application directory:
         
-      <p><?=$GLOBALS['AG']['dirs']['application']?>
+      <p><?php echo $GLOBALS['AG']['dirs']['application']?>
       
       <p>If you are
          an expert and wish to bypass this wizard, then simply remove
@@ -503,7 +503,7 @@ create database andro;</textarea>
       ?>
       <div class="errorbox">PostgreSQL must be version 8.1 or better</div>
       
-      <p>The install program has detected <?=$this->pgversion?>, the minimum
+      <p>The install program has detected <?php echo $this->pgversion?>, the minimum
          version required to run Andromeda is 8.1.  Please upgrade to version
          8.1 or better and then rerun the installation.
       <?php

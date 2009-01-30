@@ -24,16 +24,16 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-	<title><?=ValueGet("PageTitle")?></title>
+	<title><?php echo ValueGet("PageTitle")?></title>
 	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 
 	<style type="text/css">
 	/* Styles generated specifically for a page */
-	<?=ElementOut("styles");?>
+	<?php echo ElementOut("styles");?>
 	</style>
 	<script language="javascript" type="text/javascript">
 	/* Script generated specifically for a page */
-	<?=ElementOut("script");?>
+	<?php echo ElementOut("script");?>
 	</script>
 
 </head>
@@ -52,11 +52,11 @@ return;
 		<table border="0" cellpadding="0" cellspacing="0" class="topleftgray">
 			<tr>
 			<td align="center" class="topleftmargin">
-				<?=ValueGet("PageTitle")?>
+				<?php echo ValueGet("PageTitle")?>
 				<br />
 				<img src="images/hrthing.jpg" width="200" height="2" border="0" alt="hrthing" />
 				<br />
-				<?=date('M-d-Y g:ia',time())?> (NY Time)
+				<?php echo date('M-d-Y g:ia',time())?> (NY Time)
 				<br />
             <?php
             $uid = SessionGet("UID");
@@ -75,7 +75,7 @@ return;
 			
 			<tr>
 			<td class="leftmenumoduleposition">
-				<?=ehStandardMenu()?>
+				<?php echo ehStandardMenu()?>
 			</td>
 			</tr>
 
@@ -98,7 +98,7 @@ return;
 								<td class="btop-ttl-left"></td>
 								<td class="btop-ttl-mid">
 									<font class="nameoftable">
-									<?=V("PageSubtitle")?>
+									<?php echo V("PageSubtitle")?>
 									</font></td>
 								<td class="btop-ttl-right"></td>
 								<td class="btop-filler"></td>
@@ -114,7 +114,7 @@ return;
 								<td class="bmid-left"></td>
 								<!-- for 800x600 displays, use width=550 -->
 								<td class="bmid-center" colspan=5 width=720px valign="top">
-									<?=$HTML_Message?>
+									<?php echo $HTML_Message?>
 
 									<?php 
 									$HTML_nots = HTMLX_Notices();
@@ -126,7 +126,7 @@ return;
 											<tr>
 												<td class="noticepic"></td>
 												<td class="noticetext">
-													<?=$HTML_nots?>
+													<?php echo $HTML_nots?>
 												</td>
 											</tr>
 										</table>
@@ -143,7 +143,7 @@ return;
 											<tr>
 												<td class="errorpic"></td>
 												<td class="errortext">
-													<?=$HTML_errs?>
+													<?php echo $HTML_errs?>
 												</td>
 											</tr>
 										</table>
@@ -156,8 +156,8 @@ return;
                                  id="Form1" 
                                  name="Form1">
 				
-									<?=ValueGet("HTML")?>
-                           <?=ehHiddenAndData()?>
+									<?php echo ValueGet("HTML")?>
+                           <?php echo ehHiddenAndData()?>
 									</form>
 								</td>
 								<td class="bmid-right"></td>

@@ -122,7 +122,7 @@ function tmpModuleMenuRight() {
     }
     ?>
     <ul>
-        <?=$extra?>
+        <?php echo $extra?>
         <li><a href='?st2logout=1'>Logout</a></li>
     </ul>
     <?php

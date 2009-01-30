@@ -13,6 +13,19 @@ vgfSet('buttons_in_commands',true);
 
 vgfSet('template','rt_pixel');
 
+/* FUTURE X6 STUFF 
+function app_nopage() {
+    if(LoggedIn()) {
+        return 'cpanel';
+    }
+}
+
+function defaultSuperUser() {
+    return 'install';
+}
+*/
+
+
 function AppDir($app) {
    $app=trim($app);
    $wp=SQL_OneValue('dir_pub',
@@ -162,10 +175,10 @@ function appModuleLeft() {
         <?php foreach($apps as $app) { ?>
            <tr>
              <td align="left" class="leftcol">
-               <a href="?gp_page=applications&gp_skey=<?=$app['skey']?>"
-               ><?=$app['application']?></a>
+               <a href="?gp_page=applications&gp_skey=<?php echo $app['skey']?>"
+               ><?php echo $app['application']?></a>
              <td align="right"  class="leftcol">
-               <?=hLinkBuild($app['application'],'Build')?>
+               <?php echo hLinkBuild($app['application'],'Build')?>
         <?php }?>
         </table>
         <br/>
@@ -183,12 +196,12 @@ function appModuleLeft() {
         <?php foreach($instances as $i) { ?>
             <tr>
             <td align="left">
-              <a href="?gp_page=instances&bp_skey=<?=$i['skey']?>">
-              <?=$i['application'].' / '.$i['instance']?>
+              <a href="?gp_page=instances&bp_skey=<?php echo $i['skey']?>">
+              <?php echo $i['application'].' / '.$i['instance']?>
               </a>
             <td align="right">
-              <a href="?gp_page=instances_p&gp_app=<?=trim($i['application'])
-                  ?>&gp_inst=<?=$i['instance']?>"
+              <a href="?gp_page=instances_p&gp_app=<?php echo trim($i['application'])
+                  ?>&gp_inst=<?php echo $i['instance']?>"
                   >Build/Upgrade</a>
         <?php } ?>
         </table>

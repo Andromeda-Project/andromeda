@@ -373,18 +373,18 @@ class x_table2 {
          .$this->h['NavBar']
          .($this->h['NavBar']=='' ? '' : '<br>');
       ?>
-      <h1><?=$this->PageSubtitle?></h1>
+      <h1><?php echo $this->PageSubtitle?></h1>
       <table cellpadding=0 cellspacing=0 
              style="width: 100%; border-collapse: collapse" align="center">
          <?php  if(is_null($this->table_obj_child)) { ?>
-            <?=$this->h['ButtonBar']?>
+            <?php echo $this->h['ButtonBar']?>
          <?php } ?>
         </tr>
         <tr>
           <td class="x2_content">
-            <?=$hN?>
-            <?=$this->ehMainModeComment($this->mode)?>
-            <?=$this->h['Content']?>
+            <?php echo $hN?>
+            <?php echo $this->ehMainModeComment($this->mode)?>
+            <?php echo $this->h['Content']?>
           </td>
         </tr>
         <tr>
@@ -709,7 +709,7 @@ class x_table2 {
            <select size=20 style="width: 250px"
               onclick="formPostAjax('&gp_xajax=1&moverdel='+this.value)"
               >
-           <?=implode("\n",$ahl)?>
+           <?php echo implode("\n",$ahl)?>
            </select>
         <td style="padding:10px; vertical-align: top">
            <br/>
@@ -725,7 +725,7 @@ class x_table2 {
            <select size=20 style="width: 250px"
               onclick="formPostAjax('&gp_xajax=1&moveradd='+this.value)"
               >
-           <?=implode("\n",$ahr)?>
+           <?php echo implode("\n",$ahr)?>
            </select>
       </table>
       <?php
@@ -780,12 +780,12 @@ class x_table2 {
          ?>
          <script>
          function keypress_f9() {
-            window.location="<?=$href?>";
+            window.location="<?php echo $href?>";
          }
          </script>
          <br/><br/>
-         <a href="<?=$href?>"
-           onclick="window.location='<?=$href?>'"
+         <a href="<?php echo $href?>"
+           onclick="window.location='<?php echo $href?>'"
               id="object_for_f9"
             name="object_for_f9">(F9) Do New Entry</a>
          <?php
@@ -1002,11 +1002,11 @@ class x_table2 {
       ?>
       <br>
       <div class="x2menubar" style="text-align: left">
-        <?=$hDsc.'&nbsp;'.$hNew?>
+        <?php echo $hDsc.'&nbsp;'.$hNew?>
       </div>
       <table cellpadding=0 cellspacing=0 width=100%>
-        <?=hTRFromArray('dhead',$cols)?>
-        <?=$hContent?>
+        <?php echo hTRFromArray('dhead',$cols)?>
+        <?php echo $hContent?>
         <tr>
             <td colspan=99 class='dhead'>&nbsp;
             </td>
@@ -1165,12 +1165,12 @@ class x_table2 {
       <br>
       <br>
       <div class="x2menubar" style="text-align: left">
-        <?=$hNew?>
+        <?php echo $hNew?>
       </div>
       <div class="andro_space2"></div>
       <table cellpadding="0" cellspacing="0" width="100%" class="x3detail">
-        <?=hTRFromArray('dhead',$cols)?>
-        <?=$hContent?>
+        <?php echo hTRFromArray('dhead',$cols)?>
+        <?php echo $hContent?>
         <tr>
             <td colspan=99 class='dhead'>&nbsp;
             </td>
@@ -1376,9 +1376,9 @@ class x_table2 {
       $ahc= ahInputsComprehensive($this->table,$mode,$this->row,$proj,$opts);
       ?>
       <div class="x2fieldset" style="margin-bottom: 2px;">
-      <h4>&nbsp;&nbsp;<?=$title?></h4>
+      <h4>&nbsp;&nbsp;<?php echo $title?></h4>
          <table height="100%">
-         <?=$this->hBoxesFromAHComprehensive($ahc,$mode);?>
+         <?php echo $this->hBoxesFromAHComprehensive($ahc,$mode);?>
          </table>
       </div>
       <?php
@@ -1390,9 +1390,9 @@ class x_table2 {
       ?>
       <td class="x2fieldset">
       <div style="margin-bottom: 2px;">
-      <h4>&nbsp;&nbsp;<?=$title?></h4>
+      <h4>&nbsp;&nbsp;<?php echo $title?></h4>
          <table height="100%">
-         <?=$this->hBoxesFromAHComprehensive($ahc);?>
+         <?php echo $this->hBoxesFromAHComprehensive($ahc);?>
          </table>
       </div>
       <?php
@@ -1482,9 +1482,9 @@ class x_table2 {
          ob_start();
          ?>
          <table cellpadding=0 cellspacing=0 width=100% class="x2_drilldown"> 
-            <tr><td style="width: 33%; padding: 5px; vertical-align: top;"><?=$hDD?></td>
-                <td style="width: 33%; padding: 5px; vertical-align: top;"><?=$hDB?></td>
-                <td style="width: 33%; padding: 5px; vertical-align: top;"><?=$hEX?></td>
+            <tr><td style="width: 33%; padding: 5px; vertical-align: top;"><?php echo $hDD?></td>
+                <td style="width: 33%; padding: 5px; vertical-align: top;"><?php echo $hDB?></td>
+                <td style="width: 33%; padding: 5px; vertical-align: top;"><?php echo $hEX?></td>
             </tr>
          </table>
          <?php
@@ -1502,9 +1502,9 @@ class x_table2 {
          ?>
          <table cellpadding=0 cellspacing=0 width=100% class="x2_drilldown"> 
             <tr><td style="padding: 5px; text-align: left;">
-               <?=$hDD?>
-               <?=$hDB?>
-               <?=$hEX?>
+               <?php echo $hDD?>
+               <?php echo $hDB?>
+               <?php echo $hEX?>
             </tr>
          </table>
          <?php
@@ -1690,7 +1690,7 @@ class x_table2 {
       <br><br>
       <table cellspacing=0 cellpadding=0>
         <tr>
-        <td class="inp-br-h1"><?=$this->table['description']?></td>
+        <td class="inp-br-h1"><?php echo $this->table['description']?></td>
       <?php
       $aheaders=asliceValsFromKeys($this->table['flat'],'description',$acols);
       foreach ($aheaders as $aheader ) {

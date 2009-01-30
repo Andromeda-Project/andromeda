@@ -74,13 +74,13 @@ class x_welcome extends x_table2 {
       echo "<b>".$AGMENU[$module]['items'][$table_id]['description']."</b>";
       ?>
       <br><br><br><br>
-      1 - <a href="?gp_page=<?=$table_id?>&gp_mode=browse">View</a>
+      1 - <a href="?gp_page=<?php echo $table_id?>&gp_mode=browse">View</a>
       <br><br><br><br>
-      2 - <a href="?gp_page=<?=$table_id?>&gp_mode=search">Edit</a>
+      2 - <a href="?gp_page=<?php echo $table_id?>&gp_mode=search">Edit</a>
       <br><br><br><br>
-      3 - <a href="?gp_page=<?=$table_id?>&gp_mode=search">Delete</a>
+      3 - <a href="?gp_page=<?php echo $table_id?>&gp_mode=search">Delete</a>
       <br><br><br><br>
-      4 - <a href="?gp_page=<?=$table_id?>&gp_mode=ins">Add</a>
+      4 - <a href="?gp_page=<?php echo $table_id?>&gp_mode=ins">Add</a>
       <br><br><br><br>
       <?php
       $x = 5;
@@ -96,14 +96,14 @@ class x_welcome extends x_table2 {
          }
          $parms   = implode('&',$columns);
          ?>
-            <?=$x?> - <a href="?gp_page=x_pkc&gp_table_upd=<?=$table_id.'&'.$parms?>"><?=$desc?></a>
+            <?php echo $x?> - <a href="?gp_page=x_pkc&gp_table_upd=<?php echo $table_id.'&'.$parms?>"><?php echo $desc?></a>
             <br><br><br><br>
          <?php
          $x++;
       }
       //hprint_r($rapidchanges);
       ?>
-      Z - <a href="?x_module=<?=$module?>">Exit</a>
+      Z - <a href="?x_module=<?php echo $module?>">Exit</a>
       <br><br><br><br>
       <?php
    }

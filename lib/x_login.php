@@ -71,7 +71,7 @@ class x_login extends x_table2 {
 <!-- LOGIN HTML (BEGIN) -->
 <br/>
 <center>
-<?=configGet('loginbefore',$GLOBALS['AG']['app_desc'])?>
+<?php echo configGet('loginbefore',$GLOBALS['AG']['app_desc'])?>
 </center>
 
 <br/>
@@ -81,7 +81,7 @@ class x_login extends x_table2 {
 		<td class="logincaption">Login Name:</td>
 		<td class="logininput">
 			<input class="login" id="loginUID" name="loginUID" 
-                maxlength="60" size="10" value="<?=$loginUID?>" />
+                maxlength="60" size="10" value="<?php echo $loginUID?>" />
 			</td>
 	</tr>
 	<tr>
@@ -102,7 +102,7 @@ class x_login extends x_table2 {
 <br/>
 <br/>
 <center>
-<a href="<?=$hForgot?>">Forgotten Password and Change Password</a>
+<a href="<?php echo $hForgot?>">Forgotten Password and Change Password</a>
 </center>
 <!-- LOGIN HTML (END) -->		
 		<?php

@@ -50,7 +50,7 @@ class x_password extends x_table2 {
 		'JOHN' or 'john' (and so forth) all mean the same thing.</p>
         <p>Email:
   		   <input name="txt_email" id="txt_email" width="30"
-			  value="<?=CleanGet("txt_email","",false)?>"></input>
+			  value="<?php echo CleanGet("txt_email","",false)?>"></input>
         </p>
            
 		<br><br>
@@ -139,7 +139,7 @@ Select count(*) as cnt
       hidden('hash',$hash);
 		?>
       <input type="hidden" name="gpp"  value="3">
-      <input type="hidden" name="hash" value="<?=hSanitize($hash)?>">
+      <input type="hidden" name="hash" value="<?php echo hSanitize($hash)?>">
 		<p>This is the change password page.  Enter your account ID 
          and new password below to change your password.</p>
 
@@ -251,7 +251,7 @@ UPDATE users SET member_password=".SQLFC($pw1)."
          not the same thing as 'JOHN' or 'john'.</p>
       <p>User id:
   		   <input name="txt_user_id" id="txt_user_id" width="30"
-			  value="<?=CleanGet("txt_user_id","",false)?>"></input>
+			  value="<?php echo CleanGet("txt_user_id","",false)?>"></input>
       </p>
            
 		<br><br>

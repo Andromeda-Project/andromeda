@@ -54,9 +54,9 @@ include('androHTMLHead.php');
 <center>
     <div class="template" style="text-align: left">
         <?php if (mosCountModules('header')) { ?>
-            <div class="templateheader"><?=mosLoadModules('header')?>
+            <div class="templateheader"><?php echo mosLoadModules('header')?>
             <div class="templateheader-top">
-                <img src="templates/<?=$template?>/images/logo.gif">
+                <img src="templates/<?php echo $template?>/images/logo.gif">
                 <div class='sizepicker'>
                 <a href="?p2s=800">800</a>&nbsp;
                 <a href="?p2s=1024">1024</a>&nbsp;
@@ -73,13 +73,13 @@ include('androHTMLHead.php');
             </div>
         <?php } ?>
         <?php if (mosCountModules('menu')) { ?>
-            <div class="templatemenu"><?=loadMenu()?>
-                <?=fwModuleMenuRight()?>
+            <div class="templatemenu"><?php echo loadMenu()?>
+                <?php echo fwModuleMenuRight()?>
             </div>
             <div style="clear: both"></div>
         <?php } ?>
         <?php if (mosCountModules('shortcuts')) { ?>
-            <div class="templateshortcuts"><?=mosLoadModules('shortcuts')?>
+            <div class="templateshortcuts"><?php echo mosLoadModules('shortcuts')?>
             </div>
         <?php } ?>
     
@@ -88,18 +88,18 @@ include('androHTMLHead.php');
             <tr>
                 <?php if (mosCountModules('left')) { ?>
                     <td class="auxiliary templateleft">
-                        <?=mosLoadModules('left')?>
+                        <?php echo mosLoadModules('left')?>
                     </td>
                 <?php } ?>
             
                 <td class="templatemain">
-                <?=mosMainBody()?>
+                <?php echo mosMainBody()?>
                 </td>
             </tr>
         </table>        
     
         <?php if (mosCountModules('footer')) { ?>
-            <div class="templatefooter"><?=mosLoadModules('footer')?>
+            <div class="templatefooter"><?php echo mosLoadModules('footer')?>
             </div>
         <?php } ?>
     </div>

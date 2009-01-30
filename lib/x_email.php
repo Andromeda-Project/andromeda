@@ -79,13 +79,13 @@ class x_table_x_email extends x_table2 {
 			and then click on the [SEND] button.</p>
 			
 		<table>
-		<?=$this->HTML_INPUTS($GLOBALS["AG"]["tables"]["adm_emails"],$em,"ins",true);?>
+		<?php echo $this->HTML_INPUTS($GLOBALS["AG"]["tables"]["adm_emails"],$em,"ins",true);?>
 		</table>
 		
 		
 		<br>
 		<br>
-		<?=HTMLE_A_JS("formSubmit()","Send Email Now");?>
+		<?php echo HTMLE_A_JS("formSubmit()","Send Email Now");?>
 		<?php
 	}
 }

@@ -46,7 +46,7 @@ class a_pullcode extends x_table2 {
       <a href="javascript:Popup('?gp_page=a_pullcode&gp_posted=2')">Step 1: Get Code</a>
       <br/>
       <br/>
-      <?=hLinkBuild('andro','Step 2: Rebuild Node Manager')?>
+      <?php echo hLinkBuild('andro','Step 2: Rebuild Node Manager')?>
      
       <h1>Download Latest Software Updates</h1>      
 

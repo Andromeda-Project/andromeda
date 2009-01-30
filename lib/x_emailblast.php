@@ -103,13 +103,13 @@ class x_table_x_emailblast extends x_table {
 		 
 		<p>Subject:
 		    <input size=50 maxlength=50 name="txt_subject"
-		       value="<?=CleanGet('txt_subject','',false)?>">
+		       value="<?php echo CleanGet('txt_subject','',false)?>">
 		    </input>
 	   </p>
 
 		Email Text:<br>
 		<textarea cols=70 rows=20 name="txt_email"
-			><?=CleanGet('txt_email','',false)?></textarea>
+			><?php echo CleanGet('txt_email','',false)?></textarea>
 		
 		<h2>Recipients</h2>
 		<?php

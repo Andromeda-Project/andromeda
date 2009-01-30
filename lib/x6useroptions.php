@@ -40,7 +40,7 @@ class x6useroptions extends androX6 {
         }
         </script>
         <h2>Skin Selection</h2>
-        Skin: <?=$select->render()?>
+        Skin: <?php echo $select->render()?>
         <?php
         $tab1->setHtml(ob_get_clean());
         

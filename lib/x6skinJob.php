@@ -266,8 +266,8 @@ class x6skinJob extends androX6 {
         ?>
 /* ==================================================== *\
  * Andromeda Generated CSS file                         
- * Generated: <?=date('r',time())."\n"?>
- * Skin, color, size: <?="$skin, $color, $size\n"?>
+ * Generated: <?php echo date('r',time())."\n"?>
+ * Skin, color, size: <?php echo "$skin, $color, $size\n"?>
 \* ==================================================== */
         <?php
         echo "\n";

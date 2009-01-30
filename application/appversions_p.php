@@ -59,12 +59,12 @@ class appversions_p extends x_table2 {
       ?>
       <h1>Freeze Current Version</h1>
       <p>This program will create a new version of all application files
-         for application <?=hSanitize(gp('gp_app'))?>.
+         for application <?php echo hSanitize(gp('gp_app'))?>.
          It will copy all disk files into the database.
-         The version will be numbered as <?=$v?>.
+         The version will be numbered as <?php echo $v?>.
       </p>
          
-      <p>The top level directory to be scanned is: <?=$root?>.
+      <p>The top level directory to be scanned is: <?php echo $root?>.
       </p>
       
       <p>The subdirectories to be scanned are:
@@ -78,7 +78,7 @@ class appversions_p extends x_table2 {
       ?>
       </ul>
          
-      <p><a href="javascript:Popup('<?=$link?>')">Process Now</a>
+      <p><a href="javascript:Popup('<?php echo $link?>')">Process Now</a>
       </p>
       
       <?php

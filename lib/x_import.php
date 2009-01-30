@@ -70,9 +70,9 @@ class x_import extends x_table2 {
       
       ?>
       <h1>Table Import</h1>
-      <p><b>Destination Table:</b><?=hLinkPage('',$tid)?>
+      <p><b>Destination Table:</b><?php echo hLinkPage('',$tid)?>
       </p>
-      <p><b>Table Name in Database:</b> <?=$tid?>.
+      <p><b>Table Name in Database:</b> <?php echo $tid?>.
       </p>
       <p>This is standardized import program that can accept file 
          uploads in the popular "CSV" format.  The first row is expected
@@ -102,7 +102,7 @@ class x_import extends x_table2 {
          ?>
          <h2>File Upload</h2>
          <p>Please upload a file to process.
-         <p><?=hFileUpload();?>
+         <p><?php echo hFileUpload();?>
          <?php
       }
    }
@@ -180,9 +180,9 @@ class x_import extends x_table2 {
             ? '<tr class="hilite">'
             : '<tr>';
          ?>
-         <td><?=$map['importmap']?>
-         <td><a href="javascript:andrax('?<?=$hp1?>')">Select</a>
-         <td><a href="javascript:andrax('?<?=$hp2?>')">Delete</a>
+         <td><?php echo $map['importmap']?>
+         <td><a href="javascript:andrax('?<?php echo $hp1?>')">Select</a>
+         <td><a href="javascript:andrax('?<?php echo $hp2?>')">Delete</a>
          <?php
       }
       // Now the row for a new entry
@@ -193,7 +193,7 @@ class x_import extends x_table2 {
       ?>
          <tr><td><input name="txt_importmap"   id="txt_importmap">
              <td>&nbsp;
-             <td><a href="javascript:andrax(<?=$hp?>)">Create</a>
+             <td><a href="javascript:andrax(<?php echo $hp?>)">Create</a>
       </table>
       <?php
              
@@ -242,9 +242,9 @@ class x_import extends x_table2 {
          $hSelect=hSelectFromAA($aline,'anycol',$value,$extra);
          if($dd['flat'][$col]['uino']<>'Y') {
             ?>
-            <tr><td><?=$col?>
-                <td><?=$dd['flat'][$col]['description']?>
-                <td><?=$hSelect?>
+            <tr><td><?php echo $col?>
+                <td><?php echo $dd['flat'][$col]['description']?>
+                <td><?php echo $hSelect?>
             <?php
          }
       }
@@ -260,8 +260,8 @@ class x_import extends x_table2 {
       <hr />
       <h2>File Process</h2>
       
-      <p>The file <?=$fi['name']?> was uploaded, size 
-         <?=number_format($fi['size'])?> bytes.
+      <p>The file <?php echo $fi['name']?> was uploaded, size 
+         <?php echo number_format($fi['size'])?> bytes.
       </p>
       
       <p><a href="javascript:SetAndPost('gp_nofile',1)">
@@ -269,7 +269,7 @@ class x_import extends x_table2 {
          </a>
       </p>  
          
-      <p><a href="javascript:Popup('<?=$href?>')">Process Now</a>
+      <p><a href="javascript:Popup('<?php echo $href?>')">Process Now</a>
       </p>
       
       <?php
@@ -306,10 +306,10 @@ class x_import extends x_table2 {
       }
       ?>
       <h1>Table Import Processing</h1>
-      <p>For Table: <?=$t['description']?>
-      <p>Name in database: <?=$tid?>
-      <p>File to process: <?=$fi['name']?>
-      <p>File upload size: <?=number_format($fi['size'])?>
+      <p>For Table: <?php echo $t['description']?>
+      <p>Name in database: <?php echo $tid?>
+      <p>File to process: <?php echo $fi['name']?>
+      <p>File upload size: <?php echo number_format($fi['size'])?>
       <hr>
       <pre>
       <?php

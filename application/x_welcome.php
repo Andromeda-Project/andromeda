@@ -58,7 +58,7 @@ class x_welcome extends x_table2 {
             font-weight: bolder; margin: 8px; padding: 0 8px 8px 8px">
             <h2>New Version of Andromeda Available</h2>
             
-            <p>Version <?=$latest?> is available at the Andromeda 
+            <p>Version <?php echo $latest?> is available at the Andromeda 
             Sourceforge repository.   <a href="?gp_page=a_pullsvn"
             >Click Here </a> to go to the Pull Code From Subversion.
             </div>
@@ -102,7 +102,7 @@ After building the application skeleton you can start working on the
    the database specification into the file
    <br/>
    <br/>
-   <b><?=$dirs[0]['dir_pub']?>/test/application/test.dd.yaml</b>
+   <b><?php echo $dirs[0]['dir_pub']?>/test/application/test.dd.yaml</b>
 <br/>
 <br/>
 
@@ -111,10 +111,10 @@ a database specification.  These specifications are
 more powerful than anything else out there, 
 and you will want learn the Andromeda way to 
 <a target="_blank" href=
-"http://www.andromeda-project.org/pages/cms/Defining+a+Database"
+"http://www.andromeda-project.org/pages/cms/database+programming.html"
 >Define a Database</a>, and if you don't want to read the primer, you
 can start with the <a target="_blank"  href=
-"http://www.andromeda-project.org/pages/cms/The+Smallest+Possible+Andromeda+Specification"
+"http://www.andromeda-project.org/pages/cms/a+starter+database+specification.html"
 >Sample Specification</a>.
 
 <br/>

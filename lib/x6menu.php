@@ -203,8 +203,8 @@ class x6menu extends androX6 {
         }
         
         // Initialize the first one
-        var x6page_prior = '<?=gp('x6page_prior')?>';
-        var x6mod_prior  = '<?=gp('x6mod_prior')?>';
+        var x6page_prior = '<?php echo gp('x6page_prior')?>';
+        var x6mod_prior  = '<?php echo gp('x6mod_prior')?>';
         if(x6mod_prior=='') {
             $("#x6menu_left div:first").click();
             //self.clicked($("#x6menu_left div:first")[0].id);

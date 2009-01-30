@@ -33,7 +33,7 @@ if(count($jqdr)>0) {
     ?>
     <script type="text/javascript">
     $(document).ready(function() {
-<?=implode("\n",$jqdr)?> 
+<?php echo implode("\n",$jqdr)?> 
     });
     </script>
     <?php
@@ -45,7 +45,7 @@ if($jqueryDocumentReady<>'') {
     ?>
     <script type="text/javascript">
     $(document).ready(function() {
-    <?=$jqueryDocumentReady?>
+    <?php echo $jqueryDocumentReady?>
     });
     </script>
     <?php
@@ -57,7 +57,7 @@ if(configGet('deprecated','Y')=='Y') {
     if($scriptend<>'') {
         ?>
         <script type="text/javascript">
-        <?=$scriptend?>
+        <?php echo $scriptend?>
         </script>
         <?php
     }
@@ -82,7 +82,7 @@ if(configGet('deprecated','Y')=='Y') {
   <br/>
   <div id="idiv2content" class="idiv2content" 
     style="margin: 10px; overflow-y: scroll;">
-    <?=vgfGet('htmlHelp')?>
+    <?php echo vgfGet('htmlHelp')?>
   </div>
 </div>
 <div id="dialogoverlay" style="display:none"></div>

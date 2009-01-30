@@ -73,7 +73,7 @@
 </head>
 <body>
 
-<?=V("HTML")?>
+<?php echo V("HTML")?>
 
 </body>
 <script>window.print();</script>

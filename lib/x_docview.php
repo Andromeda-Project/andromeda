@@ -237,8 +237,8 @@ class x_docview extends x_table2 {
       echo $hpn;
       ?>
       <hr>
-      Page last modified <?=date('r',dEnsureTS($row['ts_upd']))?> by 
-         <?=$row['uid_upd']?><br><br>
+      Page last modified <?php echo date('r',dEnsureTS($row['ts_upd']))?> by 
+         <?php echo $row['uid_upd']?><br><br>
       <?php
    }
    

@@ -27,8 +27,8 @@ class x4Menu extends androX4 {
         ?>
         <div id="x4Menu" class="x4Pane x4Menu">
         <center>
-        <h1><?=$h1?></h1>
-        <?=$text?>
+        <h1><?php echo $h1?></h1>
+        <?php echo $text?>
         </center>
         <br/>
         <?php

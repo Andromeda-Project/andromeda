@@ -40,11 +40,11 @@ class x_table_instance_import extends x_table {
 		subdirectory, application code in 'app' and library code in 'lib'.
 		
 		<p>Any files submitted on this page will overwrite all existing
-		files for application<b><?=CleanGet("application")?></b>.</p>
+		files for application<b><?php echo CleanGet("application")?></b>.</p>
 		
-		<p>The maximum file size in megabytes is: <?=$this->maxf?>.</p>
+		<p>The maximum file size in megabytes is: <?php echo $this->maxf?>.</p>
 		
-		<input type="hidden" name="MAX_FILE_SIZE" value="<?=$max?>000000">
+		<input type="hidden" name="MAX_FILE_SIZE" value="<?php echo $max?>000000">
 		<input type="FILE" name="f_single" id="f_single">
 		
 		<br><br>

@@ -157,7 +157,7 @@ if (window.attachEvent) window.attachEvent("onload", sfHover);
   			</div> <!-- nav -->
             <?php if(mosCountModules('menuright')) { ?>
                 <div id="nav" style="float:right">
-                    <?=mosLoadModules('menuright') ?>
+                    <?php echo mosLoadModules('menuright') ?>
                 </div>
             <?php } ?>
 			</div>
@@ -165,14 +165,14 @@ if (window.attachEvent) window.attachEvent("onload", sfHover);
          <?php /* Andromeda change, add a line of links */ ?>
          <?php if (mosCountModules('quicklinks')) { ?> 
          <div id="quicklinks">
-           <?=mosLoadModules('quicklinks') ?>
+           <?php echo mosLoadModules('quicklinks') ?>
          </div>
          <?php } ?>
 
          <?php /* Andromeda change, add a spot for commands */ ?>
          <?php if (mosCountModules('commands')) { ?> 
          <div id="quicklinks">
-           <?=mosLoadModules('commands') ?>
+           <?php echo mosLoadModules('commands') ?>
          </div>
          <?php } ?>
 

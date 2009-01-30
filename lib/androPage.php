@@ -156,7 +156,7 @@ class androPage {
     function mainHelp() {
         ob_start();
         ?>
-        This is the <?=$this->yamlP2['options']['title']?> inquiry screen
+        This is the <?php echo $this->yamlP2['options']['title']?> inquiry screen
         <br/><br/>
         The input boxes accept a very flexible set of values,
         you can enter ranges like a-e or 100-200, you can enter

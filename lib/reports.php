@@ -84,17 +84,17 @@ class reports extends x_table2 {
       
       
       </script>
-      <h1><?=$this->PageSubtitle?></h1>
+      <h1><?php echo $this->PageSubtitle?></h1>
       <table cellpadding=0 cellspacing=0 width=100%  
              style="border-collapse:collapse">
         <tr>
-          <td height="40" valign=top><?=$this->h['ButtonBar']?>
+          <td height="40" valign=top><?php echo $this->h['ButtonBar']?>
         </tr>
         <tr>
           <td>
             <hr/>
             <div class="x2menubar" id="x2tabbar" name="x2tabbar">
-            <?=$this->ehTabbar(false);?>
+            <?php echo $this->ehTabbar(false);?>
             <hr/>
             </div>
           </td>
@@ -102,7 +102,7 @@ class reports extends x_table2 {
         <tr><td>&nbsp;
         <tr>
           <td class="x2_content" id="x2_content" name="x2_content">
-          <?=$this->ehTab_Main()?>
+          <?php echo $this->ehTab_Main()?>
           </td>
         </tr>
       </table>
@@ -229,18 +229,18 @@ class reports extends x_table2 {
           <td>
           Report Description:
           <br>
-          <input value="<?=$desc?>" name="ajx_description"
+          <input value="<?php echo $desc?>" name="ajx_description"
                  onblur="sndReq('&gp_ajax=repdesc&gp_new='+this.value)">
           <br/><br/>
-          Landscape: <input type="checkbox" <?=($flnd=='Y'?'CHECKED':'')?> 
+          Landscape: <input type="checkbox" <?php echo ($flnd=='Y'?'CHECKED':'')?> 
                  name="ajax_checkbox"
-                 onchange="andrax('<?=$h5?>)">
+                 onchange="andrax('<?php echo $h5?>)">
           </td>
           <td>
-            <?=$h3?><br><br>
-            <?=$h4?><br><br>
-            <?=$h4b?><br><br>
-            <?=$h4c?><br><br>
+            <?php echo $h3?><br><br>
+            <?php echo $h4?><br><br>
+            <?php echo $h4b?><br><br>
+            <?php echo $h4c?><br><br>
           </td>
         </tr>
       </table>         
@@ -265,7 +265,7 @@ class reports extends x_table2 {
           <td >
             Tables Currently In this Report:
             <div id="ajx_tablesrep" name="ajx_tablesrep">
-            <?=$this->ehTablesRep(false)?>
+            <?php echo $this->ehTablesRep(false)?>
             </div>
           <td style="vertical-align: middle">
             <input type="button" value="&lt;&lt; Add"
@@ -279,7 +279,7 @@ class reports extends x_table2 {
           <td>
             Tables That Can Be Added To This Report
             <div id="ajx_tablesavl" name="ajx_tablesavl">
-            <?=$this->ehTablesAvl(false)?>
+            <?php echo $this->ehTablesAvl(false)?>
         </tr>
       <?php
    }
@@ -439,7 +439,7 @@ class reports extends x_table2 {
            <br>
            <br>
            <div name="ajx_columnsrep" id="ajx_columnsrep">
-           <?=$this->ehColumns(false)?>
+           <?php echo $this->ehColumns(false)?>
            </div>
         </td>
         <td style="vertical-align: top; text-align: center; width: 80px">
@@ -454,7 +454,7 @@ class reports extends x_table2 {
            <select size=20 style="width:220px"
                    name="sel_columnsavl" id="sel_columnsavl"
                   >
-           <?=$hOpts?>
+           <?php echo $hOpts?>
            </select>
         </td>
       </tr>
@@ -526,16 +526,16 @@ class reports extends x_table2 {
          
          ?>
          <tr>
-         <td><a href="javascript:sndReq('<?=$coldl?>')">delete</a>
-         <td><a href="javascript:sndReq('<?=$colup?>')">up</a>&nbsp;&nbsp;
-         <td><?="(".$row['tdesc'].") ".$row['cdesc']?>
-         <td><a href="javascript:sndReq('<?=$coldn?>')">down</a>
-         <td><input value="<?=$row['description']?>" size=10
-                    onblur="sndReq(<?=$hCC?>)">
-         <td><input value="<?=$row['dispsize']?>" maxlength=3 size=3
-                    onblur="sndReq(<?=$hDS?>)">
-         <td><input type=checkbox <?=$CHKD?> value="Y"
-               onchange="javascript:sndReq('<?=$colst?>')">
+         <td><a href="javascript:sndReq('<?php echo $coldl?>')">delete</a>
+         <td><a href="javascript:sndReq('<?php echo $colup?>')">up</a>&nbsp;&nbsp;
+         <td><?php echo "(".$row['tdesc'].") ".$row['cdesc']?>
+         <td><a href="javascript:sndReq('<?php echo $coldn?>')">down</a>
+         <td><input value="<?php echo $row['description']?>" size=10
+                    onblur="sndReq(<?php echo $hCC?>)">
+         <td><input value="<?php echo $row['dispsize']?>" maxlength=3 size=3
+                    onblur="sndReq(<?php echo $hDS?>)">
+         <td><input type=checkbox <?php echo $CHKD?> value="Y"
+               onchange="javascript:sndReq('<?php echo $colst?>')">
          <?php
       }
       echo "</table>";
@@ -808,7 +808,7 @@ class reports extends x_table2 {
                    cols=60
                    rows=5 
                   style="border:1px solid gray"
-                ><?=$repfilter?></textarea></td>
+                ><?php echo $repfilter?></textarea></td>
            <td><a href="javascript:sndReq('&gp_ajax=filtrep&gp_val='+encodeURIComponent(ob('lev0').value))">Save</a>
 
         </tr>
@@ -817,13 +817,13 @@ class reports extends x_table2 {
          $js='&gp_ajax=filtlev&gp_skeylev='.$lev['skey'];
          ?>
          <tr>
-           <td valign=top><?=$lev['reportlevel']?></td>
+           <td valign=top><?php echo $lev['reportlevel']?></td>
            <td><textarea 
                     cols=60 
                     rows=5 
                    style="border:1px solid gray"
-               onchange="sndReq('<?=$js?>&gp_val='+this.value)"
-                 ><?=$lev['repfilters']?></textarea></td>
+               onchange="sndReq('<?php echo $js?>&gp_val='+this.value)"
+                 ><?php echo $lev['repfilters']?></textarea></td>
          </tr>
          <?php
       }
@@ -845,9 +845,9 @@ class reports extends x_table2 {
          $cols=SQL_Allrows($sql);
          foreach($cols as $col) {
             ?>
-            <tr><td><?=$col['description']?>
-                <td><?=$col['table_id']?>
-                <td><?=$col['column_id']?>
+            <tr><td><?php echo $col['description']?>
+                <td><?php echo $col['table_id']?>
+                <td><?php echo $col['column_id']?>
             <?php
          }
          ?>
@@ -890,13 +890,13 @@ class reports extends x_table2 {
          }
          ?>
          <tr>
-         <td><?='('.$row['tdesc'].') '.$row['cdesc']?>
-         <td><select onchange="sndReq(<?=$hSel1?>)" 
-                     value="<?=$row['compoper']?>">
-             <?=$hOpts?>
+         <td><?php echo '('.$row['tdesc'].') '.$row['cdesc']?>
+         <td><select onchange="sndReq(<?php echo $hSel1?>)" 
+                     value="<?php echo $row['compoper']?>">
+             <?php echo $hOpts?>
              </select>
-         <td><input onblur="sndReq(<?=$hSel2?>)"
-                value="<?=$row['compval']?>"
+         <td><input onblur="sndReq(<?php echo $hSel2?>)"
+                value="<?php echo $row['compval']?>"
                 size=70 maxlength=100>
          </tr>   
          <?php
@@ -911,7 +911,7 @@ class reports extends x_table2 {
            <td class="dhead" style="width:10%">Operator
            <td class="dhead" style="width:65%">Value
          </tr>
-         <?=$hHTML?>
+         <?php echo $hHTML?>
       </table>
       <?php
    }

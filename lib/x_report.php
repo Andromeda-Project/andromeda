@@ -477,7 +477,7 @@ class x_report extends x_table2 {
 
    function RepFooterHTML() {
       ?>
-      </div><?=$this->hDashes?></pre>
+      </div><?php echo $this->hDashes?></pre>
       </body>
       </html>
       <?php

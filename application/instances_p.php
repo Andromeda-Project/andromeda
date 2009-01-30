@@ -64,11 +64,11 @@ class instances_p extends x_table2 {
       
         ?>
         <h1>Instance Upgrade</h1>
-        <p>Application: <?=$hApp?>   </p>
-        <p>Instance: <?=$hInst?>     </p>
-        <p>Current Version: <?=($hVer=='' ? '-none-' : $hVer)?> </p>
-        <p>Latest Version Available: <?=($verx=='' ? '-none-' : $verx)?> </p>
-        <?=$av?> 
+        <p>Application: <?php echo $hApp?>   </p>
+        <p>Instance: <?php echo $hInst?>     </p>
+        <p>Current Version: <?php echo ($hVer=='' ? '-none-' : $hVer)?> </p>
+        <p>Latest Version Available: <?php echo ($verx=='' ? '-none-' : $verx)?> </p>
+        <?php echo $av?> 
         <p>&nbsp;</p>
         <p>
         <?php
@@ -79,7 +79,7 @@ class instances_p extends x_table2 {
             download release code for this application, or you may
             generate files out of your development code.
             </p>
-            <?=$hWarn?>
+            <?php echo $hWarn?>
             <?php
             return;
         }

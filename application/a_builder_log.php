@@ -24,7 +24,8 @@ class a_builder_log extends x_table2 {
 	function main() {
 		echo "<h1>View Build Log</h1>";
 		?>
-<p>Currently viewing the log for application code "<b><?=CleanGet('application')?></b>".  Click any
+<p>Currently viewing the log for application code "
+  <b><?php echo gp('application')?></b>".  Click any
    of the links below to see the logs for the particular application:</p>
 <?php 
 		// Run out list of apps they can see

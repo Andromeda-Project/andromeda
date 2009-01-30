@@ -197,7 +197,7 @@ if($deprecated=='Y') {
     if($styles<>'') {
         ?>
         <style type="text/css">
-        <?=$styles?>
+        <?php echo $styles?>
         </style>
         <?php
     }
@@ -208,7 +208,7 @@ if($deprecated=='Y') {
         ?>
         <script language="javascript" type="text/javascript">
         /* Script generated specifically for a page */
-        <?=ElementOut("script");?>
+        <?php echo ElementOut("script");?>
         </script>
         <?php
     }

@@ -8,7 +8,7 @@ $cookie = arr($_COOKIE,'x6skin','Default.Gray.1024');
 ?>
 <link    rel="stylesheet"
        x6skin="Y"
-        href="templates/x6/skins/x6skin.<?=$cookie?>.css" />
+        href="templates/x6/skins/x6skin.<?php echo $cookie?>.css" />
 <?php include 'androHTMLHead.php' ?>
 
 <?php
@@ -30,13 +30,13 @@ if($loadFBLite == 1) {
 <div style="clear: both"></div>
 <div class="x6body">
     <div class="x6main">
-    <?=mosMainBody()?>
+    <?php echo mosMainBody()?>
     </div>
 </div>
 
 <div class="x6footer">
   <span style="float: left">Produced by Secure Data Software</span>
-  <span style="float: right">Server time: <?=date('h:i:s a',time())?></span>
+  <span style="float: right">Server time: <?php echo date('h:i:s a',time())?></span>
 </div>
 <?php include 'androHTMLFoot.php' ?>
 </body>
