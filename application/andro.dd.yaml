@@ -343,13 +343,6 @@ table usersroot:
         prefix: member_
         description: MD5 Password
     
-
-content variables:
-    columns: [ variable, description, variable_value ]
-    values:
-        - [ DEV_STATION_ANDROMEDA, Andromeda Developed Here, "N" ]
-
-
 # ========================================================================
 # MODULE: Deprecated source control
 # ========================================================================
