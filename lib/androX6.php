@@ -583,7 +583,7 @@ class androX6 {
     function checkboxSave() {
         $row      = aFromGP('cbval_');
         x6Data('row',$row);
-        $table_id = gp('x6table');
+        $table_id = gp('x6page');
         if(gp('checked')=='true') {
             SQLX_Insert($table_id,$row);
         }
