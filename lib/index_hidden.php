@@ -368,7 +368,7 @@ if(in_array(gp('gp_page'),$x4Required)) {
 # may have come in, such as gp_dropdown, which causes
 # this to be ignored.
 #
-if(gp('x4Page')=='' && gp('gp_page')=='') {
+if(gp('x4Page')=='' && gp('gp_page')=='' &&gp('x6page')=='') {
     if(function_exists('app_nopage')) {
         app_nopage();
     }
