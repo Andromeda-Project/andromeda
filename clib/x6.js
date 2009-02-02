@@ -6373,7 +6373,7 @@ x6plugins.tabs = function(self,id,table) {
             // Here we have all of the values we need to make
             // a literal command to the back to either insert
             // or delete a row.
-            var json = new x6JSON('x6table',args.x6table);
+            var json = new x6JSON('x6page',args.x6table);
             json.addParm('x6action','checkboxSave');
             json.addParm('checked',inp.checked);
             json.addParm('cbval_'+args.pkl,args.pkvalleft);
