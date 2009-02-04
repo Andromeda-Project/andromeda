@@ -515,6 +515,11 @@ column x6_template {
     description: Public Default Template;
     flagcarry: N;
 }
+column x6_x2 {
+    type_id: cbool; 
+    description: Use x2 file if found and no x6 file;
+    flagcarry: N;
+}
 column x6_group {
     type_id: vchar;
     colprec: 40;
@@ -629,7 +634,7 @@ table configfw {
         auth_net_login_id; auth_net_tran_key;
     }
     column {
-        x6_template; x6_group; x6_jssource; 
+        x6_template; x6_x2; x6_group; x6_jssource; 
     }
 }
 table configapp {
@@ -693,7 +698,7 @@ table configinst {
     column description { suffix: _x6; description: X6 Settings; }
     projection x6 {
         column {
-            flag_x6; x6_template; x6_group; x6_jssource; 
+            flag_x6; x6_x2; x6_template; x6_group; x6_jssource; 
         }
     }
 
