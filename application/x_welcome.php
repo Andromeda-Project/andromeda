@@ -84,7 +84,7 @@ class x_welcome extends x_table2 {
 
     If you want to start programming a new application right away, 
     <a target="_blank"  href=
-    "http://www.andromeda-project.org/pages/cms/creating+an+application.html"
+    "http://www.andromeda-project.org/creatinganapplication.html"
     >The instructions are here</a>, or you can just 
     <a href="?gp_page=applications&gp_mode=ins">define a new application here.</a>
     <br/>
@@ -109,23 +109,17 @@ After building the application skeleton you can start working on the
 All Andromeda applications start with
 a database specification.  These specifications are 
 more powerful than anything else out there, 
-and you will want learn the Andromeda way to 
+and you will want learn the Andromeda's 
 <a target="_blank" href=
-"http://www.andromeda-project.org/pages/cms/database+programming.html"
->Define a Database</a>, and if you don't want to read the primer, you
-can start with the <a target="_blank"  href=
-"http://www.andromeda-project.org/pages/cms/a+starter+database+specification.html"
->Sample Specification</a>.
+"http://www.andromeda-project.org/databaseprogramming.html"
+>Database Programming</a> language.
 
 <br/>
 <br/>
 Once you are ready to try some custom pages, you are ready to look
 at <a target="_blank" href=
-"http://www.andromeda-project.org/pages/cms/Web+Programming"
->Web Programming</a>, and if you want to dive into your first page, the
-instructions for <a target="_blank" href=
-"http://www.andromeda-project.org/pages/cms/Pages%2C+Classes+and+Tables"
->Where to put the file and what to put in it.</a>
+"http://www.andromeda-project.org/webprogramming.html"
+>Web Programming</a>.
    
     
 </div>        
