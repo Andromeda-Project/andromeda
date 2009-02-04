@@ -658,6 +658,18 @@ function index_hidden_x6Dispatch(
     # So we default to the conventional profile.
     if($x6method=='x6main' && $x6class=='androX6') {
         $x6method = 'profile_conventional';
+        
+        # KFD 2/2/09.  Allow fallback to x2 processing.  If the
+        #              app is set for it, and a file exists, call
+        #              that instead
+        if(configGet('x6_x2','N')=='Y') {
+            if(file_exists(fsDirTop().'application/'.$x6page.'.php')) {
+                include_once('x_table2.php');
+                include_once($x6page.'.php');
+                $x6class = $x6page;
+                $x6method= "main";
+            }
+        }
     }
     
     # Now everything is resolved.  We know what class to instantiate
