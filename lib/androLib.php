@@ -2344,7 +2344,7 @@ class androHtml {
                 $this->hp['on'.$event] = "$fname(this)";
         }
         foreach($this->functions as $name=>$snippet) {
-            jqDocReady("x6.byId('{$this->hp['id']}').$name = $snippet");
+            jqDocReady("x6.byId('{$this->hp['id']}').$name = ".$snippet);
         }
         
         # KFD 10/7/08 if data has been attached, send it as json
@@ -3337,6 +3337,9 @@ class androHTMLDetail extends androHTML {
             }
         }
 
+        # Define this outside the loop, it is used to make
+        # xdefsrc inside of the loop
+        $fetches = array('fetchdef','fetch','distribute');
         $options = array(
             'xTabGroup'=>'ddisp_'.$table_id
         );
@@ -3361,7 +3364,18 @@ class androHTMLDetail extends androHTML {
                     )
                 );
             }
-                
+            
+            # KFD 2/4/09. If this is in the fetch family, set its
+            #             xdefsrc
+            $autoid=strtolower($dd['flat'][$col]['automation_id']);
+            if(in_array($autoid,$fetches)) {
+                $xoptions = array_merge(
+                    $options
+                    ,array('attributes'=>array(
+                        'xdefsrc'=>strtolower($dd['flat'][$col]['auto_formula'])
+                    ))
+                );
+            }
             
             $this->addTRInput($dd,$col,$xoptions);
             $x6ba = trim(arr($dd['flat'][$col],'x6breakafter',''));
@@ -3954,11 +3968,18 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
     #               options array
     $atts = arr($options,'attributes',array());
     #if(count($atts)>0) x6data($column_id,$atts);
+    
+    # KFD 2/5/09 modified so only specific situations are readonly
+    $readonlies=array('fetch','distribute');
+    $autoid    =arr($colinfo,'automation_id','');
+    $tfko      =arr($colinfo,'table_id_fko' ,'');
     foreach($atts as $name=>$value) {
         $input->hp[$name]=$value;
         if($name=='xdefsrc') {
-            $input->hp['xRoIns'] = 'Y';
-            $input->hp['xRoUpd'] = 'Y';
+            if(in_array($autoid,$readonlies) || $tfko <> '') {
+                $input->hp['xRoIns'] = 'Y';
+                $input->hp['xRoUpd'] = 'Y';
+            }
         }
     }
     
