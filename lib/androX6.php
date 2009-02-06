@@ -933,7 +933,19 @@ class androX6 {
             $tab->ap['x6table'   ] = $child;
             
             if($info['x6childwrites']=='detail') {
+                # Create the basic detail
                 $modal = new androHTMLDetail($child,true,700,$table_id);
+
+                # Now see if we need to add buttons
+                if(file_exists(fsDirtop()."application/x6$child.php")) {
+                    include_once(fsDirtop()."application/x6$child.php");
+                    $childClass = 'x6'.$child;
+                    $objChild = new $childClass;
+                    $custom = $objChild->customButtons();
+                    $modal->addCustomButtons($custom);
+                }
+                
+                # Tell framework to add it to the output.
                 addModal($modal);
             }
         }
