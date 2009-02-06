@@ -681,6 +681,7 @@ var x6 = {
         
         // Make list of keys to stop no matter what
         var stopThem = [ 'CtrlF5', 'F10' ];
+        var stopThem = [ ];
         
         var noPropagate = [
             'CtrlS', 'CtrlN', 'CtrlI', 'CtrlD',
@@ -690,7 +691,8 @@ var x6 = {
             'DownArrow','UpArrow',
             'ShiftDownArrow','ShiftUpArrow',
             'Ctrl0','Ctrl1','Ctrl2','Ctrl3','Ctrl4',
-            'Ctrl5','Ctrl6','Ctrl7','Ctrl8','Ctrl9'
+            'Ctrl5','Ctrl6','Ctrl7','Ctrl8','Ctrl9',
+            'F1','F2','F3','F4','F6','F7','F8','F9','F10'
         ];
         
         // Set a flag now.  If user hit ESC, we are trying
@@ -1349,14 +1351,6 @@ var x6 = {
         */
         inputs: function(obj,direct) {
             if(direct==null) direct=false;
-            if(obj==null) {
-                if(x6.byId('x4Top')!=null) {
-                    obj = x6.byId('x4Top');
-                }
-                else {
-                    obj = $('.x6main')[0];
-                }
-            }
             if(typeof(obj)=='string') {
                 if(obj.indexOf('input')==-1) {
                     var jqObjects = $(obj).find(':input');
@@ -1369,33 +1363,7 @@ var x6 = {
                 var jqObjects = $(obj).find(":input");
             }
             jqObjects.each( function() {
-                if(direct) 
-                    var id = 'x4c_'+x6.p(this,'xColumnId');
-                else
-                    var id = this.id;
-                    
-                
-                if(this.type=='checkbox') {
-                    if(this.checked) {
-                        x6.json.addParm(id,'Y');
-                    }
-                    else {
-                        x6.json.addParm(id,'N');
-                    }
-                }
-                else {
-                    if(typeof(x6)=='undefined') {
-                        if($(this).prop('value')!='') {
-                            x6.json.addParm(id,$(this).prop('value'));
-                        }
-                    }
-                    else {
-                        var zOrig = x6.p(this,'zOriginalValue','').trim();
-                        if($(this).prop('value').trim()!=zOrig) {
-                            x6.json.addParm(id,$(this).prop('value'));
-                        }
-                    }
-                }
+                x6.json.addParm(this.id,$(this).val());
             });
         },
         /******/
