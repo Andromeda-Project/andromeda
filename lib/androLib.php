@@ -1912,6 +1912,13 @@ class androHtml {
         $this->hp['x6firstFocus']='Y';
     }
     
+    # KFD BLUNT WEAPON.  This really is meant for very simple
+    #                    elements where you just make it scrollable
+    function scrollable($height='') {
+        $this->addStyle('overflow-y: scroll');
+        $this->addStyle("height: $height");
+    }
+    
         
     /****m* androHtml/TbodyRows
     *
@@ -1926,7 +1933,7 @@ class androHtml {
     *	array $options - striping options
     *
     ******/
-    function TbodyRows($rows,$options=array()) {
+    function &TbodyRows($rows,$options=array()) {
         $rowIdPrefix='row_';
         $stripe = $stripe1 = $stripe2 = $stripe3 = 0;
         if(a($options,'stripe',0)>0) {
@@ -2066,8 +2073,8 @@ class androHtml {
     *   androHtmlDetail
     *  
     ******/
-    function &addDetail($table_id,$complete=false,$height=300) {
-        $newDetail = new androHTMLDetail($table_id,$complete,$height);
+    function &addDetail($table_id,$complete=false,$height=300,$p='') {
+        $newDetail = new androHTMLDetail($table_id,$complete,$height,$p);
         $this->addChild($newDetail);
         return $newDetail;
     }
@@ -3314,7 +3321,6 @@ class androHTMLDetail extends androHTML {
                 $colsFK[$chd] = $par;
             }
         }
-        
                 
         # Put in a div that will be the inner box
         #
