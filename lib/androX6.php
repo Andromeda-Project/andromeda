@@ -828,6 +828,30 @@ class androX6 {
     # *******************************************************************
     # ===================================================================
     function profile_conventional() {
+        # KFD 2/9/09, new feature for Jeff/wholdist.  If "table_id_par"
+        #             was passed in, load a certain row from the parent
+        #             table into the bulletin board.  Specifically this
+        #             is so the table can act like a child table 
+        #             w/respect to loading FETCH and FETCHDEF values.
+        #             Maybe we'll do more with it later.
+        $tid_par = gp('table_id_par','');       
+        if( $tid_par <> '' ) {
+            $ddpar = ddTable($tid_par);
+            $pks   = explode(',',$ddpar['pks']);
+            $aWhere = array();
+            foreach($pks as $pk) {
+                $type_id = $ddpar['flat'][$pk]['type_id'];
+                if( ($pkval=gp('pre_'.$pk))<>'') {
+                    $aWhere[] = $pk .'='.SQL_Format($type_id,$pkval);
+                }
+            }
+            $sql = 'select * from '.ddView($tid_par).' where '
+                .implode('AND',$aWhere);
+            $row = sql_oneRow($sql);
+            x6Script("x6bb.fwSet('dbRow_$tid_par',".json_encode($row).')');
+        }
+        
+        
         # Grab the data dictionary for this table
         $dd       = $this->dd;
         $table_id = $this->dd['table_id'];
@@ -863,6 +887,9 @@ class androX6 {
         
         # Begin with title and tabs
         $top->h('h1',$dd['description']);
+        if(method_exists($this,'insert_belowh1')) {
+            $this->insert_belowh1($top);
+        }
         $options = array('x6profile'=>'conventional','x6table'=>$table_id);
         $tabs = $top->addTabs('tabs_'.$table_id,$hpane1,$options);
         $lookup = $tabs->addTab('Lookup');
@@ -897,7 +924,7 @@ class androX6 {
         # because otherwise the programmer would have selected
         # a different profile.
         #
-        $divDetail = $detail->addDetail($dd['table_id'],true,$hdetail);
+        $divDetail = $detail->addDetail($dd['table_id'],true,$hdetail,$tid_par);
         $divDetail->addCustomButtons($this->customButtons());
         $divDetail->ap['xTabSelector'] = $tabs->ul->hp['id'];
         $divDetail->ap['xTabIndex']    = 1;
@@ -921,10 +948,6 @@ class androX6 {
         foreach($dd['fk_children'] as $child=>$info) {
             # KFD 1/2/09.  If x6display is 'none', skip it
             if(trim(arr($info,'x6display',''))=='none') continue;
-            
-            # KFD 1/28/09,  Hardcoded hack to limit entries.
-            #               Will have to come out eventually.
-            if($idx++ > 6) continue;
             
             $tc = $top->addTableController($child);
             $tc->hp['x6tablepar'] = $table_id;
