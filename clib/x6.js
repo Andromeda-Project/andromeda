@@ -3756,7 +3756,7 @@ var x6inputs = {
             if(this.div) {
                 var row = $(this.tbody).find('.hilight>div:first');
                 if(row.length > 0) {
-                    $(inp).val($(row).html());
+                    $(inp).val($(row).html().htmlEdit());
                 }
             }
         },
@@ -3924,7 +3924,7 @@ var x6inputs = {
                     //$(this.input).prop(
                     //    {value:this.parentNode.firstChild.innerHTML}
                     //);
-                    $(this.input).val(this.firstChild.innerHTML);
+                    $(this.input).val(this.firstChild.innerHTML.htmlEdit());
                     x6inputs.afterBlurner(this.input);
                     x6inputs.x6select.hide();
                     setTimeout(
@@ -3959,9 +3959,23 @@ var x6inputs = {
             var totalWidth = 0;
             var colCount = $(this.tbody).find('div.x6selrow:last div').length;
             for(var x = 0; x<= colCount; x++) {
-                var width = $(this.div).find('#x6head'+x).width();
-                totalWidth+=width+8;
-                $(this.div).find('.tbody .x6col'+x).width(width);
+                if(x==colCount) {
+                    maxWidth=15;
+                }
+                else {
+                    var maxWidth=0;
+                    $(this.tbody).find('div.x6col'+x).each(
+                        function() {
+                            if($(this).width() > maxWidth) 
+                                maxWidth = $(this).width();
+                        }
+                    );
+                }
+                //var width = $(this.div).find('#x6head'+x).width();
+                totalWidth+=maxWidth+8;
+                //$(this.div).find('.tbody .x6col'+x).width(width);
+                $(this.div).find('.tbody .x6col'+x).width(maxWidth);
+                $(this.div).find('#x6head'+x).width(maxWidth);
             }
             
 
