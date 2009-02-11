@@ -2962,7 +2962,7 @@ class androHTMLGrid extends androHTML {
             $this->colStyles['div.cell_'.$column_id.' input'] 
                 ="width: {$iWidth}px; $cssExtra";
         }
-        else if($type_id = 'mime-f') {
+        else if($type_id == 'mime-f') {
             $iWidth -= x6cssdefine('bodyfs','12px')*.67*20;
             $this->colStyles['div.cell_'.$column_id.' input'] 
                 ="width: {$iWidth}px; $cssExtra";
