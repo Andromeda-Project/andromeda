@@ -3963,7 +3963,7 @@ var x6inputs = {
                     maxWidth=15;
                 }
                 else {
-                    var maxWidth=0;
+                    var maxWidth=$(this.div).find('#x6head'+x).width();
                     $(this.tbody).find('div.x6col'+x).each(
                         function() {
                             if($(this).width() > maxWidth) 
