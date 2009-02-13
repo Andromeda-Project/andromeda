@@ -180,7 +180,7 @@ Selection.prototype._createSelectionMarker = function() {
 \* **************************************************************** */
 
 
-/****M* Javascript-API/Date-Extensions
+/****M* Javascript API/Date-Extensions
 *
 * NAME
 *   Date-Extensions
@@ -227,7 +227,7 @@ Date.prototype.getDow = function(makeItShort) {
 /******/
 
 
-/****M* Javascript-API/String-Extensions
+/****M* Javascript API/String-Extensions
 *
 * NAME
 *   String-Extensions
@@ -515,7 +515,7 @@ if(!Array.indexOf){
    X6 Object
    
 \* **************************************************************** */
-/****o* Javascript-API/x6
+/****o* Javascript API/x6
 *
 * NAME
 *   x6
@@ -1818,10 +1818,10 @@ if(readCookie('log_Info') ==1) x6.console.enableInfo  = true;
 if(readCookie('log_Warn') ==1) x6.console.enableWarn  = true;
 if(readCookie('log_Error')==1) x6.console.enableError = true;
 
-/****O* Javascript-API/x6dialogs
+/****O* Javascript API/x6dialogs
 *
 * NAME
-*   Javascript-API/x6dialogs
+*   Javascript API/x6dialogs
 *
 * FUNCTION
 *   The two Javascript dialogs x6dialogs.alert and
@@ -2113,7 +2113,7 @@ x6dialogs = {
     }
 }
 
-/****O* Javascript-API/x6bb
+/****O* Javascript API/x6bb
 * NAME
 *   x6bb
 *
@@ -2241,7 +2241,7 @@ x6bb = {
 }
 
 
-/****O* Javascript-API/x6events
+/****O* Javascript API/x6events
 *
 * NAME
 *   x6events
@@ -4049,7 +4049,7 @@ var x6inputs = {
    
 \* **************************************************************** */
 
-/****O* Javascript-API/x6plugins
+/****O* Javascript API/x6plugins
 *
 * NAME
 *   x6plugins
