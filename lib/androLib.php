@@ -28,16 +28,16 @@
 # Prefix: gp
 #
 # ==============================================================
-/****h* PHP-API/Get-Post-Variables
+/****h* PHP API/GET and POST Variables
 *
 * NAME
-*   Get-Post-Variables
+*   GET and POST Variables
 *
 * FUNCTION
-*   The Get-Post Variables functions allow you to retrieve
+*   This family of PHP functions allows you to retrieve
 *   HTTP Request parameters.
 *
-*   Andromeda has a special system for obtaining Get-Post
+*   Andromeda has a special system for obtaining GET and POST
 *   variables.  When you request a variable, it checks first
 *   in the $_GET superglobal and next in the $_POST superglobal.
 *   This frees the programmer from having to track these two
@@ -46,7 +46,7 @@
 ******
 */
 
-/****f* Get-Post-Variables/gp
+/****f* GET and POST Variables/gp
 *
 * NAME
 *    gp
@@ -57,8 +57,8 @@
 *    in case the requested variable does not exist.
 *
 * INPUTS
-*    string $key	- Requested variable name
-*    string $vardefault - value to return if the variable does not exist
+*    * string - Requested variable name
+*    * string - value to return if the variable does not exist
 *
 * RETURNS
 *    mixed - either the value of the variable if it was passed
@@ -81,7 +81,7 @@ function gp($key,$vardefault='') {
 }
 /******/
 
-/****f* Get-Post-Variables/gpExists
+/****f* GET and POST Variables/gpExists
 *
 * NAME
 *    gpExists
@@ -104,7 +104,7 @@ function gpExists($key) {
 }
 /******/
 
-/*---f* Get-Post-Variables/hgp
+/*---f* GET and POST Variables/hgp
 *
 * NAME
 *    hgp
@@ -132,7 +132,7 @@ function hgp($key,$default='') {
 }
 /*---**/
 
-/*---f* Get-Post-Variables/rowFromgp
+/*---f* GET and POST Variables/rowFromgp
 *
 * NAME
 *    rowFromgp
@@ -156,7 +156,7 @@ function rowFromgp($prefix) {
 }
 /*---**/
 
-/*---f* Get-Post-Variables/removetrailingnewlines
+/*---f* GET and POST Variables/removetrailingnewlines
 *
 * NAME
 *    removetrailingnewlines
@@ -181,13 +181,24 @@ function removetrailingnewlines($input) {
 }
 /*---**/
 
-/****f* Get-Post-Variables/aFromgp
+/****f* GET and POST Variables/aFromgp
 *
 * NAME
 *    aFromgp
 *
 * FUNCTION
-*	Deprecated - function was named wrong
+*	The PHP function aFromGP captures zero or more GET/POST
+*   variables and returns an associative array.  The function
+*   is called by provided a prefix string.  Every GET/POST
+*   variable whose name begins with that prefix is captured
+*   and returned.  The keys in the associative array do not
+*   contain the prefix, the prefix is stripped.
+*
+* INPUTS
+*   string prefix
+*
+* RETURNS
+*   associative array
 *
 ******/
 function aFromgp($prefix) {
@@ -201,20 +212,21 @@ function aFromgp($prefix) {
 	return $row;
 }
 
-/****f* Get-Post-Variables/gpSet
+/****f* GET and POST Variables/gpSet
 *
 * NAME
 *    gpSet
 *
 * FUNCTION
-*	The PHP function gpSet assigns the value provied to the variable in the
-*	Get/Post parameters that has the provided name.  If the variable doesn't
-*	exist, this function creates a new variable with the provided name
-*	and value.
+*	The PHP function gpSet 'fakes' a GET/POST variable, making it
+*   appear as if it had beent sent from the browser.  The first
+*   parameter names the variable, the second parameter is the value.
+*   If the named parameter actually came from the browser, the
+*   browser's value will be overwritten.
 *
 * INPUTS
-*	string $key	- Name of variable
-*	mixed $value	- Value to assign
+*	string $key	 - Name of variable
+*	mixed $value - Value to assign
 *
 * SOURCE
 */
@@ -223,7 +235,7 @@ function gpSet($key,$value='') {
 }
 /******/
 
-/****f* Get-Post-Variables/gpSetFromArray
+/****f* GET and POST Variables/gpSetFromArray
 *
 * NAME
 *    gpSetFromArray
@@ -248,7 +260,7 @@ function gpSetFromArray($prefix,$array) {
 }
 /******/
 
-/*---f* Get-Post-Variables/gpUnSet
+/*---f* GET and POST Variables/gpUnSet
 *
 * NAME
 *    gpUnSet
@@ -269,7 +281,7 @@ function gpUnSet($key) {
 }
 /*---**/
 
-/*---f* Get-Post-Variables/gpUnsetPrefix
+/*---f* GET and POST Variables/gpUnsetPrefix
 *
 * NAME
 *    gpUnsetPrefix
@@ -293,7 +305,7 @@ function gpUnsetPrefix($prefix) {
 }
 /*---**/
 
-/*---f* Get-Post-Variables/gpControls
+/*---f* GET and POST Variables/gpControls
 *
 * NAME
 *    gpControls
@@ -312,7 +324,7 @@ function gpControls() {
 }
 /*---**/
 
-/*---f* Get-Post-Variables/rowFromgpInputs
+/*---f* GET and POST Variables/rowFromgpInputs
 *
 * NAME
 *	rowFromgpInputs
@@ -358,7 +370,7 @@ function rowFromgp($table_id) {
 * INPUTS
 */
 
-/*---f* Get-Post-Variables/gpToSession
+/*---f* GET and POST Variables/gpToSession
 *
 * NAME
 *    gpToSession
@@ -381,10 +393,10 @@ function gpToSession() {
 # Add elements to the JSON RETURN ARRAY
 # ==============================================================
 // KFD X4
-/****h* PHP-API/JSON-Returns
+/****h* PHP API/JSON Returns
 *
 * NAME
-*	JSON-Returns
+*	JSON Returns
 *
 * FUNCTION
 *	JSON-Return functions are used to save certain variables for later processing.  Usually these
@@ -393,13 +405,16 @@ function gpToSession() {
 *
 ******/
 
-/****f* JSON-Returns/x6Error
+/****f* JSON Returns/x6Error
 *
 * NAME
 *	x6Error
 *
 * FUNCTION
-*	Saves an error for later processing
+*
+*	Saves an error to be sent to the browser.  Once the complete JSON
+*   call is returned to the browser, errors are displayed in an alert
+*   and processing is stopped.
 *
 * INPUTS
 *	string $parm1 - the error to save
@@ -412,7 +427,7 @@ function x4Error($parm1) {
 }
 /******/
 
-/*---f* JSON-Returns/x6Notice
+/*---f* JSON Returns/x6Notice
 *
 * NAME
 *	x6Notice
@@ -431,7 +446,7 @@ function x4Notice($parm1) {
 }
 /*---**/
 
-/*---f* JSON-Returns/x6Print_r
+/*---f* JSON Returns/x6Print_r
 *
 * NAME
 *	x6Print_r
@@ -453,13 +468,15 @@ function x4Print_r($var) {
 }
 /*---**/
 
-/****f* JSON-Returns/x6Debug
+/****f* JSON Returns/x6Debug
 *
 * NAME
 *	x6Debug
 *
 * FUNCTION
-*	The PHP function x4Debug saves debug information for later processing
+*	The PHP function x6Debug saves a debug datum to be returned to
+*   the browser.  The browser takes no action with these items, they
+*   are meant to be inspected using Firebug or a similar tool.
 *
 * INPUTS
 *	string $parm1 - the debug info to save
@@ -472,13 +489,13 @@ function x4Debug($parm1) {
 }
 /******/
 
-/****f* JSON-Returns/x6DebugClean
+/*f* JSON Returns/x6DebugClean
 *
 * NAME
 *	x6DebugClean
 *
 * FUNCTION
-*	The PHP function x4DebugClean saves debug information and sends it back
+*	The PHP function x6DebugClean saves debug information and sends it back
 *   to the browser in a JSON call.  This routine differes from x6Debug
 *   because this method also clears out newlines and compresses whitespace.
 *
@@ -503,17 +520,20 @@ function x4DebugSQL($parm1) {
     x4Debug($parm1);
 }
 
-/****f* JSON-Returns/x6HTML
+/****f* JSON Returns/x6HTML
 *
 * NAME
 *	x6HTML
 *
 * FUNCTION
-*	The PHP function x4HTML is used to save the provided html for later processing.
+*	The PHP function x6HTML is saves the HTML fragment to be sent
+*   back to the browser.  The first parameter names the ID of the
+*   element whose HTML is to be replaced, and the second parameter
+*   contains the HTML.  
 *
 * INPUTS
-*	string $parm1 - the html tag
-*	string $parm2 - the html value
+*	* string $parm1 - the html id 
+*	* string $parm2 - the html value
 *
 * SOURCE
 */
@@ -534,7 +554,7 @@ function x4HTML($parm1,$parm2) {
 *	string $parm1  variable
 */
 
-/****f* JSON-Returns/x4HtmlDump
+/*f* JSON Returns/x4HtmlDump
 *
 * NAME
 *	x4HtmlDump
@@ -562,18 +582,23 @@ function x4HtmlDump($parm1) {
 *	string $parm1	script to store
 */
 
-/****f* JSON-Returns/x6Script
+/****f* JSON Returns/x6Script
 *
 * NAME
 *	x6Script
 *
 * FUNCTION
-*	The PHP function x4Script strips the <script> and </script> tags from $parm1 and
-*	save the script for later processing.  Can pass parameter
-*	either with <script> tags or without: function is flexible.
+*	The PHP function x6Script stores a script fragment to be returned
+*   to the browser.  If this is called during normal page processing,
+*   it is equivalant to a call to jqDocReady.  If it is called on a
+*   JSON call, the script is returned to the browser and executed if
+*   there are no errors.
+*
+*   This function strips the <script> and </script> tags from $parm1 and
+*	so that you can include the script tags if you like.
 *
 * INPUTS
-*	string $parm1 - var to dump
+*	string - the javascript to execute.
 *
 * SOURCE
 */
@@ -599,17 +624,19 @@ function x6scriptKill() {
 *	mixed $data
 */
 
-/****f* JSON-Returns/x6Data
+/****f* JSON Returns/x6Data
 *
 * NAME
 *	x6Data
 *
 * FUNCTION
-*	The PHP function x4Data JSON encodes the data to be saved as javascript for later processing.
+*	The PHP function x6Data takes a variable and sends it to the
+*   browser.  After the page is loaded, or the JSON call is processed,
+*   the data will appear as a property of the x6.data object.
 *
 * INPUTS
-*	string $name - name of data
-*	string $data - the data itself
+*	* string - name of data element
+*	* mixed - the value or array
 *
 * SOURCE
 */
@@ -642,7 +669,7 @@ function jsonPrint_r($data) {
 *	string	json encoded string
 */
 
-/****f* JSON-Returns/json_encode_safe
+/****f* JSON Returns/json_encode_safe
 *
 * NAME
 *	json_encode_safe
@@ -755,10 +782,10 @@ function DispatchObject($gp_page) {
 # ==============================================================
 // KFD X4
 
-/****h* PHP-API/HTML-Generation
+/****h* PHP API/HTML Generation
 *
 * NAME
-*	HTML-Generation
+*	HTML Generation
 *
 * FUNCTION
 *	Andromeda uses an object oriented html system in order to prevent the mix of php and html code
@@ -773,7 +800,7 @@ function DispatchObject($gp_page) {
 *
 ******/
 
-/****f* HTML-Generation/hSizepx
+/****f* HTML Generation/hSizepx
 *
 * NAME
 *    hSizepx
@@ -781,10 +808,13 @@ function DispatchObject($gp_page) {
 * FUNCTION
 *	The PHP function hSizepx computes a width by examining the size cookie.
 *	It assumes that the baseline is 1024, and returns a string of the form
-*	"999px" that is scaled up or down based.
+*	"999px" that is scaled up or down based on what skin the user is
+*   actually using.
+*
+*   This function returns a string with 'px' appended.
 *
 * INPUTS
-*    number $x1024	- Size in 1024x768 mode
+*    number - Size in 1024x768 mode
 *
 * SOURCE
 */
@@ -796,7 +826,33 @@ function hSizepx($x1024) {
 }
 /******/
 
-/****f* HTML-Generation/html
+/****f* HTML Generation/hSize
+*
+* NAME
+*    hSize
+*
+* FUNCTION
+*	The PHP function hSizepx computes a width by examining the size cookie.
+*	It assumes that the baseline is 1024, and returns number that is 
+*   scaled up or down based on what skin the user is
+*   actually using.
+*
+*
+* INPUTS
+*    number - Size in 1024x768 mode
+*
+* SOURCE
+*/
+function hSize($x1024) {
+    $app  = $GLOBALS['AG']['application'];
+    $size = a($_REQUEST,$app."_size",'1024');
+    $final = intval(($x1024 * $size)/1024);
+    return $final.'px';
+}
+/******/
+
+
+/****f* HTML Generation/html
 *
 * NAME
 *    html
@@ -848,7 +904,7 @@ function html($tag,&$parent=null,$innerHTML='') {
     return $retval;
 }
 
-/****f* HTML-Generation/htmlMacroTop
+/****f* HTML Generation/htmlMacroTop
 *
 * NAME
 *    htmlMacroTop
@@ -875,7 +931,7 @@ function &htmlMacroTop($page,$center=false) {
 }
 
 
-/****f* HTML-Generation/htmlMacroGridWithData
+/****f* HTML Generation/htmlMacroGridWithData
 *
 * NAME
 *    htmlMacroGridWithData
@@ -957,7 +1013,7 @@ function &htmlMacroGridWithData($dd,$cols,$rows) {
             */
  
 
-/****c* HTML-Generation/androHtml
+/****c* HTML Generation/androHtml
 *
 * NAME
 *    androHtml
@@ -2433,7 +2489,7 @@ class androHTMLTableController extends androHTML {
 
 
 
-/****c* HTML-Generation/androHtmlTabs
+/****c* HTML Generation/androHtmlTabs
 *
 * NAME
 *    androHtmlTabs
@@ -2624,7 +2680,7 @@ class androHTMLTabs extends androHTML {
 }
 
 
-/****c* HTML-Generation/androHtmlTable
+/****c* HTML Generation/androHtmlTable
 *
 * NAME
 *    androHtmlTable
@@ -2731,7 +2787,7 @@ class androHTMLTable extends androHTML {
     }    
 }
 
-/****c* HTML-Generation/androHtmlGrid
+/****c* HTML Generation/androHtmlGrid
 *
 * NAME
 *    androHtmlGrid
@@ -3246,7 +3302,7 @@ class androHTMLGrid extends androHTML {
     }
 }
 
-/****c* HTML-Generation/androHtmlDetail
+/****c* HTML Generation/androHtmlDetail
 *
 * NAME
 *    androHtmlDetail
@@ -3481,7 +3537,7 @@ class androHTMLDetail extends androHTML {
     
 }
 
-/****c* HTML-Generation/androHtmlxrefs
+/****c* HTML Generation/androHtmlxrefs
 *
 * NAME
 *    androHtmlxrefs
@@ -3613,7 +3669,7 @@ class androHTMLModal extends androHTML {
 *	string $page	page of form (used to create action attribute)
 */
 
-/****f* HTML-Generation/htmlForm
+/****f* HTML Generation/htmlForm
 *
 * NAME
 *    htmlForm
@@ -3655,7 +3711,7 @@ function htmlForm(&$parent,$page='') {
 *	androHtml	object oriented input html
 */
 
-/****f* HTML-Generation/input
+/****f* HTML Generation/input
 *
 * NAME
 *    input
@@ -4082,7 +4138,7 @@ function x6select() {
 *                           or comma-list of columns.
 */
 
-/****f* HTML-Generation/projection
+/****f* HTML Generation/projection
 *
 * NAME
 *    projection
@@ -4195,7 +4251,7 @@ function projectionColumns($dd,$projection='') {
     return $columns;    
 }
 
-/****f* HTML-Generation/inputsTabLoop
+/****f* HTML Generation/inputsTabLoop
 *
 * NAME
 *    inputsTabLoop
@@ -4244,7 +4300,7 @@ function inputsTabLoop(&$tabLoop,$options=array()) {
     }
 }
 
-/****f* HTML-Generation/inputFixupByType
+/****f* HTML Generation/inputFixupByType
 *
 * NAME
 *    inputFixupByType
@@ -4279,7 +4335,7 @@ function inputFixupByType($input) {
 #
 # These routines produce little snippet values
 # ==============================================================
-/****f* HTML-Generation/hprint_r
+/****f* HTML Generation/hprint_r
 *
 * NAME
 *	hprint_r
@@ -4303,7 +4359,7 @@ function hprint_r($anyvalue) {
 }
 /******/
 
-/****f* HTML-Generation/hx
+/****f* HTML Generation/hx
 *
 * NAME
 *	hx
@@ -4648,7 +4704,7 @@ function x6cssHeightLessH1() {
 # SECTION: All SQL Generation
 #
 # ==============================================================
-/****h* PHP-API/SQL-Generation
+/*h* PHP API/SQL-Generation
 *
 * NAME
 *	SQL Generation
@@ -4661,7 +4717,7 @@ function x6cssHeightLessH1() {
 */
 
 
-/****f* SQL-Generation/SQL_FORMAT
+/*f* SQL-Generation/SQL_FORMAT
 *
 * NAME
 *    SQL_FORMAT
@@ -4802,7 +4858,7 @@ function SQL_FORMAT($t,$v,$clip=0) {
 	}
 }
 
-/****f* SQL-Generation/SQLFC
+/*f* SQL-Generation/SQLFC
 *
 * NAME
 *    SQLFC
@@ -4821,7 +4877,7 @@ function SQL_FORMAT($t,$v,$clip=0) {
 function SQLFC($value) { return SQL_Format('char',$value); }
 /******/
 
-/****f* SQL-Generation/SQLFN
+/*f* SQL-Generation/SQLFN
 *
 * NAME
 *    SQLFN
@@ -4840,7 +4896,7 @@ function SQLFC($value) { return SQL_Format('char',$value); }
 function SQLFN($value) { return SQL_Format('numb',$value); }
 /******/
 
-/****f* SQL-Generation/SQLFD
+/*f* SQL-Generation/SQLFD
 *
 * NAME
 *    SQLFD
@@ -4859,7 +4915,7 @@ function SQLFN($value) { return SQL_Format('numb',$value); }
 function SQLFD($value) { return SQL_Format('date',$value); }
 /******/
 
-/****f* SQL-Generation/SQLFDT
+/*f* SQL-Generation/SQLFDT
 *
 * NAME
 *    SQLFDT
@@ -4878,7 +4934,7 @@ function SQLFD($value) { return SQL_Format('date',$value); }
 function SQLFDT($value) { return SQL_Format('dtime',$value); }
 /******/
 
-/****f* SQL-Generation/sqlFilter
+/*f* SQL-Generation/sqlFilter
 *
 * NAME
 *    sqlFilter
@@ -5071,7 +5127,7 @@ function sqlFilter($colinfo,$tcv,$table = '') {
     }
 }
 
-/****f* SQL-Generation/sqlOrderBy
+/*f* SQL-Generation/sqlOrderBy
 *
 * NAME
 *    sqlOrderBy
@@ -5113,7 +5169,7 @@ function sqlOrderBy($vals) {
 // ==================================================================
 // Joomla Compatibility Functions
 // ==================================================================
-/****h* PHP-API/Joomla-Compatibility
+/*h* PHP API/Joomla-Compatibility
 *
 * NAME
 *	Joomla Compatibility
@@ -5131,7 +5187,7 @@ function sqlOrderBy($vals) {
 ******
 */
 
-/****f* Joomla-Compatibility/JoomlaCompatibility
+/*f* Joomla-CompatibilityJoomlaCompatibility
 *
 * NAME
 *	JoomlaCompatibility
@@ -5260,7 +5316,7 @@ class joomla_fake {
 */
 function mosShowHead() {  return ''; }
 
-/****f* Joomla-Compatibility/mosCountModules
+/*f* Joomla-CompatibilitymosCountModules
 *
 * NAME
 *	mosCountModules
@@ -5294,7 +5350,7 @@ function mosCountModules($name) {
    }
 }
 
-/****f* Joomla-Compatibility/mosLoadModules
+/*f* Joomla-CompatibilitymosLoadModules
 *
 * NAME
 *	mosLoadModules
@@ -5333,7 +5389,7 @@ function mosLoadModules($name,$arg1=null) {
   }
 }
 
-/****f* Joomla-Compatibility/mosPathWay
+/*f* Joomla-CompatibilitymosPathWay
 *
 * NAME
 *	mosPathWay
@@ -5353,7 +5409,7 @@ function mosPathWay()  {
    //echo "mosPathway";
 }
 
-/****f* Joomla-Compatibility/mosMainBody
+/*f* Joomla-CompatibilitymosMainBody
 *
 * NAME
 *	mosMainBody
@@ -5367,7 +5423,7 @@ function mosMainBody() {
   ehStandardContent();
 }
 
-/****f* Joomla-Compatibility/tmpPathInsert
+/*f* Joomla-CompatibilitytmpPathInsert
 *
 * NAME
 *	tmpPathInsert
@@ -5392,7 +5448,7 @@ function tmpPathInsert() {
    return scriptPath();
 }
 
-/****f* PHP-API/scriptPath
+/*f* PHP API/scriptPath
 *
 * NAME
 *	scriptPath
@@ -5420,7 +5476,7 @@ function scriptPath() {
     return $path;
 }
 
-/****f* Joomla-Compatibility/ampReplace
+/*f* Joomla-CompatibilityampReplace
 *
 * NAME
 *	ampReplace
@@ -5440,7 +5496,7 @@ function ampReplace($input) {
    return str_replace("&","&amp;",$input);
 }
 
-/****f* Joomla-Compatibility/sefRelToAbs
+/*f* Joomla-CompatibilitysefRelToAbs
 *
 * NAME
 *	sefRelToAbs
@@ -5462,7 +5518,7 @@ function sefRelToAbs($input) {
 }
 /******/
 
-/****f* Joomla-Compatibility/fwModuleMenuRight
+/*f* Joomla-CompatibilityfwModuleMenuRight
 *
 * NAME
 *	fwModuleMenuRight
@@ -5570,10 +5626,10 @@ function loadYaml($filename) {
 
 
 // ------------------------------------------------------------------
-/****h* PHP-API/Session-Handling
+/****h* PHP API/Session Handling
 *
 * NAME
-*	Session-Handling
+*	Session Handling
 *
 * FUNCTION
 *	Andromeda provides wrappers for accessing session variables.  The
@@ -5604,7 +5660,7 @@ function loadYaml($filename) {
 *
 ******/
 
-/****f* Session-Handling/SessionGet
+/****f* Session Handling/SessionGet
 *
 * NAME
 *	SessionGet
@@ -5637,7 +5693,7 @@ function SessionGet($key,$default="",$sfx='app') {
 }
 /******/
 
-/****f* Session-Handling/SessionSet
+/****f* Session Handling/SessionSet
 *
 * NAME
 *	SessionSet
@@ -5664,7 +5720,7 @@ function SessionSet($key,$value,$sfx='app') {
 /******/
 
 
-/****f* Session-Handling/SessionUnSet
+/****f* Session Handling/SessionUnSet
 *
 * NAME
 *	SessionUnSet
@@ -5688,7 +5744,7 @@ function SessionUnSet($key,$context='app',$sfx='app') {
 }
 /******/
 
-/****f* Session-Handling/SessionReset
+/****f* Session Handling/SessionReset
 *
 * NAME
 *	SessionReset
@@ -5713,7 +5769,7 @@ function SessionReset() {
    }
 }
 
-/****f* Session-Handling/SessionUnSet_Prefix
+/****f* Session Handling/SessionUnSet_Prefix
 *
 * NAME
 *	SessionUnSet_Prefix
@@ -5734,7 +5790,7 @@ function SessionUnSet_Prefix($prefix) {
 # SECTION: GLOBAL VARIABLES
 #
 # ==================================================================
-/****h* PHP-API/Global-Variables
+/****h* PHP API/Global Variables
 *
 * NAME
 *    Global_Variables
@@ -5744,16 +5800,16 @@ function SessionUnSet_Prefix($prefix) {
 *  retrieve PHP global variables without risking a collission with
 *  framework global variables.
 *
-*  Use PHP-API/vgaSet to set a variable, and PHP-API/vgaGet
+*  Use PHP API/vgaSet to set a variable, and PHP API/vgaGet
 *  to retrieve a variable.
 *
-*  The framework uses the corresponding functions PHP-API/vgfSet
-*  and PHP-API/vgfGet.
+*  The framework uses the corresponding functions PHP API/vgfSet
+*  and PHP API/vgfGet.
 *
 ******
 */
 
-/****f* Global-Variables/vgaGet
+/****f* Global Variables/vgaGet
 *
 * NAME
 *	vgaGet
@@ -5779,7 +5835,7 @@ function vgaGet($key,$default='') {
 }
 /******/
 
-/****f* Global-Variables/vgaSet
+/****f* Global Variables/vgaSet
 *
 * NAME
 *    vgaSet
@@ -5803,7 +5859,7 @@ function vgaSet($key,$value='') {
 }
 /******/
 
-/****f* Global-Variables/vgfGet
+/****f* Global Variables/vgfGet
 *
 * NAME
 *	vgfGet
@@ -5863,7 +5919,7 @@ function vgfGetHC($key,$default='') {
    }
 }
 
-/****f* Global-Variables/vgfSet
+/****f* Global Variables/vgfSet
 *
 * NAME
 *	vgfSet
@@ -6007,7 +6063,7 @@ The following are [[deprecated]] form variable conventions:
   *	$stackname string
   */
 
-/*---h* PHP-API/Stack-Functions
+/*---h* PHP API/Stack-Functions
 *
 * NAME
 *	Stack-Functions
@@ -6086,7 +6142,7 @@ function scStackPop($stackname) {
 // ------------------------------------------------------------------
 // Routines to assemble return values
 // ------------------------------------------------------------------
-/*---h* PHP-API/Ajax-Return-Assembly
+/*---h* PHP API/Ajax-Return-Assembly
 *
 * NAME
 *	Ajax-Return-Assembly
@@ -6219,10 +6275,10 @@ function returns_as_ajax() {
 // ------------------------------------------------------------------
 // Data Dictionary Routines
 // ------------------------------------------------------------------
-/****h* PHP-API/Data-Dictionary-Routines
+/****h* PHP API/Data Dictinary Routines
 *
 * NAME
-*	Data-Dictionary-Routines
+*	Data Dictinary Routines
 *
 * FUNCTION
 *	Data dictionaries are one of the most important aspects of andromeda.  Following the philosophy that
@@ -6234,7 +6290,7 @@ function returns_as_ajax() {
 *
 ******/
 
-/*---f* Data-Dictionary-Routines/DD_EnsureREf
+/*---f* Data Dictinary Routines/DD_EnsureREf
 *
 * NAME
 *	DD_EnsureREf
@@ -6274,7 +6330,7 @@ function ddNoWrites() {
    );
 }
 
-/****f* Data-Dictionary-Routines/ddTable
+/****f* Data Dictinary Routines/ddTable
 *
 * NAME
 *	ddTable
@@ -6427,7 +6483,7 @@ function &ddTable($table_id) {
     return $tabdd;
 }
 
-/****f* Data-Dictionary-Routines/ddView
+/****f* Data Dictinary Routines/ddView
 *
 * NAME
 *	ddView
@@ -6484,7 +6540,7 @@ function ddView($tabx) {
     return $tabx['viewname'];
 }
 
-/****f* Data-Dictionary-Routines/ddUserPerm
+/****f* Data Dictinary Routines/ddUserPerm
 *
 * NAME
 *	ddUserPerm
@@ -6561,7 +6617,7 @@ function DD_ColumnBrowse(&$col,&$table)
    return false;
 }
 
-/*---f* Data-Dictionary-Routines/DD_TableProperty
+/*---f* Data Dictinary Routines/DD_TableProperty
 *
 * NAME
 *	DD_TableProperty
@@ -6599,7 +6655,7 @@ function DD_TableDropdown($table_id) {
 	return explode(",",$ret);
 }
 
-/*---f* Data-Dictionary-Routines/DDTable_IDResolve
+/*---f* Data Dictinary Routines/DDTable_IDResolve
 *
 * NAME
 *	DDTable_IDResolve
@@ -6660,7 +6716,7 @@ function DDTable_IDResolve($table_id) {
         }
 }
 
-/*---f* Data-Dictionary-Routines/DD_ColInsertsOK
+/*---f* Data Dictinary Routines/DD_ColInsertsOK
 *
 * NAME
 *	DD_ColInsertsOK
@@ -6720,7 +6776,7 @@ function DD_ColUpdatesOK(&$colinfo) {
     return in_array($aid,$automations);
 }
 
-/*---f* Data-Dictionary-Routines/DDColumnWritable
+/*---f* Data Dictinary Routines/DDColumnWritable
 *
 * NAME
 *	DDColumnWritable
@@ -7079,7 +7135,7 @@ name:_default_
 parent:System Log Functions
 */
 // ------------------------------------------------------------------
-/****h* PHP-API/System-Log-Functions
+/****h* PHP API/System Log Functions
 *
 * NAME
 *	System Log Functions
@@ -7104,7 +7160,7 @@ parent:System Log Functions
 ******
 */
 
-/****f* System-Log-Functions/SysLogOpen
+/****f* System Log Functions/SysLogOpen
 *
 * NAME
 *	SysLogOpen
@@ -7152,7 +7208,7 @@ function SysLogOpen($name) {
    return $syslog;
 }
 
-/****f* System-Log-Functions/SysLogEntry
+/****f* System Log Functions/SysLogEntry
 *
 * NAME
 *	SysLogEntry
@@ -7179,7 +7235,7 @@ function SysLogEntry($syslog,$text) {
    }
 }
 
-/****f* System-Log-Functions/SysLogClose
+/****f* System Log Functions/SysLogClose
 *
 * NAME
 *	SysLogClose
@@ -7225,7 +7281,7 @@ name:_default_
 parent:Hidden Variables
 */
 // ------------------------------------------------------------------
-/****h* PHP-API/Hidden-Variables
+/*h* PHP API/Hidden-Variables
 *
 * NAME
 *	Hidden-Variables
@@ -7253,7 +7309,7 @@ parent:Hidden Variables
 *	string $val		Variable value
 */
 
-/****f* Hidden-Variables/Hidden
+/*f* Hidden-Variables/Hidden
 *
 * NAME
 *	Hidden
@@ -7298,7 +7354,7 @@ function Hidden($varname=null,$val=null) {
 *	array $row
 */
 
-/****f* Hidden-Variables/hiddenFromTable
+/*f* Hidden-Variables/HiddenFromTable
 *
 * NAME
 *	hiddenFromTable
@@ -7338,7 +7394,7 @@ name:_default_
 parent:Context Variables
 */
 // ------------------------------------------------------------------
-/*---h* PHP-API/Context-Variables
+/*---h* PHP API/Context-Variables
 *
 * NAME
 *	Context Variables
@@ -8972,7 +9028,7 @@ name:_default_
 parent:Template Level HTML
 */
 // ------------------------------------------------------------------
-/****h* PHP-API/Template-Level-HTML
+/*h* PHP API/Template-Level-HTML
 *
 * NAME
 *	Template-Level-HTML
@@ -9395,7 +9451,7 @@ function ehModuleCommands() {
 // HTTP Functions
 // ==================================================================
 // ==================================================================
-/****h* PHP-API/HTTP-Functions
+/*h* PHP API/HTTP-Functions
 *
 * NAME
 *	HTTP-Functions
@@ -9413,7 +9469,7 @@ function ehModuleCommands() {
 ******
 */
 
-/****h* HTTP-Functions/httpWebPagePath
+/*h* HTTP-Functions/httpWebPagePath
 *
 * NAME
 *	httpWebPagePath
@@ -9447,7 +9503,7 @@ function httpWebPagePath() {
       .$x;
 }
 
-/****f* HTTP-Functions/httpWebSite
+/*f* HTTP-Functions/httpWebSite
 *
 * NAME
 *	httpWebSite
@@ -9465,7 +9521,7 @@ function httpWebSite() {
    return 'http://'.$_SERVER['HTTP_HOST'];
 }
 
-/****f* HTTP-Functions/httpHeadersForDownload
+/*f* HTTP-Functions/httpHeadersForDownload
 *
 * NAME
 *	httpHeadersForDownload
@@ -13408,7 +13464,18 @@ function Email_Exp($from,$to,$subject,$body,$headers) {
 // and put up some HTML allowing the user to enter values manually,
 // which makes for a great interactive testing system.
 // ==================================================================
-/****f* PHP-API/EmailSend
+/****h* PHP API/Email Functions
+*
+* NAME
+*   Email functions
+*
+* PURPOSE
+*
+*   There are two email functions, both of which send emails.
+*   One of them is to send plaintext emails, the other sends
+*   HTML emails.
+******/
+/****f* Email Functions/EmailSend
 *
 * NAME
 *   emailSend
@@ -13443,7 +13510,7 @@ function EmailSend($to,$subject,$message,$headers=array()) {
 	);
 }
 
-/****f* PHP-API/EmailSendHTML
+/****f* Email Functions/EmailSendHTML
 *
 * NAME
 *   emailSendHTML
