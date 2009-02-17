@@ -5928,14 +5928,7 @@ x6plugins.grid = function(self,id,table) {
                 $(this).find('.tbody').html('');
                 return;
             }
-            //x6.json.addParm('x6action'   ,'browseFetch');
-            //x6.json.addParm('xSortable'  ,'N');
-            //x6.json.addParm('xReturnAll' ,'N');
-            json.addParm('x6action'   ,'browseFetch');
-            json.addParm('xSortable'  ,x6.p(this,'xSortable'  ,'N'));
-            json.addParm('xReturnAll' ,'N');
-            json.addParm('xGridHeight',x6.p(this,'xGridHeight',500));
-            json.addParm('xLookups'   ,x6.p(this,'xLookups'   ,'N'));
+            this.gridParms(json);
             
             // Add the "exact match" parm if it is part of the
             // the grid.  Notice it is a one-timer
@@ -5977,12 +5970,8 @@ x6plugins.grid = function(self,id,table) {
         
         // Fetch the filters as well
         this.addFilters(json);
-            
-        json.addParm('x6action','browseFetch');
-        json.addParm('xGridHeight',x6.p(this,'xGridHeight'));
-        json.addParm('xSortable'  ,x6.p(this,'xSortable'  ));
-        json.addParm('xReturnAll' ,x6.p(this,'xReturnAll' ));
-        json.addParm('xButtonBar' ,x6.p(this,'xButtonBar','N'));
+        this.gridParms(json);
+        
         json.addParm('sortCol',args.sortCol);
         json.addParm('sortAsc',args.sortAsc);
         x6dialogs.pleaseWait();
@@ -6010,6 +5999,14 @@ x6plugins.grid = function(self,id,table) {
             this.zValue = $(this).prop('value');
             json.addParm('x6w_'+x6.p(this,'xColumnId'),$(this).prop('value'));
         });
+    }
+    self.gridParms = function(json) {
+        json.addParm('x6action'   ,'browseFetch');
+        json.addParm('xSortable'  ,x6.p(this,'xSortable'  ,'N'));
+        json.addParm('xReturnAll' ,x6.p(this,'xReturnAll' ,'N'));
+        json.addParm('xGridHeight',x6.p(this,'xGridHeight',500));
+        json.addParm('xLookups'   ,x6.p(this,'xLookups'   ,'N'));
+        json.addParm('xButtonBar' ,x6.p(this,'xButtonBar','N'));
     }
 
     /* --------------------------------------------------------------- */
