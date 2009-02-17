@@ -341,11 +341,17 @@ class androX6 {
         # Build the where clause        
         #
         $this->flat = $this->dd['flat'];
+        $allowNoFilters=false;
         foreach($vals as $column_id=>$colvalue) {
             if(!isset($this->flat[$column_id])) continue;
             if($colvalue=='*') {
                 $awhere=array();
-                gpSet('xReturnAll','Y');
+                # KFD 2/17/09 Sourceforge 2609083
+                #             Doing this returned all rows on regular
+                #             searches.  Whatever it was for, it cannot
+                #             be done here this way.
+                #gpSet('xReturnAll','Y');
+                $allowNoFilters = true;
                 break;
             }
             
@@ -366,16 +372,22 @@ class androX6 {
         }
         
         # <----- RETURN (MAYBE)
-        if(count($awhere) == 0 && gp('xReturnAll','N')=='N') return;
+        if(count($awhere) == 0 ) {
+            if(gp('xReturnAll','N')=='N' && !$allowNoFilters){
+                return;
+            }
+        }
         
         # Generate the limit
         $SLimit = ' LIMIT 100';
         if($tabPar <> '') {
             if(a($this->dd['fk_parents'][$tabPar],'uiallrows','N')=='Y') {
-                $SLimit = '';
+                $SLimit = ' LIMIT 100';
             }
         }
-        if(gp('xReturnAll','N')=='Y') $SLimit = '';
+        if(gp('xReturnAll','N')=='Y') {
+            $SLimit = '';
+        }
         
 
         #  Build the Order by
