@@ -1201,7 +1201,7 @@ function SpecLoad_ArrayToTables($arr,$cLoadSuffix,$parent_row=array(),$parent_pr
             $row['srcfile']=$srcfile;
             $return = $this->DBB_Insert("zdd.",$table,$cLoadSuffix,$row);
             if($return == '') {
-                x_echoFlush(
+                 x_echoFlush(
                  "    Parent object defined at line ".$properties['__yaml_line']
                  );
                 hprint_r($properties);
