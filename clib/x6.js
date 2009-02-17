@@ -4011,6 +4011,8 @@ var x6inputs = {
             // get current row
             var rowNow = $('.x6select div.hilight');
             var jqBody = $('.x6select .tbody');
+            // get the height of a row
+            var lineHeight = $('.x6select .tbody > div > div:first').height()            
             if(rowNow.length==0) {
                 $(jqBody[0].firstChild).addClass('hilight');
             }
@@ -4021,7 +4023,7 @@ var x6inputs = {
                     var rowsBelow = $(rowNow).nextAll().length;
                     if(rowsBelow > 5) {
                         var stNow = $('.x6select .tbody').scrollTop();
-                        $(jqBody).scrollTop(stNow - ( this.lineHeight + 3));                        
+                        $(jqBody).scrollTop(stNow - ( lineHeight + 3));                        
                     }
                 }
                 else {
@@ -4030,7 +4032,7 @@ var x6inputs = {
                     var rowsAbove = $(rowNow).prevAll().length;
                     if(rowsAbove > 5) {
                         var stNow = $(jqBody).scrollTop();
-                        $(jqBody).scrollTop(stNow + this.lineHeight + 3);                        
+                        $(jqBody).scrollTop(stNow + lineHeight + 3);                        
                     }
                 }
                 x6.console.log("row now ",rowNow);
