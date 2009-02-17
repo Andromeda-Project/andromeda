@@ -1,6 +1,6 @@
 /* ==================================================== *\
  * Andromeda Generated CSS file                         
- * Generated: Wed, 28 Jan 2009 13:46:54 -0500
+ * Generated: Tue, 17 Feb 2009 09:38:12 -0500
  * Skin, color, size: Default, Gray, 800
 \* ==================================================== */
         
@@ -492,7 +492,7 @@ div.tbody div div {
     height:                  18px;
 }
 
-div.tbody div.selected input {
+div.tbody div input {
     margin-left:             -2px;
     margin-right:            -2px;
 }

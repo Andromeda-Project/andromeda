@@ -473,9 +473,8 @@ css:
             # static
             z-index:     1000
             # flavor
-            border-top:  1px solid *black 
-        #    # varies with skin
-        #    top:        *menupost
+            #    # varies with skin
+            #    top:        *menupost
             border-top:              1px solid *black
             border-bottom:           1px solid *black
             border-left:             1px solid *black
@@ -746,7 +745,15 @@ css:
             padding-right:    *pad0
             padding-left:     *pad0
             
-        div.tbody div.selected input:
+        # KFD 2/17/09 Sourceforge 2609092
+        #div.tbody div.selected input:
+        #    margin-left:     -2px
+        #    margin-right:    -2px
+        # KFD 2/17/09 Sourceforge 2609092
+        #div.tbody div.hilight input:
+        #    margin-left:     -2px
+        #    margin-right:    -2px
+        div.tbody div input:
             margin-left:     -2px
             margin-right:    -2px
         
