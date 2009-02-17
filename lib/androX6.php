@@ -1064,7 +1064,13 @@ class androX6 {
                 
                 $input=input($this->dd['flat'][$column],$tabLoop);
                 $input->hp['xSkey'] = $row['skey'];
-                $input->hp['value'] = htmlentities($row[$column]);
+                # KFD 2/17/09  Sourceforge bug 2609176
+                if($input->htype=='textarea') {
+                    $input->setHtml(htmlentities($row[$column]));
+                }
+                else {
+                    $input->hp['value'] = htmlentities($row[$column]);
+                }
                 $td = $tr->h('td');
                 $td->setHtml($input->bufferedRender());
                 $td->addClass('x6Input');            
