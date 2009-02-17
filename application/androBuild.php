@@ -3038,7 +3038,7 @@ function SpecDDL_Triggers() {
     $retval = $retval && $this->SpecDDL_Triggers_Automated();
     $this->SpecDDL_Triggers_ColConsTypes();
     $this->SpecDDL_Triggers_ColConsMinMax();
-    $this->SpecDDL_Triggers_Chains();
+    $retval = $retval && $this->SpecDDL_Triggers_Chains();
     $this->SpecDDL_Triggers_Cascades();
     $this->SpecDDL_Triggers_Histories();
 
@@ -5391,16 +5391,42 @@ function SpecDDL_Triggers_ColConsMinMax()  {
 
 function SpecDDL_Triggers_Chains() {
 	$chains = $this->SpecDDL_Triggers_ChainsList();
-
-   // KFD 5/26/07, attach chains to $this->utabs, so we can save them
-   // out in the dd and use them in client code.
-   foreach($chains as $x=>$chain) {
-      $this->utabs[$chain['table_id']]['chains'][$x]=$chain;
-   }
+    
+    # KFD 2/17/09 Sourceforge 2321898. Trap for empty comparison operators
+    #             Very hard to do this is SQL because of the table
+    #             structures.  So we must scan the array of chains
+    #             and look for any test that has a _compare array
+    #             but an empty compoper field.
+    #
+    $errors = 0;
+    foreach($chains as $key=>$chaindetails) {
+        foreach($chaindetails['tests'] as $idx=>$test) {
+            if(count($test['_compare'])>0 && trim($test['compoper']) == '') {
+                $tid  = $chaindetails['table_id'];
+                $cid  = $chaindetails['column_id'];
+                $chain= $chaindetails['chain'];
+                x_EchoFlush(
+                    ">>> ERROR in Chain Definition, no comparison operator"
+                );
+                x_EchoFlush(">>>  -> table $tid, column $cid, chain $chain");
+                x_EchoFlush(">>>  -> comparison details:");
+                hprint_r($test['_compare']);
+                $errors++;
+            }
+        }
+    }
+    if($errors > 0) return false;
+    
+    // KFD 5/26/07, attach chains to $this->utabs, so we can save them
+    // out in the dd and use them in client code.
+    foreach($chains as $x=>$chain) {
+        $this->utabs[$chain['table_id']]['chains'][$x]=$chain;
+    }
 
 
 	$this->SpecDDL_Triggers_ChainsCode($chains);
 	$this->SpecDDL_Triggers_ChainsBuild($chains);
+    return true;
 }
 	
 function SpecDDL_Triggers_ChainsList() { 
@@ -5454,7 +5480,7 @@ function SpecDDL_Triggers_ChainsList() {
 		
 	}
    
-   // Final, send them back to calling program
+    // Final, send them back to calling program
 	return $chains;
 }
 
