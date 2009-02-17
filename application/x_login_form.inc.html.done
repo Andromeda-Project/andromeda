@@ -1,0 +1,36 @@
+<br/>
+<center>
+<h1>Andromeda Node Manager - New Install</h1>
+<h3>Use "start" as username and password</h3>
+</center>
+
+<br/>
+<br/>
+<table align="center">
+	<tr>
+		<td class="logincaption">Login Name:</td>
+		<td class="logininput">
+			<input class="login" id="loginUID" name="loginUID" 
+                maxlength="60" size="10" value="start" />
+			</td>
+	</tr>
+	<tr>
+		<td class="logincaption">Password:</td>
+		<td class="logininput">
+			<input class="login"  name="loginPWD"
+               type="password" maxlength="20" size="10" value="start" />
+		</td>
+	</tr>
+	<tr><td colspan="2">&nbsp;</td></tr>
+	<tr>
+		<td class="logincaption">&nbsp;</td>
+		<td class="logininput">
+        <input class="login" type="submit" name="pushSave" value="Login" />
+        </td>
+	</tr>
+</table>
+<br/>
+<br/>
+<center>
+<a href="<?php echo $hForgot?>">Forgotten Password and Change Password</a>
+</center>

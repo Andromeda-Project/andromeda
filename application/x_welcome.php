@@ -1,6 +1,82 @@
 <?php
 class x_welcome extends x_table2 {
     function main() {
+        # KFD 2/17/09.  If installed with Debian package, will
+        #               have username and password of "start".
+        #               Must force a new id now.
+        #
+        if(SessionGet('UID')=='start') {
+            if(gp('user_id')<>'') {
+                if(gp('user_id')=='') {
+                    ErrorAdd("User Id may not be empty");
+                }
+                if(substr(gp('user_id'),0,5)=='andro') {
+                    ErrorAdd("User Id may not begin with 'andro'");
+                }
+                if(gp('password1')<>gp('password2')) {
+                    ErrorAdd("Passwords do not match");
+                }
+                if(strlen(trim(gp('password1')))==0) {
+                    ErrorAdd("Password may not be empty");
+                }
+                if(!Errors()) {
+                    $row = array(
+                        'user_id'=>gp('user_id')
+                        ,'member_password'=>gp('password1')
+                    );
+                    SQLX_Insert('usersroot',$row);
+                    if(!Errors()) {
+                        scDBConn_Pop();
+                        SessionSet('UID',gp('user_id'));
+                        SessionSet('PWD',gp('password1'));
+                        scDBConn_Push();
+                        SQL("DELETE FROM USERSROOT WHERE user_id='start'");
+                        
+                        # Get rid of the form that replaces login
+                        $file=fsDirTop().'application/x_login_form.inc.html';
+                        $fileto=$file.'.done';
+                        @rename($file,$fileto);
+                    
+                        ?>
+                        <h1>New Root User Created</h1>
+                        
+                        <p>Your new user is created.</p>
+                        
+                        <p><a href="index.php?st2logout=1">
+                           Return to Login Page</a></p>
+                        <?php
+                        return;
+                    }
+                }
+            }
+            
+            
+            ?>
+            <h1>New Install - Must Create User</h1>
+            
+            <p>You are logged into your Node Manager with the default
+               username of "start" and password "start".  We have to change
+               this right now so nobody can get into your new system.
+            </p>
+            
+            <p>Please provide a new ROOT (superuser) user id and password
+               below.  Andromeda will create the new user, log you in as
+               that user, and remove the "start" user.
+            </p>
+            
+            <table>
+              <tr><td align="left">User Name
+                  <td><input name = 'user_id' /> (may not begin with 'andro')
+              <tr><td align="left">Password
+                  <td><input type="password" name = 'password1'/>
+              <tr><td align="left">Password (verify)
+                  <td><input type="password" name = 'password2'/>
+            </table>
+            <input type="submit" value="Create User Now" />
+            <?php
+            return;
+        }
+        
         /* FUTURE X6 VERSION OF NODE MANAGER
         ?>
         <h1>Node Manager Upgrade Required</h1>
