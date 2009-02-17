@@ -656,6 +656,11 @@ function index_hidden_x6Dispatch(
     # is x6main, this means an unprogrammed page: there is
     # no custom program file and no profile in the yaml.
     # So we default to the conventional profile.
+    #
+    # KFD 2/17/09 Sourceforge 2546056
+    #             This means that bad page requests go to
+    #             profile_conventional(), so that is where
+    #             we trap for them.  See androX6::profile_conventional()
     if($x6method=='x6main' && $x6class=='androX6') {
         $x6method = 'profile_conventional';
         

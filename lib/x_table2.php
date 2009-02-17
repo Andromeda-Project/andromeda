@@ -236,6 +236,18 @@ class x_table2 {
       if(vgfGet('suppress_maintenance',false)) return;
       vgfset('maintenance',true);
       
+      # KFD 2/17/09 Sourceforge 2546056
+      #             If we are in default main code branch, and
+      #             there is no data dictionary, the user has
+      #             called a bad page.
+      if(!isset($this->table['projections'])) {
+          ?>
+          <h1>Bad Page Request</h1>
+          <p>There is no page <?php echo hx(gp('gp_page'))?>
+          <?php
+          return;
+      }
+      
       // If a "fk jump", retrieve skey and make it look
       // like an edit call.
       if(gp('gp_pk')<>'') { 

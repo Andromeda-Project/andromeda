@@ -828,6 +828,20 @@ class androX6 {
     # *******************************************************************
     # ===================================================================
     function profile_conventional() {
+        # KFD 2/17/09 Sourceforge 2546056.  The dispatching system
+        #             sends page requests here by default.  This is
+        #             where we have to work out if there is a bad
+        #             page request.
+        if(!isset($this->dd['table_id'])) {
+            ?>
+            <h1>No Page By That Name</h1>
+            
+            <p>There is no page <b><?php echo hx(gp('x6page'))?></b>.
+            <?php
+            return;
+        }
+        
+        
         # KFD 2/9/09, new feature for Jeff/wholdist.  If "table_id_par"
         #             was passed in, load a certain row from the parent
         #             table into the bulletin board.  Specifically this
