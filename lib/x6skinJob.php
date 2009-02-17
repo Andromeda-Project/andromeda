@@ -64,6 +64,7 @@ class x6skinJob extends androX6 {
             $files = scandir($dir);
             
             foreach($files as $file) {
+                echo "<br/>$dir$file;";
                 # These lines filter out entries that are not skins
                 $apieces = explode('.',$file);
                 if(count($apieces)!=3       ) continue;
@@ -73,7 +74,14 @@ class x6skinJob extends androX6 {
                 # Load the file and process it.  We assume the
                 # middle piece of the file is the name of the
                 # template.
-                $yaml = loadYaml($dir.$file);
+                list($yaml,$errors) = loadYaml($dir.$file);
+                if(count($errors) > 0) {
+                    echo "<h2>Errors encountered in skin file</h2>";
+                    echo "<p>File: $dir$file</p>";
+                    hprint_r($errors);
+                    return;
+                }
+                removeYamlLineNumbers($yaml);
                 $this->writeCSS($apieces[1],$yaml['defines'],$yaml['css']);
             }
         }
@@ -276,6 +284,7 @@ class x6skinJob extends androX6 {
             $selector = str_replace(';',':',$selector);
             echo "$selector {\n";
             foreach($rules as $rule=>$value) {
+                if($rule=='__yaml_line') continue;
                 if(trim($value)=='' || is_null($value)) continue;
                 echo "    ".str_pad($rule.':',25,' ',STR_PAD_RIGHT)."$value;\n";
             }
