@@ -5916,27 +5916,15 @@ x6plugins.grid = function(self,id,table) {
     */
     self.fetch = function(doFetch) {
         if(doFetch==null) doFetch=false;
-        var cntNoBlank = 0;
         
         // Initialize and then scan
-        var json = new x6JSON('x6page',this.zTable);        
-        $(this).find(".thead :input").each(function() {
-            if(typeof(this.zValue)=='undefined') 
-                this.zValue = this.getAttribute('xValue');
-            if($(this).prop('value')!=this.zValue) {
-                doFetch = true;
-            }
-            if($(this).prop('value')!='') {
-                cntNoBlank++;
-            }
-            this.zValue = $(this).prop('value');
-            json.addParm('x6w_'+x6.p(this,'xColumnId'),$(this).prop('value'));
-        });
+        var json = new x6JSON('x6page',this.zTable);
+        this.addFilters(json);
         
-        if(doFetch) {
+        if(this.doFetch) {
             // Clear the previous results
             x6.data.browseFetchHtml = '';
-            if(cntNoBlank==0) {
+            if(this.cntNoBlank==0) {
                 $(this).find('.tbody').html('');
                 return;
             }
@@ -5986,6 +5974,9 @@ x6plugins.grid = function(self,id,table) {
             json.addParm('tableIdPar',tablePar     );
             json.addParm('skeyPar'   ,skeyPar      );
         }
+        
+        // Fetch the filters as well
+        this.addFilters(json);
             
         json.addParm('x6action','browseFetch');
         json.addParm('xGridHeight',x6.p(this,'xGridHeight'));
@@ -6001,6 +5992,24 @@ x6plugins.grid = function(self,id,table) {
         }
         delete json;
         x6dialogs.clear();
+    }
+    
+    self.addFilters = function(json) {
+        this.doFetch    = false;
+        this.cntNoBlank = 0;
+        var grid = this;
+        $(this).find(".thead :input").each(function() {
+            if(typeof(this.zValue)=='undefined') 
+                this.zValue = this.getAttribute('xValue');
+            if($(this).prop('value')!=this.zValue) {
+                grid.doFetch = true;
+            }
+            if($(this).prop('value')!='') {
+                grid.cntNoBlank++;
+            }
+            this.zValue = $(this).prop('value');
+            json.addParm('x6w_'+x6.p(this,'xColumnId'),$(this).prop('value'));
+        });
     }
 
     /* --------------------------------------------------------------- */
