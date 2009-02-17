@@ -9409,6 +9409,10 @@ function codeGenerate_Config() {
             $text.="\n    ";
             if($docomma) $text.=",";
             $docomma = true;
+            # KFD 2/17/09 Sourceforge 2591306
+            #             See also androLib, configWrite(),
+            #             code is duplicated.
+            $value = str_replace("'","\'",$value);
             $text.="'$column_id'=>'$value'";
         }
         $text.="\n);\n?>";

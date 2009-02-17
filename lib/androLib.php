@@ -4473,6 +4473,9 @@ function configWrite($type) {
         $text.="\n    ";
         if($docomma) $text.=",";
         $docomma = true;
+        # KFD 2/17/09 Sourceforge 2591306
+        #             See also androBuild, code is duplicated.
+        $value = str_replace("'","\'",$value);
         $text.="'$column_id'=>'$value'";
     }
     $text.="\n);\n?>";
