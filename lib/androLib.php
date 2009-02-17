@@ -5609,7 +5609,19 @@ function hLinkImage($pic,$alt,$var,$val,$enabled) {
 
 function loadYaml($filename) {
     include_once("spyc.php");
-    return Spyc::YAMLLoad($filename);
+    $parser = new Spyc;
+    $temparray = $parser->load($filename);
+    return array($temparray,$parser->errors);    
+}
+function removeYamlLineNumbers(&$yaml) {
+    foreach($yaml as $key=>$value) {
+        if($key=='__yaml_line') {
+            unset($yaml[$key]);
+        }
+        elseif(is_array($value)) {
+            removeYamlLineNumbers($yaml[$key]);
+        }
+    }
 }
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
