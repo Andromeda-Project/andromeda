@@ -6184,7 +6184,7 @@ x6tabs = {
                 function() {
                     $(ui.panel).animate({height: newHeightT},spd,null
                         ,function() { 
-                            x6tabs.slideUpData(tabsUl,newChild,newHeight);
+                            x6tabs.slideUpData(tabsUl,newChild,newHeightT);
                             x6.byId(topPane).currentChild = newChild;
                         }
                     );
@@ -6204,7 +6204,7 @@ x6tabs = {
             ,function() {
                 $(ui.panel).animate({height: newHeightT},400,null
                     ,function() { 
-                        x6tabs.slideUpData(tabsUl,newChild,newHeight); 
+                        x6tabs.slideUpData(tabsUl,newChild,newHeightT); 
                         x6.byId(topPane).currentChild = newChild;
                     } 
                 );
