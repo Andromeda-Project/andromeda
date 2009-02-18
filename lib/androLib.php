@@ -2921,7 +2921,7 @@ class androHTMLGrid extends androHTML {
             $input->hp['value'] ="*VALUE_$colname*";
             $input->hp['xClassRow'] = 0;
             $input->hp['xTabGroup'] = 'rowEdit';
-            $wrapper->addClass('cell_'.$colname);
+            $wrapper->addClass($this->hp['id'].'_'.$colname);
             if(!in_array($colinfo['type_id'],array('cbool','gender'))){
                 unset($input->hp['size']);
             }
@@ -3010,28 +3010,28 @@ class androHTMLGrid extends androHTML {
         if(in_array($type_id,array('int','numb','money'))) {
             $cssExtra = 'text-align: right';
         }
-        $this->colStyles['div.cell_'.$column_id] 
-            ="width: {$width}px; $cssExtra";
+        $styleId = 'div.'.$this->hp['id'].'_'.$column_id;
+        $this->colStyles[$styleId] ="width: {$width}px; $cssExtra";
         $iWidth = $width;
         if($table_id_fko <> '') {
             $iWidth -= x6cssdefine('bodyfs','12px')*.67*5;
-            $this->colStyles['div.cell_'.$column_id.' input'] 
+            $this->colStyles[$styleId] 
                 ="width: {$iWidth}px; $cssExtra";
         }
         else if($type_id == 'mime-f') {
             $iWidth -= x6cssdefine('bodyfs','12px')*.67*20;
-            $this->colStyles['div.cell_'.$column_id.' input'] 
+            $this->colStyles[$styleId] 
                 ="width: {$iWidth}px; $cssExtra";
         }
         else if(!in_array($type_id,array('cbool','gender'))) {
-            $this->colStyles['div.cell_'.$column_id.' input'] 
+            $this->colStyles[$styleId] 
                 ="width: {$iWidth}px; $cssExtra";
         }
         
         # Finally, generate the HTML.
         $div = $this->dhead->h('div',$description);
         $div->hp['xColumn'] = $column_id;
-        $div->addclass('cell_'.$column_id);
+        $div->addclass($this->hp['id'].'_'.$column_id);
         $this->headers[] = $div;
     }
     /****m* androHtmlGrid/lastColumn
@@ -3200,7 +3200,10 @@ class androHTMLGrid extends androHTML {
         }
         if($class!='') $div->addClass($class);
         $div->hp['gColumn'] = $this->lastCell;
-        $div->addClass('cell_'.$this->columns[$this->lastCell]['column_id']);
+        $div->addClass(
+            $this->hp['id']
+            .'_'.$this->columns[$this->lastCell]['column_id']
+        );
             /*
         $div->hp['style'] ="
             overflow: hidden;
