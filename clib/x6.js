@@ -6053,17 +6053,10 @@ x6tabs = {
             // other tab while processing is going on.
             tabs.disableAll([ui.index]);
 
-            // If we set objectfocus to '--null--', we turn off events
-            // for all objects, which is good, user can't go clicking
-            // things during animations.  But if they clicked 'hide'
-            // we turn the parent back on.
+            // Set object focus to --null--, which turns off all
+            // objects during animation.
             var tablePar = x6.p(tabs,'x6parentTable');
-            if(ui.index > 0) {
-                x6events.fireEvent('objectFocus','--null--');
-            }
-            else {
-                x6events.fireEvent('objectFocus','ddisp_'+tablePar);
-            }
+            x6events.fireEvent('objectFocus','--null--');
             
             var topPane = x6.p(tabs,'x6slideUp');
             var tpi     = x6.p(tabs,'x6slideUpInner');
@@ -6092,6 +6085,9 @@ x6tabs = {
     },
     
     slideUp: function(tabsUl,event,ui,topPane,topPaneI) {
+        // This is animation speed
+        var spd = 400;
+        
         var obj = x6.byId(topPane);
         if(typeof(obj.currentChild)=='undefined') obj.currentChild='*';
         var currentChild = obj.currentChild
@@ -6100,65 +6096,121 @@ x6tabs = {
         // if UI.index = 0, they clicked hide.
         if(ui.index==0) {
             if(currentChild!='*') {
+                // KFD 2/18/09 Sourceforge 2547824
+                // THIS IS IN FINAL FORM.  LOOKS GOOD.  WORKS.
+                // Sliding tabs around works much better if we first 
+                // slide up the inner content, then slide everything
+                // else down.
                 var newHeight = $('#'+topPane).height()+350;
                 var newHeightI= $('#'+topPaneI).height()+350;
-                $('#'+topPaneI).animate( {height: newHeightI},500,null
-                    ,function() { $(this).css('overflow-y','scroll'); }
-                );
-                $('#'+topPane).animate( {height: newHeight},500);
-                obj.currentChild = '*';
-                tabsUl.enableAll();
-                $('#'+currentChild).css('overflow','hidden').height(3);
-                x6events.fireEvent(
-                    'objectFocus','ddisp_'+$(tabsUl).prop('x6parenttable')
+                $('#'+currentChild).slideUp(200
+                    ,function() {
+                        // Wait 1/10 of a second and start slidin
+                        // the top-outer container down
+                        setTimeout(
+                            function() {
+                                $('#'+topPane).animate( 
+                                    {height: newHeight}
+                                    ,spd
+                                );
+                            }
+                            ,100
+                        );
+                        // Wait another 1/10 of a second and start sliding
+                        // the top-inner container down.  Do all wrap-up
+                        // when that is finished.
+                        setTimeout(
+                            function() {
+                                var pt
+                                    = 'ddisp_'
+                                    + $(tabsUl).prop('x6parenttable');
+                                $('#'+topPaneI).animate(
+                                    {height: newHeightI}
+                                    ,spd
+                                    ,null
+                                    ,function() {
+                                        $(this).css('overflow-y','scroll');
+                                        obj.currentChild = '*';
+                                        tabsUl.enableAll();
+                                        x6events.fireEvent(
+                                            'objectFocus'
+                                            ,pt
+                                        );
+                                    }
+                                );
+                            }
+                            ,200
+                        );
+                    }
                 );
                 return true;
             }
         }
         
-        // Make the current tab effectively invisible
-        $(ui.panel).css('overflow','hidden').height(3);
-        
-        
         // If no tab, slide up and slide down 
         if(currentChild=='*') {
             var newHeight = $('#'+topPane).height()-350;
             var newHeightI= $('#'+topPaneI).height()-350;
-            setTimeout(function() {
-                $('#'+topPaneI).animate( {height: newHeightI},500,null
-                    ,function() {
-                        $(this).css('overflow-y','scroll');
-                    }
-                );
-            },100);
-            $('#'+topPane).animate( {height: newHeight},500 );
-            var newHeight=$(ui.panel).height()+350;
-            setTimeout(function() {
-                    $(ui.panel).animate({height: newHeight},500,null
+            
+            // KFD 2/18/09.  Sourceforge 2547824
+            // Apparently jQuery loses track of how high an inner
+            // tab should be (or we are not telling it properly).
+            // If a tab was previously displayed and is now
+            // being displayed again, we have to set the height to
+            // 0 before starting, otherwise it ends up twice as
+            // high as it should be.
+            $(ui.panel).height(0);
+            
+            // Begin the inner immediately
+            $('#'+topPaneI).animate( {height: newHeightI},spd,null
+                ,function() {
+                    $(this).css('overflow-y','scroll');
+                }
+            );
+            // Wait 1/10 of a second and start sliding up the
+            // outer top pane.
+            setTimeout(
+                function() {
+                    $('#'+topPane).animate( {height: newHeight},spd );
+                }
+                ,100
+            );
+
+            // Wait another 1/10 of a second and slide down the
+            // tab itself as an animate.
+            var newHeightT=$(ui.panel).height()+350;
+            var newheightT = 353;
+            setTimeout(
+                function() {
+                    $(ui.panel).animate({height: newHeightT},spd,null
                         ,function() { 
                             x6tabs.slideUpData(tabsUl,newChild,newHeight);
+                            x6.byId(topPane).currentChild = newChild;
                         }
                     );
-            },200);
-            x6.byId(topPane).currentChild = newChild;
+                }
+                ,200
+            );
             return true;
         }
 
         // If we are still here, they picked one child tab
-        // while another was still open.  We have to drop down
-        // the selected tab.  We have to do this even if they
-        // swap around between tabs, because jQuery restores the
-        // original height (3px or so) when it hides a tab.
+        // while another was still open.  We have to slide up
+        // the current tab, then animate the new one down,
+        // then we call for data.
         var newHeight=$(ui.panel).height()+350;
-        setTimeout(function() {
-                $(ui.panel).animate({height: newHeight},500,null
+        var newHeightT = 353;
+        $('#'+currentChild).slideUp(200
+            ,function() {
+                $(ui.panel).animate({height: newHeightT},400,null
                     ,function() { 
                         x6tabs.slideUpData(tabsUl,newChild,newHeight); 
+                        x6.byId(topPane).currentChild = newChild;
                     } 
                 );
-                $('#'+currentChild).css('overflow','hidden').height(3);
-        },100);
-        x6.byId(topPane).currentChild = newChild;
+            }
+        );
+        
         return true;
     },
     
@@ -6645,38 +6697,6 @@ x6modals = {
                     var mw = $('#x6modal').width();
                     var ww = $(window).width();
                     var wh = $(window).height();
-                    
-                    /*
-                    // Make sure the width is at least the title 
-                    // and the link
-                    var h1w = $('#x6modal .x6modaltop b').width();
-                    var aw  = $('#x6modal .x6modaltop a').width();
-                    if(mw < (h1w + aw +40)) {
-                        mw = h1w + aw + 40;
-                        $('#x6modal').css('width',mw);
-                    }
-
-                    // Make sure the height is at least 1/2 of the window
-                    if(mh < (wh/2)) {
-                        mh = Math.floor(wh/2);
-                        $('#x6modal').css('height',mh);
-                    }
-                    // Make sure height is notmore than window less 100
-                    if(mh > (wh - 100)) {
-                        mh = wh - 100;
-                        $('#x6modal').css('height',mh);
-                    }
-                    
-                    // Unconditionally set the inner height, who knows
-                    // where its gone off to.
-                    var ihNew  = mh - $('#x6modal .x6modaltop').height();
-                    ihNew -= Number($(mObj).attr('xSpacing'));
-                    
-                    if(ih > ihNew) {
-                        $('#x6modal .x6modalinner').css('overflow-y','scroll');
-                    }
-                    $('#x6modal .x6modalinner').css('height',ihNew);
-                    */
 
                     // now center this guy.
                     var left = Math.floor( (ww-mw)/2 );
