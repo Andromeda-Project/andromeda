@@ -372,9 +372,11 @@ class androX6 {
         }
         
         # <----- RETURN (MAYBE)
+        #        Sourceforge 2612788 - this is actually an exit, not
+        #        a return.
         if(count($awhere) == 0 ) {
             if(gp('xReturnAll','N')=='N' && !$allowNoFilters){
-                return;
+                exit;
             }
         }
         
