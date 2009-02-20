@@ -102,76 +102,38 @@ function eraseCookie(name) {
 
 /* **************************************************************** *\
 
-    NOTE: This is not actually referenced yet.  If we get
-          IE working w/o it, remove.  KFD 1/16/09
-
-   Cross Browser selectionStart/selectionEnd
-   Version 0.2
-   Copyright (c) 2005-2007 KOSEKI Kengo
- 
-   This script is distributed under the MIT licence.
-   http://www.opensource.org/licenses/mit-license.php
+   A SelectionStart/End replacement that works in IE & FF
    
-   Notes from KFD:
-   Explained at: http://www.teria.com/~koseki/memo/xbselection/
-   Download    : http://www.teria.com/~koseki/memo/xbselection/Selection.js
+   Copied from:
+   http://stackoverflow.com/questions/235411/is-there-an-internet-explorer-approved-substitute-for-selectionstart-and-selectio/235582
 
 \* **************************************************************** */
+function getSelection(inputBox) {
+    if ("selectionStart" in inputBox) {
+        return {
+            start: inputBox.selectionStart,
+            end: inputBox.selectionEnd
+        }
+    }
 
-function Selection(textareaElement) {
-    this.element = textareaElement;
-}
+    //and now, the blinkered IE way
+    var bookmark = document.selection.createRange().getBookmark()
+    var selection = inputBox.createTextRange()
+    selection.moveToBookmark(bookmark)
 
-Selection.prototype.create = function() {
-    if (document.selection != null && this.element.selectionStart == null) {
-        return this._ieGetSelection();
-    } else {
-        return this._mozillaGetSelection();
+    var before = inputBox.createTextRange()
+    before.collapse(true)
+    before.setEndPoint("EndToStart", selection)
+
+    var beforeLength = before.text.length
+    var selLength = selection.text.length
+
+    return {
+        start: beforeLength,
+        end: beforeLength + selLength
     }
 }
 
-Selection.prototype._mozillaGetSelection = function() {
-    return { 
-        start: this.element.selectionStart, 
-        end: this.element.selectionEnd 
-    };
-}
-
-Selection.prototype._ieGetSelection = function() {
-    this.element.focus();
-
-    var range = document.selection.createRange();
-    var bookmark = range.getBookmark();
-
-    var contents = this.element.value;
-    var originalContents = contents;
-    var marker = this._createSelectionMarker();
-    while(contents.indexOf(marker) != -1) {
-        marker = this._createSelectionMarker();
-    }
-
-    var parent = range.parentElement();
-    if (parent == null || parent.type != "textarea") {
-        return { start: 0, end: 0 };
-    }
-    range.text = marker + range.text + marker;
-    contents = this.element.value;
-
-    var result = {};
-    result.start = contents.indexOf(marker);
-    contents = contents.replace(marker, "");
-    result.end = contents.indexOf(marker);
-
-    this.element.value = originalContents;
-    range.moveToBookmark(bookmark);
-    range.select();
-
-    return result;
-}
-
-Selection.prototype._createSelectionMarker = function() {
-    return "##SELECTION_MARKER_" + Math.random() + "##";
-}
 
 /* **************************************************************** *\
 
@@ -3293,12 +3255,13 @@ var x6inputs = {
                 // Generate the value to send back
                 x6.console.group("An x6select, fetching from Server");
                 var val = $(inp).val();
-                var val = val.slice(0,inp.selectionStart)
+                var s = getSelection(inp);
+                var val = val.slice(0,s.start)
                     +keyLabel
-                    +val.slice(inp.selectionEnd);
+                    +val.slice(s.end);
                 x6.console.log("current value: ",$(inp).val())
-                x6.console.log("sel start: ",inp.selectionStart)
-                x6.console.log("sel end: ",inp.selectionEnd)
+                x6.console.log("sel start: ",s.start)
+                x6.console.log("sel end: ",s.end)
                 x6.console.log("computed value:",val);
                 json = new x6JSON('x6page',x6.p(inp,'x6seltab'));
                 json.addParm('x6select','Y');
