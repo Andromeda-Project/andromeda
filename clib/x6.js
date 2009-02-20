@@ -3215,6 +3215,33 @@ var x6inputs = {
         // Type validation for some types, only if not TAB or ENTER
         if(!isNav ) {
             x6.console.log("Not nav key, doing type validation");
+
+            // KFD 2/20/09.  Originally this came AFTER type validation,
+            //               but that did not allow for alpha chars in
+            //               numeric lookups, so I moved it before.
+            // Next possibility is a lookup that requires a
+            // fetch from the server.  
+            if(x6.p(inp,'x6select','N')=='Y' && x6.p(inp,'xValues',null)==null) {
+                // Generate the value to send back
+                x6.console.group("An x6select, fetching from Server");
+                var val = $(inp).val();
+                var s = getSelection(inp);
+                var val = val.slice(0,s.start)
+                    +keyLabel
+                    +val.slice(s.end);
+                x6.console.log("current value: ",$(inp).val())
+                x6.console.log("sel start: ",s.start)
+                x6.console.log("sel end: ",s.end)
+                x6.console.log("computed value:",val);
+                json = new x6JSON('x6page',x6.p(inp,'x6seltab'));
+                json.addParm('x6select','Y');
+                json.addParm('gpletters',val);
+                json.execute(true);
+                x6inputs.x6select.display(inp,null,x6.data.x6select);
+                x6.console.groupEnd();
+                return;
+            }
+
             if(x6.p(inp,'xLookup','N')=='Y') {
                 x6.console.log("This is a lookup input, allowing everything");
                 x6.console.groupEnd();
@@ -3249,27 +3276,6 @@ var x6inputs = {
                 break;
             }
             
-            // Next possibility is a lookup that requires a
-            // fetch from the server.
-            if(x6.p(inp,'x6select','N')=='Y' && x6.p(inp,'xValues',null)==null) {
-                // Generate the value to send back
-                x6.console.group("An x6select, fetching from Server");
-                var val = $(inp).val();
-                var s = getSelection(inp);
-                var val = val.slice(0,s.start)
-                    +keyLabel
-                    +val.slice(s.end);
-                x6.console.log("current value: ",$(inp).val())
-                x6.console.log("sel start: ",s.start)
-                x6.console.log("sel end: ",s.end)
-                x6.console.log("computed value:",val);
-                json = new x6JSON('x6page',x6.p(inp,'x6seltab'));
-                json.addParm('x6select','Y');
-                json.addParm('gpletters',val);
-                json.execute(true);
-                x6inputs.x6select.display(inp,null,x6.data.x6select);
-                x6.console.groupEnd();
-            }
           
             // Yet another possibility is a lookup on a set
             // of fixed values.  
