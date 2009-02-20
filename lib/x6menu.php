@@ -88,8 +88,17 @@ class x6menu extends androX6 {
                 $a->hp['onmouseover'] = 
                     "$('#x6menu_right .hilight').removeClass('hilight');
                      $(this).addClass('hilight')";
-                $a->hp['onclick'] 
-                    = "window.location = '?x6page=$page&x6module=$menuid'";
+                 
+                # DUPLICATE CODE ALERT.  THIS CODE IS ALSO IN
+                #   TEMPLATES/X6/X6MENUTOP.PHP
+                # KFD 2/20/09 Sourceforge 2616802
+                if($pageinfo['uix2'] == 'Y') {
+                    $href = "?gp_page=$page&amp;x2=1";
+                }
+                else {
+                    $href = '?x6page=$page&amp;x6module=$menuid';
+                }
+                $a->hp['onclick'] = "window.location='$href'";
                 $a->hp['id'] = 'page_'.$page;
                 if(arr($pageinfo,'spaceafter','N')=='Y') {
                     $itemsDiv->h('hr');
