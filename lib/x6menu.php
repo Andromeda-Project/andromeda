@@ -141,7 +141,7 @@ class x6menu extends androX6 {
             this.clickedRight($(crString)[0].id);
             $('#items_'+moduleId).fadeIn(300,
                 function() {
-                    $('#items_'+moduleId+' div').attr('xActive','Y');
+                    $('#items_'+moduleId+' > div').attr('xActive','Y');
                 }
             );
         }
@@ -207,7 +207,7 @@ class x6menu extends androX6 {
             x6events.subscribeToEvent('key_'+letter,id);
             self['receiveEvent_key_'+letter] = function(letter) {
                 letter = letter.toLowerCase();
-                $('#x6menu_right div[xactive=Y][xkey='+letter+']').click();
+                $('#x6menu_right div[xActive=Y][xkey='+letter+']').click();
             }
         }
         
