@@ -3132,7 +3132,7 @@ var x6inputs = {
         x6.console.log(inp);
         x6.console.log(e);
         var keyLabel=x6.keyLabel(e);
-        
+
         // KFD 1/15/09.  Inputs never deal with Ctrl or Alt
         if(keyLabel.slice(0,4)=='Ctrl' || keyLabel.slice(0,3)=='Alt') {
             x6.console.log('Ctrl or alt, input keydown returning true');
@@ -3151,7 +3151,7 @@ var x6inputs = {
         x6.console.log('isNav: '  ,isNav   );
         
         // All meta keys return true immediately except TAB and ENTER
-        if(isMeta && !isNav) {
+        if(isMeta && !isNav && keyLabel!='BackSpace') {
             var handUpList = ['UpArrow','DownArrow','PageUp','PageDown'];
             if(handUpList.indexOf(keyLabel)>=0) {
                 // If we are passing it up or not, it should not be
@@ -3226,9 +3226,15 @@ var x6inputs = {
                 x6.console.group("An x6select, fetching from Server");
                 var val = $(inp).val();
                 var s = getSelection(inp);
-                var val = val.slice(0,s.start)
-                    +keyLabel
-                    +val.slice(s.end);
+                if(keyLabel=='BackSpace') {
+                    var val = val.slice(0,s.start-1)
+                        +val.slice(s.end+1);
+                }
+                else {
+                    var val = val.slice(0,s.start)
+                        +keyLabel
+                        +val.slice(s.end);
+                }
                 x6.console.log("current value: ",$(inp).val())
                 x6.console.log("sel start: ",s.start)
                 x6.console.log("sel end: ",s.end)
