@@ -5468,7 +5468,7 @@ x6plugins.grid = function(self,id,table) {
             var col  = info.column_id;
             if(col=='') continue;
             if(row[col]==null) row[col] = '';
-            html+='<div class="cell_'+col+'"'
+            html+='<div class="'+this.id+'_'+col+'"'
                 +' gcolumn = "'+idx+'">'
                 +row[col].htmlDisplay()
                 +'</div>';
