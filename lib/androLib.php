@@ -4841,8 +4841,8 @@ function SQL_FORMAT($t,$v,$clip=0) {
 		case "money":
 		case "numb":
 		case "int":
-			if ($v=="") { return "0"; }
-         else { return SQL_ESCAPE_STRING(trim($v)); }
+			if ($v=="" || $v=='.') { return "0"; }
+            else { return SQL_ESCAPE_STRING(trim($v)); }
 		case "rtime":
 		case "time":
 			# KFD 7/8/08, if they returned a jquery time,
