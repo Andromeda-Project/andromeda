@@ -130,6 +130,7 @@ class androPage {
         if( $this->yamlP2['options']['nofilter'] == 'Y' )   $runHTML = false;
         if( gp('gp_post')<>'' && gp('gp_post')<>'onscreen') $runHTML = false;
         if( gp('gp_post')=='onscreen' && gpExists('x4Page'))$runHTML = false;
+        if( gp('gp_post')=='onscreen' && gpExists('x6page'))$runHTML = false;
         # KFD 9/10/08, don't run HTML if they are requesting Show sql
         if( gp('showsql')==1                               )$runHTML = false;
         $runPage = true;
@@ -150,7 +151,7 @@ class androPage {
         }
         if($runPage) {
             $this->PassPage();
-        }        
+        }
     }
     
     function mainHelp() {
