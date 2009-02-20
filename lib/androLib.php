@@ -1670,7 +1670,7 @@ class androHtml {
     ******/
     # overrides default addButtonbar
     function bbHeight() { return x6cssHeight('div.x6buttonBar a.button');} 
-    function addButtonBar($list='new,ins,save,cancel,delete') {
+    function addButtonBar($list='new,save,cancel,delete') {
         $bbHeight = $this->bbHeight();
         $table_id = $this->hp['x6table'];
         $abuts = explode(',',$list);

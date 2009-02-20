@@ -96,7 +96,7 @@ class x6menu extends androX6 {
                     $href = "?gp_page=$page&amp;x2=1";
                 }
                 else {
-                    $href = '?x6page=$page&amp;x6module=$menuid';
+                    $href = "?x6page=$page&amp;x6module=$menuid";
                 }
                 $a->hp['onclick'] = "window.location='$href'";
                 $a->hp['id'] = 'page_'.$page;

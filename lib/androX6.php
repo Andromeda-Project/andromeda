@@ -668,9 +668,13 @@ class androX6 {
         
         # Work out a height by finding out inside height
         # and subtracing line height a few times
+        $bb = true;
+        if($queuepos<>'') { 
+            $bb = 'new,ins,save,cancel,delelete';
+        }
         $gridHeight = $hremain - x6cssHeight('h1');
         $grid       = $top->addGrid(
-            $gridHeight,$table_id,false,$sortable,true,true
+            $gridHeight,$table_id,false,$sortable,$bb,true
         );
         $grid->hp['x6profile'] = 'grid';
         
