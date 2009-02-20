@@ -4864,12 +4864,16 @@ x6plugins.detailDisplay = function(self,id,table) {
             
             // Alternate method, find inputs with xdefsrc, which
             // tells us where to pull defaults from
+            console.log(row);
             $(this).find(':input[xdefsrc]').each(
                 function() {
                     var info = $(this).prop('xdefsrc').split('.');
                     var row  = x6bb.fwGet('dbRow_'+info[0]);
-                    var val  = row[info[1]];
-                    $(this).val(val);
+                    if(row) {
+                        console.log(row);
+                        var val  = row[info[1]];
+                        $(this).val(val);
+                    }
                 }
             );
         }
