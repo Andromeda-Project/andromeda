@@ -3960,7 +3960,13 @@ var x6inputs = {
             var colCount = $(this.tbody).find('div.x6selrow:last div').length;
             for(var x = 0; x<= colCount; x++) {
                 if(x==colCount) {
-                    maxWidth=15;
+                    // KFD 2/20/09 Sourceforge 2616798
+                    if(navigator.userAgent.indexOf('MSIE 6.0')>0) {
+                        maxWidth=17;
+                    }
+                    else {
+                        maxWidth=15;   
+                    }
                 }
                 else {
                     var maxWidth=$(this.div).find('#x6head'+x).width();
