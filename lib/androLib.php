@@ -1971,7 +1971,7 @@ class androHtml {
     # KFD BLUNT WEAPON.  This really is meant for very simple
     #                    elements where you just make it scrollable
     function scrollable($height='') {
-        $this->addStyle('overflow-y: scroll; overflow-x: hidden;');
+        $this->addStyle('overflow-y: scroll;');
         $this->addStyle("height: $height");
     }
     
@@ -2002,7 +2002,8 @@ class androHtml {
         foreach($rows as $index=>$row) {
             $tr = html('tr',$tbody);
             $tr->hp['id'] = $rowIdPrefix.($index+1);
-
+            $tr->hp['valign'] = 'top';
+            
             if($stripe1 > 0) {
                 $i = $index % $stripe3;
                 if($i > $stripe2) {
