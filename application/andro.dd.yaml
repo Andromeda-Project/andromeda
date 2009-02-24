@@ -193,11 +193,6 @@ column spec_name:
 table instance_spec_checksums:
     module: apps
     description: Instance Spec Checksums
-    group admin:
-        permsel: "Y"
-        permins: "Y"
-        permupd: "Y"
-        permdel: "Y"
 
     foreign_key instances:
         primary_key: "Y"
