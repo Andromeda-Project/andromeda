@@ -207,7 +207,6 @@ function checkDBFilesForChanges() {
             application=" .SQLFC( $app ) ." AND spec_name=" .SQLFC( $checksum['file'] )
             .( isset( $parm['INST'] ) ? " AND instance=" .SQLFC( $parm['INST'] ) : '' );
         $row = SQL_OneRow( $query );
-        
         if ( $row === false ) {
             $this->LogEntry( 'Entry for ' .$checksum['file']  .' not found' );
             $checksum_entry = array(
@@ -221,8 +220,11 @@ function checkDBFilesForChanges() {
             $changed = true;
         } else {
             $this->LogEntry( 'Entry for ' .$checksum['file']  .' file found' );
+            $this->LogEntry( '  Old Value:     ' .$row['checksum'] );
+            $this->LogEntry( '  Current Value: ' .$checksum['md5'] );
+            $this->LogEntry( '' );
             if ( $row['checksum'] != $checksum['md5'] ) {
-                $this->LogEntry("Spec File Changed: " .$checksum['file'] );
+                $this->LogEntry('  Spec File Changed' );
                 $changed = true;
                 $checksum_update = array(
                     'skey'=>$row['skey'],
