@@ -207,8 +207,19 @@ function checkDBFilesForChanges() {
             application=" .SQLFC( $app ) ." AND spec_name=" .SQLFC( $checksum['file'] )
             .( isset( $parm['INST'] ) ? " AND instance=" .SQLFC( $parm['INST'] ) : '' );
         $row = SQL_OneRow( $query );
-
-        if ( $row ) {
+        
+        if ( $row === false ) {
+            $this->LogEntry( 'Entry for ' .$checksum['file']  .' not found' );
+            $checksum_entry = array(
+                'application'=>$app,
+                'instance'=>( isset( $parm['INST'] ) ? $parm['INST'] : '' ),
+                'spec_name'=>$checksum['file'],
+                'checksum'=>md5_file( $checksum['fullpath'] )
+            );
+            SQLX_Insert( 'instance_spec_checksums', $checksum_entry );
+            $this->LogEntry("Spec File Changed: " .$checksum['file'] );
+            $changed = true;
+        } else {
             $this->LogEntry( 'Entry for ' .$checksum['file']  .' file found' );
             if ( $row['checksum'] != $checksum['md5'] ) {
                 $this->LogEntry("Spec File Changed: " .$checksum['file'] );
@@ -220,17 +231,6 @@ function checkDBFilesForChanges() {
                 SQLX_Update( 'instance_spec_checksums', $checksum_update );
                 $this->LogEntry( "Updating Entry" );
             }
-        } else {
-            $this->LogEntry( 'Entry for ' .$checksum['file']  .' not found' );
-            $checksum_entry = array(
-                'application'=>$app,
-                'instance'=>( isset( $parm['INST'] ) ? $parm['INST'] : '' ),
-                'spec_name'=>$checksum['file'],
-                'checksum'=>md5_file( $checksum['fullpath'] )
-            );
-            SQLX_Insert( 'instance_spec_checksums', $checksum_entry );
-            $this->LogEntry("Spec File Changed: " .$checksum['file'] );
-            $changed = true;
         }
         
     }
