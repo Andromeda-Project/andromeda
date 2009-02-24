@@ -193,7 +193,11 @@ column spec_name:
 table instance_spec_checksums:
     module: apps
     description: Instance Spec Checksums
-    nomenu: "Y"
+    group admin:
+        permsel: "Y"
+        permins: "Y"
+        permupd: "Y"
+        permdel: "Y"
 
     foreign_key instances:
         primary_key: "Y"
@@ -202,7 +206,6 @@ table instance_spec_checksums:
     column spec_name:
         uisearch: "Y"
     column checksum:
-        primary_key: "Y"
         uisearch: "Y"
         
 table instbuilds:
