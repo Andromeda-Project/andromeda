@@ -200,6 +200,7 @@ table instance_spec_checksums:
         uisearch: "Y"
     column spec_name:
         uisearch: "Y"
+        primary_key: "Y"
     column checksum:
         uisearch: "Y"
         
