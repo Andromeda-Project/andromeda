@@ -9900,7 +9900,7 @@ function FSCopyTree($src,$tgt,$name) {
          
       }
       else {
-         $cmd="cp -r $src/$name/* $tgt/$name/";
+         $cmd="cp -rf $src/$name/* $tgt/$name/";
       }
       $this->LogEntry($cmd);
       `$cmd`;
