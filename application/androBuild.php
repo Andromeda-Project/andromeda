@@ -10092,7 +10092,7 @@ function LogStart()
 	// Next big fatal error is that we cannot write to the log
 	//
 	$pLogFile = "AndroDBB.".$GLOBALS["parm"]["APP"].".log";
-	$pLogPath = $this->FS_ADDSLASH($dircur).'../tmp/'.$pLogFile;
+	$pLogPath = realpath($this->FS_ADDSLASH($dircur).'../tmp/').'/'.$pLogFile;
 	if (file_exists($pLogPath)) {
 		if (! is_writable($pLogPath)) {
 			$this->LogEntry("===================================================" );
