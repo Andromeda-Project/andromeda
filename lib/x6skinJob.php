@@ -1,5 +1,7 @@
 <?php
 class x6skinJob extends androX6 {
+	var $skinFiles = array();
+	
     function x6main() {
         ?>
         <h1>CSS Skin Generator</h1>
@@ -57,6 +59,7 @@ class x6skinJob extends androX6 {
         $dirx6   = fsDirTop().'templates/x6/';
         $dirx6src= $dirx6.'skinsources/';
         $dirapp  = fsDirTop().'application/';
+        
 
         # Now scan for other skins and process those
         $dirs = array($dirx6src,$dirapp);
@@ -85,6 +88,12 @@ class x6skinJob extends androX6 {
                 $this->writeCSS($apieces[1],$yaml['defines'],$yaml['css']);
             }
         }
+        
+        # Finally, write the list of skins out to apppub
+        file_put_contents(
+            fsDirTop().'templates/x6/skinsphp/x6skins.ser.txt'
+            ,serialize($this->skinFiles)
+        );
         
     }
     
@@ -137,17 +146,11 @@ class x6skinJob extends androX6 {
                 $this->writeFiles(
                     $constants,$name,$cgName,$sCombo[0],$cssFinal
                 );
-                $skinFiles["$name - $cgName - {$sCombo[0]}"] 
+                $this->skinFiles["$name - $cgName - {$sCombo[0]}"] 
                     = "$name.$cgName.{$sCombo[0]}"; 
             }
         }
         
-        # Finally, write the list of skins out to apppub
-        file_put_contents(
-            fsDirTop().'templates/x6/skinsphp/x6skins.ser.txt'
-            ,serialize($skinFiles)
-        );
-
     }
     
     
@@ -253,8 +256,8 @@ class x6skinJob extends androX6 {
             }
         }
         if(count($notused)>0) {
-            echo "<br><b>These constants were not used:</b>";
-            hprint_r($notused);
+            #echo "<br><b>These constants were not used:</b>";
+            #hprint_r($notused);
         }
         
         return $retval;
