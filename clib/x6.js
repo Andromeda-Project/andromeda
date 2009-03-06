@@ -6656,7 +6656,7 @@ x6modals = {
         // start by making everybody inside the modal
         // invisible, then make the one we are interested
         // in visible later on
-        $('#x6modal div.x6modal').css('display:none');
+        $('#x6modal > div').css('display','none');
         
         // Turn scrolling off for the body
         $('body')
@@ -6678,6 +6678,10 @@ x6modals = {
                         .css('display','block')
                         .css('width','')
                         .css('height','')
+                        
+                    // Now make the particular display visible
+                    $('#'+id).css('display','');
+                        
                     var mh = $('#x6modal').height();
                     var mw = $('#x6modal').width();
                     var ww = $(window).width();
