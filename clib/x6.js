@@ -4845,13 +4845,11 @@ x6plugins.detailDisplay = function(self,id,table) {
             
             // Alternate method, find inputs with xdefsrc, which
             // tells us where to pull defaults from
-            console.log(row);
             $(this).find(':input[xdefsrc]').each(
                 function() {
                     var info = $(this).prop('xdefsrc').split('.');
                     var row  = x6bb.fwGet('dbRow_'+info[0]);
                     if(row) {
-                        console.log(row);
                         var val  = row[info[1]];
                         $(this).val(val);
                     }
@@ -6086,48 +6084,50 @@ x6tabs = {
                 // Sliding tabs around works much better if we first 
                 // slide up the inner content, then slide everything
                 // else down.
-                var newHeight = $('#'+topPane).height()+350;
-                var newHeightI= $('#'+topPaneI).height()+350;
-                $('#'+currentChild).slideUp(200
-                    ,function() {
-                        // Wait 1/10 of a second and start slidin
-                        // the top-outer container down
-                        setTimeout(
-                            function() {
-                                $('#'+topPane).animate( 
-                                    {height: newHeight}
-                                    ,spd
-                                );
-                            }
-                            ,100
-                        );
-                        // Wait another 1/10 of a second and start sliding
-                        // the top-inner container down.  Do all wrap-up
-                        // when that is finished.
-                        setTimeout(
-                            function() {
-                                var pt
-                                    = 'ddisp_'
-                                    + $(tabsUl).prop('x6parenttable');
-                                $('#'+topPaneI).animate(
-                                    {height: newHeightI}
-                                    ,spd
-                                    ,null
-                                    ,function() {
-                                        $(this).css('overflow-y','scroll');
-                                        obj.currentChild = '*';
-                                        tabsUl.enableAll();
-                                        x6events.fireEvent(
-                                            'objectFocus'
-                                            ,pt
-                                        );
-                                    }
-                                );
-                            }
-                            ,200
-                        );
-                    }
-                );
+            	setTimeout(function() {
+	                var newHeight = $('#'+topPane).height()+350;
+	                var newHeightI= $('#'+topPaneI).height()+350;
+	                $('#'+currentChild).slideUp(200
+	                    ,function() {
+	                        // Wait 1/10 of a second and start slidin
+	                        // the top-outer container down
+	                        setTimeout(
+	                            function() {
+	                                $('#'+topPane).animate( 
+	                                    {height: newHeight}
+	                                    ,spd
+	                                );
+	                            }
+	                            ,100
+	                        );
+	                        // Wait another 1/10 of a second and start sliding
+	                        // the top-inner container down.  Do all wrap-up
+	                        // when that is finished.
+	                        setTimeout(
+	                            function() {
+	                                var pt
+	                                    = 'ddisp_'
+	                                    + $(tabsUl).prop('x6parenttable');
+	                                $('#'+topPaneI).animate(
+	                                    {height: newHeightI}
+	                                    ,spd
+	                                    ,null
+	                                    ,function() {
+	                                        $(this).css('overflow-y','scroll');
+	                                        obj.currentChild = '*';
+	                                        tabsUl.enableAll();
+	                                        x6events.fireEvent(
+	                                            'objectFocus'
+	                                            ,pt
+	                                        );
+	                                    }
+	                                );
+	                            }
+	                            ,200
+	                        );
+	                    }
+	                );
+            	},10);
                 return true;
             }
         }
