@@ -2956,7 +2956,9 @@ class androHTMLGrid extends androHTML {
         $column_id   = arr($options,'column_id' );
         if($column_id=='') $column_id = rand(100000,999999);
         $dispsize    = arr($options,'dispsize'   ,10);
-        $description = arr($options,'description','No Desc');
+        # KFD 3/6/09 Sourceforge 2668452, respect descshort if present
+        $description = arr($options,'descshort','');
+        if($description=='') $description=arr($options,'description','No Desc');
         $type_id     = arr($options,'type_id'    ,'char');
         $forcelong   = arr($options,'forcelong'  ,false);
         $table_id_fko= arr($options,'table_id_fko','');
