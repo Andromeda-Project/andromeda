@@ -198,7 +198,7 @@ column add   { description: Address      ; type_id: vchar; colprec: 75; }
 column add1  { description: Address     ; type_id: vchar; colprec: 75; }
 column add2  { description: Address 2    ; type_id: vchar; colprec: 75; }
 column city  { description: City         ; type_id: vchar; colprec: 22; }
-column state { description: State/Province  ; type_id: char;  colprec: 5;  }
+column state { description: State/Province  ; type_id: char;  colprec: 5; descshort:ST  }
 column zip9  { description: Zip+4        ; type_id: char; colprec: 10; }
 column _dob  { description: Birthdate; type_id: date; prefix_table_name: Y; }
 column dob   { description: Birthdate; type_id: date; }
