@@ -3150,6 +3150,12 @@ var x6inputs = {
         x6.console.log('isMeta: ' ,isMeta  );
         x6.console.log('isNav: '  ,isNav   );
         
+        // KFD Sourceforge 2668116 Allow backspace!
+        if(keyLabel=='BackSpace') {
+        	x6.console.groupEnd();
+        	return true;
+        }
+        
         // All meta keys return true immediately except TAB and ENTER
         if(isMeta && !isNav && keyLabel!='BackSpace') {
             var handUpList = ['UpArrow','DownArrow','PageUp','PageDown'];
