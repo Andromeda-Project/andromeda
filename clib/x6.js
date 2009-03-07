@@ -4519,6 +4519,10 @@ x6plugins.tableController = function(self,id,table) {
     self['receiveEvent_reqUndoRow_'+table] = function() {
         x6.console.group("tableController reqUndoRow");
         x6events.fireEvent('uiUndoRow_'+this.zTable,this.zSkey);
+        // Sourceforge 2668115, new,cancel,new wouldn't work because
+        //                      tablecontroller still thought it was
+        //                      on a new row.
+        this.zSkey = -1;
         x6.console.groupEnd();
         return true;
     }
@@ -4690,7 +4694,12 @@ x6plugins.detailDisplay = function(self,id,table) {
     self.receiveEvent_objectFocus = function(id) {
         x6.console.group("Object Focus for: "+id+", we are "+this.id);
         if(id!=this.id) {
-            x6events.fireEvent('buttonsNew_'+this.zTable,false);
+        	var x6profile = $(this).attr('x6profile');
+            // Sourceforge 2668115, (tag-along), don't disable 
+        	//                      new buttons when losing focus 
+        	if(x6profile!='twosides') {
+	            x6events.fireEvent('buttonsNew_'+this.zTable,false);
+        	}
             x6events.fireEvent('buttonsEdit_'+this.zTable,false);
             x6inputs.objectFocusBlur(this.id);
         }
