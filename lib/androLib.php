@@ -3799,7 +3799,11 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
             $xRoUpd = 'Y';
         }
     }
-
+    # KFD 3/7/09 Sourceforge 2671622 perms should be controlled
+    #            at top level by table permissions.
+    if(ddUserPerm($table_id,'ins')==false) $xRoIns = 'Y';
+    if(ddUserPerm($table_id,'upd')==false) $xRoUpd = 'Y';
+    
     # First decision is to work out what kind of control to make
     if(arr($colinfo,'x6view','')=='window') {
         $input = html('a');
