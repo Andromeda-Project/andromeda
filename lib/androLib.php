@@ -2919,7 +2919,13 @@ class androHTMLGrid extends androHTML {
             $count++;
             $input   = input($dd['flat'][$colname],$tabLoop,$options);
             $input->hp['tabindex'] = $tabIndex++;
-            $input->hp['value'] ="*VALUE_$colname*";
+            # KFD 3/6/09 Sourceforge 2668359
+            if($input->htype=='textarea') {
+            	$input->setHtml("*VALUE_$colname*");
+            }
+            else {
+                $input->hp['value'] ="*VALUE_$colname*";
+            }
             $input->hp['xClassRow'] = 0;
             $input->hp['xTabGroup'] = 'rowEdit';
             $wrapper->addClass($this->hp['id'].'_'.$colname);
