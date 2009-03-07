@@ -3756,7 +3756,9 @@ var x6inputs = {
                         overflow: 'hidden',
                         border: '1px solid black',
                         cursor: 'pointer',
-                        zIndex: 1000
+                        // KFD Sourceforge 2671574 make zIndex
+                        //     on top of modal
+                        zIndex: 11000
                 });
                 $(this.div).addClass('x6select');
 
