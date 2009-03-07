@@ -3781,8 +3781,11 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
     if(!$xRoIns) {
         $xRoIns = arr($colinfo,'uiro','N');
         $xRoUpd = arr($colinfo,'uiro','N');
+        # KFD Sourceforge 2668117 Added min/max to automations
+        #                 that prevent user interaction
         $autos = array('SUM','COUNT','FETCH','DISTRIBUTE','SEQUENCE'
             ,'TS_INS','TS_UPD','UID_INS','UID_UPD','EXTEND'
+            ,'MIN','MAX'
         );
         if(in_array(a($colinfo,'automation_id','none'),$autos)) {
             $xRoIns = 'Y';
