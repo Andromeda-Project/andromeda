@@ -785,7 +785,8 @@ class androX6 {
             $awhere[] = sqlfilter($this->dd['flat'][$colname],$value);
         }
         if(count($awhere)>0) $where = 'WHERE '.implode(' AND ',$awhere);
-        $sql = "Select skey,$uisearch from $table_id $where ORDER BY $ob";
+        $view_id = ddView($table_id);
+        $sql = "Select skey,$uisearch from $view_id $where ORDER BY $ob";
         $rows = SQL_AllRows($sql);
         $aColumns = explode(',',$uisearch);
         foreach($rows as $row) {
