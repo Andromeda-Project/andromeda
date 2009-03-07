@@ -830,8 +830,11 @@ class androX6 {
         }
 
         # tell the screen to start out by 
-        # focusing on the browse
+        # focusing on the browse 
         jqDocReady("x6events.fireEvent('objectFocus','{$x6grid->hp['id']}')");
+        # KFD 3/7/09 Sourceforge 2669466
+        #            Turn on new buttons by default
+        jqDocReady('x6events.fireEvent("buttonsNew_'.$table_id.'",true)');
         
         # Render it!  That's it!
         $this->hldOut($div);
