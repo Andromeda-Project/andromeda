@@ -100,6 +100,11 @@ window.x6menu = false;
 // If menu is activated, pick this one and turn off other,
 // but if menu is not active do nothing
 function x6menumouseover(menuid) {
+    // KFD 03/07/09 Sourceforge 2643036
+    //              If x6 is not loaded yet, don't do anything
+    //              Prevents errors from mouse doodling during
+    //              page load
+    if(typeof(x6)=='undefined') return;
     if(!window.x6menu) return;
     if(window.x6menu == menuid) return;
 
@@ -123,6 +128,11 @@ function x6menumouseover(menuid) {
 // Clicking a menu pad activates the menu and causes
 // mousing-over of other pads to activate those.
 function x6menuclick(menuid) {
+	// KFD 03/07/09 Sourceforge 2643036
+	//              If x6 is not loaded yet, don't do anything
+	//              Prevents errors from mouse doodling during
+	//              page load
+	if(typeof(x6)=='undefined') return;
     // if an old one exists, clear it out
     if(window.x6menu) {
         var pad = x6.byId('x6menu_'+window.x6menu);
