@@ -6566,6 +6566,10 @@ x6plugins.modal = function(self,id,table) {
     /*
     *   Core function: display myself
     */
+    
+    // KFD 3/20/09 Sourceforge 2697442
+    //     STRAY CODE, EARLIER VERSION
+    /*
     self.display = function(title) {
         if(title==null) title = '';
         
@@ -6660,7 +6664,7 @@ x6plugins.modal = function(self,id,table) {
                 }
             );
     }
-    
+    */
 }
 
 
@@ -6669,7 +6673,7 @@ x6modals = {
     *   Core function: display one of them
     */
     display: function(id) {
-        x6.console.group("x6modals.display: "+id);
+		x6.console.group("x6modals.display: "+id);
         // start by making everybody inside the modal
         // invisible, then make the one we are interested
         // in visible later on
@@ -6703,6 +6707,19 @@ x6modals = {
                     var mw = $('#x6modal').width();
                     var ww = $(window).width();
                     var wh = $(window).height();
+                    
+                    // KFD 3/20/09 Sourceforge 2697442
+                    //             Must set height by window, shrink it
+                    //             down if necessary
+                    //   Prefix "con" means "content"
+                    //   Inr = Inner, Otr = Outer, Ht = Height
+                    var conInrHt = $('#'+id).attr('xInnerHeight');
+                    var conOtrHt = $('#'+id).attr('xHeight');
+                	var delta = conOtrHt - conInrHt;
+                	var conOtrHtNew = wh-100;
+                	var conInrHtNew = conOtrHtNew - delta;
+                	$('#'+id).height(conOtrHtNew);
+                	$('#'+id+"_inner").height(conInrHtNew);
 
                     // now center this guy.
                     var left = Math.floor( (ww-mw)/2 );
