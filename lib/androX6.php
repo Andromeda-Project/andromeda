@@ -35,7 +35,10 @@ class androX6 {
         # put in for the wholdist application to carry
         # context from screen to screen.
         #
-        $this->hld = aFromGp('hld_');
+        # KFD 3/20/09 Sourceforge 2697962 
+        #             Moved this to index_hidden so it works with
+        #             androPage w/o modifying androPage
+        #$this->hld = aFromGp('hld_');
         
         # If the x6exit variable was passed in, put it out
         hidden('x6exit',gp('x6exit','N'));
@@ -733,7 +736,9 @@ class androX6 {
         }
         
         # always at the end, render it
-        $this->hldOut($top);
+        # KFD 3/20/09 Sourceforge 2697962 
+        #             index_hidden calls this now
+        #$this->hldOut($top);
         $top->render();
         
         # And a final doo-dad, broadcast a focus event
@@ -838,7 +843,9 @@ class androX6 {
         jqDocReady('x6events.fireEvent("buttonsNew_'.$table_id.'",true)');
         
         # Render it!  That's it!
-        $this->hldOut($div);
+        # KFD 3/20/09 Sourceforge 2697962 
+        #             index_hidden calls this now
+        #$this->hldOut($top);
         $div->render();
     }
     
@@ -1021,7 +1028,9 @@ class androX6 {
         # the browse
         jqDocReady("x6events.fireEvent('objectFocus','{$grid->hp['id']}')");
 
-        $this->hldOut($top);
+        # KFD 3/20/09 Sourceforge 2697962 
+        #             index_hidden calls this now
+        #$this->hldOut($top);
         $top->render();
     }
 
@@ -1134,14 +1143,34 @@ class androX6 {
         return arr($dd,"ui$perm","Y") == 'N' ? false : true;
     }
     
-    function hldOut(&$top) {
+    # KFD 3/20/09 Sourceforge 2697962 Moved entire routine into
+    #             index_hidden
+    /*
+    function hldOut(&$top=null) {
         if(isset($this->hld)) {
             foreach($this->hld as $name=>$value) {
-                $inp = $top->h('input');
-                $inp->hp['type'] = 'hidden';
-                $inp->hp['name'] = $inp->hp['id'] = 'hld_'.$name;
-                $inp->hp['value'] = $value;
+                # KFD 3/20/09 Sourceforge 2697962
+                #             Put out as hidden instead
+                hidden('hld_'.$name,$value);
+                #$inp = $top->h('input');
+                #$inp->hp['type'] = 'hidden';
+                #$inp->hp['name'] = $inp->hp['id'] = 'hld_'.$name;
+                #$inp->hp['value'] = $value;
             }
+        }
+    }
+    */
+    
+    # KFD 3/20/09 Sourceforge 2697962 
+    #             Various improvements to hold variables
+    function clearHold($name='') {
+        if($name=='') {
+            $this->hld=array();
+        }
+        else {
+            if(isset($this->hld[$name])) {
+                unset($this->hld[$name]);
+            }     
         }
     }
     

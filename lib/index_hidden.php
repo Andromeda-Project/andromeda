@@ -681,11 +681,31 @@ function index_hidden_x6Dispatch(
     # and what method to call, so go for it.
     ob_start();
     $obj = new $x6class();
+    # KFD 3/30/09 Sourceforge 2697962 Do this here, so it 
+    #             does not matter if androX6 or androPage
+    $obj->hld = aFromGp('hld_');    
     $obj->dd    = ddTable($x6page);
     $obj->x6page= $x6page;
     $obj->view  = arr($obj->dd,'viewname','');
     $obj->$x6method();
     $HTML = ob_get_clean();
+    
+    # KFD 3/20/09 Sourceforge 2697962 
+    #             Make sure programmer never has to send out
+    #             hold variables, they should go automatically
+    if(gp('json')<>1) {
+        if(isset($obj->hld)) {
+            foreach($obj->hld as $name=>$value) {
+                # KFD 3/20/09 Sourceforge 2697962
+                #             Put out as hidden instead
+                hidden('hld_'.$name,$value);
+                #$inp = $top->h('input');
+                #$inp->hp['type'] = 'hidden';
+                #$inp->hp['name'] = $inp->hp['id'] = 'hld_'.$name;
+                #$inp->hp['value'] = $value;
+            }
+        }
+    }
     
     # Now if they made a "main" call, see if they want us to
     # send back some script as well

@@ -1217,6 +1217,12 @@ var x6 = {
             if(name!=null) {
                 this.addParm(name,value);
             }
+            var self = this;
+            // KFD 3/20/09 Sourceforge 2697962
+            //             Make sure hold variables always go through
+            $('[id^=hld]').each(function() {
+            	self.addParm( $(this).attr('id'), $(this).val() );
+            });
         },
         /******/
 
@@ -2597,6 +2603,15 @@ function x6JSON(parm,value) {
     if(parm!=null) {
         this.addParm(parm,value);
     }
+    
+    // KFD 3/20/09 Sourceforge 2697962
+    //             Make sure hold variables always go through
+    var self = this;
+    $('[id^=hld]').each(function() {
+    	self.addParm( $(this).attr('id'), $(this).val() );
+    });
+    
+    
     // Create an object
     var browser = navigator.appName;
     if(browser == "Microsoft Internet Explorer"){
