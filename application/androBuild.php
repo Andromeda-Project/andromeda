@@ -2725,6 +2725,39 @@ function SpecHandle_Lists_FK()
 			"cols_par"=>$pk,
 			"cols_both"=>$both,
          "cols_match"=>$match);
+		
+		# KFD 3/23/09 Sourceforge 2706831
+		#             HORRIBLE HACK.  Make a second list of foreign keys
+		#             that includes the prefix also.  Good news is we
+		#             could gradually switch over to using this proper
+		#             one.  We cannot change the original one because
+		#             we would break all kinds of things.
+        $combo =
+            trim($row["table_id"])."_".
+            trim($row['prefix'])."_".
+            trim($row["table_id_par"])."_".
+            $suffix;
+
+        $this->ufks2[$combo] = array(
+            "combo"=>$combo,
+            "table_id_chd"=>trim($row["table_id"]),
+            "table_id_par"=>trim($row["table_id_par"]),
+            "suffix"=>trim($row["suffix"]),
+            "auto_insert"=>$row["auto_insert"],
+            "copysamecols"=>$row["copysamecols"],
+            "nocolumns"=>$row["nocolumns"],
+            "allow_empty"=>$row["allow_empty"],
+            "allow_orphans"=>$row["allow_orphans"],
+            "delete_cascade"=>$row["delete_cascade"],
+            "prevent_fk_change"=>$row["prevent_fk_change"],
+             "uidisplay"=>$row['uidisplay'],
+            "cols_chd"=>$fk,
+            "cols_par"=>$pk,
+            "cols_both"=>$both,
+            "cols_match"=>$match
+        );
+		
+		
 		$rc++;
 	}
    return $retval;
@@ -4270,7 +4303,8 @@ function SpecDDL_Triggers_Automated_FetchDistribute() {
              ,'auto_prefix'=>$row['auto_prefix']
              ,'auto_suffix'=>$row['auto_suffix']
         );
-        $tpi = $row['table_id'].'_'.$tp.'_'.$row['auto_suffix'];
+        # KFD 3/23/09 Sourceforge 2706831 Respect auto_prefix
+        $tpi = $row['table_id'].'_'.$row['auto_prefix'].'_'.$tp.'_'.$row['auto_suffix'];
         
         // This creates definitions grouped by foreign key definitions
         if(!isset($ddall[$row['table_id']][$tpi])) {
@@ -4315,16 +4349,19 @@ function SpecDDL_Triggers_Automated_FetchDistribute() {
          // Generate the keys match between the two tables
          // KFD 2/16/07, big change to allow suffix/prefix
          //$keyname = $table_id."_".$table_id_par."_";
+         # KFD 3/23/09 Sourceforge 2706831 Use alternate FK List
          $keyname = $foreign_key;
-         $keys = $this->ufks[$keyname]["cols_both"];
+         $keys = $this->ufks2[$keyname]["cols_both"];
          // KFD 10/12/06, part of general changes to range foreign keys
          //$match = str_replace(","," AND new.",$keys);
          //$match = "new.".str_replace(":"," = par.",$match);
-         $match=str_replace("chd.","new.",$this->ufks[$keyname]['cols_match']);
+         # KFD 3/23/09 Sourceforge 2706831 Use alternate FK List
+         $match=str_replace("chd.","new.",$this->ufks2[$keyname]['cols_match']);
          
          
          // KFD 6/22/07, don't do a fetch if the foreign key is null
-         $keyskids=$this->ufks[$keyname]['cols_chd'];
+         # KFD 3/23/09 Sourceforge 2706831 Use alternate FK List
+         $keyskids=$this->ufks2[$keyname]['cols_chd'];
          $akeyskids=explode(',',$keyskids);
          $nullchecks = array();
          foreach($akeyskids as $akeykid) {
@@ -4332,7 +4369,8 @@ function SpecDDL_Triggers_Automated_FetchDistribute() {
          }
          
          // Generate a key change expression for child table
-         $keychga = explode(",",$this->ufks[$keyname]["cols_chd"]);
+         # KFD 3/23/09 Sourceforge 2706831 Use alternate FK List
+         $keychga = explode(",",$this->ufks2[$keyname]["cols_chd"]);
          $keychgb = array();
          foreach($keychga as $keycol) {
             $type_id=$this->utabs[$table_id]['flat'][$keycol]['formshort'];
@@ -4442,15 +4480,18 @@ function SpecDDL_Triggers_Automated_FetchDistribute() {
          // Generate the keys match between the two tables
          // KFD 3/1/07, fix this
          $keyname=$foreign_key;
-         $keys = $this->ufks[$keyname]["cols_both"];
+         # KFD 3/23/09 Sourceforge 2706831 Use alternate FK List
+         $keys = $this->ufks2[$keyname]["cols_both"];
          // KFD 10/12/06, part of range foreign keys actually
          // KFD Fixed 6/18/07, this was wrong, making the wrong match
          //   not picked up cuz we don't use DISTRIBUTE much
-         $match=str_replace("chd.",$table_id.".",$this->ufks[$keyname]['cols_match']);
+         # KFD 3/23/09 Sourceforge 2706831 Use alternate FK List
+         $match=str_replace("chd.",$table_id.".",$this->ufks2[$keyname]['cols_match']);
          $match=str_replace('par.','new.',$match);
 
          // For "SYNCH" automations, build the reverse match
-         $matchr=str_replace("chd.","new.",$this->ufks[$keyname]['cols_match']);
+         # KFD 3/23/09 Sourceforge 2706831 Use alternate FK List
+         $matchr=str_replace("chd.","new.",$this->ufks2[$keyname]['cols_match']);
          $matchr=str_replace("par.",$table_id_par.".",$matchr);
          
 
