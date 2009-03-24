@@ -170,11 +170,11 @@ function checkDBFilesForChanges() {
     
     $changed = false;
     $checksums = array();    
-    $specboot = $parm["SPEC_BOOT"].".add";
+    $specboot = $parm['SPEC_BOOT'].".add";
     $checksums[] = array( 
         'file'=>$specboot, 
-        'md5'=>md5_file( $parm['DIR_PUB']."lib/".$specboot ),
-        'fullpath'=>$parm['DIR_PUB']."lib/".$specboot
+        'md5'=>md5_file( $parm['DIR_PUB'].'lib/' .$specboot ),
+        'fullpath'=>$parm['DIR_PUB'].'lib/' .$specboot
     );
     
     if ( isset( $parm['INST'] ) ) {
@@ -184,18 +184,20 @@ function checkDBFilesForChanges() {
     }
     
     if ($parm["SPEC_LIST"]<>"") {
-        $speclist = explode(",",$parm["SPEC_LIST"]);
+        $speclist = explode(",",$parm['SPEC_LIST']);
         foreach ($speclist as $spec) {
-            if(substr($spec,-5)<>'.yaml') { 
+            if( substr($spec,-5) <>'.yaml') { 
                 $file = $spec.".add";
             } else {
                 $file = $spec;
             }
-            $checksums[] = array( 
-                'file'=>$file, 
-                'md5'=>md5_file( $parm["DIR_PUB"]."application/".$file ),
-                'fullpath'=>$parm["DIR_PUB"]."application/".$file
-            );
+            if ( is_file( $parm['DIR_PUB'] .'application/' .$file ) ) {
+                $checksums[] = array( 
+                    'file'=>$file, 
+                    'md5'=>md5_file( $parm['DIR_PUB'] .'application/' .$file ),
+                    'fullpath'=>$parm['DIR_PUB'] .'application/' .$file
+                );
+            }
         }
     }
     $checkqry = "SELECT relname FROM pg_class WHERE relname='instance_spec_checksums'";
@@ -10069,11 +10071,18 @@ function FS_GET_CONTENTS($filespec) {
 
 function FS_PUT_CONTENTS($file,$text,$changequotes=false) {
 	if ($changequotes) {
-		$text = str_replace("#","\"",$text);
+	   $text = str_replace("#","\"",$text);
 	}
-	$FILEOUT=fopen($file,"w");
-	fwrite($FILEOUT,$text);
-	fclose($FILEOUT);
+	// Might have to check file line by line in 
+	// the future for $text and write if doesnt exist
+	if ( !is_file( $file ) ) {
+		$text = $text ."\r\n";
+		//  DO 3-23-2009 Changed to  write only mode
+		//  Since apache is currently using the .htacess file
+		$FILEOUT = fopen( $file , 'a' );
+		fwrite($FILEOUT,$text);
+		fclose($FILEOUT);
+	}
 }
 
 function fs_Skeleton_copy($src,$dst) {
