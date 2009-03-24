@@ -10073,15 +10073,12 @@ function FS_PUT_CONTENTS($file,$text,$changequotes=false) {
 	if ($changequotes) {
 	   $text = str_replace("#","\"",$text);
 	}
-	// Might have to check file line by line in 
-	// the future for $text and write if doesnt exist
+	$text = $text ."\r\n";
 	if ( !is_file( $file ) ) {
-		$text = $text ."\r\n";
-		//  DO 3-23-2009 Changed to  write only mode
-		//  Since apache is currently using the .htacess file
-		$FILEOUT = fopen( $file , 'a' );
-		fwrite($FILEOUT,$text);
-		fclose($FILEOUT);
+	    //  DO 3-23-2009 Changed mode
+	    $FILEOUT = fopen( $file , 'w+' );
+	    fwrite($FILEOUT,$text);
+	    fclose($FILEOUT);
 	}
 }
 
