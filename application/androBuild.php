@@ -6439,6 +6439,26 @@ function SpecValidate()
         );
         $this->LogEntry("ERROR >> ");
 	}
+	
+	// KFD 4/4/09 Sourceforge 2722150 
+    $this->LogEntry("Looking for bad suffix/prefix combos, empty columns");
+	$results = $this->SQLRead(
+        "select table_id,prefix,suffix from zdd.tabflat ".
+        " where column_id_src=''");
+    while($row=pg_fetch_array($results)) {
+        $errors++;
+        $this->LogEntry("");
+        $this->LogEntry(
+            "ERROR >> table ". $row["table_id"]." has an empty column."
+        );
+        $this->LogEntry(
+            "ERROR >>     maybe the prefix or suffix is wrong?"
+        );
+        $this->LogEntry("ERROR >> "
+            ."    Prefix: ".$row['prefix'].", Suffix: ".$row['suffix']
+        );
+        $this->LogEntry("ERROR >> ");
+    }	
 
     
     // Check for no automation Id for some automations
