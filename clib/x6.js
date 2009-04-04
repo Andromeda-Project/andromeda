@@ -6736,12 +6736,16 @@ x6modals = {
                 	$('#'+id).height(conOtrHtNew);
                 	$('#'+id+"_inner").height(conInrHtNew);
 
+                	// KFD 4/4/09 Sourceforge 2706257
+                	//            get scrolltop of window
+                	var windowScrollTop = $(window).scrollTop();
+                	
                     // now center this guy.
                     var left = Math.floor( (ww-mw)/2 );
                     $('#x6modal')
                         .css('display','none')
                         .css('left',left)
-                        .css('top',50)
+                        .css('top',windowScrollTop + 50)
                         .fadeIn('fast',
                             function() {
                                 x6events.fireEvent('objectFocus',id);
