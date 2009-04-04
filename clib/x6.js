@@ -6762,6 +6762,8 @@ x6modals = {
                 $('#x6modalblock').animate({opacity:0},'fast',null
                     ,function() {
                         $(this).css('display','none');
+                        // KFD 4/4/09 Sourceforge 2706256
+                        $('body').css('overflow','auto');
                         x6events.priorFocus();
                     }
                 );
