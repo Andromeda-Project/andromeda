@@ -5767,8 +5767,13 @@ function TrigGen_ChainCompare($ctid,$chaintest) {
 			$retval = $arg1. " $not BETWEEN ".implode(" AND ",$args);
 			break;
 		case "!EMPTY":
-         $sfb=$this->SQLFORMATBLANK($cta1,true,true);
-			$retval = "COALESCE($arg1,$sfb) <> $sfb";
+            if($cta1=='date' || $cta1=='datetime') {
+    			$retval = "$arg1 IS NOT NULL";
+            }
+            else {
+                $sfb=$this->SQLFORMATBLANK($cta1,true,true);
+                $retval = "COALESCE($arg1,$sfb) <> $sfb";
+            }
 			break;
 		case "EMPTY":
          $sfb=$this->SQLFORMATBLANK($cta1,true,true);
@@ -6536,7 +6541,28 @@ select table_id,column_id,
     $errors+=$this->SpecValidateRI('histcols'     ,'retcol'   ,'History Definition');
     $errors+=$this->SpecValidateRI('tabprojcols'  ,'column_id','Projection');
     $errors+=$this->SpecValidateRI('colchaintests','column_id','Chain Test Definition');
-    $errors+=$this->SpecValidateRI('colchainargs' ,'column_id_arg','Chain Argument Definition');
+    #$errors+=$this->SpecValidateRI('colchainargs' ,"replace(column_id_arg,'::int','')",'Chain Argument Definition');
+
+    $this->LogEntry("Checking column definitions in chain arguments");
+    $errors = 0;
+    $sq="SELECT table_id,column_id_arg as column_id FROM zdd.colchainargs
+          WHERE column_id_arg <> ''
+            AND NOT EXISTS (
+                SELECT * from zdd.tabflat 
+                WHERE table_id  = zdd.colchainargs.table_id
+                AND column_id = REGEXP_REPLACE(zdd.colchainargs.column_id_arg,'::.*','')
+               )";
+    $results = $this->SQLRead($sq);
+    while ($row=pg_fetch_array($results)) {
+        $retval=false;  
+        $this->LogEntry("");
+        $this->LogEntry(
+            "ERROR >> Chain Argument Definition in table colchainargs"
+            ." refers to undefined column ".$row['column_id']
+        );
+        $errors++;
+    }
+    
     
     // Some manual RI checks
     $sq="SELECT h.history,hc.table_id,hc.column_id
