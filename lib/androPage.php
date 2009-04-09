@@ -709,6 +709,12 @@ class androPage {
 
         // Collapse the lists into strings
         $SQL_COLS=implode("\n       ,",$SQL_COLSA);
+        # KFD 4/9/09.  Slip in skey and source from first table.
+        $tables= array_keys($yamlP2['table']);
+        $skeytable = $tables[0];
+        $SQL_COLS = $skeytable.".skey,'$skeytable' as _source,"
+            .$SQL_COLS;
+        
         $SQL_COLSOB='';
         if ( isset( $yamlP2['orderby'] ) ) {
                 $SQL_COLSOB="\n ORDER BY " .$yamlP2['orderby'];
