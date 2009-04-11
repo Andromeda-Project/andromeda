@@ -3266,6 +3266,15 @@ var x6inputs = {
                 json = new x6JSON('x6page',x6.p(inp,'x6seltab'));
                 json.addParm('x6select','Y');
                 json.addParm('gpletters',val);
+                // KFD 4/11/09 Sourceforge 2753358 provide values of
+                //             other columns that must match
+                var cols = $(inp).prop('xMatches','').split(',');
+                var tab  = $(inp).prop('xtableid');
+                for(var x in cols) {
+                	if(cols[x]=='') continue;
+                	var value = $('#x6inp_'+tab+'_'+cols[x]).val();
+                	json.addParm('mtch_'+cols[x],value);
+                }
                 json.execute(true);
                 x6inputs.x6select.display(inp,null,x6.data.x6select);
                 x6.console.groupEnd();

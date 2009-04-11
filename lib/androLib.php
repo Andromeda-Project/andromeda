@@ -3880,6 +3880,19 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
         }
         $input->ap['xTableIdPar'] = $colinfo['table_id_fko'];
         $input->ap['xMatches']    = a($colinfo,'matches');
+        
+        # KFD 4/11/09 Sourceforge 2753358.  For x6 only, build a list of
+        #             pk cols that appear before this, and send them back
+        #             as matches.
+        if($x6) {
+            $pkpar = explode(',',$ddfko['pks']);
+            $apkpre = array();
+            foreach($pkpar as $pkparone) {
+                if($pkparone==$column_id) break;
+                $apkpre[]=$pkparone;   
+            }
+            $input->ap['xMatches'] = implode(',',$apkpre);
+        }
 
         // If any columns are supposed to fetch from here,
         // set an event to go to server looking for fetches
@@ -4187,7 +4200,7 @@ function projection($dd,$projection='',&$tabLoop,$options=array()) {
     # Lay out the projection as a table and return it
     $tdx   = $trtop->html('td');
     $table = $tdx->html('table');
-    $table->addClass('x4Detail');
+    $table->addClass('x4Detail x6Detail');
     $uiwithnext = 'N';
     $td = false;
     # KFD 8/7/08, moved all options into the projection system
@@ -4205,7 +4218,7 @@ function projection($dd,$projection='',&$tabLoop,$options=array()) {
         }
         else {
             $tr = $table->h('tr');
-            $tr->h('td',$dd['flat'][$column]['description'].':','x4Caption');
+            $tr->h('td',$dd['flat'][$column]['description'].':','x4Caption x6Caption');
 
             $td = $tr->h('td','','x4Input');
             $td->addChild($input);
