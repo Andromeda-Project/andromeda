@@ -2149,6 +2149,8 @@ Update zdd.tabflat SET automation_id = 'EXTEND'
 function SpecFlatten_ColumnDeps() {
    $retval=true;
 	$this->LogEntry("COLUMN DEPENDENCIES: From Chains");
+	// KFD 4/11/09 Sourceforge 2753129, remove typecasting
+	//             from chain column arguments
    // KFD 5/30/07, add filtering out self-dependencies, we
    //    don't need to know and it gives false sequencing errors
    // KFD 6/ 8/07, putting in the filter caused other problems,
@@ -2163,7 +2165,8 @@ function SpecFlatten_ColumnDeps() {
 		INSERT INTO zdd.column_deps 
 		 (table_id,column_id,table_dep,column_dep,automation_id) 
 		SELECT DISTINCT table_id,column_id
-                       ,table_id,column_id_arg,'EXTEND' 
+                       ,table_id
+                       ,regexp_replace(column_id_arg,'::.*',''),'EXTEND' 
 		  FROM zdd.colchainargs 
 		 WHERE zdd.colchainargs.column_id_arg <> ''
            AND zdd.colchainargs.chain <> 'cons'
@@ -3512,7 +3515,7 @@ function SpecDDL_Triggers_SecurityAndro() {
 function SpecDDL_Triggers_Defaults() {
 	$this->LogEntry("Building default clauses");
 	$results = 	$this->SQLRead(
-		"SELECT table_id,column_id,automation_id,formshort,auto_formula,type_id". 
+		"SELECT table_id,column_id,automation_id,formshort,colprec,auto_formula,type_id". 
 		" FROM zdd.tabflat ". 
 		" WHERE automation_id IN ('BLANK','DEFAULT','SEQUENCE','SEQDEFAULT','TS_INS','UID_INS','TS_UPD','UID_UPD','QUEUEPOS','TS_UPD_PG','UID_UPD_PG')"
    ); 
@@ -3522,7 +3525,7 @@ function SpecDDL_Triggers_Defaults() {
 		$table_id = $row["table_id"];
 		$column_id = trim($row["column_id"]);
 		$automation_id = trim(strtoupper($row["automation_id"]));
-		$formshort = $row["formshort"];
+		$formshort = trim($row["formshort"]);
 		
 		if ($automation_id=="SEQUENCE") {
 			$s1 = "\n".
@@ -3552,10 +3555,15 @@ function SpecDDL_Triggers_Defaults() {
 					"        END IF;\n";
 			}
 			$Seq = $this->DBB_SequenceName($table_id,$row["auto_formula"],$column_id);
+			# KFD 4/11/09 Sourceforge 2753174 Support char/varchar 
+			$nextval = "nextval(##". $Seq . "##)";
+			if($formshort=='char' || $formshort=='varchar') {
+                $nextval = "lpad($nextval::varchar,{$row['colprec']},##0##)";		 
+			}
 			$s1 = 
 				"    -- 1011 sequence/default assignment\n".
 				"    IF new.". $column_id . " IS NULL THEN \n".
-				"        new.". $column_id . " = nextval(##". $Seq . "##);\n".
+				"        new.". $column_id . " = $nextval;\n".
 				$nlist.
 				"    END IF;\n";
 			$this->SpecDDL_TriggerFragment($table_id,"INSERT","BEFORE","1011",$s1);
@@ -3571,11 +3579,25 @@ function SpecDDL_Triggers_Defaults() {
 				"    END IF;\n";
 			$this->SpecDDL_TriggerFragment($table_id,"UPDATE","BEFORE","1010",$s1);
 					
-			$Seq = $this->DBB_SequenceName($table_id,$row["auto_formula"],$column_id);
+            $Seq = $this->DBB_SequenceName($table_id,$row["auto_formula"],$column_id);
+			# KFD 4/11/09 Sourceforge 2753136 If SEQDEFAULT value is provided,
+			#             make sure next sequence value will be after it.
+            # KFD 4/11/09 Sourceforge 2753174 Support char/varchar 
+			$nextval = "nextval(##". $Seq . "##)";
+            if($formshort=='char' || $formshort=='varchar') {
+                $nextval = "lpad($nextval::varchar,{$row['colprec']},##0##)";       
+            }
 			$s1 = 
 				"    -- 1011 sequence assignment\n".
-				"    IF new.". $column_id . " IS NULL OR new.".$column_id." = 0 THEN \n".
-				"        new.". $column_id . " = nextval(##". $Seq . "##);\n".
+				"    IF new.". $column_id . " IS NULL OR new.".$column_id."::int = 0 THEN \n".
+				"        new.". $column_id . " = $nextval;\n".
+			    "    ELSE\n".
+			    "        AnyInt = nextval(##$Seq##);\n".
+			    "        IF AnyInt < new.$column_id::int THEN\n".
+			    "            perform setval(##$Seq##,new.$column_id::int);\n".
+			    "        ELSE\n".
+                "            perform setval(##$Seq##,AnyInt-1);\n".
+			    "        END IF;\n".
 				"    END IF;\n";
 			$this->SpecDDL_TriggerFragment($table_id,"INSERT","BEFORE","1011",$s1);
 
@@ -6779,12 +6801,17 @@ function PlanMake() {
     $this->PlanMake_Security();
     
     // 11/27/06, fix all sequences so they are always safe
-    $res=$this->SQLRead("Select table_id,column_id FROM zdd.tabflat 
+    $res=$this->SQLRead("Select table_id,column_id,formshort FROM zdd.tabflat 
          Where automation_id in ('SEQUENCE','SEQDEFAULT')");
     while ($row=pg_fetch_array($res)) {
         $tid=$row['table_id'];
         $cid=$row['column_id'];
         $seq=$tid."_SEQ_".$cid;
+        # KFD 4/11/09 Sourceforge 2753174, support char/varchar for 
+        #             SEQUENCE and SEQDEFAULT
+        if(in_array(trim($row['formshort']),array('char','varchar'))) {
+            $cid.='::int';
+        }
         $sq="SELECT SETVAL(#$seq#,(SELECT MAX($cid) FROM $tid)+1)";
         $this->PlanMakeEntry("6050",$sq);
     }
