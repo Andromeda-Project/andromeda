@@ -82,7 +82,10 @@ function createCookie(name,value,days) {
 		var expires = "; expires="+date.toGMTString();
 	}
 	else var expires = "";
-	document.cookie = name+"="+value+expires+"; path=/";
+	// Sourceforge 2753325 Do not know why that path statement was
+	//                     there, got rid of it to make cookie work
+	//document.cookie = name+"="+value+expires+"; path=/";
+	document.cookie = name+"="+value+expires+";";	
 }
 
 function readCookie(name) {

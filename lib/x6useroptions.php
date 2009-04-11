@@ -34,8 +34,10 @@ class x6useroptions extends androX6 {
         ?>        
         <script>
         window.x6ChangeSkin = function(select) {
-            document.cookie 
-                = "x6skin="+select.value+"; expires=12/31/2049 00:00:00;";
+            // Sourceforge 2753325 use quirksmode-supplied set cookie
+            createCookie('x6skin',select.value,3650);
+            //document.cookie 
+            //    = "x6skin="+select.value+"; expires=12/31/2049 00:00:00;";
             window.location.reload(true);
         }
         </script>
