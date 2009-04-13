@@ -3595,12 +3595,14 @@ function SpecDDL_Triggers_Defaults() {
 			#             make sure next sequence value will be after it.
             # KFD 4/11/09 Sourceforge 2753174 Support char/varchar 
 			$nextval = "nextval(##". $Seq . "##)";
+			$compare = '0';
             if($formshort=='char' || $formshort=='varchar') {
-                $nextval = "lpad($nextval::varchar,{$row['colprec']},##0##)";       
+                $nextval = "lpad($nextval::varchar,{$row['colprec']},##0##)";
+                $compare = '####';       
             }
 			$s1 = 
 				"    -- 1011 sequence assignment\n".
-				"    IF new.". $column_id . " IS NULL OR new.".$column_id."::int = 0 THEN \n".
+				"    IF new.". $column_id . " IS NULL OR new.".$column_id." = $compare THEN \n".
 				"        new.". $column_id . " = $nextval;\n".
 			    "    ELSE\n".
 			    "        AnyInt = nextval(##$Seq##);\n".
