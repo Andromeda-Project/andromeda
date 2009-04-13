@@ -2659,8 +2659,8 @@ function SpecHandle_Lists_FK()
     $results = $this->SQLRead("Select * FROM zdd.tabfky");
     
     while ($row = pg_fetch_array($results)) {
-        $suffix = trim($row["suffix"]);
-        $prefix = trim($row["prefix"]);
+        $suffix = is_null($row['suffix']) ? '' : trim($row["suffix"]);
+        $prefix = is_null($row['prefix']) ? '' : trim($row["prefix"]);
         // Get details on pk/fk
         $fk = $pk = $both = $match = "";
         $cols_list = $this->utabs[trim($row["table_id_par"])]["pk"];
@@ -2726,7 +2726,12 @@ function SpecHandle_Lists_FK()
 			"delete_cascade"=>$row["delete_cascade"],
 			"prevent_fk_change"=>$row["prevent_fk_change"],
              "uidisplay"=>$row['uidisplay'],
-			"cols_chd"=>$fk,
+		    # Sourceforge 2697638 fallback columns
+		    'fallback_column_id'=>$row['fallback_column_id'],
+            'fallback_sort_column_id'=>$row['fallback_sort_column_id'],
+		    'fallback_group_column_id'=>$row['fallback_group_column_id'],
+            'fallback_sort_asc'=>$row['fallback_sort_asc'],
+		    "cols_chd"=>$fk,
 			"cols_par"=>$pk,
 			"cols_both"=>$both,
          "cols_match"=>$match);
@@ -2739,7 +2744,7 @@ function SpecHandle_Lists_FK()
 		#             we would break all kinds of things.
         $combo =
             trim($row["table_id"])."_".
-            trim($row['prefix'])."_".
+            $prefix."_".
             trim($row["table_id_par"])."_".
             $suffix;
 
@@ -2756,6 +2761,11 @@ function SpecHandle_Lists_FK()
             "delete_cascade"=>$row["delete_cascade"],
             "prevent_fk_change"=>$row["prevent_fk_change"],
              "uidisplay"=>$row['uidisplay'],
+            # Sourceforge 2697638 fallback columns
+            'fallback_column_id'=>$row['fallback_column_id'],
+            'fallback_sort_column_id'=>$row['fallback_sort_column_id'],
+            'fallback_group_column_id'=>$row['fallback_group_column_id'],
+            'fallback_sort_asc'=>$row['fallback_sort_asc'],
             "cols_chd"=>$fk,
             "cols_par"=>$pk,
             "cols_both"=>$both,
@@ -2765,6 +2775,7 @@ function SpecHandle_Lists_FK()
 		
 		$rc++;
 	}
+	
    return $retval;
 }
 
@@ -4042,7 +4053,9 @@ function SpecDDL_Triggers_FK() {
     $this->LogEntry("Building Foreign Key clauses");
     
     $retval = true;
-    foreach($this->ufks as $ufk) {
+    // KFD 4/13/09 Sourceforge 2697638 Must use the new corrected
+    //             list of foreign keys
+    foreach($this->ufks2 as $ufk) {
         //$this->LogEntry("Attempting fk for ".$ufk["table_id_chd"]." to ".$ufk["table_id_par"]);
         $ptab = $ufk["table_id_par"];
         $retval=$retval && $this->SpecDDL_Triggers_FK_PT(
@@ -4164,14 +4177,13 @@ function SpecDDL_Triggers_FK_PT($ufk,$ptab,$chdlist,$parlist) {
             ."        ErrorList = ErrorList || ##$chd,1005,Required Value;##;\n"
             ."    END IF;\n";
       }
-		$onEmpty .= 
+	  $onEmpty .= 
 			"    -- 8001 FK Insert/Update Child Validation\n".
 			"    IF ". $nullList . " THEN\n".
          "        --Error was reported above, not reported again\n".
 			"        --ErrorCount = ErrorCount + 1;\n". 
 			"        --ErrorList = ErrorList || ##*,1005,Foreign key columns may not be null: ". $ufk["cols_chd"] . ";##;\n".
 			"    ELSE\n";
-         
 	}
    
 	// If there is no match under normal circumstances, we get an error,
@@ -4222,7 +4234,7 @@ function SpecDDL_Triggers_FK_PT($ufk,$ptab,$chdlist,$parlist) {
 	   //	"            ErrorCount = ErrorCount + 1;\n".
 		//	"            ErrorList = ErrorList || ##*,1006,No match in ". $ptab . " for ". $ufk["cols_chd"] .";##;\n";
 	}
-		
+	
 	$s1 = 
 		"\n".
 		$onEmpty.
@@ -4233,7 +4245,75 @@ function SpecDDL_Triggers_FK_PT($ufk,$ptab,$chdlist,$parlist) {
 		$noMatch . 
 		"        END IF;\n".
 		"    END IF;\n";
-   // if the "allow_orphan" flag is set, do nothing
+		
+   # KFD 4/13/09 Sourceforge 2697638.  Put in fallback processing.
+   #             Note that this always happens, and happens before
+   #             anything else, even if allow_orphans is true. 
+   #             But we must toss in the fragment now, just before
+   #             tossing in the final generated fragements.
+   if($ufk['fallback_column_id']<>'') {
+      # TO DO:
+      # Find table that has this column as the primary key
+      $fallback_cid = $ufk['fallback_column_id'];
+      $fallback_sort = $ufk['fallback_sort_column_id'] == ''
+         ? $fallback_cid
+         : trim($ufk['fallback_sort_column_id']);
+      $res_col = $this->sqlread(
+        "Select table_id 
+           from (select table_id,max(column_id) as cid
+                  from zdd.tabflat
+                 where primary_key = 'Y'
+                 group by table_id
+                 having count(*) = 1
+                ) candidates
+           where candidates.cid = '$fallback_cid'  
+      ");
+      $xrow = pg_fetch_array($res_col);
+      $fallback_tid = $xrow['table_id'];
+
+      $SQL_fbg = '';
+      if($ufk['fallback_group_column_id']) {
+         $fallback_gid = $ufk['fallback_group_column_id'];
+         $SQL_fbg = "
+         AND $fallback_gid = (
+             SELECT $fallback_gid
+               FROM $fallback_tid
+              WHERE $fallback_cid = new.$fallback_cid
+         )
+";
+      }
+      
+      $fbmatches = str_replace(
+          "new.$fallback_cid"
+         ,"$fallback_tid.$fallback_cid"
+         ,$mtchList
+      );
+      
+      $sort_order = $ufk['fallback_sort_asc'] =='Y' ? 'ASC' : "DESC";
+      $sort_compare= $sort_order == 'ASC' ? '>=' : '<=';
+      $s1="
+    -- 8001 FK Fallback, if fk does not match, 
+    SELECT into new.$fallback_cid $fallback_cid
+      FROM $fallback_tid
+     WHERE $fallback_sort $sort_compare (
+             SELECT $fallback_sort
+               FROM $fallback_tid
+              WHERE $fallback_cid = new.$fallback_cid
+           )
+         $SQL_fbg
+         AND EXISTS (
+                SELECT skey FROM ". $ptab . " par
+                    WHERE ".$fbmatches . "
+         )         
+    ORDER BY $fallback_sort $sort_order LIMIT 1;\n";
+      $this->SpecDDL_TriggerFragment($ufk["table_id_chd"],"INSERT","BEFORE","8001",$s1,"FK:".$ufk["table_id_par"]);
+      $this->SpecDDL_TriggerFragment($ufk["table_id_chd"],"UPDATE","BEFORE","8001",$s1,"FK:".$ufk["table_id_par"]);
+      
+   }
+
+   // if the "allow_orphan" flag is set, do nothing.  This means
+   // we only load the trigger fragments if allow_orphans is not 'Y'.
+   // This also means auto-insert only works if orphans are not allowed.
    // EXPERIMENT KFD 6/11/06
    if ($ufk["allow_orphans"]<>'Y') {
       $this->SpecDDL_TriggerFragment($ufk["table_id_chd"],"INSERT","BEFORE","8001",$s1,"FK:".$ufk["table_id_par"]);

@@ -767,6 +767,12 @@ column uidisplay      { type_id: char; colprec: 10; description: UI Display Meth
 column x6display      { type_id: char; colprec: 10; description: x6 UI display method; }
 column uifiltercolumn { type_id: char; colprec: 35; description: UI Filter Column;  }
 
+// Sourceforge 2697638, Foreign key fallbacks
+column fallback_column_id       { type_id: vchar; colprec: 35; description: X; } 
+column fallback_sort_column_id  { type_id: vchar; colprec: 35; description: X; }
+column fallback_group_column_id { type_id: vchar; colprec: 35; description: X; }
+column fallback_sort_asc        { type_id: char;  colprec: 1;  description: X; }
+
 table tabfky {
 	module: datadict;
 	description: Foreign Key Placements;
@@ -780,6 +786,11 @@ table tabfky {
 	column { table_id_par_comp; } 
 	column { primary_key; pk_change; uicolseq; uisearch; description; }
     column { descshort; }
+    
+    // Sourceforge 2697638, Foreign key fallbacks
+    column { fallback_column_id; 
+      fallback_sort_column_id; fallback_group_column_id; fallback_sort_asc; 
+    } 
 
 	column { auto_insert; copysamecols; }
 	column { uicolseq; nocolumns; allow_empty; allow_orphans; }
