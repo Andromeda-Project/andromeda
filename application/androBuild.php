@@ -4327,12 +4327,19 @@ function SpecDDL_Triggers_FK_PT($ufk,$ptab,$chdlist,$parlist) {
 	// little piece is sequenced.  Notice for delete cascade we put it
 	// at the front, so if there are any complex chains, they will all
 	// be worked out before the rest of the trigger fires.
+	# KFD 4/15/09 Sourceforge 2766496 Moved delete cascade from before to
+	#             after.  This is rather counter-intuitive, but if the
+	#             delete is in the BEFORE, and the child table has a SUM
+	#             or some other reason to update the parent, the parent row
+	#             is never actually deleted.  Only the children are.  And
+	#             postgres says, "Query executed, 0 rows affected."
+	#             If you move the child delete to the AFTER, it works.
 	if ($this->zzArray($ufk,"delete_cascade")=="Y") {
 		$prntList = str_replace("chd.","",$prntList);
 		$s1 = "\n".
 			"    -- 6000 FK Delete cascades to child rows \n".
 			"    DELETE FROM ".$ufk["table_id_chd"]. " WHERE ".$prntList."; \n";
-		$this->SpecDDL_TriggerFragment($ptab,"DELETE","BEFORE","0005",$s1);
+		$this->SpecDDL_TriggerFragment($ptab,"DELETE","AFTER","6000",$s1);
 	}
 	else {
 		$s1 = "\n".
