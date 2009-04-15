@@ -898,6 +898,13 @@ class androX6 {
         # Grab the data dictionary for this table
         $dd       = $this->dd;
         $table_id = $this->dd['table_id'];
+        
+        # KFD 4/15/09 Sourceforge 2765788, handle no kids gracefully,
+        #             work out how many kids there are to display
+        $kidCount = 0;
+        foreach($dd['fk_children'] as $child=>$info) {
+            if(trim(arr($info,'x6display',''))<>'none') $kidCount++;
+        }
 
         # Create the top level div as a table controller
         $top= new androHTMLTableController($table_id);
@@ -914,6 +921,8 @@ class androX6 {
         
         # $hpane1 is the outer, it is what is left after removing
         # h1, one row of tabs, and padding at bottom.
+        # KFD 4/15/09 Sourceforge 2765788, if no kids, correct height
+        if($kidCount==0) $htabs = 0;
         $hpane1  = $hinside - $hh1 - $htabs - ($pad0 * 2);
         
         # $hchild is the height of the empty nested tab
@@ -984,44 +993,47 @@ class androX6 {
             ,'x6table'=>$table_id
             ,'styles'=>array('overflow'=>'hidden')
         );
-        $tabKids = $detail->addTabs('kids_'.$table_id,$hempty,$options);
-        $tabKids->ul->hp['xOffset'] = 2;
-        $tab = $tabKids->addTab("Hide");
-        $idx = 0;
-        foreach($dd['fk_children'] as $child=>$info) {
-            # KFD 1/2/09.  If x6display is 'none', skip it
-            if(trim(arr($info,'x6display',''))=='none') continue;
-            
-            $tc = $top->addTableController($child);
-            $tc->hp['x6tablepar'] = $table_id;
-            $tab = $tabKids->addTab($info['description']);
-            $tab->ap['x6tablePar'] = $table_id;
-            $tab->ap['x6table'   ] = $child;
-            
-            if($info['x6childwrites']=='detail') {
-                # Create the basic detail
-                $modal = new androHTMLDetail($child,true,700,$table_id);
-
-                # Now see if we need to add buttons
-                if(file_exists(fsDirtop()."application/x6$child.php")) {
-                    include_once(fsDirtop()."application/x6$child.php");
-                    $childClass = 'x6'.$child;
-                    $objChild = new $childClass;
-                    $custom = $objChild->customButtons();
-                    $modal->addCustomButtons($custom);
-                }
+        # KFD 4/15/09 Sourcefroge 2765788 no kids handle gracefully
+        if($kidCount > 0) {
+            $tabKids = $detail->addTabs('kids_'.$table_id,$hempty,$options);
+            $tabKids->ul->hp['xOffset'] = 2;
+            $tab = $tabKids->addTab("Hide");
+            $idx = 0;
+            foreach($dd['fk_children'] as $child=>$info) {
+                # KFD 1/2/09.  If x6display is 'none', skip it
+                if(trim(arr($info,'x6display',''))=='none') continue;
                 
-                # Tell framework to add it to the output.
-                addModal($modal);
+                $tc = $top->addTableController($child);
+                $tc->hp['x6tablepar'] = $table_id;
+                $tab = $tabKids->addTab($info['description']);
+                $tab->ap['x6tablePar'] = $table_id;
+                $tab->ap['x6table'   ] = $child;
+                
+                if($info['x6childwrites']=='detail') {
+                    # Create the basic detail
+                    $modal = new androHTMLDetail($child,true,700,$table_id);
+    
+                    # Now see if we need to add buttons
+                    if(file_exists(fsDirtop()."application/x6$child.php")) {
+                        include_once(fsDirtop()."application/x6$child.php");
+                        $childClass = 'x6'.$child;
+                        $objChild = new $childClass;
+                        $custom = $objChild->customButtons();
+                        $modal->addCustomButtons($custom);
+                    }
+                    
+                    # Tell framework to add it to the output.
+                    addModal($modal);
+                }
             }
-        }
-        
-        # And then loop through extra tabs
-        foreach($this->appTabs as $child=>$caption) {
-            $top->addTableController($child);
-            $tab = $tabKids->addTab($caption);
-            $tab->hp['x6tablePar'] = $table_id;
-            $tab->hp['x6table'   ] = $child;
+            
+            # And then loop through extra tabs
+            foreach($this->appTabs as $child=>$caption) {
+                $top->addTableController($child);
+                $tab = $tabKids->addTab($caption);
+                $tab->hp['x6tablePar'] = $table_id;
+                $tab->hp['x6table'   ] = $child;
+            }
         }
         
         # tell the screen to start out by focusing on
