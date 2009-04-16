@@ -3290,11 +3290,26 @@ var x6inputs = {
             switch(type) {
             case 'int':
                 x6.console.log("type validation for int");
+                // KFD 4/16/09 Sourceforge 2769228
+                if(keyLabel=='+' || keyLabel=='-') {
+                	var val=Number($(inp).val());
+                	if(keyLabel=='+') val++; else val--;
+                	$(inp).val(val);
+                	return false;
+                	break;
+                }
                 if(!x6.keyIsNumeric(e)) return false;
                 break;
             case 'numb':
             case 'money':
                 x6.console.log("type validation for numb/money");
+                // KFD 4/16/09 Sourceforge 2769228
+                if(keyLabel=='+' || keyLabel=='-') {
+                	var val=Number($(inp).val());
+                	if(keyLabel=='+') val++; else val--;
+                	$(inp).val(val);
+                	break;
+                }
                 if(!x6.keyIsNumeric(e) && x6.keyLabel(e)!='.') return false;
                 break;
             case 'date':
@@ -3519,8 +3534,12 @@ var x6inputs = {
             return false;
         }
         inp.inblur = true;
+        // Get possible name of global function to handle afterBlur
+        var fBlur = 'afterBlur_'
+            + x6.p(inp,'xTableId')
+            + '_' + x6.p(inp,'xColumnId')
         // If method does not exist forget it
-        if(!inp.afterBlur) {
+        if(!inp.afterBlur && eval("typeof("+fBlur+")") !='function') {
             x6.console.log("No afterBlur(), leaving flag set and returning");
             x6.console.groupEnd();
             return true;
@@ -3537,7 +3556,11 @@ var x6inputs = {
             // not be fired again for this value.  It does not mean there
             // is anything particularly "valid" or correct about the
             // value.
-            if(inp.afterBlur()) {
+        	var afterBlurResult 
+        		= inp.afterBlur 
+        		? inp.afterBlur()
+        		: eval(fBlur+"(inp)");
+            if(afterBlurResult) {
                 x6.console.log("Afterblurner setting flag false, return true");
                 x6.console.groupEnd();
                 inp.inblur = false;
