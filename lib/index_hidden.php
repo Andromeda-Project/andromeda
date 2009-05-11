@@ -513,7 +513,8 @@ function index_hidden_x6Dispatch(
     if(gp('x6select',false)) {
         $table_id = gp('x6page');
         $gpletters= gp('gpletters');
-        $matches  = array();
+        # KFD 4/11/09 Sourceforge 2753358 do real matches
+        $matches  = aFromGp('mtch_');
         
         $rows=RowsForSelect($table_id,$gpletters,$matches,'',true);
         foreach($rows as $idx=>$row) {

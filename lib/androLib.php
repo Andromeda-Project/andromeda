@@ -9550,6 +9550,19 @@ function httpWebPagePath() {
       .$x;
 }
 
+function httpWebPath() {
+    $start = httpWebPagePath();
+    $pos = strpos($start,'index.php');
+    if($pos!==false) {
+        $start = substr($start,0,$pos-1);
+    }
+    $pos = strpos($start,'?');
+    if($pos!==false) {
+        $start = substr($start,0,$pos-1);
+    }
+    return $start;
+}
+
 /*f* HTTP-Functions/httpWebSite
 *
 * NAME
