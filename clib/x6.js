@@ -473,6 +473,21 @@ if(!Array.indexOf){
     }
 }
 
+/* ---------------------------------------------------- *\
+
+   Add "hld_" variables to a link and go
+   Google Issue #13
+
+\* ---------------------------------------------------- */
+function linkHolds(url) {
+    $('[id^=hld]').each(
+        function() {
+            url+='&'+$(this).attr('id')+'='+$(this).val();
+        }
+    );
+    window.location = url;
+}
+
 
   
 /* **************************************************************** *\
