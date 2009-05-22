@@ -71,7 +71,7 @@ class x_builder {
         $this->cmdsubseq=0;
     }
     
-    function main() {	
+    function main() {
         $ts=time();
         $this->ts=$ts;
         // First come the most basic reality checks, that the
@@ -2172,6 +2172,40 @@ function SpecFlatten_ColumnDeps() {
            AND zdd.colchainargs.chain <> 'cons'
          ";
 	$this->SQL($sql);	
+	
+	# KFD Google #20 5/22/09, Add column dependencies for chains
+	#     with literal Postgres operations
+	#
+	$sql="Select * from zdd.colchainargs";
+	$dbres = $this->SQLRead($sql);
+	while( $row = pg_fetch_array($dbres)) {
+        if(substr($row['literal_arg'],0,1)!='!') continue;
+        $t = $row['table_id'];
+
+        $matches = array();
+        $subject = substr($row['literal_arg'],1);
+        preg_match_all('/!\w*\b/',$subject,$matches);
+        foreach($matches[0] as $match) {
+            $match =substr($match,1);
+            $dbres = $this->SQLRead(
+                "Select count(*) as cnt from zdd.column_deps
+                  where table_id   = '$t'
+                    AND table_dep  = '$t'
+                    AND column_id  = '{$row['column_id']}'
+                    AND column_dep = '$match'" 
+            );
+            $cnt = pg_fetch_array($dbres);
+            if($cnt['cnt']==0) {
+                $sql=
+                    "INSERT INTO zdd.column_deps 
+                        (table_id,column_id,table_dep,column_dep,automation_id)
+                     VALUES
+                        ('$t','{$row['column_id']}','$t','$match','EXTEND')";
+                $this->SQL($sql);
+            }
+        }
+	}
+	
 
 
     # KFD 9/18/08, put in column dependencies for
@@ -5581,7 +5615,6 @@ function SpecDDL_Triggers_Chains() {
         $this->utabs[$chain['table_id']]['chains'][$x]=$chain;
     }
 
-
 	$this->SpecDDL_Triggers_ChainsCode($chains);
 	$this->SpecDDL_Triggers_ChainsBuild($chains);
     return true;
@@ -5637,7 +5670,7 @@ function SpecDDL_Triggers_ChainsList() {
 			$chains[$chainname]["tests"][$uicolseq]["_return"][] = $rowadd;
 		
 	}
-   
+	
     // Final, send them back to calling program
 	return $chains;
 }
@@ -5673,7 +5706,7 @@ function SpecDDL_Triggers_ChainsCode(&$chains) {
 		
 		$chains[$key]["_chaintext"] = " CASE ".trim($chaintext).
 			"        ELSE ".$this->SQLFormatBlank($rtid,true,true)." END";
-			
+
 	}
 }
 
@@ -5740,7 +5773,7 @@ function TrigGen_ChainReturn($rtid,$test,$dsiz) {
     }  
    
 	foreach ($test["_return"] as $retinfo) {
-      $arg = $this->TrigGen_CRet_Arg($rtid,$retinfo);
+        $arg = $this->TrigGen_CRet_Arg($rtid,$retinfo);
 		
 		$fo = $funcoper;
 		switch ($funcoper) {
@@ -5773,6 +5806,8 @@ function TrigGen_CRet_Arg($rtid,$retinfo) {
    else {
       if(substr($retinfo['literal_arg'],0,1)=='!') {
          $arg=substr($retinfo['literal_arg'],1);
+         # KFD Google #20 5/22/09 replace "!" with "new." so it will work
+         $arg = str_replace('!','new.',$arg);
       }
       else {
           if($retinfo['literal_arg']=='%NOW') {
