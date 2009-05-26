@@ -2161,6 +2161,8 @@ function SpecFlatten_ColumnDeps() {
    // KFD 12/21/07 How about filtering out dependencies based on
    //              constraints?  That makes much more sense.
    //           EXPERIMENTAL  EXPERIMENTAL tried w/project PROMAT
+    # Google defect #22, added code to filter out a column
+    #        depending on itself.
 	$sql = "
 		INSERT INTO zdd.column_deps 
 		 (table_id,column_id,table_dep,column_dep,automation_id) 
@@ -2170,6 +2172,7 @@ function SpecFlatten_ColumnDeps() {
 		  FROM zdd.colchainargs 
 		 WHERE zdd.colchainargs.column_id_arg <> ''
            AND zdd.colchainargs.chain <> 'cons'
+           AND NOT (column_id = column_id_arg)
          ";
 	$this->SQL($sql);	
 	
