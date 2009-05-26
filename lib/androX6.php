@@ -205,21 +205,41 @@ class androX6 {
         if($errors) return;
 
         if(!isset($row['skey'])) {
+            # KFD 5/26/09 Google Feature #23, hook inserts
+            $method = $table_id."_before_insert";
+            if(method_exists($this,$method)) {
+                $row = $this->$method($row);
+            }
             $skey = SQLX_Insert($dd,$row);
             if(!errors()) {
                 $row=SQL_OneRow(
                     "Select * FROM {$dd['viewname']} WHERE skey = $skey"
                 );
+                # KFD 5/26/09 Google Feature #23, hook inserts
+                $method = $table_id."_after_insert";
+                if(method_exists($this,$method)) {
+                    $row = $this->$method($row);
+                }
             }
             x6Data('row',$row);
         }
         else {
+            # KFD 5/26/09 Google Feature #23, hook updates
+            $method = $table_id."_before_update";
+            if(method_exists($this,$method)) {
+                $row = $this->$method($row);
+            }
             SQLX_Update($dd,$row);
             if(!errors()) {
                 $skey = $row['skey'];
                 $row=SQL_OneRow(
                     "Select * FROM {$dd['viewname']} WHERE skey = $skey"
                 );
+                # KFD 5/26/09 Google Feature #23, hook updates
+                $method = $table_id."_after_update";
+                if(method_exists($this,$method)) {
+                    $row = $this->$method($row);
+                }
                 x6Data('row',$row);
             }
         }
