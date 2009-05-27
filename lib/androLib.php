@@ -3350,6 +3350,15 @@ class androHTMLDetail extends androHTML {
         }
     }
     
+    # KFD 5/27/09 Google #21 Part of allowing override of a detail pane
+    #             is to build one normally, then let the user wipe it
+    #             out and start over.
+    function removeInner() {
+        $this->children[1]->children = array();
+        $this->children[1]->setHtml('');
+        return $this->children[1];
+    }
+    
     function makeComplete($table_id,$height,$parTable) {
         # The complete track is much more involved, adds
         # buttons and a status bar at bottom.

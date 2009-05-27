@@ -1001,7 +1001,12 @@ class androX6 {
         $divDetail->ap['xTabSelector'] = $tabs->ul->hp['id'];
         $divDetail->ap['xTabIndex']    = 1;
         $divDetail->ap['x6profile'] = 'conventional';
-        $detail->hp['x6objectFocusId'] = $divDetail->hp['id']; 
+        $detail->hp['x6objectFocusId'] = $divDetail->hp['id'];
+        # KFD 5/27/09 Google #21 Allow user to override the detail
+        if(method_exists($this,$table_id.'_detail')) {
+            $method = $table_id.'_detail';
+            $this->$method($divDetail);
+        }
         
         # The div kids is a tabbar of child tables.  Notice that we
         # put nothing into them.  They are loaded dynamically when
@@ -1032,6 +1037,12 @@ class androX6 {
                 if($info['x6childwrites']=='detail') {
                     # Create the basic detail
                     $modal = new androHTMLDetail($child,true,700,$table_id);
+                    # KFD 5/27/09 Google #21 Allow user to override
+                    if(method_exists($this,$child.'_detail')) {
+                        $method = $child.'_detail';
+                        $this->$method($modal);
+                    }
+                    
     
                     # Now see if we need to add buttons
                     if(file_exists(fsDirtop()."application/x6$child.php")) {
