@@ -2922,8 +2922,13 @@ function x6JSON(parm,value) {
         if(async) {
             this.http.onreadystatechange = function() {
                 if(this.readyState!=4) return;
-                json.processPre(false);
-                json.process();
+                // KFD 5/27/09 Google #11
+                //             When somebody is asking for a return
+                //             string, you do not want to process
+                if(!returnString) {
+                	json.processPre(false);
+                	json.process();
+                }
                 if(callBack) callBack();
             }
         }
@@ -3124,7 +3129,6 @@ var x6selectJSON = {
 	request: function(inp,val) {
 		// First thing is to cancel current request
 		if(this.JSON) {
-			console.log("Aborting");
 			//if(this.JSON.http) {
 			//	this.JSON.http.abort();
 			//}
@@ -5155,6 +5159,57 @@ x6grid = {
     }
 }
 
+// KFD 5/27/09 Google #11, create a separate object that handles
+//             grid requests, which automatically cancels 
+//             previous requests.
+x6gridJSON = {
+	JSON: false,
+
+	request: function(gridObject) {
+		// First thing is to cancel current request
+		if(this.JSON) {
+			this.JSON = false;
+		}
+		
+		// The "addFilters" routine puts in all parms, but
+		// it does the very important task of figuring out
+		// if there is anything to do, and it writes the
+		// result to gridObject.doFetch.  
+		//
+		// It would be nice not to create the JSON object
+		// until after the routine had determined if it were
+		// necessary, but unfortunately the routine puts the
+		// parms there if required, so that's how we have to
+		// do it.
+		this.JSON = new x6JSON('x6page',gridObject.zTable);
+		gridObject.addFilters(this.JSON);
+		if(!gridObject.doFetch) return;
+		// <<<-------- EARLY RETURN;
+		
+		x6.data.browseFetchHtml = '';
+        if(gridObject.cntNoBlank==0) {
+            $(gridObject).find('.tbody').html('');
+            return;
+        }
+        gridObject.gridParms(this.JSON);
+            
+        // Add the "exact match" parm if it is part of the
+        // the grid.  Notice it is a one-timer
+        if($(gridObject).attr('x6exactPre')==1) {
+            this.JSON.addParm('x6exactPre',1);
+            $(gridObject).attr('x6exactPre',0);
+        }
+
+        var json = this.JSON;
+        this.JSON.execute(false,true,true,function() {
+        	console.log("you ran a search!");
+            $(gridObject).find(".tbody").replaceWith(json.http.responseText);
+            $(gridObject).find('.tbody div:first').mouseover();
+        });
+    }
+}
+
+
 /***im* x6plugins/grid
 *
 * NAME
@@ -6022,38 +6077,53 @@ x6plugins.grid = function(self,id,table) {
     */
     self.fetch = function(doFetch) {
         if(doFetch==null) doFetch=false;
+
+        // KFD 5/27/09 Google #11 Refactor if user types quickly
+        //     everything should still work smoothly, and
+        //     user should see result from very last keystroke
+        //
+        //     NOTE: The fetch(false) call comes from the keyUp()
+        //           event on the grid search inputs.
+        x6gridJSON.request(this);
+        return;
+        //
+        // KFD 5/27/09 Google #11 (END)
         
+        
+        // KFD 5/27/09, Google #11, all code below is 
+        //              now dead.  Keep it around for
+        //              a few months and then get rid of it.
         // Initialize and then scan
-        var json = new x6JSON('x6page',this.zTable);
-        this.addFilters(json);
-        
-        if(this.doFetch) {
-            // Clear the previous results
-            x6.data.browseFetchHtml = '';
-            if(this.cntNoBlank==0) {
-                $(this).find('.tbody').html('');
-                return;
-            }
-            this.gridParms(json);
-            
-            // Add the "exact match" parm if it is part of the
-            // the grid.  Notice it is a one-timer
-            if($(this).attr('x6exactPre')==1) {
-                json.addParm('x6exactPre',1);
-                $(this).attr('x6exactPre',0);
-            }
-            
-            if( html = json.execute(false,false,true)) {
-                //json.process();
-                // The standard path is to take data returned
-                // by the server and render it.  This is safe
-                // even if the server does not return anything,
-                // because we initialized to an empty object.
-                $(this).find(".tbody").replaceWith(html);
-                $(this).find('.tbody div:first').mouseover();
-            }
-        }
-        delete json;
+//        var json = new x6JSON('x6page',this.zTable);
+//        this.addFilters(json);
+//        
+//        if(this.doFetch) {
+//            // Clear the previous results
+//            x6.data.browseFetchHtml = '';
+//            if(this.cntNoBlank==0) {
+//                $(this).find('.tbody').html('');
+//                return;
+//            }
+//            this.gridParms(json);
+//            
+//            // Add the "exact match" parm if it is part of the
+//            // the grid.  Notice it is a one-timer
+//            if($(this).attr('x6exactPre')==1) {
+//                json.addParm('x6exactPre',1);
+//                $(this).attr('x6exactPre',0);
+//            }
+//
+//            if( html = json.execute(false,false,true)) {
+//                //json.process();
+//                // The standard path is to take data returned
+//                // by the server and render it.  This is safe
+//                // even if the server does not return anything,
+//                // because we initialized to an empty object.
+//                $(this).find(".tbody").replaceWith(html);
+//                $(this).find('.tbody div:first').mouseover();
+//            }
+//        }
+//        delete json;
     }
     
     /*
