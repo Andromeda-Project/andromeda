@@ -2911,7 +2911,7 @@ function x6JSON(parm,value) {
     *
     *******
     */
-    this.execute = function(autoProcess,async,returnString) {
+    this.execute = function(autoProcess,async,returnString,callBack) {
         this.hadErrors = false;
         if(async==null) async = false;
         if(autoProcess==null) autoProcess=false;
@@ -2924,6 +2924,7 @@ function x6JSON(parm,value) {
                 if(this.readyState!=4) return;
                 json.processPre(false);
                 json.process();
+                if(callBack) callBack();
             }
         }
         
@@ -3113,6 +3114,43 @@ var x6dd = {
    Universal x6 input keyup handler
    
 \* **************************************************************** */
+// KFD 5/27/09 Google #24, create a separate object that handles
+//             auto-complete (x6select) searches, which has only
+//             one active JSON object, and which is smart about
+//             cancelling prior searches if the user keeps typing.
+var x6selectJSON = {
+	JSON: false,
+	
+	request: function(inp,val) {
+		// First thing is to cancel current request
+		if(this.JSON) {
+			console.log("Aborting");
+			//if(this.JSON.http) {
+			//	this.JSON.http.abort();
+			//}
+			this.JSON = false;
+		}
+		this.JSON = new x6JSON('x6page',x6.p(inp,'x6seltab'));
+	
+	    this.JSON.addParm('x6select','Y');
+	    this.JSON.addParm('gpletters',val);
+	    // KFD 4/11/09 Sourceforge 2753358 provide values of
+	    //             other columns that must match
+	    var cols = $(inp).prop('xMatches','').split(',');
+	    var tab  = $(inp).prop('xtableid');
+	    for(var x in cols) {
+	    	if(cols[x]=='') continue;
+	    	var value = $('#x6inp_'+tab+'_'+cols[x]).val();
+	    	this.JSON.addParm('mtch_'+cols[x],value);
+	    }
+	    this.JSON.execute(true,true,false
+	    	,function() { 
+	    			x6inputs.x6select.display(inp,null,x6.data.x6select);
+	    	}	    		
+	    );
+	}	
+}
+
 var x6inputs = {
     // Key up is used to look for changed values because
     // you do not see an input's new value until the keyup 
@@ -3278,6 +3316,8 @@ var x6inputs = {
                 x6.console.log("sel start: ",s.start)
                 x6.console.log("sel end: ",s.end)
                 x6.console.log("computed value:",val);
+                x6selectJSON.request(inp,val);
+                /*
                 json = new x6JSON('x6page',x6.p(inp,'x6seltab'));
                 json.addParm('x6select','Y');
                 json.addParm('gpletters',val);
@@ -3292,6 +3332,7 @@ var x6inputs = {
                 }
                 json.execute(true);
                 x6inputs.x6select.display(inp,null,x6.data.x6select);
+                */
                 x6.console.groupEnd();
                 return;
             }
