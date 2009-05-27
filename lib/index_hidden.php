@@ -470,6 +470,7 @@ $x6action = gp('x6action');
 // responsible for returning all headers, HTML or anything
 // else it wants to send back.
 if(    gp('ajxFETCH')   =='1') index_hidden_ajxFETCH();
+elseif(gp('x6fetch')     <>'') index_hidden_x6FETCH();
 elseif(gp('ajxfSELECT')  <>'') index_hidden_ajxfSELECT();
 elseif(gp('ajxc1table')  <>'') index_hidden_ajx1ctable();
 elseif(gp('gp_function') <>'') index_hidden_function();
@@ -1359,6 +1360,67 @@ function index_hidden_ajxFETCH() {
    }
    echo implode('|-|',$returns);
 }
+
+# KFD 5/27/09
+# Google #14.  X6 must do FETCH operations when user navigates off
+#              autoselect columns.
+function index_hidden_x6FETCH() {
+   $returns=array();
+
+    # This is everything that *might* go back, make a place
+    # for all of it
+    $GLOBALS['AG']['x4'] = array(
+        'error'=>array()
+        ,'debug'=>array()
+        ,'notice'=>array()
+        ,'html'=>array()
+        ,'script'=>array()
+    );
+   
+    // First fetch the values
+    $table_id  = gp('x6fetch');
+    $dd        = ddTable($table_id);
+    $column    = gp('x6col');
+    $colvalue  = gp('x6val');
+    
+    # Look for fetch columns that pull from this column's
+    # table_id_fko
+    $tfko = $dd['flat'][$column]['table_id_fko'];
+    $cfko = $dd['flat'][$column]['column_id_fko'];
+    $cols = array();
+    foreach($dd['flat'] as $fcol=>$cdetails) {
+       $arr = array('FETCH','FETCHDEF','DISTRIBUTE');
+       if(in_array($cdetails['automation_id'],$arr)) {
+           if($cdetails['auto_table_id']==$tfko) {
+               $cols[$fcol] = $cdetails['auto_column_id'];
+           }
+       }
+    } 
+    
+    # We now have a list of source and destination 
+    # columns, build the query
+    $sql="Select ".implode(',',$cols)
+       ." FROM $tfko WHERE $cfko = ".SQLFC($colvalue);
+    FB::Send($sql);
+    $row = SQL_OneRow($sql);
+    FB::Send($row);
+    foreach($cols as $fcol=>$srccol) {
+       $type = $dd['flat'][$fcol]['formshort'];
+       if($type=='date'){
+           x6html(
+                "x6inp_{$table_id}_$fcol"
+                ,date("Y-m-d",dEnsureTs($row[$srccol]))
+           );
+       }
+       else {
+           x6html("x6inp_{$table_id}_$fcol",$row[$srccol]);
+       }
+    }
+    echo json_encode_safe($GLOBALS['AG']['x4']);
+    exit;
+}
+
+
 
 // ------------------------------------------------------------------
 // >> Simple SQL Query, return SQL_Allrows array

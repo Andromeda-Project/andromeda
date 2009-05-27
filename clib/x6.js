@@ -3572,6 +3572,13 @@ var x6inputs = {
         x6inputs.setClass(inp);
         x6inputs.afterBlurner(inp);
         x6inputs.x6select.hide();
+        // KFD 5/27/09 Google #14 Must fetch
+        if($(inp).prop('xtableidpar','')!='') {
+        	x6.json.init('x6fetch',$(inp).attr('xtableid'));
+        	x6.json.addParm('x6col',$(inp).attr('xcolumnid'));
+        	x6.json.addParm('x6val',$(inp).val());
+        	x6.json.execute(true,true);
+        }
         x6.console.log("Input Blur DONE");
         x6.console.groupEnd();
         return true;
