@@ -3125,6 +3125,7 @@ var x6dd = {
 //             cancelling prior searches if the user keeps typing.
 var x6selectJSON = {
 	JSON: false,
+	active: false,
 	
 	request: function(inp,val) {
 		// First thing is to cancel current request
@@ -3132,9 +3133,16 @@ var x6selectJSON = {
 			//if(this.JSON.http) {
 			//	this.JSON.http.abort();
 			//}
+			if(this.JSON.http.abort) {
+				//this.JSON.http.abort();
+			}
+			//this.JSON.http.abort();
+			this.active = false;
+			//delete this.JSON;
 			this.JSON = false;
 		}
 		this.JSON = new x6JSON('x6page',x6.p(inp,'x6seltab'));
+		this.active = true;
 	
 	    this.JSON.addParm('x6select','Y');
 	    this.JSON.addParm('gpletters',val);
@@ -3150,6 +3158,7 @@ var x6selectJSON = {
 	    this.JSON.execute(true,true,false
 	    	,function() { 
 	    			x6inputs.x6select.display(inp,null,x6.data.x6select);
+	    			x6selectJSON.active=false;
 	    	}	    		
 	    );
 	}	
@@ -3462,8 +3471,16 @@ var x6inputs = {
         // we have to work out the next control to give focus
         // to, either forward or backward
         if(isTab) {
+        	// KFD 5/28/09 Google #25 disable tab on auto-complete
+        	//             while search is in progress.
+        	if(x6selectJSON.active) {
+        		$(e).stopPropagation();
+        		console.log("Stopping propagation");
+                x6.console.log("Tab during auto-complete search, discarding keystroke.");
+                x6.console.groupEnd();
+                return false;
+        	}
             x6.console.log("Tab key hit, returning true");
-            x6.console.groupEnd();
             return true;
         }
         if(!e.shiftKey) {
@@ -3574,10 +3591,14 @@ var x6inputs = {
         x6inputs.x6select.hide();
         // KFD 5/27/09 Google #14 Must fetch
         if($(inp).prop('xtableidpar','')!='') {
-        	x6.json.init('x6fetch',$(inp).attr('xtableid'));
-        	x6.json.addParm('x6col',$(inp).attr('xcolumnid'));
-        	x6.json.addParm('x6val',$(inp).val());
-        	x6.json.execute(true,true);
+        	// KFD 5/28/09 Google # 25 Make independent objects
+        	//             to smooth out what happens when user
+        	//             is typing very quickly on auto-select
+        	//             and then hits TAB.
+        	var json = new x6JSON('x6fetch',$(inp).attr('xtableid'));
+        	json.addParm('x6col',$(inp).attr('xcolumnid'));
+        	json.addParm('x6val',$(inp).val());
+        	json.execute(true,true);
         }
         x6.console.log("Input Blur DONE");
         x6.console.groupEnd();
