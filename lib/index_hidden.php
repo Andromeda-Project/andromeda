@@ -1401,9 +1401,7 @@ function index_hidden_x6FETCH() {
     # columns, build the query
     $sql="Select ".implode(',',$cols)
        ." FROM $tfko WHERE $cfko = ".SQLFC($colvalue);
-    FB::Send($sql);
     $row = SQL_OneRow($sql);
-    FB::Send($row);
     foreach($cols as $fcol=>$srccol) {
        $type = $dd['flat'][$fcol]['formshort'];
        if($type=='date'){
