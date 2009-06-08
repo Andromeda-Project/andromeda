@@ -546,20 +546,35 @@ var x6 = {
         //               So firefox must remain keypress and IE keydown
         if(window.androIsIE) {
             $(document).keydown(function(e) {
-                    //e = e ? e : window.event;
+                // KFD 6/8/09 Google #26 input.keydown() might have
+                //            told us not to process the key
+                x6.console.group("Document Keydown");
+                if(x6bb.fwGet('noDocKey',false)) {
+                	x6.console.log("noDocKey flag set, no action")
+                	x6bb.fwSet('noDocKey',false);
+                }
+                else {
                     var keyLabel = x6.keyLabel(e);
-                    x6.console.group("Document Keydown");
                     var retval= x6.keyDispatcher(e);
-                    x6.console.groupEnd(); 
-                    return retval;
+                }
+                x6.console.groupEnd(); 
+                return retval;
             });
         }
         else {
             $(document).keypress(function(e) {
                     //e = e ? e : window.event;
                     x6.console.group("Document Keypress");
-                    var keyLabel = x6.keyLabel(e);
-                    var retval= x6.keyDispatcher(e);
+                    // KFD 6/8/09 Google #26 input.keydown() might have
+                    //            told us not to process the key
+                    if(x6bb.fwGet('noDocKey',false)) {
+                    	x6.console.log("noDocKey flag set, no action")
+                    	x6bb.fwSet('noDocKey',false);
+                    }
+                    else {
+	                    var keyLabel = x6.keyLabel(e);
+	                    var retval= x6.keyDispatcher(e);
+                    }
                     x6.console.groupEnd(); 
                     return retval;
             });
@@ -3305,6 +3320,10 @@ var x6inputs = {
         // Type validation for some types, only if not TAB or ENTER
         if(!isNav ) {
             x6.console.log("Not nav key, doing type validation");
+            
+            // KFD 6/8/09 Google #26, turn of Document.keypress handling
+            //            for all regular typing cases
+            x6bb.fwSet('noDocKey',true);
 
             // KFD 2/20/09.  Originally this came AFTER type validation,
             //               but that did not allow for alpha chars in
