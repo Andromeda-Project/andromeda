@@ -10274,12 +10274,14 @@ function FS_PUT_CONTENTS($file,$text,$changequotes=false) {
 	   $text = str_replace("#","\"",$text);
 	}
 	$text = $text ."\r\n";
-	if ( !is_file( $file ) ) {
+	#if ( !is_file( $file ) ) {
+	    # KFD 6/8/09, why??
 	    //  DO 3-23-2009 Changed mode
-	    $FILEOUT = fopen( $file , 'w+' );
-	    fwrite($FILEOUT,$text);
-	    fclose($FILEOUT);
-	}
+	    #$FILEOUT = fopen( $file , 'w' );
+	    #fwrite($FILEOUT,$text);
+	    #fclose($FILEOUT);
+	    file_put_contents($file,$text);
+	#}
 }
 
 function fs_Skeleton_copy($src,$dst) {

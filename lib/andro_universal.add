@@ -651,6 +651,7 @@ table configapp {
     column { cf_template; }
     column { smtpout;     }
 }
+
 table configinst {
     module: system;
     uisort: 552;
@@ -666,7 +667,7 @@ table configinst {
 
     column description { suffix: _login; description: Login; }
     projection login {
-        column { loginbefore; loginafter; notesfooter }
+        column { loginbefore; loginafter; notesfooter; x4menutitle;  }
     }
 
     column description { suffix: _email; description: Sending Emails; }
