@@ -4975,6 +4975,9 @@ x6plugins.detailDisplay = function(self,id,table) {
         x6events.fireEvent('buttonsNew_'+this.zTable,true);
         x6events.fireEvent('buttonsEdit_'+this.zTable,true);
 
+        // KFD 6/8/09 Google #28, since this is a new row, turn off the
+        //                        memory of prior focused input
+        x6bb.fwSet('lastFocus_'+this.id,'');
         x6events.fireEvent('objectFocus',this.id);
         
         x6.console.groupEnd();
