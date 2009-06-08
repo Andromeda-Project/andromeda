@@ -3614,10 +3614,16 @@ var x6inputs = {
         	//             to smooth out what happens when user
         	//             is typing very quickly on auto-select
         	//             and then hits TAB.
-        	var json = new x6JSON('x6fetch',$(inp).attr('xtableid'));
-        	json.addParm('x6col',$(inp).attr('xcolumnid'));
-        	json.addParm('x6val',$(inp).val());
-        	json.execute(true,true);
+        	// KFD 6/8/09 Refinement, only execute if value changed
+        	var orig = $(inp).prop('zlastfetch',$(inp).attr('zOriginalValue'));
+        	if(orig!=$(inp).val()) {
+        		var val = $(inp).val();
+	        	var json = new x6JSON('x6fetch',$(inp).attr('xtableid'));
+	        	json.addParm('x6col',$(inp).attr('xcolumnid'));
+	        	json.addParm('x6val',val);
+	        	json.execute(true,true);
+	        	inp.zlastfetch = val;
+        	}
         }
         x6.console.log("Input Blur DONE");
         x6.console.groupEnd();
