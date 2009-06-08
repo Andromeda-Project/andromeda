@@ -4597,6 +4597,9 @@ x6plugins.tableController = function(self,id,table) {
                 var retval = 'success';
                 x6.json.process();
                 this.zSkey = x6.data.row.skey;
+                // KFD 6/8/09 Google #27 Put skey onto bulletin board
+                //                       after a save
+                x6bb.fwSet('skey_'+this.zTable,x6.data.row.skey);
             }
             else {
                 var retval = 'fail';
