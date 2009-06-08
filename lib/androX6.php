@@ -270,13 +270,29 @@ class androX6 {
             return;
         }
         
+        # KFD 6/8/09 Google #29 Various changes to allow pre- and post-
+        #                       delete methods
+        $table_id = gp('x6page');
         $view = ddView(gp('x6page'));
         $skey = SQLFN(gp('skey'));
-        $sq="Delete from $view where skey = $skey";
-        if(Errors()) {
-            x6Errors(hErrors());
+        $method = $table_id."_before_delete";
+        $continue = true;
+        if(method_exists($this,$method)) {
+            $continue = $this->$method($skey);
         }
-        SQL($sq);
+        if($continue) {        
+            $sq="Delete from $view where skey = $skey";
+            SQL($sq);
+            if(Errors()) {
+                x6Errors(hErrors());
+            }
+            else {
+                $method = $table_id."_after_delete";
+                if(method_exists($this,$method)) {
+                    $this->$method();
+                }
+            }
+        }
     }
 
     # ===================================================================
