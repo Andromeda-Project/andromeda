@@ -210,18 +210,21 @@ class androX6 {
             if(method_exists($this,$method)) {
                 $row = $this->$method($row);
             }
-            $skey = SQLX_Insert($dd,$row);
-            if(!errors()) {
-                $row=SQL_OneRow(
-                    "Select * FROM {$dd['viewname']} WHERE skey = $skey"
-                );
-                # KFD 5/26/09 Google Feature #23, hook inserts
-                $method = $table_id."_after_insert";
-                if(method_exists($this,$method)) {
-                    $row = $this->$method($row);
+            # KFD 6/8/09 Google #30, no action if returns false
+            if($row) {
+                $skey = SQLX_Insert($dd,$row);
+                if(!errors()) {
+                    $row=SQL_OneRow(
+                        "Select * FROM {$dd['viewname']} WHERE skey = $skey"
+                    );
+                    # KFD 5/26/09 Google Feature #23, hook inserts
+                    $method = $table_id."_after_insert";
+                    if(method_exists($this,$method)) {
+                        $row = $this->$method($row);
+                    }
+                    x6Data('row',$row);
                 }
             }
-            x6Data('row',$row);
         }
         else {
             # KFD 5/26/09 Google Feature #23, hook updates
@@ -229,18 +232,21 @@ class androX6 {
             if(method_exists($this,$method)) {
                 $row = $this->$method($row);
             }
-            SQLX_Update($dd,$row);
-            if(!errors()) {
-                $skey = $row['skey'];
-                $row=SQL_OneRow(
-                    "Select * FROM {$dd['viewname']} WHERE skey = $skey"
-                );
-                # KFD 5/26/09 Google Feature #23, hook updates
-                $method = $table_id."_after_update";
-                if(method_exists($this,$method)) {
-                    $row = $this->$method($row);
+            # KFD 6/8/09 Google #30, no action if returns false
+            if($row) {
+                SQLX_Update($dd,$row);
+                if(!errors()) {
+                    $skey = $row['skey'];
+                    $row=SQL_OneRow(
+                        "Select * FROM {$dd['viewname']} WHERE skey = $skey"
+                    );
+                    # KFD 5/26/09 Google Feature #23, hook updates
+                    $method = $table_id."_after_update";
+                    if(method_exists($this,$method)) {
+                        $row = $this->$method($row);
+                    }
+                    x6Data('row',$row);
                 }
-                x6Data('row',$row);
             }
         }
         
