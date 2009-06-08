@@ -5255,7 +5255,6 @@ x6gridJSON = {
 
         var json = this.JSON;
         this.JSON.execute(false,true,true,function() {
-        	console.log("you ran a search!");
             $(gridObject).find(".tbody").replaceWith(json.http.responseText);
             $(gridObject).find('.tbody div:first').mouseover();
         });
