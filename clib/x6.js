@@ -4991,6 +4991,10 @@ x6plugins.detailDisplay = function(self,id,table) {
     self['receiveEvent_uiRowSaved_'+table] = function(row) {
         x6.console.group("detailDisplay uiRowSaved");
         this.displayRow('edit',row);
+        // KFD 6/8/09, show child panes on saving new row
+        x6events.fireEvent('uiHideKids_'+this.zTable,this.zTable);
+        x6events.fireEvent('uiEnableKids_'+this.zTable,this.zTable);
+        
         if($(this).prop('x6modal','N')=='Y') {
             x6modals.close();
         }
