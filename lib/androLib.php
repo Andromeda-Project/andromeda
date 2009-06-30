@@ -5509,6 +5509,17 @@ function tmpPathInsert() {
 function scriptPath() {
     $path = $_SERVER['SCRIPT_NAME'];
     $path = str_replace( "index.php", "", $path );
+    
+    /*
+     *
+     * DO 6-29-2009
+     * scriptPath() was getting confused by friendly urls with /pages/
+     *
+     */
+    if ( stripos( $_SERVER['PHP_SELF'], '/pages/' ) !== false ) {
+        $path = str_replace( $_SERVER['PATH_INFO'], '', $path );
+        $path = str_replace( '/pages', '', $path );
+    }
     $path = str_replace( "//", "/", $path );
     if ( substr( $path, 0, 1 ) != '/' ) {
         $path = '/' .$path;
