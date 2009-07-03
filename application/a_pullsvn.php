@@ -273,6 +273,11 @@ class a_pullsvn extends x_table2 {
                 $matches=array();
                 preg_match_all('!\<li\>\<a.*\>(.*)\</a\>\</li\>!U',$rawtext,$matches);
                 $versions = $matches[1];
+                foreach( $versions as $key=>$version ) {
+                    if ( $version == '..' ) {
+                        unset( $versions[$key] );
+                    }
+                }
                 if(count($versions)==0) {
                     x_EchoFlush("  No versions listed, nothing to pull.");
                     continue;
