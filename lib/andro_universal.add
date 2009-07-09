@@ -204,6 +204,7 @@ column _dob  { description: Birthdate; type_id: date; prefix_table_name: Y; }
 column dob   { description: Birthdate; type_id: date; }
 column dod   { description: Date of Death; type_id: date; }
 
+
 //  These column definitions are computer related
 //
 column hostip { description: Host IP Num; type_id: char; colprec: 15; }

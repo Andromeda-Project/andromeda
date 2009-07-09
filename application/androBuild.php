@@ -177,6 +177,12 @@ function checkDBFilesForChanges() {
         'fullpath'=>$parm['DIR_PUB'].'lib/' .$specboot
     );
     
+    $checksums[] = array(
+        'file'=>'andro_universal.add',
+        'md5'=>md5_file( $parm['DIR_PUB'].'lib/andro_universal.add' ),
+        'fullpath'=>$parm['DIR_PUB'].'lib/andro_universal.add'
+    );
+    
     if ( isset( $parm['INST'] ) ) {
         $app = str_replace( '_' .$parm['INST'], '', $parm['APP'] );
     } else {
