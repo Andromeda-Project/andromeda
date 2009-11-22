@@ -187,7 +187,7 @@ column notes    { description: Notes             ; type_id: text; }
 //  These column definitions are for names and addresses
 //
 column email { description: Email Address; type_id: vchar; colprec: 50; }
-column name  { description: Full Name;     type_id: vchar; colprec: 70; }
+column name  { description: Full Name;     type_id: vchar; colprec: 100; }
 column name_ { description: Name Part;     type_id: vchar; colprec: 25; }
 column mi    { description: Middle Initial;type_id: char;  colprec: 1;  }
 column nam1st{ description: First        ; type_id: vchar; colprec: 20; }
