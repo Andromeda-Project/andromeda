@@ -89,10 +89,10 @@ class x_password extends x_table2 {
             $PWD=$member['member_password'];
             // KFD 12/21/06.  Done for medinfo originally.  If UID looks like
             //  the email, send the email instead
-            $emailUID=strtolower($UID)==strtolower($leml) ? $leml : $UID;
+            $emailUID= $member['email'];
             $table_dd=DD_Tableref('users');
             SQLX_Update($table_dd,$row);
-            $emailuser_id = OptionGet('EMAIL_USERID','N')=='Y' ? $eml : $emailUID;
+            $emailuser_id = OptionGet('EMAIL_USERID','N')=='Y' ? $emlUID : $leml;
             $text_email = "
 Your username and password are: $emailuser_id and $PWD.
    
