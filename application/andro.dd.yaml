@@ -37,7 +37,7 @@ group admin:
 content configapp:
     columns: [ x4menu, deprecated ]
     update:
-        - [ N, N ]
+        - [ N, Y ]
         
 
 # ========================================================================
