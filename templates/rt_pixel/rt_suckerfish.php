@@ -114,7 +114,6 @@ function mosShowListMenu($menutype) {
 	global $mosConfig_absolute_path, $mosConfig_live_site, $mosConfig_shownoauth;
     
 	$class_sfx = null;
-	error_reporting(E_ALL ^ E_NOTICE);
 	$hilightid = null;
 
     /* If a user has signed in, get their user type */
