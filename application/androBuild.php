@@ -37,7 +37,6 @@
 // -------------------------------------------------------------------
 ini_set("max_execution_time",0);  // allows to run in a web page.
 ini_set("allow_url_open",false);
-ini_set("error_reporting",E_ALL);
 ini_set("display_errors",true);
 ini_set("log_errors",true);
 
@@ -4211,8 +4210,7 @@ function SpecDDL_Triggers_FK_PT($ufk,$ptab,$chdlist,$parlist) {
 			"    IF    ".implode("\n      AND ",$lEmpty)." THEN\n";
         #
         # KFD 9/11/08 (END)
-	}
-	else {
+	} else {
       $onEmpty="";
       foreach($chdlist as $chd) {
          $onEmpty.=
