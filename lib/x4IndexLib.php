@@ -70,7 +70,6 @@ if(!isset($AG['tmpPathInsert'])) {
 // INI settings
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 ini_set("allow_url_open",false);
-ini_set("error_reporting",E_ALL);
 ini_set("display_errors",true);
 ini_set("log_errors",true);
 ini_set("short_tag_open",true);
@@ -1303,7 +1302,6 @@ function x4SQLQuery($query) {
 
 function x4SQL($sql) {
     $dbconn = $GLOBALS['AG']['dbconn'];
-    $errlevel = error_reporting(0);
     pg_send_query($dbconn,$sql);
     $results=pg_get_result($dbconn);
     $t=pg_result_error($results);
@@ -1334,7 +1332,6 @@ function x4SQL($sql) {
         $t = str_replace("\n",'',$t);
         ri('message','sqlerr',$t);
     }
-    error_reporting($errlevel);
     return $results;   
 }
 
