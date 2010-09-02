@@ -41,7 +41,6 @@ INVENTORY OF framework gp variables:
 // >>> 
 // ==================================================================
 ini_set("allow_url_open",false);
-ini_set("error_reporting",E_ALL);
 ini_set("display_errors",true);
 ini_set("log_errors",true);
 ini_set("short_tag_open",true);
