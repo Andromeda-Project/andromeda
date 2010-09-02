@@ -16511,7 +16511,6 @@ function SQL2($sql,$dbconn,&$error=false)
       return;
 	}
 	global $AG;
-	$errlevel = error_reporting(0);
     # KFD 12/31/08, Control by cookie and group setting
     $debug = inGroup('debugging') && arr($_COOKIE,'log_Server',0)==1;
 	#$debug = trim(ConfigGet('js_css_debug','N'));
@@ -16579,7 +16578,6 @@ function SQL2($sql,$dbconn,&$error=false)
 
       }
 	}
-	error_reporting($errlevel);
 	return $results;
 }
 
