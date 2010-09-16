@@ -92,7 +92,7 @@ class x_password extends x_table2 {
             $emailUID= $member['email'];
             $table_dd=DD_Tableref('users');
             SQLX_Update($table_dd,$row);
-            $emailuser_id = OptionGet('EMAIL_USERID','N')=='Y' ? $emlUID : $leml;
+            $emailuser_id = OptionGet('EMAIL_USERID','N')=='Y' ? $emailUID : $leml;
             $text_email = "
 Your username and password are: $emailuser_id and $PWD.
    
