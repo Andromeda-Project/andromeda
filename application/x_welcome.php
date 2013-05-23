@@ -134,8 +134,7 @@ class x_welcome extends x_table2 {
             font-weight: bolder; margin: 8px; padding: 0 8px 8px 8px">
             <h2>New Version of Andromeda Available</h2>
             
-            <p>Version <?php echo $latest?> is available at the Andromeda 
-            Sourceforge repository.   <a href="?gp_page=a_pullsvn"
+            <p>Version <?php echo $latest?> is available.   <a href="?gp_page=a_pullsvn"
             >Click Here </a> to go to the Pull Code From Subversion.
             </div>
             <?php        

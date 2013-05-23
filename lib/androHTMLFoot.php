@@ -109,5 +109,3 @@ if(configGet('deprecated','Y')=='Y') {
     }
 }
 ?>
-
-

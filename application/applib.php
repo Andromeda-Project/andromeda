@@ -11,7 +11,8 @@ vgfSet('ajaxTM',0);
 vgfSet('loglogins',true);
 vgfSet('buttons_in_commands',true);
 
-vgfSet('template','rt_pixel');
+
+vgfSet('template','bootstrap');
 
 /* FUTURE X6 STUFF 
 function app_nopage() {
@@ -77,7 +78,7 @@ function hLinkBuild($app,$caption, $code_only=false) {
         $link_options['code_only'] = 1;
     }
     return hLinkPopup(
-        ''
+        'small pull-right'
         ,$caption
         ,$link_options
     );
@@ -146,18 +147,18 @@ function svnVersions() {
  *
  */
 function appModuleLeft() {
+	$retVal = '';
+	$hasContent = false;
     if(!LoggedIn()) return false;
 
-    ?>
-    <div class="moduletable">
-    <h3>Updates</h3>
-    </div>
-    <table>
-      <tr><td class="leftcol"><a class="mainlevel" href="?gp_page=a_pullsvn"
-        >Pull Code From Subversion</a>
-    </table>
-    <br/> 
-    <?php
+    $retVal .= "<ul class=\"nav nav-list\">";
+    $retVal .= "<li class=\"nav-header\">Updates</li>";
+    
+    $retVal .= '<li>';
+	$retVal .= '<a class="small" href="?gp_page=a_pullsvn">Pull Code From Subversion</a>';
+    $retVal .= '</li>';
+    
+    
 
     // Display either applications or instances, depending upon 
     // which we have here
@@ -165,51 +166,46 @@ function appModuleLeft() {
     #$ds =OptionGet('DEV_STATION','Y');
     #$boa=OptionGet( 'BUILD_ALL_APPS','N');
     #if($ds=='Y' || $boa == 'Y') {
+		
     if(True) {
         $apps=SQL_AllRows("Select * from applications order by application");
-        ?>
-        <div class="moduletable">
-        <h3>Applications</h3>
-        </div>
-        <table style="width:100%">
-        <?php foreach($apps as $app) { ?>
-           <tr>
-             <td align="left" class="leftcol">
-               <a href="?gp_page=applications&gp_skey=<?php echo $app['skey']?>"
-               ><?php echo $app['application']?></a>
-             <td align="right"  class="leftcol">
-               <?php echo hLinkBuild($app['application'],'Build')?>
-        <?php }?>
-        </table>
-        <br/>
-        <?php
+		if ( !empty($apps) ) {
+			
+			$hasContent = true;
+			$retVal .= '<li class="nav-header">Applications</li>';
+		   
+			foreach($apps as $app) {
+				$retVal .= '<li>';
+					$retVal .= '<a class="pull-left" href="?gp_page=applications&gp_skey=' .$app['skey'] .'">';
+					$retVal .= $app['application'];
+					$retVal .= '</a>';
+					$retVal .= '&nbsp;';
+					$retVal .= hLinkBuild($app['application'],'Build');
+				$retVal .= '</li>';
+			}
+		}
     }
-    
     $instances = SQL_ALLROWS("Select * from instances
         order by application,instance");
-    if(count($instances)>0) {
-        ?>
-        <div class="moduletable">
-        <h3>Instances</h3>
-        </div>
-        <table width="100%">
-        <?php foreach($instances as $i) { ?>
-            <tr>
-            <td align="left">
-              <a href="?gp_page=instances&bp_skey=<?php echo $i['skey']?>">
-              <?php echo $i['application'].' / '.$i['instance']?>
-              </a>
-            <td align="right">
-              <a href="?gp_page=instances_p&gp_app=<?php echo trim($i['application'])
-                  ?>&gp_inst=<?php echo $i['instance']?>"
-                  >Build/Upgrade</a>
-        <?php } ?>
-        </table>
-        <?php
+    if(!empty($instances)>0) {
+        $hasContent = true;
+        $retVal .= '<li class="nav-header">Instances</li>';
+        
+        foreach($instances as $i) {
+            $retVal .= '<li>';
+			$retVal .= '<a class="pull-left" href="?gp_page=instances&bp_skey=' .$i['skey'] .'">';
+			$retVal .= $i['application'].' / '.$i['instance'];
+			$retVal .= '</a>';
+			$retVal .= '<a class=" pull-right small" href="?gp_page=instances_p&gp_app=' .trim($i['application']) .'&gp_inst=' .$i['instance'] .'">';
+			$retVal .= 'Build/Upgrade';
+			$retVal .= '</a>';
+			$retVal .= '</li>';
+        }
     }
     
-    
-    return false;
+	$retVal .= '</ul>';
+	$retVal .= '<div style="clear:both;"></div>';
+    return ( $hasContent !== false ? $retVal :false);
 }
 
 // DO 2-22-2008 Moved these out of androBuilder as they may be needed in other files 

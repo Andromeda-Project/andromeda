@@ -182,12 +182,12 @@ class x_docview extends x_table2 {
          $hn=$pnext=='' ? '' 
             : '<a href="?gp_page=x_docview&gppn='.urlencode($pnext).'">NEXT: '.$pnext.'</a>';
          $hpn="
-            <table width=100% border=0 cellpadding=0 cellspacing=0>
-               <tr>
-                  <td align=left>$hp
-                  <td align=right>$hn
-               </tr>
-            </table>";
+			<div class=\"row\">
+			<div class=\"span9\">
+				<div class=\"pull-left\">$hp</div>
+				<div class=\"pull-right\">$hn</div>
+			</div>
+			</div>";
       }
       
       // Pull out and assemble the see-also groups
@@ -219,7 +219,7 @@ class x_docview extends x_table2 {
       // Now the actual output and formatting
       // 
       $this->PageSubtitle=$pn;
-      echo "<h1>Database Specification</h1>";
+      echo "<div class=\"hero-unit\">Database Specification</div>";
       echo $hpars."<br><br>";
       echo $hpn;
       echo "\n<hr>";

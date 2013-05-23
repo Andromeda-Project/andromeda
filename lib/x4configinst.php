@@ -13,13 +13,14 @@ class x4configinst extends androX4 {
         $row = SQL_OneRow("Select * from ".$this->table_id);
         
         # Basic information at top
-        html('h1',$top,'Instance Configuration');
+        html('div',$top,'Instance Configuration', 'hero-unit');
         html('p',$top,'Any changes made here will take immediate 
             effect for all users of this program, except where a user
             has configured their own preferred setting.');
 
         # Set up titles
         $table = html('table',$top);
+        $table->addClass('table table-bordered table-condensed table-hover table-striped');
         $table->hp['id'] = 'x2data1';
         $thead = html('thead',$table);
         $tr    = html('tr',$thead);

@@ -69,41 +69,37 @@ class x_login extends x_table2 {
 		?>	
 
 <!-- LOGIN HTML (BEGIN) -->
-<br/>
-<center>
-<?php echo configGet('loginbefore',$GLOBALS['AG']['app_desc'])?>
-</center>
 
-<br/>
-<br/>
-<table align="center">
-	<tr>
-		<td class="logincaption">Login Name:</td>
-		<td class="logininput">
-			<input class="login" id="loginUID" name="loginUID" 
-                maxlength="60" size="10" value="<?php echo $loginUID?>" />
-			</td>
-	</tr>
-	<tr>
-		<td class="logincaption">Password:</td>
-		<td class="logininput">
-			<input class="login"  name="loginPWD"
-               type="password" maxlength="20" size="10" />
-		</td>
-	</tr>
-	<tr><td colspan="2">&nbsp;</td></tr>
-	<tr>
-		<td class="logincaption">&nbsp;</td>
-		<td class="logininput">
-        <input class="login" type="submit" name="pushSave" value="Login" />
-        </td>
-	</tr>
-</table>
-<br/>
-<br/>
-<center>
-<a href="<?php echo $hForgot?>">Forgotten Password and Change Password</a>
-</center>
+
+
+	<div class="row">
+		<div class="span3"></div>
+		<div class="span3">
+			<fieldset>
+				<legend align="center"><?php echo configGet('loginbefore',$GLOBALS['AG']['app_desc'])?></legend>
+				<div class="control-group">
+					<label class="control-label">Login Name:</label>
+					<div class="controls">
+						<input type="text" id="loginUID" name="loginUID" maxlength="60" value="<?php echo $loginUID?>" />
+					</div>
+				</div>
+				
+				<div class="control-group">
+					<label class="control-label">Password:</label>
+					<div class="controls">
+						<input name="loginPWD" type="password" maxlength="20"/>
+					</div>
+				</div>
+				<div class="control-group">
+					<div class="controls">
+						<input class="btn btn-primary" type="submit" name="pushSave" value="Login" />
+					</div>
+				</div>
+				<p align="center"><a href="<?php echo $hForgot?>">Forgotten Password and Change Password</a></p>
+			</fieldset>
+		</div>
+		<div class="span3"></div>
+	</div>
 <!-- LOGIN HTML (END) -->		
 		<?php
 	}

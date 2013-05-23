@@ -311,6 +311,7 @@ class x_table2 {
       if($mode<>"mover") {
          $this->hButtonBar($mode);
       }
+      
       $this->hLinks($mode);
       $this->hExtra($mode);
       
@@ -385,32 +386,19 @@ class x_table2 {
          .$this->h['NavBar']
          .($this->h['NavBar']=='' ? '' : '<br>');
       ?>
-      <h1><?php echo $this->PageSubtitle?></h1>
-      <table cellpadding=0 cellspacing=0 
-             style="width: 100%; border-collapse: collapse" align="center">
-         <?php  if(is_null($this->table_obj_child)) { ?>
-            <?php echo $this->h['ButtonBar']?>
-         <?php } ?>
-        </tr>
-        <tr>
-          <td class="x2_content">
-            <?php echo $hN?>
-            <?php echo $this->ehMainModeComment($this->mode)?>
-            <?php echo $this->h['Content']?>
-          </td>
-        </tr>
-        <tr>
-          <td style="vertical-align:top">
-          <?php
-          foreach ($this->h['Extra'] as $EKey=>$EContent) {
-            echo $EContent;  
-          }
-          ?>
-          </td>
-        </tr>
-      </table>
-      <?php
-   }
+      
+		<div class="hero-unit"><h1><?php echo $this->PageSubtitle?></h1></div>
+      
+         <?php
+			if(is_null($this->table_obj_child)) { 
+				echo $this->h['ButtonBar'];
+			} 
+			echo $this->ehMainModeComment($this->mode);
+			echo $this->h['Content'];
+			foreach ($this->h['Extra'] as $EKey=>$EContent) {
+				echo $EContent;  
+			}
+	}
    
    function ehMainModeComment($mode) {
       return;
@@ -476,17 +464,17 @@ class x_table2 {
          
       }
       else {
+		  
          if(vgfget('buttons_in_commands',false)) {
+			 
             $this->h['ButtonBar']='';
             vgfSet('html_buttonbar'
-               ,implode("&nbsp;|&nbsp;",$buts)
+               ,implode("",$buts)
             );
-         }
-         else {
+         } else {
             $this->h['ButtonBar']
-               ="<tr>"
-               ."<td height=\"40\" valign=top>"
-               ."\n<div class=\"x2menubar\">\n"
+               =
+               "\n<div class=\"x2menubar\">\n"
                .implode("\n&nbsp;",$buts)
                ."\n</div>";
          }
@@ -514,7 +502,7 @@ class x_table2 {
       list($caption,$akey)=FindAccessKey($caption);
       if(!$switch) {
          if ($this->button_images) {
-            return "<td><img src=\"images/$img-gray.png\"></td>"; 
+            return "<th><img src=\"images/$img-gray.png\"></th>"; 
          }
          else {
             // the "import" button should not be there at all if disabled
@@ -522,7 +510,7 @@ class x_table2 {
                return '';
             }
             else {
-               return "<span>$caption</span>";
+               return "<a class=\"btn disabled\">$caption</a>";
             }
          }
       }
@@ -574,15 +562,15 @@ class x_table2 {
       }
       else {
          // Make image
-         $ho="<td>";
-         $hc="</td>";
+         $ho="<th>";
+         $hc="</th>";
          $caption 
             ="<img src=\"images/".$img.".png\" " 
             ." onmouseover=\"this.src='images/$img-over.png'\" "
             ."  onmouseout=\"this.src='images/$img.png'\" "
             ."  alt='$caption' border=0>";
       }
-      return "$ho<a $akey $name href=\"$hlink\" onclick=\"$onclick\">$caption</a>$hc";
+      return "<a class=\"btn\" $akey $name href=\"$hlink\" onclick=\"$onclick\">$caption</a>";
    }
 
 
@@ -875,6 +863,7 @@ class x_table2 {
    
    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    function hBrowse_NavBar() {
+	   
       // Get vital stats, work out what the max page is
       $table_id = $this->table['table_id'];
       $var='gp_spage_'.$table_id;
@@ -913,17 +902,14 @@ class x_table2 {
             ."\n</tr></table>";
       }
       else {
-         $hprev=
-            $this->hTextButton('\First',$var,0,$lprev)
-            .$this->hTextButton('\Previous',$var,1,$lprev);
+         $hprev = $this->hTextButton('&laquo;',$var,0,$lprev,'First')
+            .$this->hTextButton('&lt;',$var,1,$lprev, 'Previous');
          $hnext=
-            $this->hTextButton('Ne\xt',$var,2,$lnext)
-            .$this->hTextButton('Las\t',$var,3,$lnext);
+            $this->hTextButton('&gt;',$var,2,$lnext, 'Next')
+            .$this->hTextButton('&raquo',$var,3,$lnext, 'Last');
          if(vgfget('buttons_in_commands')) {
-            vgfSet('html_navbar'
-               ,'<span style="border:1px solid gray; padding: 2px">'
-               .$hprev.$hcenter."&nbsp;&nbsp;&nbsp;".$hnext
-               .'</span>'
+            vgfSet('html_navbar', "<div style=\"margin:0px;\" class=\"pagination pull-right\">$hcenter&nbsp;"
+               .$hprev.$hnext ."</div>"
             );
             return '';
          }
@@ -938,15 +924,15 @@ class x_table2 {
       // Return the assembled HTML fragment
    }
    
-   function hTextButton($caption,$var,$val,$enabled) {
+   function hTextButton($caption,$var,$val,$enabled,$title='') {
       list($caption,$akey)=FindAccessKey($caption);
       if($enabled) {
-         return "<a $akey href=\"javascript:formPostString('"
+         return "<a class=\"btn btn-info\" $akey href=\"javascript:formPostString('"
             .$var."=".urlencode($val)
-            ."')\">".$caption."</a>&nbsp;&nbsp;&nbsp;";
+            ."')\"" .(!empty($title) ? " title=\"$title\"" : "" ) .">".$caption."</a>&nbsp;&nbsp;&nbsp;";
       }
       else {
-         return "<span>$caption</span>&nbsp;&nbsp;&nbsp;";
+         return "<span class=\"btn btn-info disabled\">$caption</span>&nbsp;&nbsp;&nbsp;";
       }
       
    }
@@ -969,6 +955,7 @@ class x_table2 {
       // Pull the nav bar.  Do this after pulling rows so we
       // know how many rows there are, what page we're on, etc.
       $hNavBar=$this->hBrowse_NavBar();
+      
 
       // Generate the table header
       $cols1=array('Edit');
@@ -1180,14 +1167,14 @@ class x_table2 {
         <?php echo $hNew?>
       </div>
       <div class="andro_space2"></div>
-      <table cellpadding="0" cellspacing="0" width="100%" class="x3detail">
-        <?php echo hTRFromArray('dhead',$cols)?>
-        <?php echo $hContent?>
-        <tr>
-            <td colspan=99 class='dhead'>&nbsp;
-            </td>
-        </tr>
-      </table>
+		<fieldset>
+			<?php echo hTRFromArray('dhead',$cols)?>
+			<?php echo $hContent?>
+			<tr>
+				<td colspan=99 class='dhead'>&nbsp;
+				</td>
+			</tr>
+		</fieldset>
       <?php
       return ob_get_clean();
    }
@@ -1202,7 +1189,7 @@ class x_table2 {
    // -----------------------------------------------------------
    function hBoxes($mode) {
       // Obtain a row depending on the mode we are in.  If there
-      // was an error then reload the first row for this table
+      // wdas an error then reload the first row for this table
       if(is_array(vgfGet('ErrorRow_'.$this->table_id,''))) {
          $row=vgfGet('ErrorRow_'.$this->table_id);
          $row['skey']=gp('gpx_skey');
@@ -1262,8 +1249,10 @@ class x_table2 {
          $lprev=$lnext=false;
          $skey = $this->row['skey'];
 			$sess_skeys = ConGet("table",$this->table_id,"skeys",array());
+	     
          if(count($sess_skeys)>1) {
             $sess_srows = array_flip($sess_skeys);
+         
             $sess_srow  = $sess_srows[$row['skey']];
             $lprev = $sess_srow==0 ? false : true;
             $skeyf= $sess_srow==0 ? 0 : $sess_skeys[0]; 
@@ -1274,17 +1263,15 @@ class x_table2 {
                ? 0 : $sess_skeys[count($sess_srows)-1]; 
             $hprev
                =hLinkImage('first','First','gp_skey',$skeyf,$lprev)
-               ."&nbsp;"
                .hLinkImage('previous','Previous','gp_skey',$skeyp,$lprev);
             $lnext = $sess_srow < (count($sess_srows)-1) ? true : false; 
             $hnext
                =hLinkImage('next','Next','gp_skey',$skeyn,$lnext)
-               ."&nbsp;"
                .hLinkImage('last','Last','gp_skey',$skeyl,$lnext);
             $HTML_ViewingPage = "Page ".($sess_srow+1)." of ".(count($sess_srows));
          }
       }
-
+      
       // Output and save the navbar
       ob_start();
       if ($HTML_ViewingPage<>'') {
@@ -1296,10 +1283,8 @@ class x_table2 {
             .$this->hTextButton('Las\t','gp_skey',$skeyl,$lnext);
          if(vgfget('buttons_in_commands')) {
             $this->h['NavBar']='';
-            vgfSet('html_navbar'
-               ,'<span style="border:1px solid gray; padding: 2px">'
-               .$hprev.$HTML_ViewingPage."&nbsp;&nbsp;&nbsp;".$hnext
-               .'</span>'
+            vgfSet('html_navbar', "<div style=\"margin:0px;\" class=\"pagination pull-right\">"
+               .$hprev.$hnext ."</div>"
             );
          }
          else {
@@ -1321,7 +1306,7 @@ class x_table2 {
          $this->h['Content']=$this->hBoxesX3($mode,'dupecheck');
          $this->h['Content']
             .='<br/><br/>'
-            .'<button id="object_for_enter" onclick="formSubmit()">(ENTER) Check For Duplicates</button>';
+            .'<button  class="btn btn-primary id="object_for_enter" onclick="formSubmit()">(ENTER) Check For Duplicates</button>';
       }
       else {
          $this->h['Content']=$this->hBoxesDefault($mode);
@@ -1613,6 +1598,7 @@ class x_table2 {
    // -----------------------------------------------------------
    // -----------------------------------------------------------
    function hExtra($mode) {
+	   
       if($mode<>'upd') return '';
 
       // Slice out the primary key from the row, use as search
@@ -1623,6 +1609,7 @@ class x_table2 {
       // Now maybe there are children to deal with.  Maybe not.
       $i=0;
       $retval=array();
+      
       foreach($this->extrabrowse as $table_id) {
          $tabinfo=$this->children[$table_id];
          $i++;
@@ -1631,12 +1618,14 @@ class x_table2 {
          if(isset($this->children[$table_id]['projections']['_uisearch'])) {
             $obj_child->projections['_uisearch']=
                $this->children[$table_id]['projections']['_uisearch'];
-         }
+      
+        }
          $retval[$table_id]="<br>".$obj_child->hBrowseChild($pks);
       }
       
       // Generate display for all valid child table rows where display
       // is 'onscreen'
+      
       foreach($this->children as $table_id=>$tabinfo) {
          $obj_child=DispatchObject($table_id);
          if($tabinfo['display']<>'onscreen') continue;
@@ -1646,8 +1635,9 @@ class x_table2 {
       // Always save values of main table's pk values.  Can be
       foreach($pks as $colname=>$colvalue) {
          hidden("parent_".$colname,$colvalue);
-      }   
+      }  
       if(isset($this->h['Extra'])) {
+		  
          $this->h['Extra'] = array_merge($this->h['Extra'],$retval);
       }
       else {

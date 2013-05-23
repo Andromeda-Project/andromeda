@@ -179,17 +179,14 @@ if(gp('st2logout')<>'') {
             # This just clears user leaves rest of session
             SessionSet('UID',$AG['application']);
             SessionSet('PWD',$AG['application']);
-        }
-        else {
+        } else {
             SessionReset();
         }
-    }
-    elseif(configGet('logout_clear','Y')=='N') {
+    } elseif(configGet('logout_clear','Y')=='N') {
         # Another way to clear user and leave session
         SessionSet('UID',$AG['application']);
         SessionSet('PWD',$AG['application']);
-    }
-    else {
+    } else {
         SessionReset();
     }
 }
@@ -214,12 +211,12 @@ if($uid=='') {
 //
 $directlogin=false;
 if (gp('gp_uid')<>'') {
-  $directlogin=true;
-  $directclean = $AG['clean'];
-  gpSet('loginUID',gp('gp_uid'));
-  gpSet('loginPWD',gp('gp_pwd'));
-  gpSet('gp_posted',1);
-  gpSet('gp_page','x_login');
+	$directlogin=true;
+	$directclean = $AG['clean'];
+	gpSet('loginUID',gp('gp_uid'));
+	gpSet('loginPWD',gp('gp_pwd'));
+	gpSet('gp_posted',1);
+	gpSet('gp_page','x_login');
 }
    
 $gp_page = gp('gp_page');
@@ -237,8 +234,7 @@ if (gp('st2login')==1) {
             unset($directclean['loginUID']);
             unset($directclean['loginPWD']);
             $AG['clean']=$directclean;
-        }
-        elseif(count(SessionGet('clean',array()))<>0) {
+        } elseif(count(SessionGet('clean',array()))<>0) {
             // These were a page attempt made w/o being logged in,
             // which is now being ok'd since the user is logged in.
             $GLOBALS['AG']['clean'] = SessionGet('clean');
@@ -331,8 +327,7 @@ if(function_exists('app_after_db_connect')) {
 if(SessionGet('ROOT')==1) {
     try {
         require_once('FirePHPCore/FirePHP.class.php');
-    }
-    catch(Exception $e) {
+    } catch(Exception $e) {
         # do nothing on error, we ignore
     }
     if(class_exists('FirePHP')) {
@@ -352,6 +347,8 @@ if(SessionGet('ROOT')==1) {
 #             always come up as x4 pages, since that is
 #             how they were coded.  Must also set a flag
 #             to keep menu in x2 mode.
+# DO 5/17/2013 Removing all references to x2 and x4 as this will now just be andromeda
+#
 $x4Required = array(
     'configfw','configapp','configinst','configuser','configconfirm'
 );
@@ -370,8 +367,7 @@ if(in_array(gp('gp_page'),$x4Required)) {
 if(gp('x4Page')=='' && gp('gp_page')=='' &&gp('x6page')=='') {
     if(function_exists('app_nopage')) {
         app_nopage();
-    }
-    else {
+    } else {
         # for x4 apps only, if we have no page
         # set it to the menu
         $x4menu = configGet('x4menu');
@@ -395,12 +391,16 @@ $flagx6    = configGet('flag_x6','N');
 $x6template= configGet('x6_template','');
 $x6group   = configGet('x6_group'   ,'');
 
+# DO 5/17/2013 Lets just totally disable x6
+$flagx6 = 'N';
+
 # KFD 1/13/09.  If there is a "gp_page" and x2=1, turn off
 #               x6 processing
-if(gp('gp_page',false) || gp('x2')==1) {
-    $flagx6 = 'N';
-}
-    
+#
+#if(gp('gp_page',false) || gp('x2')==1) {
+#    $flagx6 = 'N';
+#}
+  
 
 $x6page    = '';
 $x6file    = '';
@@ -411,6 +411,7 @@ $x6action  = '';
 
 # KFD 1/10/09.  Completely reworked to run off of 'flag_x6'
 #               instead of template.
+/*
 $x6page = gp('x6page');
 if($flagx6=='Y' && $x6page=='') {
     if(function_exists('app_nopage')) {
@@ -420,7 +421,7 @@ if($flagx6=='Y' && $x6page=='') {
         $x6page = 'menu';
     }
 }
-
+*/
 
 # A custom file for this page
 $x = "x6$x6page.php";

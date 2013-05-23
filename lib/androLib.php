@@ -876,7 +876,7 @@ function hSize($x1024) {
 
 ******
 */
-function html($tag,&$parent=null,$innerHTML='') {
+function html($tag,&$parent=null,$innerHTML='', $class='') {
     // Branch off if an array and return an array
     if(is_array($innerHTML) ) {
         $retval = array();
@@ -889,11 +889,12 @@ function html($tag,&$parent=null,$innerHTML='') {
 
     $retval = & new androHtml();
     $retval->setHtml($innerHTML);
-
+	if (!empty($class)) {
+		$retval->addClass($class);
+	}
     if($tag<>'a-void') {
         $retval->htype = $tag;
-    }
-    else {
+    } else {
         $retval->htype='a';
         $retval->hp['href']='#';
     }
@@ -1268,7 +1269,13 @@ class androHtml {
     * SOURCE
     */
     function addClass($value) {
-        $this->classes[] = $value;
+		if (is_array(value)) {
+			foreach( $value as $class ) {
+				$this->classes[] =  $class;
+			}
+		} else {
+			$this->classes[] = $value;
+		}
     }
     /******/
 
@@ -1685,7 +1692,7 @@ class androHtml {
         # First trick is to create the div that will be
         # slipped in above the titles.
         $this->buttonBar = html('div');
-        $this->buttonBar->hp['style'] = "height: {$bbHeight}px;";
+        $this->buttonBar->hp['class'] = 'subnav pull-right';
         if(arr($this->hp,'x6plugin','')=='grid') {
             array_unshift($this->dhead0->children,$this->buttonBar);
         }
@@ -2470,6 +2477,7 @@ class androHTMLTableController extends androHTML {
         $this->hp['x6plugin'] = 'tableController';
         $this->hp['x6table']  = $table_id;
         $this->hp['id']       = 'tc_'.$table_id;
+        $this->hp['class'] = 'table table-striped table-condensed table-bordered table-hover';
         
         $this->ap['xPermSel'] = ddUserPerm($table_id,'sel');
         $this->ap['xPermIns'] = $this->permResolve('ins');
@@ -3920,6 +3928,7 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
     }
     else {
         $input = html('input');
+        $input->hp['type'] = 'text';
     }
     
     # Apply the readonly stuff we figured out first
@@ -4564,6 +4573,8 @@ function configLayoutX4($container,$type) {
 
     # set up the table
     $table = html('table',$top);
+    
+    $table->addClass('table table-bordered table-striped table-condensed table-hover');
     $table->hp['id'] = 'x2data1';
     $thead = html('thead',$table);
     $tr = html('tr',$thead);
@@ -5421,16 +5432,17 @@ function mosLoadModules($name,$arg1=null) {
    //   echo $content;
    //}
    if(function_exists('appLoadModules')) {
-      appLoadModules($name,$arg1);
+       $ret = appLoadModules($name,$arg1);
    }
    elseif(function_exists('tmpLoadModules')) {
-      tmpLoadModules($name,$arg1);
+      $ret = tmpLoadModules($name,$arg1);
    }
    else {
       echo
          'Could not find appLoadModules() or tmpLoadModules(). '
          ." This message sponsored by module '$name'";
   }
+  return $ret;
 }
 
 /*f* Joomla-CompatibilitymosPathWay
@@ -9211,7 +9223,7 @@ function ehStandardFormOpen($id='Form1') {
    $x=$id; //annoying jedit compiler warning
    $style = vgfGet('x6') ? '' : 'style="height:100%"';
    ?>
-   <form method="post" action="index.php" id="<?php echo $x?>"
+   <form class="form-horizontal" method="post" action="index.php" id="<?php echo $x?>"
                  enctype="multipart/form-data"
                  name="Form1" <?php echo $style?> >
    <?php
@@ -9376,7 +9388,7 @@ function ehFWLogin($class='login',$id='',$username='') {
    }
    else {
    ?>
-   <form action="?gp_page=x_login&gp_posted=1" method="post">
+   <form class="form form-horizontal" action="?gp_page=x_login&gp_posted=1" method="post">
    <table <?php echo $hclass?>>
      <tr>
       <td <?php echo $hclass?>>User Login:</td>
@@ -9452,7 +9464,7 @@ function ehLoginHorizontal() {
 ******
 */
 function ehModuleCommands() {
-   ?>
+/*   
    <script type="text/javascript">
    function DoCommand(e) {
       var kc = KeyCode(e);  // this routine is in raxlib.js
@@ -9462,10 +9474,11 @@ function ehModuleCommands() {
       }
    }
    </script>
-   <div style="text-align: right">
-   <span style="float: left">
-   <?php if(vgfGet('x4')!==true) { ?>
-   <a      id="object_for_f4"
+   
+
+   if(vgfGet('x4')!==true) { 
+	   
+   <a class="btn" id="object_for_f4"
          href="#"
       onclick="javascript:history.back()">
    (F4) Back</a>&nbsp;&nbsp;
@@ -9486,7 +9499,8 @@ function ehModuleCommands() {
           href='javascript:void(0)'
        onclick="window.open('?gp_page=x4init')"
        >F6: New Window</a>
-   <?php } ?>
+   } 
+
 
    <span style="color: red"><?php echo "&nbsp;&nbsp;".vgfGet('command_error')?></span>
    <?php
@@ -9498,15 +9512,12 @@ function ehModuleCommands() {
    }
    ?>
    </span>
-
+   */
+   ?>
    <span style="padding-right: 10px">
    <?php echo vgfGet('html_buttonbar')?>&nbsp;&nbsp;&nbsp;&nbsp;
    <?php echo vgfGet('html_navbar')?>
-   <?php if(vgfGet('x4')===true) { ?>
-       <?php echo ehLoginHorizontal()?>
-   <?php } ?>
    </span>
-   </div>
    <?php
 }
 
@@ -10140,7 +10151,6 @@ function objPageMain($class) {
 */
 function FILE_EXISTS_INCPATH($file) {
     $paths = explode(PATH_SEPARATOR, get_include_path());
-
     foreach ($paths as $path) {
         // Formulate the absolute path
         $fullpath = $path . DIRECTORY_SEPARATOR . $file;
@@ -11556,18 +11566,17 @@ function hTableSortable($table_id,$cols,$class='dhead') {
    hidden($hid,'');
 
    $retval
-      ='<table width="100%" border="0" '
-      .' cellpadding="0" cellspacing="0"'
-      .' style="border-collapse: collapse;">'."\n";
-   $retval.='<tr>';
+      ='<table class="table table-bordered table-hover table-striped table-condensed">'."\n";
+   $retval .= '<thead>';
    foreach($cols as $colname=>$colcap) {
       $href="javascript:SaveAndPost('".$hid."','".$colname."')";
+      
       $retval.=
-         '<td class="'.$class.'">'
+         '<th class="'.$class.'">'
          .'<a href="'.$href.'">'.$colcap.'</a>'
-         .'</td>';
+         .'</th>';
    }
-   $retval.='</tr>';
+   $retval.='</thead>';
    return $retval;
 }
 
@@ -15090,7 +15099,7 @@ function hDetailFromAHCols($ahcols,$name,$tabindex,$display='') {
 
    ob_start();
    $first='';
-   if($display=='') echo "\n<table class=\"x3detail\" cellspacing=\"1\" cellpadding=\"0\" >";
+   if($display=='') echo "\n<fieldset>";
    foreach($ahcols as $colname=>$ahcol) {
       // Establish names of crucial items
       $cname=$ahcol['cname'];
@@ -15113,16 +15122,16 @@ function hDetailFromAHCols($ahcols,$name,$tabindex,$display='') {
 
       switch($display) {
       case '':
-        echo "\n<tr><td class=\"x3caption\" >".$ahcol['description'] ."</td>";
-        echo "\n<td class=\"x3input\">$html $hrgt</td>";
-        echo "\n<td class=\"x3error\" id=\"$cnmer\">$cname--ERROR--</td>";
-        echo "\n<td class=\"x3tooltip\">".$ahcol['tooltip'] ."</td></tr>";
+        echo "\n<div class=\"control-group\"><label class=\"control-label\">".$ahcol['description'] .":</label>";
+        echo "\n<div class=\"controls\">$html $hrgt";
+        echo "\n<span class=\"help-inline\" id=\"$cnmer\">$cname--ERROR--</span>";
+        echo "\n<span class=\"help-inline\">".$ahcol['tooltip'] ."</span></div></div>";
         break;
      case 'tds':
-        echo "\n<td class=\"x3input\">$html</td>";
+        echo "\n<div class=\"controls\">$html</div>";
      }
    }
-   if ($display=='') echo "</table>";
+   if ($display=='') echo "</fieldset>";
    return ob_get_clean();
 }
 
@@ -15262,6 +15271,7 @@ function ahColFromACol(&$acol) {
    $acol['text-align']  = 'left';
    $acol['hparms']=array(
       'class'=>'x3'.$acol['mode']
+      ,'type'=>'text'
       ,'name'=>'--NAME--'
       ,'nameprefix'=>'--NAME-PREFIX--'
       ,'id'=>'--ID--'
@@ -15427,9 +15437,9 @@ function ahColFromACol(&$acol) {
       // Says we want an info button next to it
       if($acol['mode']<>'search') {
          $acol['html_right']
-            .="<a tabindex=999 href=\"javascript:Info2('"
+            .="<span class=\"help-inline\"><a tabindex=999 href=\"javascript:Info2('"
             .$acol['table_id_fko']."'"
-            .",'--NAME--')\">Info</a>";
+            .",'--NAME--')\">Info</a></span>";
       }
 
       if($acol['writable']) {
@@ -15517,7 +15527,7 @@ function ahColFromACol(&$acol) {
       $fetches=$acol['fetches'];
       foreach($fetches as $fetch) {
 
-         $acol['snippets']['onblur'][]
+         $acol['snippets']['onchange'][]
             ="ajaxFetch("
             ."'".$fetch['table_id_par']."'"
             .",'--NAME-PREFIX--'"
@@ -16155,7 +16165,8 @@ function cssOutput() {
         $string = '';
         foreach($css as $cssone) {
             $string.="\n/* FILE: $cssone */\n";
-            if(file_exists(fsDirTop().$cssone)) {
+            $cssFile = fsDirTop().$cssone;
+            if(file_exists($cssFile)) {
                 $string.=file_get_contents( fsDirTop().$cssone );
             }
         }
@@ -16472,7 +16483,7 @@ function SQL_CONN($tuid,$tpwd,$app="") {
     global $AG;
 	//if ($app=="") { $app = $AG["application"]; }
     $app = $AG["application"];
-    //echo "$tuid $tpwd $app";
+//echo "$tuid $tpwd $app";
 	$tcs = SQL_CONNSTRING($tuid,$tpwd,$app);
     if(function_exists('pg_connect')) {
        $conn = @pg_connect($tcs,PGSQL_CONNECT_FORCE_NEW );

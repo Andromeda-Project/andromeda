@@ -450,16 +450,17 @@ The information used to build the system came from the
       ob_start();
       ?>
 
-<table class="adocs_table1 grid" cellspacing=0 cellpadding=0>
+<table class="table table-condensed table-striped table-hover table-bordered">
 <thead>
-<tr class="dark">
-  <td class="adocs_th">Column Name
-  <td class="adocs_th">Description
-  <td class="adocs_th">Defined In
-  <td class="adocs_th">Stats
-  <td class="adocs_th">Automation
-  <td class="adocs_th">Present In
+<tr>
+  <th>Column Name
+  <th>Description
+  <th>Defined In
+  <th>Stats
+  <th>Automation
+  <th>Present In
 </tr>
+</thead>
       <?php
       $sq="SELECT * from zdd.columns order by column_id";
       $cols=SQL_AllRows($sq);
@@ -584,15 +585,19 @@ to read from table "X" even if one or more of the other groups they
 belong to cannot read from that table. 
  
 
-<table class="adocs_table1" cellspacing=0 cellpadding=0>
-  <tr><td class="adocs_th">Group
-      <td class="adocs_th">Defined In
-      <td class="adocs_th">Description
-      <td class="adocs_th">Select
-      <td class="adocs_th">Insert
-      <td class="adocs_th">Update
-      <td class="adocs_th">Delete
-  </tr>
+<table class="table table-striped table-bordered table-condensed table-hover">
+	<thead>
+	  <tr>
+		  <th>Group</th>
+		  <th>Defined In</th>
+		  <th>Description</th>
+		  <th>Select</th>
+		  <th>Insert</th>
+		  <th>Update</th>
+		  <th>Delete</th>
+	  </tr>
+  </thead>
+  <tbody>
       <?php
       $groups=SQL_AllRows("select * from zdd.groups order by group_id");
       foreach($groups as $row) {
@@ -611,7 +616,10 @@ belong to cannot read from that table.
          echo hTRFromArray('',$display);
          $this->ProcessData_OneGroup($row);
       }
-      echo "</table>";
+      echo "</tbody>";
+	  ?>
+      </table>
+      <?php
       $page_text=ob_get_clean();
       $this->PageUpdate('Groups',$page_text,'Data Dictionary');
    }
@@ -768,15 +776,16 @@ belong to cannot read from that table.
    function ProcessData_Tables() {
       ob_start();
       ?>
-<table class="adocs_table1 grid" cellspacing=0 cellpadding=0>
+<table class="table table-striped table-bordered table-condensed table-hover">
   <thead>
   <tr class="dark">
-      <td class="adocs_th">Module
-      <td class="adocs_th">Table
-      <td class="adocs_th">Defined In
-      <td class="adocs_th">Title
-  </thead>
+      <th>Module</th>
+      <th>Table</th>
+      <th>Defined In</th>
+      <th>Title</th>
   </tr>
+  </thead>
+  <tbody>
       <?php 
       $sql = 
          "SELECT t.table_id,t.srcfile,t.description,t.module 
@@ -798,6 +807,7 @@ belong to cannot read from that table.
          echo hTRFromArray('',$display);
          $this->ProcessData_OneTable($row);
       }
+      echo '</tbody>';
       echo "</table>";
       $page_text=ob_get_clean();
       $this->PageUpdate('Tables',$page_text,'Data Dictionary');
@@ -807,14 +817,14 @@ belong to cannot read from that table.
       $tab = trim($table["table_id"]);
       ob_start();
       ?>
-       <table class="adocs_table1 grid" cellspacing=0 cellpadding=0>
+       <table class="table table-striped table-bordered table-condensed table-hover">
           <thead>
-          <tr class="dark">
-              <td class="adocs_th">Module
-              <td class="adocs_th">Parent Tables
-              <td class="adocs_th">Child Tables
-          </thead>
+          <tr>
+              <th>Module</th>
+              <th>Parent Tables</th>
+              <th>Child Tables</th>
           </tr>
+          </thead>
           <tr>
       <?php
       echo "<td>".$this->PageLink('Module',$table['module']);
@@ -892,11 +902,15 @@ Select c.* from zdd.colchains c
             .($colsCon['chain']=='calc' ? 'Calculation' : 'Constraint')
             ."</div>";
          ?>
-         <table width=100% class="adocs_table1">
-           <tr>
-             <td width=50% class="adocs_th">Test</td>
-             <td width=50% class="adocs_th">Returns</td>
-           </tr>
+		<table class="table table-striped table-bordered table-condensed table-hover">
+			<thead>
+				<tr>
+					<th width=50% class="adocs_th">Test</th>
+					<th width=50% class="adocs_th">Returns</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
          <?php
          $tests=SQL_AllRows("
 select arg.*,test.funcoper,test.compoper 
@@ -936,6 +950,7 @@ select arg.*,test.funcoper,test.compoper
              }
           }
           echo "</tr>";
+          echo "</tbody>";
           echo "</table>";
       }
       
@@ -1048,7 +1063,7 @@ select arg.*,test.funcoper,test.compoper
    }
    
    function ehTableHeader() {
-      echo "<table cellpadding=0 cellspacing=0 class=\"adocs_table1 grid\">";
+      echo "<table class=\"table table-striped table-condensed table-hover table-bordered\">";
    }
    
    function PermResolve($perm) {
