@@ -146,24 +146,6 @@ include('androHTMLHead.php');
 		</div>
 	</div>	
 	<div class="container-fluid">	
-		<?php
-			if (mosCountModules('commands')) {
-				$commands = mosLoadModules('commands');
-				if (!is_null($commands)) {
-		?>
-		<div class="row-fluid">
-			<div class="span12">
-				<?php
-					echo '<div class="subnav">';
-					echo mosLoadModules('commands');
-					echo( '</div>' );
-				?>
-			</div>
-		</div>
-		<?php
-				}
-			}
-		?>
 		<div class="row-fluid">
 			<?php 
 				if (mosCountModules('left')) {
@@ -179,7 +161,19 @@ include('androHTMLHead.php');
 						echo '</div>';
 					}
 				} 
-				echo '<div class="span' .($left === false ? '12' : '9')  .'">';
+				echo '<div class=" test span' .($left === false ? '12' : '9')  .'" style="padding-bottom:15px;">';
+					
+				if (mosCountModules('commands')) {
+			?>
+					<div class="container" style="padding-bottom:15px;">
+						<div class="span<?php echo ($left === false ? '12' : '9') ?>">
+							<?php
+								mosLoadModules('commands');
+							?>
+						</div>
+					</div>
+			<?php
+				}
 				echo mosMainBody();
 				echo '</div>';
 			?>

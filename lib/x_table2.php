@@ -474,7 +474,7 @@ class x_table2 {
          } else {
             $this->h['ButtonBar']
                =
-               "\n<div class=\"x2menubar\">\n"
+               "\n<div class=\"btn-group\">\n"
                .implode("\n&nbsp;",$buts)
                ."\n</div>";
          }
@@ -908,14 +908,12 @@ class x_table2 {
             $this->hTextButton('&gt;',$var,2,$lnext, 'Next')
             .$this->hTextButton('&raquo',$var,3,$lnext, 'Last');
          if(vgfget('buttons_in_commands')) {
-            vgfSet('html_navbar', "<div style=\"margin:0px;\" class=\"pagination pull-right\">$hcenter&nbsp;"
-               .$hprev.$hnext ."</div>"
-            );
+            vgfSet('html_navbar', $hprev .'<span style="width:100px;font-size:10px;margin-left:5px;margin-right:5px;vertical-align:middle;">' .$hcenter .'</span>' .$hnext);
             return '';
          }
          else {
-            return "\n<div class=\"x2menubar\">\n"
-               .$hprev.$hcenter."&nbsp;&nbsp;&nbsp;".$hnext
+            return "\n<div class=\"btn-group\">\n"
+               .$hprev.$hnext
                ."\n</div>";
          }
       }
@@ -929,10 +927,10 @@ class x_table2 {
       if($enabled) {
          return "<a class=\"btn btn-info\" $akey href=\"javascript:formPostString('"
             .$var."=".urlencode($val)
-            ."')\"" .(!empty($title) ? " title=\"$title\"" : "" ) .">".$caption."</a>&nbsp;&nbsp;&nbsp;";
+            ."')\"" .(!empty($title) ? " title=\"$title\"" : "" ) .">".$caption."</a>";
       }
       else {
-         return "<span class=\"btn btn-info disabled\">$caption</span>&nbsp;&nbsp;&nbsp;";
+         return "<a href=\"#\" class=\"btn btn-info disabled\">$caption</a>";
       }
       
    }
@@ -1283,9 +1281,7 @@ class x_table2 {
             .$this->hTextButton('Las\t','gp_skey',$skeyl,$lnext);
          if(vgfget('buttons_in_commands')) {
             $this->h['NavBar']='';
-            vgfSet('html_navbar', "<div style=\"margin:0px;\" class=\"pagination pull-right\">"
-               .$hprev.$hnext ."</div>"
-            );
+            vgfSet('html_navbar', $hprev .$hnext);
          }
          else {
             $this->h['NavBar']

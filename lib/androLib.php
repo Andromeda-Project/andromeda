@@ -9514,10 +9514,14 @@ function ehModuleCommands() {
    </span>
    */
    ?>
-   <span style="padding-right: 10px">
-   <?php echo vgfGet('html_buttonbar')?>&nbsp;&nbsp;&nbsp;&nbsp;
-   <?php echo vgfGet('html_navbar')?>
-   </span>
+		<div class="btn-group">
+			<?php echo vgfGet('html_buttonbar')?>
+		</div>
+		<div class="pull-right">
+			<div class="btn-group">
+				<?php echo vgfGet('html_navbar')?>
+			</div>
+		</div>
    <?php
 }
 
