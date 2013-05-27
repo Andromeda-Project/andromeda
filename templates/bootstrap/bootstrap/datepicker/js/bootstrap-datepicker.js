@@ -149,9 +149,14 @@
 			this.fill();
 		},
 		
-		place: function(){
-			var offset = this.component.offset || this.element.offset(),
-				height = this.height || this.element.height();
+		place: function() {
+			var offset, height;
+			if (!!this.componenet) {
+				offset = this.component.offset();
+			} else {
+				offset = this.element.offset();
+			}
+			height = this.height || this.element.height();
 			this.picker.css({
 				top: offset.top + height,
 				left: offset.left
