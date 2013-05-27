@@ -109,6 +109,7 @@ else {
 
 cssInclude("templates/$template/bootstrap/css/bootstrap.min.css");
 cssInclude("templates/$template/bootstrap/css/bootstrap-responsive.min.css");
+cssInclude("templates/$template/bootstrap/datepicker/css/datepicker.css");
 include('androHTMLHead.php');
 ?>
 </head>
@@ -184,6 +185,7 @@ include('androHTMLHead.php');
 	</div>
 <?php
 	jsInclude("templates/$template/bootstrap/js/bootstrap.min.js");
+	jsInclude("templates/$template/bootstrap/datepicker/js/bootstrap-datepicker.js");
 	jsInclude("clib/androLib.js");
 	jsInclude("clib/androLibDeprecated.js");
 	jsInclude("clib/x4.js");
