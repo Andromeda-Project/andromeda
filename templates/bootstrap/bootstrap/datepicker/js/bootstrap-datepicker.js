@@ -150,11 +150,10 @@
 		},
 		
 		place: function(){
-			var offset = this.component.offset() || this.element.offset(),
+			var offset = this.component.offset || this.element.offset(),
 				height = this.height || this.element.height();
-				
 			this.picker.css({
-				top: offset.top + ( height + 15 ),
+				top: offset.top + height,
 				left: offset.left
 			});
 		},

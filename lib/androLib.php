@@ -3820,7 +3820,6 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
     #            at top level by table permissions.
     if(ddUserPerm($table_id,'ins')==false) $xRoIns = 'Y';
     if(ddUserPerm($table_id,'upd')==false) $xRoUpd = 'Y';
-    
     # First decision is to work out what kind of control to make
     if(arr($colinfo,'x6view','')=='window') {
         $input = html('a');
@@ -3929,6 +3928,9 @@ function input($colinfo,&$tabLoop = null,$options=array()) {
     else {
         $input = html('input');
         $input->hp['type'] = 'text';
+        if ( $type_id == 'date') {
+			$input->hp['data-date-format'] = 'yyyy-mm-dd';
+		}
     }
     
     # Apply the readonly stuff we figured out first
@@ -12798,6 +12800,7 @@ function hWidget($type_id,$name,$value='',$opts=array()) {
          unset($col['parms']['size']);
          break;
       case 'date':
+		 $col['parms']['data-date-format'] = 'yyyy-mm-dd';
          $col['parms']['maxlength']=10;
          $col['parms']['size']=11;
    }
@@ -13047,6 +13050,8 @@ function ahInputsComprehensive(
       $coltype=$table['flat'][$colname]['type_id'];
       //echo "$colname is $coltype<br>";
       switch ($coltype) {
+		 case 'date':
+			$col['parms']['data-date-format'] = 'yyyy-mm-dd';
          case 'time':
             $col['input']='select';
             $v=$col['parms']['value'];
@@ -14876,24 +14881,26 @@ function aWidgets(&$table,$row=array(),$mode='upd',$projection='') {
     // These calls are the top of hDetailFromAHCols
     // We are doing cargo-cult programming putting them here
     ahColsNames($ahcols,'x2t_',500);
+    
     $calcRow=vgaGet('calcRow');
     $calcRow=str_replace('--NAME-PREFIX--','x2t_',$calcRow);
     vgaSet('calcRow',$calcRow);
-
     // This loop is directly lifted from hDetailFromAHCols
     foreach($ahcols as $colname=>$ahcol) {
         //  if no first focus, set it now
         if( vgfGet('HTML_focus')=='' && $ahcol['writable']) {
             vgfSet('HTML_focus',$ahcol['cname']);
         }
-
         // Replace out the HTML for MIME-H stuff
         // KFD 9/7/07, replace the HTML if it is a WYSIWYG column
         if($ahcol['type_id']=='mime-h'  || $ahcol['type_id'] == 'mime-h-f') {
             $ahcols[$colname]['htmlnamed']
                 = '--MIME-H--'.$ahcol['cname'].'--MIME-H--';
             //$html = '--MIME-H--'.$ahcol['cname'].'--MIME-H--';
-        }
+        } else if ($ahcol['type_id'] == 'date') {
+			$ahcols[$colname]['parms']['data-date-format'] = 'yyyy-mm-dd';
+		}
+        
     }
 
     // Now we want to make use of the already written jsValues
@@ -15120,10 +15127,13 @@ function hDetailFromAHCols($ahcols,$name,$tabindex,$display='') {
       if($ahcol['type_id']=='mime-h' || $ahcol['type_id'] == 'mime-h-f') {
           $html = '--MIME-H--'.$ahcol['cname'].'--MIME-H--';
       }
-
+      
+      if ($ahcol['type_id'] == 'date') {
+		  $ahcol['hparms']['data-date-format'] = 'mm/dd/yyyy';
+		  jqDocReady( 'jQuery(\'#' .$ahcol['cname'] .'\').datepicker().on(\'changeDate\',function(){$(this).datepicker(\'hide\');});' );
+	  }
       // Replace out the stuff to the right
       $hrgt=$ahcol['hrgtnamed'];
-
       switch($display) {
       case '':
         echo "\n<div class=\"control-group\"><label class=\"control-label\">".$ahcol['description'] .":</label>";
@@ -15332,12 +15342,14 @@ function ahColFromACol(&$acol) {
    case 'date':
       //  We might put a date button off to the right,
       //  if it is writable
+      /*
       if($acol['writable']) {
          $acol['html_right']
             .="&nbsp;&nbsp;"
             ."<img src='clib/dhtmlgoodies_calendar_images/calendar1.gif' value='Cal'
                onclick=\"displayCalendar(ob('--NAME--'),'mm/dd/yyyy',this,true)\">";
-      }
+      }*/
+      $acol['hparams']['data-date-format'] = 'yyyy-mm-dd';
       $acol['hparms']['size']=$acol['size'];
       if(isset($acol['maxlength'])) {
          $acol['hparms']['maxlength'] = $acol['maxlength'];
@@ -15558,6 +15570,7 @@ function ahColFromACol(&$acol) {
    // Big deal OMEGA, rendering the element
    // ------------------------------------
    $hparms='';
+   
    foreach($acol['hparms'] as $parm=>$value) {
        $hparms.=$parm.'="'
         .(( $acol['type_id'] == 'mime-h' || $acol['type_id'] == 'mime-h-f' ) && $parm=='value'
