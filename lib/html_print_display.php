@@ -121,16 +121,9 @@ return;
 									if ($HTML_nots) {
 										if ($HTML_Message) echo "<br>"; 
 									?>
-										<center>
-										<table cellpadding="0" cellspacing="0" class="noticebox">
-											<tr>
-												<td class="noticepic"></td>
-												<td class="noticetext">
-													<?php echo $HTML_nots?>
-												</td>
-											</tr>
-										</table>
-										</center>
+										<div class="alert alert-info">
+                                            <?php echo $HTML_nots?>
+									    </div>
 									<?php } ?>
 
 									
@@ -138,16 +131,11 @@ return;
 									$HTML_errs = HTMLX_Errors();
 									if ($HTML_errs) {
 									?>
-										<center>
-										<table cellpadding="0" cellspacing="0" class="errorbox">
-											<tr>
-												<td class="errorpic"></td>
-												<td class="errortext">
-													<?php echo $HTML_errs?>
-												</td>
-											</tr>
-										</table>
-										</center>
+
+										<div class="alert alert-error">
+											<?php echo $HTML_errs?>
+										</div>
+
 									<?php } ?>
 					
 								

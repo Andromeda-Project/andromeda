@@ -8033,7 +8033,7 @@ function aNoticesClean() {
 * RETURN
 *	string HTML_Fragment
 */
-function hErrors($class='errorbox') {
+function hErrors($class='alert alert-error') {
     $retval="";
 
     global $AG;
@@ -8042,7 +8042,7 @@ function hErrors($class='errorbox') {
     if(count($errors)>0) {
         $retval="\n<div class=\"".$class."\">";
         foreach($errors as $error) {
-            $retval.="\n<p>".$error."</p>";
+            $retval.="\n".$error;
         }
         $retval.="\n</div>";
     }
@@ -9245,7 +9245,7 @@ function ehErrors() {
     
    $aErrors = aErrorsClean();
    if (count($aErrors)>0) {
-      echo '<div class="errorbox">';
+      echo '<div class="alert alert-error">';
       if(vgfGet('ERROR_TITLE')=='') {
          // KFD 6/27/07, think this got broken by changes to SQL2 and
          // error reporting system, just take it out
@@ -9516,7 +9516,7 @@ function ehModuleCommands() {
    </span>
    */
    ?>
-		<div class="btn-group">
+		<div class="btn-group" style="padding-bottom:10px;">
 			<?php echo vgfGet('html_buttonbar')?>
 		</div>
 		<div class="pull-right">
@@ -15128,10 +15128,15 @@ function hDetailFromAHCols($ahcols,$name,$tabindex,$display='') {
           $html = '--MIME-H--'.$ahcol['cname'].'--MIME-H--';
       }
       
-      if ($ahcol['type_id'] == 'date') {
-		  $ahcol['hparms']['data-date-format'] = 'mm/dd/yyyy';
-		  jqDocReady( 'jQuery(\'#' .$ahcol['cname'] .'\').datepicker().on(\'changeDate\',function(){$(this).datepicker(\'hide\');});' );
-	  }
+        if ($ahcol['type_id'] == 'date') {
+            jqDocReady( "$('.datepicker').each(
+		        function() {
+		            $(this).datepicker().on('changeDate',function() {
+		                $(this).datepicker('hide');
+		            });
+		        });
+		    " );
+	    }
       // Replace out the stuff to the right
       $hrgt=$ahcol['hrgtnamed'];
       switch($display) {
@@ -15303,7 +15308,11 @@ function ahColFromACol(&$acol) {
       ,'x_value_focus'=>''
       ,'x_type_id'=>$acol['type_id']
    );
-
+    if ($acol['type_id'] == 'date') {
+        $acol['hparms']['data-date'] = '--NAME----VALUE--';
+        $acol['hparms']['class'] = 'datepicker';
+        $acol['hparms']['data-date-format'] = 'mm/dd/yyyy';
+    }
    $TOOLTIPS = OptionGet('TOOLTIPS','N');
    switch($TOOLTIPS) {
    case 'NONE':
@@ -15319,7 +15328,8 @@ function ahColFromACol(&$acol) {
 
    // For read-onlies, add another class
    if(!$acol['writable']) {
-      $acol['hparms']['class']='x3ro';
+      //$acol['hparms']['class']='x3ro';
+      $acol['hparms']['readonly'] = 'readonly';
    }
 
    // A size correction

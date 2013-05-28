@@ -474,7 +474,7 @@ class x_table2 {
          } else {
             $this->h['ButtonBar']
                =
-               "\n<div class=\"btn-group\">\n"
+               "\n<div class=\"btn-group\" style=\"padding-bottom:10px;\">\n"
                .implode("\n&nbsp;",$buts)
                ."\n</div>";
          }
@@ -702,7 +702,7 @@ class x_table2 {
       
       ob_start();
       ?>
-      <table width=100%>
+      <table class="table table-bordered table-striped table-condensed">
         <tr>
         <td>
            <b>Selected Values</b><br/><br/> 
@@ -912,7 +912,7 @@ class x_table2 {
             return '';
          }
          else {
-            return "\n<div class=\"btn-group\">\n"
+            return "\n<div class=\"btn-group\" style=\"padding-bottom:10px;\">\n"
                .$hprev.$hnext
                ."\n</div>";
          }
