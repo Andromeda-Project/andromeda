@@ -10100,7 +10100,16 @@ function FS_PrepareMake() {
       `$cmd`;
       `rm $dir_pubx/htaccess`;
    }
-   
+
+    $addt_file = $dir_pubx .DIRECTORY_SEPARATOR .'application' .DIRECTORY_SEPARATOR .'htaccess_addt';
+    if (file_exists($ddt_file)) {
+        $handle = fopen($dir_pubx .DIRECTORY_SEPARATOR .'.htaccess','a');
+        if ($handle) {
+            fwrite($handle, file_get_contents($addt_file) ."\n");
+            fclose($handle);
+        }
+    }
+
     # KFD 1/24/09, copy any skeleton files found if not 
     #              an instance
     if(!isset($parm['IVER'])) {
