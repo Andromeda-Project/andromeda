@@ -10077,7 +10077,9 @@ function FS_PrepareMake() {
       }
    }
 
-
+   /*
+    * ToDo: Clean these functions up to use native PHP methods
+    */
    $this->LogEntry("Copying /root files into root directory...");
    if(isWindows()) {
       $cmd="copy \"$dir_pubx" .DIRECTORY_SEPARATOR ."root" .DIRECTORY_SEPARATOR ."*\" \"$dir_pubx" .DIRECTORY_SEPARATOR ."\"";
@@ -10098,7 +10100,8 @@ function FS_PrepareMake() {
       `$cmd`;
       $cmd="cp $dir_pubx" .DIRECTORY_SEPARATOR ."root" .DIRECTORY_SEPARATOR ."htaccess $dir_pubx" .DIRECTORY_SEPARATOR .".htaccess";
       `$cmd`;
-      `rm $dir_pubx/htaccess`;
+
+      $cmd  = "rm $dir_pubx" .DIRECTORY_SEPARATOR ."htaccess";
    }
 
     $addt_file = $dir_pubx .DIRECTORY_SEPARATOR .'application' .DIRECTORY_SEPARATOR .'htaccess_addt';
