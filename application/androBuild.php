@@ -10080,23 +10080,23 @@ function FS_PrepareMake() {
 
    $this->LogEntry("Copying /root files into root directory...");
    if(isWindows()) {
-      $cmd="copy \"$dir_pubx\\root\\*\" \"$dir_pubx\"\\";
-      $cmd=str_replace('/','\\',$cmd);
+      $cmd="copy \"$dir_pubx" .DIRECTORY_SEPARATOR ."root" .DIRECTORY_SEPARATOR ."*\" \"$dir_pubx" .DIRECTORY_SEPARATOR ."\"";
+      //$cmd=str_replace('/','\\',$cmd);
       $this->LogEntry("  ".$cmd);
       `$cmd`;
-      $cmd="copy \"$dir_pubx/root/htaccess\" \"$dir_pubx/.htaccess\"";
-      $cmd=str_replace('/','\\',$cmd);
+      $cmd="copy \"$dir_pubx" ..DIRECTORY_SEPARATOR ."root" .DIRECTORY_SEPARATOR ."htaccess\" \"$dir_pubx" .DIRECTORY_SEPARATOR .".htaccess\"";
+      //$cmd=str_replace('/','\\',$cmd);
       $this->LogEntry("  ".$cmd);
       `$cmd`;
-      $cmd = "del \"$dir_pubx\\htaccess\"";
-      $cmd=str_replace('/','\\',$cmd);
+      $cmd = "del \"$dir_pubx" .DIRECTORY_SEPARATOR ."htaccess\"";
+      //$cmd=str_replace('/','\\',$cmd);
       $this->LogEntry("  ".$cmd);
       `$cmd`;
    }
    else {
-      $cmd="cp $dir_pubx/root/* $dir_pubx/";
+      $cmd="cp $dir_pubx" .DIRECTORY_SEPARATOR ."root" .DIRECTORY_SEPARATOR "* $dir_pubx" .DIRECTORY_SEPARATOR;
       `$cmd`;
-      $cmd="cp $dir_pubx/root/htaccess $dir_pubx/.htaccess";
+      $cmd="cp $dir_pubx" .DIRECTORY_SEPARATOR ."root" .DIRECTORY_SEPARATOR ."htaccess $dir_pubx" .DIRECTORY_SEPARATOR .".htaccess";
       `$cmd`;
       `rm $dir_pubx/htaccess`;
    }
