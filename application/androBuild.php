@@ -10086,7 +10086,7 @@ function FS_PrepareMake() {
       //$cmd=str_replace('/','\\',$cmd);
       $this->LogEntry("  ".$cmd);
       `$cmd`;
-      $cmd="copy \"$dir_pubx" ..DIRECTORY_SEPARATOR ."root" .DIRECTORY_SEPARATOR ."htaccess\" \"$dir_pubx" .DIRECTORY_SEPARATOR .".htaccess\"";
+      $cmd="copy \"$dir_pubx" .DIRECTORY_SEPARATOR ."root" .DIRECTORY_SEPARATOR ."htaccess\" \"$dir_pubx" .DIRECTORY_SEPARATOR .".htaccess\"";
       //$cmd=str_replace('/','\\',$cmd);
       $this->LogEntry("  ".$cmd);
       `$cmd`;
@@ -10096,21 +10096,27 @@ function FS_PrepareMake() {
       `$cmd`;
    }
    else {
-      $cmd="cp $dir_pubx" .DIRECTORY_SEPARATOR ."root" .DIRECTORY_SEPARATOR "* $dir_pubx" .DIRECTORY_SEPARATOR;
+      $cmd="cp $dir_pubx" .DIRECTORY_SEPARATOR ."root" .DIRECTORY_SEPARATOR ."* " .$dir_pubx .DIRECTORY_SEPARATOR;
       `$cmd`;
       $cmd="cp $dir_pubx" .DIRECTORY_SEPARATOR ."root" .DIRECTORY_SEPARATOR ."htaccess $dir_pubx" .DIRECTORY_SEPARATOR .".htaccess";
       `$cmd`;
 
       $cmd  = "rm $dir_pubx" .DIRECTORY_SEPARATOR ."htaccess";
+       `$cmd`;
    }
 
     $addt_file = $dir_pubx .DIRECTORY_SEPARATOR .'application' .DIRECTORY_SEPARATOR .'htaccess_addt';
-    if (file_exists($ddt_file)) {
+    $this->LogEntry("  ". "Checking for application/htaccess_addt");
+    if (file_exists($addt_file)) {
+        $this->LogEntry("    " ."Found");
         $handle = fopen($dir_pubx .DIRECTORY_SEPARATOR .'.htaccess','a');
         if ($handle) {
+            fwrite($handle, "## DO NOT EDIT ##\n# Application Specific .htaccess config from application/htaccess_addt");
             fwrite($handle, file_get_contents($addt_file) ."\n");
             fclose($handle);
         }
+    } else {
+        $this->LogEntry("    " ."Not Found");
     }
 
     # KFD 1/24/09, copy any skeleton files found if not 

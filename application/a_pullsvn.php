@@ -170,19 +170,22 @@ class a_pullsvn extends x_table2 {
             <?php return; ?>
         <?php } ?>
         
-        <div class="warning">
+        <div class="alert alert-warning">
         Warning! If you use this program on a development workstation you
         can <i>overwrite your own work</i>, because this program 
         unconditionally overwrites the application code.  On development
         workstations you should use manual Subversion tools.
         </div>
-        <h2>Application List</h2>
-        <table id="chart">
-          <thead><tr><th>Application / Respository
-                     <th>Local Version
-                     <th>User Name
-                     <th>Password
+        <h3>Application List</h3>
+        <table class="table table-bordered table-condensed table-striped table-hover">
+          <thead><tr><th>Application</th>
+                     <th>Local Version</th>
+                     <th>User Name</th>
+                     <th>Password</th>
+                     <th>Respository</th>
+            </tr>
           </thead>
+            <tbody>
         <?php
         $dd = ddTable('applications');
         foreach($rows as $row) {
@@ -195,14 +198,13 @@ class a_pullsvn extends x_table2 {
             $td = html('td',$tr,$row['svn_uid']);
             $pwd = $row['svn_pwd']=='' ? '' : '********';
             $td = html('td',$tr,$pwd);
-            $tr->render();
-            
-            $tr = html('tr');
-            $td = html('td',$tr,$row['svn_url']."<br/><br/>");
-            $td->hp['colspan'] = 4;
+
+            $td = html('td',$tr,$row['svn_url']);
+            //$td->hp['colspan'] = 4;
             $tr->render();
         }
         ?>
+            </tbody>
         </table>
 
         <br/>
