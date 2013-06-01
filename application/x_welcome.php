@@ -110,8 +110,7 @@ class x_welcome extends x_table2 {
         
         if(trim($andro['svn_url'])=='') {
             $htmlVersions = '';
-        }
-        else {
+        } else {
             $htmlVersions = @file_get_contents($andro['svn_url']);
         }
         $matches =array();
@@ -127,7 +126,7 @@ class x_welcome extends x_table2 {
             
             // Get current latest
             $current = $andro['local'];
-            if($latest >= $current)  {
+            if($latest > $current)  {
             ?>
             <br/>
             <div style="border: 5px solid gray; color: blue
