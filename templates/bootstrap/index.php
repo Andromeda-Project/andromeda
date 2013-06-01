@@ -129,7 +129,7 @@ include('androHTMLHead.php');
 					<ul class="nav pull-right">
 						<li class="divider-vertical"></li>
 						<li class="dropdown">
-							<a class="dropdown-toggle" data-toggle="dropdown">
+							<a href="" class="dropdown-toggle" data-toggle="dropdown">
 								Logged in as <?php echo SessionGet('UID')?>
 								<b class="caret"></b>
 							</a>
