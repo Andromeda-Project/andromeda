@@ -121,7 +121,7 @@ include('androHTMLHead.php');
 	 <span class="icon-bar"></span>
 	 <span class="icon-bar"></span>
 
-				</button> <a class="brand" href=""><?php echo $GLOBALS['AG']['app_desc']; ?></a>
+				</button> <a class="brand" href="index.php"><?php echo $GLOBALS['AG']['app_desc']; ?></a>
 				<div class="nav-collapse collapse">
 					<?php
 						if (LoggedIn()) {
