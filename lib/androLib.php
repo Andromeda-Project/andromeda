@@ -16640,30 +16640,32 @@ function ErrorComprehensive($onerr) {
 
    // Get the column, error, and text, then see if the
    // application has overridden them.
-   list($column,$error,$text) = explode(',',$onerr,3);
-   $errorStrings=vgfGet('errorStrings',array());
-   if(isset($errorStrings[$error])) {
-       $text = $errorStrings[$error];
-   }
+   if (!empty($onerr)) {
+       list($column,$error,$text) = explode(',',$onerr,3);
+       $errorStrings=vgfGet('errorStrings',array());
+       if(isset($errorStrings[$error])) {
+           $text = $errorStrings[$error];
+       }
 
-   $column=trim($column);
+       $column=trim($column);
 
-   if($column=='*') {
-      // A table-level error begins with an asterisk, report this
-      // as an old-fashioned error that appears at the top of the page
-      ErrorAdd($text);
-   }
-   else {
-      // This is a column level error.  It is being stored for
-      // display later.
-      $colerrs[$column][]=$text;
+       if($column=='*') {
+          // A table-level error begins with an asterisk, report this
+          // as an old-fashioned error that appears at the top of the page
+          ErrorAdd($text);
+       }
+       else {
+          // This is a column level error.  It is being stored for
+          // display later.
+          $colerrs[$column][]=$text;
 
-      // KFD 6/27/07, by putting this here, every error gets reported
-      // both at its column level and at the top
-      ErrorAdd($column.": ".$text);
-   }
+          // KFD 6/27/07, by putting this here, every error gets reported
+          // both at its column level and at the top
+          ErrorAdd($column.": ".$text);
+       }
 
-   vgfSet('errorsCOL',$colerrs);
+       vgfSet('errorsCOL',$colerrs);
+    }
 }
 
 /**
