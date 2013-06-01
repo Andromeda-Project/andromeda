@@ -13466,10 +13466,10 @@ function x_EchoFlush($message,$level=null) {
    else {
       echo "<br><script type=\"text/javascript\">scroll(0,document.height);</script>\n";
    }
-   if(ob_get_level()>0) {
+   //if(ob_get_level()>0) {
       ob_flush();
       flush();
-   }
+   //}
 }
 
 /** Output a Line w/newline to a file stream
@@ -16198,6 +16198,7 @@ function cssOutput() {
             }
         }
         file_put_contents($file,$string);
+        chmod($file,0664);
     }
 
     // Finally, put out the file
@@ -16320,6 +16321,7 @@ function jsOutput() {
             }
         }
         file_put_contents($file,$string);
+        chmod($file, 0664);
     }
 
     // Finally, put out the file
