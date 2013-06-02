@@ -12,7 +12,7 @@ function tmpLoadModules($module_name,$var=null) {
       case 'left':     return tmpModuleLeft();
       case 'right':    tmpModuleRight();    break;
       case 'top':      tmpModuleTop();      break;
-      case 'commands': ehModuleCommands();  break;
+      case 'commands': return ehModuleCommands();  break;
       case 'menuright':fwModuleMenuRight();break;
    }
 }
@@ -166,22 +166,8 @@ include('androHTMLHead.php');
 					}
 				} 
 				echo '<div class=" test span' .($left === false ? '12' : '9')  .'" style="padding-bottom:15px;">';
-					
-				if (mosCountModules('commands')) {
-			?>
 
-					<div class="container" style="padding-bottom:15px;">
-						<div class="span<?php echo ($left === false ? '12' : '9') ?>">
-							<?php
-								mosLoadModules('commands');
-							?>
-						</div>
-					</div>
-
-
-			<?php
-				}
-				echo mosMainBody();
+				echo str_replace( '--COMMANDS--', $commands, mosMainBody() );
 				echo '</div>';
 			?>
 		</div>

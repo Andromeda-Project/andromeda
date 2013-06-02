@@ -9518,19 +9518,13 @@ function ehModuleCommands() {
    ?>
    </span>
    */
-   ?>
 
-		<div class="btn-group" style="padding-bottom:10px;">
-			<?php echo vgfGet('html_buttonbar')?>
-		</div>
-
+   return '<div class="btn-group" style="padding-bottom:10px;">' .vgfGet('html_buttonbar') .'</div>
 		<div class="pull-right">
 			<div class="btn-group">
-				<?php echo vgfGet('html_navbar')?>
+				' .vgfGet('html_navbar') .'
 			</div>
-		</div>
-
-   <?php
+		</div>';
 }
 
 

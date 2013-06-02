@@ -388,9 +388,23 @@ class x_table2 {
       ?>
       
 		<div class="hero-unit"><h1><?php echo $this->PageSubtitle?></h1></div>
-
         <?php
             ehErrors();
+
+            if (mosCountModules('commands')) {
+                $commands = ehModuleCommands('commands');
+
+                if ( !empty($commands))  {
+                    $commands = '
+                            <div class="container" style="padding-bottom:15px;">
+                                <div class="span' .($left === false ? '12' : '9') .'">' .$commands .'
+                                </div>
+                            </div>';
+                } else {
+                    $commands = '';
+                }
+            }
+            echo $commands;
 			if(is_null($this->table_obj_child)) { 
 				echo $this->h['ButtonBar'];
 			} 
