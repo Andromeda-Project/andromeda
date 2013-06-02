@@ -107,9 +107,12 @@ else {
 	<head>
 <?php
 
+cssInclude("clib/bootstrap-wysiwyg/bootstrap-wysihtml5.css");
 cssInclude("templates/$template/bootstrap/css/bootstrap.min.css");
 cssInclude("templates/$template/bootstrap/css/bootstrap-responsive.min.css");
 cssInclude("templates/$template/bootstrap/datepicker/css/datepicker.css");
+cssInclude("clib/bootstrap-wysiwyg/wysiwyg-color.css");
+
 include('androHTMLHead.php');
 ?>
 </head>
@@ -166,6 +169,7 @@ include('androHTMLHead.php');
 					
 				if (mosCountModules('commands')) {
 			?>
+
 					<div class="container" style="padding-bottom:15px;">
 						<div class="span<?php echo ($left === false ? '12' : '9') ?>">
 							<?php
@@ -173,6 +177,8 @@ include('androHTMLHead.php');
 							?>
 						</div>
 					</div>
+
+
 			<?php
 				}
 				echo mosMainBody();
@@ -184,8 +190,12 @@ include('androHTMLHead.php');
 	<?php echo mosLoadModules('footer');?>
 	</div>
 <?php
+    jsInclude("clib/bootstrap-wysiwyg/wysihtml5-0.3.0.min.js");
 	jsInclude("templates/$template/bootstrap/js/bootstrap.min.js");
+    jsInclude("clib/bootstrap-wysiwyg/bootstrap-wysihtml5.js");
+    jsInclude("clib/bootstrap-wysiwyg/prettify.js");
 	jsInclude("templates/$template/bootstrap/datepicker/js/bootstrap-datepicker.js");
+
 	jsInclude("clib/androLib.js");
 	jsInclude("clib/androLibDeprecated.js");
 	jsInclude("clib/x4.js");

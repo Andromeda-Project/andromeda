@@ -296,7 +296,10 @@ class x_login extends x_table2 {
             $agroups[]="'".trim($row['group_id'])."'";
 			#$groups.=ListDelim($groups)."'".trim($row["group_id"])."'";
 		}
-        $groups = implode(",",$agroups);
+        $groups = array();
+        if (!empty($agroups)) {
+            $groups = implode(",",$agroups);
+        }
 		//scDBConn_Pop();
 		
       // We have a successful login.  If somebody else was already

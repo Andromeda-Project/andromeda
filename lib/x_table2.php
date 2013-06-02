@@ -388,8 +388,9 @@ class x_table2 {
       ?>
       
 		<div class="hero-unit"><h1><?php echo $this->PageSubtitle?></h1></div>
-      
-         <?php
+
+        <?php
+            ehErrors();
 			if(is_null($this->table_obj_child)) { 
 				echo $this->h['ButtonBar'];
 			} 

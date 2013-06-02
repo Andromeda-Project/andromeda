@@ -9160,9 +9160,8 @@ function ehStandardContent($dotitle=false) {
       }
       echo '</div>';
    }
-   ehErrors();
-   echo vgfGet("HTML");
-   if(!vgfGet('suppress_hidden')) {
+    echo vgfGet("HTML");
+    if(!vgfGet('suppress_hidden')) {
        ehHiddenAndData();
    }
 
@@ -9235,7 +9234,8 @@ function ehStandardFormOpen($id='Form1') {
 * INPUTS
 * @deprecated use hErrors()
 */
-function ehErrors() {
+function ehErrors($return = false) {
+    $html = '';
     if(function_exists('app_ehErrors')) {
         $errors = ErrorsGet();
         if(count($errors)==0) return;
@@ -9243,29 +9243,32 @@ function ehErrors() {
         app_ehErrors($errors);
     }
     
-   $aErrors = aErrorsClean();
-   if (count($aErrors)>0) {
-      echo '<div class="alert alert-error">';
-      if(vgfGet('ERROR_TITLE')=='') {
-         // KFD 6/27/07, think this got broken by changes to SQL2 and
-         // error reporting system, just take it out
-         //echo "There was an error attempting to save:<br/>";
-      }
-      elseif (vgfGet('ERROR_TITLE')=='*') {
-         // do nothing, the asterisk means do nothing
-      }
-      else {
-         echo vgfGet('ERROR_TITLE');
-      }
-      foreach ($aErrors as $error) {
-         // Don't do htmlentities on errors, as they may contain
-         // hyperlinks, and they are all system generated so we consider
-         // them safe.
-         //echo '<p>'.htmlentities($error).'</p>';
-         echo '<p>'.$error.'</p>';
-      }
-      echo '</div>';
-   }
+    $aErrors = aErrorsClean();
+    if (count($aErrors)>0) {
+        $html .= '<div class="alert alert-error">';
+        if(vgfGet('ERROR_TITLE')=='') {
+             // KFD 6/27/07, think this got broken by changes to SQL2 and
+             // error reporting system, just take it out
+             //echo "There was an error attempting to save:<br/>";
+        } elseif (vgfGet('ERROR_TITLE')=='*') {
+            // do nothing, the asterisk means do nothing
+        } else {
+            $html .= vgfGet('ERROR_TITLE');
+        }
+        foreach ($aErrors as $error) {
+            // Don't do htmlentities on errors, as they may contain
+            // hyperlinks, and they are all system generated so we consider
+            // them safe.
+            //echo '<p>'.htmlentities($error).'</p>';
+            $html .= '<p>'.$error.'</p>';
+        }
+        $html .= '</div>';
+    }
+    if ($return === true) {
+        return $html;
+    } else {
+        echo( $html );
+    }
 }
 
 /****f* Template-Level-HTML/ehHiddenAndData
@@ -9516,14 +9519,17 @@ function ehModuleCommands() {
    </span>
    */
    ?>
+
 		<div class="btn-group" style="padding-bottom:10px;">
 			<?php echo vgfGet('html_buttonbar')?>
 		</div>
+
 		<div class="pull-right">
 			<div class="btn-group">
 				<?php echo vgfGet('html_navbar')?>
 			</div>
 		</div>
+
    <?php
 }
 
@@ -14931,21 +14937,46 @@ function jsValues($ahcols,$name,$row,$h) {
 function jsValuesOne($ahcols,$colname,$ahcol,$name,$row,$h) {
     // KFD 9/7/07, slip this in for mime-h columns, they are
     //             much simpler.
-    if($ahcol['type_id']=='mime-h' || $ahcol['type_id'] == 'mime-h-f' ) {
-       $dir = $GLOBALS['AG']['dirs']['root'];
-       @include_once($dir.'/clib/FCKeditor/fckeditor.php');
-       $oFCKeditor = new FCKeditor($name.$colname);
-       $oFCKeditor->BasePath   = 'clib/FCKeditor/';
-       $oFCKeditor->ToolbarSet = ( $ahcol['type_id'] == 'mime-h' ? 'Basic' : 'Default' );
-       $oFCKeditor->Width  = ( $ahcol['type_id'] == 'mime-h' ? '275' : '470' );
-       $oFCKeditor->Height = ( $ahcol['type_id'] == 'mime-h' ? '200' : '400' );
-       $oFCKeditor->Value = trim(ArraySafe($row,$colname,''));
-       $hx = $oFCKeditor->CreateHtml();
-       $h=str_replace('--MIME-H--'.$name.$colname.'--MIME-H--',$hx,$h);
 
-       // Get rid of the error box completely on wysiwyg fields
-       $h=str_replace($name.$colname.'--ERROR--','',$h);
-       return $h;
+    if($ahcol['type_id']=='mime-h' || $ahcol['type_id'] == 'mime-h-f' ) {
+        $editor = "<textarea class=\"wysiwyg\"  style=\"width: 810px; height: 200px\" x_original_value=\"" .trim(ArraySafe($row, $colname, '')) ."\" class=\"wysiwyg\" name=\"$name$colname\">" .trim(ArraySafe($row,$colname,'')) ."</textarea>";
+
+        /*
+            $dir = $GLOBALS['AG']['dirs']['root'];
+            @include_once($dir.'/clib/FCKeditor/fckeditor.php');
+            $oFCKeditor = new FCKeditor($name.$colname);
+            $oFCKeditor->BasePath   = 'clib/FCKeditor/';
+            $oFCKeditor->ToolbarSet = ( $ahcol['type_id'] == 'mime-h' ? 'Basic' : 'Default' );
+            $oFCKeditor->Width  = ( $ahcol['type_id'] == 'mime-h' ? '275' : '470' );
+            $oFCKeditor->Height = ( $ahcol['type_id'] == 'mime-h' ? '200' : '400' );
+            $oFCKeditor->Value = trim(ArraySafe($row,$colname,''));
+            $hx = $oFCKeditor->CreateHtml();
+        */
+            $h=str_replace('--MIME-H--'.$name.$colname.'--MIME-H--',$editor,$h);
+
+            jqDocReady("
+                $('.wysiwyg').each(function() {
+                    $(this).wysihtml5({html: true, color: true});
+                });
+            ");
+            $herr='';
+            if(count($colerrsx)>0) {
+                 $herr="<span class=\"x2columnerr\">"
+                    .implode("<br/>",$colerrsx)
+                    ."</span>";
+                 $scr="getNamedItem('x_class_base').value='err'";
+                 $scr="ob('$name$colname').attributes.".$scr;
+                 #E*lementAdd('ajax',"_script|$scr");
+                 #E*lementAdd('ajax',"_script|ob('$name$colname').className='x3err'");
+            }
+            if ( !empty($herr) ) {
+                $h=str_replace($name.$colname.'--ERROR--CLASS', 'error',$h);
+            } else {
+                $h=str_replace($name.$colname.'--ERROR--CLASS', '', $h);
+            }
+
+            $h=str_replace($name.$colname.'--ERROR--',$herr,$h);
+            return $h;
     }
 
     // Set the value (which also sets x_value_original)
@@ -15080,7 +15111,14 @@ function jsValuesOne($ahcols,$colname,$ahcol,$name,$row,$h) {
      #E*lementAdd('ajax',"_script|$scr");
      #E*lementAdd('ajax',"_script|ob('$name$colname').className='x3err'");
     }
+    if ( !empty($herr) ) {
+        $h=str_replace($name.$colname.'--ERROR--CLASS', 'error',$h);
+    } else {
+        $h=str_replace($name.$colname.'--ERROR--CLASS', '', $h);
+    }
+
     $h=str_replace($name.$colname.'--ERROR--',$herr,$h);
+
 
 
     // ------------------------------------
@@ -15112,43 +15150,44 @@ function hDetailFromAHCols($ahcols,$name,$tabindex,$display='') {
    $first='';
    if($display=='') echo "\n<fieldset>";
    foreach($ahcols as $colname=>$ahcol) {
-      // Establish names of crucial items
-      $cname=$ahcol['cname'];
-      $cnmer=$cname."_err";
+        // Establish names of crucial items
+        $cname=$ahcol['cname'];
+        $cnmer=$cname."_err";
 
-      //  if no first focus, set it now
-      if($first=='' && vgfGet('HTML_focus')=='' && $ahcol['writable']) {
-         vgfSet('HTML_focus',$cname);
-      }
+        //  if no first focus, set it now
+        if($first=='' && vgfGet('HTML_focus')=='' && $ahcol['writable']) {
+            vgfSet('HTML_focus',$cname);
+        }
 
-      // Replace out the HTML
-      $html=$ahcol['htmlnamed'];
-      // KFD 9/7/07, replace the HTML if it is a WYSIWYG column
-      if($ahcol['type_id']=='mime-h' || $ahcol['type_id'] == 'mime-h-f') {
-          $html = '--MIME-H--'.$ahcol['cname'].'--MIME-H--';
-      }
-      
+        // Replace out the HTML
+        $html=$ahcol['htmlnamed'];
+        // KFD 9/7/07, replace the HTML if it is a WYSIWYG column
+        if($ahcol['type_id']=='mime-h' || $ahcol['type_id'] == 'mime-h-f') {
+            $html = '--MIME-H--'.$ahcol['cname'].'--MIME-H--';
+        }
+
         if ($ahcol['type_id'] == 'date') {
             jqDocReady( "$('.datepicker').each(
-		        function() {
-		            $(this).datepicker().on('changeDate',function() {
-		                $(this).datepicker('hide');
-		            });
-		        });
-		    " );
-	    }
-      // Replace out the stuff to the right
-      $hrgt=$ahcol['hrgtnamed'];
-      switch($display) {
-      case '':
-        echo "\n<div class=\"control-group\"><label class=\"control-label\">".$ahcol['description'] .":</label>";
-        echo "\n<div class=\"controls\">$html $hrgt";
-        echo "\n<span class=\"help-inline\" id=\"$cnmer\">$cname--ERROR--</span>";
-        echo "\n<span class=\"help-inline\">".$ahcol['tooltip'] ."</span></div></div>";
-        break;
-     case 'tds':
-        echo "\n<div class=\"controls\">$html</div>";
-     }
+                function() {
+                    $(this).datepicker().on('changeDate',function() {
+                        $(this).datepicker('hide');
+                    });
+                });
+            " );
+        }
+        // Replace out the stuff to the right
+        $hrgt=$ahcol['hrgtnamed'];
+        switch($display) {
+            case '':
+                echo "\n<div class=\"control-group $cname--ERROR--CLASS\"><label class=\"control-label\">".$ahcol['description'] .":</label>";
+                echo "\n<div class=\"controls\">$html $hrgt";
+                echo "\n<span class=\"help-inline\" id=\"$cnmer\">$cname--ERROR--</span>";
+                echo "\n<span class=\"help-inline\">".$ahcol['tooltip'] ."</span></div></div>";
+                break;
+            case 'tds':
+                echo "\n<div class=\"controls\">$html</div>";
+                break;
+        }
    }
    if ($display=='') echo "</fieldset>";
    return ob_get_clean();
