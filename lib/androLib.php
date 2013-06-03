@@ -15163,7 +15163,7 @@ function hDetailFromAHCols($ahcols,$name,$tabindex,$display='') {
         if ($ahcol['type_id'] == 'date') {
             jqDocReady( "$('input[data-date-format]').each(
                 function() {
-                    if ($(this).attr('readonly') == '') {
+                    if (typeof($(this).attr('readonly')) == 'undefined') {
                         $(this).datepicker().on('changeDate',function() {
                             $(this).datepicker('hide');
                         });
