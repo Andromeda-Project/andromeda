@@ -269,6 +269,10 @@ class x_builder {
         } else {
             $this->LogEntry( 'Spec files have not changed: Proceeding with mini build' );
         }
+
+        if (isset($_GET['gp_forceBuild'])) {
+            $changed = true;
+        }
         return $changed;
     }
 
