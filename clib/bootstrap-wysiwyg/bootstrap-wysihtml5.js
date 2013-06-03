@@ -369,8 +369,8 @@
                 "wysiwyg-color-orange" : 1,
             },
             tags: {
-                "strong", {},
-                "p", {},
+                "strong": {},
+                "p": {},
                 "b":  {},
                 "i":  {},
                 "br": {},
