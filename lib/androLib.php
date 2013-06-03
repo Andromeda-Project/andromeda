@@ -14933,7 +14933,7 @@ function jsValuesOne($ahcols,$colname,$ahcol,$name,$row,$h) {
     //             much simpler.
 
     if($ahcol['type_id']=='mime-h' || $ahcol['type_id'] == 'mime-h-f' ) {
-        $editor = "<textarea class=\"wysiwyg\"  style=\"width: 810px; height: 200px\" x_original_value=\"" .trim(ArraySafe($row, $colname, '')) ."\" class=\"wysiwyg\" name=\"$name$colname\">" .trim(ArraySafe($row,$colname,'')) ."</textarea>";
+        $editor = "<textarea class=\"wysiwyg\"  style=\"width: 810px; height: 200px\" x_original_value=\"" .htmlentities(trim(ArraySafe($row, $colname, ''))) ."\" class=\"wysiwyg\" name=\"$name$colname\">" .htmlentities(trim(ArraySafe($row,$colname,''))) ."</textarea>";
 
         /*
             $dir = $GLOBALS['AG']['dirs']['root'];
