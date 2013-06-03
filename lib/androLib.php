@@ -15163,9 +15163,11 @@ function hDetailFromAHCols($ahcols,$name,$tabindex,$display='') {
         if ($ahcol['type_id'] == 'date') {
             jqDocReady( "$('.datepicker').each(
                 function() {
-                    $(this).datepicker().on('changeDate',function() {
-                        $(this).datepicker('hide');
-                    });
+                    if ($(this).attr('readonly') == '') {
+                        $(this).datepicker().on('changeDate',function() {
+                            $(this).datepicker('hide');
+                        });
+                    }
                 });
             " );
         }
