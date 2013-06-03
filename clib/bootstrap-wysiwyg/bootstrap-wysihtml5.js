@@ -369,6 +369,8 @@
                 "wysiwyg-color-orange" : 1,
             },
             tags: {
+                "strong", {},
+                "p", {},
                 "b":  {},
                 "i":  {},
                 "br": {},
@@ -382,7 +384,6 @@
                 "u": 1,
                 "img": {
                     "check_attributes": {
-                        "width": "numbers",
                         "alt": "alt",
                         "src": "url",
                         "height": "numbers"
