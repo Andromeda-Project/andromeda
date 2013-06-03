@@ -382,18 +382,8 @@
                 "h3": {},
                 "blockquote": {},
                 "u": 1,
-                "img": {
-                    "check_attributes": {
-                        "alt": "alt",
-                        "src": "url",
-                        "height": "numbers"
-                    }
-                },
+                "img": {},
                 "a":  {
-                    set_attributes: {
-                        target: "_blank",
-                        rel:    "nofollow"
-                    },
                     check_attributes: {
                         href:   "url" // important to avoid XSS
                     }
