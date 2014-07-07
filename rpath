@@ -1,0 +1,20 @@
+<?php
+// The basic idea of this file is to convert the path into
+// parameters before passing into the framework.
+//
+$pathi=$_SERVER['PATH_INFO'];
+
+// Strip off the leading slash
+$pathi=substr($pathi,1);
+
+// Convert into an array
+$a_pathi=explode('/',$pathi);
+
+// Convert into parameters
+for($x = 0; $x<count($a_pathi); $x+=2) {
+   $_GET[$a_pathi[$x]]=$a_pathi[$x+1];
+}
+
+// Proceed to normal universal dispatcher processing
+include("index.php");
+?>

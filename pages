@@ -1,0 +1,73 @@
+<?php
+// =======================================================================
+//  This is the "Friendly URL" processor.  It turns the URI into
+//  GET parameters and then calls the universal dispatcher.
+// =======================================================================
+// -----------------------------------------------------------------------
+// We have to clip off anything in front of 'pages' and save it, it will
+// need to be added to absolute references for stylesheets and js files
+//
+// Example:  REQUEST_URI = /~someuser/xyz/pages/a/b/c
+//                          --------------
+//                               ^
+//                               |
+//                               This we call the "Path Insert" and we
+//                               need it so templates can build proper
+//                               absolute references to style sheets
+//                               and javascript files
+//                               (notice leading / not included, trailing is)
+//
+//                          
+// -----------------------------------------------------------------------
+$position=strpos($_SERVER['REQUEST_URI'],'pages');
+if($position==0) {
+   $pathinsert='';
+}
+else {
+   // Clip off the leading slash, but include the trailing slash
+   $pathinsert = substr($_SERVER['REQUEST_URI'],1,$position-1);
+}
+$AG['tmpPathInsert']=$pathinsert;
+
+// -----------------------------------------------------------------------
+// Next we need the "Path Info" so we can convert it into GET variables.
+//
+// Example:  REQUEST_URI = /~someuser/xyz/pages/a/b/c
+//
+// Then $_SERVER['PATH_INFO'] = /a/b/c
+//
+// This is very convenient because its all already parsed for us                         
+// -----------------------------------------------------------------------
+
+// Strip off the leading slash if present and split on slashes
+// If no parameters, stop here
+$pathinfo=isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : '';
+if(substr($pathinfo,0,1)=='/') $pathinfo=substr($pathinfo,1);
+$aparms=explode("/",$pathinfo);
+
+// Always take first parameter as gp_page.  If pathinfo was empty we
+// will get an array of one empty value.  For empty values we do not
+// make an assigment, we let downstream code figure out what to do.
+if(count($aparms)>0) {
+   $gp_page=array_shift($aparms).'';
+   if($gp_page) {
+      $_GET['gp_page']=$gp_page;
+   }
+}
+
+// Now proceed to parse off the rest of them
+while(count($aparms)>1) {
+   $pname=array_shift($aparms);
+   $pval=array_shift($aparms);
+   $_GET[$pname]=$pval;   
+}
+
+// If there is a stray left over, give it to gp0
+if(count($aparms==1)) {
+   $_GET['gp0']=array_shift($aparms);
+}
+
+
+// Proceed to normal universal dispatcher processing
+include("index.php");
+?>

@@ -6,7 +6,9 @@ $x6         = vgfGet('x6',false);
 # Output the title
 #
 # =====================================================================
-echo "\n<title>".vgfGet('pageTitle')."</title>\n";
+if (isset($GLOBALS['fwdata']['pageTitle'])) {
+    echo "\n<title>".vgfGet('pageTitle')."</title>\n";
+}
 
 # =====================================================================
 # 
@@ -23,12 +25,6 @@ echo "\n<title>".vgfGet('pageTitle')."</title>\n";
           more info at http://www.jquery.com'
           ,'Y'
     );
-
-
-
-
-
-
 
 
 $xpath = arr($_COOKIE,'altjs','clib/');

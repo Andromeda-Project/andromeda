@@ -1,0 +1,12 @@
+clib/js-min-*
+clib/css-min-*
+docsgen/
+docsapp/
+files/
+generated/
+dynamic/
+docslib/
+tmp/
+application/.htaccess
+lib/.htaccess
+root/.htaccess

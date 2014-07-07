@@ -13464,7 +13464,7 @@ function x_EchoFlush($message,$level=null) {
       echo "\n";
    }
    else {
-      echo "<br><script type=\"text/javascript\">scroll(0,document.height);</script>\n";
+      echo "<br><script type=\"text/javascript\">scroll(0,document.body.scrollHeight);</script>\n";
    }
    //if(ob_get_level()>0) {
       ob_flush();
