@@ -1,6 +1,6 @@
 <?php 
 /* ================================================================== *\
-   (C) Copyright 2005 by Secure Data Software, Inc.
+   
    This file is part of Andromeda
 
    Andromeda is free software; you can redistribute it and/or modify
