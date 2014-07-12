@@ -64,6 +64,5 @@ They click on something else, another page comes up.
 A page, therefore, is what goes back to the browser 
 
 Some programmers will think of a page as equal to a file on disk.
-
-
+*/
 ?>
