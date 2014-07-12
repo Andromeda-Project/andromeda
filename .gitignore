@@ -10,3 +10,6 @@ tmp/
 application/.htaccess
 lib/.htaccess
 root/.htaccess
+vendor/
+composer.lock
+.idea/

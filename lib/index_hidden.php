@@ -149,8 +149,6 @@ if (file_exists($x)) {
   This creates a global variable so that the plugin manager
   is accessible throughout the application
 */
-require_once('AndroPluginManager.php');
-require_once('AndroPlugin.php');
 $GLOBALS['AG']['plugins'] = new AndroPluginManager();
 
 // ==================================================================
@@ -580,7 +578,7 @@ function index_hidden_x6Dispatch(
 
     # Include the basic x6 class, and set a default for
     # the class and the method call
-    include('androX6.php');
+    //include('androX6.php');
     $x6class = 'androX6';
     $x6method= 'x6main';
     
@@ -609,7 +607,7 @@ function index_hidden_x6Dispatch(
         # So if that file exists we load that and use it.
         if($x6file<>'') {
             $x6class = 'x6'.$x6page;
-            include($x6class.'.php');
+            //include($x6class.'.php');
         }
             
         # The next major decision is whether we are calling some
@@ -623,7 +621,7 @@ function index_hidden_x6Dispatch(
             if(file_exists("application/$x6page.page.yaml")) {
                 $x6class = 'androPage';
                 $x6method= 'x6main';
-                include('androPage.php');
+                //include('androPage.php');
             }
             else {
                 # Now we must be loading a page, because no plugin was
@@ -671,8 +669,8 @@ function index_hidden_x6Dispatch(
         #              that instead
         if(configGet('x6_x2','N')=='Y') {
             if(file_exists(fsDirTop().'application/'.$x6page.'.php')) {
-                include_once('x_table2.php');
-                include_once($x6page.'.php');
+                //include_once('x_table2.php');
+                //include_once($x6page.'.php');
                 $x6class = $x6page;
                 $x6method= "main";
             }
@@ -828,7 +826,7 @@ function index_hidden_x4Dispatch() {
         index_hidden_x4DB();
     }
     else if(file_exists("application/$x4Page.page.yaml")) {   
-       include 'androPage.php';
+       //include 'androPage.php';
        $obj_page = new androPage();
        if ($obj_page->flag_buffer) { ob_start(); }
        $obj_page->main($x4Page);
@@ -1692,7 +1690,7 @@ function index_hidden_page() {
    
    $dir=$GLOBALS['AG']['dirs']['root'].'application/';
    if(file_exists($dir.$gp_page.".page.yaml")){
-       include 'androPage.php';
+       //include 'androPage.php';
        $obj_page = new androPage();
        if ($obj_page->flag_buffer) { ob_start(); }
        $obj_page->main($gp_page);

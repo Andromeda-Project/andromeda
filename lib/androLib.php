@@ -765,14 +765,14 @@ function DispatchObject($gp_page) {
     // processing uses it directly or uses a subclass of it
     //
     //include_once("x_table.php");   // old version
-    include_once ("x_table2.php");
+    //include_once ("x_table2.php");
      // How can there be two "One True" classes?
     
     // Always attempt to load a class for the page, and then
     // look for the named class
     $obj_page = null;
     if (FILE_EXISTS_INCPATH($gp_page . ".php")) {
-        include_once ("$gp_page.php");
+        //include_once ("$gp_page.php");
         
         $class_page = "x_table_$gp_page";
         if (class_exists($class_page)) {

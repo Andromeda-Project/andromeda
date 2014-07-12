@@ -162,8 +162,12 @@ class x_table2
         
         // ((((((((((((((((((((((((((((*))))))))))))))))))))))))))))))))
         // ((((((((((((((((( Run Custom-level Construct ))))))))))))))))
-        $this->construct_custom();
-        $this->custom_construct();
+        if (method_exists($this, 'construct_custom')) {
+            $this->construct_custom();
+        }
+        if (method_exists($this, 'custom_construct')) {
+            $this->custom_construct();
+        }
         
         // ((((((((((((((((( Run Custom-level Construct ))))))))))))))))
         // ((((((((((((((((((((((((((((*))))))))))))))))))))))))))))))))

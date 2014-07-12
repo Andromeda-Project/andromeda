@@ -1,0 +1,34 @@
+{
+    "name": "dorgan/andromeda",
+    "description": "Core Andromeda framework and application management application",
+    "keywords": ["framework", "logic", "yaml"],
+    "license": "GPL2",
+    "autoload": {
+        "classmap": ["lib", "application"]
+    },
+    "include-path": ["lib"],
+    "homepage": "http://www.andromeda-project.org",
+    "authors": [
+        {
+            "name": "Donald Organ",
+            "email": "dorgan@donaldorgan.com",
+            "homepage": "http://www.donaldorgan.com",
+            "role": "Current Project Maintainer"
+        },
+        {
+            "name": "Ken Downs",
+            "homepage": "http://database-programmer.blogspot.com/",
+            "role": "Chief Architect, PostgreSQL/DB Master (No Longer Contributing)"
+        }
+    ],
+    "require": {
+        "php": ">=5.2",
+        "smarty/smarty": "3.1.*"
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/dorgan/andromeda"
+        }
+    ]
+}

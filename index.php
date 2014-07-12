@@ -1,4 +1,5 @@
 <?php
+require_once('vendor/autoload.php');
 /* ================================================================== *\
    (C) Copyright 2005 by Secure Data Software, Inc.
    This file is part of Andromeda
@@ -18,7 +19,7 @@
    Foundation, Inc., 51 Franklin St, Fifth Floor,
    Boston, MA  02110-1301  USA 
    or visit http://www.gnu.org/licenses/gpl.html
-\* ================================================================== */
+   ================================================================== */
 // ==================================================================
 // This first stuff you see makes possible "friendly URLS", by 
 // making possible absolute path references to CSS and JS files.
