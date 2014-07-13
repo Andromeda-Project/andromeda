@@ -1,5 +1,5 @@
 {
-    "name": "dorgan/andromeda",
+    "name": "andro/andromeda",
     "description": "Core Andromeda framework and application management application",
     "keywords": ["framework", "logic", "yaml"],
     "license": "GPL2",
@@ -24,11 +24,5 @@
     "require": {
         "php": ">=5.2",
         "smarty/smarty": "3.1.*"
-    },
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/dorgan/andromeda"
-        }
-    ]
+    }
 }
