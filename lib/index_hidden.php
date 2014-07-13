@@ -1464,7 +1464,7 @@ function index_hidden_page_mime() {
     //$row = SQL_OneRow($sql);
 
     $filename= "$x_table-$x_mime-$x_skey.$x_mime";
-    $filepath=scAddSlash($_SERVER['DOCUMENT_ROOT'].'/files/'.$filename;
+    $filepath=scAddSlash($_SERVER['DOCUMENT_ROOT'].'/files/'.$filename);
 
     //header('Content-type: audio/mpeg');
     // Kind of nifty, gives suggested filename to save
