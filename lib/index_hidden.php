@@ -670,8 +670,6 @@ function index_hidden_x6Dispatch(
         #              that instead
         if(configGet('x6_x2','N')=='Y') {
             if(file_exists(fsDirTop().'application/'.$x6page.'.php')) {
-                //include_once('x_table2.php');
-                //include_once($x6page.'.php');
                 $x6class = $x6page;
                 $x6method= "main";
             }
@@ -1466,7 +1464,7 @@ function index_hidden_page_mime() {
     //$row = SQL_OneRow($sql);
 
     $filename= "$x_table-$x_mime-$x_skey.$x_mime";
-    $filepath=scAddSlash($GLOBALS['AG']['dirs']['root']).'files/'.$filename;
+    $filepath=scAddSlash($_SERVER['DOCUMENT_ROOT'].'/files/'.$filename;
 
     //header('Content-type: audio/mpeg');
     // Kind of nifty, gives suggested filename to save
@@ -1522,8 +1520,8 @@ function index_hidden_page() {
 
     // If the install page exists, it will be used, no getting
     // around it.
-    $install=$GLOBALS['AG']['dirs']['application'].'install.php';
-    $instal2=$GLOBALS['AG']['dirs']['application'].'install.done.php';
+    $install=$_SERVER['DOCUMENT_ROOT'] .'/vendor/andro/andromeda/application/install.php';
+    $instal2=$_SERVER['DOCUMENT_ROOT'] .'/vendor/andro/andromeda/application/install.done.php';
     if(file_exists($install)) {
         if(gp('gp_install')=='finish') {
             rename($install,$instal2);
@@ -1689,7 +1687,7 @@ function index_hidden_page() {
     // Load user preferences just before display
     UserPrefsLoad();
 
-    $dir=$GLOBALS['AG']['dirs']['root'].'application/';
+    $dir=$_SERVER['DOCUMENT_ROOT'].'application/';
     if(file_exists($dir.$gp_page.".page.yaml")){
         //include 'androPage.php';
         $obj_page = new androPage();
