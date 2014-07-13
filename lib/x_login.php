@@ -368,7 +368,7 @@ class x_login extends x_table2 {
 		//
       // GET AGMENU
 		$AGMENU=array();  // avoid compiler warning, populated next line
-		include("ddmodules.php");
+		include("/generated/ddmodules.php");
       
       // Pull distinct modules person has any menu options in.
       $sq="SELECT DISTINCT module
