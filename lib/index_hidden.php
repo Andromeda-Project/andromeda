@@ -136,7 +136,6 @@ if(configGet('deprecated','Y')=='Y') {
 // ==================================================================
 
 $x=$AG['dirs']['application'] .'applib.php';
-var_dump($x);
 if (file_exists($x)) {
     include_once($x);
 }
