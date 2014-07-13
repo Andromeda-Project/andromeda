@@ -1687,7 +1687,7 @@ function index_hidden_page() {
     // Load user preferences just before display
     UserPrefsLoad();
 
-    $dir=$_SERVER['DOCUMENT_ROOT'].'application/';
+    $dir=$_SERVER['DOCUMENT_ROOT'].'/application/';
     if(file_exists($dir.$gp_page.".page.yaml")){
         //include 'androPage.php';
         $obj_page = new androPage();
@@ -1698,8 +1698,7 @@ function index_hidden_page() {
             //ob_end_clean();
         }
         vgfSet("PageSubtitle",$obj_page->PageSubtitle);
-    }
-    else {
+    } else {
         $obj_page = DispatchObject($gp_page);
         if ($obj_page->flag_buffer) { ob_start(); }
         $obj_page->main();
