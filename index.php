@@ -46,15 +46,15 @@ require_once('vendor/autoload.php');
 //
 // ==================================================================
 if(!isset($AG['tmpPathInsert'])) {
-   $ruri=$_SERVER['REQUEST_URI'];
-   // If there is a "?", strip that off and everything past it
-   $ruriqm =strpos($ruri,'?'); 
-   if($ruriqm!==false) $ruri=substr($ruri,0,$ruriqm);
-   // If there is an "index.php" then strip that off
-   $ruri=preg_replace('/index.php/i','',$ruri);
-   // Now remove the leading slash that is always there (unless it ain't)
-   if(substr($ruri,0,1)=='/') $ruri = substr($ruri,1);
-   $AG['tmpPathInsert']=$ruri;
+    $ruri=$_SERVER['REQUEST_URI'];
+    // If there is a "?", strip that off and everything past it
+    $ruriqm =strpos($ruri,'?');
+    if($ruriqm!==false) $ruri=substr($ruri,0,$ruriqm);
+    // If there is an "index.php" then strip that off
+    $ruri=preg_replace('/index.php/i','',$ruri);
+    // Now remove the leading slash that is always there (unless it ain't)
+    if(substr($ruri,0,1)=='/') $ruri = substr($ruri,1);
+    $AG['tmpPathInsert']=$ruri;
 }
 
 
@@ -62,27 +62,28 @@ if(!isset($AG['tmpPathInsert'])) {
 // >>> 
 // >>> The path is based on the real location of the index.php
 // >>> file.  
-// >>> 
+// >>>
 // ==================================================================
-$dir = realpath(dirname(__FILE__)).'/';
+$dir = pathinfo(__FILE__)['dirname'] .'/';
+
 $AG['dirs']['root']        = $dir;
-$AG["dirs"]["dynamic"]     = $dir."dynamic/";
-$AG["dirs"]["application"] = $dir."application/";
-$AG["dirs"]["generated"]   = $dir."generated/";
+$AG['dirs']['app_root']    = realpath($dir .'../../../') .'/';
+$AG["dirs"]["dynamic"]     = realpath($dir .'../../../dynamic/') .'/';
+$AG["dirs"]["application"] = realpath($dir .'../../../application/') .'/';
+$AG["dirs"]["generated"]   = realpath($dir .'../../../generated/') .'/';
 $AG["dirs"]["lib"]         = $dir."lib/";
 
 ini_set("include_path"
-	,$AG["dirs"]["dynamic"].PATH_SEPARATOR
-	.$AG["dirs"]["application"].PATH_SEPARATOR
-	.$AG["dirs"]["generated"].PATH_SEPARATOR
-	.$AG["dirs"]["lib"].PATH_SEPARATOR
-	.ini_get("include_path")
+    ,$AG["dirs"]["dynamic"].PATH_SEPARATOR
+    .$AG["dirs"]["application"].PATH_SEPARATOR
+    .$AG["dirs"]["generated"].PATH_SEPARATOR
+    .$AG["dirs"]["lib"].PATH_SEPARATOR
+    .ini_get("include_path")
 );
-
+//var_dump($AG['dirs']);
 // ==================================================================
 // >>> 
 // >>> Now pass control forever to the library routines
 // >>> 
 // ==================================================================
-include('index_hidden.php'); 
-?>
+include($AG['dirs']['lib'] .'index_hidden.php');
