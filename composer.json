@@ -1,5 +1,6 @@
 {
     "name": "andro/andromeda",
+    "type": "library",
     "description": "Core Andromeda framework and application management application",
     "keywords": ["framework", "logic", "yaml"],
     "license": "GPL2",
