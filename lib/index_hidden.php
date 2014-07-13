@@ -1753,7 +1753,7 @@ function index_hidden_page() {
             $template_color          = $J['template_color'];
             $template_color = 'red';
             $file
-                =$GLOBALS['AG']['dirs']['root'].'/templates/'
+                =$_SERVER['DOCUMENT_ROO'].'/templates/'
                 .$mainframe->GetTemplate()."/index.php";
             include($file);
         }
