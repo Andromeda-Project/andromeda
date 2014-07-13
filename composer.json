@@ -28,7 +28,7 @@
     "repositories": [
         {
             "type": "vcs",
-            "url": "https://github.com/Andromeda-Project/andromeda"
+            "url": "git@github.com:Andromeda-Project/andromeda.git"
         }
     ]
 }
