@@ -1,7 +1,7 @@
 <?php
 
 /* ================================================================== *\
-   
+
    This file is part of Andromeda
 
    Andromeda is free software; you can redistribute it and/or modify
@@ -17,7 +17,7 @@
    You should have received a copy of the GNU General Public License
    along with Andromeda; if not, write to the Free Software
    Foundation, Inc., 51 Franklin St, Fifth Floor,
-   Boston, MA  02110-1301  USA 
+   Boston, MA  02110-1301  USA
    or visit http://www.gnu.org/licenses/gpl.html
 \* ================================================================== */
 /**
@@ -37,9 +37,9 @@ INVENTORY OF framework gp variables:
 
  */
 // ==================================================================
-// >>> 
+// >>>
 // >>> Make INI file settings here
-// >>> 
+// >>>
 // ==================================================================
 ini_set("allow_url_open",false);
 ini_set("display_errors",true);
@@ -47,17 +47,17 @@ ini_set("log_errors",true);
 ini_set("short_tag_open",true);
 
 // ==================================================================
-// >>> 
+// >>>
 // >>> Start session
-// >>> 
+// >>>
 // ==================================================================
 session_start();
 header("Cache-control: private");
 
 // ==================================================================
-// >>> 
+// >>>
 // >>> Find file of application information
-// >>> 
+// >>>
 // ==================================================================
 
 include($AG['dirs']['generated'] .'appinfo.php');
@@ -76,10 +76,10 @@ $GLOBALS['AG']['dbg']['sql'] = array();
 
 
 // ==================================================================
-// >>> 
+// >>>
 // >>> Copy the $_POST array and overlay with $_GET
 // >>> Reverse the effects of magic quotes if found
-// >>> 
+// >>>
 // ==================================================================
 $AG['clean']= array();
 $AG['clean']['gp_page'] = '';
@@ -99,10 +99,10 @@ if(ini_get('magic_quotes_gpc')) {
     }
 }
 
-// >>> 
+// >>>
 // >>> Restore the context (taken from g/p variables)
 // >>> Used only in "classic" x_table2 page handling, not in x4
-// >>> 
+// >>>
 if(!isset($AG['clean']['gpContext'])) {
     $AG['clean']['gpContext']=array();
 }
@@ -120,9 +120,9 @@ else {
 
 
 // ==================================================================
-// >>> 
+// >>>
 // >>> Load the framework library
-// >>> 
+// >>>
 // ==================================================================
 include_once('androLib.php');
 if(configGet('deprecated','Y')=='Y') {
@@ -130,9 +130,9 @@ if(configGet('deprecated','Y')=='Y') {
 }
 
 // ==================================================================
-// >>> 
+// >>>
 // >>> Load the application library
-// >>> 
+// >>>
 // ==================================================================
 
 $x=$AG['dirs']['application'] .'applib.php';
@@ -155,9 +155,9 @@ if (file_exists($x)) {
 $GLOBALS['AG']['plugins'] = new AndroPluginManager();
 
 // ==================================================================
-// >>> 
+// >>>
 // >>> Up the session hit counter
-// >>> 
+// >>>
 // ==================================================================
 SessionSet('count',SessionGet('count')+1);
 
@@ -168,9 +168,9 @@ SessionSet('count',SessionGet('count')+1);
 
 
 // ==================================================================
-// >>> 
+// >>>
 // >>> Determine the User ID, or UID
-// >>> 
+// >>>
 // ==================================================================
 
 // A logout command comes first
@@ -192,7 +192,7 @@ if(gp('st2logout')<>'') {
     }
 }
 
-// This is the only place where we branch out of sequence to 
+// This is the only place where we branch out of sequence to
 // actual page processing, and it is only for logins.
 //
 // Begin with an anonymous connection if no identity.  An expired
@@ -223,6 +223,7 @@ if (gp('gp_uid')<>'') {
 $gp_page = gp('gp_page');
 // KFD 3/6/08 Changed login processing from page x_login to
 //            the st2login command
+
 if (gp('st2login')==1) {
     $obj_login = dispatchObject('x_login');
     $obj_login->directlogin = $directlogin;
@@ -252,13 +253,13 @@ if (gp('st2login')==1) {
 }
 
 // This is an after-the-fact check.  The login is never supposed
-// to allow logins to "postgres" or any user whose name begins 
+// to allow logins to "postgres" or any user whose name begins
 // with the application code.  If the login system let something
 // get by, then we trap it here.  We also set the user to anonymous
 //
 // Note however that an EXACT match of user_id to application code
-// is ok, that is the so-called "anonymous" account.  
-// 
+// is ok, that is the so-called "anonymous" account.
+//
 $uid=trim(SessionGet('UID'));
 $app=trim($AG['application']);
 $uidx=substr($uid,0,strlen($app));
@@ -278,18 +279,18 @@ if(!LoggedIn()) {
 }
 
 // ==================================================================
-// >>> 
+// >>>
 // >>> Command line programs now exit after loading framework
-// >>> 
+// >>>
 // ==================================================================
 if(!isset($_SERVER['HTTP_HOST'])) return;
 if(isset($force_cli))   return;
 if(isset($header_mode)) return;
 
 // ==================================================================
-// >>> 
-// >>> Turn on logging 
-// >>> 
+// >>>
+// >>> Turn on logging
+// >>>
 // ==================================================================
 # experimental
 #if(configGet('admin_logging','N')=='Y' && SessionGet('ROOT')) {
@@ -300,9 +301,9 @@ if(isset($header_mode)) return;
 
 
 // ==================================================================
-// >>> 
+// >>>
 // >>> Dispatching, pass execution to the relevant handler
-// >>> 
+// >>>
 // ==================================================================
 
 // If making an ajax call and session time out, send to logout
@@ -312,7 +313,7 @@ if(Count(SessionGet('clean',array()))>0 && gpExists('ajxBUFFER')) {
 }
 
 // Everything after assumes we need a database connection
-// KFD 3/18/08 If a user has passed in an "impersonation" 
+// KFD 3/18/08 If a user has passed in an "impersonation"
 // user_id, save that in the session
 if(gpExists('gpimp')) SessionSet('UID_IMPERSONATE',gp('gpimp'));
 scDBConn_Push();
@@ -379,12 +380,12 @@ if(gp('x4Page')=='' && gp('gp_page')=='' &&gp('x6page')=='') {
 }
 
 
-// Entries made in the command box can rewrite get/post 
+// Entries made in the command box can rewrite get/post
 // variables and affect downstream processing.  Do those
 // now if required.
 if(    gpExists('gp_command')) index_hidden_command();
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # KFD 10/17/08.  x6 Page Resolution
 #
 #
@@ -445,7 +446,7 @@ if(isset($GLOBALS['AG']['x6profiles'][$x6page])) {
 }
 
 # the action is always taken directly from request variables,
-# 
+#
 $x6action = gp('x6action');
 #$x6plugin = gp('x6plugIn');
 
@@ -462,7 +463,7 @@ $x6action = gp('x6action');
 # Ken's debugging to make sure assignments worked
 #echo "candidate -$x6cand- page -$x6page- file -$x6file- yaml -$x6yaml-
 #  profile -$x6profile- plugin -$x6plugin- action -$x6action-";
-#exit;    
+#exit;
 #
 # KFD 10/17/08.  x6 Page Resolution (END)
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -485,7 +486,7 @@ elseif($x6page           <>'') index_hidden_x6Dispatch(
 elseif(gp('x4Page')      <>'') index_hidden_x4Dispatch();
 else                           index_hidden_page();
 
-// All finished, disconnect and leave. 
+// All finished, disconnect and leave.
 scDBConn_Pop();
 
 return;
@@ -510,7 +511,7 @@ function index_hidden_x6Dispatch(
 
     vgfSet('x6',true);
 
-    # KFD 12/10/08, allow dynamic lookups. 
+    # KFD 12/10/08, allow dynamic lookups.
     #
     if(gp('x6select',false)) {
         $table_id = gp('x6page');
@@ -682,7 +683,7 @@ function index_hidden_x6Dispatch(
     # and what method to call, so go for it.
     ob_start();
     $obj = new $x6class();
-    # KFD 3/30/09 Sourceforge 2697962 Do this here, so it 
+    # KFD 3/30/09 Sourceforge 2697962 Do this here, so it
     #             does not matter if androX6 or androPage
     $obj->hld = aFromGp('hld_');
     $obj->dd    = ddTable($x6page);
@@ -691,7 +692,7 @@ function index_hidden_x6Dispatch(
     $obj->$x6method();
     $HTML = ob_get_clean();
 
-    # KFD 3/20/09 Sourceforge 2697962 
+    # KFD 3/20/09 Sourceforge 2697962
     #             Make sure programmer never has to send out
     #             hold variables, they should go automatically
     if(gp('json')<>1) {
@@ -755,14 +756,14 @@ function index_hidden_x6Dispatch(
             jqDocReady($script);
         }
 
-        # Just before the absolute very last command is the 
+        # Just before the absolute very last command is the
         # firing of our (currently) one and only queue
         jqDocReady('x6events.fireQueue("afterInit")');
         # The absolute very last command is the fade in
         $fadeIn = "$('.fadein').fadeIn('slow',function() { x6.initFocus(); });";
         jqDocReady($fadeIn);
 
-        # DUPLICATE ALERT: This code copied from 
+        # DUPLICATE ALERT: This code copied from
         #                  index_hidden_page() below
         index_hidden_template('x4');
         global $J;
@@ -793,7 +794,7 @@ function index_hidden_x4Dispatch() {
     ,'script'=>array()
     );
 
-    # EXPERIMENTAL. 
+    # EXPERIMENTAL.
     # KFD 8/18/08.  Having any gp vars might be screwing things
     #               up, remove them.  Specifically it is screwing
     #               up the gp_command
@@ -878,7 +879,7 @@ function index_hidden_x4Dispatch() {
             jqDocReady($script);
         }
 
-        # DUPLICATE ALERT: This code copied from 
+        # DUPLICATE ALERT: This code copied from
         #                  index_hidden_page() below
         index_hidden_template('x4');
         global $J;
@@ -995,7 +996,7 @@ function index_hidden_function() {
 
 // ------------------------------------------------------------------
 // >> Execute a command.  Created 6/29/07 KFD originally for
-// >>    medical program.  Only support in first version is 
+// >>    medical program.  Only support in first version is
 // >>    to give a quick route to lookups
 // ------------------------------------------------------------------
 function index_hidden_command() {
@@ -1155,7 +1156,7 @@ function index_hidden_dropdown() {
                      x_value='$value'
                 onmouseover='androSelect_mo(this,$s)'
                 onmouseout = 'aSelect.hasFocus = false;'
-                onclick=\"androSelect_click('$value')\";                
+                onclick=\"androSelect_click('$value')\";
                 >"
                 .$tds;
         }
@@ -1174,7 +1175,7 @@ function index_hidden_dropdown() {
     }
 }
 // ------------------------------------------------------------------
-// >> Return a single row from a table 
+// >> Return a single row from a table
 //    Created 4/18/07 originally for project "jewel"
 // ------------------------------------------------------------------
 function index_hidden_fetchrow() {
@@ -1396,7 +1397,7 @@ function index_hidden_x6FETCH() {
         }
     }
 
-    # We now have a list of source and destination 
+    # We now have a list of source and destination
     # columns, build the query
     $sql="Select ".implode(',',$cols)
         ." FROM $tfko WHERE $cfko = ".SQLFC($colvalue);
@@ -1462,7 +1463,7 @@ function index_hidden_page_mime() {
     $x_table = CleanGet("gp_page");
     //$x_column= CleanGet("x_column");
     $x_skey  = CleanGet("x_skey");
-    //$sql ="Select skey,$x_column FROM $x_table WHERE skey = $x_skey"; 
+    //$sql ="Select skey,$x_column FROM $x_table WHERE skey = $x_skey";
     //$row = SQL_OneRow($sql);
 
     $filename= "$x_table-$x_mime-$x_skey.$x_mime";
@@ -1739,8 +1740,7 @@ function index_hidden_page() {
             $ajax=ElementReturn('ajax',array());
             echo '|-|'.implode('|-|',$ajax);
             echo '|-|_title|'.vgfGet('PageTitle');
-        }
-        elseif(defined('_VALID_MOS')) {
+        } elseif(defined('_VALID_MOS')) {
             // This is the default branch, using a Joomla template
             // DUPLICATE ALERT: This code copied into
             //          index_hidden_x4Dispatch() above
@@ -1752,15 +1752,13 @@ function index_hidden_page() {
             $template_color          = $J['template_color'];
             $template_color = 'red';
             $file
-                =$AG['dirs']['app_root'].'/templates/'
+                =$AG['dirs']['app_root'].'templates/'
                 .$mainframe->GetTemplate()."/index.php";
             include($file);
-        }
-        elseif($obj_page->html_template!=='') {
+        } elseif($obj_page->html_template!=='') {
             // This is newer style, let the class specify the template.
             include($obj_page->html_template.'.php');
-        }
-        else {
+        } else {
             // This is old style, defaults to "html_main.php", can be
             // set also by vgaSet() or by gp(gp_out)
             $html_main = vgaGet('html_main')==''? 'html_main' : vgaGet('html_main');
@@ -1809,11 +1807,11 @@ function index_hidden_template($mode) {
         }
     } else {
 
-        # this is old x2/x4 mode, begin by obtaining a 
+        # this is old x2/x4 mode, begin by obtaining a
         # 'candidate' they may have been set
         $candidate = vgfGet('template');
 
-        # KFD 7/23/08. Give application a chance to 
+        # KFD 7/23/08. Give application a chance to
         #              play with setting
         if(function_exists('app_template')) {
             vgfSet('template',app_template($candidate));
@@ -1837,12 +1835,12 @@ function index_hidden_template($mode) {
         }
     }
 
-    # KFD 9/2/08.  We still have one customer with a public 
+    # KFD 9/2/08.  We still have one customer with a public
     #        interface that is not a Joomla template.  If the
     #        template is "*" then we DO NOT set up Joomla
     #        compatibility.  The application will use its own
     #        file in the application directory that is specified
-    #        with vgaSet('html_pub').  
+    #        with vgaSet('html_pub').
     if(vgfGet('template')=='*') return;
 
     # Tell the JOOMLA files that we are legit

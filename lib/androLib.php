@@ -771,21 +771,17 @@ function DispatchObject($gp_page) {
     // Always attempt to load a class for the page, and then
     // look for the named class
     $obj_page = null;
-    if (file_exists($_SERVER['DOCUMENT_ROOT'] .'/application/' .$gp_page . ".php")) {
-        //include_once ("$gp_page.php");
+    $class_page = "x_table_$gp_page";
+    if (class_exists($class_page)) {
 
-        $class_page = "x_table_$gp_page";
-        if (class_exists($class_page)) {
+        // case 1, extension of x_table (original)
+        $obj_page = new $class_page();
+        $obj_page->table_id = $gp_page;
+        $obj_page->x_table_DDLoad();
+    } elseif (class_exists($gp_page)) {
 
-            // case 1, extension of x_table (original)
-            $obj_page = new $class_page();
-            $obj_page->table_id = $gp_page;
-            $obj_page->x_table_DDLoad();
-        } elseif (class_exists($gp_page)) {
-
-            // case 2, extension of x_table2 (new way to do it)
-            $obj_page = new $gp_page();
-        }
+        // case 2, extension of x_table2 (new way to do it)
+        $obj_page = new $gp_page();
     }
 
     // if no object found, must make a default
@@ -6218,8 +6214,9 @@ function &ddTable($table_id) {
     if (isset($GLOBALS['AG']['tables'][$table_id])) {
         return $GLOBALS['AG']['tables'][$table_id];
     }
+
     // First run the include and get a reference
-    if (!file_exists(fsDirTop() . "generated/ddtable_$table_id.php")) {
+    if (!file_exists($GLOBALS['AG']['dirs']['generated'] . 'ddtable_' .$table_id .'.php')) {
         $GLOBALS['AG']['tables'][$table_id] = array('flat' => array(), 'description' => $table_id, 'viewname' => '');
     } else {
         include_once ("ddtable_" . $table_id . ".php");
@@ -6649,11 +6646,12 @@ function DDColumnWritable(&$colinfo, $gpmode, $value) {
          *
          *---**
         */
-function &DD_TableRef($table_id) {
+function DD_TableRef($table_id) {
     $retval = ddTable($table_id);
     return $retval;
     if (!isset($GLOBALS["AG"]["tables"][$table_id])) {
-        $file = fsDirTop() . "generated/ddtable_" . $table_id . ".php";
+        $file = $GLOBALS['AG']['dirs']['generated'] . "ddtable_" . $table_id . ".php";
+        var_dump($file);
         if (!file_exists($file)) {
             return array();
         } else {
