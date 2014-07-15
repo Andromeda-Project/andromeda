@@ -1,7 +1,6 @@
 <?php
 require_once('vendor/autoload.php');
 /* ================================================================== *\
-   (C) Copyright 2005 by Secure Data Software, Inc.
    This file is part of Andromeda
    
    Andromeda is free software; you can redistribute it and/or modify
@@ -64,23 +63,26 @@ if(!isset($AG['tmpPathInsert'])) {
 // >>> file.  
 // >>>
 // ==================================================================
-$dir = pathinfo(__FILE__)['dirname'] .'/';
+$dir = dirname(__FILE__);
 
-$AG['dirs']['root']        = $dir;
-$AG['dirs']['app_root']    = realpath($dir .'../../../') .'/';
-$AG["dirs"]["dynamic"]     = realpath($dir .'../../../dynamic/') .'/';
-$AG["dirs"]["application"] = realpath($dir .'../../../application/') .'/';
-$AG["dirs"]["generated"]   = realpath($dir .'../../../generated/') .'/';
-$AG["dirs"]["lib"]         = $dir."lib/";
+$AG['dirs']['root']        = $dir .PATH_SEPARATOR;
+$AG["dirs"]["dynamic"]     = $AG["dirs"]["app_root"] .'dynamic' .PATH_SEPARATOR;
+$AG["dirs"]["application"] = $AG['dirs']['app_root'] .'application' .PATH_SEPARATOR;
+$AG["dirs"]["generated"]   = $AG['dirs']['app_root'] .'generated' .PATH_SEPARATOR;
+$AG["dirs"]["lib"]         = $AG['dirs']['root'] .'lib' .PATH_SEPARATOR;
+
+if (!isset($AG['dirs']['app_root'])) {
+    $AG['dirs']['app_root']    = dirname(__FILE__) .PATH_SEPARATOR;
+}
 
 ini_set("include_path"
-    ,$AG["dirs"]["dynamic"].PATH_SEPARATOR
+    ,$AG["dirs"]["dynamic"]
     .$AG["dirs"]["application"].PATH_SEPARATOR
     .$AG["dirs"]["generated"].PATH_SEPARATOR
     .$AG["dirs"]["lib"].PATH_SEPARATOR
     .ini_get("include_path")
 );
-//var_dump($AG['dirs']);
+
 // ==================================================================
 // >>> 
 // >>> Now pass control forever to the library routines
