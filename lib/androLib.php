@@ -917,7 +917,7 @@ function html($tag, &$parent = null, $innerHTML = '', $class = '') {
         return $retval;
     }
 
-    $retval = & new androHtml();
+    $retval = new androHtml();
     $retval->setHtml($innerHTML);
     if (!empty($class)) {
         $retval->addClass($class);
@@ -8933,15 +8933,15 @@ function ehStandardContent($dotitle = false) {
  ******
  */
 function ehStandardFormOpen($id = 'Form1') {
-$x = $id;
+    $x = $id;
 //annoying jedit compiler warning
-$style = vgfGet('x6') ? '' : 'style="height:100%"';
-?>
-<form class="form-horizontal" method="post" action="index.php" id="<?php
-echo $x ?>"
-      enctype="multipart/form-data"
-      name="Form1" <?php
-echo $style ?> >
+    $style = vgfGet('x6') ? '' : 'style="height:100%"';
+    ?>
+    <form class="form-horizontal" method="post" action="index.php" id="<?php
+    echo $x ?>"
+    enctype="multipart/form-data"
+    name="Form1" <?php
+    echo $style ?> >
 <?php
 }
 
