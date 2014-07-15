@@ -1783,36 +1783,31 @@ function index_hidden_template($mode) {
     #               path, x6 settings win out.
     $flagx6    = configGet('flag_x6','N');
     $x6template= configGet('x6_template','');
-    $x6group   = configGet('x6_group'   ,'');
-    if($flagx6=='Y') {
+    $x6group   = configGet('x6_group', '');
+    if ($flagx6=='Y') {
         # In x6, we consider the "app_template()" function first,
         # if it returns something it always wins.
         if(function_exists('app_template')) {
             vgfSet('template',app_template());
-        }
-
-        # If app_template() does not exist, we have to figure
-        # it ourselves.  If they have not given us a template,
-        # we just go with x6.
-        else if($x6template=='') {
+        } else if($x6template=='') {
+            // If app_template() does not exist, we have to figure
+            // it ourselves.  If they have not given us a template,
+            // we just go with x6.
             vgfSet('template','x6');
-        }
-
-        # Now we know they have specified a template, which
-        # we will use if the user is not logged in, or is 
-        # in the group they specified as still getting
-        # the public template.
-        else if(!LoggedIn() || inGroup($x6group)) {
+        } else if(!LoggedIn() || inGroup($x6group)) {
+            /*
+                Now we know they have specified a template, which
+                we will use if the user is not logged in, or is
+                in the group they specified as still getting
+                the public template.
+            */
             vgfSet('template',$x6template);
-        }
-
-        # Final result, they are logged in, and not in the
-        # public group, so they see the x6 template
-        else {
+        } else {
+            // Final result, they are logged in, and not in the
+            // public group, so they see the x6 template
             vgfSet('template','x6');
         }
-    }
-    else {
+    } else {
 
         # this is old x2/x4 mode, begin by obtaining a 
         # 'candidate' they may have been set
