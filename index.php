@@ -65,18 +65,18 @@ if(!isset($AG['tmpPathInsert'])) {
 // ==================================================================
 $dir = dirname(__FILE__);
 
-$AG['dirs']['root']        = $dir .PATH_SEPARATOR;
-$AG["dirs"]["dynamic"]     = $AG["dirs"]["app_root"] .'dynamic' .PATH_SEPARATOR;
-$AG["dirs"]["application"] = $AG['dirs']['app_root'] .'application' .PATH_SEPARATOR;
-$AG["dirs"]["generated"]   = $AG['dirs']['app_root'] .'generated' .PATH_SEPARATOR;
-$AG["dirs"]["lib"]         = $AG['dirs']['root'] .'lib' .PATH_SEPARATOR;
+$AG['dirs']['root']        = $dir .DIRECTORY_SEPARATOR;
+$AG["dirs"]["dynamic"]     = $AG["dirs"]["app_root"] .'dynamic' .DIRECTORY_SEPARATOR;
+$AG["dirs"]["application"] = $AG['dirs']['app_root'] .'application' .DIRECTORY_SEPARATOR;
+$AG["dirs"]["generated"]   = $AG['dirs']['app_root'] .'generated' .DIRECTORY_SEPARATOR;
+$AG["dirs"]["lib"]         = $AG['dirs']['root'] .'lib' .DIRECTORY_SEPARATOR;
 
 if (!isset($AG['dirs']['app_root'])) {
-    $AG['dirs']['app_root']    = dirname(__FILE__) .PATH_SEPARATOR;
+    $AG['dirs']['app_root']    = dirname(__FILE__) .DIRECTORY_SEPARATOR;
 }
 
 ini_set("include_path"
-    ,$AG["dirs"]["dynamic"]
+    ,$AG["dirs"]["dynamic"] .PATH_SEPARATOR
     .$AG["dirs"]["application"].PATH_SEPARATOR
     .$AG["dirs"]["generated"].PATH_SEPARATOR
     .$AG["dirs"]["lib"].PATH_SEPARATOR
