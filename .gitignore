@@ -13,3 +13,8 @@ root/.htaccess
 vendor/
 composer.lock
 .idea/
+favicon.ico
+pages
+phpWait.php
+rpath
+x4index.php

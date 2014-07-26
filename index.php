@@ -1,6 +1,6 @@
 <?php
-require_once('vendor/autoload.php');
 /* ================================================================== *\
+   (C) Copyright 2005 by Secure Data Software, Inc.
    This file is part of Andromeda
    
    Andromeda is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@ require_once('vendor/autoload.php');
    Foundation, Inc., 51 Franklin St, Fifth Floor,
    Boston, MA  02110-1301  USA 
    or visit http://www.gnu.org/licenses/gpl.html
-   ================================================================== */
+\* ================================================================== */
 // ==================================================================
 // This first stuff you see makes possible "friendly URLS", by 
 // making possible absolute path references to CSS and JS files.
@@ -45,15 +45,15 @@ require_once('vendor/autoload.php');
 //
 // ==================================================================
 if(!isset($AG['tmpPathInsert'])) {
-    $ruri=$_SERVER['REQUEST_URI'];
-    // If there is a "?", strip that off and everything past it
-    $ruriqm =strpos($ruri,'?');
-    if($ruriqm!==false) $ruri=substr($ruri,0,$ruriqm);
-    // If there is an "index.php" then strip that off
-    $ruri=preg_replace('/index.php/i','',$ruri);
-    // Now remove the leading slash that is always there (unless it ain't)
-    if(substr($ruri,0,1)=='/') $ruri = substr($ruri,1);
-    $AG['tmpPathInsert']=$ruri;
+   $ruri=$_SERVER['REQUEST_URI'];
+   // If there is a "?", strip that off and everything past it
+   $ruriqm =strpos($ruri,'?'); 
+   if($ruriqm!==false) $ruri=substr($ruri,0,$ruriqm);
+   // If there is an "index.php" then strip that off
+   $ruri=preg_replace('/index.php/i','',$ruri);
+   // Now remove the leading slash that is always there (unless it ain't)
+   if(substr($ruri,0,1)=='/') $ruri = substr($ruri,1);
+   $AG['tmpPathInsert']=$ruri;
 }
 
 
@@ -61,26 +61,21 @@ if(!isset($AG['tmpPathInsert'])) {
 // >>> 
 // >>> The path is based on the real location of the index.php
 // >>> file.  
-// >>>
+// >>> 
 // ==================================================================
-$dir = dirname(__FILE__);
-
-$AG['dirs']['root']        = $dir .DIRECTORY_SEPARATOR;
-$AG["dirs"]["dynamic"]     = $AG["dirs"]["app_root"] .'dynamic' .DIRECTORY_SEPARATOR;
-$AG["dirs"]["application"] = $AG['dirs']['app_root'] .'application' .DIRECTORY_SEPARATOR;
-$AG["dirs"]["generated"]   = $AG['dirs']['app_root'] .'generated' .DIRECTORY_SEPARATOR;
-$AG["dirs"]["lib"]         = $AG['dirs']['root'] .'lib' .DIRECTORY_SEPARATOR;
-
-if (!isset($AG['dirs']['app_root'])) {
-    $AG['dirs']['app_root']    = dirname(__FILE__) .DIRECTORY_SEPARATOR;
-}
+$dir = realpath(dirname(__FILE__)).'/';
+$AG['dirs']['root']        = $dir;
+$AG["dirs"]["dynamic"]     = $dir."dynamic/";
+$AG["dirs"]["application"] = $dir."application/";
+$AG["dirs"]["generated"]   = $dir."generated/";
+$AG["dirs"]["lib"]         = $dir."lib/";
 
 ini_set("include_path"
-    ,$AG["dirs"]["dynamic"] .PATH_SEPARATOR
-    .$AG["dirs"]["application"].PATH_SEPARATOR
-    .$AG["dirs"]["generated"].PATH_SEPARATOR
-    .$AG["dirs"]["lib"].PATH_SEPARATOR
-    .ini_get("include_path")
+	,$AG["dirs"]["dynamic"].PATH_SEPARATOR
+	.$AG["dirs"]["application"].PATH_SEPARATOR
+	.$AG["dirs"]["generated"].PATH_SEPARATOR
+	.$AG["dirs"]["lib"].PATH_SEPARATOR
+	.ini_get("include_path")
 );
 
 // ==================================================================
@@ -88,4 +83,5 @@ ini_set("include_path"
 // >>> Now pass control forever to the library routines
 // >>> 
 // ==================================================================
-include($AG['dirs']['lib'] .'index_hidden.php');
+include('index_hidden.php'); 
+?>

@@ -9783,7 +9783,7 @@ $retval
 );
 ?>";
     global $AG;
-    $file = fsDirTop() . ($dir == '' ? 'dynamic' : $dir) . "/$name";
+    $file = $AG['dirs']['app_root'] .($dir == '' ? 'dynamic' : $dir) . "/$name";
     file_put_contents($file, $retval);
 
     //  hprint_r($array);
@@ -14412,18 +14412,6 @@ function jsValuesOne($ahcols, $colname, $ahcol, $name, $row, $h) {
 
     if ($ahcol['type_id'] == 'mime-h' || $ahcol['type_id'] == 'mime-h-f') {
         $editor = "<textarea class=\"wysiwyg\"  style=\"width: 810px; height: 200px\" x_original_value=\"" . htmlentities(trim(ArraySafe($row, $colname, ''))) . "\" class=\"wysiwyg\" name=\"$name$colname\">" . htmlentities(trim(ArraySafe($row, $colname, ''))) . "</textarea>";
-
-        /*
-                    $dir = $GLOBALS['AG']['dirs']['root'];
-                    @include_once($dir.'/clib/FCKeditor/fckeditor.php');
-                    $oFCKeditor = new FCKeditor($name.$colname);
-                    $oFCKeditor->BasePath   = 'clib/FCKeditor/';
-                    $oFCKeditor->ToolbarSet = ( $ahcol['type_id'] == 'mime-h' ? 'Basic' : 'Default' );
-                    $oFCKeditor->Width  = ( $ahcol['type_id'] == 'mime-h' ? '275' : '470' );
-                    $oFCKeditor->Height = ( $ahcol['type_id'] == 'mime-h' ? '200' : '400' );
-                    $oFCKeditor->Value = trim(ArraySafe($row,$colname,''));
-                    $hx = $oFCKeditor->CreateHtml();
-                    */
         $h = str_replace('--MIME-H--' . $name . $colname . '--MIME-H--', $editor, $h);
 
         jqDocReady("
@@ -15608,7 +15596,7 @@ function cssInclude($file, $force_immediate = false) {
  * @deprecated
  */
 function cssOutput() {
-
+    $cssDir = $GLOBALS['AG']['dirs']['app_root'] .'clib/';
     // Get the array of files to output and combine
     $css = vgfGet('cssIncludes', array());
     if (count($css) == 0) return;
@@ -15618,15 +15606,15 @@ function cssOutput() {
     //
     $list = implode('|', $css);
     $md5 = substr(md5($list), 0, 15);
-    $file = fsDirTop() . "/clib/css-min-$md5.css";
+    $file = $cssDir . "/clib/css-min-$md5.css";
 
     if (!file_exists($file)) {
         $string = '';
         foreach ($css as $cssone) {
             $string.= "\n/* FILE: $cssone */\n";
-            $cssFile = fsDirTop() . $cssone;
+            $cssFile = $cssDir . $cssone;
             if (file_exists($cssFile)) {
-                $string.= file_get_contents(fsDirTop() . $cssone);
+                $string.= file_get_contents($cssDir . $cssone);
             }
         }
         file_put_contents($file, $string);
@@ -15744,15 +15732,15 @@ if ($debug == 'N' && $external == false) {
 if (count($aj) == 0) return;
 $list = implode('|', $aj);
 $md5 = substr(md5($list), 0, 15);
-$file = fsDirTop() . "/clib/js-min-$md5.js";
+$file = $GLOBALS['AG']['dirs']['app_root'] . "/clib/js-min-$md5.js";
 
 if (!file_exists($file)) {
     $string = '';
     foreach ($aj as $ajone) {
         if (file_exists($ajone . '.mjs')) {
-            $string.= file_get_contents(fsDirTop() . $ajone . '.mjs');
+            $string.= file_get_contents($GLOBALS['AG']['dirs']['app_root'] . $ajone . '.mjs');
         } else {
-            $string.= file_get_contents(fsDirTop() . $ajone);
+            $string.= file_get_contents($GLOBALS['AG']['dirs']['app_root'] . $ajone);
         }
     }
     file_put_contents($file, $string);
