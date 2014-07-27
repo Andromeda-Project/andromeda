@@ -5,7 +5,7 @@
     "keywords": ["framework", "logic", "yaml"],
     "license": "GPL2",
     "autoload": {
-        "classmap": ["lib", "application"]
+        "classmap": ["lib"]
     },
     "include-path": ["lib"],
     "homepage": "http://www.andromeda-project.org",
