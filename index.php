@@ -67,7 +67,7 @@ $dir = realpath(dirname(__FILE__)).'/';
 $AG['dirs']['root']        = $dir;
 $AG["dirs"]["dynamic"]     = $AG['dirs']['app_root'] ."dynamic/";
 $AG["dirs"]["application"] = $AG['dirs']['app_root'] ."application/";
-$AG["dirs"]["generated"]   = $AG['dirs']['app_root'] ."genrated/" ;
+$AG["dirs"]["generated"]   = $AG['dirs']['app_root'] ."generated/" ;
 $AG["dirs"]["lib"]         = $dir."lib/";
 
 ini_set("include_path"
