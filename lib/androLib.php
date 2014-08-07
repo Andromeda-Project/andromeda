@@ -5106,7 +5106,7 @@ function JoomlaCompatibility($template_name, $template_color = '') {
     // These are 1.5 definitions
     define('_JEXEC', true);
     if (!defined('DS')) {
-        define('DS', '/');
+        define('DS', DIRECTORY_SEPARATOR);
     }
 
     // We don't know what this is
