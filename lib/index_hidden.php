@@ -1526,10 +1526,10 @@ function index_hidden_page() {
     $install=$AG['dirs']['application'] .'install.php';
     $instal2=$AG['dirs']['application'] .'install.done.php';
     if(file_exists($install)) {
+        require_once($install);
         if(gp('gp_install')=='finish') {
             rename($install,$instal2);
-        }
-        else {
+        } else {
             $MPPages['install']='install';
             gpSet('gp_page','install');
         }

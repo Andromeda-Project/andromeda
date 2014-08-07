@@ -5105,7 +5105,9 @@ function JoomlaCompatibility($template_name, $template_color = '') {
 
     // These are 1.5 definitions
     define('_JEXEC', true);
-    define('DS', '/');
+    if (!defined('DS')) {
+        define('DS', '/');
+    }
 
     // We don't know what this is
     define('_ISO', '');
