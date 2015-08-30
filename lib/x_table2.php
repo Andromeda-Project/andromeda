@@ -85,7 +85,8 @@ class x_table2
     // Default constructor is very smart and should always
     // be called by classes that override x_table2
     // -----------------------------------------------------------
-    function __construct($table_id = '') {
+    function __construct($table_id = '') 
+    {
         
         // Grab table ID if given, otherwise try to figure
         // one out, but only if we don't have one
@@ -199,7 +200,8 @@ class x_table2
     'txt_/primary_key/' value.  Depending upon which one, returns
     the value of the primary key.  If neither, returns empty string.
     */
-    function PKFromSKEYorPK() {
+    function PKFromSKEYorPK() 
+    {
         $pkcol = $this->table['pks'];
         $pkcand = gp('txt_' . $pkcol);
         if ($pkcand <> '') {
@@ -216,7 +218,8 @@ class x_table2
     // If there were database saves to do, they were done
     // before the page was called.
     // -----------------------------------------------------------
-    function main() {
+    function main() 
+    {
         
         // ------------------------------------------------
         // Branch out to ajax handling functions
@@ -228,7 +231,8 @@ class x_table2
         // ------------------------------------------------
         
         // Public sites can turn off table maintenance pages
-        if (vgfGet('suppress_maintenance', false)) return;
+        if (vgfGet('suppress_maintenance', false)) { return; 
+        }
         vgfset('maintenance', true);
         
         // KFD 2/17/09 Sourceforge 2546056
@@ -240,7 +244,7 @@ class x_table2
           <h1>Bad Page Request</h1>
           <p>There is no page <?php
             echo hx(gp('gp_page')) ?>
-          <?php
+            <?php
             return;
         }
         
@@ -292,13 +296,13 @@ class x_table2
         }
         
         switch ($mode) {
-            case 'search':
-                $this->PageSubtitle.= " (Lookup Mode)";
-                break;
+        case 'search':
+            $this->PageSubtitle.= " (Lookup Mode)";
+            break;
 
-            case 'ins':
-                $this->PageSubtitle.= " (New Entry)";
-                break;
+        case 'ins':
+            $this->PageSubtitle.= " (New Entry)";
+            break;
         }
         
         // ----------------------------------------------
@@ -320,7 +324,8 @@ class x_table2
         // Now if this is a child table in a 1:M, it will not actually
         // output its own stuff, it will invoke its parent, so let's
         // buffer the output
-        if ($this->table_id_parent <> '') ob_start();
+        if ($this->table_id_parent <> '') { ob_start(); 
+        }
         
         // Echo out the HTML
         $this->ehMain();
@@ -365,7 +370,8 @@ class x_table2
         }
     }
     
-    function mainCheckForMover() {
+    function mainCheckForMover() 
+    {
         $dd = ContextGet('drilldown', array());
         if (isset($dd[0]['page'])) {
             $tpar = $dd[0]['page'];
@@ -382,7 +388,8 @@ class x_table2
     // ----------------------------------------------
     // Main HTML otuput
     // ----------------------------------------------
-    function ehMain() {
+    function ehMain() 
+    {
         $hN = $this->h['Links'] . ($this->h['Links'] == '' ? '' : '<br/>') . $this->h['NavBar'] . ($this->h['NavBar'] == '' ? '' : '<br>');
 ?>
       
@@ -416,7 +423,8 @@ class x_table2
         }
     }
     
-    function ehMainModeComment($mode) {
+    function ehMainModeComment($mode) 
+    {
         return;
         
         // KFD 6/28/07.  Nobody reads this message.  It has been superseded
@@ -437,7 +445,8 @@ class x_table2
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // Work out what buttons to display based on mode
     // and permissions
-    function hButtonBar($mode) {
+    function hButtonBar($mode) 
+    {
         $buttons = array();
         
         // First work out which are active
@@ -457,11 +466,15 @@ class x_table2
         
         // Now create an array out of them
         $buts[] = $this->hButton($b_new, "\New Entry", "ins", 'newentry');
-        if ($mode == 'search') $buts[] = $this->hButton($b_search, "\Lookup", "browse", 'search');
-        else $buts[] = $this->hButton($b_search, "\Lookup", "search", 'search');
+        if ($mode == 'search') { $buts[] = $this->hButton($b_search, "\Lookup", "browse", 'search'); 
+        }
+        else { $buts[] = $this->hButton($b_search, "\Lookup", "search", 'search'); 
+        }
         $buts[] = $this->hButton($b_browse, "\Browse", "browse", 'browse');
-        if ($mode == 'ins') $buts[] = $this->hButton($b_save, "\Save", "save", 'save');
-        else $buts[] = $this->hButton($b_save, "\Save", "saveupd", 'save');
+        if ($mode == 'ins') { $buts[] = $this->hButton($b_save, "\Save", "save", 'save'); 
+        }
+        else { $buts[] = $this->hButton($b_save, "\Save", "saveupd", 'save'); 
+        }
         $buts[] = $this->hButton($b_clear, "\Clear", "clear", 'clear');
         $buts[] = $this->hButton($b_reset, "\Reset", "reset", 'reset');
         $buts[] = $this->hButton($b_delete, "Delete", "delete", 'delete');
@@ -494,7 +507,8 @@ class x_table2
      Creates a hyperlink to the specified form action.  By its nature
      this routine is loaded with exception code.
      */
-    function hButton($switch, $caption, $action, $img) {
+    function hButton($switch, $caption, $action, $img) 
+    {
         
         // KFD 5/17/07, give it a name so it can be clicked in code
         $name = str_replace(' ', '', $caption);
@@ -520,47 +534,47 @@ class x_table2
         // If we are still continuing, then this is a "lit" active
         // button.  First work out the link
         switch ($action) {
-            case 'import':
-                $hlink = "?gp_page=x_import&gp_table_id=" . $this->table_id;
-                $onclick = "javascript:window.location='$hlink'";
-                break;
+        case 'import':
+            $hlink = "?gp_page=x_import&gp_table_id=" . $this->table_id;
+            $onclick = "javascript:window.location='$hlink'";
+            break;
 
-            case 'save':
-                $hlink = "javascript:SetAndPost('gp_action','save')";
-                $onclick = $hlink;
-                break;
+        case 'save':
+            $hlink = "javascript:SetAndPost('gp_action','save')";
+            $onclick = $hlink;
+            break;
 
-            case 'saveupd':
-                $hlink = "javascript:SetAction('gp_skey','" . $this->row['skey'] . "'" . ",'gp_action','save')";
-                $onclick = $hlink;
-                break;
+        case 'saveupd':
+            $hlink = "javascript:SetAction('gp_skey','" . $this->row['skey'] . "'" . ",'gp_action','save')";
+            $onclick = $hlink;
+            break;
 
-            case 'reset':
+        case 'reset':
                 
-                //$hlink="javascript:ob('Form1').reset()";
-                $hlink = "javascript:fieldsReset()";
-                $onclick = $hlink;
-                break;
+            //$hlink="javascript:ob('Form1').reset()";
+            $hlink = "javascript:fieldsReset()";
+            $onclick = $hlink;
+            break;
 
-            case 'clear':
-                $hlink = "javascript:clearBoxes()";
-                $onclick = $hlink;
-                break;
+        case 'clear':
+            $hlink = "javascript:clearBoxes()";
+            $onclick = $hlink;
+            break;
 
-            case 'delete':
+        case 'delete':
                 
-                //$skey=gp('gp_skey');
-                //$name = 'gp_delskey_'.$this->table_id;
-                //$hlink="SetAndPost('".$name."',".$skey.')';
-                $hlink = "javascript:SetAndPost('gp_action','del')";
-                $onclick = $hlink;
-                break;
+            //$skey=gp('gp_skey');
+            //$name = 'gp_delskey_'.$this->table_id;
+            //$hlink="SetAndPost('".$name."',".$skey.')';
+            $hlink = "javascript:SetAndPost('gp_action','del')";
+            $onclick = $hlink;
+            break;
 
-            default:
+        default:
                 
-                //$qstring = "gp_mode=".urlencode($action);
-                $hlink = "javascript:SetAndPost('gp_mode','$action')";
-                $onclick = $hlink;
+            //$qstring = "gp_mode=".urlencode($action);
+            $hlink = "javascript:SetAndPost('gp_mode','$action')";
+            $onclick = $hlink;
         }
         
         // If a text-button, we will now just make a link.  But if its
@@ -589,7 +603,8 @@ class x_table2
     // -----------------------------------------------------------
     // -----------------------------------------------------------
     // -----------------------------------------------------------
-    function hMover() {
+    function hMover() 
+    {
         
         // Get the parent table, and the "left" side, which is us
         $dd = ContextGet('drilldown', array());
@@ -705,8 +720,8 @@ class x_table2
            <select size=20 style="width: 250px"
               onclick="formPostAjax('&gp_xajax=1&moverdel='+this.value)"
               >
-           <?php
-        echo implode("\n", $ahl) ?>
+            <?php
+            echo implode("\n", $ahl) ?>
            </select>
         <td style="padding:10px; vertical-align: top">
            <br/>
@@ -722,11 +737,11 @@ class x_table2
            <select size=20 style="width: 250px"
               onclick="formPostAjax('&gp_xajax=1&moveradd='+this.value)"
               >
-           <?php
-        echo implode("\n", $ahr) ?>
+            <?php
+            echo implode("\n", $ahr) ?>
            </select>
       </table>
-      <?php
+        <?php
         $this->h['Content'] = ob_get_clean();
         
         if (gpexists('gp_xajax')) {
@@ -748,7 +763,8 @@ class x_table2
     // -----------------------------------------------------------
     // -----------------------------------------------------------
     // -----------------------------------------------------------
-    function hBrowse($filters = array()) {
+    function hBrowse($filters = array()) 
+    {
         
         // Pull the rows so we know how many we have
         if (count($filters) <> 0) {
@@ -789,13 +805,14 @@ class x_table2
 ?>'"
               id="object_for_f9"
             name="object_for_f9">(F9) Do New Entry</a>
-         <?php
+            <?php
         }
         $this->h['Content'] = ob_get_clean();
     }
     
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    function ehBrowse_Data(&$rows) {
+    function ehBrowse_Data(&$rows) 
+    {
         
         // Generate the table header as sortable columns
         echo "\n";
@@ -814,26 +831,26 @@ class x_table2
                 foreach ($cols as $colname => $coldesc) {
                     if ($i <> 0) {
                         switch ($this->table['flat'][$colname]['type_id']) {
-                            case 'time':
-                                $newrow[] = hTime($row[$colname]);
-                                break;
+                        case 'time':
+                            $newrow[] = hTime($row[$colname]);
+                            break;
 
-                            case 'dtime':
-                                $newrow[] = date('m/d/Y - h:i A', dEnsureTS($row[$colname]));
-                                break;
+                        case 'dtime':
+                            $newrow[] = date('m/d/Y - h:i A', dEnsureTS($row[$colname]));
+                            break;
 
-                            case 'date':
-                                if (is_null($row[$colname])) {
-                                    $newrow[] = '';
-                                } else {
-                                    $newrow[] = hDate(strtotime($row[$colname]));
-                                }
+                        case 'date':
+                            if (is_null($row[$colname])) {
+                                $newrow[] = '';
+                            } else {
+                                $newrow[] = hDate(strtotime($row[$colname]));
+                            }
                                 
-                                //$newrow[]=$row[$colname];
-                                break;
+                            //$newrow[]=$row[$colname];
+                            break;
 
-                            default:
-                                $newrow[] = $row[$colname];
+                        default:
+                            $newrow[] = $row[$colname];
                         }
                     } else {
                         $hName = $j == 1 ? ' id="browse_row0" ' : '';
@@ -856,7 +873,8 @@ class x_table2
     }
     
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    function hBrowse_NavBar() {
+    function hBrowse_NavBar() 
+    {
         
         // Get vital stats, work out what the max page is
         $table_id = $this->table['table_id'];
@@ -898,7 +916,8 @@ class x_table2
         
     }
     
-    function hTextButton($caption, $var, $val, $enabled, $title = '') {
+    function hTextButton($caption, $var, $val, $enabled, $title = '') 
+    {
         list($caption, $akey) = FindAccessKey($caption);
         if ($enabled) {
             return "<a class=\"btn btn-info\" $akey href=\"javascript:formPostString('" . $var . "=" . urlencode($val) . "')\"" . (!empty($title) ? " title=\"$title\"" : "") . ">" . $caption . "</a>";
@@ -914,7 +933,8 @@ class x_table2
     // -----------------------------------------------------------
     // -----------------------------------------------------------
     // -----------------------------------------------------------
-    function hBrowseChild($filters = array()) {
+    function hBrowseChild($filters = array()) 
+    {
         
         // Pull the rows so we know how many we have
         if (count($filters) <> 0) {
@@ -943,7 +963,8 @@ class x_table2
                 // The edit button
                 $slipin = hLinkPostFromArray('', 'Edit', array('gp_dd_page' => $this->table_id, 'gp_skey' => $row['skey'], 'gp_mode' => 'upd'));
                 $slipin = array('_edit' => $slipin);
-                if (isset($row['skey'])) unset($rows[$index]['skey']);
+                if (isset($row['skey'])) { unset($rows[$index]['skey']); 
+                }
                 $rows[$index] = array_merge($slipin, $rows[$index]);
             }
             $hContent = hTBodyFromRows('', $rows);
@@ -969,18 +990,20 @@ class x_table2
             </td>
         </tr>
       </table>
-      <?php
+        <?php
         return ob_get_clean();
     }
     
-    function hDisplayOnScreenOverride($rows, $filters, $parent_row) {
+    function hDisplayOnScreenOverride($rows, $filters, $parent_row) 
+    {
         $NEVERUSED = $rows;
         $NEVERUSED = $filters;
         $NEVERUSED = $parent_row;
         return '';
     }
     
-    function hDisplayOnscreen($filters = array(), &$parent_row) {
+    function hDisplayOnscreen($filters = array(), &$parent_row) 
+    {
         $parent_pks = $filters;
         
         // capture for later reference
@@ -995,7 +1018,8 @@ class x_table2
         $rows = rowsFromUserSearch($this->table, $this->projections['_uisearch'], $filters, true);
         
         $early_return = $this->hDisplayOnscreenOverride($rows, $filters, $parent_row);
-        if ($early_return <> '') return $early_return;
+        if ($early_return <> '') { return $early_return; 
+        }
         
         // Pull the nav bar.  Do this after pulling rows so we
         // know how many rows there are, what page we're on, etc.
@@ -1030,7 +1054,8 @@ class x_table2
                     $value = hFormat($this->table['flat'][$colname]['type_id'], $colvalue);
                     $rows[$index][$colname] = $value;
                 }
-                if (isset($row['skey'])) unset($rows[$index]['skey']);
+                if (isset($row['skey'])) { unset($rows[$index]['skey']); 
+                }
                 $rows[$index][] = $slipin1;
                 $rows[$index][] = $slipin2;
                 
@@ -1061,7 +1086,8 @@ class x_table2
         // KFD 1/11/07, unconditionally copied in all values supplied
         // from parent.
         foreach ($pkcols as $pkcol) {
-            if (!isset($parent_row[$pkcol])) continue;
+            if (!isset($parent_row[$pkcol])) { continue; 
+            }
             $prefilled[$pkcol] = $parent_row[$pkcol];
         }
         $prefilled = $parent_pks;
@@ -1115,17 +1141,17 @@ class x_table2
       </div>
       <div class="andro_space2"></div>
       <fieldset>
-         <?php
-        echo hTRFromArray('dhead', $cols) ?>
-         <?php
-        echo $hContent
+            <?php
+            echo hTRFromArray('dhead', $cols) ?>
+            <?php
+            echo $hContent
 ?>
          <tr>
             <td colspan=99 class='dhead'>&nbsp;
             </td>
          </tr>
       </fieldset>
-      <?php
+        <?php
         return ob_get_clean();
     }
     
@@ -1136,7 +1162,8 @@ class x_table2
     // -----------------------------------------------------------
     // -----------------------------------------------------------
     // -----------------------------------------------------------
-    function hBoxes($mode) {
+    function hBoxes($mode) 
+    {
         
         // Obtain a row depending on the mode we are in.  If there
         // wdas an error then reload the first row for this table
@@ -1145,47 +1172,50 @@ class x_table2
             $row['skey'] = gp('gpx_skey');
         } else {
             switch ($mode) {
-                case 'search':
+            case 'search':
                     
-                    // if a previous search, use that, else fall through
-                    // to using current row
-                    $row = ConGet('table', $this->table_id, 'search', array());
-                    if (count($row) <> 0) break;
+                // if a previous search, use that, else fall through
+                // to using current row
+                $row = ConGet('table', $this->table_id, 'search', array());
+                if (count($row) <> 0) { break; 
+                }
 
-                case 'ins':
-                    $row = DrillDownMatches();
-                    if (count($row) == 0) {
-                        $row = aFromGP('pre_');
-                    }
+            case 'ins':
+                $row = DrillDownMatches();
+                if (count($row) == 0) {
+                    $row = aFromGP('pre_');
+                }
                     
-                    // KFD 8/13/07, part of COPY ability
-                    if (gp('gp_action') == 'copy') {
-                        $row2 = SQL_OneRow("SELECT * FROM " . $this->table_id . " where skey=" . SQLFN(gp('gp_skey')));
-                        foreach ($row2 as $column_id => $colvalue) {
-                            if (is_numeric($column_id)) continue;
-                            if (!isset($this->table['flat'][$column_id])) continue;
-                            $aid = $this->table['flat'][$column_id]['automation_id'];
-                            if ($aid == 'SEQUENCE' || $column_id == gp('gp_exclude')) {
-                                unset($row2[$column_id]);
-                            }
+                // KFD 8/13/07, part of COPY ability
+                if (gp('gp_action') == 'copy') {
+                    $row2 = SQL_OneRow("SELECT * FROM " . $this->table_id . " where skey=" . SQLFN(gp('gp_skey')));
+                    foreach ($row2 as $column_id => $colvalue) {
+                        if (is_numeric($column_id)) { continue; 
                         }
-                        $row = array_merge($row, $row2);
-                    }
-                    break;
-
-                case 'upd': {
-                        $skey = gp('gp_skey');
-                        hidden('gp_skey', '');
-                        if (trim($skey) == '') {
-                            $row = array();
-                        } else {
-                            $skey = " WHERE skey=" . $skey;
-                            $sq = "Select * FROM " . $this->view_id . $skey;
-                            $row = SQL_OneRow($sq);
+                        if (!isset($this->table['flat'][$column_id])) { continue; 
+                        }
+                        $aid = $this->table['flat'][$column_id]['automation_id'];
+                        if ($aid == 'SEQUENCE' || $column_id == gp('gp_exclude')) {
+                            unset($row2[$column_id]);
                         }
                     }
+                    $row = array_merge($row, $row2);
+                }
+                break;
+
+            case 'upd': {
+                    $skey = gp('gp_skey');
+                    hidden('gp_skey', '');
+                if (trim($skey) == '') {
+                    $row = array();
+                } else {
+                    $skey = " WHERE skey=" . $skey;
+                    $sq = "Select * FROM " . $this->view_id . $skey;
+                    $row = SQL_OneRow($sq);
+                }
                 }
             }
+        }
             
             // Save the row for other routines
             $this->row = $row;
@@ -1194,39 +1224,39 @@ class x_table2
             // kind of button for stuff like that.
             // Set the next/prev stuff based on rows
             $HTML_PagePrev = $HTML_PageNext = $HTML_ViewingPage = "";
-            if ($mode == "upd") {
-                $lprev = $lnext = false;
-                $skey = $this->row['skey'];
-                $sess_skeys = ConGet("table", $this->table_id, "skeys", array());
+        if ($mode == "upd") {
+            $lprev = $lnext = false;
+            $skey = $this->row['skey'];
+            $sess_skeys = ConGet("table", $this->table_id, "skeys", array());
                 
-                if (count($sess_skeys) > 1) {
-                    $sess_srows = array_flip($sess_skeys);
+            if (count($sess_skeys) > 1) {
+                $sess_srows = array_flip($sess_skeys);
                     
-                    $sess_srow = $sess_srows[$row['skey']];
-                    $lprev = $sess_srow == 0 ? false : true;
-                    $skeyf = $sess_srow == 0 ? 0 : $sess_skeys[0];
-                    $skeyp = $sess_srow == 0 ? 0 : $sess_skeys[$sess_srow - 1];
-                    $skeyn = $sess_srow >= (count($sess_srows) - 1) ? 0 : $sess_skeys[$sess_srow + 1];
-                    $skeyl = $sess_srow >= (count($sess_srows) - 1) ? 0 : $sess_skeys[count($sess_srows) - 1];
-                    $hprev = hLinkImage('first', 'First', 'gp_skey', $skeyf, $lprev) . hLinkImage('previous', 'Previous', 'gp_skey', $skeyp, $lprev);
-                    $lnext = $sess_srow < (count($sess_srows) - 1) ? true : false;
-                    $hnext = hLinkImage('next', 'Next', 'gp_skey', $skeyn, $lnext) . hLinkImage('last', 'Last', 'gp_skey', $skeyl, $lnext);
-                    $HTML_ViewingPage = "Page " . ($sess_srow + 1) . " of " . (count($sess_srows));
-                }
+                $sess_srow = $sess_srows[$row['skey']];
+                $lprev = $sess_srow == 0 ? false : true;
+                $skeyf = $sess_srow == 0 ? 0 : $sess_skeys[0];
+                $skeyp = $sess_srow == 0 ? 0 : $sess_skeys[$sess_srow - 1];
+                $skeyn = $sess_srow >= (count($sess_srows) - 1) ? 0 : $sess_skeys[$sess_srow + 1];
+                $skeyl = $sess_srow >= (count($sess_srows) - 1) ? 0 : $sess_skeys[count($sess_srows) - 1];
+                $hprev = hLinkImage('first', 'First', 'gp_skey', $skeyf, $lprev) . hLinkImage('previous', 'Previous', 'gp_skey', $skeyp, $lprev);
+                $lnext = $sess_srow < (count($sess_srows) - 1) ? true : false;
+                $hnext = hLinkImage('next', 'Next', 'gp_skey', $skeyn, $lnext) . hLinkImage('last', 'Last', 'gp_skey', $skeyl, $lnext);
+                $HTML_ViewingPage = "Page " . ($sess_srow + 1) . " of " . (count($sess_srows));
             }
+        }
             
             // Output and save the navbar
             ob_start();
-            if ($HTML_ViewingPage <> '') {
-                $hprev = $this->hTextButton('\First', 'gp_skey', $skeyf, $lprev) . $this->hTextButton('\Previous', 'gp_skey', $skeyp, $lprev);
-                $hnext = $this->hTextButton('Ne\xt', 'gp_skey', $skeyn, $lnext) . $this->hTextButton('Las\t', 'gp_skey', $skeyl, $lnext);
-                if (vgfget('buttons_in_commands')) {
-                    $this->h['NavBar'] = '';
-                    vgfSet('html_navbar', $hprev . $hnext);
-                } else {
-                    $this->h['NavBar'] = "\n<div class=\"x2menubar\">\n" . $hprev . $HTML_ViewingPage . "&nbsp;&nbsp;&nbsp;" . $hnext . "\n</div><br>";
-                }
+        if ($HTML_ViewingPage <> '') {
+            $hprev = $this->hTextButton('\First', 'gp_skey', $skeyf, $lprev) . $this->hTextButton('\Previous', 'gp_skey', $skeyp, $lprev);
+            $hnext = $this->hTextButton('Ne\xt', 'gp_skey', $skeyn, $lnext) . $this->hTextButton('Las\t', 'gp_skey', $skeyl, $lnext);
+            if (vgfget('buttons_in_commands')) {
+                $this->h['NavBar'] = '';
+                vgfSet('html_navbar', $hprev . $hnext);
+            } else {
+                $this->h['NavBar'] = "\n<div class=\"x2menubar\">\n" . $hprev . $HTML_ViewingPage . "&nbsp;&nbsp;&nbsp;" . $hnext . "\n</div><br>";
             }
+        }
             
             // Second output is main content
             // KFD 8/9/07, Project DUPECHECK
@@ -1234,16 +1264,17 @@ class x_table2
             //             doing a new entry, we first ask them to enter
             //             those values
             $dc = ArraySafe($this->table['projections'], 'dupecheck');
-            if ($dc != '' && $mode == 'ins' && !gpExists('gp_nodupecheck')) {
-                hidden('gp_action', 'dupecheck');
-                $this->h['Content'] = $this->hBoxesX3($mode, 'dupecheck');
-                $this->h['Content'].= '<br/><br/>' . '<button  class="btn btn-primary id="object_for_enter" onclick="formSubmit()">(ENTER) Check For Duplicates</button>';
-            } else {
-                $this->h['Content'] = $this->hBoxesDefault($mode);
-            }
+        if ($dc != '' && $mode == 'ins' && !gpExists('gp_nodupecheck')) {
+            hidden('gp_action', 'dupecheck');
+            $this->h['Content'] = $this->hBoxesX3($mode, 'dupecheck');
+            $this->h['Content'].= '<br/><br/>' . '<button  class="btn btn-primary id="object_for_enter" onclick="formSubmit()">(ENTER) Check For Duplicates</button>';
+        } else {
+            $this->h['Content'] = $this->hBoxesDefault($mode);
+        }
     }
     
-    function hBoxesDefault($mode) {
+    function hBoxesDefault($mode) 
+    {
         
         // KFD 10/8/08, correction to setting of context, make dtimes
         //              use the same format that we display, so they
@@ -1277,7 +1308,8 @@ class x_table2
         
     }
     
-    function hBoxesX3($mode, $projection = '', $title = '') {
+    function hBoxesX3($mode, $projection = '', $title = '') 
+    {
         $acols = aColsModeProj($this->table, $mode, $projection);
         $ahcols = aHColsfromACols($acols);
         $title = $title ? '<h3 style="padding:5px; margin:0px">' . $title . '</h3>' : $title;
@@ -1292,14 +1324,16 @@ class x_table2
         return $title . $xh;
     }
     
-    function hBoxesFromProjection($mode, $proj = '') {
+    function hBoxesFromProjection($mode, $proj = '') 
+    {
         
         // Obtain the HTML for the inputs and output as table
         $ahc = ahInputsComprehensive($this->table, $mode, $this->row, $proj);
         return "\n" . hTable(100) . $this->hBoxesFromAHComprehensive($ahc, $mode) . "\n</table>";
     }
     
-    function ehProjection($mode, $proj, $title = '', $opts = array()) {
+    function ehProjection($mode, $proj, $title = '', $opts = array()) 
+    {
         $NEVERUSED = $title;
         $ahc = ahInputsComprehensive($this->table, $mode, $this->row, $proj, $opts);
 ?>
@@ -1308,14 +1342,15 @@ class x_table2
         echo $title
 ?></h4>
          <table height="100%">
-         <?php
-        echo $this->hBoxesFromAHComprehensive($ahc, $mode); ?>
+            <?php
+            echo $this->hBoxesFromAHComprehensive($ahc, $mode); ?>
          </table>
       </div>
-      <?php
+        <?php
     }
     
-    function ehProjectionTD($mode, $proj, $title = '', $opts = array()) {
+    function ehProjectionTD($mode, $proj, $title = '', $opts = array()) 
+    {
         $NEVERUSED = $title;
         $ahc = ahInputsComprehensive($this->table, $mode, $this->row, $proj, $opts);
 ?>
@@ -1325,21 +1360,23 @@ class x_table2
         echo $title
 ?></h4>
          <table height="100%">
-         <?php
-        echo $this->hBoxesFromAHComprehensive($ahc); ?>
+            <?php
+            echo $this->hBoxesFromAHComprehensive($ahc); ?>
          </table>
       </div>
-      <?php
+        <?php
     }
     
-    function hBoxesFromAhComprehensive($ahc, $mode = 'upd') {
+    function hBoxesFromAhComprehensive($ahc, $mode = 'upd') 
+    {
         $HFirst = '';
         ob_start();
         $count = 0;
         foreach ($ahc as $colname => $colinfo) {
             $count++;
             $extra = $colinfo['input'] == 'textarea' ? 'style="vertical-align:top; padding-top:2px"' : '';
-            if ($colinfo['writeable'] && $HFirst == '') $HFirst = $colinfo['parms']['name'];
+            if ($colinfo['writeable'] && $HFirst == '') { $HFirst = $colinfo['parms']['name']; 
+            }
             if (!isset($this->table['flat'][$colname])) {
                 echo "Reference non-existent column: " . $colname;
                 exit;
@@ -1391,26 +1428,34 @@ class x_table2
     // 1) drilldowns, 2) drillbacks, 3) other
     // -----------------------------------------------------------
     // -----------------------------------------------------------
-    function hLinks($mode) {
+    function hLinks($mode) 
+    {
         
         // maybe routine was disabled by setting a flag
-        if ($this->hlinks_disable == true) return '';
-        if ($this->hlinks_display == 'none') return '';
-        if ($this->hlinks_display == '') return '';
+        if ($this->hlinks_disable == true) { return ''; 
+        }
+        if ($this->hlinks_display == 'none') { return ''; 
+        }
+        if ($this->hlinks_display == '') { return ''; 
+        }
         
         $aDD = $this->aLinks_DrillDown($mode);
         $aDB = $this->aLinks_DrillBack($mode);
         $aEX = $this->aLinks_Extra($mode);
         
-        if (count($aDD) + count($aDB) + count($aEX) == 0) return '';
+        if (count($aDD) + count($aDB) + count($aEX) == 0) { return ''; 
+        }
         
         if ($this->hlinks_display == 'vertical') {
             $hDD = implode("<br>", $aDD);
-            if ($hDD <> '') $hDD = 'More Detail:<br><br>' . $hDD;
+            if ($hDD <> '') { $hDD = 'More Detail:<br><br>' . $hDD; 
+            }
             $hDB = implode("<br>", $aDB);
-            if ($hDB <> '') $hDB = 'Go Back:<br><br>' . $hDB;
+            if ($hDB <> '') { $hDB = 'Go Back:<br><br>' . $hDB; 
+            }
             $hEX = implode("<br>", $aEX);
-            if ($hEX <> '') $hEX = 'Other Links:<br><br>' . $hEX;
+            if ($hEX <> '') { $hEX = 'Other Links:<br><br>' . $hEX; 
+            }
             
             ob_start();
 ?>
@@ -1419,47 +1464,53 @@ class x_table2
             echo $hDD
 ?></td>
                 <td style="width: 33%; padding: 5px; vertical-align: top;"><?php
-            echo $hDB
+                echo $hDB
 ?></td>
                 <td style="width: 33%; padding: 5px; vertical-align: top;"><?php
-            echo $hEX
+                echo $hEX
 ?></td>
             </tr>
          </table>
-         <?php
+            <?php
             $this->h['Links'] = ob_get_clean();
         } else {
             $hDD = implode(", ", $aDD);
-            if ($hDD <> '') $hDD = 'More Detail: ' . $hDD . "<br/>";
+            if ($hDD <> '') { $hDD = 'More Detail: ' . $hDD . "<br/>"; 
+            }
             $hDB = implode(", ", $aDB);
-            if ($hDB <> '') $hDB = 'Go Back: ' . $hDB . "<br/>";
+            if ($hDB <> '') { $hDB = 'Go Back: ' . $hDB . "<br/>"; 
+            }
             $hEX = implode(", ", $aEX);
-            if ($hEX <> '') $hEX = 'Other Links: ' . $hEX . "<br/>";
+            if ($hEX <> '') { $hEX = 'Other Links: ' . $hEX . "<br/>"; 
+            }
             
             ob_start();
 ?>
          <table cellpadding=0 cellspacing=0 width=100% class="x2_drilldown"> 
             <tr><td style="padding: 5px; text-align: left;">
-               <?php
-            echo $hDD
+                <?php
+                echo $hDD
 ?>
-               <?php
-            echo $hDB
+                <?php
+                echo $hDB
 ?>
-               <?php
-            echo $hEX
+                <?php
+                echo $hEX
 ?>
             </tr>
          </table>
-         <?php
+            <?php
             $this->h['Links'] = ob_get_clean();
         }
     }
     
     // Generate drilldown links for any child table
-    function aLinks_DrillDown($mode) {
-        if ($mode <> 'upd') return array();
-        if ($this->table_id_parent <> '') return array();
+    function aLinks_DrillDown($mode) 
+    {
+        if ($mode <> 'upd') { return array(); 
+        }
+        if ($this->table_id_parent <> '') { return array(); 
+        }
         $retval = array();
         
         // Get the pks into a string value, do the loop so we can trim
@@ -1472,7 +1523,8 @@ class x_table2
         
         $dd = array('drilldown', 'mover');
         foreach ($this->children as $table_id => $tabinfo) {
-            if (!in_array($tabinfo['display'], $dd)) continue;
+            if (!in_array($tabinfo['display'], $dd)) { continue; 
+            }
             $tabdesc = DD_TableProperty($table_id, 'description');
             $h = hLinkPostFromArray('', $tabdesc, array('gp_dd_page' => $table_id));
             
@@ -1482,8 +1534,10 @@ class x_table2
         return $retval;
     }
     
-    function aLinks_DrillBack($mode) {
-        if ($this->table_id_parent <> '') return array();
+    function aLinks_DrillBack($mode) 
+    {
+        if ($this->table_id_parent <> '') { return array(); 
+        }
         $x = $mode;
         $retval = array();
         
@@ -1528,7 +1582,8 @@ class x_table2
      the [[link bar]] of an editing page.  It takes the parameter $mode
      which can be used to decide when a link should appear.
      */
-    function aLinks_Extra($mode) {
+    function aLinks_Extra($mode) 
+    {
         return array();
         $mode = 'Fill in your own override code that returns an array';
     }
@@ -1542,9 +1597,11 @@ class x_table2
     // -----------------------------------------------------------
     // -----------------------------------------------------------
     // -----------------------------------------------------------
-    function hExtra($mode) {
+    function hExtra($mode) 
+    {
         
-        if ($mode <> 'upd') return '';
+        if ($mode <> 'upd') { return ''; 
+        }
         
         // Slice out the primary key from the row, use as search
         // filters for child tables.  Also save to be used as
@@ -1571,7 +1628,8 @@ class x_table2
         
         foreach ($this->children as $table_id => $tabinfo) {
             $obj_child = DispatchObject($table_id);
-            if ($tabinfo['display'] <> 'onscreen') continue;
+            if ($tabinfo['display'] <> 'onscreen') { continue; 
+            }
             $retval[$table_id] = "<br>" . $obj_child->hDisplayOnscreen($pks, $this->row);
         }
         
@@ -1616,7 +1674,8 @@ class x_table2
     code that should be unrem'd.  Should also examine the call to that
     routine in raxlib.php, it has been changed since this code was written.
     */
-    function ehRowsOfBoxes($filters, $lcols = null) {
+    function ehRowsOfBoxes($filters, $lcols = null) 
+    {
         $x = $filters;
         if (is_null($lcols)) {
             $lcols = $this->projections['_uisearch'];
@@ -1639,7 +1698,7 @@ class x_table2
         <tr>
         <td class="inp-br-h1"><?php
         echo $this->table['description'] ?></td>
-      <?php
+        <?php
         $aheaders = asliceValsFromKeys($this->table['flat'], 'description', $acols);
         foreach ($aheaders as $aheader) {
             echo "\n<td class=\"inp-br-head\">$aheader</td>";
@@ -1693,7 +1752,8 @@ class x_table2
     //   These are functions that handle events that occur on the
     //   client which are then sent back via ajax calls
     // ==============================================================
-    function fwAjax() {
+    function fwAjax() 
+    {
         if (gp('fwajax') == 'field_changed') {
             $this->field_changed();
         }
@@ -1701,7 +1761,8 @@ class x_table2
         returns_as_ajax();
     }
     
-    function field_changed() {
+    function field_changed() 
+    {
         $field = gp('ajx_field');
         $value = gp('ajx_value');
         

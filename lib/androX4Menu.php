@@ -1,27 +1,29 @@
 <?php
-class x4Menu extends androX4 {
+class x4Menu extends androX4
+{
     
-    # ===================================================================
-    #
-    # Major Area 0: Put out the menu
-    #
-    # ===================================================================
-    function mainLayout(&$container) {
-        # load the javascript        
+    // ===================================================================
+    // 
+    // Major Area 0: Put out the menu
+    // 
+    // ===================================================================
+    function mainLayout(&$container) 
+    {
+        // load the javascript        
         jsInclude("clib/androX4Menu.js");
 
-        # Set focus if requested
-        if( ($focus=gp('x4Focus'))!='') {
+        // Set focus if requested
+        if(($focus=gp('x4Focus'))!='') {
             x4Script("$('#x4Menu')[0].lastFocusId = 'x4menu_$focus'");    
         }
 
-        # Other miscellaneous commands
-        vgfSet('suppress_hidden',true);
+        // Other miscellaneous commands
+        vgfSet('suppress_hidden', true);
         //vgfSet('show_menu',false);
         
-        # Fetch some text
-        $h1 = configGet("x4menutitle","Extended Desktop Menu");
-        $text = configGet("x4menutext","");
+        // Fetch some text
+        $h1 = configGet("x4menutitle", "Extended Desktop Menu");
+        $text = configGet("x4menutext", "");
         
         ob_start();
         ?>
@@ -34,7 +36,7 @@ class x4Menu extends androX4 {
         <?php
         $table = html('table');
         $table->hp['class']='tab100';
-        $tr    = html('tr',$table);
+        $tr    = html('tr', $table);
         $array=SessionGet('AGMENU');
         $first = true;
                 
@@ -46,20 +48,20 @@ class x4Menu extends androX4 {
         $grid = array();
         foreach($array as $module=>$modinfo) {
             if(!$first) {
-                $td = html('td',$tr);
+                $td = html('td', $tr);
                 $td->hp['style'] = 'width: 10px';
             }
             $first = false;
-            $td = html('td',$tr);
+            $td = html('td', $tr);
             $td->hp['class'] = 'style1';
             
-            $h3 = html('h3',$td);
+            $h3 = html('h3', $td);
             $h3->setHtml(($letters[$col]).') '.$modinfo['description']);
             
             $row = 0;
             foreach($modinfo['items'] as $page=>$info) {
                 // Add the link
-                $a = html('a',$td);
+                $a = html('a', $td);
                 $a->hp['id']='x4menu_'. $page;
                 $a->hp['href']="?x4Return=menu&x4Page=$page";
                 $a->setHTML($row.') '.$info['description']);
@@ -72,15 +74,15 @@ class x4Menu extends androX4 {
                 $row++;
 
                 // Add a BR
-                html('br',$td);
+                html('br', $td);
             }
             $col++;
         }
         $table->render();
         echo "</div>";
         
-        # put out the grid and set the HTML
-        x4data('grid',$grid);
+        // put out the grid and set the HTML
+        x4data('grid', $grid);
         $container->setHTML(ob_get_clean());
     }
 }

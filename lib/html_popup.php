@@ -19,7 +19,7 @@
    Boston, MA  02110-1301  USA 
    or visit http://www.gnu.org/licenses/gpl.html
 \* ================================================================== */
-include("html_minheader.php"); 
+require "html_minheader.php"; 
 ?>
 
 <?php echo ehStandardContent()?>

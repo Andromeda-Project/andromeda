@@ -1,6 +1,6 @@
 <?php
-include_once('PEAR.php');
-include_once('fpdf153/fpdf.php');
+require_once 'PEAR.php';
+require_once 'fpdf153/fpdf.php';
 
 
 
@@ -18,7 +18,8 @@ include_once('fpdf153/fpdf.php');
  * @author Kenneth Downs <ken@secdat.com>
  *
 */
-class x4_fpdf extends fpdf {
+class x4_fpdf extends fpdf
+{
     /**
      *  The last column that was written to
      *  @var lastCol
@@ -51,13 +52,14 @@ class x4_fpdf extends fpdf {
      *  @param string $paper See http://www.fpdf.org/manual/FPDF
      *
      *  @access public
-     *  @since 0.1
+     *  @since  0.1
      */
-    function x4_fpdf($ori='l',$uom='pt',$paper='letter') {
+    function x4_fpdf($ori='l',$uom='pt',$paper='letter') 
+    {
         // Tab Stops
         $this->cols  = array();
         
-        $this->FPDF($ori,$uom,$paper);
+        $this->FPDF($ori, $uom, $paper);
     }
 
     /**
@@ -67,14 +69,15 @@ class x4_fpdf extends fpdf {
      *  complain that it "doesn't work" and when you click on the link to
      *  generate the report nothing appears to happen.
      *
-     *  @param string $name Name of report, defaults to 'report.pdf'
+     *  @param string $name   Name of report, defaults to 'report.pdf'
      *  @param string $nature "I" for inline (default) or "A" for attachment.
      *
      *  @since 12/16/07
      */
-    function overAndOut($name="report.pdf",$nature='I') {
-        header('Pragma:',true);
-        $this->Output($name,$nature);
+    function overAndOut($name="report.pdf",$nature='I') 
+    {
+        header('Pragma:', true);
+        $this->Output($name, $nature);
         exit;
     }
     
@@ -91,17 +94,19 @@ class x4_fpdf extends fpdf {
      *  @param string $fontsize   In points, default 12  
      *  @param string $lineheight default 1, single spacing
      */
-    function setupReport($ori='p',$fontname='Times',$fontsize=12,$linespacing=1) {
-        $this->reportSetup($ori,$fontname,$fontsize,$linespacing);
+    function setupReport($ori='p',$fontname='Times',$fontsize=12,$linespacing=1) 
+    {
+        $this->reportSetup($ori, $fontname, $fontsize, $linespacing);
     }
     
     // Deprecated original name of rotuine, some code still
     // calls this
-    function reportSetup($ori='p',$fontname='Times',$fontsize=12,$linespacing=1) {
+    function reportSetup($ori='p',$fontname='Times',$fontsize=12,$linespacing=1) 
+    {
         $this->margin_left = 36;
         $this->margin_top = 36;
-        $this->SetMargins($this->margin_left,$this->margin_top);
-        $this->SetTextColor(0,0,0);
+        $this->SetMargins($this->margin_left, $this->margin_top);
+        $this->SetTextColor(0, 0, 0);
         $this->SetFont($fontname);
         $this->SetFontSize($fontsize);
         $this->fontname=$fontname;
@@ -121,19 +126,21 @@ class x4_fpdf extends fpdf {
      *  In normal coding you call this right after calling
      *  reportSetup and right before calling addPage.
      *
-     *  @param float $gutter Width of gutter between columns 
+     *  @param float  $gutter Width of gutter between columns  in inches
      *                       in inches
-     *  @param string $list  Comma-separated list of widths in inches
+     *  @param string $list   Comma-separated list of widths in inches An example would be setupColumns(.1,'1,2,1:R,1:R'), which establishes a gutter of .1 inch, and four columns of widths 1 inch, 2 inches, 1 inch and 1 inch respectively.  The  latter two columns will be right justified.
      *
      *  An example would be setupColumns(.1,'1,2,1:R,1:R'), which
      *  establishes a gutter of .1 inch, and four columns of widths
      *  1 inch, 2 inches, 1 inch and 1 inch respectively.  The 
      *  latter two columns will be right justified.
      */
-    function setupColumns($gutter,$commalist) {
-        $this->setupCols($gutter,$commalist);
+    function setupColumns($gutter,$commalist) 
+    {
+        $this->setupCols($gutter, $commalist);
     }
-    function setupCols($gutter,$commalist) {
+    function setupCols($gutter,$commalist) 
+    {
         $this->lastCol = -1;
         $this->cols = array();
         $this->gutter = $gutter * 72;
@@ -141,11 +148,11 @@ class x4_fpdf extends fpdf {
             $alist = $commalist;
         }
         else {
-            $alist = explode(',',$commalist);
+            $alist = explode(',', $commalist);
         }
         $posx = $this->margin_left;
         foreach($alist as $onestop) {
-            $colstuff = explode(':',$onestop);
+            $colstuff = explode(':', $onestop);
             $width = array_shift($colstuff);
             $align='L';
             $money = false;
@@ -153,15 +160,16 @@ class x4_fpdf extends fpdf {
             if(count($colstuff)>0) {
                 $align = array_shift($colstuff);
             }
-            # KFD 9/24/08, look for second to be money and third
-            #              to be "notes", or multi-line
+            // KFD 9/24/08, look for second to be money and third
+            // to be "notes", or multi-line
             if(count($colstuff)>0) {
                 $x = array_shift($colstuff);
-                if($x<>'') $money = true;
+                if($x<>'') { $money = true; 
+                }
             }
             $multi = count($colstuff)>0;
-            #$money = count($colstuff)>0 ? true : false;
-            # KFD 9/24/08, END
+            // $money = count($colstuff)>0 ? true : false;
+            // KFD 9/24/08, END
             $this->cols[] = array(
                 'xpos'=>$posx
                 ,'width'=>$onestop * 72
@@ -177,27 +185,31 @@ class x4_fpdf extends fpdf {
      * Outputs text alone on a line, centered.  Good for
      * page headers.
      *
-     * @param string $text The text to output
+     * @param string $text  The text to output
      * @param string $style Can include "B" or "I" for 
      *                       bold and italic.  Defaults to blank
      *                      which is normal text size.
-     * @param string $size Font size in points. Defaults to 
+     * @param string $size  Font size in points. Defaults to  current font size.
      *                     current font size.
      */
-    function CenteredLine($text,$style='',$size=null) {
-        if(is_null($size)) $size=$this->fontsize;
-        $this->setFont($this->fontname,$style,$size);
-        $this->Cell(0,0,$text,0,0,'C'); // DOC: 0 width=all
+    function CenteredLine($text,$style='',$size=null) 
+    {
+        if(is_null($size)) { $size=$this->fontsize; 
+        }
+        $this->setFont($this->fontname, $style, $size);
+        $this->Cell(0, 0, $text, 0, 0, 'C'); // DOC: 0 width=all
         $this->Ln($size * $this->linespacing);      
-        $this->setFont($this->fontname,'',$this->fontsize);
+        $this->setFont($this->fontname, '', $this->fontsize);
     }
 
-    function OutputLine($text,$style='',$size=null) {
-        if(is_null($size)) $size=$this->fontsize;
-        $this->setFont($this->fontname,$style,$size);
-        $this->Cell(0,0,$text,0,0,'L'); // DOC: 0 width=all
+    function OutputLine($text,$style='',$size=null) 
+    {
+        if(is_null($size)) { $size=$this->fontsize; 
+        }
+        $this->setFont($this->fontname, $style, $size);
+        $this->Cell(0, 0, $text, 0, 0, 'L'); // DOC: 0 width=all
         $this->Ln($size * $this->linespacing);      
-        $this->setFont($this->fontname,'',$this->fontsize);
+        $this->setFont($this->fontname, '', $this->fontsize);
     }
     
     /**
@@ -206,25 +218,27 @@ class x4_fpdf extends fpdf {
      *
      * Good for use in headers.
      */
-   function DateAndPage() {
-      $this->Cell(0,0,date('m/d/Y',time()),0,1,'L');
-      $this->Cell(0,0,'Page '.$this->PageNo(),0,0,'R');
-      $this->Ln($this->lineheight);
-   }
+    function DateAndPage() 
+    {
+        $this->Cell(0, 0, date('m/d/Y', time()), 0, 1, 'L');
+        $this->Cell(0, 0, 'Page '.$this->PageNo(), 0, 0, 'R');
+        $this->Ln($this->lineheight);
+    }
 
     /**
      * Goes to the next line.  Also resets the column position
      * so that "AtNextCol" will begin at the let.
      */
-    function nextLine($color=false) {
-        #$this->Ln($this->lineheight);
-        #if(isset($this->realHeight)) {
-        #    $this->Ln($this->realHeight + $this->lineheight);
-        #    unset($this->realHeight);
-        #}
-        #else {
+    function nextLine($color=false) 
+    {
+        // $this->Ln($this->lineheight);
+        // if(isset($this->realHeight)) {
+        // $this->Ln($this->realHeight + $this->lineheight);
+        // unset($this->realHeight);
+        // }
+        // else {
             $this->Ln($this->lineheight);
-        #}
+        // }
         $this->lastCol=-1;
     }
        
@@ -245,12 +259,11 @@ class x4_fpdf extends fpdf {
      *   $this->outFromList('Name,Name,Income,Income');
      *   $this->linesForColumns();
      * }
-     *
-     *
      */
-   function outFromList($commalist) {
-       $this->lineFromArray(explode(',',$commalist));
-   }
+    function outFromList($commalist) 
+    {
+        $this->lineFromArray(explode(',', $commalist));
+    }
    
     /**
      * Accepts an array of values and puts each value
@@ -265,64 +278,64 @@ class x4_fpdf extends fpdf {
      * foreach($rows as $row) {
      *   $this->outFromArray($row);
      * }
-     *
      */
-   function outFromArray($alist) {
-       while($value = array_shift($alist)) {
-           $this->atNextCol($value);
-       }
-       $this->nextLine();
-   }
+    function outFromArray($alist) 
+    {
+        while($value = array_shift($alist)) {
+            $this->atNextCol($value);
+        }
+        $this->nextLine();
+    }
    
     /**
      * Puts a value into a specific column.
      *
-     * @param int $col  Column position, zero indexed.  Columns
+     * @param int    $col  Column position, zero indexed.  Columns must be defined already by a call to setupColumns().
      *                  must be defined already by a call to
      *                  setupColumns().
      * @param string $text Value to write.  Numerics and dates
      *                     must be formatted into the string
      *                     representation you want.
-     * @param string $ori Orientation (optional)  Overrides default 
+     * @param string $ori  Orientation (optional)  Overrides default  orientation as established by  prior call to setupColumns()
      *                    orientation as established by 
      *                    prior call to setupColumns()
-     *
      */
-   function AtCol($col,$text,$flush='L') {
-       if(!isset($this->cols[$col])) {
-           echo "<b>ERROR: Output past last column, did you 
+    function AtCol($col,$text,$flush='L') 
+    {
+        if(!isset($this->cols[$col])) {
+            echo "<b>ERROR: Output past last column, did you 
             forget a \$this->nextLine()?";
-           exit;
-       }
+            exit;
+        }
        
-       # Figure out if we need to reformat as money
-       if($this->cols[$col]['money'] &&is_numeric($text)) {
-           $text = hmoney($text);
-       }
+        // Figure out if we need to reformat as money
+        if($this->cols[$col]['money'] &&is_numeric($text)) {
+            $text = hmoney($text);
+        }
        
-       // work out the x position in points, don't mess with y
-       $xposition = $this->cols[$col]['xpos'];
-       $width     = $this->cols[$col]['width'];
-       $align     = $this->cols[$col]['align'];
-       $this->Setx($xposition);
-       # KFD 9/24/08. Capture Y, figure how many lines
-       if($this->cols[$col]['multi']) {
-           $ybeg = $this->getY();
-           $xbeg = $this->getX();
-           $this->setY($ybeg-5);
-           $this->setx($xbeg);
-           $this->MultiCell($width,$this->lineheight,$text,0,$align);
-           #$yend = $this->getY();
-           #if(!isset($this->realHeight)) $this->realHeight = $this->lineheight;
-           #$this->realHeight = max($yend-$ybeg,$this->realHeight);
-           #$this->setY($ybeg);
-       }
-       else {
-           $this->Cell($width,0,$text,0,0,$align);
-       }
-       # KFD 9/24/08. (END)
-       $this->lastCol = $col;
-   }
+        // work out the x position in points, don't mess with y
+        $xposition = $this->cols[$col]['xpos'];
+        $width     = $this->cols[$col]['width'];
+        $align     = $this->cols[$col]['align'];
+        $this->Setx($xposition);
+        // KFD 9/24/08. Capture Y, figure how many lines
+        if($this->cols[$col]['multi']) {
+            $ybeg = $this->getY();
+            $xbeg = $this->getX();
+            $this->setY($ybeg-5);
+            $this->setx($xbeg);
+            $this->MultiCell($width, $this->lineheight, $text, 0, $align);
+            // $yend = $this->getY();
+            // if(!isset($this->realHeight)) $this->realHeight = $this->lineheight;
+            // $this->realHeight = max($yend-$ybeg,$this->realHeight);
+            // $this->setY($ybeg);
+        }
+        else {
+            $this->Cell($width, 0, $text, 0, 0, $align);
+        }
+        // KFD 9/24/08. (END)
+        $this->lastCol = $col;
+    }
 
     /**
      * Puts a value into the next column. 
@@ -333,30 +346,29 @@ class x4_fpdf extends fpdf {
      * @param string $text Value to write.  Numerics and dates
      *                     must be formatted into the string
      *                     representation you want.
-     * @param string $ori Orientation (optional)  Overrides default 
+     * @param string $ori  Orientation (optional)  Overrides default  orientation as established by  prior call to setupColumns()
      *                    orientation as established by 
      *                    prior call to setupColumns()
-     *
      */
-   function AtNextCol($text,$flush='L') {
-       $this->AtCol($this->lastCol+1,$text,$flush);
-   }
+    function AtNextCol($text,$flush='L') 
+    {
+        $this->AtCol($this->lastCol+1, $text, $flush);
+    }
    
     /**
      * Fills a line with horizontal lines across the
      * width of each column.  Often used as the last call
      * in a page header.
-     *
      */
-    function LinesForColumns() {
-       $posy = $this->getY();
-       foreach($this->cols as $onecol=>$colinfo) {
-           $this->Line(
-               $colinfo['xpos'],$posy
-               ,$colinfo['xpos']+$colinfo['width'],$posy
-           );
-       }
-       $this->nextLine();       
+    function LinesForColumns() 
+    {
+        $posy = $this->getY();
+        foreach($this->cols as $onecol=>$colinfo) {
+            $this->Line(
+                $colinfo['xpos'], $posy, $colinfo['xpos']+$colinfo['width'], $posy
+            );
+        }
+        $this->nextLine();       
     }
    
     /**
@@ -367,24 +379,25 @@ class x4_fpdf extends fpdf {
      * @param int $start First column (zero indexed)
      * @param int $end   Last Column (zero indexed)
      */
-   function lineAcrossColumns($start,$end) {
-       $posx1 = $this->cols[$start]['xpos'];
-       $posx2 = $this->cols[$start]['xpos'];
-       for($x = $start;$x<=$end;$x++) {
-           $posx2 += $this->cols[$x]['width'];
-       }
-       $posx2 += $this->gutter * ($end - $start);
-       $posy = $this->getY();
-       $this->Line($posx1,$posy,$posx2,$posy);
-   }
+    function lineAcrossColumns($start,$end) 
+    {
+        $posx1 = $this->cols[$start]['xpos'];
+        $posx2 = $this->cols[$start]['xpos'];
+        for($x = $start;$x<=$end;$x++) {
+            $posx2 += $this->cols[$x]['width'];
+        }
+        $posx2 += $this->gutter * ($end - $start);
+        $posy = $this->getY();
+        $this->Line($posx1, $posy, $posx2, $posy);
+    }
    
     /**
      * Writes a value across two or more columns.  Usually
      * used in page headers.
      *
-     * @param int $start First column (zero indexed)
-     * @param int $end   Last Column (zero indexed)
-     * @param string $text Value to display
+     * @param int    $start First column (zero indexed)
+     * @param int    $end   Last Column (zero indexed)
+     * @param string $text  Value to display
      * @param string $align Can by "L"eft, "R"ight or "C"enter
      *                      defaults to centered.
      *
@@ -400,16 +413,17 @@ class x4_fpdf extends fpdf {
      * );
      * $this->LinesAcrossColumns();
      */
-   function valueAcrossColumns($start,$end,$text,$align='C') {
-       $posx1 = $this->cols[$start]['xpos'];
-       $width = 0;
-       for($x = $start;$x<=$end;$x++) {
-           $width += $this->cols[$x]['width'];
-       }
-       $width += $this->gutter * ($end - $start);
-       $this->Setx($posx1);
-       $this->Cell($width,0,$text,0,0,$align);
-   }
+    function valueAcrossColumns($start,$end,$text,$align='C') 
+    {
+        $posx1 = $this->cols[$start]['xpos'];
+        $width = 0;
+        for($x = $start;$x<=$end;$x++) {
+            $width += $this->cols[$x]['width'];
+        }
+        $width += $this->gutter * ($end - $start);
+        $this->Setx($posx1);
+        $this->Cell($width, 0, $text, 0, 0, $align);
+    }
    
 }
 ?>

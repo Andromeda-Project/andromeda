@@ -1,6 +1,8 @@
 <?php
-class x_paypalfinal extends x_table2 {
-    function main() {
+class x_paypalfinal extends x_table2
+{
+    function main() 
+    {
         ?>
         <h1>Paypal Success Page</h1>
         <p>This is the framework default page that shows

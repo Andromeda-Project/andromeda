@@ -21,34 +21,36 @@
 * 
 ******
 */
-class androX6 {
+class androX6
+{
     var $appTabs = array();
-    # ===================================================================
-    #
-    # Major Area Pre-1: Constructor 
-    #
-    # ===================================================================
-    function androX6() {
-        # KFD 1/14/09. copied this from androX4
-        # KFD 8/7/08.  Grab any "hold" variables and
-        # attach them to the current object.  This was
-        # put in for the wholdist application to carry
-        # context from screen to screen.
-        #
-        # KFD 3/20/09 Sourceforge 2697962 
-        #             Moved this to index_hidden so it works with
-        #             androPage w/o modifying androPage
-        #$this->hld = aFromGp('hld_');
+    // ===================================================================
+    // 
+    // Major Area Pre-1: Constructor 
+    // 
+    // ===================================================================
+    function androX6() 
+    {
+        // KFD 1/14/09. copied this from androX4
+        // KFD 8/7/08.  Grab any "hold" variables and
+        // attach them to the current object.  This was
+        // put in for the wholdist application to carry
+        // context from screen to screen.
+        // 
+        // KFD 3/20/09 Sourceforge 2697962 
+        // Moved this to index_hidden so it works with
+        // androPage w/o modifying androPage
+        // $this->hld = aFromGp('hld_');
         
-        # If the x6exit variable was passed in, put it out
-        hidden('x6exit',gp('x6exit','N'));
+        // If the x6exit variable was passed in, put it out
+        hidden('x6exit', gp('x6exit', 'N'));
     }
     
-    # ===================================================================
-    #
-    # Major Area 0: User overridable functions 
-    #
-    # ===================================================================
+    // ===================================================================
+    // 
+    // Major Area 0: User overridable functions 
+    // 
+    // ===================================================================
     /****m* androX6/x6main
     *
     * NAME
@@ -60,24 +62,26 @@ class androX6 {
     *
     ******
     */
-    function x6main() { 
+    function x6main() 
+    { 
         $this->profile_conventional();
         return;
     }
     
-    function customButtons() {
+    function customButtons() 
+    {
         return false;
     }
-    # ===================================================================
-    #
-    # SERVER FUNCTION 2: Return a single row when asked 
-    #
-    # ===================================================================
+    // ===================================================================
+    // 
+    // SERVER FUNCTION 2: Return a single row when asked 
+    // 
+    // ===================================================================
     /**
       * Return a single row for a table
-      *
       */
-    function fetchRow() {
+    function fetchRow() 
+    {
         $table_id = gp('x6page');
         $dd = ddTable($table_id);
         $view = $dd['viewname'];
@@ -86,76 +90,83 @@ class androX6 {
         SQL("set datestyle to SQL");
         $skey = SQLFN(gp('x6w_skey'));
         $row = SQL_OneRow("SELECT * FROM $view WHERE skey=$skey");
-        x6Data('row',$row);
+        x6Data('row', $row);
     }
 
-    # ===================================================================
-    #
-    # SERVER FUNCTION 3: Execute an skey-based update or insert 
-    #
-    # ===================================================================
-    function save() {
+    // ===================================================================
+    // 
+    // SERVER FUNCTION 3: Execute an skey-based update or insert 
+    // 
+    // ===================================================================
+    function save() 
+    {
         $table_id = gp('x6page');
         $dd = ddTable($table_id);
         
         $row0 = aFromGP('x6v_');
         $row1 = aFromgp('x6inp_'.$table_id.'_');
-        $row = array_merge($row0,$row1);
-        if(arr($row,'skey',0)==0) unset($row['skey']);
+        $row = array_merge($row0, $row1);
+        if(arr($row, 'skey', 0)==0) { unset($row['skey']); 
+        }
         
-        # KFD 12/20/08, prevent ui saves if dd does not allow them
+        // KFD 12/20/08, prevent ui saves if dd does not allow them
         if(!isset($row['skey'])) {
-            $perm = $this->uiPerm(gp('x6page'),'ins');
+            $perm = $this->uiPerm(gp('x6page'), 'ins');
             if(!$perm) {
                 x6Error("Inserts not allowed from this screen");
                 return;
             }
         }
         else {
-            $perm = $this->uiPerm(gp('x6page'),'upd');
+            $perm = $this->uiPerm(gp('x6page'), 'upd');
             if(!$perm) {
                 x6Error("Updates not allowed from this screen");
                 return;
             }
         }    
 
-        # Add in values from parent
-        if(gp('tableIdPar',false)) {
+        // Add in values from parent
+        if(gp('tableIdPar', false)) {
             $vals2 = $this->fetchParent();
-            $row = array_merge($row,$vals2);
+            $row = array_merge($row, $vals2);
         }
         
 
-        # KFD 12/8/08, More generalized code to allow for
-        #              inserts before or after a row.
-        #
-        # an skeyAfter value means we must find the queuepos
-        # column in this table, and save a value of that 
-        # column equal to +1 of the value in row skeyAfter
-        if(gp('queuepos','')<>'') {
+        // KFD 12/8/08, More generalized code to allow for
+        // inserts before or after a row.
+        // 
+        // an skeyAfter value means we must find the queuepos
+        // column in this table, and save a value of that 
+        // column equal to +1 of the value in row skeyAfter
+        if(gp('queuepos', '')<>'') {
             $queuepos = gp('queuepos');
             $skeyBefore=gp('skeyBefore');
             $skeyAfter =gp('skeyAfter');
             $skey      = 0;
-            if($skeyBefore <> -1) $skey = $skeyBefore;
-            if($skeyAfter  <> -1) $skey = $skeyAfter;
+            if($skeyBefore <> -1) { $skey = $skeyBefore; 
+            }
+            if($skeyAfter  <> -1) { $skey = $skeyAfter; 
+            }
             if($skey==0) {
                 $row[$queuepos] = 1;
             }
             else {
-                $qpvalue = SQL_OneValue($queuepos,
+                $qpvalue = SQL_OneValue(
+                    $queuepos,
                     "Select $queuepos from {$dd['viewname']}
                     where skey = ".sqlfc($skey)
                 );
-                if($skey==$skeyAfter) 
-                    $qpvalue++;
-                else
-                    $qpvalue--;
+                if($skey==$skeyAfter) { 
+                    $qpvalue++; 
+                }
+                else {
+                    $qpvalue--; 
+                }
                 $row[$queuepos] = $qpvalue;
             }
         }
             
-        # KFD 6/28/08, a non-empty date must be valid
+        // KFD 6/28/08, a non-empty date must be valid
         $errors = false;
         foreach($row as $col => $value) {
             if(!isset($dd['flat'][$col])) {
@@ -167,34 +178,35 @@ class androX6 {
             $ermsg2 = "Invalid date value for "
                 .$dd['flat'][$col]['description'];
             if($dd['flat'][$col]['type_id'] == 'date') {
-                if(trim($value)=='') continue;
+                if(trim($value)=='') { continue; 
+                }
                 
-                if(strpos($value,'/')===false && strpos($value,'-')===false) {
+                if(strpos($value, '/')===false && strpos($value, '-')===false) {
                     x6Error($ermsg);
                     $errors = true;
                     continue;
                 }
-                if(strpos($value,'/')!==false) {
-                    $parsed = explode('/',$value);
+                if(strpos($value, '/')!==false) {
+                    $parsed = explode('/', $value);
                     if(count($parsed)<>3) {
                         $errors = true;
                         x6Error($ermsg);
                         continue;
                     }
-                    if(!checkdate($parsed[0],$parsed[1],$parsed[2])) {
+                    if(!checkdate($parsed[0], $parsed[1], $parsed[2])) {
                         x6Error($ermsg2);
                         $errors = true;
                         continue;
                     }
                 }
-                if(strpos($value,'-')!==false) {
-                    $parsed = explode('-',$value);
+                if(strpos($value, '-')!==false) {
+                    $parsed = explode('-', $value);
                     if(count($parsed)<>3) {
                         $errors = true;
                         x6Error($ermsg);
                         continue;
                     }
-                    if(!checkdate($parsed[1],$parsed[2],$parsed[0])) {
+                    if(!checkdate($parsed[1], $parsed[2], $parsed[0])) {
                         x6Error($ermsg2);
                         $errors = true;
                         continue;
@@ -202,50 +214,51 @@ class androX6 {
                 }
             }
         }
-        if($errors) return;
+        if($errors) { return; 
+        }
 
         if(!isset($row['skey'])) {
-            # KFD 5/26/09 Google Feature #23, hook inserts
+            // KFD 5/26/09 Google Feature #23, hook inserts
             $method = $table_id."_before_insert";
-            if(method_exists($this,$method)) {
+            if(method_exists($this, $method)) {
                 $row = $this->$method($row);
             }
-            # KFD 6/8/09 Google #30, no action if returns false
+            // KFD 6/8/09 Google #30, no action if returns false
             if($row) {
-                $skey = SQLX_Insert($dd,$row);
+                $skey = SQLX_Insert($dd, $row);
                 if(!errors()) {
                     $row=SQL_OneRow(
                         "Select * FROM {$dd['viewname']} WHERE skey = $skey"
                     );
-                    # KFD 5/26/09 Google Feature #23, hook inserts
+                    // KFD 5/26/09 Google Feature #23, hook inserts
                     $method = $table_id."_after_insert";
-                    if(method_exists($this,$method)) {
+                    if(method_exists($this, $method)) {
                         $row = $this->$method($row);
                     }
-                    x6Data('row',$row);
+                    x6Data('row', $row);
                 }
             }
         }
         else {
-            # KFD 5/26/09 Google Feature #23, hook updates
+            // KFD 5/26/09 Google Feature #23, hook updates
             $method = $table_id."_before_update";
-            if(method_exists($this,$method)) {
+            if(method_exists($this, $method)) {
                 $row = $this->$method($row);
             }
-            # KFD 6/8/09 Google #30, no action if returns false
+            // KFD 6/8/09 Google #30, no action if returns false
             if($row) {
-                SQLX_Update($dd,$row);
+                SQLX_Update($dd, $row);
                 if(!errors()) {
                     $skey = $row['skey'];
                     $row=SQL_OneRow(
                         "Select * FROM {$dd['viewname']} WHERE skey = $skey"
                     );
-                    # KFD 5/26/09 Google Feature #23, hook updates
+                    // KFD 5/26/09 Google Feature #23, hook updates
                     $method = $table_id."_after_update";
-                    if(method_exists($this,$method)) {
+                    if(method_exists($this, $method)) {
                         $row = $this->$method($row);
                     }
-                    x6Data('row',$row);
+                    x6Data('row', $row);
                 }
             }
         }
@@ -260,30 +273,30 @@ class androX6 {
         }
     }
     
-    # ===================================================================
-    #
-    # SERVER FUNCTION 4: Execute an skey-based delete 
-    #
-    # ===================================================================
+    // ===================================================================
+    // 
+    // SERVER FUNCTION 4: Execute an skey-based delete 
+    // 
+    // ===================================================================
     /**
       * Execute an skey-based delete
-      *
       */
-    function delete() {
-        $perm = $this->uiPerm(gp('x6page'),'del');
+    function delete() 
+    {
+        $perm = $this->uiPerm(gp('x6page'), 'del');
         if(!$perm) {
             x6Error("Deletion not allowed from this screen");
             return;
         }
         
-        # KFD 6/8/09 Google #29 Various changes to allow pre- and post-
-        #                       delete methods
+        // KFD 6/8/09 Google #29 Various changes to allow pre- and post-
+        // delete methods
         $table_id = gp('x6page');
         $view = ddView(gp('x6page'));
         $skey = SQLFN(gp('skey'));
         $method = $table_id."_before_delete";
         $continue = true;
-        if(method_exists($this,$method)) {
+        if(method_exists($this, $method)) {
             $continue = $this->$method($skey);
         }
         if($continue) {        
@@ -294,23 +307,23 @@ class androX6 {
             }
             else {
                 $method = $table_id."_after_delete";
-                if(method_exists($this,$method)) {
+                if(method_exists($this, $method)) {
                     $this->$method();
                 }
             }
         }
     }
 
-    # ===================================================================
-    #
-    # SERVER FUNCTION 5: Fetch values from other tables based on an FK
-    #
-    # ===================================================================
+    // ===================================================================
+    // 
+    // SERVER FUNCTION 5: Fetch values from other tables based on an FK
+    // 
+    // ===================================================================
     /**
       * Go get FETCH values from other tables
-      *
       */
-    function fetch() {
+    function fetch() 
+    {
         // Get the list of columns from the dd
         $column_id    = gp('column');
         $table_id     = $this->dd['table_id'];
@@ -325,35 +338,36 @@ class androX6 {
             $colsp[] = $info['column_id_par'].' as '.$info['column_id'];
         }
         $type_id = $this->dd['flat'][$column_id]['type_id'];
-        $value   = SQL_Format($type_id,gp('value'));
-        $sql="SELECT ".implode(',',$colsp)
+        $value   = SQL_Format($type_id, gp('value'));
+        $sql="SELECT ".implode(',', $colsp)
             ."  FROM ".ddTable_idResolve($table_id_fko)
             ." WHERE ".$this->dd['fk_parents'][$table_id_fko]['cols_par']."= $value";
         $answer = SQL_OneRow($sql);
-        x6Data('fetch',$answer);
+        x6Data('fetch', $answer);
     }
 
-    # ===================================================================
-    #
-    # SERVER FUNCTION 6: fetch browse/grid values
-    #
-    # ===================================================================
-    function browseFetch() {
+    // ===================================================================
+    // 
+    // SERVER FUNCTION 6: fetch browse/grid values
+    // 
+    // ===================================================================
+    function browseFetch() 
+    {
         $mtime=microtime(true);
         $table_id = $this->dd['table_id'];
         $tabPar   = gp('tableIdPar');
         
-        #  This is the list of columns to return.  Maybe override
-        #  if there is something specific named for this table
-        $acols = explode(',',$this->dd['projections']['_uisearch']);
+        // This is the list of columns to return.  Maybe override
+        // if there is something specific named for this table
+        $acols = explode(',', $this->dd['projections']['_uisearch']);
         if($tabPar<>'') {
             if(isset($this->dd['projections']['child_'.$tabPar])) {
-                $acols=explode(',',$this->dd['projections']['child_'.$tabPar]);
+                $acols=explode(',', $this->dd['projections']['child_'.$tabPar]);
             }
         }
 
-        #  By default the search criteria come from the 
-        #  variables, unless it is a child table search
+        // By default the search criteria come from the 
+        // variables, unless it is a child table search
         $vals = aFromGP('x6w_');
         $awhere = array();
         $projSort= '';
@@ -362,12 +376,12 @@ class androX6 {
         }
         else {
             $vals2 = $this->fetchParent();
-            $vals  = array_merge($vals,$vals2);
+            $vals  = array_merge($vals, $vals2);
             
-            # KFD 12/27/08, if the sortdesc flag has been set on any
-            #               columns in the projection, those columns
-            #               become the default sort.  Work it up here
-            #               and set them aside.
+            // KFD 12/27/08, if the sortdesc flag has been set on any
+            // columns in the projection, those columns
+            // become the default sort.  Work it up here
+            // and set them aside.
             $proj = 'child_'.$tabPar;
             $aprojSort = array();
             if(isset($this->dd['projdetails'][$proj])) {
@@ -380,65 +394,69 @@ class androX6 {
                     }
                 }
             }
-            $projSort = implode(",",$aprojSort);
+            $projSort = implode(",", $aprojSort);
         }
         
-        # Build the where clause        
-        #
+        // Build the where clause        
+        // 
         $this->flat = $this->dd['flat'];
         $allowNoFilters=false;
         foreach($vals as $column_id=>$colvalue) {
-            if(!isset($this->flat[$column_id])) continue;
+            if(!isset($this->flat[$column_id])) { continue; 
+            }
             if($colvalue=='*') {
                 $awhere=array();
-                # KFD 2/17/09 Sourceforge 2609083
-                #             Doing this returned all rows on regular
-                #             searches.  Whatever it was for, it cannot
-                #             be done here this way.
-                #gpSet('xReturnAll','Y');
+                // KFD 2/17/09 Sourceforge 2609083
+                // Doing this returned all rows on regular
+                // searches.  Whatever it was for, it cannot
+                // be done here this way.
+                // gpSet('xReturnAll','Y');
                 $allowNoFilters = true;
                 break;
             }
             
             $colinfo = $this->flat[$column_id];
             $exact = isset($vals2[$column_id]);
-            $expre = gp('x6exactPre',0);
+            $expre = gp('x6exactPre', 0);
             
             //$tcv  = trim($colvalue);
             $tcv = $colvalue;
             $type = $colinfo['type_id'];
             if ($tcv != "") {
-                if($exact) gpSet('x6exactPre',1);
+                if($exact) { gpSet('x6exactPre', 1); 
+                }
                 // trap for a % sign in non-string
-                $xwhere = sqlFilter($this->flat[$column_id],$tcv);
-                if($xwhere<>'') $awhere[] = "($xwhere)";
-                if($exact && $expre==0) gpUnset('x6exactpre');
+                $xwhere = sqlFilter($this->flat[$column_id], $tcv);
+                if($xwhere<>'') { $awhere[] = "($xwhere)"; 
+                }
+                if($exact && $expre==0) { gpUnset('x6exactpre'); 
+                }
             }
         }
         
-        # <----- RETURN (MAYBE)
-        #        Sourceforge 2612788 - this is actually an exit, not
-        #        a return.
+        // <----- RETURN (MAYBE)
+        // Sourceforge 2612788 - this is actually an exit, not
+        // a return.
         if(count($awhere) == 0 ) {
-            if(gp('xReturnAll','N')=='N' && !$allowNoFilters){
+            if(gp('xReturnAll', 'N')=='N' && !$allowNoFilters) {
                 exit;
             }
         }
         
-        # Generate the limit
+        // Generate the limit
         $SLimit = ' LIMIT 100';
         if($tabPar <> '') {
-            if(a($this->dd['fk_parents'][$tabPar],'uiallrows','N')=='Y') {
+            if(a($this->dd['fk_parents'][$tabPar], 'uiallrows', 'N')=='Y') {
                 $SLimit = ' LIMIT 100';
             }
         }
-        if(gp('xReturnAll','N')=='Y') {
+        if(gp('xReturnAll', 'N')=='Y') {
             $SLimit = '';
         }
         
 
-        #  Build the Order by
-        #        
+        // Build the Order by
+        // 
         $ascDesc = gp('sortAD')=='ASC' ? ' ASC' : ' DESC';
         $aorder = array();
         $searchsort = '';
@@ -448,17 +466,17 @@ class androX6 {
             $aorder[] = gp('sortCol').' '.gp('sortAD');
         }
         else {
-            # KFD 12/27/08, Use the search sort that was 
-            #               set aside above if it is there
+            // KFD 12/27/08, Use the search sort that was 
+            // set aside above if it is there
             $searchsort = $projSort==''
-              ? trim(arr($this->dd,'uisearchsort',''))
+              ? trim(arr($this->dd, 'uisearchsort', ''))
               : $projSort;
         }
         if($searchsort <> '') {
-            $aocols = explode(",",$searchsort);
+            $aocols = explode(",", $searchsort);
             foreach($aocols as $pmcol) {
-                $char1 = substr($pmcol,0,1);
-                $column_id = substr($pmcol,1);
+                $char1 = substr($pmcol, 0, 1);
+                $column_id = substr($pmcol, 1);
                 if($char1 == '+') {
                     $aorder[] = $column_id.' ASC';
                 }
@@ -466,40 +484,43 @@ class androX6 {
                     $aorder[] = $column_id.' DESC';
                 }
             }
-            $SQLOrder = " ORDER BY ".implode(',',$aorder);
+            $SQLOrder = " ORDER BY ".implode(',', $aorder);
         }
         else {
-            # KFD 6/18/08, new routine that works out sort 
+            // KFD 6/18/08, new routine that works out sort 
             $aorder = sqlOrderBy($vals);
             if(count($aorder)==0) {
                 $SQLOrder = '';
             }
             else {
-                $SQLOrder = " ORDER BY ".implode(',',$aorder);
+                $SQLOrder = " ORDER BY ".implode(',', $aorder);
             }
         }
         
-        # just before building the query, drop out
-        # any columns that have a table_id_fko to the parent
+        // just before building the query, drop out
+        // any columns that have a table_id_fko to the parent
         foreach($acols as $idx=>$column_id) {
             if($this->flat[$column_id]['table_id_fko'] == $tabPar
-                && $tabPar <> '') {
+                && $tabPar <> ''
+            ) {
                 unset($acols[$idx]);
             }
         }
         
         // Build the where and limit
-        if(count($awhere)==0) 
-            $SWhere = '';
-        else 
-            $SWhere = ' WHERE '.implode(' AND ',$awhere);
+        if(count($awhere)==0) { 
+            $SWhere = ''; 
+        }
+        else { 
+            $SWhere = ' WHERE '.implode(' AND ', $awhere); 
+        }
 
         // Retrieve data
-        #$SQL ="SELECT skey,".implode(',',$acols)
-        # KFD 11/15/08.  We can actually select *, because the grid
-        #                works out what columns it needs, and we
-        #                don't want to accidentally reduce the column
-        #                list and exclude something it needs.
+        // $SQL ="SELECT skey,".implode(',',$acols)
+        // KFD 11/15/08.  We can actually select *, because the grid
+        // works out what columns it needs, and we
+        // don't want to accidentally reduce the column
+        // list and exclude something it needs.
         $SQL ="SELECT * "
              ."  FROM ".$this->dd['viewname']
              .$SWhere
@@ -507,50 +528,52 @@ class androX6 {
              .$SLimit;
         $answer =SQL_AllRows($SQL);
         
-        # These parameters have to be sent from the back.  They
-        # figure everything out.
-        $sortable  = gp('xSortable','N')=='Y';
-        $gridHeight= gp('xGridHeight',500);
-        $lookups   = gp('xLookups','N')=='Y';
+        // These parameters have to be sent from the back.  They
+        // figure everything out.
+        $sortable  = gp('xSortable', 'N')=='Y';
+        $gridHeight= gp('xGridHeight', 500);
+        $lookups   = gp('xLookups', 'N')=='Y';
         $edit      = 0;
-        $childedit = in_array($this->dd['x6childwrites']
-            ,array('Y','grid')
+        $childedit = in_array(
+            $this->dd['x6childwrites'], array('Y','grid')
         );
-        if(($tabPar != '') && $childedit) $edit = 1;
+        if(($tabPar != '') && $childedit) { $edit = 1; 
+        }
         
-        # The button bar is either a 1/0 or a list of buttons.
-        # Make the simple setting first, then possibly override
-        $bb = gp('xButtonBar','N')=='Y' || $edit;
-        if(($tabPar != '') && ($this->dd['x6childwrites'] == 'detail'))
-            $bb = 'new';
+        // The button bar is either a 1/0 or a list of buttons.
+        // Make the simple setting first, then possibly override
+        $bb = gp('xButtonBar', 'N')=='Y' || $edit;
+        if(($tabPar != '') && ($this->dd['x6childwrites'] == 'detail')) {
+            $bb = 'new'; 
+        }
 
-        # Now grab us a grid
+        // Now grab us a grid
         $grid = new androHTMLGrid(
-            $gridHeight,$table_id,$lookups,$sortable,$bb,$edit
+            $gridHeight, $table_id, $lookups, $sortable, $bb, $edit
         );
-        $this->gridGeneric($grid,$this->dd,$tabPar,$vals2);
+        $this->gridGeneric($grid, $this->dd, $tabPar, $vals2);
         $grid->addData($answer);
         $grid->hp['x6profile'] = 'grid';
         
-        # Put some important properties on the grid!
+        // Put some important properties on the grid!
         $grid->ap['xGridHeight'] = $gridHeight;
-        $grid->ap['xReturnAll']  = gp('xReturnAll','N');
+        $grid->ap['xReturnAll']  = gp('xReturnAll', 'N');
         if($tabPar<>'') {
             $grid->ap['x6tablePar']=$tabPar;
         }
         
-        # If they asked for the entire grid, send it back
-        # as *MAIN* and let the browser put it where it belongs
-        if(gp('sendGrid',0)==1) {
+        // If they asked for the entire grid, send it back
+        // as *MAIN* and let the browser put it where it belongs
+        if(gp('sendGrid', 0)==1) {
             if(count($answer)==0) {
                 $grid->noResults();
             }
-            x6html('*MAIN*',$grid->bufferedRender());
+            x6html('*MAIN*', $grid->bufferedRender());
             return;
         }
         
-        # ..otherwise just send the body back.  But kill
-        #   any script they created.
+        // ..otherwise just send the body back.  But kill
+        // any script they created.
         if(count($answer)==0) {
             $grid->noResults();
         }
@@ -559,53 +582,56 @@ class androX6 {
         exit;
     }
     
-    function timeDiff($mtime,$str) {
-        FB::Send(number_format(microtime(true)-$mtime,4),$str);        
+    function timeDiff($mtime,$str) 
+    {
+        FB::Send(number_format(microtime(true)-$mtime, 4), $str);        
     }
-    # ===================================================================
-    #
-    # SERVER FUNCTION 7: compose list of checkboxes for child x-ref
-    #
-    # ===================================================================
-    function child_checkbox() {
+    // ===================================================================
+    // 
+    // SERVER FUNCTION 7: compose list of checkboxes for child x-ref
+    // 
+    // ===================================================================
+    function child_checkbox() 
+    {
         $table_id  = gp('x6page');
         $table_chd = gp('table_chd');
         $skey      = gp('skey');
         
-        # Load up dd's, get pk of parent, etc.
+        // Load up dd's, get pk of parent, etc.
         $dd       = ddTable($table_id);
         $dd_chd   = ddTable($table_chd);
         $view     = $dd['viewname'];
         $view_chd = $dd_chd['viewname'];
         $pk       = $dd['pks'];
         $pk_chd   = $dd_chd['pks'];
-        $pkval    = SQL_OneValue($pk,
+        $pkval    = SQL_OneValue(
+            $pk,
             "Select $pk from $view where skey = ".SQLFC($skey)
         );
         
-        # Now work out the other parent table by assuming there
-        # are only two parents.  Drop one and the other must be
-        # our parent.
+        // Now work out the other parent table by assuming there
+        // are only two parents.  Drop one and the other must be
+        // our parent.
         $parents = array_keys($dd_chd['fk_parents']);
-        unset($parents[ array_search($table_id,$parents) ]);
+        unset($parents[ array_search($table_id, $parents) ]);
         $table_par = array_shift($parents);
         $dd_par  = ddTable($table_par);
         $pk_par  = $dd_par['pks'];
         $view_par= $dd_par['viewname'];
         
-        # Now pull the list of descriptions from the other parent,
-        # and the list of values from the x-ref.  Use this to 
-        # build a set of checkboxes that are either checked or
-        # not.
+        // Now pull the list of descriptions from the other parent,
+        // and the list of values from the x-ref.  Use this to 
+        // build a set of checkboxes that are either checked or
+        // not.
         $rows_par = SQL_AllRows(
             "Select $pk_par,description from $view_par order by description"
         );
         $rows     = SQL_AllRows(
-            "Select $pk_par from $view_chd where $pk = ".SQLFC($pkval),$pk_par
+            "Select $pk_par from $view_chd where $pk = ".SQLFC($pkval), $pk_par
         );
         
-        # Finally we are ready to build the list of checkboxes
-        # which are either checked or not
+        // Finally we are ready to build the list of checkboxes
+        // which are either checked or not
         $pad0 = x6CssDefine('pad0');
         $pad1 = $pad0 * 3;
         echo "<p style='padding: {$pad1}px'
@@ -627,66 +653,69 @@ class androX6 {
             if(isset($rows[$row_par[$pk_par]])) {
                 $inp->hp['checked'] = 'checked';
             }
-            $div2 = $div->h('div',$row_par['description']);
+            $div2 = $div->h('div', $row_par['description']);
             $div2->hp['style'] = "float: left; padding-top: 1px";
             $div->render();
         }
         
         
-        #  NOTICE THE EXIT COMMAND.  This is because we are 
-        #  streaming back literal html that will dropped directly
-        #  into place.
+        // NOTICE THE EXIT COMMAND.  This is because we are 
+        // streaming back literal html that will dropped directly
+        // into place.
         exit;
     }   
     
-    function checkboxSave() {
+    function checkboxSave() 
+    {
         $row      = aFromGP('cbval_');
-        x6Data('row',$row);
+        x6Data('row', $row);
         $table_id = gp('x6page');
         if(gp('checked')=='true') {
-            SQLX_Insert($table_id,$row);
+            SQLX_Insert($table_id, $row);
         }
         else {
-            SQLX_Delete($table_id,$row);
+            SQLX_Delete($table_id, $row);
         }
     }
     
-    # ===================================================================
-    #
-    # SERVER FUNCTION 8: Retrieve and display a CLOB field
-    #
-    # ===================================================================
-    function viewClob() {
+    // ===================================================================
+    // 
+    // SERVER FUNCTION 8: Retrieve and display a CLOB field
+    // 
+    // ===================================================================
+    function viewClob() 
+    {
         $table_id = gp('x6page');
         $skey     = SQLFC(gp('skey'));
         $column   = gp('column');
         
         $sql='SELECT "'.$column.'" from "'.$table_id.'" where skey= '.$skey;
         echo "<pre>";
-        $text= SQL_OneValue($column,$sql);
+        $text= SQL_OneValue($column, $sql);
         echo $text;
-        file_put_contents(fsDirTop().'tmp/viewClob.txt',$text);
+        file_put_contents(fsDirTop().'tmp/viewClob.txt', $text);
         echo "</pre>";
         exit;
     }
     
-    # ===================================================================
-    # *******************************************************************
-    #
-    # Profile 0: "grid"  editable!
-    #
-    # *******************************************************************
-    # ===================================================================
-    function profile_grid() {
-        # these were provided by the code that instantiated
-        # and initialized the object.
+    // ===================================================================
+    // *******************************************************************
+    // 
+    // Profile 0: "grid"  editable!
+    // 
+    // *******************************************************************
+    // ===================================================================
+    function profile_grid() 
+    {
+        // these were provided by the code that instantiated
+        // and initialized the object.
         $dd       = $this->dd;
         $table_id = $this->dd['table_id'];
         
-        # Scan through and look for a single queuepos column,
-        # it changes things considerably: the queuepos column
-        # is hidden and sorting is forced on that column.  It is
-        # also assigned automatically as the user creates rows.
+        // Scan through and look for a single queuepos column,
+        // it changes things considerably: the queuepos column
+        // is hidden and sorting is forced on that column.  It is
+        // also assigned automatically as the user creates rows.
         $queuepos = '';
         foreach($dd['flat'] as $colname=>$colinfo) {
             if(strtolower($colinfo['automation_id'])=='queuepos') {
@@ -695,50 +724,52 @@ class androX6 {
                 break;
             }
         }
-        # Make sortable or not based on queuepos
+        // Make sortable or not based on queuepos
         $sortable = $queuepos=='';
         
-        # Create the top level div
+        // Create the top level div
         $top=new androHTMLTableController($table_id);
         $top->addClass('fadein');
         
         $hremain = x6cssDefine('insideheight');
         
-        # Get us the basic title
-        $top->h('h1',$dd['description']);
+        // Get us the basic title
+        $top->h('h1', $dd['description']);
         $hremain -= x6cssHeight('h1');
         $hremain -= x6cssHeight('div.x6buttonBar a.button');
         $clearboth = $top->h('div');
         $clearboth->hp['style'] = 'clear: both';
         
-        # Work out a height by finding out inside height
-        # and subtracing line height a few times
+        // Work out a height by finding out inside height
+        // and subtracing line height a few times
         $bb = true;
         if($queuepos<>'') { 
             $bb = 'new,ins,save,cancel,delelete';
         }
         $gridHeight = $hremain - x6cssHeight('h1');
         $grid       = $top->addGrid(
-            $gridHeight,$table_id,false,$sortable,$bb,true
+            $gridHeight, $table_id, false, $sortable, $bb, true
         );
         $grid->hp['x6profile'] = 'grid';
         
-        # More features specific to this profile, these will 
-        # allow browseFetch not to have to figure this all out
-        # all over again.
+        // More features specific to this profile, these will 
+        // allow browseFetch not to have to figure this all out
+        // all over again.
         $grid->ap['xGridHeight'] = $gridHeight;
         $grid->ap['xSortable']   = $sortable ? "Y" : "N";
         $grid->ap['xReturnAll']  = "Y";
         
 
-        # If queuepos set, set this flag        
-        if($queuepos) $grid->ap['xInsertAfter'] = 'Y';
+        // If queuepos set, set this flag        
+        if($queuepos) { $grid->ap['xInsertAfter'] = 'Y'; 
+        }
         
-        # Now obtain the _uisearch columns and make one column each
+        // Now obtain the _uisearch columns and make one column each
         $uisearch = $dd['projections']['_uisearch'];
-        $aColumns = explode(',',$uisearch);
+        $aColumns = explode(',', $uisearch);
         foreach($aColumns as $idx=>$column) {
-            if($column==$queuepos) unset($aColumns[$idx]);
+            if($column==$queuepos) { unset($aColumns[$idx]); 
+            }
         }
         foreach($aColumns as $column) {
             $desc = $dd['flat'][$column]['descshort'];
@@ -752,23 +783,24 @@ class androX6 {
                 ,'description'=>$desc
                 ,'sortable'   =>true
             );
-            #$grid->addColumn($dd['flat'][$column]);
+            // $grid->addColumn($dd['flat'][$column]);
             $grid->addColumn($options);
         }
         $gridWidth=$grid->lastColumn();
         
-        # Now set the left-padding to be 1/3 of remaining space
+        // Now set the left-padding to be 1/3 of remaining space
         $remain = x6cssDefine('insidewidth') - $gridWidth;
         $remain = intval($remain/3);
         $top->hp['style'] = "padding-left: {$remain}px";
         
-        # Also, let's set the width of the button bar
-        # now that we know what it is
+        // Also, let's set the width of the button bar
+        // now that we know what it is
         $bb->hp['style'] = "width: {$gridWidth}px";
         
-        # The data...
+        // The data...
         $ob='';
-        if($queuepos) $ob = " order by $queuepos"; 
+        if($queuepos) { $ob = " order by $queuepos"; 
+        } 
         $rows = SQL_AllRows("Select skey,$uisearch from $table_id $ob");
         foreach($rows as $row) {
             $grid->addRow($row['skey']);
@@ -777,65 +809,67 @@ class androX6 {
             }
         }
         
-        # always at the end, render it
-        # KFD 3/20/09 Sourceforge 2697962 
-        #             index_hidden calls this now
-        #$this->hldOut($top);
+        // always at the end, render it
+        // KFD 3/20/09 Sourceforge 2697962 
+        // index_hidden calls this now
+        // $this->hldOut($top);
         $top->render();
         
-        # And a final doo-dad, broadcast a focus event
-        # to turn on the grid
+        // And a final doo-dad, broadcast a focus event
+        // to turn on the grid
         jqDocReady("x6events.fireEvent('objectFocus','".$grid->hp['id']."');");
     }    
-    # ===================================================================
-    # *******************************************************************
-    #
-    # Profile 1: "twosides"
-    #
-    # *******************************************************************
-    # ===================================================================
-    function profile_twosides() {
-        # Grab the data dictionary for this table
+    // ===================================================================
+    // *******************************************************************
+    // 
+    // Profile 1: "twosides"
+    // 
+    // *******************************************************************
+    // ===================================================================
+    function profile_twosides() 
+    {
+        // Grab the data dictionary for this table
         $dd       = $this->dd;
         $table_id = $this->dd['table_id'];
         
-        # Get the standard padding, we are going to double it
+        // Get the standard padding, we are going to double it
         $pad0 = x6CSSDefine('pad0');
         $heightRemain = x6cssDefine('insideheight');
         
-        # Now put in your basic title
+        // Now put in your basic title
         $div = new androHTMLTableController($table_id);
         $div->addClass('fadein');
         $div->ap['xCache']   = 'Y';  // results will be cached
-        $div->h('h1','<center>'.$dd['description'].'</center>');
+        $div->h('h1', '<center>'.$dd['description'].'</center>');
         $heightRemain -= x6cssHeight('h1');
         $heightRemain -= ($pad0*2);
         
-        # Create a two-sided layout by creating two boxes
-        # Left side is a grid with the entire table
+        // Create a two-sided layout by creating two boxes
+        // Left side is a grid with the entire table
         $area0 = $div->h('div');
         $area0->hp['style'] = "float: left; 
             padding-left: {$pad0}px;
             padding-right: {$pad0}px;";
-        $x6grid = $area0->addGrid($heightRemain,$table_id,false,true,false);
+        $x6grid = $area0->addGrid($heightRemain, $table_id, false, true, false);
         $x6grid->hp['x6profile'] = 'twosides';
-        $this->gridGeneric($x6grid,$this->dd);
+        $this->gridGeneric($x6grid, $this->dd);
         
-        # Now put the data over there
+        // Now put the data over there
         $uisearch = $this->dd['projections']['_uisearch'];
         $ob       = $this->dd['pks'];
-        # KFD 1/22/09, allow filtering on "pre" values
+        // KFD 1/22/09, allow filtering on "pre" values
         $pre = aFromGp('pre_');
         $awhere = array();
         $where = '';
         foreach($pre as $colname=>$value) {
-            $awhere[] = sqlfilter($this->dd['flat'][$colname],$value);
+            $awhere[] = sqlfilter($this->dd['flat'][$colname], $value);
         }
-        if(count($awhere)>0) $where = 'WHERE '.implode(' AND ',$awhere);
+        if(count($awhere)>0) { $where = 'WHERE '.implode(' AND ', $awhere); 
+        }
         $view_id = ddView($table_id);
         $sql = "Select skey,$uisearch from $view_id $where ORDER BY $ob";
         $rows = SQL_AllRows($sql);
-        $aColumns = explode(',',$uisearch);
+        $aColumns = explode(',', $uisearch);
         foreach($rows as $row) {
             $x6grid->addRow($row['skey']);
             foreach($aColumns as $column) {
@@ -843,7 +877,7 @@ class androX6 {
             }
         }
         
-        # Calculate how much width is left
+        // Calculate how much width is left
         $wInner = x6CSSDefine('insidewidth');
         $wInner-=$x6grid->width;
         $wInner-=2;  // assume a border on the grid
@@ -852,21 +886,21 @@ class androX6 {
         
         $box2  = $div->h('div');
         $box2->hp['style'] = "float: left; width: {$wInner}px;";
-        $detail = $box2->addDetail($table_id,true,$heightRemain-2);
+        $detail = $box2->addDetail($table_id, true, $heightRemain-2);
         $detail->ap['x6profile'] = 'twosides';
         
-        # Generate a list of child xrefs.  The idea here is to
-        # work out the dimensions first, because we must tell the
-        # class how high to make itself.  Then we generate the
-        # list.  If it comes back empty, we forget about it, otherwise
-        # we create a div of the correct position and put it into it.
+        // Generate a list of child xrefs.  The idea here is to
+        // work out the dimensions first, because we must tell the
+        // class how high to make itself.  Then we generate the
+        // list.  If it comes back empty, we forget about it, otherwise
+        // we create a div of the correct position and put it into it.
         $xrtop = ($detail->hp['xInnerHeight']-$detail->hp['xInnerEmpty'])
             +(x6CssHeight('h1'));
         $xrhgt = $detail->hp['xInnerEmpty'] 
             - x6cssHeight('h1')
             - ($pad0 * 10) ;      // total hack, don't know why 7 works
         $xrwdth= $wInner - $detail->hp['xInnerWidthLost'];
-        $xrefs = new androHTMLxrefs($table_id,$xrhgt);
+        $xrefs = new androHTMLxrefs($table_id, $xrhgt);
         if($xrefs->hp['xCount']>0) {
             $xrefParent = $detail->innerDiv->h('div');
             $xrefParent->hp['style'] = 
@@ -877,32 +911,33 @@ class androX6 {
             $xrefParent->addChild($xrefs);
         }
 
-        # tell the screen to start out by 
-        # focusing on the browse 
+        // tell the screen to start out by 
+        // focusing on the browse 
         jqDocReady("x6events.fireEvent('objectFocus','{$x6grid->hp['id']}')");
-        # KFD 3/7/09 Sourceforge 2669466
-        #            Turn on new buttons by default
+        // KFD 3/7/09 Sourceforge 2669466
+        // Turn on new buttons by default
         jqDocReady('x6events.fireEvent("buttonsNew_'.$table_id.'",true)');
         
-        # Render it!  That's it!
-        # KFD 3/20/09 Sourceforge 2697962 
-        #             index_hidden calls this now
-        #$this->hldOut($top);
+        // Render it!  That's it!
+        // KFD 3/20/09 Sourceforge 2697962 
+        // index_hidden calls this now
+        // $this->hldOut($top);
         $div->render();
     }
     
-    # ===================================================================
-    # *******************************************************************
-    #
-    # Profile 2: "conventional"
-    #
-    # *******************************************************************
-    # ===================================================================
-    function profile_conventional() {
-        # KFD 2/17/09 Sourceforge 2546056.  The dispatching system
-        #             sends page requests here by default.  This is
-        #             where we have to work out if there is a bad
-        #             page request.
+    // ===================================================================
+    // *******************************************************************
+    // 
+    // Profile 2: "conventional"
+    // 
+    // *******************************************************************
+    // ===================================================================
+    function profile_conventional() 
+    {
+        // KFD 2/17/09 Sourceforge 2546056.  The dispatching system
+        // sends page requests here by default.  This is
+        // where we have to work out if there is a bad
+        // page request.
         if(!isset($this->dd['table_id'])) {
             ?>
             <h1>No Page By That Name</h1>
@@ -913,92 +948,94 @@ class androX6 {
         }
         
         
-        # KFD 2/9/09, new feature for Jeff/wholdist.  If "table_id_par"
-        #             was passed in, load a certain row from the parent
-        #             table into the bulletin board.  Specifically this
-        #             is so the table can act like a child table 
-        #             w/respect to loading FETCH and FETCHDEF values.
-        #             Maybe we'll do more with it later.
-        $tid_par = gp('table_id_par','');       
-        if( $tid_par <> '' ) {
+        // KFD 2/9/09, new feature for Jeff/wholdist.  If "table_id_par"
+        // was passed in, load a certain row from the parent
+        // table into the bulletin board.  Specifically this
+        // is so the table can act like a child table 
+        // w/respect to loading FETCH and FETCHDEF values.
+        // Maybe we'll do more with it later.
+        $tid_par = gp('table_id_par', '');       
+        if($tid_par <> '' ) {
             $ddpar = ddTable($tid_par);
-            $pks   = explode(',',$ddpar['pks']);
+            $pks   = explode(',', $ddpar['pks']);
             $aWhere = array();
             foreach($pks as $pk) {
                 $type_id = $ddpar['flat'][$pk]['type_id'];
-                if( ($pkval=gp('pre_'.$pk))<>'') {
-                    $aWhere[] = $pk .'='.SQL_Format($type_id,$pkval);
+                if(($pkval=gp('pre_'.$pk))<>'') {
+                    $aWhere[] = $pk .'='.SQL_Format($type_id, $pkval);
                 }
             }
             $sql = 'select * from '.ddView($tid_par).' where '
-                .implode('AND',$aWhere);
+                .implode('AND', $aWhere);
             $row = sql_oneRow($sql);
             x6Script("x6bb.fwSet('dbRow_$tid_par',".json_encode($row).')');
         }
         
         
-        # Grab the data dictionary for this table
+        // Grab the data dictionary for this table
         $dd       = $this->dd;
         $table_id = $this->dd['table_id'];
         
-        # KFD 4/15/09 Sourceforge 2765788, handle no kids gracefully,
-        #             work out how many kids there are to display
+        // KFD 4/15/09 Sourceforge 2765788, handle no kids gracefully,
+        // work out how many kids there are to display
         $kidCount = 0;
         foreach($dd['fk_children'] as $child=>$info) {
-            if(trim(arr($info,'x6display',''))<>'none') $kidCount++;
+            if(trim(arr($info, 'x6display', ''))<>'none') { $kidCount++; 
+            }
         }
 
-        # Create the top level div as a table controller
+        // Create the top level div as a table controller
         $top= new androHTMLTableController($table_id);
         $top->addClass('fadein');
         
-        # Various heights.  Assume all borders are the same and get
-        # only one.
+        // Various heights.  Assume all borders are the same and get
+        // only one.
         $hinside = x6cssDefine('insideheight');
         $hh1     = x6cssHeight('h1');
         $htabs   = x6cssHeight('.ui-tabs-nav li');
-        $hborder = x6cssRuleSize('ui-tabs-panel','border-top');
+        $hborder = x6cssRuleSize('ui-tabs-panel', 'border-top');
         $pad0    = x6cssDefine('pad0');
         $hlh     = x6CssDefine('lh0');
         
-        # $hpane1 is the outer, it is what is left after removing
-        # h1, one row of tabs, and padding at bottom.
-        # KFD 4/15/09 Sourceforge 2765788, if no kids, correct height
-        if($kidCount==0) $htabs = 0;
+        // $hpane1 is the outer, it is what is left after removing
+        // h1, one row of tabs, and padding at bottom.
+        // KFD 4/15/09 Sourceforge 2765788, if no kids, correct height
+        if($kidCount==0) { $htabs = 0; 
+        }
         $hpane1  = $hinside - $hh1 - $htabs - ($pad0 * 2);
         
-        # $hchild is the height of the empty nested tab
-        # pane, hardcoded at pad0.  This is where the child 
-        # tables are initially displayed -- at the bottom of the
-        # detail pane.  They are initially slid all of the way down,
-        # that is why their height is only pad0.
+        // $hchild is the height of the empty nested tab
+        // pane, hardcoded at pad0.  This is where the child 
+        // tables are initially displayed -- at the bottom of the
+        // detail pane.  They are initially slid all of the way down,
+        // that is why their height is only pad0.
         $hempty  = $pad0;
         
-        # $hdetail is the height of the detail pane inside of the 
-        # detail tab.  It is the $hpane1 less another tab (the 
-        # nested one), and $hempty, and a double padding
+        // $hdetail is the height of the detail pane inside of the 
+        // detail tab.  It is the $hpane1 less another tab (the 
+        // nested one), and $hempty, and a double padding
         $hdetail = $hpane1 - $htabs - $hempty - ($pad0 * 2);
         
-        # Begin with title and tabs
-        $top->h('h1',$dd['description']);
-        if(method_exists($this,'insert_belowh1')) {
+        // Begin with title and tabs
+        $top->h('h1', $dd['description']);
+        if(method_exists($this, 'insert_belowh1')) {
             $this->insert_belowh1($top);
         }
         $options = array('x6profile'=>'conventional','x6table'=>$table_id);
-        $tabs = $top->addTabs('tabs_'.$table_id,$hpane1,$options);
+        $tabs = $top->addTabs('tabs_'.$table_id, $hpane1, $options);
         $lookup = $tabs->addTab('Lookup');
-        $detail = $tabs->addTab('Detail',true);
+        $detail = $tabs->addTab('Detail', true);
 
-        # Make a generic grid, which will show all uisearch 
-        # columns, and add a row of lookup inputs to it.  
-        # Enclose it in a div that gives some padding on top
-        # and bottom.  Divide up the left-right free space to
-        # put 1/3 on the left and the remaining on the right.
+        // Make a generic grid, which will show all uisearch 
+        // columns, and add a row of lookup inputs to it.  
+        // Enclose it in a div that gives some padding on top
+        // and bottom.  Divide up the left-right free space to
+        // put 1/3 on the left and the remaining on the right.
         $divgrid = $lookup->h('div');
-        $grid = $divgrid->addGrid($hpane1 - ($hlh*2),$table_id,true,true);
+        $grid = $divgrid->addGrid($hpane1 - ($hlh*2), $table_id, true, true);
         $grid->hp['x6profile'] = 'conventional';
-        $gridWidth = $this->gridGeneric($grid,$dd);
-        # Work out the available free width after making the grid
+        $gridWidth = $this->gridGeneric($grid, $dd);
+        // Work out the available free width after making the grid
         $wAvail = x6cssDefine('insidewidth')
             - 2 // hardcoded assumption of border of tab container
             - (x6cssDefine('pad0')*2)  // padding outside of tab container
@@ -1006,33 +1043,34 @@ class androX6 {
         $divgrid->hp['style']=
             "padding-left: ".intval($wAvail/3)."px;
              padding-top: ".x6CSSDefine('lh0')."px;";
-        # tell the browse tab object to focus when it is selected
+        // tell the browse tab object to focus when it is selected
         $lookup->hp['x6objectFocusId'] = $grid->hp['id'];
         
-        # This is kind of a hack for forcing exact matches when
-        # a maintenance screen is invoked with pre-set parameters
-        if(gp('x6exactPre')==1) $grid->hp['x6exactPre'] = 1;
+        // This is kind of a hack for forcing exact matches when
+        // a maintenance screen is invoked with pre-set parameters
+        if(gp('x6exactPre')==1) { $grid->hp['x6exactPre'] = 1; 
+        }
 
-        # We are making
-        # the assumption that there will *always* be child tables
-        # because otherwise the programmer would have selected
-        # a different profile.
-        #
-        $divDetail = $detail->addDetail($dd['table_id'],true,$hdetail,$tid_par);
+        // We are making
+        // the assumption that there will *always* be child tables
+        // because otherwise the programmer would have selected
+        // a different profile.
+        // 
+        $divDetail = $detail->addDetail($dd['table_id'], true, $hdetail, $tid_par);
         $divDetail->addCustomButtons($this->customButtons());
         $divDetail->ap['xTabSelector'] = $tabs->ul->hp['id'];
         $divDetail->ap['xTabIndex']    = 1;
         $divDetail->ap['x6profile'] = 'conventional';
         $detail->hp['x6objectFocusId'] = $divDetail->hp['id'];
-        # KFD 5/27/09 Google #21 Allow user to override the detail
-        if(method_exists($this,$table_id.'_detail')) {
+        // KFD 5/27/09 Google #21 Allow user to override the detail
+        if(method_exists($this, $table_id.'_detail')) {
             $method = $table_id.'_detail';
             $this->$method($divDetail);
         }
         
-        # The div kids is a tabbar of child tables.  Notice that we
-        # put nothing into them.  They are loaded dynamically when
-        # the user picks them.
+        // The div kids is a tabbar of child tables.  Notice that we
+        // put nothing into them.  They are loaded dynamically when
+        // the user picks them.
         $options=array('x6slideUp'=>$divDetail->hp['id']
             ,'x6slideUpInner'=>$divDetail->innerId
             ,'x6parentTable'=>$table_id
@@ -1040,15 +1078,16 @@ class androX6 {
             ,'x6table'=>$table_id
             ,'styles'=>array('overflow'=>'hidden')
         );
-        # KFD 4/15/09 Sourcefroge 2765788 no kids handle gracefully
+        // KFD 4/15/09 Sourcefroge 2765788 no kids handle gracefully
         if($kidCount > 0) {
-            $tabKids = $detail->addTabs('kids_'.$table_id,$hempty,$options);
+            $tabKids = $detail->addTabs('kids_'.$table_id, $hempty, $options);
             $tabKids->ul->hp['xOffset'] = 2;
             $tab = $tabKids->addTab("Hide");
             $idx = 0;
             foreach($dd['fk_children'] as $child=>$info) {
-                # KFD 1/2/09.  If x6display is 'none', skip it
-                if(trim(arr($info,'x6display',''))=='none') continue;
+                // KFD 1/2/09.  If x6display is 'none', skip it
+                if(trim(arr($info, 'x6display', ''))=='none') { continue; 
+                }
                 
                 $tc = $top->addTableController($child);
                 $tc->hp['x6tablepar'] = $table_id;
@@ -1057,30 +1096,30 @@ class androX6 {
                 $tab->ap['x6table'   ] = $child;
                 
                 if($info['x6childwrites']=='detail') {
-                    # Create the basic detail
-                    $modal = new androHTMLDetail($child,true,700,$table_id);
-                    # KFD 5/27/09 Google #21 Allow user to override
-                    if(method_exists($this,$child.'_detail')) {
+                    // Create the basic detail
+                    $modal = new androHTMLDetail($child, true, 700, $table_id);
+                    // KFD 5/27/09 Google #21 Allow user to override
+                    if(method_exists($this, $child.'_detail')) {
                         $method = $child.'_detail';
                         $this->$method($modal);
                     }
                     
     
-                    # Now see if we need to add buttons
+                    // Now see if we need to add buttons
                     if(file_exists(fsDirtop()."application/x6$child.php")) {
-                        include_once(fsDirtop()."application/x6$child.php");
+                        include_once fsDirtop()."application/x6$child.php";
                         $childClass = 'x6'.$child;
                         $objChild = new $childClass;
                         $custom = $objChild->customButtons();
                         $modal->addCustomButtons($custom);
                     }
                     
-                    # Tell framework to add it to the output.
+                    // Tell framework to add it to the output.
                     addModal($modal);
                 }
             }
             
-            # And then loop through extra tabs
+            // And then loop through extra tabs
             foreach($this->appTabs as $child=>$caption) {
                 $top->addTableController($child);
                 $tab = $tabKids->addTab($caption);
@@ -1089,54 +1128,56 @@ class androX6 {
             }
         }
         
-        # tell the screen to start out by focusing on
-        # the browse
+        // tell the screen to start out by focusing on
+        // the browse
         jqDocReady("x6events.fireEvent('objectFocus','{$grid->hp['id']}')");
 
-        # KFD 3/20/09 Sourceforge 2697962 
-        #             index_hidden calls this now
-        #$this->hldOut($top);
+        // KFD 3/20/09 Sourceforge 2697962 
+        // index_hidden calls this now
+        // $this->hldOut($top);
         $top->render();
     }
 
-    # ===================================================================
-    # *******************************************************************
-    #
-    # Profile 3: "onerow"
-    #
-    # *******************************************************************
-    # ===================================================================
-    function profile_onerow() {
+    // ===================================================================
+    // *******************************************************************
+    // 
+    // Profile 3: "onerow"
+    // 
+    // *******************************************************************
+    // ===================================================================
+    function profile_onerow() 
+    {
         
-        # Get started with the top of the page and
-        # a table controller
+        // Get started with the top of the page and
+        // a table controller
         $top = htmlMacroTop($this->x6page);
         $top->addTableController($this->x6page);
         
-        # Make the tabs
+        // Make the tabs
         $height = x6CssHeightLessH1();
-        $tabs = $top->addTabs($this->x6page,$height);
+        $tabs = $top->addTabs($this->x6page, $height);
         
         $spacing = intval(x6CSSDefine('insidewidth')/25);
         
-        # Get a list of projections, we will make a tab
-        # for each one of them
+        // Get a list of projections, we will make a tab
+        // for each one of them
         $projections = array_keys($this->dd['projections']);
         foreach($projections as $idx=>$projection) {
-            if(substr($projection,0,1)=='_') unset($projections[$idx]);
+            if(substr($projection, 0, 1)=='_') { unset($projections[$idx]); 
+            }
         }
         
-        # Say nothing to do if nothing to do
+        // Say nothing to do if nothing to do
         if(count($projections)==0) {
-            $top->h('p','Nothing to configure.');
+            $top->h('p', 'Nothing to configure.');
         }
         
-        # Get the row from the table so we can populate
-        # the inputs
+        // Get the row from the table so we can populate
+        // the inputs
         $row = SQL_OneRow("Select * from ".$this->dd['viewname']);
 
         
-        # Make a tab for each projection, and put the inputs in there!
+        // Make a tab for each projection, and put the inputs in there!
         foreach($projections as $projection) {
             $description = $projection;
             $x = 'description_'.$projection;
@@ -1150,17 +1191,17 @@ class androX6 {
             
             $table = $insidetab->h('table');
             $table->addClass('x6Detail');
-            $columns = explode(',',$this->dd['projections'][$projection]);
+            $columns = explode(',', $this->dd['projections'][$projection]);
             foreach($columns as $idx=>$column) {
                 $tabLoop=array();
                 
                 $tr = $table->h('tr');
-                $td = $tr->h('td',$this->dd['flat'][$column]['description']);
+                $td = $tr->h('td', $this->dd['flat'][$column]['description']);
                 $td->addClass('x6Caption');
                 
-                $input=input($this->dd['flat'][$column],$tabLoop);
+                $input=input($this->dd['flat'][$column], $tabLoop);
                 $input->hp['xSkey'] = $row['skey'];
-                # KFD 2/17/09  Sourceforge bug 2609176
+                // KFD 2/17/09  Sourceforge bug 2609176
                 if($input->htype=='textarea') {
                     $input->setHtml(htmlentities($row[$column]));
                 }
@@ -1196,20 +1237,21 @@ class androX6 {
         jqDocReady(ob_get_clean());
     }
     
-    # ===================================================================
-    # -------------------------------------------------------------------
-    #
-    # Simple Library routines
-    #
-    # -------------------------------------------------------------------
-    # ===================================================================
-    function uiPerm($table,$perm) {
+    // ===================================================================
+    // -------------------------------------------------------------------
+    // 
+    // Simple Library routines
+    // 
+    // -------------------------------------------------------------------
+    // ===================================================================
+    function uiPerm($table,$perm) 
+    {
         $dd = ddTable($table);
-        return arr($dd,"ui$perm","Y") == 'N' ? false : true;
+        return arr($dd, "ui$perm", "Y") == 'N' ? false : true;
     }
     
-    # KFD 3/20/09 Sourceforge 2697962 Moved entire routine into
-    #             index_hidden
+    // KFD 3/20/09 Sourceforge 2697962 Moved entire routine into
+    // index_hidden
     /*
     function hldOut(&$top=null) {
         if(isset($this->hld)) {
@@ -1226,9 +1268,10 @@ class androX6 {
     }
     */
     
-    # KFD 3/20/09 Sourceforge 2697962 
-    #             Various improvements to hold variables
-    function clearHold($name='') {
+    // KFD 3/20/09 Sourceforge 2697962 
+    // Various improvements to hold variables
+    function clearHold($name='') 
+    {
         if($name=='') {
             $this->hld=array();
         }
@@ -1239,24 +1282,27 @@ class androX6 {
         }
     }
     
-    function fetchParent() {
+    function fetchParent() 
+    {
         $ddpar = ddTable(gp('tableIdPar'));
         $pks   = $ddpar['pks'];
         $stab  = ddView(gp('tableIdPar'));
         $skey  = SQLFN(gp('skeyPar'));
         $vals2 = SQL_OneRow("SELECT $pks FROM $stab WHERE skey = $skey");
-        if(!$vals2) $vals2=array();
+        if(!$vals2) { $vals2=array(); 
+        }
         return $vals2;
     }
     
-    # Makes a generic grid.  First created 11/3/08 so we can add
-    # cells to it for a browseFetch and then pluck out the tbody html
-    function gridGeneric(&$grid,$dd,$tabPar='',$vals2=array()) {
+    // Makes a generic grid.  First created 11/3/08 so we can add
+    // cells to it for a browseFetch and then pluck out the tbody html
+    function gridGeneric(&$grid,$dd,$tabPar='',$vals2=array()) 
+    {
         $table_id = $dd['table_id'];
         
-        # KFD 12/18/08.  If we have a tablePar and $vals2, we will
-        #                put a set of options onto the grid that
-        #                it will respect when building the inputs
+        // KFD 12/18/08.  If we have a tablePar and $vals2, we will
+        // put a set of options onto the grid that
+        // it will respect when building the inputs
         if($tabPar!='') {
             $options = array();
             foreach($vals2 as $colname=>$colvalue) {
@@ -1271,27 +1317,27 @@ class androX6 {
             $grid->setColumnOptions($options);
         }
         
-        # KFD 1/29/09 tell us the x6childwrites setting
+        // KFD 1/29/09 tell us the x6childwrites setting
         $grid->hp['x6childwrites'] = trim($this->dd['x6childwrites']);
         if(trim($this->dd['x6childwrites'])=='Y') {
             $grid->hp['x6childwrites'] = 'grid';
         }
         
-        # KFD 11/15/08 
-        # Nifty trick to allow different columns when viewed as 
-        # child table.  If tabPar is passed in, we will pick
-        # the projection named "child_{tabPar}" if it exists.
-        # The first line will pull an empty result if this feature
-        # has not been used by the programmer, which causes a fallback
-        # to the normal uisearch approach.
-        $uisearch = arr($dd['projections'],'child_'.$tabPar,'');
+        // KFD 11/15/08 
+        // Nifty trick to allow different columns when viewed as 
+        // child table.  If tabPar is passed in, we will pick
+        // the projection named "child_{tabPar}" if it exists.
+        // The first line will pull an empty result if this feature
+        // has not been used by the programmer, which causes a fallback
+        // to the normal uisearch approach.
+        $uisearch = arr($dd['projections'], 'child_'.$tabPar, '');
         if($uisearch=='') {
             $uisearch = $dd['projections']['_uisearch'];
         }
-        $aColumns = explode(',',$uisearch);
+        $aColumns = explode(',', $uisearch);
         foreach($aColumns as $column) {
             $type_id = $dd['flat'][$column]['type_id'];
-            $x6view  = arr($dd['flat'][$column],'x6view','');
+            $x6view  = arr($dd['flat'][$column], 'x6view', '');
             if($type_id=='text' && $x6view=='') {
                 $dd['flat'][$column]['dispsize'] = 20;
             }

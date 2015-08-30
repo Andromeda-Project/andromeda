@@ -97,7 +97,6 @@ class special_action extends x_table2 {
 ?>
 !<
 !<
-
 */
 
 /**
@@ -206,8 +205,6 @@ or update (uid_upd tags the user who made an update).
 * ''7002'' Delete not allowed (''Table level'' error).
 * ''8001'' Attempt to create a duplicate user.
 * ''9001'' Attempt to create a duplicate user in Node Manager.
-
-
 */
 
 

@@ -19,194 +19,203 @@
 
 //create variable names to perform additional order processing
 
-function create_local_variables() {
+function create_local_variables() 
+{
 
-$array_name['business']=$_POST['business'];
-$array_name['receiver_email']=$_POST['receiver_email'];
-$array_name['receiver_id']=$_POST['receiver_id'];
-$array_name['item_name']=$_POST['item_name'];
-$array_name['item_number']=$_POST['item_number'];
-$array_name['quantity']=$_POST['quantity'];
-$array_name['invoice']=$_POST['invoice'];
-$array_name['custom']=$_POST['custom'];
-$array_name['memo']=$_POST['memo'];
-$array_name['tax']=$_POST['tax'];
-$array_name['option_name1']=$_POST['option_name1'];
-$array_name['option_selection1']=$_POST['option_selection1'];
-$array_name['option_name2']=$_POST['option_name2'];
-$array_name['option_selection2']=$_POST['option_selection2'];
-$array_name['num_cart_items']=$_POST['num_cart_items'];
-$array_name['mc_gross']=$_POST['mc_gross'];
-$array_name['mc_fee']=$_POST['mc_fee'];
-$array_name['mc_currency']=$_POST['mc_currency'];
-$array_name['settle_amount']=$_POST['settle_amount'];
-$array_name['settle_currency']=$_POST['settle_currency'];
-$array_name['exchange_rate']=$_POST['exchange_rate'];
-$array_name['payment_gross']=$_POST['payment_gross'];
-$array_name['payment_fee']=$_POST['payment_fee'];
-$array_name['payment_status']=$_POST['payment_status'];
-$array_name['pending_reason']=$_POST['pending_reason'];
-$array_name['reason_code']=$_POST['reason_code'];
-$array_name['payment_date']=$_POST['payment_date'];
-$array_name['txn_id']=$_POST['txn_id'];
-$array_name['txn_type']=$_POST['txn_type'];
-$array_name['payment_type']=$_POST['payment_type'];
-$array_name['for_auction']=$_POST['for_auction'];
-$array_name['auction_buyer_id']=$_POST['auction_buyer_id'];
-$array_name['auction_closing_date']=$_POST['auction_closing_date'];
-$array_name['auction_multi_item']=$_POST['auction_multi_item'];
-$array_name['first_name']=$_POST['first_name'];
-$array_name['last_name']=$_POST['last_name'];
-$array_name['payer_business_name']=$_POST['payer_business_name'];
-$array_name['address_name']=$_POST['address_name'];
-$array_name['address_street']=$_POST['address_street'];
-$array_name['address_city']=$_POST['address_city'];
-$array_name['address_state']=$_POST['address_state'];
-$array_name['address_zip']=$_POST['address_zip'];
-$array_name['address_country']=$_POST['address_country'];
-$array_name['address_status']=$_POST['address_status'];
-$array_name['payer_email']=$_POST['payer_email'];
-$array_name['payer_id']=$_POST['payer_id'];
-$array_name['payer_status']=$_POST['payer_status'];
-$array_name['notify_version']=$_POST['notify_version'];
-$array_name['verify_sign']=$_POST['verify_sign'];
+    $array_name['business']=$_POST['business'];
+    $array_name['receiver_email']=$_POST['receiver_email'];
+    $array_name['receiver_id']=$_POST['receiver_id'];
+    $array_name['item_name']=$_POST['item_name'];
+    $array_name['item_number']=$_POST['item_number'];
+    $array_name['quantity']=$_POST['quantity'];
+    $array_name['invoice']=$_POST['invoice'];
+    $array_name['custom']=$_POST['custom'];
+    $array_name['memo']=$_POST['memo'];
+    $array_name['tax']=$_POST['tax'];
+    $array_name['option_name1']=$_POST['option_name1'];
+    $array_name['option_selection1']=$_POST['option_selection1'];
+    $array_name['option_name2']=$_POST['option_name2'];
+    $array_name['option_selection2']=$_POST['option_selection2'];
+    $array_name['num_cart_items']=$_POST['num_cart_items'];
+    $array_name['mc_gross']=$_POST['mc_gross'];
+    $array_name['mc_fee']=$_POST['mc_fee'];
+    $array_name['mc_currency']=$_POST['mc_currency'];
+    $array_name['settle_amount']=$_POST['settle_amount'];
+    $array_name['settle_currency']=$_POST['settle_currency'];
+    $array_name['exchange_rate']=$_POST['exchange_rate'];
+    $array_name['payment_gross']=$_POST['payment_gross'];
+    $array_name['payment_fee']=$_POST['payment_fee'];
+    $array_name['payment_status']=$_POST['payment_status'];
+    $array_name['pending_reason']=$_POST['pending_reason'];
+    $array_name['reason_code']=$_POST['reason_code'];
+    $array_name['payment_date']=$_POST['payment_date'];
+    $array_name['txn_id']=$_POST['txn_id'];
+    $array_name['txn_type']=$_POST['txn_type'];
+    $array_name['payment_type']=$_POST['payment_type'];
+    $array_name['for_auction']=$_POST['for_auction'];
+    $array_name['auction_buyer_id']=$_POST['auction_buyer_id'];
+    $array_name['auction_closing_date']=$_POST['auction_closing_date'];
+    $array_name['auction_multi_item']=$_POST['auction_multi_item'];
+    $array_name['first_name']=$_POST['first_name'];
+    $array_name['last_name']=$_POST['last_name'];
+    $array_name['payer_business_name']=$_POST['payer_business_name'];
+    $array_name['address_name']=$_POST['address_name'];
+    $array_name['address_street']=$_POST['address_street'];
+    $array_name['address_city']=$_POST['address_city'];
+    $array_name['address_state']=$_POST['address_state'];
+    $array_name['address_zip']=$_POST['address_zip'];
+    $array_name['address_country']=$_POST['address_country'];
+    $array_name['address_status']=$_POST['address_status'];
+    $array_name['payer_email']=$_POST['payer_email'];
+    $array_name['payer_id']=$_POST['payer_id'];
+    $array_name['payer_status']=$_POST['payer_status'];
+    $array_name['notify_version']=$_POST['notify_version'];
+    $array_name['verify_sign']=$_POST['verify_sign'];
 
-return $array_name;
+    return $array_name;
 
 }
 
 //post transaction data using curl
 
-function curlPost($url,$data)  {
+function curlPost($url,$data)  
+{
 
-   global $paypal;
-   $postdata='';
+    global $paypal;
+    $postdata='';
    
-   //build post string
+    //build post string
    
-   foreach($data as $i=>$v) {
-      $postdata.= $i . "=" . urlencode($v) . "&";
-   }
+    foreach($data as $i=>$v) {
+        $postdata.= $i . "=" . urlencode($v) . "&";
+    }
    
-   $postdata.="cmd=_notify-validate";
+    $postdata.="cmd=_notify-validate";
    
-   //execute curl on the command line
+    //execute curl on the command line
    
-   exec("{$paypal['curl_location']} -d \"$postdata\" $url", $info);
+    exec("{$paypal['curl_location']} -d \"$postdata\" $url", $info);
    
-   $info=implode(",",$info);
+    $info=implode(",", $info);
    
-   return $info;
+    return $info;
 
 }
 
 //posts transaction data using libCurl
 
-function libCurlPost($url,$data)  {
+function libCurlPost($url,$data)  
+{
 
-   //build post string
+    //build post string
    
-   $postdata='';
-   foreach($data as $i=>$v) {
+    $postdata='';
+    foreach($data as $i=>$v) {
    
-   $postdata.= $i . "=" . urlencode($v) . "&";
+        $postdata.= $i . "=" . urlencode($v) . "&";
    
-   }
+    }
    
-   $postdata.="cmd=_notify-validate";
+    $postdata.="cmd=_notify-validate";
    
-   $ch=curl_init();
+    $ch=curl_init();
    
-   curl_setopt($ch,CURLOPT_SSL_VERIFYPEER,FALSE);
-   curl_setopt($ch,CURLOPT_URL,$url);
-   curl_setopt($ch,CURLOPT_POST,1);
-   curl_setopt($ch,CURLOPT_POSTFIELDS,$postdata);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_POST, 1);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $postdata);
    
-   //Start ob to prevent curl_exec from displaying stuff.
-   ob_start();
-   curl_exec($ch);
+    //Start ob to prevent curl_exec from displaying stuff.
+    ob_start();
+    curl_exec($ch);
    
-   //Get contents of output buffer
-   $info=ob_get_contents();
-   curl_close($ch);
+    //Get contents of output buffer
+    $info=ob_get_contents();
+    curl_close($ch);
    
-   //End ob and erase contents.
-   ob_end_clean();
+    //End ob and erase contents.
+    ob_end_clean();
    
-   return $info;
+    return $info;
 }
 
 //posts transaction data using fsockopen.
-function fsockPost($url,$data) {
+function fsockPost($url,$data) 
+{
 
-   //Parse url
-   $web=parse_url($url);
-   $postdata='';
+    //Parse url
+    $web=parse_url($url);
+    $postdata='';
    
-   //build post string
-   foreach($data as $i=>$v) {
-   $postdata.= $i . "=" . urlencode($v) . "&";
-   }
+    //build post string
+    foreach($data as $i=>$v) {
+        $postdata.= $i . "=" . urlencode($v) . "&";
+    }
    
-   $postdata.="cmd=_notify-validate";
+    $postdata.="cmd=_notify-validate";
    
-   //Set the port number
-   if($web['scheme'] == "https") { $web['port']="443";  $ssl="ssl://"; } else { $web['port']="80"; }
+    //Set the port number
+    if($web['scheme'] == "https") { $web['port']="443";  $ssl="ssl://"; 
+    } else { $web['port']="80"; 
+    }
    
-   //Create paypal connection
-   $fp=@fsockopen($ssl . $web['host'],$web['port'],$errnum,$errstr,30);
+    //Create paypal connection
+    $fp=@fsockopen($ssl . $web['host'], $web['port'], $errnum, $errstr, 30);
    
-   //Error checking
-   if(!$fp) { echo "$errnum: $errstr"; }
+    //Error checking
+    if(!$fp) { echo "$errnum: $errstr"; 
+    }
    
-   //Post Data
-   else {
+    //Post Data
+    else {
    
-     fputs($fp, "POST {$web['path']} HTTP/1.1\r\n");
-     fputs($fp, "Host: {$web['host']}\r\n");
-     fputs($fp, "Content-type: application/x-www-form-urlencoded\r\n");
-     fputs($fp, "Content-length: ".strlen($postdata)."\r\n");
-     fputs($fp, "Connection: close\r\n\r\n");
-     fputs($fp, $postdata . "\r\n\r\n");
+        fputs($fp, "POST {$web['path']} HTTP/1.1\r\n");
+        fputs($fp, "Host: {$web['host']}\r\n");
+        fputs($fp, "Content-type: application/x-www-form-urlencoded\r\n");
+        fputs($fp, "Content-length: ".strlen($postdata)."\r\n");
+        fputs($fp, "Connection: close\r\n\r\n");
+        fputs($fp, $postdata . "\r\n\r\n");
    
-   //loop through the response from the server
-   while(!feof($fp)) { $info[]=@fgets($fp, 1024); }
+        //loop through the response from the server
+        while(!feof($fp)) { $info[]=@fgets($fp, 1024); 
+        }
    
-   //close fp - we are done with it
-   fclose($fp);
+        //close fp - we are done with it
+        fclose($fp);
    
-   //break up results into a string
-   $info=implode(",",$info);
+        //break up results into a string
+        $info=implode(",", $info);
    
-   }
+    }
    
-   return $info;
+    return $info;
    
 }
 
 //Display Paypal Hidden Variables
 
-function showVariables() {
+function showVariables() 
+{
 
-   global $paypal;
-   foreach($paypal as $ppvarname=>$ppvarval) {
-      switch ($ppvarname) {
-         case 'success_url':
+    global $paypal;
+    foreach($paypal as $ppvarname=>$ppvarval) {
+        switch ($ppvarname) {
+        case 'success_url':
             $val=$paypal['site_url'].$ppvarval;
             $ppvarname='return';
             break;
-         case 'image_url':
-         case 'cancel_url':
-         case 'notify_url':
+        case 'image_url':
+        case 'cancel_url':
+        case 'notify_url':
             $val=$paypal['site_url'].$ppvarval;
             break;
-         default: $val=$ppvarval;
-      }
-      echo 
+        default: $val=$ppvarval;
+        }
+        echo 
          "\n<input type=\"hidden\" "
          ."name=\"$ppvarname\" "
          ."value=\"$val\">";
-   }
+    }
 }
 
 /*

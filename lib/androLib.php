@@ -1,8 +1,6 @@
 <?php
 
 /* ================================================================== *\
-   
-
    Purpose: This the ONE TRUE LIBRARY
 
    Andromeda is free software; you can redistribute it and/or modify
@@ -67,7 +65,8 @@
  *
  * SOURCE
  */
-function gp($key, $vardefault = '') {
+function gp($key, $vardefault = '')
+{
     //echo "<br/>Gp called with -$key- -$vardefault-";
     $post = $GLOBALS["AG"]["clean"];
     if (!isset($post[$key])) {
@@ -99,7 +98,8 @@ function gp($key, $vardefault = '') {
  *
  * SOURCE
  */
-function gpExists($key) {
+function gpExists($key)
+{
     return isset($GLOBALS["AG"]["clean"][$key]);
 }
 
@@ -127,7 +127,8 @@ function gpExists($key) {
  *
  * SOURCE
 */
-function hgp($key, $default = '') {
+function hgp($key, $default = '')
+{
     $temp = gp($key, $default);
     return htmlentities($temp);
 }
@@ -153,7 +154,8 @@ function hgp($key, $default = '') {
  *
  * SOURCE
 */
-function rowFromgp($prefix) {
+function rowFromgp($prefix)
+{
     return aFromgp($prefix);
 }
 
@@ -176,7 +178,8 @@ function rowFromgp($prefix) {
  *
  * SOURCE
 */
-function removetrailingnewlines($input) {
+function removetrailingnewlines($input)
+{
     while (substr($input, -1, 1) == "\n") {
         $input = substr($input, 0, strlen($input) - 1);
     }
@@ -205,7 +208,8 @@ function removetrailingnewlines($input) {
  *   associative array
  *
  ******/
-function aFromgp($prefix) {
+function aFromgp($prefix)
+{
     $strlen = strlen($prefix);
     $row = array();
     foreach ($GLOBALS["AG"]["clean"] as $colname => $colvar) {
@@ -234,7 +238,8 @@ function aFromgp($prefix) {
  *
  * SOURCE
  */
-function gpSet($key, $value = '') {
+function gpSet($key, $value = '')
+{
     $GLOBALS["AG"]["clean"][$key] = $value;
 }
 
@@ -258,7 +263,8 @@ function gpSet($key, $value = '') {
  *       parameters.
  * SOURCE
  */
-function gpSetFromArray($prefix, $array) {
+function gpSetFromArray($prefix, $array)
+{
     foreach ($array as $key => $value) {
         gpSet($prefix . $key, $value);
     }
@@ -280,7 +286,8 @@ function gpSetFromArray($prefix, $array) {
  *
  * SOURCE
 */
-function gpUnSet($key) {
+function gpUnSet($key)
+{
     if (isset($GLOBALS["AG"]["clean"][$key])) {
         unset($GLOBALS["AG"]["clean"][$key]);
     }
@@ -302,7 +309,8 @@ function gpUnSet($key) {
  *
  * SOURCE
 */
-function gpUnsetPrefix($prefix) {
+function gpUnsetPrefix($prefix)
+{
     foreach ($GLOBALS['AG']['clean'] as $key => $value) {
         $len = substr($key, 0, strlen($prefix));
         if ($len == $prefix) {
@@ -327,7 +335,8 @@ function gpUnsetPrefix($prefix) {
  *
  * SOURCE
 */
-function gpControls() {
+function gpControls()
+{
     return unserialize(base64_decode(gp('gpControls')));
 }
 
@@ -342,34 +351,10 @@ function gpControls() {
  * Deprecated
  *
  *---**/
-function rowFromgpInputs() {
+function rowFromgpInputs()
+{
     return afromgp('txt_');
 }
-
-/**
- * INPUTS
- * @deprecated
-/*
-function rowFromgp($table_id) {
-// First look for gp_skey
-$skey=CleanGet('gp_skey','',false);
-$skey=$skey<>'' ? $skey : Cleanget('txt_skey','',false);
-if($skey<>'') {
-$sq="SELECT * FROM ".$table_id." WHERE skey=".SQL_Format('numb',$skey);
-return SQL_OneRow($sq);
-}
-// no skey?  Look for the primary key, assume one column
-$table=DD_TableRef($table_id);
-$pkcol=$table['pks'];
-$pkval = CleanGet('gp_'.$pkcol,'',false);
-$pkval = $pkval<>'' ? $pkval : CleanGet('txt_'.$pkcol,'',false);
-if($pkval=='') {
-return false;
-}
-$sq="SELECT * FROM ".$table_id." WHERE $pkcol=".SQL_Format('char',$pkval);
-return SQL_OneRow($sq);
-}
- */
 
 /**
  * Puts the current Get/Post parameters into the current session.
@@ -388,7 +373,8 @@ return SQL_OneRow($sq);
  *
  * SOURCE
 */
-function gpToSession() {
+function gpToSession()
+{
     SessionSet('clean', $GLOBALS['AG']['clean']);
 }
 
@@ -428,10 +414,12 @@ function gpToSession() {
  *
  * SOURCE
  */
-function x6Error($parm1) {
+function x6Error($parm1)
+{
     return x4Error($parm1);
 }
-function x4Error($parm1) {
+function x4Error($parm1)
+{
     $GLOBALS['AG']['x4']['error'][] = $parm1;
 }
 
@@ -450,10 +438,12 @@ function x4Error($parm1) {
  *
  * SOURCE
 */
-function x6Notice($parm1) {
+function x6Notice($parm1)
+{
     return x4Notice($parm1);
 }
-function x4Notice($parm1) {
+function x4Notice($parm1)
+{
     $GLOBALS['AG']['x4']['notice'][] = $parm1;
 }
 
@@ -473,10 +463,12 @@ function x4Notice($parm1) {
  *
  * SOURCE
 */
-function x6Print_r($var) {
+function x6Print_r($var)
+{
     x4Print_r($var);
 }
-function x4Print_r($var) {
+function x4Print_r($var)
+{
     ob_start();
     print_r($var);
     x4Notice(ob_get_clean());
@@ -499,10 +491,12 @@ function x4Print_r($var) {
  *
  * SOURCE
  */
-function x6Debug($parm1) {
+function x6Debug($parm1)
+{
     return x4Debug($parm1);
 }
-function x4Debug($parm1) {
+function x4Debug($parm1)
+{
     $GLOBALS['AG']['x4']['debug'][] = $parm1;
 }
 
@@ -523,10 +517,12 @@ function x4Debug($parm1) {
  *
  * SOURCE
 */
-function x6DebugClean($parm1) {
+function x6DebugClean($parm1)
+{
     return x4DebugClean($parm1);
 }
-function x4DebugClean($parm1) {
+function x4DebugClean($parm1)
+{
     $parm1 = str_replace("\n", '', $parm1);
     $parm1 = str_replace("\t", ' ', $parm1);
     $parm1 = preg_replace('/\s{2,}/', ' ', $parm1);
@@ -535,7 +531,8 @@ function x4DebugClean($parm1) {
 
 /******/
 
-function x4DebugSQL($parm1) {
+function x4DebugSQL($parm1)
+{
     $parm1 = str_replace("\n", "", $parm1);
     x4Debug($parm1);
 }
@@ -557,10 +554,12 @@ function x4DebugSQL($parm1) {
  *
  * SOURCE
  */
-function x6HTML($parm1, $parm2) {
+function x6HTML($parm1, $parm2)
+{
     return x4html($parm1, $parm2);
 }
-function x4HTML($parm1, $parm2) {
+function x4HTML($parm1, $parm2)
+{
     if (!isset($GLOBALS['AG']['x4']['html'][$parm1])) {
         $GLOBALS['AG']['x4']['html'][$parm1] = '';
     }
@@ -591,7 +590,8 @@ function x4HTML($parm1, $parm2) {
  *
  * SOURCE
 */
-function x4HtmlDump($parm1) {
+function x4HtmlDump($parm1)
+{
     ob_start();
     hprint_r($parm1);
     x4HTML('*MAIN*', ob_get_clean());
@@ -600,8 +600,6 @@ function x4HtmlDump($parm1) {
 /******/
 
 /**
- *
- *
  * INPUTS
  * string $parm1 script to store
  */
@@ -626,10 +624,12 @@ function x4HtmlDump($parm1) {
  *
  * SOURCE
  */
-function x6script($parm1) {
+function x6script($parm1)
+{
     return x4script($parm1);
 }
-function x4SCRIPT($parm1, $insert = false) {
+function x4SCRIPT($parm1, $insert = false)
+{
     $parm1 = preg_replace("/<script>/i", '', $parm1);
     $parm1 = preg_replace("/<\/script>/i", '', $parm1);
     if ($insert) {
@@ -640,7 +640,8 @@ function x4SCRIPT($parm1, $insert = false) {
 }
 
 /******/
-function x6scriptKill() {
+function x6scriptKill()
+{
     $GLOBALS['AG']['x4']['script'] = array();
 }
 
@@ -666,19 +667,24 @@ function x6scriptKill() {
  *
  * SOURCE
  */
-function x6Data($name, $data) {
+function x6Data($name, $data)
+{
     $script = "\nx6.data.$name = " . json_encode_safe($data) . ";";
     x6Script($script);
 }
-function x4Data($name, $data) {
-    if (vgfGet('x6', false)) return x6Data($name, $data);
+function x4Data($name, $data)
+{
+    if (vgfGet('x6', false)) {
+        return x6Data($name, $data);
+    }
     $script = "\n\$a.data.$name = " . json_encode_safe($data) . ";";
     x4Script($script);
 }
 
 /******/
 
-function jsonPrint_r($data) {
+function jsonPrint_r($data)
+{
     ob_start();
     hprint_r();
     $GLOBALS['AG']['x4']['html']['*MAIN*'].= ob_get_clean();
@@ -712,7 +718,8 @@ function jsonPrint_r($data) {
  *
  * SOURCE
  */
-function json_encode_safe($data) {
+function json_encode_safe($data)
+{
 
     // Package up the JSON
     if (function_exists('json_encode')) {
@@ -739,12 +746,13 @@ function json_encode_safe($data) {
  * RETURN
  * object $obj_page  the x4 object that handles that table/page
  */
-function x4Object($x4Page) {
+function x4Object($x4Page)
+{
     include_once 'androX4.php';
     $class = 'androX4';
     $file = strtolower($x4Page) == 'menu' ? 'androX4Menu.php' : "x4$x4Page.php";
     if (file_exists_incpath($file)) {
-        include_once ($file);
+        include_once$file;
         $class = 'x4' . $x4Page;
     }
     $object = new $class($x4Page);
@@ -759,7 +767,8 @@ function x4Object($x4Page) {
  * RETURN
  * object $obj_page  the object representing the dispatched page.
  */
-function DispatchObject($gp_page) {
+function DispatchObject($gp_page)
+{
 
     // Get the One True Class loaded.  All table
     // processing uses it directly or uses a subclass of it
@@ -773,13 +782,11 @@ function DispatchObject($gp_page) {
     $obj_page = null;
     $class_page = "x_table_$gp_page";
     if (class_exists($class_page)) {
-
         // case 1, extension of x_table (original)
         $obj_page = new $class_page();
         $obj_page->table_id = $gp_page;
         $obj_page->x_table_DDLoad();
     } elseif (class_exists($gp_page)) {
-
         // case 2, extension of x_table2 (new way to do it)
         $obj_page = new $gp_page();
     }
@@ -817,11 +824,11 @@ function DispatchObject($gp_page) {
  * in andromeda pages.
  *
  * To make HTML in andromeda, you use the html function, which builds an html element as an
- * androHtml object.  The object allows you to modify the element in any way you would normally
+ * AndroHtml object.  The object allows you to modify the element in any way you would normally
  * in html.  It is very flexible.
  *
  * In order to display your object oriented html, you must render it.  Call the render function on your
- * androHtml parent object to render the whole page.
+ * AndroHtml parent object to render the whole page.
  *
  ******/
 
@@ -843,7 +850,8 @@ function DispatchObject($gp_page) {
  *
  * SOURCE
  */
-function hSizepx($x1024) {
+function hSizepx($x1024)
+{
     $app = $GLOBALS['AG']['application'];
     $size = a($_REQUEST, $app . "_size", '1024');
     $final = intval(($x1024 * $size) / 1024);
@@ -869,7 +877,8 @@ function hSizepx($x1024) {
  *
  * SOURCE
  */
-function hSize($x1024) {
+function hSize($x1024)
+{
     $app = $GLOBALS['AG']['application'];
     $size = a($_REQUEST, $app . "_size", '1024');
     $final = intval(($x1024 * $size) / 1024);
@@ -898,11 +907,12 @@ function hSize($x1024) {
  * mixed $innerHTML - Inner html in this element
  *
  * RETURN VALUE
- * androHtml object built specifically for the provided parameters.
+ * AndroHtml object built specifically for the provided parameters.
 
  ******
  */
-function html($tag, &$parent = null, $innerHTML = '', $class = '') {
+function html($tag, &$parent = null, $innerHTML = '', $class = '')
+{
 
     // Branch off if an array and return an array
     if (is_array($innerHTML)) {
@@ -913,7 +923,7 @@ function html($tag, &$parent = null, $innerHTML = '', $class = '') {
         return $retval;
     }
 
-    $retval = new androHtml();
+    $retval = new AndroHtml();
     $retval->setHtml($innerHTML);
     if (!empty($class)) {
         $retval->addClass($class);
@@ -946,2653 +956,28 @@ function html($tag, &$parent = null, $innerHTML = '', $class = '') {
  * string $page - The page, which is a table name or menu entry
  *
  * RETURNS
- * androHtml DIV object with a title built in and having class "fadeIn".
+ * AndroHtml DIV object with a title built in and having class "fadeIn".
  ******
  */
-function &htmlMacroTop($page, $center = false) {
+function htmlMacroTop($page, $center = false)
+{
     $retval = html('div');
     $retval->addClass('fadein');
     $h1 = $retval->h('h1', ddPageDescription($page));
-    if ($center) $h1->hp['style'] = 'text-align: center';
+    if ($center) {
+        $h1->hp['style'] = 'text-align: center';
+    }
     return $retval;
 }
 
-/****f* HTML Generation/htmlMacroGridWithData
- *
- * NAME
- *    htmlMacroGridWithData
- *
- * FUNCTION
- * The PHP function htmlMacroGridWithData is a shortcut
- *   that creates a grid for editing existing data.
- *   The grid does not contain any buttons for [New], [Save], etc.,
- *   it contains inputs that save immediately when the user changes
- *   a value.
- *
- *   In standard usage, you execute a query using SQL_AllRows, then
- *   call this macro to set up a grid allowing the user to edit
- *   the data.
- *
- *   This macro assumes the grid is the only element on the page.
- *   It will be high enough to leave space for an H1 above it and
- *   and blank space below it.  It will be shifted about 1/3 across
- *   the screen horizontally.
- *
- * INPUTS
- * array $dd - The data dictionary of the table being edited
- *   mixed $cols - comma-separated list of columns, or array of columns
- *   array $rows - an array of row arrays.  The skey column must be included.
- *
- * RETURNS
- * androHtml GRID object with inputs that save each value as the
- *   user changes them.  Returns a free-standing HTML object, use
- *   addChild() to add it into an existing HTML object.
- ******
- */
-
-/*
-function &htmlMacroGridWithData($dd,$cols,$rows) {
-    # Make sure the list of columns is an array
-    if(!is_array($cols)) {
-        $cols = explode(',',$cols);   
-    }
-    
-    # This is convenient to have
-    $table_id = $dd['table_id'];
-
-    # Work out grid height as inside height less two h1's, one
-    # at top and a blank space at bottom
-    $hinside = x6cssDefine('insideheight');
-    $hh1     = x6cssHeight('h1');
-    $gheight = $hinside - ($hh1 * 2);
-    
-    # create a tabdiv and add the columns
-    $tabDiv = new androHTMLGrid($gheight,$table_id);
-    foreach($cols as $col) {
-        $tabDiv->addColumn($dd['flat'][$col]);
-    }
-    $gwidth = $tabDiv->lastColumn();
-    
-    # Get the width of the grid and wiggle it over               
-    $remain = x6cssDefine('insidewidth') - $gwidth;
-    $remain = intval($remain/3);
-    $tabDiv->hp['style'] .= "; margin-left: {$remain}px";
-    
-    foreach($rows as $row) {
-        $tabDiv->addRow($row['skey']);
-        foreach($cols as $col) {
-            $colinfo = &$dd['flat'][$col];
-            if($colinfo['uiro'] == 'Y') {
-                $tabDiv->addCell($row[$col]);   
-            }
-            else {
-                $inp = input($dd['flat'][$col]);
-                if(isset($inp->style['text-align'])) {
-                    $inp->hp['size']-=2;   
-                }
-                $inp->hp['value'] = arr($row,$col,'&nbsp;');
-                $tabDiv->addCell($inp);
-            }
-        }
-    }
-    return $tabDiv;
-}
-*/
-
-/****c* HTML Generation/androHtml
- *
- * NAME
- *    androHtml
- *
- * FUNCTION
- * The class androHtml is used to build object oriented html hierarchies  in order to prevent
- * the mixing of html and php code in andromeda.  Each androHtml object can have attributes,
- * custom parameters, children elements, styles, and inner html.  Essentially everything a typical
- * html element can have.
- *
- * androHtml elements are build exclusively through the factory function html, which handles
- * html children and parents.
- *
- * SEE ALSO
- * html
- *
- ******
- */
-class androHtml
+function addModal($modal)
 {
-
-    /****v* androHtml/children
-     *
-     * NAME
-     *    children
-     *
-     * FUNCTION
-     * The variable children is an array that holds all of the androHtml elements held within this current
-     * androHtml element.
-     *
-     ******
-     */
-    var $children = array();
-
-    /****v* androHtml/hp
-     *
-     * NAME
-     *    hp
-     *
-     * FUNCTION
-     * The variable hp is an array that holds all of this androHtml element's html properties.  These are
-     * properties that would show up in the html code on the page.  For instace, the property "href" is an
-     * html property for the "a" element.
-     *
-     ******
-     */
-    var $hp = array();
-
-    /****v* androHtml/code
-     *
-     * NAME
-     *    code
-     *
-     * FUNCTION
-     * The variable code is an array that holds all of this androHtml element's javascript code references.
-     *
-     ******
-     */
-    var $code = array();
-    var $functions = array();
-
-    /****v* androHtml/ap
-     *
-     * NAME
-     *    ap
-     *
-     * FUNCTION
-     * The variable ap is an array that holds all of this androHtml element's additional properties.  These
-     * are self created properties for the object that do not show up in the html source code.
-     *
-     ******
-     */
-    var $ap = array();
-
-    /****v* androHtml/styles
-     *
-     * NAME
-     *    styles
-     *
-     * FUNCTION
-     * The variable styles is an associative array that holds all of this androHtml element's css style
-     * properties.  If you want to set a style property, you name the property as a key in the array, and
-     * you set the value for the css property as the value for the key.
-     *
-     * EXAMPLE
-     * $htmlObject->style = 'float: right';
-     *
-     ******
-     */
-    var $style = array();
-
-    /****v* androHtml/innerHtml
-     *
-     * NAME
-     *    innerHtml
-     *
-     * FUNCTION
-     * The variable innerHtml is a string that contains all of the code and text held within this androHtml
-     * element.
-     *
-     ******
-     */
-    var $innerHtml = '';
-
-    /****v* androHtml/htype
-     *
-     * NAME
-     *    htype
-     *
-     * FUNCTION
-     * The variable htype is a string that contains the name of the type of html tag that this androHtml
-     * object is representing.  For example, if this androHtml element is representing a div element, htype
-     * would be equal to 'div';
-     *
-     ******
-     */
-    var $htype = '';
-
-    /****v* androHtml/classes
-     *
-     * NAME
-     *    classes
-     *
-     * FUNCTION
-     * The variable classes is an array that holds all of this androHtml element's css classes.
-     *
-     ******
-     */
-    var $classes = array();
-
-    /***** androHtml/autoFormat
-     *
-     * NAME
-     *    autoFormat
-     *
-     * FUNCTION
-     * The variable autoFormat is a boolean value which states whether this androHtml element is
-     * autoformatted or not.
-     *
-     ******
-     */
-    var $autoFormat = false;
-
-    /****v* androHtml/isParent
-     *
-     * NAME
-     *    isParent
-     *
-     * FUNCTION
-     * The variable isParent is a boolean value which states whether this androHtml element is a parent
-     * element or not.
-     *
-     ******
-     */
-    var $isParent = false;
-
-    /****m* androHtml/setHtml
-     *
-     * NAME
-     *    setHtml
-     *
-     * FUNCTION
-     * The method setHtml sets this androHtml element's innerHtml to the provided string.
-     *
-     * INPUTS
-     * string $value - New innerHtml
-     *
-     ******
-     */
-    function setHtml($value) {
-        $this->innerHtml = $value;
-    }
-
-    /****m* androHtml/getHtml
-     *
-     * NAME
-     *    getHtml
-     *
-     * FUNCTION
-     * The method getHtml retrieves the innerHTML of an HTML
-     *   object.  The HTML of nested children is not returned,
-     *   only the literal HTML set by the setHTML() method.
-     *
-     * INPUTS
-     * none
-     *
-     * RETURNS
-     *   string
-     *
-     ******
-     */
-    function getHtml() {
-        return $this->innerHtml;
-    }
-
-    /****m* androHtml/clear
-     *
-     * NAME
-     *    clear
-     *
-     * FUNCTION
-     * The method clear removes all child elements and innerHtml from this androHtml element.
-     *
-     * SOURCE
-     */
-    function clear() {
-        $this->innerHtml = '';
-        $this->children = array();
-    }
-
-    /******/
-
-    /****m* androHtml/clearHP
-     *
-     * NAME
-     *    clearHP
-     *
-     * FUNCTION
-     * The method clearHP removes all Html properties from this androHtml element.
-     *
-     * SOURCE
-     */
-    function clearHP() {
-        $this->hp = array();
-    }
-
-    /******/
-
-    /****m* androHtml/clearAP
-     *
-     * NAME
-     *    clearAP
-     *
-     * FUNCTION
-     * The method clearAP removes all additional properties from this androHtml element.
-     *
-     * SOURCE
-     */
-    function clearAP() {
-        $this->ap = array();
-    }
-
-    /******/
-
-    /****m* androHtml/addClass
-     *
-     * NAME
-     *    addClass
-     *
-     * FUNCTION
-     * The method addClass adds the provided css class to this androHtml object.
-     *
-     * INPUTS
-     * string $value - Css class to add
-     *
-     * SOURCE
-     */
-    function addClass($value) {
-        if (is_array(value)) {
-            foreach ($value as $class) {
-                $this->classes[] = $class;
-            }
-        } else {
-            $this->classes[] = $value;
-        }
-    }
-
-    /******/
-
-    /****m* androHtml/addStyle
-     *
-     * NAME
-     *    addStyle
-     *
-     * FUNCTION
-     * The method addStyle adds the provided CSS rule to
-     *   any that are already defined for the node.
-     *
-     * INPUTS
-     * string $value - Css class to add
-     *
-     * SOURCE
-     */
-    function addStyle($value) {
-        if (substr($value, -1) != ';') $value.= ';';
-        if (!isset($this->hp['style'])) {
-            $this->hp['style'] = $value;
-        } else {
-            $this->hp['style'].= $value;
-        }
-    }
-
-    /******/
-
-    /****m* androHtml/removeClass
-     *
-     * NAME
-     *    removeClass
-     *
-     * FUNCTION
-     * The method removeClass removes the provided css class from this androHtml object.
-     *
-     * INPUTS
-     * string $value - Css class to remove from this object
-     *
-     * SOURCE
-     */
-    function removeClass($value) {
-        $index = array_search($value, $this->classes);
-        if ($index) unset($this->classes[$index]);
-    }
-
-    /******/
-
-    /****m* androHtml/addChild
-     *
-     * NAME
-     *    addChild
-     *
-     * FUNCTION
-     * The method addChild adds a child html element to this androHtml object.
-     *
-     * INPUTS
-     * object $object - androHtml element to add to this object as a child element
-     *
-     * SOURCE
-     */
-    function addChild($object) {
-        $this->children[] = $object;
-    }
-
-    /******/
-
-    /****m* androHtml/html
-     *
-     * NAME
-     *    html
-     *
-     * FUNCTION
-     * The method html acts a lot like the library function html, however it adds the created html element
-     * directly to this androHtml element, specifying that this androHtml element is the parent element.
-     *
-     * INPUTS
-     * string $tag - Name of html tag.
-     * mixed $innerHml - Innerhtml for the created html element.
-     * string $class - Css class for the html element.
-     * SOURCE
-     */
-    function html($tag, $innerHTML = '', $class = '') {
-        $x = html($tag, $this, $innerHTML);
-        if ($class <> '') $x->addClass($class);
-        return $x;
-    }
-
-    /******/
-
-    /****m* androHtml/h
-     *
-     * NAME
-     *    h
-     *
-     * FUNCTION
-     * The method h is a shortcut for the method html.
-     *
-     * SEE ALSO
-     * html
-     *
-     * SOURCE
-     */
-    function h($tag, $innerHTML = '', $class = '') {
-        return $this->html($tag, $innerHTML, $class);
-    }
-
-    /******/
-
-    /****m* androHtml/form
-     *
-     * NAME
-     *    androHTML/form
-     *
-     * FUNCTION
-     * The PHP method form creates an HTML FORM node, adds it as a
-     *   child to the current node, and returns a reference to it.
-     *
-     *   All inputs are optional.
-     *
-     * INPUTS
-     * string $name - the name of the form.  Default: "Form1"
-     *   string $method - the method (GET or POST).  Default: POST
-     *   string $action - the URI to route to.  Default "index.php"
-     * string $x6page - the value of x6page to go to, defaults to none.
-     *
-     * SOURCE
-     */
-    function &form($name = 'Form1', $method = 'POST', $action = "index.php", $x6page = '') {
-        $form = $this->h('form');
-        $form->hp['id'] = $name;
-        $form->hp['name'] = $name;
-        $form->hp['method'] = $method;
-        $form->hp['action'] = $action;
-        $form->hp['enctype'] = "multipart/form-data";
-        if ($x6page <> '') {
-            $symbol = strpos($action, '?') === false ? '?' : '&';
-            $form->hp['action'].= $symbol . "x6page=" . $x6page;
-        }
-        return $form;
-    }
-
-    /******/
-
-    /****m* androHtml/hidden
-     *
-     * NAME
-     *    hidden
-     *
-     * FUNCTION
-     * The method hidden adds a hidden value to this androHtml object.  A hidden variable is stored in
-     * an input html element that has the html property 'type' set to 'hidden'.  This enables the passing
-     * of variables back and forth from the server to the client browser after refreshes.
-     *
-     * INPUTS
-     * string $name - Name of the hidden variable
-     * string $value - Value for the hidden variable
-     *
-     * SOURCE
-     */
-    function hidden($name, $value = '') {
-        $h = $this->h('input');
-        $h->hp['type'] = 'hidden';
-        $h->hp['id'] = $name;
-        $h->hp['name'] = $name;
-        $h->hp['value'] = $value;
-        return $h;
-    }
-
-    /******/
-
-    /* DEPRECATED */
-    function detailRow($dd, $column, $options = array()) {
-        // something we need for b/w compatibility that is
-        // easier to declare and ignore than it is to
-        // try to get rid of. (Also, getting rid of it will
-        // break some of my older apps).
-        $tabLoop = array();
-
-        $tr = $this->h('tr');
-        $td = $tr->h('td', $dd['flat'][$column]['description']);
-        $td->addClass('x4Caption');
-
-        $input = input($dd['flat'][$column], $tabLoop, $options);
-        $td = $tr->h('td');
-        $td->setHtml($input->bufferedRender());
-        $td->addClass('x4Input');
-    }
-
-    /******/
-
-    /****m* androHtml/tr
-     *
-     * NAME
-     *    tr
-     *
-     * FUNCTION
-     * The method tr adds a table row html element to this androHtml element.  Slightly shorter than
-     * using the html method.
-     *
-     * INPUTS
-     *   mixed $innerHTML - inner html
-     *   string $class - Css class
-     *
-     * SOURCE
-     */
-    function tr($innerHTML = '', $class = '') {
-        return $this->html('tr', $innerHTML, $class);
-    }
-
-    /******/
-
-    /****m* androHtml/td
-     *
-     * NAME
-     *    td
-     *
-     * FUNCTION
-     * The method td adds a table colunn element to this androHtml object.
-     *
-     * INPUTS
-     * mixed $innerHTML - inner html for the td element
-     * string $class - Css class for this td element
-     *
-     * SOURCE
-     */
-    function td($innerHTML = '', $class = '') {
-        return $this->html('td', $innerHTML, $class);
-    }
-
-    /******/
-
-    function a($innerHTML, $href, $class = '') {
-        $a = $this->h('a', $innerHTML, $class);
-        $a->hp['href'] = $href;
-        return $a;
-    }
-
-    /****m* androHtml/link
-     *
-     * NAME
-     *    androHtml.link
-     *
-     * FUNCTION
-     * The PHP method link adds a hyperlink to his androHtml object.
-     *
-     * INPUTS
-     * string $href - Hypertext reference
-     * string $innerHTML - inner html for the 'a' tag
-     *
-     * SOURCE
-     */
-    function link($href, $innerHTML) {
-        $a = $this->h('a', $innerHTML);
-        $a->hp['href'] = $href;
-        return $a;
-    }
-
-    /******/
-
-    /****m* androHtml/br
-     *
-     * NAME
-     *    br
-     *
-     * FUNCTION
-     * The method br adds the provided amount of break elements to this androHtml object as children
-     * elements.
-     *
-     * INPUTS
-     * number $count - Number of break elements to add
-     *
-     * SOURCE
-     */
-    function br($count = 1) {
-        for ($x = 1; $x <= $count; $x++) {
-            $this->children[] = '<br/>';
-        }
-    }
-
-    /******/
-
-    /****m* androHtml/hr
-     *
-     * NAME
-     *    hr
-     *
-     * FUNCTION
-     * The method hr adds the provided number of horizontal rule elements to this androHtml object
-     * as children elements.
-     *
-     * INPUTS
-     * number $count - Number of horizontal rule elements to add
-     *
-     * SOURCE
-     */
-    function hr($count = 1) {
-        for ($x = 1; $x <= $count; $x++) {
-            $this->children[] = '<hr/>';
-        }
-    }
-
-    /******/
-
-    /****m* androHtml/nbsp
-     *
-     * NAME
-     *    nbsp
-     *
-     * FUNCTION
-     * The method nbsp adds the provided number of non-breaking spaces to this androHtml object as
-     * children elements.
-     *
-     * INPUTS
-     * number $count - Number of non-breaking spaces to add.
-     *
-     * SOURCE
-     */
-    function nbsp($count = 1) {
-        for ($x = 1; $x <= $count; $x++) {
-            $this->children[] = '&nbsp;';
-        }
-    }
-
-    /******/
-
-    /****m* androHtml/hiddenInputs
-     *
-     * NAME
-     *    androHtml.hiddenInputs
-     *
-     * FUNCTION
-     *    The PHP method hiddenInputs adds an invisible div to the
-     *    current node and fills it with inputs for provided table.
-     *    These can cloned (using jQuery) in browser-side code to
-     *    place inputs on-the-fly anywhere on the screen.
-     *
-     *    The function returns a reference to the div.  The div
-     *    contains an associative array indexed on column name
-     *    that contains references to the inputs.
-     *
-     * INPUTS
-     *    mixed - either a table name or a data dictionary array reference.
-     *
-     * RETURNS
-     *    reference - reference to the invisible div.
-     *
-     ******/
-    function &hiddenInputs($x) {
-        // Get a data dictionary
-        if (is_array($x)) {
-            $dd = $x;
-        } else {
-            $dd = ddTable($x);
-        }
-        // Make the master Div
-        $div = $this->h('div');
-        $div->hp['style'] = 'display: none';
-        // Loop through the dictionary, not skipping any column
-        foreach ($dd['flat'] as $colname => $colinfo) {
-            $wrapper = $div->h('div');
-            $wrapper->hp['id'] = 'wrapper_' . $dd['table_id'] . '_' . $colinfo['column_id'];
-            $input = input($colinfo);
-            $div->inputs[$colname] = $input;
-            $wrapper->addChild($input);
-        }
-        return $div;
-    }
-
-    function addXRefs($table_id, $top, $width, $height) {
-        $child = new androHTMLxrefs($table_id, $top, $width, $height);
-        $this->addChild($child);
-    }
-
-    /****m* androHtml/addButtonBar
-     *
-     * NAME
-     *    androHtml.addButtonBar
-     *
-     * FUNCTION
-     *    The PHP method addButtonBarStandard adds a div to the
-     *    current node that contains the standard buttons for
-     *    [New], [Duplicate], [Save], [Abandon], and [Remove].
-     *
-     *    The div has class x6buttonBar (note capitalization).
-     *
-     *    The function returns a reference to the div.  The div
-     *    contains an array called buttons that is indexed on
-     *    the button action.  The actions are:
-     *    * new
-     *    * duplicate
-     *    * save
-     *    * remove
-     *    * abandon
-     *
-     * INPUTS
-     *    * string - the name of the table the buttons operate on
-     *    * mixed - a list of buttons to include, comma separated.
-     *      default is to include all five buttons.
-     *
-     *
-     * RETURNS
-     *    reference - reference to the div.
-     *
-     ******/
-    // overrides default addButtonbar
-    function bbHeight() {
-        return x6cssHeight('div.x6buttonBar a.button');
-    }
-    function addButtonBar($list = 'new,save,cancel,delete') {
-        $bbHeight = $this->bbHeight();
-        $table_id = $this->hp['x6table'];
-        $abuts = explode(',', $list);
-        // Tell us which buttons it has, default to none
-        $this->hp['butnew'] = 'N';
-        $this->hp['butins'] = 'N';
-        $this->hp['butsave'] = 'N';
-        $this->hp['butcancel'] = 'N';
-        $this->hp['butdelete'] = 'N';
-        // First trick is to create the div that will be
-        // slipped in above the titles.
-        $this->buttonBar = html('div');
-        $this->buttonBar->hp['class'] = 'subnav pull-right';
-        if (arr($this->hp, 'x6plugin', '') == 'grid') {
-            array_unshift($this->dhead0->children, $this->buttonBar);
-        } else {
-            $this->addChild($this->buttonBar);
-        }
-        $bb = $this->buttonBar;
-        $bb->addClass('x6buttonBar');
-
-        $pad0 = x6cssDefine('pad0');
-        // KFD 1/22/09, create two divs, drop buttons into them
-        //              this makes it possible to drop in
-        //              custom buttons in a new div that is float:left
-        $sl = $bb->h('div');
-        $sl->hp['style'] = 'float: left';
-        $sr = $bb->h('div');
-        $sr->hp['style'] = 'float: right';
-
-        if (in_array('new', $abuts)) {
-            $this->hp['butnew'] = 'Y';
-            $a = $sl->h('a-void', 'New');
-            $a->addClass('button_disabled button-first');
-            $a->hp['style'] = 'margin-left: 0px';
-            $a->hp['x6table'] = $table_id;
-            $a->hp['x6plugin'] = 'buttonNew';
-            $a->hp['id'] = 'buttonNew_' . $table_id;
-            $a->hp['style'] = 'float: left';
-            $bb->buttons['new'] = $a;
-            $a->initPlugin();
-
-            if (in_array('ins', $abuts)) {
-                $this->hp['butins'] = 'Y';
-                $a = $sl->h('a-void', 'Insert');
-                $a->addClass('button_disabled');
-                $a->hp['style'] = 'margin-left: 0px';
-                $a->hp['x6table'] = $table_id;
-                $a->hp['x6plugin'] = 'buttonInsert';
-                $a->hp['id'] = 'buttonInsert_' . $table_id;
-                $a->hp['style'] = 'float: left';
-                $bb->buttons['ins'] = $a;
-                $a->initPlugin();
-            }
-        }
-        if (in_array('save', $abuts)) {
-            $this->hp['butsave'] = 'Y';
-            $a = $sl->h('a-void', 'Save');
-            $a->addClass('button_disabled');
-            $a->hp['x6table'] = $table_id;
-            $a->hp['x6plugin'] = 'buttonSave';
-            $a->hp['id'] = 'buttonSave_' . $table_id;
-            $a->hp['style'] = 'float: left';
-            $bb->buttons['save'] = $a;
-            $a->initPlugin();
-        }
-        if (in_array('cancel', $abuts)) {
-            $this->hp['butcancel'] = 'Y';
-            $a = $sr->h('a-void', 'Delete');
-            $a->addClass('button_disabled');
-            $a->hp['x6table'] = $table_id;
-            $a->hp['x6plugin'] = 'buttonDelete';
-            $a->hp['id'] = 'buttonDelete_' . $table_id;
-            $a->hp['style'] = "float: right; margin-right: {$pad0}px";
-            $bb->buttons['remove'] = $a;
-            $a->initPlugin();
-        }
-        if (in_array('delete', $abuts)) {
-            $this->hp['butdelete'] = 'Y';
-            $a = $sr->h('a-void', 'Cancel');
-            $a->addClass('button_disabled');
-            $a->hp['x6table'] = $table_id;
-            $a->hp['x6plugin'] = 'buttonCancel';
-            $a->hp['id'] = 'buttonCancel_' . $table_id;
-            $a->hp['style'] = 'float: right';
-            $bb->buttons['abandon'] = $a;
-            $a->initPlugin();
-        }
-
-        return $bb;
-    }
-    // overrides default addButtonbar
-    function addCustomButtons($obj) {
-        if ($obj === false) return;
-
-        $this->buttonBar->addChild($obj);
-    }
-
-    function &addCustomButton($table, $action, $key, $caption, $permins, $permupd) {
-        $b = $this->h('a-void', $caption);
-        $b->addClass('button');
-        $b->hp['buttonKey'] = $key;
-        $b->hp['x6table'] = $table;
-        $b->hp['x6plugin'] = 'buttonCustom';
-        $b->hp['action'] = $action;
-        $b->hp['id'] = $action;
-        $b->hp['permins'] = $permins;
-        $b->hp['permupd'] = $permupd;
-        $b->hp['style'] = 'float: left;';
-        $b->initPlugin();
-        jqDocReady("x6events.fireEvent('disable_{$action}_$table')");
-        return $b;
-    }
-
-    function &addButtonBarOld($table_id, $buts = null) {
-        if (is_null($buts)) {
-            $buts = 'new,duplicate,save,remove,abandon';
-        }
-        $abuts = explode(',', $buts);
-
-        $bb = $this->h('div');
-        $bb->addClass('x6buttonBar');
-        if (in_array('new', $abuts)) {
-            $a = $bb->h('a-void', 'New');
-            $a->addClass('button button-first');
-            $a->hp['style'] = 'margin-left: 0px';
-            $a->hp['x6table'] = $table_id;
-            $a->hp['x6plugIn'] = 'buttonNew';
-            $a->hp['style'] = 'float: left';
-            $bb->buttons['new'] = $a;
-        }
-        //if(in_array('duplicate',$abuts)) {
-        //    $a=$bb->h('a-void','Duplicate');
-        //    $a->addClass('button');
-        //    $a->hp['x6table']  = $table_id;
-        //    $a->hp['x6plugIn'] = 'buttonDuplicate';
-        //    $a->hp['style']    = 'float: left';
-        //    $bb->buttons['duplicate'] = $a;
-        //    #jqDocReady("x6events.fireEvent('disable_duplicate')");
-        //}
-        if (in_array('save', $abuts)) {
-            $a = $bb->h('a-void', 'Save');
-            $a->addClass('button');
-            $a->hp['x6table'] = $table_id;
-            $a->hp['x6plugIn'] = 'buttonSave';
-            $a->hp['style'] = 'float: left';
-            $bb->buttons['save'] = $a;
-            jqDocReady("x6events.fireEvent('disable_save')");
-        }
-        if (in_array('remove', $abuts)) {
-            $a = $bb->h('a-void', 'Remove');
-            $a->addClass('button');
-            $a->hp['x6table'] = $table_id;
-            $a->hp['x6plugIn'] = 'buttonRemove';
-            $a->hp['style'] = 'float: right';
-            $bb->buttons['remove'] = $a;
-            jqDocReady("x6events.fireEvent('disable_remove')");
-        }
-        if (in_array('abandon', $abuts)) {
-            $a = $bb->h('a-void', 'Abandon');
-            $a->addClass('button');
-            $a->hp['x6table'] = $table_id;
-            $a->hp['x6plugIn'] = 'buttonAbandon';
-            $a->hp['style'] = 'float: right';
-            $bb->buttons['abandon'] = $a;
-            jqDocReady("x6events.fireEvent('disable_abandon')");
-        }
-
-        return $bb;
-    }
-
-    /****m* androHtml/autoFormat
-     *
-     * NAME
-     *    autoFormat
-     *
-     * FUNCTION
-     * The method autoFormat sets whether this androHtml element is autoFormatted or not.  The default
-     * input for this function is true.
-     *
-     * INPUTS
-     * boolean $setting - True for autoFormatting, false for none.
-     *
-     * SOURCE
-     */
-    function autoFormat($setting = true) {
-        $this->autoFormat = $setting;
-    }
-
-    /******/
-
-    /****m* androHtml/tabIndex
-     *
-     * NAME
-     *    tabIndex
-     *
-     * FUNCTION
-     * The PHP method tabIndex sets the HTML attribute "tabindex" on
-     *   the object.  The first time it is called, this routine
-     *   sets the index at 1000.  Subsequence calls go to 1001,1002 etc.
-     *
-     *   The first time you call this method it also marks the
-     *   object as getting focus when the page loads.  To force focus
-     *   to begin on some other object, call tabFocus instead of
-     *   tabIndex for that object.
-     *
-     * INPUTS
-     *   int (optional) starting value.  If this value is supplied,
-     *   the object will get this value for its tabIndex, and
-     *   subsequent calls will increment from there.  Defaults
-     *   to 1000.
-     *
-     * EXAMPLE
-     *   Here is an example:
-     *     <?php
-     *     $div = html('div');
-     *     $input = $div->h('input');
-     *     $input->tabIndex();
-     *     // more poperty settings...
-     *     $input = $div->h('input'); // reuse var, make another input
-     *     $input->tabIndex();
-     *     ?>
-     *
-     * SEE ALSO
-     *   tabFocus
-     *
-     ******/
-    function tabIndex($startHere = null) {
-        if (!is_null($startHere)) {
-            $tabIndex = $startHere;
-        } else {
-            $tabIndex = vgfGet('tabindex', 0);
-            if ($tabIndex == 0) {
-                $this->hp['x6firstFocus'] = 'Y';
-                $tabIndex = 1000;
-            }
-        }
-        $this->hp['tabIndex'] = $tabIndex;
-        vgfSet('tabindex', ++$tabIndex);
-        if (is_object(vgfGet('lastTab', 0))) {
-            $obj = vgfGet('lastTab');
-            $obj->hp['xNextTab'] = $this->hp['tabIndex'];
-            $this->hp['xPrevTab'] = $obj->hp['tabIndex'];
-        }
-        vgfSet('lastTab', $this);
-    }
-
-    /****m* androHtml/tabFocus
-     *
-     * NAME
-     *    tabFocus
-     *
-     * FUNCTION
-     * The PHP method tabFocus does exactly the same thing
-     *   as tabIndex, with one additional action.  When the page
-     *   loads, this object will start out with focus.
-     *
-     *   Calling this method more than once while building a page
-     *   causes focus to begin on the last object that made
-     *   the call.
-     *
-     *   The first time you call tabIndex, it acts like a call
-     *   to tabFocus, so there is no reason to ever call tabFocus
-     *   unless you want focus to begin somewhere other than the
-     *   first tabbable object.
-     *
-     * INPUTS
-     *   int (optional) starting value.  If this value is supplied,
-     *   the object will get this value for its tabIndex, and
-     *   subsequent calls will increment from there.
-     *
-     * EXAMPLE
-     *   Here is an example:
-     *     <?php
-     *     $div = html('div');
-     *     $input = $div->h('input');
-     *     $input->tabFocus();   // first input should get focus
-     *     // more poperty settings...
-     *     $input = $div->h('input'); // reuse var, make another input
-     *     $input->tabIndex();
-     *     ?>
-     *
-     *
-     ******/
-    function tabFocus($startHere = null) {
-        $this->tabIndex($startHere);
-        $this->hp['x6firstFocus'] = 'Y';
-    }
-    // KFD BLUNT WEAPON.  This really is meant for very simple
-    //                    elements where you just make it scrollable
-    function scrollable($height = '') {
-        $this->addStyle('overflow-y: scroll;');
-        $this->addStyle("height: $height");
-    }
-
-    /****m* androHtml/TbodyRows
-     *
-     * NAME
-     *    TbodyRows
-     *
-     * FUNCTION
-     * The method TbodyRows adds a set of elements to something with striping option.
-     *
-     * INPUTS
-     * array $rows - rows of elements to add
-     * array $options - striping options
-     *
-     ******/
-    function &TbodyRows($rows, $options = array()) {
-        $rowIdPrefix = 'row_';
-        $stripe = $stripe1 = $stripe2 = $stripe3 = 0;
-        if (a($options, 'stripe', 0) > 0) {
-            $stripe1 = $options['stripe'];
-            $stripe2 = $stripe1 - 1;
-            $stripe3 = $stripe1 * 2;
-        }
-        $stripe = a($options, 'stripeCss') == '' ? 0 : 1;
-        $tbody = html('tbody', $this);
-        foreach ($rows as $index => $row) {
-            $tr = html('tr', $tbody);
-            $tr->hp['id'] = $rowIdPrefix . ($index + 1);
-            $tr->hp['valign'] = 'top';
-
-            if ($stripe1 > 0) {
-                $i = $index % $stripe3;
-                if ($i > $stripe2) {
-                    $tr->addClass('lightgray');
-                } else {
-                    if ($i < $stripe2) {
-                        $tr->addClass('lightgraybottom');
-                    }
-                }
-            }
-
-            foreach ($row as $colname => $colvalue) {
-                html('td', $tr, $colvalue);
-            }
-        }
-        return $tbody;
-    }
-
-    /***** androHtml/addInput
-     *
-     * NAME
-     *    addInput
-     *
-     * FUNCTION
-     * The PHP method androHtml::addInput adds an HTML input as
-     *   a child of the current node.
-     *
-     * INPUTS
-     *   array - dictionary info on the field, e.g. $dd['flat']['price']
-     *
-     * RETURNS
-     *   node - a reference to the input.
-     *
-     * SEE ALSO
-     *   androHtmlTable
-     *
-     ******/
-    function &addInput($colinfo) {
-        $input = input($colinfo);
-        $this->addChild($input);
-        return $input;
-    }
-
-    /****m* androHtml/addTable
-     *
-     * NAME
-     *    addTable
-     *
-     * FUNCTION
-     * The PHP method androHtml::addTable adds an instance of
-     *   class androHTMLTable as a child node.
-     *   The resulting table has special
-     *   routines for easily adding thead, tbody, tr, th and td
-     *   cells.
-     *
-     * SEE ALSO
-     *   androHtmlTable
-     *
-     ******/
-    function &addTable() {
-        $newTable = new androHTMLTable();
-        $this->addChild($newTable);
-        return $newTable;
-    }
-
-    function &addTableController($table_id) {
-        $retval = new androHTMLTableController($table_id);
-        $this->addChild($retval);
-        return $retval;
-    }
-
-    /****m* androHtml/addGrid
-     *
-     * NAME
-     *    addTabGrid
-     *
-     * FUNCTION
-     * The PHP method androHtml::addGrid adds an instance of
-     *   class androHTMLGrid as a child node.
-     *   A "Grid" is a simulated HTML table that uses divs
-     *   instead of TD elements.  The two main reasons for doing
-     *   this are that you cannot put an onclick() routine onto
-     *   a TR in Internet Explorer (as of IE7 oct 2008) and
-     *   the scrollable body is easier to get going on
-     *   a DIV.
-     *
-     * INPUTS
-     *   HEIGHT: The total height of the table including borders,
-     *   header, and footer.
-     *
-     *
-     * SEE ALSO
-     *   androHtmlTable
-     *
-     ******/
-    function &addGrid($height, $table_id, $lookups = false, $sortable = false, $bb = false, $edit = false) {
-        $newTable = new androHTMLGrid($height, $table_id, $lookups, $sortable, $bb, $edit);
-        $this->addChild($newTable);
-
-        return $newTable;
-    }
-
-    /****m* androHtml/addDetail
-     *
-     * NAME
-     *    addTabDiv
-     *
-     * FUNCTION
-     * The PHP method androHtml::addDetail adds an instance of
-     *   class androHTMLDetail as a child node.  This is an HTML
-     *   TABLE that will contain rows of inputs - caption on the
-     *   left and input on the right.
-     *
-     * INPUTS
-     *   string table_id - the name of the table being edited
-     *
-     *
-     * SEE ALSO
-     *   androHtmlDetail
-     *
-     ******/
-    function &addDetail($table_id, $complete = false, $height = 300, $p = '') {
-        $newDetail = new androHTMLDetail($table_id, $complete, $height, $p);
-        $this->addChild($newDetail);
-        return $newDetail;
-    }
-
-    /****m* androHtml/addTabs
-     *
-     * NAME
-     *   addTabs
-     *
-     * FUNCTION
-     * The PHP method androHtml::addTabs adds an instance of
-     *   class androHTMLTabs as a child node.
-     *
-     *   The androHTMLTabs class depends on jQuery's UI/Tabs
-     *   feature.
-     *
-     * SEE ALSO
-     *   androHtmlTabs
-     *
-     ******/
-    function &addTabs($id, $height = 500, $options = array()) {
-        $newTabs = new androHTMLTabs($id, $height, $options);
-        $this->addChild($newTabs);
-        return $newTabs;
-    }
-
-    /****m* androHtml/addCheckList
-     *
-     * NAME
-     *    addCheckList
-     *
-     * FUNCTION
-     * The PHP method androHtml::addCheckList adds an instance of
-     *   class androHTMLCheckList as a child node.
-     *
-     * SEE ALSO
-     *   androHtmlCheckList
-     *
-     ******/
-    function &addCheckList() {
-        $newTable = new androHTMLCheckList();
-        $this->addChild($newTable);
-        return $newTable;
-    }
-
-    /* DEPRECATED */
-    function makeThead($thvalues, $class = 'dark') {
-        // Make it an array if it is not already
-        if (!is_array($thvalues)) {
-            $thvalues = explode(',', $thvalues);
-        }
-        $thead = html('thead', $this);
-        $tr = html('tr', $thead);
-        foreach ($thvalues as $th) {
-            $tr->h('th', $th, $class);
-        }
-        return $thead;
-    }
-
-    /* DEPRECATED */
-    function addItems($tag, $values) {
-        if (!is_array($values)) {
-            $values = explode(',', $values);
-        }
-        foreach ($values as $value) {
-            html($tag, $this, $value);
-        }
-    }
-
-    /****m* androHtml/addOptions
-     *
-     * NAME
-     *    addOptions
-     *
-     * FUNCTION
-     * The PHP Method addOptions takes an array of rows and
-     *   creates on HTML OPTION object for each row.  These
-     *   are added to the parent object, which is assumed to be
-     *   an HTML SELECT object.
-     *
-     * INPUTS
-     * array - an array of rows
-     * string - name of column to use as value
-     *   string - name of column to use as display
-     *
-     * SOURCE
-     */
-    function addOptions($rows, $value, $desc) {
-        foreach ($rows as $row) {
-            $opt = $this->h('option', $row[$desc]);
-            $opt->hp['value'] = $row[$value];
-        }
-    }
-
-    /******/
-
-    /****m* androHtml/setAsParent
-     *
-     * NAME
-     *    setAsParent
-     *
-     * FUNCTION
-     * The method setAsParent sets a flag for this androHtml element to work as parent.
-     *
-     * SOURCE
-     */
-    function setAsParent() {
-        $this->isParent = true;
-    }
-
-    /******/
-    // Internal use only
-    function initPlugin() {
-        $plugin = $this->hp['x6plugin'];
-        $table = $this->hp['x6table'];
-        jqDocReady("var plugin = x6.byId('{$this->hp['id']}');");
-        jqDocReady("x6plugins.$plugin(plugin,plugin.id,'$table')");
-    }
-
-    /****m* androHtml/firstChild
-     *
-     * NAME
-     *    firstChild
-     *
-     * FUNCTION
-     * The method firstChild returns a reference to the first child html element in this androHtml object.
-     *
-     * RETURN VALUE
-     * reference - reference to first child element
-     *
-     * SOURCE
-     */
-    function firstChild() {
-        if (count($this->children) == 0) {
-            return null;
-        } else {
-            $retval = & $this->children[0];
-            return $retval;
-        }
-    }
-
-    /******/
-
-    /****m* androHtml/lastChild
-     *
-     * NAME
-     *    lastChild
-     *
-     * FUNCTION
-     * The method lastChild returns a reference to the last child element in this androHtml object.
-     *
-     * RETURN VALUE
-     * reference - reference to last child
-     *
-     * SOURCE
-     */
-    function lastChild() {
-        if (count($this->children) == 0) {
-            return null;
-        } else {
-            $retval = & $this->children[count($this->children) - 1];
-            return $retval;
-        }
-    }
-
-    /******/
-
-    /****m* androHtml/print_r
-     *
-     * NAME
-     *    print_r
-     *
-     * FUNCTION
-     * The method dumps a variable into the innerHTML of an
-     *   and Andromeda HTML Object.
-     *
-     * SOURCE
-     */
-    function print_r($value) {
-        ob_start();
-        print_r($value);
-        $pre = $this->h('pre', ob_get_clean());
-        $pre->hp['class'] = 'border: 1px solid gray; background-color:white;
-            color: black;';
-    }
-
-    /******/
-
-    /****m* androHtml/bufferedRender
-     *
-     * NAME
-     *    bufferedRender
-     *
-     * FUNCTION
-     * The method bufferedRender rendered this androHtml object in a buffer, instead of directly outputing
-     * it to the browser.
-     *
-     * SOURCE
-     */
-    function bufferedRender($parentId = '', $singleQuotes = false) {
-        ob_start();
-        $this->render($parentId, $singleQuotes);
-        return ob_get_clean();
-    }
-
-    /******/
-
-    /****m* androHtml/render
-     *
-     * NAME
-     *    render
-     *
-     * FUNCTION
-     * The method render renders this androHtml object.  It builds
-     *   all of the html code based on the objects attributes,
-     *   children elements, parent elements, etc.  Render directly
-     *   outputs all html out to the browser.  User bufferedRender
-     *   to get the html as a string instead of outputting to the browser.
-     *
-     * INPUTS
-     * string $parentId - parent id for this androHtml object
-     ******/
-    function render($parentId = '', $singleQuotes = false, $x6wrapperPane = '') {
-        // Accept a parentId, maybe assign one to
-        if ($parentId <> '') {
-            $this->ap['xParentId'] = $parentId;
-        }
-        if ($this->isParent) {
-            $parentId = a($this->hp, 'id', '');
-            if ($parentId == '') {
-                echo "Object has no id but wants to be parent";
-                hprint_r($this);
-                exit;
-            }
-        }
-        // KFD 12/30/08, IE Compatibility.  All inputs, selects and
-        //               so forth must have an ID.  This is actually
-        //               due to jQuery returning strange items with
-        //               the :input selector, and we can only distinguish
-        //               real from bogus by looking for IDs
-        if (in_array($this->htype, array('input', 'select', 'checkbox'))) {
-            if (arr($this->hp, 'id', '') == '') {
-                $id = rand(1000, 9999);
-                while (isset($GLOBALS['AG']['id'][$id])) {
-                    $id = rand(1000, 9999);
-                }
-                $this->hp['id'] = 'id_' . $id;
-                $GLOBALS['AG']['id'][$id] = 1;
-            }
-        }
-        // Set the x6 parent tab if exists
-        if (arr($this->hp, 'x6plugin') == 'x6tabs') {
-            $this->hp['x6wrapperPane'] = $x6wrapperPane;
-        }
-        // Before we render, we are going to take the code
-        // snippets and generate top-level functions for them
-        $twoparms = array('click', 'keypress', 'keyup', 'keydown');
-        $snippet_id = a($this->hp, 'id');
-        if ($snippet_id == '') {
-            $snippet_id = 'snip_' . rand(1, 100000);
-        }
-        foreach ($this->code as $event => $snippet) {
-            $fname = $snippet_id . '_' . $event;
-            jqDocReady("window.$fname = $snippet");
-            if (in_array($event, $twoparms)) $this->hp['on' . $event] = "$fname(this,event)";
-            else $this->hp['on' . $event] = "$fname(this)";
-        }
-        foreach ($this->functions as $name => $snippet) {
-            jqDocReady("x6.byId('{$this->hp['id']}').$name = " . $snippet);
-        }
-        // KFD 10/7/08 if data has been attached, send it as json
-        if (isset($this->data)) {
-            $js = "x6.byId('" . $this->hp['id'] . "').zData = " . json_encode($this->data);
-            jqDocReady($js);
-        }
-
-        if ($this->autoFormat) {
-            echo "\n<!-- ELEMENT ID " . $this->hp['id'] . " (BEGIN) -->";
-
-            //echo "$indent\n<!-- ELEMENT ID ".$this->hp['id']." (BEGIN) -->";
-
-        }
-        $parms = '';
-        if (count($this->classes) > 0) {
-            $this->hp['class'] = implode(' ', $this->classes);
-        }
-        if (count($this->style) > 0) {
-            $style = '';
-            foreach ($this->style as $prop => $value) {
-                $style.= "$prop: $value;";
-            }
-            $this->hp['style'] = $style;
-        }
-        $q = $singleQuotes ? "'" : '"';
-        foreach ($this->hp as $parmname => $parmvalue) {
-            if ($parmname == 'href') {
-                $parmvalue = preg_replace('/&([a-zA-z])/', '&amp;$1', $parmvalue);
-            }
-            $parms.= "\n  $parmname=$q$parmvalue$q";
-        }
-        foreach ($this->ap as $parmname => $parmvalue) {
-            $parms.= "\n  $parmname=$q$parmvalue$q";
-        }
-        echo "<" . $this->htype . ' ' . $parms . '>' . $this->innerHtml;
-        foreach ($this->children as $child) {
-            if (is_string($child)) {
-                echo $child;
-            } else {
-                if (arr($this->hp, 'x6plugin') == 'x6tabsPane') {
-                    $x6wrapperPane = $this->hp['id'];
-                }
-                $child->render($parentId, $singleQuotes, $x6wrapperPane);
-            }
-        }
-        echo "</$this->htype \n>";
-        if ($this->autoFormat) {
-            echo "\n<!-- ELEMENT ID " . $this->hp['id'] . " (END) -->";
-
-            //echo "$indent\n<!-- ELEMENT ID ".$this->hp['id']." (END) -->";
-
-        }
-    }
-}
-
-class androHTMLTableController extends androHTML
-{
-    function androHTMLTableController($table_id) {
-        $this->htype = 'div';
-        $this->hp['x6plugin'] = 'tableController';
-        $this->hp['x6table'] = $table_id;
-        $this->hp['id'] = 'tc_' . $table_id;
-        $this->hp['class'] = 'table table-striped table-condensed table-bordered table-hover';
-
-        $this->ap['xPermSel'] = ddUserPerm($table_id, 'sel');
-        $this->ap['xPermIns'] = $this->permResolve('ins');
-        $this->ap['xPermUpd'] = $this->permResolve('upd');
-        $this->ap['xPermDel'] = $this->permResolve('del');
-
-        $this->initPlugin();
-    }
-
-    function permResolve($perm) {
-        $tryfirst = ddUserPerm($this->hp['x6table'], $perm);
-        $dd = ddTable($this->hp['x6table']);
-        $trysecond = arr($dd, 'ui' . $perm, 'Y');
-
-        return $trysecond == 'N' ? 'N' : $tryfirst;
-    }
-}
-
-/****c* HTML Generation/androHtmlTabs
- *
- * NAME
- *    androHtmlTabs
- *
- * FUNCTION
- *   The class androHtmlTabBar is used to create on-screen Tab Bars
- *   without having to manually create all of the various HTML elements.
- *
- *   The object is a subclass of androHtml, and supports all of its
- *   methods such as addChild, addClass, etc.
- *
- *
- *
- * EXAMPLE
- *   A typical usage example might be something like this:
- *
- *      <?php
- *      # Create a top-level div
- *      $div = html('div');
- *      $div->h('h1','Here is the title');
- *
- *      # now put in a tab bar with 3 tabs
- *      $tabBar = new androHtmlTabBar('id');
- *      $div->addChild($tabBar);
- *      $tabBar->addTab('Users');  // this is the caption *and* the id
- *      $tabBar->addTab('Groups');
- *      $tabBar->addTab('Tables');
- *
- *      # Now you can access the tabs like this:
- *      $tabBar->tabs['Users']->h('h2','Welcome to the users tab.');
- *      # ...and so on
- *      ?>
- *
- * SEE ALSO
- * addChild
- *
- ******
- */
-class androHTMLTabs extends androHTML
-{
-
-    /****v* androHtml/androHTMLTabs
-     *
-     * NAME
-     *    tabs
-     *
-     * FUNCTION
-     *   The class property tabs is an associative array that
-     *   can be used to add HTML to the various tabs in the
-     *   tab bar.
-     *
-     * EXAMPLE
-     *   Normal usage looks like this:
-     *      <?php
-     *      $tabBar = new androHtmlTabBar('id');
-     *      $tabBar->addTab('Users');  // this is the caption *and* the id
-     *      $tabBar->tabs['Users']->h('h2','Hello! Welcome to users tab');
-     *      ?>
-     *
-     ******/
-    var $tabs = array();
-
-    function androHTMLTabs($id = '', $height = 500, $options = array()) {
-        // Example HTML from jquery tabs
-        /*
-        <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-                    "http://www.w3.org/TR/html4/loose.dtd">
-        <html>
-        <head>
-        <script src="http://code.jquery.com/jquery-latest.js"></script>
-        <link rel="stylesheet" href="http://dev.jquery.com/view/tags/ui/latest/themes/flora/flora.all.css" type="text/css" media="screen" title="Flora (Default)">
-        <script type="text/javascript" src="http://dev.jquery.com/view/tags/ui/latest/ui/ui.core.js"></script>
-        <script type="text/javascript" src="http://dev.jquery.com/view/tags/ui/latest/ui/ui.tabs.js"></script>
-        
-        
-        <script>
-        $(document).ready(function(){
-        $("#example > ul").tabs();
-        });
-        </script>
-        
-        </head>
-        <body>
-        
-        <div id="example" class="flora">
-            <ul>
-        
-                <li><a href="#fragment-1"><span>One</span></a></li>
-                <li><a href="#fragment-2"><span>Two</span></a></li>
-                <li><a href="#fragment-3"><span>Three</span></a></li>
-            </ul>
-            <div id="fragment-1">
-                <p>First tab is active by default:</p>
-                <pre><code>$('#example > ul').tabs();</code></pre>
-            </div>
-            <div id="fragment-2">
-                Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.
-                Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.
-            </div>
-            <div id="fragment-3">
-                Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.
-                Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.
-                Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.
-            </div>
-        </div>
-        </body>
-        </html>
-        */
-        // Build the HTML that looks like the sample above
-        // We actually bind all of the options and stuff to the
-        //  UL, not the parent div, because that is what the
-        //  jQuery stuff is operating on
-        $this->htype = 'div';
-        $this->height = $height;
-        $this->options = $options;
-
-        $this->ul = $this->h('ul');
-        $this->ul->hp['x6plugin'] = 'tabs';
-        $this->ul->hp['id'] = $id;
-        $this->tabs = array();
-        // Set various options on the tab itself
-        foreach ($options as $option => $value) {
-            $this->ul->hp[$option] = $value;
-        }
-        if (!isset($this->ul->hp['x6table'])) {
-            $this->ul->hp['x6table'] = '*';
-        }
-        // Register the script to turn on the tabs
-        jqDocReady(" \$('#$id').tabs(); ");
-        // Now initialize the plugin.
-        $this->ul->initPlugin();
-    }
-
-    /****m* androHtmlTabs/addTab
-     *
-     * NAME
-     *    androHtmlTabs.addTab
-     *
-     * FUNCTION
-     *   This PHP class method addTab is the basic method
-     *   of the androHTMLTabs class,
-     *   call this function once for each tab you wish to add
-     *   to your tabbar.
-     *
-     * INPUTS
-     *   - $caption string, becomes both caption and ID
-     *
-     * RETURNS
-     *   - androHTML, reference to a div where you can put content
-     *   for the new tab.
-     *
-     ******/
-    function &addTab($caption, $disable = false) {
-        // Make an index, and add it in.
-        $index = $this->ul->hp['id'] . '-' . (count($this->tabs) + 1);
-        // Get the offset, if they gave one, for setting
-        // CTRL+Number key activation
-        $offset = arr($this->ul->hp, 'xOffset', 0);
-        $key = $offset + count($this->tabs) . ': ';
-        if ($key > 9) $key = '';
-        // Make a style setting just for this element, otherwise
-        // jquery ui clobbers the height setting
-        $this->h('style', "#$index { height: {$this->height}px;}");
-        // First easy thing is to do the li entry
-        $inner = "<a href='#$index'><span>$key$caption</span></a></li>";
-        $this->ul->h('li', $inner);
-        // Next really easy thing to do is make a div, give it
-        // the id, and return it
-        $div = $this->h('div');
-        $div->hp['xParentId'] = $this->ul->hp['id'];
-        $div->hp['x6plugin'] = 'x6tabsPane';
-        $this->tabs[] = $div;
-        $div->hp['id'] = "$index";
-        if (isset($this->options['styles'])) {
-            $div->hp['style'] = '';
-            foreach ($this->options['styles'] as $rule => $value) {
-                $div->hp['style'].= "$rule: $value";
-            }
-        }
-        return $div;
-    }
-}
-
-/****c* HTML Generation/androHtmlTable
- *
- * NAME
- *    androHtmlTable
- *
- * FUNCTION
- *   The PHP class androHtmlTable models an HTML Table element, with
- *   special properties and methods for easily manipulating rows
- *   and cells.
- *
- *   The object is a subclass of androHtml, and supports all of its
- *   methods such as addChild, addClass, etc.
- *
- *
- ******
- */
-class androHTMLTable extends androHTML
-{
-
-    /****v* androHtmlTable/cells
-     *
-     * NAME
-     *    cells
-     *
-     * FUNCTION
-     *   The PHP property androHTMLTable::cells is a two-dimensional
-     *   numeric-indexed array of all cells added to the table.
-     *
-     *   This array is only updated for cells created with the
-     *   methods tr and td.  If you use $table->h('td') or similar
-     *   methods the resulting cell will not be in the array.
-     *
-     ******
-     */
-    var $lastBody = false;
-
-    var $lastRow = false;
-
-    var $lastCell = false;
-
-    function androHTMLTable() {
-        $this->htype = 'table';
-    }
-
-    function &tbody() {
-        $x = $this->h('tbody');
-        $this->bodies[] = $x;
-        $this->lastBody = $x;
-        return $x;
-    }
-    function &thead() {
-        $x = $this->h('thead');
-        $this->bodies[] = $x;
-        $this->lastBody = $x;
-        return $x;
-    }
-    function &tr() {
-        if (!$this->lastBody) {
-            $this->tbody();
-        }
-        $this->lastRow = $this->lastBody->h('tr');
-        return $this->lastRow;
-    }
-
-    function &td($mixed = '', $tag = 'td') {
-        // Turn the input into an array no matter what
-        // we were given
-        /*
-        if(is_array($mixed)) {
-            # already an array, pass it right over
-            $adds=$mixed;
-        }
-        else {
-            if(!is_numeric($mixed)) {
-                # Not numeric, must be a single value
-                $adds = array($mixed);
-            }
-            else {
-                # a numeric was a request for a certain
-                # number of cells.
-                while($mixed>0) {
-                    $adds[] = '';
-                    $mixed--;
-                }
-            }
-        }
-        */
-        // Now get us a row if we don't have one
-        if (!$this->lastRow) {
-            $this->tr();
-        }
-        $td = $this->lastRow->h('td', $mixed);
-        // And finally add
-        /*
-        while (count($adds)>0) {
-            $value = array_shift($adds);
-            $this->lastRow->h($tag,$value);
-        }
-        */
-        return $td;
-    }
-
-    function &th($mixed = '') {
-        return $this->td($mixed, 'th');
-    }
-}
-
-/****c* HTML Generation/androHtmlGrid
- *
- * NAME
- *    androHtmlGrid
- *
- * FUNCTION
- *   The PHP class androHtmlGrid simulates an HTML Table element
- *   using only Divs.
- *
- *   The object is a subclass of androHtml, and supports all of its
- *   methods such as addChild, addClass, etc.
- *
- *
- ******
- */
-class androHTMLGrid extends androHTML
-{
-    var $columns = array();
-    var $headers = array();
-    var $lastRow = false;
-    var $lastCell = 0;
-    var $scrollable = false;
-    var $colWidths = 0;
-    var $rows = array();
-    var $buttonBar = false;
-    var $colOptions = array();
-
-    function androHTMLGrid($height = 300, $table, $lookups = false, $sortable = false, $bb = false, $edit = false) {
-        $this->lookups = $lookups;
-        $this->sortable = $sortable;
-        $this->htype = 'div';
-        $this->addClass('tdiv box3');
-        $this->hp['x6plugin'] = 'grid';
-        $this->hp['x6table'] = $table;
-        $this->hp['id'] = 'grid_' . $table; //.'_'.rand(100,999);
-        $this->hp['style'] = "height: {$height}px;";
-        $this->height = $height;
-        $cssLineHeight = x6cssHeight('div.thead div div');
-        $this->hp['cssLineHeight'] = $cssLineHeight;
-        $this->hp['xRowsVisible'] = intval($height / $cssLineHeight);
-        $this->hp['xGridHeight'] = $height;
-        $this->hp['xLookups'] = $lookups ? 'Y' : 'N';
-        $this->hp['xSortable'] = $sortable ? 'Y' : 'N';
-        $this->hp['xInitKeyboard'] = 'Y';
-        // Figure the tbody height.  If lookups has
-        // been set, double the amount we subtract
-        $height-= x6cssHeight('div.thead div div');
-        if ($lookups) {
-            $height-= x6cssHeight('div.thead div div');
-        }
-        if ($bb) {
-            $height-= $this->bbHeight();
-        }
-        // create default options
-        $this->hp['xGridHilight'] = 'Y';
-        // Very first thing we add is a style, we will
-        // overwrite it later
-        $this->h('style');
-        // notice: we slip one div inside of thead,
-        //         we assume there will always be
-        //         only one row, the column headers
-        $x = $this->h('div');
-        $x->addClass('thead');
-        $this->dhead0 = $x;
-        $this->dhead = $x->h('div');
-        // Again, add button bar if required
-        if ($bb) {
-            if (is_string($bb)) {
-                $this->addButtonBar($bb);
-            } else {
-                $this->addButtonBar();
-            }
-        }
-        $this->hp['xButtonBar'] = $bb ? 'Y' : 'N';
-        // Add features if editInPlace
-        $this->editable = false;
-        if ($edit) {
-            $this->hp['uiNewRow'] = 'Y';
-            // vs. nothing
-            $this->hp['uiEditRow'] = 'Y';
-            // vs. nothing
-            $this->editable = true;
-        }
-        // The body is empty, we have to add row by row
-        $this->dbody = $this->h('div');
-        $this->dbody->addClass('tbody');
-        $this->dbody->hp['id'] = 'tbody_' . $table;
-        $this->dbody->hp['style'] = "height: {$height}px;";
-        // The footer is like the header, we go ahead
-        // and insert the only row, assuming they will
-        // be adding
-        $x = $this->h('div');
-        $this->dfoot = $x->h('div');
-        $this->dfoot->addClass('tfoot');
-        // KFD 12/18/08.  Figured that this should always be the last
-        //     command, never up in the middle.  Reason is that an object
-        //     may put other plugins onto itself and then expect them to
-        //     be active while it is initializing.  By putting this last,
-        //     we ensure that that is the case.
-        $this->initPlugin();
-    }
-
-    function setColumnOptions($options) {
-        $this->colOptions = $options;
-    }
-
-    function inputsRow() {
-        $dd = ddTable($this->hp['x6table']);
-        // Make an input for each column and build up
-        // a string of HTML for these.
-        $html = '';
-        $tabIndex = 1000;
-        $count = 0;
-        $tabLoop = null;
-        foreach ($this->columnsById as $colname => $colinfo) {
-            $options = a($this->colOptions, $colname, array());
-            $wrapper = html('div');
-            $wrapper->hp['gColumn'] = $count;
-            $count++;
-            $input = input($dd['flat'][$colname], $tabLoop, $options);
-            $input->hp['tabindex'] = $tabIndex++;
-            // KFD 3/6/09 Sourceforge 2668359
-            if ($input->htype == 'textarea') {
-                $input->setHtml("*VALUE_$colname*");
-            } else {
-                $input->hp['value'] = "*VALUE_$colname*";
-            }
-            $input->hp['xClassRow'] = 0;
-            $input->hp['xTabGroup'] = 'rowEdit';
-            $wrapper->addClass($this->hp['id'] . '_' . $colname);
-            if (!in_array($colinfo['type_id'], array('cbool', 'gender'))) {
-                unset($input->hp['size']);
-            }
-            $wrapper->addChild($input);
-            $html.= $wrapper->bufferedRender(null, true);
-        }
-        $html = str_replace("\n", "", $html);
-        $strLeft = 'x6.byId("' . $this->hp['id'] . '").zRowEditHtml';
-        jqDocReady("$strLeft = \"$html\"", true);
-    }
-
-    /****m* androHtmlGrid/addColumn
-     *
-     * NAME
-     *    addColumn
-     *
-     * FUNCTION
-     *   This PHP class method addColumn specifies the
-     *   description and size of a new column.  Call it once
-     *   for each column to be added to the tabdiv.
-     *
-     * INPUTS
-     *   - $caption string, becomes both caption and ID
-     *
-     * RETURNS
-     *   - androHTML, reference to the content area for the new tab
-     *
-     ******/
-    function addColumn($options) {
-        $column_id = arr($options, 'column_id');
-        if ($column_id == '') $column_id = rand(100000, 999999);
-        $dispsize = arr($options, 'dispsize', 10);
-        // KFD 3/6/09 Sourceforge 2668452, respect descshort if present
-        $description = arr($options, 'descshort', '');
-        if ($description == '') $description = arr($options, 'description', 'No Desc');
-        $type_id = arr($options, 'type_id', 'char');
-        $forcelong = arr($options, 'forcelong', false);
-        $table_id_fko = arr($options, 'table_id_fko', '');
-        // Permanently store the column information,
-        // and increment the running total
-        $width1 = max($dispsize, strlen(trim($description)));
-        $width1++;
-        // KFD 1/8/09, expand width (maybe) if this column
-        //             gets an x6select
-        if ($table_id_fko <> '') {
-            if ($type_id == 'cbool' || $type_id == 'gender') {
-                if ($width1 < 5) $width1 = 5;
-            } else {
-                $width1+= 3;
-            }
-        }
-        // Now that we have what we need from description,
-        // turn spaces into &nbsp;
-        $description = str_replace(' ', '&nbsp;', $description);
-        // KFD Calculated width of 14 12px chars is 110px
-        //     This means avg width is 7.85 pixels
-        //     This means the ratio of width to height is .654
-        //     However, if you add sortable, it gets a LEETLE TOO TINY,
-        //     so we kicked it up to....
-        $width1*= x6CssDefine('bodyfs', '12px') * .67;
-        $width = $forcelong ? $width1 : intval(min($width1, 200));
-        $pad0 = x6CSSDefine('pad0');
-        $bord = 1;
-        // HARDCODE!
-        $this->colWidths+= $width + ($pad0 * 2) + ($bord * 2);
-        // Save the information about the column permanently,
-        // we will need all of this when adding cells.
-        $colinfo = array('description' => $description, 'dispsize' => $dispsize, 'type_id' => $type_id, 'column_id' => $column_id, 'width' => $width, 'colprec' => arr($options, 'colprec', $dispsize), 'colscale' => arr($options, 'colscale', $dispsize), 'uiro' => arr($options, 'uiro', 'N'));
-        $this->columns[] = $colinfo;
-        $this->columnsById[$column_id] = $colinfo;
-        $cssExtra = '';
-        if (in_array($type_id, array('int', 'numb', 'money'))) {
-            $cssExtra = 'text-align: right';
-        }
-        $styleId = 'div.' . $this->hp['id'] . '_' . $column_id;
-        $this->colStyles[$styleId] = "width: {$width}px; $cssExtra";
-        $iWidth = $width;
-        if ($table_id_fko <> '') {
-            $iWidth-= x6cssdefine('bodyfs', '12px') * .67 * 5;
-            $this->colStyles[$styleId . ' input'] = "width: {$iWidth}px; $cssExtra";
-        } else if ($type_id == 'mime-f') {
-            $iWidth-= x6cssdefine('bodyfs', '12px') * .67 * 20;
-            $this->colStyles[$styleId . ' input'] = "width: {$iWidth}px; $cssExtra";
-        } else if (!in_array($type_id, array('cbool', 'gender'))) {
-            $this->colStyles[$styleId . ' input'] = "width: {$iWidth}px; $cssExtra";
-        }
-        // Finally, generate the HTML.
-        $div = $this->dhead->h('div', $description);
-        $div->hp['xColumn'] = $column_id;
-        $div->addclass($this->hp['id'] . '_' . $column_id);
-        $this->headers[] = $div;
-    }
-
-    /****m* androHtmlGrid/lastColumn
-     *
-     * NAME
-     *    lastColumn
-     *
-     * FUNCTION
-     *   This PHP class method lastColumn must be called
-     *   after you have defined all of the columns in the
-     *   table.  This method computes and assigns the
-     *   final width of the overall table.
-     *
-     * INPUTS
-     *   - $scrollable (boolean) if true, make table scrollable
-     *
-     ******/
-    function lastColumn($scrollable = true) {
-        // Save the scrollable setting, and compute the final
-        // width of the table
-        //$this->scrollable=$scrollable;
-        if ($scrollable) {
-            $this->columns[] = array('description' => '&nbsp;', 'dispsize' => 0, 'type_id' => '', 'column_id' => '', 'width' => 15);
-            $pad0 = x6CSSDefine('pad0');
-            $bord = 1;
-            // HARDCODE!
-            $this->colWidths+= 15 + ($pad0 * 2) + ($bord * 2);
-            $div = $this->dhead->h('div', '');
-            $div->hp['style'] = "
-                max-width: 15px;
-                min-width: 15px;
-                width:     15px;";
-        }
-        // Send the column structure back as JSON
-        jqDocReady("x6.byId('" . $this->hp['id'] . "').zColsInfo=" . json_encode($this->columns), true);
-        jqDocReady("x6.byId('" . $this->hp['id'] . "').zColsById=" . json_encode($this->columnsById), true);
-        // If editable, add in the invisible row of inputs
-        if ($this->editable) {
-            $this->inputsRow();
-        }
-        // If the lookups flag is set, add that now
-        if ($this->lookups) {
-            $this->addLookupInputs();
-        }
-        // If the sortable flag was set, add that now
-        if ($this->sortable) {
-            $this->makeSortable();
-        }
-        // Generate the cell styles
-        $styles = "\n";
-        foreach ($this->colStyles as $selector => $rules) {
-            $styles.= "$selector { " . $rules . "}\n";
-        }
-        $this->children[0]->setHTML($styles);
-        // Get the standard padding, we hardcoded
-        // assuming 2 for border, 3 for padding left
-        //--$extra = 5;
-
-        // now work out the final width of the table by
-        // adding up the columns, adding one for each
-        // column (the border) and two more for the table
-        // border.
-        $width = $this->colWidths;
-        // JB:  Increased width of master table by 1px so it lines up
-        //$width+= ((count($this->columns))*$extra)+1;  // border + padding
-        //--$width+= (count($this->columns))*$extra;
-        //$width+= 39;  // fudge factor, unknown
-        $this->hp['style'].= "width: {$width}px";
-        $this->width = $width;
-        return $width;
-    }
-
-    function makeSortable() {
-        $table_id = $this->hp['x6table'];
-        foreach ($this->headers as $idx => $header) {
-            $hdrhtml = $header->getHtml();
-            $a = html('a-void');
-            $a->setHtml($hdrhtml);
-            //$a->setHtml('&hArr;');
-            $col = $this->columns[$idx]['column_id'];
-            $args = "{xChGroup:'$table_id', xColumn: '$col'}";
-            $a->hp['onclick'] = "x6events.fireEvent('reqSort_$table_id',$args)";
-            $a->hp['xChGroup'] = $table_id;
-            $a->hp['xColumn'] = $col;
-            $this->headers[$idx]->setHtml($a->bufferedRender());
-        }
-    }
-
-    function addRow($id, $thead = false) {
-        if (!$thead) {
-            $this->lastRow = $this->dbody->h('div');
-        } else {
-            $this->lastRow = $this->dhead0->h('div');
-        }
-        $this->rows[] = $this->lastRow;
-
-        // KFD EXPERIMENTAL 12/9
-        $this->lastRow->hp['id'] = $this->hp['x6table'] . "_$id";
-        //$this->lastRow->hp['id'] = 'row_'.$id;
-
-        $this->lastCell = 0;
-        // PHP-JAVASCRIPT DUPLICATION ALERT!
-        // This code also exists in x6.js in browser-side
-        // constructor of the tabDiv object.
-        $table_id = $this->hp['x6table'];
-        if ($this->hp['xGridHilight'] == 'Y') {
-            // Removes hilight from any other row, and hilights
-            // this one if it is not selected (edited)
-            $this->lastRow->hp['onmouseover'] = 'x6grid.mouseover(this)';
-            //    "$(this).siblings('.hilight').removeClass('hilight');
-            //    $('#row_$id:not(.selected)').addClass('hilight')";
-            if (!$thead) {
-                $this->lastRow->hp['onclick'] = "x6events.fireEvent('reqEditRow_$table_id',$id);";
-            }
-        }
-
-        return $this->lastRow;
-    }
-    function addCell($child = '', $class = '', $id = '', $convert = true) {
-        if (is_object($child)) {
-            $child = $child->bufferedRender();
-        } else {
-            if ($convert) {
-                $child = str_replace(' ', '&nbsp;', $child);
-            }
-        }
-        if (trim($child) == '') $child = '&nbsp;';
-        // figure out if we need a new row
-        $maxcols = count($this->columns);
-        if ($this->scrollable) $maxcols--;
-        if ($this->lastCell > $maxcols) {
-            $this->addRow();
-        }
-        // now put out the actual div
-        $info = $this->columns[$this->lastCell];
-        $width = $info['width'];
-        $div = $this->lastRow->h('div', $child);
-        if ($id <> '') {
-            $div->hp['id'] = $id;
-        }
-        if ($class != '') $div->addClass($class);
-        $div->hp['gColumn'] = $this->lastCell;
-        $div->addClass($this->hp['id'] . '_' . $this->columns[$this->lastCell]['column_id']);
-
-        /*
-        $div->hp['style'] ="
-            overflow: hidden;
-            max-width: {$width}px;
-            min-width: {$width}px;
-            width:     {$width}px;";
-        */
-        // Now for numerics do right-justified
-        if (in_array($info['type_id'], array('int', 'numb', 'money'))) {
-            $div->hp['style'] = 'text-align: right';
-        }
-        // up the cell counter
-        $this->lastCell++;
-    }
-
-    function addData($rows) {
-        $dd = ddTable($this->hp['x6table']);
-        foreach ($rows as $row) {
-            $this->addRow($row['skey']);
-            foreach ($this->columns as $colinfo) {
-                if ($colinfo['column_id'] == '') continue;
-
-                $column_id = trim($colinfo['column_id']);
-                if (isset($row[$column_id])) {
-                    $type_id = $dd['flat'][$column_id]['type_id'];
-                    $x6view = arr($dd['flat'][$column_id], 'x6view', 'text');
-                    if (!($type_id == 'text' && $x6view == 'window')) {
-                        $value = hFormat($type_id, $row[$column_id]);
-                    } else {
-                        $t = $this->hp['x6table'];
-                        $c = $column_id;
-                        $s = $row['skey'];
-                        $a = html('a');
-                        $a->setHtml('View');
-                        $a->hp['href'] = "javascript:x6inputs.viewClob($s,'$t','$c')";
-                        $value = $a;
-                    }
-                    $this->addCell($value);
-                } else {
-                    $this->addCell('');
-                }
-            }
-        }
-    }
-
-    function noResults() {
-        return;
-        $div = $this->dbody->h('div');
-        $div->hp['id'] = $this->hp['x6table'] . '_noresults';
-        $div->hp['style'] = 'text-align: center; padding-top: 20px';
-        $div->setHTML('<b>No results found</b>');
-    }
-
-    function addLookupInputs() {
-        $fakeCI = array('colprec' => '10');
-
-        $table_id = $this->hp['x6table'];
-        $this->addRow('lookup', true);
-        foreach ($this->columns as $idx => $colinfo) {
-            // Skip the column that is for the scrollbar
-            $column = trim($colinfo['column_id']);
-            if ($column == '') continue;
-
-            $inpid = 'search_' . $table_id . '_' . $column;
-
-            $width = $colinfo['width'] - (2 * x6cssDefine('pad0')) - 2;
-
-            $nothing = array();
-            $options = array('forceinput' => true);
-            $inp = input($colinfo, $nothing, $options);
-            if ($idx == 0) {
-                $inp->ap['x6firstFocus'] = 'Y';
-            }
-            $inp->hp['maxlength'] = 500;
-            $inp->hp['id'] = $inpid;
-            $inp->hp['autocomplete'] = 'off';
-            $inp->hp['xValue'] = '';
-            $inp->hp['xColumnId'] = $column;
-            $inp->hp['xNoPassup'] = 'Y';
-            $inp->hp['onkeyup'] = "x6.byId('" . $this->hp['id'] . "').fetch()";
-            $inp->hp['style'] = "width: {$width}px";
-            $inp->hp['xLookup'] = 'Y';
-            $inp->hp['value'] = gp('pre_' . $column, '');
-            if (isset($inp->hp['x6select'])) unset($inp->hp['x6select']);
-            //$inp->ap['xParentId'] = $t->hp['id'];
-            //$inp->ap['xNoEnter'] = 'Y';
-            $this->addCell($inp, 'linput');
-        }
-
-        if ($this->scrollable) {
-            $this->addCell('');
-        }
-    }
-}
-
-/****c* HTML Generation/androHtmlDetail
- *
- * NAME
- *    androHtmlDetail
- *
- * FUNCTION
- *   The PHP class androHtmlDetail provides an HTML table that can
- *   be populated with caption/input rows using addInput().
- *
- *   The object is a subclass of androHtml, and supports all of its
- *   methods such as addChild, addClass, etc.
- *
- *
- ******
- */
-class androHTMLDetail extends androHTML
-{
-    var $firstFocus = false;
-
-    function androHTMLDetail($table_id, $complete = false, $height = 300, $p = '') {
-        $this->hp['x6plugin'] = 'detailDisplay';
-        $this->hp['x6table'] = $table_id;
-        $this->hp['id'] = 'ddisp_' . $table_id;
-        $this->initPlugin();
-        $this->hp['xHeight'] = $height;
-        if ($complete) {
-            $this->htype = 'div';
-            $this->innerId = "ddisp_{$table_id}_inner";
-            $this->makeComplete($table_id, $height, $p);
-        } else {
-            $this->htype = 'table';
-            $this->inputsTable = $this;
-            $this->addClass('x6Detail');
-        }
-    }
-    // KFD 5/27/09 Google #21 Part of allowing override of a detail pane
-    //             is to build one normally, then let the user wipe it
-    //             out and start over.
-    function removeInner() {
-        $this->children[1]->children = array();
-        $this->children[1]->setHtml('');
-        return $this->children[1];
-    }
-
-    function makeComplete($table_id, $height, $parTable) {
-        // The complete track is much more involved, adds
-        // buttons and a status bar at bottom.
-        $this->addClass('box2');
-        $this->hp['xInitDisabled'] = 'Y';
-        $pad0 = x6CssDefine('pad0');
-        $this->hp['style'] = "height: {$height}px;
-            padding-left: {$pad0}px;
-            padding-right: {$pad0}px;";
-
-        $this->hp['xInnerWidthLost'] = ($pad0 * 2)
-            // padding left and right
-            + x6cssRuleSize('.box2', 'border-left') + x6cssRuleSize('.box2', 'border-right') + x6cssRuleSize('.box1', 'border-left')
-            // see below, inner
-            + x6cssRuleSize('.box1', 'border-right')
-            // box is box1
-            + ($pad0 * 7);
-        // padding left and right of box1
-
-        // Always need this
-        $dd = ddTable($table_id);
-        // Now for the display
-        // Put some buttons on users
-        $this->addButtonBar();
-        // KFD 1/29/09 break out pk/fk columns
-        if ($parTable == '') {
-            $colsFK = array();
-        } else {
-            //echo $table_id;
-            //hprint_r($dd['fk_parents']);
-            $x = $dd['fk_parents'][$parTable]['cols_both'];
-            $x = explode(',', $x);
-            foreach ($x as $pair) {
-                list($chd, $par) = explode(':', $pair);
-                $colsFK[$chd] = $par;
-            }
-        }
-        // Put in a div that will be the inner box
-        //
-        $div = $this->h('div');
-        $div->addClass('box1');
-        $table = $div->h('table');
-        $table->hp['style'] = 'float: left; margin-right: 20px';
-        $table->addClass('x6Detail');
-        $this->inputsTable = $table;
-        $cols = projectionColumns($dd, '');
-        // KFD 1/2/08.  Loop through columns and try to find anything
-        //              with an x6breakafter.  If found, do not break
-        //              every 17, use the instructions in x6breakafter.
-        $break17 = true;
-        foreach ($cols as $idx => $col) {
-            if (arr($dd['flat'][$col], 'x6breakafter', '') <> '') {
-                $break17 = false;
-                break;
-            }
-        }
-        // Define this outside the loop, it is used to make
-        // xdefsrc inside of the loop
-        $fetches = array('fetchdef', 'fetch', 'distribute');
-        $options = array('xTabGroup' => 'ddisp_' . $table_id);
-        foreach ($cols as $idx => $col) {
-            if ($break17) {
-                if ($idx > 0 && $idx % 17 == 0) {
-                    $this->inputsTable = $div->h('table');
-                    $this->inputsTable->hp['style'] = 'float: left';
-                    $this->inputsTable->addClass('x6Detail');
-                }
-            }
-            // KFD 1/29/09.  If detail that is child of a parent,
-            //               see if this column needs to pull
-            if (!isset($colsFK[$col])) $xoptions = $options;
-            else {
-                $xoptions = array_merge($options, array('attributes' => array('xdefsrc' => $parTable . '.' . $colsFK[$col])));
-            }
-            // KFD 2/4/09. If this is in the fetch family, set its
-            //             xdefsrc
-            $autoid = strtolower($dd['flat'][$col]['automation_id']);
-            if (in_array($autoid, $fetches)) {
-                $xoptions = array_merge($options, array('attributes' => array('xdefsrc' => strtolower($dd['flat'][$col]['auto_formula']))));
-            }
-
-            $this->addTRInput($dd, $col, $xoptions);
-            $x6ba = trim(arr($dd['flat'][$col], 'x6breakafter', ''));
-            if ($x6ba == 'column') {
-                $this->inputsTable = $div->h('table');
-                $this->inputsTable->hp['style'] = 'float: left';
-                $this->inputsTable->addClass('x6Detail');
-            }
-            if ($x6ba == 'line') {
-                $tr = $this->inputsTable->h('tr');
-                $td = $tr->h('td', '&nbsp;');
-                $td->hp['colspan'] = 2;
-            }
-        }
-        // Calculate height of inner area
-        $hinner = $height - ($pad0 * 2)
-            // padding top and bottom
-            - x6cssDefine('lh0')
-            // for status bar at bottom
-            - x6cssRuleSize('.box1', 'border-top') - x6cssRuleSize('.box1', 'border-bottom') - x6cssRuleSize('.box1', 'padding-top') - x6cssRuleSize('.box1', 'padding-bottom') - x6cssHeight('div.x6buttonBar a.button');
-        $div->hp['style'] = "height: {$hinner}px; clear: both; 
-            overflow-y: scroll; position: relative;
-            padding: {$pad0}px;";
-        // Keep track of the inner div for possible additions
-        $div->hp['id'] = $this->innerId;
-        $lineheight = x6cssHeight('td.x6Caption');
-        $emptyHeight = $hinner - $lineheight * (count($cols))
-            // computed height
-            - (count($cols) - 1);
-        // borders between rows
-        $this->hp['xInnerHeight'] = $hinner;
-        $this->hp['xInnerEmpty'] = $emptyHeight;
-
-        $this->innerDiv = $div;
-
-        $sb = $this->h('div');
-        $sb->addClass('statusBar');
-        $sbl = $sb->h('div');
-        $sbl->addClass('sbleft');
-        $sbl->hp['id'] = 'sbl_' . $table_id;
-        $sbr = $sb->h('div');
-        $sbr->addClass('sbright');
-        $sbr->hp['id'] = 'sbr_' . $table_id;
-
-        return $emptyHeight;
-    }
-
-    /****m* androHtml/addTRInput
-     *
-     * NAME
-     *    androHtml.addTRInput
-     *
-     * FUNCTION
-     * The PHP method androHtml.addInput adds a TR and two TD elements
-     *   to a TABLE.  The left side has class "x6Caption" and contains the
-     *   caption/label for the field.  The right side contains an input
-     *   for the field and as class 'x6Input'.
-     *
-     *
-     *
-     * INPUTS
-     *   array $dd - the table's complete data dictionary
-     *   string $column - name of the database column (field)
-     *
-     *
-     * SOURCE
-     */
-    function addTrInput(&$dd, $column, $options = array()) {
-        // something we need for b/w compatibility that is
-        // easier to declare and ignore than it is to
-        // try to get rid of. (Also, getting rid of it will
-        // break some of my older apps).
-        $tabLoop = array();
-
-        $tr = $this->inputsTable->h('tr');
-        $td = $tr->h('td', $dd['flat'][$column]['description']);
-        $td->addClass('x6Caption');
-
-        $input = input($dd['flat'][$column], $tabLoop, $options);
-        if (!$this->firstFocus) {
-            $input->hp['x6firstFocus'] = 'Y';
-            $this->firstFocus = true;
-        }
-        $td = $tr->h('td');
-        $td->setHtml($input->bufferedRender());
-        $td->addClass('x6Input');
-    }
-
-    /******/
-}
-
-/****c* HTML Generation/androHtmlxrefs
- *
- * NAME
- *    androHtmlxrefs
- *
- * FUNCTION
- *   The PHP class androHtmlxRefs generates a tabbed list of child
- *   tables to the named parent.  Only child tables with the
- *   "x6xref" property set are included.  The only supported value
- *   for "x6xref" at this time is "checkboxes".
- *
- *   The object is a subclass of androHtml, and supports all of its
- *   methods such as addChild, addClass, etc.
- *
- *   IMPORTANT! If there are no qualifying child tables, the object
- *   is still created and returned, but it will have "display: none"
- *   and will effectively not exist for the user.
- *
- * INPUTS
- *   * string table_id - the parent table
- *   * number height - the total height available for the display
- *
- * RETURNS
- *   object - androHTMLxrefs object.
- *
- ******
- */
-class androHTMLxrefs extends androHTML
-{
-    var $firstFocus = false;
-
-    function androHTMLxrefs($table_id, $height = 300) {
-        // Extreme basics for child tables.
-        $this->htype = 'div';
-        $this->hp['x6table'] = $table_id;
-        $this->hp['xCount'] = 0;
-        // First bit of business is to run through and find
-        // out if we actually have any kids.
-        $dd = ddTable($table_id);
-
-        $kids = array();
-        $atts = array();
-        foreach ($dd['fk_children'] as $table_kid => $info) {
-            if (arr($info, 'x6xref', '') <> '') {
-                $kids[$table_kid] = $info['x6xref'];
-                $atts[] = "$table_kid:{$info['x6xref']}";
-            }
-        }
-        // If no kids, set ourselves to be invisible
-        if (count($kids) == 0) {
-            $this->hp['style'] = 'display: none;';
-            return;
-        }
-        $this->hp['xCount'] = count($kids);
-
-        $options = array('x6profile' => 'x6xrefs', 'x6table' => $table_id, 'styles' => array('overflow-y' => 'scroll'));
-        $tabs = $this->addTabs($table_id . '_xrefs', $height, $options);
-        $tabs->ul->hp['kids'] = implode("|", $atts);
-        // If we are still here, we have at least one kid.  Let's
-        // put in a tab bar and start adding the kids.
-        foreach ($kids as $kid => $x) {
-            $pane = $tabs->addTab($dd['fk_children'][$kid]['description']);
-        }
-    }
-}
-
-function addModal($modal) {
     $modal->hp['x6modal'] = 'Y';
     if (!isset($GLOBALS['AG']['modals'])) {
         $GLOBALS['AG']['modals'] = array();
     }
     $GLOBALS['AG']['modals'][] = $modal;
 }
-
-/*
-class androHTMLModal extends androHTML {
-    function androHTMLModal($id,$title='') {
-        # First stuff is basic stuff for any plugin
-        $this->htype='div';
-        $this->addClass('x6modal');
-        $this->hp['id'] = $id;
-        
-        # look for a global list of modals
-        if(!isset($GLOBALS['AG']['modals'])) {
-            $GLOBALS['AG']['modals'] = array();
-        }
-        $GLOBALS['AG']['modals'][] = $this;
-        return;
-        
-        $this->hp['x6plugin'] = 'modal';
-        $this->hp['x6table']  = '*';
-        $this->initPlugin();
-        
-        # Ugly hack, tell the javascript how much padding to
-        # take away.
-        $this->hp['xSpacing'] = x6CssDefine('pad0')*3;
-        
-        # Title and link go across top      
-        $top = $this->h('div');
-        $top->addClass('x6modaltop');
-        $left = $top->h('div');
-        $left->hp['style'] = 'float: left';
-        $title = $left->h('b',$title);
-        $right= $top->h('div');
-        $right->hp['style'] = 'float:right';
-        $a=$right->h('a','ESC: Exit');
-        $a->hp['href'] = "javascript:x6.byId('$id').close();";
-
-        $x = $this->h('div');
-        $x->hp['style'] = 'clear:both';
-        $this->inner = $this->h('div');
-        $this->inner->addClass('x6modalinner');
-    }
-}
-*/
 
 /**
  * Create a form with parent html element $parent.
@@ -3615,11 +1000,16 @@ class androHTMLModal extends androHTML {
  * string $page - action page for this form
  *
  * RETURN VALUE
- * androHtml - Generated form
+ * AndroHtml - Generated form
  ******/
-function htmlForm(&$parent, $page = '') {
-    if ($page == '') $page = gp('x4Page');
-    if ($page == '') $page = gp('gp_page');
+function htmlForm(&$parent, $page = '')
+{
+    if ($page == '') {
+        $page = gp('x4Page');
+    }
+    if ($page == '') {
+        $page = gp('gp_page');
+    }
     $form = html('form', $parent);
     $form->hp['method'] = 'POST';
     $form->hp['action'] = "index.php?x4Page=$page";
@@ -3641,7 +1031,7 @@ function htmlForm(&$parent, $page = '') {
  * reference &$tabLoop
  * array $options  options
  * RETURN
- * androHtml object oriented input html
+ * AndroHtml object oriented input html
  */
 
 /****f* HTML Generation/input
@@ -3658,10 +1048,11 @@ function htmlForm(&$parent, $page = '') {
  * array $options - option elements
  *
  * RETURN VALUE
- * androHtml - generated input element
+ * AndroHtml - generated input element
  *
  ******/
-function input($colinfo, &$tabLoop = null, $options = array()) {
+function input($colinfo, &$tabLoop = null, $options = array())
+{
     $formshort = a($colinfo, 'formshort', a($colinfo, 'type_id', 'char'));
     $type_id = a($colinfo, 'type_id');
     $colprec = a($colinfo, 'colprec');
@@ -3705,8 +1096,12 @@ function input($colinfo, &$tabLoop = null, $options = array()) {
     }
     // KFD 3/7/09 Sourceforge 2671622 perms should be controlled
     //            at top level by table permissions.
-    if (ddUserPerm($table_id, 'ins') == false) $xRoIns = 'Y';
-    if (ddUserPerm($table_id, 'upd') == false) $xRoUpd = 'Y';
+    if (ddUserPerm($table_id, 'ins') == false) {
+        $xRoIns = 'Y';
+    }
+    if (ddUserPerm($table_id, 'upd') == false) {
+        $xRoUpd = 'Y';
+    }
     // First decision is to work out what kind of control to make
     if (arr($colinfo, 'x6view', '') == 'window') {
         $input = html('a');
@@ -3757,7 +1152,6 @@ function input($colinfo, &$tabLoop = null, $options = array()) {
             $option->setHTML($x);
         }
     } elseif (a($colinfo, 'table_id_fko') <> '') {
-
         // First work out which control to use
         $table_id_fko = $colinfo['table_id_fko'];
         $ddfko = ddTable($table_id_fko);
@@ -3785,7 +1179,9 @@ function input($colinfo, &$tabLoop = null, $options = array()) {
             $pkpar = explode(',', $ddfko['pks']);
             $apkpre = array();
             foreach ($pkpar as $pkparone) {
-                if ($pkparone == $column_id) break;
+                if ($pkparone == $column_id) {
+                    break;
+                }
 
                 $apkpre[] = $pkparone;
             }
@@ -3799,7 +1195,9 @@ function input($colinfo, &$tabLoop = null, $options = array()) {
             $tabdd = ddTable($table_id);
             $fetchdist = $table_id . "_" . $table_id_fko . "_";
             if (isset($tabdd['FETCHDIST'][$fetchdist])) {
-                if (!isset($input->hp['onblur'])) $input->hp['onblur'] = '';
+                if (!isset($input->hp['onblur'])) {
+                    $input->hp['onblur'] = '';
+                }
                 $input->hp['onblur'].= ";a.forms.fetch(" . "'$table_id','$column_id',this.value,x4.parent(this),this" . ")";
             }
         }
@@ -3845,8 +1243,7 @@ function input($colinfo, &$tabLoop = null, $options = array()) {
     $input->ap['xColumnId'] = $column_id;
     if (a($colinfo, 'inputId', '') <> '') {
         $input->hp['id'] = $colinfo['inputId'];
-    }
-    // KFD 8/7/08, allow options to contain a prefix
+    } // KFD 8/7/08, allow options to contain a prefix
     elseif (a($options, 'prefix', '') <> '') {
         $input->hp['id'] = $options['prefix'] . $table_id . '_' . $column_id;
     } elseif ($table_id <> '') {
@@ -3961,12 +1358,15 @@ function input($colinfo, &$tabLoop = null, $options = array()) {
     //  KFD 12/10/08  Major redirection if doing x6, call
     //                out for possible wrapping of input
     //
-    if ($x6) return inputForX6($input, $colinfo, $options);
+    if ($x6) {
+        return inputForX6($input, $colinfo, $options);
+    }
     // For now that's all we are going to do.
     return $input;
 }
 
-function inputForX6($input, $colinfo, $options) {
+function inputForX6($input, $colinfo, $options)
+{
     // First decide what kind of input to do
 
     if (in_array($colinfo['type_id'], array('cbool', 'gender'))) {
@@ -4000,14 +1400,18 @@ function inputForX6($input, $colinfo, $options) {
         $x6profile = arr($ddpar, 'x6profile', 'conventional');
         $pfs = array('tabDiv', 'twosides');
         if (arr($ddpar, 'x6all', 'N') == 'Y' || in_array($x6profile, $pfs)) {
-            $rows = SQL_AllRows("Select $ccols
+            $rows = SQL_AllRows(
+                "Select $ccols
                    from " . $ddpar['viewname'] . "
-                  order by " . $ddpar['pks']);
+                  order by " . $ddpar['pks']
+            );
             $input->hp['x6rowCount'] = count($rows);
             $values = array();
             foreach ($rows as $row) {
                 foreach ($row as $colname => $colvalue) {
-                    if (is_null($colvalue)) $row[$colname] = '&nbsp;';
+                    if (is_null($colvalue)) {
+                        $row[$colname] = '&nbsp;';
+                    }
                 }
                 $values[] = implode('|', $row);
             }
@@ -4017,7 +1421,8 @@ function inputForX6($input, $colinfo, $options) {
     return $input;
 }
 
-function x6select() {
+function x6select()
+{
     $retval = html('div');
     $input = $retval->h('input');
     $button = $retval->h('img');
@@ -4051,10 +1456,11 @@ function x6select() {
  * * array $options - Options for the projection
  *
  * RETURN VALUE
- * androHtml - generated projection (html table)
+ * AndroHtml - generated projection (html table)
  *
  ******/
-function projection($dd, $projection = '', &$tabLoop, $options = array()) {
+function projection($dd, $projection = '', $tabLoop = [], $options = array())
+{
     $columns = projectionColumns($dd, $projection);
     // Create a top level container
     $ttop = html('table');
@@ -4106,7 +1512,8 @@ function projection($dd, $projection = '', &$tabLoop, $options = array()) {
     return $ttop;
 }
 
-function projectionColumns($dd, $projection = '') {
+function projectionColumns($dd, $projection = '')
+{
     // Work out what they gave us and make a list of
     // columns out of it
     if (is_array($projection)) {
@@ -4117,15 +1524,31 @@ function projectionColumns($dd, $projection = '') {
             $x6 = vgfGet('x6', false);
             $columns = array();
             foreach ($dd['flat'] as $column_id => $colinfo) {
-                if ($colinfo['uino'] == 'Y') continue;
-                if ($column_id == 'skey') continue;
-                if ($column_id == '_agg') continue;
-                if ($column_id == 'skey_quiet') continue;
+                if ($colinfo['uino'] == 'Y') {
+                    continue;
+                }
+                if ($column_id == 'skey') {
+                    continue;
+                }
+                if ($column_id == '_agg') {
+                    continue;
+                }
+                if ($column_id == 'skey_quiet') {
+                    continue;
+                }
                 if ($x6) {
-                    if ($column_id == 'ts_ins') continue;
-                    if ($column_id == 'ts_upd') continue;
-                    if ($column_id == 'uid_ins') continue;
-                    if ($column_id == 'uid_upd') continue;
+                    if ($column_id == 'ts_ins') {
+                        continue;
+                    }
+                    if ($column_id == 'ts_upd') {
+                        continue;
+                    }
+                    if ($column_id == 'uid_ins') {
+                        continue;
+                    }
+                    if ($column_id == 'uid_upd') {
+                        continue;
+                    }
                 }
                 $columns[] = $column_id;
             }
@@ -4153,8 +1576,11 @@ function projectionColumns($dd, $projection = '') {
  * array $options - Options for the input.
  *
  ******/
-function inputsTabLoop(&$tabLoop, $options = array()) {
-    if (count($tabLoop) < 2) return;
+function inputsTabLoop($tabLoop, $options = array())
+{
+    if (count($tabLoop) < 2) {
+        return;
+    }
     // Do the first and last manually
     $last = count($tabLoop) - 1;
     $tabLoop[0]->ap['xTabPrev'] = $tabLoop[$last]->hp['id'];
@@ -4195,12 +1621,13 @@ function inputsTabLoop(&$tabLoop, $options = array()) {
  * Moved to main input function
  *
  * INPUTS
- * androHtml - Input element
+ * AndroHtml - Input element
  *
  * RETURN VALUE
- * androHtml - Modified input element
+ * AndroHtml - Modified input element
  ******/
-function inputFixupByType($input) {
+function inputFixupByType($input)
+{
     return $input;
     if ($input->ap['xTypeId'] == 'date') {
         $input->hp['onkeyup'] = 'return x4.stdlib.inputKeyUpDate(event,this)';
@@ -4213,10 +1640,10 @@ function inputFixupByType($input) {
 //
 // These routines produce little snippet values
 // ==============================================================
-/****f* HTML Generation/hprint_r
+/****f* HTML Generation/hPrintR
  *
  * NAME
- * hprint_r
+ * hPrintR
  *
  * FUNCTION
  * Dumps the variable $anyvalue, but wraps it in HTML PRE tags so
@@ -4230,7 +1657,8 @@ function inputFixupByType($input) {
  *
  * SOURCE
  */
-function hprint_r($anyvalue) {
+function hPrintR($anyvalue)
+{
     echo "<pre>\n";
     print_r($anyvalue);
     echo "</pre>";
@@ -4254,7 +1682,8 @@ function hprint_r($anyvalue) {
  *
  * SOURCE
  */
-function hx($in) {
+function hx($in)
+{
     return htmlentities($in);
 }
 
@@ -4280,19 +1709,22 @@ function hx($in) {
  * RETURN
  * string  config value for $var
  */
-function configGet($var, $default = '', $skip = array()) {
+function configGet($var, $default = '', $skip = array())
+{
     // clean up what they passed in
     $var = strtolower(trim($var));
     // Allow a programmer to override any option
     // by setting an application global
-    if (($ag = vgaGet($var, '')) <> '') return $ag;
+    if (($ag = vgaGet($var, '')) <> '') {
+        return $ag;
+    }
     // Define the arrays and then attempt to load them
     $configuser = $configinst = $configapp = $configfw = array();
     $alist = array('configfw', 'configapp', 'configinst');
     foreach ($alist as $table_id) {
         $file = fsDirTop() . "/dynamic/table_$table_id.php";
         if (file_exists($file)) {
-            include ($file);
+            include$file;
         }
     }
     //hprint_r($configinst);
@@ -4301,23 +1733,32 @@ function configGet($var, $default = '', $skip = array()) {
     $uid = SessionGet("UID");
     $file = fsDirTop() . "/dynamic/table_configuser_$uid.php";
     if (file_exists($file)) {
-        include ($file);
+        include$file;
     }
     // Now proceed to the first value we find
     if (!in_array('user', $skip)) {
-        if (a($configuser, $var, '*null*') <> '*null*') return $configuser[$var];
+        if (a($configuser, $var, '*null*') <> '*null*') {
+            return $configuser[$var];
+        }
     }
     if (!in_array('inst', $skip)) {
-        if (a($configinst, $var, '*null*') <> '*null*') return $configinst[$var];
+        if (a($configinst, $var, '*null*') <> '*null*') {
+            return $configinst[$var];
+        }
     }
     if (!in_array('app', $skip)) {
-        if (a($configapp, $var, '*null*') <> '*null*') return $configapp[$var];
+        if (a($configapp, $var, '*null*') <> '*null*') {
+            return $configapp[$var];
+        }
     }
-    if (a($configfw, $var, '*null*') <> '*null*') return $configfw[$var];
+    if (a($configfw, $var, '*null*') <> '*null*') {
+        return $configfw[$var];
+    }
     return $default;
 }
 
-function configWrite($type) {
+function configWrite($type)
+{
     // DUPLICATE CODE: THIS CODE IS DUPLICATE IN ANDROBUILD.PHP
 
     // First work out some differences based on which table
@@ -4340,10 +1781,16 @@ function configWrite($type) {
     $docomma = false;
     $nocols = array('_agg', 'skey', 'skey_quiet', 'recnum');
     foreach ($data as $column_id => $value) {
-        if (in_array($column_id, $nocols)) continue;
-        if (is_null($value)) $value = '*null*';
+        if (in_array($column_id, $nocols)) {
+            continue;
+        }
+        if (is_null($value)) {
+            $value = '*null*';
+        }
         $text.= "\n    ";
-        if ($docomma) $text.= ",";
+        if ($docomma) {
+            $text.= ",";
+        }
         $docomma = true;
         // KFD 2/17/09 Sourceforge 2591306
         //             See also androBuild, code is duplicated.
@@ -4354,17 +1801,22 @@ function configWrite($type) {
     file_put_contents($file, $text);
 }
 
-function configLayoutX4($container, $type) {
+function configLayoutX4($container, $type)
+{
     // get row saved on disk
     if ($type == 'Framework') {
         $configfw = array();
         $file = fsDirTop() . "/dynamic/table_configfw.php";
-        if (file_exists($file)) include ($file);
+        if (file_exists($file)) {
+            include$file;
+        }
         $row = $configfw;
     } else {
         $configapp = array();
         $file = fsDirTop() . "/dynamic/table_configapp.php";
-        if (file_exists($file)) include ($file);
+        if (file_exists($file)) {
+            include$file;
+        }
         $row = $configapp;
     }
 
@@ -4403,8 +1855,12 @@ function configLayoutX4($container, $type) {
     $tbody = html('tbody', $table);
     foreach ($dd['flat'] as $column_id => $colinfo) {
         $column_id = trim($column_id);
-        if (!isset($dd['flat'][$column_id])) continue;
-        if (!isset($row[$column_id])) continue;
+        if (!isset($dd['flat'][$column_id])) {
+            continue;
+        }
+        if (!isset($row[$column_id])) {
+            continue;
+        }
 
         $tr = html('tr', $tbody);
         $td = html('td', $tr, $dd['flat'][$column_id]['description']);
@@ -4413,113 +1869,50 @@ function configLayoutX4($container, $type) {
         $td = html('td', $tr, htmlEntities($row[$column_id]));
     }
 }
-// ==============================================================
-//
-// SECTION: Generate plaintext business reports
-//
-// ==============================================================
-class androText
-{
-    var $pages = array();
-    var $topMargin = 6;
-    var $leftMargin = 5;
-    var $cpi = 10;
-    var $cpl = 85;
-    var $lpp = 66;
 
-    function androText($topMargin = 6, $leftMargin = 5, $cpi = 10) {
-        $this->topMargin = $topMargin;
-        $this->leftMargin = $leftMargin;
-        $this->cpi = $cpi;
-
-        $this->cpl = ($this->cpi * 8.5) - $this->leftMargin;
-    }
-
-    function newPage() {
-        $this->pages[] = array();
-    }
-
-    function box($line, $position, $text, $orientation = 'L') {
-        // Adjust for margins
-        $line+= $this->topMargin;
-        if ($orientation == 'R' && $position == 0) {
-            $position = $this->cpl;
-        } else {
-            $position+= $this->leftMargin;
-        }
-        // Always add a page if there is not one, then fetch
-        // the page number
-        if (count($this->pages) == 0) {
-            $this->newPage();
-        }
-        $page = count($this->pages) - 1;
-        // Create the line if it is not there, retrieve it
-        if (!isset($this->pages[$page][$line])) {
-            $lineLength = $this->cpl - $this->leftMargin;
-            $this->pages[$page][$line] = str_repeat(' ', $lineLength);
-        }
-        $lineText = $this->pages[$page][$line];
-        // If centered, work out the position and then fake
-        // it as a left-oriented.
-        if ($orientation == 'C') {
-            $position = intval(($this->cpl - strlen($text)) / 2);
-            $orientation = 'L';
-        }
-        // The only real switch is on orientation.  Otherwise
-        // we are doing straight string substitution
-        if ($orientation == 'L') {
-            $lineText = substr($lineText, 0, $position - 1) . $text . substr($lineText, ($position + strlen($text)) - 1);
-        } else {
-            if ($position == 0) $position = $this->cpl;
-            $lineText = substr($lineText, 0, $position - strlen($text)) . $text . substr($lineText, $position);
-        }
-        $this->pages[$page][$line] = $lineText;
-    }
-
-    function renderAsText() {
-        $text = '';
-        foreach ($this->pages as $pagelines) {
-            for ($x = 1; $x <= 66; $x++) {
-                if (isset($pagelines[$x])) {
-                    $text.= $pagelines[$x];
-                } else {
-                    $text.= str_repeat(' ', $this->cpl);
-                }
-                $text.= "\n";
-            }
-        }
-        return $text;
-    }
-}
 // ==============================================================
 //
 // SECTION: x6skin CSS Stuff
 //
 // ==============================================================
-function x6CSS() {
+function x6CSS()
+{
     return isset($GLOBALS['AG']['x6skin']);
 }
-function x6CSSDefine($key, $default = '') {
-    if (!x6CSS()) return $default;
+function x6CSSDefine($key, $default = '')
+{
+    if (!x6CSS()) {
+        return $default;
+    }
     global $AG;
     $retval = arr($AG['x6skin']['defines'], $key, $default);
     return str_replace('px', '', $retval);
 }
 
-function x6CSSRule($selector, $rule, $default = '') {
-    if (!x6CSS()) return $default;
+function x6CSSRule($selector, $rule, $default = '')
+{
+    if (!x6CSS()) {
+        return $default;
+    }
 
     $skin = $GLOBALS['AG']['x6skin']['css'];
-    if (!isset($skin[$selector])) return $default;
+    if (!isset($skin[$selector])) {
+        return $default;
+    }
     $retval = arr($skin[$selector], $rule, $default);
     return str_replace('px', '', $retval);
 }
 
-function x6cssRuleSize($selector, $rule, $default = 0) {
-    if (!x6CSS()) return $default;
+function x6cssRuleSize($selector, $rule, $default = 0)
+{
+    if (!x6CSS()) {
+        return $default;
+    }
 
     $skin = $GLOBALS['AG']['x6skin']['css'];
-    if (!isset($skin[$selector])) return $default;
+    if (!isset($skin[$selector])) {
+        return $default;
+    }
     $retval = arr($skin[$selector], $rule, $default);
     $arv = explode(' ', $retval);
     foreach ($arv as $arv1) {
@@ -4530,7 +1923,8 @@ function x6cssRuleSize($selector, $rule, $default = 0) {
     return $default;
 }
 
-function x6cssHeight($element) {
+function x6cssHeight($element)
+{
     $defaultLH = x6cssDefine('lh0', 0);
     $height = x6CSSRuleSize($element, 'line-height', $defaultLH);
     $height+= x6CSSRuleSize($element, 'border-top', 0);
@@ -4553,7 +1947,8 @@ function x6cssHeight($element) {
     return $height;
 }
 
-function x6cssHeightLessH1() {
+function x6cssHeightLessH1()
+{
     $retval = x6cssDefine('insideheight');
     $retval-= (x6cssHeight('h1') * 2);
     return $retval;
@@ -4605,7 +2000,8 @@ function x6cssHeightLessH1() {
  * string - sql formatted string
  *
  ******/
-function SQL_FORMAT($t, $v, $clip = 0) {
+function SQL_FORMAT($t, $v, $clip = 0)
+{
     global $AG;
     switch ($t) {
         case 'mime-x':
@@ -4622,7 +2018,9 @@ function SQL_FORMAT($t, $v, $clip = 0) {
         case 'ph12':
         case "gender":
         case 'mime-f':
-            if ($clip > 0 && strlen($v) > $clip) $v = substr($v, 0, $clip);
+            if ($clip > 0 && strlen($v) > $clip) {
+                $v = substr($v, 0, $clip);
+            }
 
             // KFD 9/10/07, one of the doctors wants all caps
             if (configGet('ALLCAPS') == 'Y') {
@@ -4633,38 +2031,41 @@ function SQL_FORMAT($t, $v, $clip = 0) {
 
         case "mime-h-f":
         case "mime-h":
-            if ($clip > 0 && strlen($v) > $clip) $v = substr($v, 0, $clip);
+            if ($clip > 0 && strlen($v) > $clip) {
+                $v = substr($v, 0, $clip);
+            }
 
             //return "'".SQL_ESCAPE_BINARY($v)."'";
             return "'" . SQL_ESCAPE_STRING($v) . "'";
             break;
 
         case "dtime":
-            if ($v == "") return "null";
-
-            //else return X_UNIX_TO_SQLTS($v);
-            else return "'" . date('r', dEnsureTS($v)) . "'";
+            if ($v == "") {
+                return "null";
+            } //else return X_UNIX_TO_SQLTS($v);
+            else {
+                return "'" . date('r', dEnsureTS($v)) . "'";
+            }
             break;
 
         case "date":
         case "rdate":
-
             // A blank is sent as null to server
-            if ($v == "") return "null";
-            if ($v == '0') return 'null';
+            if ($v == "") {
+                return "null";
+            }
+            if ($v == '0') {
+                return 'null';
+            }
 
             // Try to detect case like 060507
             if (strlen($v) == 6 && strpos($v, '/') === false && strpos($v, '-') === false) {
-
                 $year = substr($v, 4);
                 $year = $year < 20 ? '20' . $year : '19' . $year;
                 $v = substr($v, 0, 2) . '/' . substr($v, 2, 2) . '/' . $year;
                 $v = strtotime($v);
-            }
-
-            // Try to detect case like 06052007
+            } // Try to detect case like 06052007
             elseif (strlen($v) == 8 && strpos($v, '/') === false && strpos($v, '-') === false) {
-
                 if (substr($v, 0, 2) == '19' || substr($v, 0, 2) == '20') {
                     $v = substr($v, 0, 2) . '/' . substr($v, 2, 2) . '/' . substr($v, 4);
                 } else {
@@ -4672,7 +2073,6 @@ function SQL_FORMAT($t, $v, $clip = 0) {
                 }
                 $v = strtotime($v);
             } elseif (!is_numeric($v)) {
-
                 // A USA prejudice, assume they will always enter m-d-y, and
                 // convert dashes to slashes so they can use dashes if they want
                 $v = str_replace('-', '/', $v);
@@ -4697,11 +2097,13 @@ function SQL_FORMAT($t, $v, $clip = 0) {
         case "money":
         case "numb":
         case "int":
+            // These should all be treat the same
             if ($v == "" || $v == '.') {
                 return "0";
             } else {
                 return SQL_ESCAPE_STRING(trim($v));
             }
+            // These should all be treat the same
         case "rtime":
         case "time":
             // KFD 7/8/08, if they returned a jquery time,
@@ -4709,13 +2111,19 @@ function SQL_FORMAT($t, $v, $clip = 0) {
             if (strpos($v, 'M') !== false) {
                 list($time, $ampm) = explode(" ", $v);
                 list($hours, $mins) = explode(":", $time);
-                if ($ampm == 'PM' && $hours <> 12) $hours+= 12;
-                if ($ampm == 'AM' && $hours == 12) $hours = 0;
+                if ($ampm == 'PM' && $hours <> 12) {
+                    $hours+= 12;
+                }
+                if ($ampm == 'AM' && $hours == 12) {
+                    $hours = 0;
+                }
                 return "'" . (($hours * 60) + $mins) . "'";
             } else {
                 return "'$v'";
             }
-            if ($v == '') return 'null';
+            if ($v == '') {
+                return 'null';
+            }
             return $v;
 
         //$arr = explode(":",$v);
@@ -4740,7 +2148,8 @@ function SQL_FORMAT($t, $v, $clip = 0) {
      *
      * SOURCE
     */
-function SQLFC($value) {
+function SQLFC($value)
+{
     return SQL_Format('char', $value);
 }
 
@@ -4762,7 +2171,8 @@ function SQLFC($value) {
      *
      * SOURCE
     */
-function SQLFN($value) {
+function SQLFN($value)
+{
     return SQL_Format('numb', $value);
 }
 
@@ -4784,7 +2194,8 @@ function SQLFN($value) {
      *
      * SOURCE
     */
-function SQLFD($value) {
+function SQLFD($value)
+{
     return SQL_Format('date', $value);
 }
 
@@ -4806,7 +2217,8 @@ function SQLFD($value) {
      *
      * SOURCE
     */
-function SQLFDT($value) {
+function SQLFDT($value)
+{
     return SQL_Format('dtime', $value);
 }
 
@@ -4834,7 +2246,8 @@ function SQLFDT($value) {
      * string - WHERE clause
      *
      ******/
-function sqlFilter($colinfo, $tcv, $table = '') {
+function sqlFilter($colinfo, $tcv, $table = '')
+{
     $type_id = $colinfo['type_id'];
     $column_id = $colinfo['column_id'];
     $c = $column_id;
@@ -4843,7 +2256,9 @@ function sqlFilter($colinfo, $tcv, $table = '') {
         $table = "$table.";
     }
     // If the value is an asterisk, return an unconditional true
-    if ($tcv == '*') return '1=1';
+    if ($tcv == '*') {
+        return '1=1';
+    }
     // Determine if we will use dashes
     $ignore_dashes = a($colinfo, 'uisearch_ignore_dash', 'N');
     // Get the dash operator
@@ -4995,7 +2410,8 @@ function sqlFilter($colinfo, $tcv, $table = '') {
          * string - ORDER BY clause
          *
          ******/
-function sqlOrderBy($vals) {
+function sqlOrderBy($vals)
+{
     // First see if an explicit sortAD and sortCol were passed
     if (gpExists('sortCol')) {
         if (gp('sortAsc', false)) {
@@ -5098,7 +2514,8 @@ function sqlOrderBy($vals) {
          *
          ******
         */
-function JoomlaCompatibility($template_name, $template_color = '') {
+function JoomlaCompatibility($template_name, $template_color = '')
+{
 
     // Templates won't run unless this is defined.
     define('_VALID_MOS', true);
@@ -5126,7 +2543,6 @@ function JoomlaCompatibility($template_name, $template_color = '') {
     if (tmppathInsert() == '') {
         $GLOBALS['J']['mC_live_site'] = '';
     } else {
-
         // strip off trailing slash for Joomla.  Andromeda functions
         // expect a trailing slash, but Rockettheme Joomla templates
         // provide one themselves.  BTW, technically this does not
@@ -5139,30 +2555,6 @@ function JoomlaCompatibility($template_name, $template_color = '') {
     $GLOBALS['J']['template_color'] = $template_color;
 }
 
-/****c* Joomla-Compatibility/joomla_fake
- *
- * NAME
- * joomla_fake
- *
- * FUNCTION
- * Class needed by Joomla templates so they go into
- * normal mode.
- *
- * SOURCE
- */
-class joomla_fake
-{
-    var $id = false;
-    var $template_name = '';
-
-    // KFD 2/25/08 added for
-    var $_session = array();
-
-    function getTemplate() {
-        return $this->template_name;
-    }
-}
-
 /******/
 
 /**
@@ -5170,7 +2562,8 @@ class joomla_fake
  *
  * INPUTS
  */
-function mosShowHead() {
+function mosShowHead()
+{
     return '';
 }
 
@@ -5194,7 +2587,8 @@ function mosShowHead() {
          *
          ******
         */
-function mosCountModules($name) {
+function mosCountModules($name)
+{
 
     //$content=vgaGet('JOOMLA_COUNT_'.$name,'');
     //if($content!=='') return $content;
@@ -5228,7 +2622,8 @@ function mosCountModules($name) {
          *
          *******
         */
-function mosLoadModules($name, $arg1 = null) {
+function mosLoadModules($name, $arg1 = null)
+{
 
     //$content=vgaGet('JOOMLA_LOAD_'.$name);
     //if($content<>'') {
@@ -5260,7 +2655,8 @@ function mosLoadModules($name, $arg1 = null) {
         *
         ******
         */
-function mosPathWay() {
+function mosPathWay()
+{
 
     //echo "mosPathway";
 
@@ -5276,7 +2672,8 @@ function mosPathWay() {
          *
          *******
         */
-function mosMainBody() {
+function mosMainBody()
+{
     ehStandardContent();
 }
 
@@ -5299,7 +2696,8 @@ function mosMainBody() {
          *
          ******
         */
-function tmpPathInsert() {
+function tmpPathInsert()
+{
 
     // DO Removed 9-5-2008 scriptPath() is more reliable and works with Friendly URL's
     //return vgfGet("tmpPathInsert");
@@ -5320,7 +2718,8 @@ function tmpPathInsert() {
          *
          ******/
 
-function scriptPath() {
+function scriptPath()
+{
     $path = $_SERVER['SCRIPT_NAME'];
     $path = str_replace("index.php", "", $path);
 
@@ -5361,7 +2760,8 @@ function scriptPath() {
          * string URL  url without &
          ******
         */
-function ampReplace($input) {
+function ampReplace($input)
+{
     return str_replace("&", "&amp;", $input);
 }
 
@@ -5382,7 +2782,8 @@ function ampReplace($input) {
          *
          * SOURCE
         */
-function sefRelToAbs($input) {
+function sefRelToAbs($input)
+{
     return tmpPathInsert() . $input;
 }
 
@@ -5401,8 +2802,11 @@ function sefRelToAbs($input) {
          *
          ******
         */
-function fwModuleMenuRight() {
-    if (!LoggedIn()) return;
+function fwModuleMenuRight()
+{
+    if (!LoggedIn()) {
+        return;
+    }
     $extra = '';
     // A few x4 options
     if (configGet('x4Welcome', 'N') == 'Y') {
@@ -5437,7 +2841,8 @@ function fwModuleMenuRight() {
 /**
  * @deprecated
  */
-function hLinkPostFromArray($class, $caption, $parms, $hExtra = '') {
+function hLinkPostFromArray($class, $caption, $parms, $hExtra = '')
+{
     $hclass = hTagParm("class", $class);
     $hparms = http_build_query($parms);
     return "<a " . $hExtra . " $hclass href=\"javascript:formPostString('$hparms');\">" . $caption . "</a>";
@@ -5446,15 +2851,20 @@ function hLinkPostFromArray($class, $caption, $parms, $hExtra = '') {
 /**
  * @deprecated
  */
-function ListDelim($input, $suffix = ",") {
-    if ($input == "") return "";
-    else return $suffix;
+function ListDelim($input, $suffix = ",")
+{
+    if ($input == "") {
+        return "";
+    } else {
+        return $suffix;
+    }
 }
 
 /**
  * @deprecated
  */
-function hLinkImage($pic, $alt, $var, $val, $enabled) {
+function hLinkImage($pic, $alt, $var, $val, $enabled)
+{
     $hparms = http_build_query(array($var => $val));
     if (strpos($pic, '.') === false) {
         $ext = "jpg";
@@ -5468,13 +2878,15 @@ function hLinkImage($pic, $alt, $var, $val, $enabled) {
     }
 }
 
-function loadYaml($filename) {
-    include_once ("spyc.php");
+function loadYaml($filename)
+{
+    include_once"spyc.php";
     $parser = new Spyc;
     $temparray = $parser->load($filename);
     return array($temparray, $parser->errors);
 }
-function removeYamlLineNumbers(&$yaml) {
+function removeYamlLineNumbers(&$yaml)
+{
     foreach ($yaml as $key => $value) {
         if ($key == '__yaml_line') {
             unset($yaml[$key]);
@@ -5553,11 +2965,14 @@ function removeYamlLineNumbers(&$yaml) {
  *
  * SOURCE
  */
-function SessionGet($key, $default = "", $sfx = 'app') {
+function SessionGet($key, $default = "", $sfx = 'app')
+{
     $xkey = $GLOBALS["AG"]["application"] . "_" . $sfx . "_" . $key;
     if (isset($_SESSION[$xkey])) {
         return $_SESSION[$xkey];
-    } else return $default;
+    } else {
+        return $default;
+    }
 }
 
 /******/
@@ -5582,7 +2997,8 @@ function SessionGet($key, $default = "", $sfx = 'app') {
  *
  * SOURCE
  */
-function SessionSet($key, $value, $sfx = 'app') {
+function SessionSet($key, $value, $sfx = 'app')
+{
     $xkey = $GLOBALS["AG"]["application"] . "_" . $sfx . "_" . $key;
     $_SESSION[$xkey] = $value;
 }
@@ -5606,7 +3022,8 @@ function SessionSet($key, $value, $sfx = 'app') {
  *
  * SOURCE
  */
-function SessionUnSet($key, $context = 'app', $sfx = 'app') {
+function SessionUnSet($key, $context = 'app', $sfx = 'app')
+{
     $x = $context;
     $xkey = $GLOBALS["AG"]["application"] . "_" . $sfx . "_" . $key;
     unset($_SESSION[$xkey]);
@@ -5629,7 +3046,8 @@ function SessionUnSet($key, $context = 'app', $sfx = 'app') {
  * variables, there is more information on what these are on the
  * [[Session Variables]] page.
  ******/
-function SessionReset() {
+function SessionReset()
+{
     global $AG;
     foreach ($_SESSION as $key => $value) {
         $app = $AG['application'] . '_';
@@ -5647,7 +3065,8 @@ function SessionReset() {
  * FUNCTION
  * DEPRECATED
  ******/
-function SessionUnSet_Prefix($prefix) {
+function SessionUnSet_Prefix($prefix)
+{
     $prefix = $GLOBALS["AG"]["application"] . "_" . $prefix;
     foreach ($_SESSION as $key => $value) {
         if (substr($key, 0, strlen($prefix)) == $prefix) {
@@ -5698,7 +3117,8 @@ function SessionUnSet_Prefix($prefix) {
  *
  * SOURCE
  */
-function vgaGet($key, $default = '') {
+function vgaGet($key, $default = '')
+{
     return isset($GLOBALS['appdata'][$key]) ? $GLOBALS['appdata'][$key] : $default;
 }
 
@@ -5723,7 +3143,8 @@ function vgaGet($key, $default = '') {
  *
  * SOURCE
  */
-function vgaSet($key, $value = '') {
+function vgaSet($key, $value = '')
+{
     $GLOBALS['appdata'][$key] = $value;
 }
 
@@ -5750,12 +3171,15 @@ function vgaSet($key, $value = '') {
  * mixed - value for the key
  ******
  */
-function vgfGet($key, $default = '') {
+function vgfGet($key, $default = '')
+{
 
     // hardcopy routines.  Some framework variables are actually
     // constructed from other things
     $hc = array('PageTitle');
-    if (in_array($key, $hc)) return vgfGetHC($key, $default);
+    if (in_array($key, $hc)) {
+        return vgfGetHC($key, $default);
+    }
 
     if (isset($GLOBALS['fwdata'][$key])) {
         return $GLOBALS['fwdata'][$key];
@@ -5766,12 +3190,12 @@ function vgfGet($key, $default = '') {
     }
 }
 
-function vgfGetHC($key, $default = '') {
+function vgfGetHC($key, $default = '')
+{
     switch ($key) {
         case 'PageTitle':
             if (vgfGet('UseSubtitle', false)) {
                 return vgfGet('PageSubtitle');
-                break;
             } else {
                 $repl = Optionget('SITETITLE');
                 $base = $repl == '' ? ValueGet('PageTitle') : $repl;
@@ -5779,8 +3203,9 @@ function vgfGetHC($key, $default = '') {
                     $base = trim($base) . ": " . trim(vgaGet('PageTitleSuffix'));
                 }
                 return $base;
-                break;
+                
             }
+            break;
         default:
             return $default;
     }
@@ -5805,7 +3230,8 @@ function vgfGetHC($key, $default = '') {
  *
  * SOURCE
  */
-function vgfSet($key, $value = '') {
+function vgfSet($key, $value = '')
+{
 
     //echo $key." - ".$value;
     //$a=xdebug_get_function_stack();
@@ -5822,96 +3248,13 @@ function vgfSet($key, $value = '') {
 // ==================================================================
 // ==================================================================
 
-
-/**
-name:_default_
-parent:GET-POST Variables
- */
-
-// ------------------------------------------------------------------
-
-
-/**
-name:GET-POST Variables
-parent:Framework API Reference
-=Accessing POST and GET Variables=
-Andromeda combines the PHP superglobals <span class="syntax10">$_GET</span>
-and <span class="syntax10">$_POST</span> into one array.  The POST variables
-are processed first, and then the GET variables are processed,
-so that a GET will override a POST of the same name.  This feature
-is entirely for the convenience of the programmer so that you do not
-have to distinguish between these two sources.
-Unlike many systems, Andromeda does ''not want to sanitize''
-or in any way modify the data that comes in through POST/GET.
-There are two reasons for this:
- *The sanitation process is different for a browser or a database,
-and sanitizing for one corrupts for the other.  Therfore we
-<a href="coding.html#5">Sanitize when Sending</a>.
- *You may need to handle the raw data.
-The "no-sanitization" policy runs counter to the default installation
-of PHP5.  By default PHP5 has a setting turned on called
-<a class="phpfunc" href="http://www.php.net/manual/en/ref.info.php#ini.magic-quotes-gpc">magic-quotes-gpc</a> which modifies data.  During the
-processing of GET-POST Variables, Andromeda detects this setting.
-If the setting is turned on, Andromeda will pass the data through
-<a class="phpfunc" href="http://www.php.net/manual/en/function.stripslashes.php">stripslashes()</a> to return it to its original state.
-However, there is a small chance that this process will not return
-the exact value originally posted, so if you have a server used
-exclusively for Andromeda, you should turn off
-<a class="phpfunc" href="http://www.php.net/manual/en/ref.info.php#ini.magic_quotes_gpc">magic_quotes_gpc</a> in PHP.INI.
-=Reading Variables From A Request=
-You can pull any value from the current request with the [[gp]] function,
-which takes as its arguments the variable name.
-You can find out if a variable was posted in by passing the variable name to
-the [[gpExists]] function, which returns true or false.
-You can capture a family of variables into a [[row array]] with the
-function [[roowFromGP]], which takes as its single argument a string prefix.
-All variables whose name begins with that prefix will be put into the array
-that is returned.  The key names will have the prefix itself stripped off.
-You can set the value of a posted variable, to make it look to later code as
-if it came from the browser, with [[gpSet]].  A variable set
-this way does not go out to the browser, it appears as if it came in on the
-current request.  You can set the value of hidden variables that will go
-back to the browser with the [[Hidden]] function.
-=Writing Variables=
-You can set the value of a hidden variable that will go out to the browser with
-[[Hidden]] which takes as its arguments a name and a value.  This is not the
-same as using [[gpSet]], because the former puts a value onto the form that
-will be sent to the browser, and therefore returned on the next request, while the
-latter "fakes" the appearance of a variable coming in on the current request.
-=Framework Conventions=
-The framework generates a lot of its own variables, which follow certain conventions.
-The framework uses prefixes to group variables together for similar treatment.
-The special prefix for application-specific variables is "ga_", the framework will
-absolutely never create a form variable with that name prefix.
-The conventions in use by the framework are:
- *prefix: gp_, control parameters for a page request, such as a table name,
-a flag to go to the next page, and so forth.  Never contains user data.
- *subset: gp_dd_, used by the framework to specify drilldown and drillback commands.
-8prefix: gpx_, These appear in every page sent to the browser, and contain
-the parameters used to process and generate this HTML.  The gp_* variables
-that are read and processed at the beginning of a page request are written
-out at the end of the page request to generate these values.
- *prefix: ga_, <b>reserved for application use</b>.  The framework will never produce
-variables with this name prefix.
- *prefix: array_, visible user input controls such as HTML INPUT
-and TEXTAREA controls.
- *prefix: parent_, hidden controls that contain the values of the primary key
-of the current row of the current table.
- *variable: gpContext, contains the entire [[window context]].  Serialized and base64'd.
- *variable: gpControls, contains information about the array_* controls
-Serialized and base64'd.
-The following are [[deprecated]] form variable conventions:
- *prefix: txt_, deprecated.  Class x_table used these for user input controls.
- *prefix: dd_, deprecated.  Class x_table used these
-for drilldown information.
- */
-
 // ------------------------------------------------------------------
 // Named stack functions
 // ------------------------------------------------------------------
 
 
-/** (SYSTEM) Initialize a Stack
+/**
+ * (SYSTEM) Initialize a Stack
  *
  * Initializes a stack for {@link scStackPush} and {@link scStackPop}
  *
@@ -5943,7 +3286,8 @@ for drilldown information.
          *
          * SOURCE
         */
-function _scStackInit($stackname) {
+function _scStackInit($stackname)
+{
     if (!isset($GLOBALS['STACK'])) {
         $GLOBALS['STACK'] = array();
     }
@@ -5968,7 +3312,8 @@ function _scStackInit($stackname) {
          *
          * SOURCE
         */
-function scStackPush($stackname, $value) {
+function scStackPush($stackname, $value)
+{
     _scStackInit($stackname);
     $GLOBALS['STACK'][$stackname][] = $value;
 }
@@ -5992,7 +3337,8 @@ function scStackPush($stackname, $value) {
          *
          * SOURCE
         */
-function scStackPop($stackname) {
+function scStackPop($stackname)
+{
     _scStackInit($stackname);
     return array_pop($GLOBALS['STACK'][$stackname]);
 }
@@ -6031,7 +3377,8 @@ function scStackPop($stackname) {
          *
          * SOURCE
         */
-function return_value_add($element, $value) {
+function return_value_add($element, $value)
+{
     global $AG;
     $retvals = ArraySafe($AG, 'retvals', array());
     $retvals[$element] = $value;
@@ -6064,7 +3411,8 @@ function return_value_add($element, $value) {
          *
          *---**
         */
-function retCmd($command, $element, $value) {
+function retCmd($command, $element, $value)
+{
     return_command_add($command, $element, $value);
 }
 
@@ -6092,7 +3440,8 @@ function retCmd($command, $element, $value) {
          *
          * SOURCE
         */
-function return_command_add($command, $element, $value) {
+function return_command_add($command, $element, $value)
+{
     global $AG;
     $retcommands = ArraySafe($AG, 'retcommands', array());
     $retcommands[$command][$element] = $value;
@@ -6103,7 +3452,6 @@ function return_command_add($command, $element, $value) {
 
 /**
  * Sends returns to the browser using ajax
- *
  */
 
 /*---f* Ajax-Return-Assembly/return_as_ajax
@@ -6116,7 +3464,8 @@ function return_command_add($command, $element, $value) {
          *
          *---**
         */
-function returns_as_ajax() {
+function returns_as_ajax()
+{
     global $AG;
     $retvals = ArraySafe($AG, 'retvals', array());
     $rv2 = array();
@@ -6169,19 +3518,25 @@ function returns_as_ajax() {
          *
          * SOURCE
         */
-function DD_EnsureREf(&$unknown) {
-    if (is_array($unknown)) return $unknown;
-    else return dd_TableRef($unknown);
+function DD_EnsureREf(&$unknown)
+{
+    if (is_array($unknown)) {
+        return $unknown;
+    } else {
+        return dd_TableRef($unknown);
+    }
 }
 
 /*---**/
 
-function DD_Table($table_id) {
-    include_once ("ddtable_" . $table_id . ".php");
+function DD_Table($table_id)
+{
+    include_once"ddtable_" . $table_id . ".php";
     return $GLOBALS["AG"]["tables"][$table_id];
 }
 
-function ddNoWrites() {
+function ddNoWrites()
+{
     return array('SEQUENCE', 'FETCH', 'DISTRIBUTE', 'EXTEND', 'SUM', 'MIN', 'MAX', 'COUNT', 'LATEST', 'TS_INS', 'TS_UPD', 'UID_INS', 'UID_UPD');
 }
 
@@ -6207,7 +3562,8 @@ function ddNoWrites() {
  *
  ******
  */
-function &ddTable($table_id) {
+function ddTable($table_id)
+{
     // Don't repeat all of this work. If this has already
     // been run don't run't it again
     if (is_array($table_id)) {
@@ -6221,7 +3577,7 @@ function &ddTable($table_id) {
     if (!file_exists($GLOBALS['AG']['dirs']['generated'] . 'ddtable_' .$table_id .'.php')) {
         $GLOBALS['AG']['tables'][$table_id] = array('flat' => array(), 'description' => $table_id, 'viewname' => '');
     } else {
-        include_once ("ddtable_" . $table_id . ".php");
+        include_once"ddtable_" . $table_id . ".php";
     }
     $tabdd = & $GLOBALS['AG']['tables'][$table_id];
     //echo "Here is first load:";
@@ -6275,8 +3631,12 @@ function &ddTable($table_id) {
     // --> EARLY RETURN
     //     If a root user, or there is no group, no point
     //     in continuing
-    if (SessionGet('ROOT')) return $GLOBALS['AG']['tables'][$table_id];
-    if (SessionGet('GROUP_ID_EFF', '') == '') return $GLOBALS['AG']['tables'][$table_id];
+    if (SessionGet('ROOT')) {
+        return $GLOBALS['AG']['tables'][$table_id];
+    }
+    if (SessionGet('GROUP_ID_EFF', '') == '') {
+        return $GLOBALS['AG']['tables'][$table_id];
+    }
     // Capture the effective group and keep going
     $group = SessionGet('GROUP_ID_EFF');
     // Check for a view assignment
@@ -6306,7 +3666,9 @@ function &ddTable($table_id) {
             $alist = explode(',', $list);
             $alist2 = array();
             foreach ($alist as $column_id) {
-                if (isset($tabdd['flat'][$column_id])) $alist2[] = $column_id;
+                if (isset($tabdd['flat'][$column_id])) {
+                    $alist2[] = $column_id;
+                }
             }
             $tabdd['projections'][$idx] = implode(',', $alist2);
         }
@@ -6357,7 +3719,8 @@ function &ddTable($table_id) {
  *
  ******
  */
-function ddView($tabx) {
+function ddView($tabx)
+{
     // If not given an array, assume we were given the name of
     // the table and go get the array
     if (!is_array($tabx)) {
@@ -6397,11 +3760,11 @@ function ddView($tabx) {
  *
  ******
  */
-function ddUserPerm($table_id, $perm_id) {
+function ddUserPerm($table_id, $perm_id)
+{
 
     // Menu is done a little differently than the rest
     if ($perm_id == 'menu') {
-
         // KFD 7/19/07.  This code assumes that tablepermsmenu lists
         //               both the base table and derived column-security table,
         //               while tablepermssel lists only the views, go figure.
@@ -6421,7 +3784,9 @@ function ddUserPerm($table_id, $perm_id) {
     //              It fools the framework into thinking it can access
     //              any table, though actual server-side security will
     //              prevent unauthorized access.
-    if (!LoggedIn()) return true;
+    if (!LoggedIn()) {
+        return true;
+    }
     //
     // KFD 9/2/08: Original code is here
     return in_array($table_id, SessionGET('TABLEPERMS' . $perm_id));
@@ -6438,11 +3803,20 @@ function ddUserPerm($table_id, $perm_id) {
 //   return $retval;
 //}
 
-function DD_ColumnBrowse(&$col, &$table) {
-    if ($col["column_id"] == "skey") return false;
-    if ($col["uino"] == "Y") return false;
-    if ($col["uisearch"] == "Y") return true;
-    if ($table["risimple"] == "Y") return true;
+function DD_ColumnBrowse(&$col, &$table)
+{
+    if ($col["column_id"] == "skey") {
+        return false;
+    }
+    if ($col["uino"] == "Y") {
+        return false;
+    }
+    if ($col["uisearch"] == "Y") {
+        return true;
+    }
+    if ($table["risimple"] == "Y") {
+        return true;
+    }
     return false;
 }
 
@@ -6464,12 +3838,14 @@ function DD_ColumnBrowse(&$col, &$table) {
          *
          *---**
         */
-function DD_TableProperty($table_id, $property) {
+function DD_TableProperty($table_id, $property)
+{
     $table = & ddTable($table_id);
     return $table[$property];
 }
 
-function DD_TableDropdown($table_id) {
+function DD_TableDropdown($table_id)
+{
 
     // Get reference to table's data dictionary
     $table = DD_TableRef($table_id);
@@ -6509,7 +3885,8 @@ function DD_TableDropdown($table_id) {
          *
          *---**
         */
-function DDTable_IDResolve($table_id) {
+function DDTable_IDResolve($table_id)
+{
     return ddView($table_id);
 
     // Both super user and nobody get original table
@@ -6527,24 +3904,25 @@ function DDTable_IDResolve($table_id) {
     $ddTable = dd_TableRef($table_id);
 
     // This is case of nonsense table, give them back original table
-    if (count($ddTable) == 0) return $table_id;
+    if (count($ddTable) == 0) {
+        return $table_id;
+    }
 
     //echo "permspec is: ".$ddTable['permspec'];
     $views = ArraySafe($ddTable, 'tableresolve', array());
-    if (count($views) == 0) return $table_id;
-    else
-
+    if (count($views) == 0) {
+        return $table_id;
+    } else if (LoggedIn()) {
         // KFD 1/23/08.  This code takes advantage of the fact that
         //   the public user by itself is always the very last
         //   effective group.  Therefore, if a user is not logged
         //   in, we will take the very last entry, assuming that it
         //   gives the answer for somebody who is only in one group.
         //
-        if (LoggedIn()) {
-            return $views[SessionGet('GROUP_ID_EFF') ];
-        } else {
-            return array_pop($views);
-        }
+        return $views[SessionGet('GROUP_ID_EFF') ];
+    } else {
+        return array_pop($views);
+    }
 }
 
 /*---f* Data Dictinary Routines/DD_ColInsertsOK
@@ -6571,30 +3949,41 @@ function DDTable_IDResolve($table_id) {
          *
          *---**
         */
-function DD_ColInsertsOK(&$colinfo, $mode = 'html') {
+function DD_ColInsertsOK(&$colinfo, $mode = 'html')
+{
 
     // If in a drilldown, any parent column is read-only
     if (DrillDownLevel() > 0 & $mode == 'html') {
         $dd = DrillDownTop();
-        if (isset($dd['parent'][$colinfo['column_id']])) return false;
+        if (isset($dd['parent'][$colinfo['column_id']])) {
+            return false;
+        }
     }
     $aid = strtolower(trim(a($colinfo, "automation_id", '')));
     return in_array($aid, array('seqdefault', 'fetchdef', 'default', 'blank', 'none', '', 'synch', 'queuepos', 'dominant'));
 }
 
-function DD_ColUpdatesOK(&$colinfo) {
+function DD_ColUpdatesOK(&$colinfo)
+{
 
     // KFD 10/22/07, allow changes to primary key
     if ($colinfo['primary_key'] == 'Y') {
-        if (ArraySafe($colinfo, 'pk_change', 'N') == 'Y') return true;
-        else return false;
+        if (ArraySafe($colinfo, 'pk_change', 'N') == 'Y') {
+            return true;
+        } else {
+            return false;
+        }
     }
     if (DrillDownLevel() > 0) {
         $dd = DrillDownTop();
-        if (isset($dd['parent'][$colinfo['column_id']])) return false;
+        if (isset($dd['parent'][$colinfo['column_id']])) {
+            return false;
+        }
     }
     $aid = strtolower(trim($colinfo["automation_id"]));
-    if ($aid == '') return true;
+    if ($aid == '') {
+        return true;
+    }
     $automations = array('seqdefault', 'fetchdef', 'default', 'blank', 'none', '', 'synch', 'queuepos', 'dominant');
     return in_array($aid, $automations);
 }
@@ -6617,19 +4006,29 @@ function DD_ColUpdatesOK(&$colinfo) {
          *
          *---**
         */
-function DDColumnWritable(&$colinfo, $gpmode, $value) {
+function DDColumnWritable(&$colinfo, $gpmode, $value)
+{
     $NEVERUSED = $value;
 
     // If neither update or ins we don't know, just say ok
-    if ($gpmode <> 'ins' && $gpmode <> 'upd') return true;
+    if ($gpmode <> 'ins' && $gpmode <> 'upd') {
+        return true;
+    }
 
     // Look for explicit settings in the dd arrays
-    if (ArraySafe($colinfo, 'upd', '') == 'N' && $gpmode == 'upd') return false;
-    if (ArraySafe($colinfo, 'ins', '') == 'N' && $gpmode == 'ins') return false;
+    if (ArraySafe($colinfo, 'upd', '') == 'N' && $gpmode == 'upd') {
+        return false;
+    }
+    if (ArraySafe($colinfo, 'ins', '') == 'N' && $gpmode == 'ins') {
+        return false;
+    }
 
     // so much for the exceptions, now just go for normal answer
-    if ($gpmode == 'ins') return DD_ColInsertsOK($colinfo);
-    else return DD_ColUpdatesOK($colinfo);
+    if ($gpmode == 'ins') {
+        return DD_ColInsertsOK($colinfo);
+    } else {
+        return DD_ColUpdatesOK($colinfo);
+    }
 }
 
 /*---f* Data-Dicitonary-Routines/DD_TableRef
@@ -6648,7 +4047,8 @@ function DDColumnWritable(&$colinfo, $gpmode, $value) {
          *
          *---**
         */
-function DD_TableRef($table_id) {
+function DD_TableRef($table_id)
+{
     $retval = ddTable($table_id);
     return $retval;
     if (!isset($GLOBALS["AG"]["tables"][$table_id])) {
@@ -6657,7 +4057,7 @@ function DD_TableRef($table_id) {
         if (!file_exists($file)) {
             return array();
         } else {
-            include ($file);
+            include$file;
         }
     }
     $retval = & $GLOBALS["AG"]["tables"][$table_id];
@@ -6670,7 +4070,6 @@ function DD_TableRef($table_id) {
 
 
 /**
- *
  * This function returns the path to the application's
  * [[top directory]].  All other directories, such as the
  * [[lib directory]] and the [[application directory]] are all
@@ -6682,7 +4081,8 @@ function DD_TableRef($table_id) {
  * RETURN
  * string  Directory Path
  */
-function fsDirTop() {
+function fsDirTop()
+{
     return $GLOBALS['AG']['dirs']['root'];
 }
 
@@ -6702,9 +4102,13 @@ function fsDirTop() {
  * RETURN
  * mixed   value associated with $key in $arr.
  */
-function ArraySafe(&$arr, $key, $value = "") {
-    if (isset($arr[$key])) return $arr[$key];
-    else return $value;
+function ArraySafe(&$arr, $key, $value = "")
+{
+    if (isset($arr[$key])) {
+        return $arr[$key];
+    } else {
+        return $value;
+    }
 }
 
 /**
@@ -6717,10 +4121,12 @@ function ArraySafe(&$arr, $key, $value = "") {
  * RETURN
  * mixed   value associated with $key in $arr.
  */
-function arr($a, $key, $value = '') {
+function arr($a, $key, $value = '')
+{
     return ArraySafe($a, $key, $value);
 }
-function a(&$a, $key, $value = '') {
+function a(&$a, $key, $value = '')
+{
     return ArraySafe($a, $key, $value);
 }
 
@@ -6736,7 +4142,8 @@ function a(&$a, $key, $value = '') {
          * RESULT
          * array - copy of the array
         */
-function array_copy($source) {
+function array_copy($source)
+{
     $retval = array();
     foreach ($source as $key => $value) {
         if (is_array($value)) {
@@ -6760,52 +4167,9 @@ function array_copy($source) {
  *
  * string $type type of element
  */
-function createElement($type) {
-    return new androHElement($type);
-}
-
-class androHElement
+function createElement($type)
 {
-    var $style = array();
-    var $atts = array();
-
-    function androHElement($type) {
-        $this->type = $type;
-        $this->children = array();
-        $this->atts = array();
-        $this->innerHTML = '';
-    }
-
-    function appendChild($object) {
-        $this->children[] = $object;
-    }
-
-    function render($indent = 0) {
-        $hIndent = str_pad('', $indent * 3);
-
-        $retval = "\n$hIndent<" . $this->type;
-
-        // Do style attributes
-        $hstyle = '';
-        foreach ($this->style as $stylename => $value) {
-            $hstyle.= "$stylename: $value;";
-        }
-        if ($hstyle <> '') {
-            $this->atts['style'] = $hstyle;
-        }
-
-        // Now output the attributes
-        foreach ($this->atts as $name => $value) {
-            $retval.= " $name = \"$value\"";
-        }
-        $retval.= ">";
-        foreach ($this->children as $onechild) {
-            $retval.= $onechild->render($indent + 1);
-        }
-        $retval.= $this->innerHTML;
-        $retval.= "\n$hIndent</" . $this->type . ">";
-        return $retval;
-    }
+    return new androHElement($type);
 }
 
 // ==================================================================
@@ -6844,38 +4208,6 @@ class androHElement
 //  dyn   dynamic saving, loading stuff
 //
 //  dd    drilldown routines
-// ==================================================================
-// ==================================================================
-// Documentation
-// ==================================================================
-// ==================================================================
-
-
-/**
-name:Standard Default Value
-parent:Framework API Reference
-Many Andromeda library functions provide a flexible way to
-handle default values.
-For example, consider the case where you want to retrieve the
-value of a [[GET-POST Variable]].  Your code must be robust enough
-to detect the cases where the value was not actually passed, and
-in those cases provide a default.  Straight PHP might look like this:
-<div class="php">
-if (!isset($_POST['book_name'])) {
-$var='Mastering PHP';
-}
-else {
-$var=$_POST['book_name'];
-}
-</div>
-The equivalent Andromeda code would look like this:
-<div class="php">
-$var=gp('book_name','Mastering PHP');
-</div>
-The second parameter is called the "Standard Default Value", and it
-tells the [[gp]] function what to return if the requested value is
-undefined or blank.
- */
 
 // ==================================================================
 // ==================================================================
@@ -6894,7 +4226,8 @@ undefined or blank.
  * string $arg2  extra argument
  * string $arg3  extra argument
  */
-function fwLogEntry($code, $desc, $arg1 = '', $arg2 = '', $arg3 = '') {
+function fwLogEntry($code, $desc, $arg1 = '', $arg2 = '', $arg3 = '')
+{
     xLogEntry('Y', $code, $desc, $arg1, $arg2, $arg3);
 }
 
@@ -6908,7 +4241,8 @@ function fwLogEntry($code, $desc, $arg1 = '', $arg2 = '', $arg3 = '') {
  * string $arg2  extra argument
  * string $arg3  extra argument
  */
-function appLogEntry($code, $desc, $arg1 = '', $arg2 = '', $arg3 = '') {
+function appLogEntry($code, $desc, $arg1 = '', $arg2 = '', $arg3 = '')
+{
     xLogEntry('N', $code, $desc, $arg1, $arg2, $arg3);
 }
 
@@ -6923,7 +4257,8 @@ function appLogEntry($code, $desc, $arg1 = '', $arg2 = '', $arg3 = '') {
  * string $arg2  extra argument
  * string $arg3  extra argument
  */
-function xLogEntry($fw, $code, $desc, $arg1 = '', $arg2 = '', $arg3 = '') {
+function xLogEntry($fw, $code, $desc, $arg1 = '', $arg2 = '', $arg3 = '')
+{
 
     // create our own connection as the anonymous user, but only
     // if not already logged in as anonymous user!  Otherwise the
@@ -6963,8 +4298,8 @@ function xLogEntry($fw, $code, $desc, $arg1 = '', $arg2 = '', $arg3 = '') {
 
 
 /**
-name:_default_
-parent:System Log Functions
+ * name:_default_
+ * parent:System Log Functions
  */
 
 // ------------------------------------------------------------------
@@ -7013,7 +4348,8 @@ parent:System Log Functions
  *
  ******
  */
-function SysLogOpen($name) {
+function SysLogOpen($name)
+{
     if (!isset($GLOBALS['AG']['logs'])) {
         $GLOBALS['AG']['logs'] = array();
     }
@@ -7056,7 +4392,8 @@ function SysLogOpen($name) {
  *
  ******
  */
-function SysLogEntry($syslog, $text) {
+function SysLogEntry($syslog, $text)
+{
     if (!is_null($syslog)) {
         $conn = $GLOBALS['AG']['logs'][$syslog];
         SQL2("insert into syslogs_e (syslog,syslog_etext)" . ' values ' . "(" . $syslog . "," . SQL_Format('char', $text) . ")", $conn);
@@ -7077,7 +4414,8 @@ function SysLogEntry($syslog, $text) {
  *
  ******
  */
-function SysLogClose($skey) {
+function SysLogClose($skey)
+{
     SysLogEntry($skey, 'Log Close Command Received');
     SQL_ConnClose($GLOBALS['AG']['logs'][$skey]);
     unset($GLOBALS['AG']['logs'][$skey]);
@@ -7091,8 +4429,8 @@ function SysLogClose($skey) {
 
 
 /**
-name:_default_
-parent:Session Variables
+ * name:_default_
+ * parent:Session Variables
  */
 
 // ==================================================================
@@ -7103,8 +4441,8 @@ parent:Session Variables
 
 
 /**
-name:_default_
-parent:Hidden Variables
+ * name:_default_
+ * parent:Hidden Variables
  */
 
 // ------------------------------------------------------------------
@@ -7151,7 +4489,8 @@ parent:Hidden Variables
          *
          * SOURCE
         */
-function Hidden($varname = null, $val = null) {
+function Hidden($varname = null, $val = null)
+{
     arrDefault($GLOBALS['AG'], 'hidden', array());
     $GLOBALS['AG']['hidden'][$varname] = $val;
 }
@@ -7201,7 +4540,8 @@ function Hidden($varname = null, $val = null) {
          *
          * SOURCE
         */
-function hiddenFromTable($table_id, $row = array()) {
+function hiddenFromTable($table_id, $row = array())
+{
     $table_id = trim($table_id);
     $table = DD_TableRef($table_id);
     $cols = array_keys($table['flat']);
@@ -7220,8 +4560,8 @@ function hiddenFromTable($table_id, $row = array()) {
 
 
 /**
-name:_default_
-parent:Context Variables
+ * name:_default_
+ * parent:Context Variables
  */
 
 // ------------------------------------------------------------------
@@ -7285,7 +4625,8 @@ parent:Context Variables
          *
          *---**
         */
-function appconget($category, $name, $key, $default = '') {
+function appconget($category, $name, $key, $default = '')
+{
     return ContextGet('app_' . $category . '_' . $name . '_' . $key, $default);
 }
 
@@ -7314,7 +4655,8 @@ function appconget($category, $name, $key, $default = '') {
          *
          *---**
         */
-function conget($category, $name, $key, $default = '') {
+function conget($category, $name, $key, $default = '')
+{
     return ContextGet('fw_' . $category . '_' . $name . '_' . $key, $default);
 }
 
@@ -7351,7 +4693,8 @@ function conget($category, $name, $key, $default = '') {
          *
          * SOURCE
         */
-function ContextGet($name, $default = '') {
+function ContextGet($name, $default = '')
+{
     $sc = & $GLOBALS['AG']['clean']['gpContext'];
     return isset($sc[$name]) ? $sc[$name] : $default;
 }
@@ -7378,7 +4721,8 @@ function ContextGet($name, $default = '') {
          *
          * SOURCE
         */
-function appConSet($category, $name, $key, $value = '') {
+function appConSet($category, $name, $key, $value = '')
+{
     return ContextSet('app_' . $category . '_' . $name . '_' . $key, $value);
 }
 
@@ -7406,7 +4750,8 @@ function appConSet($category, $name, $key, $value = '') {
          *
          * SOURCE
         */
-function conSet($category, $name, $key, $value = '') {
+function conSet($category, $name, $key, $value = '')
+{
     return ContextSet('fw_' . $category . '_' . $name . '_' . $key, $value);
 }
 
@@ -7429,7 +4774,8 @@ function conSet($category, $name, $key, $value = '') {
          *
          * SOURCE
         */
-function ContextSet($name, $value = '') {
+function ContextSet($name, $value = '')
+{
     $sc = & $GLOBALS['AG']['clean']['gpContext'];
     $sc[$name] = $value;
 }
@@ -7456,7 +4802,8 @@ function ContextSet($name, $value = '') {
          *
          * SOURCE
         */
-function appConUnSet($category, $name, $key) {
+function appConUnSet($category, $name, $key)
+{
     return ContextUnSet('app_' . $category . '_' . $name . '_' . $key);
 }
 
@@ -7484,7 +4831,8 @@ function appConUnSet($category, $name, $key) {
          *
          *---**
         */
-function conUnSet($category, $name, $key) {
+function conUnSet($category, $name, $key)
+{
     return ContextUnSet('fw_' . $category . '_' . $name . '_' . $key);
 }
 
@@ -7504,8 +4852,11 @@ function conUnSet($category, $name, $key) {
          *
          * SOURCE
         */
-function ContextUnSet($name) {
-    if (isset($GLOBALS['gpContext'][$name])) unset($GLOBALS['gpContext'][$name]);
+function ContextUnSet($name)
+{
+    if (isset($GLOBALS['gpContext'][$name])) {
+        unset($GLOBALS['gpContext'][$name]);
+    }
 }
 
 /*---**/
@@ -7523,7 +4874,8 @@ function ContextUnSet($name) {
          *
          *---**
         */
-function appConClear() {
+function appConClear()
+{
     return ContextClear('app');
 }
 
@@ -7540,7 +4892,8 @@ function appConClear() {
          *
          *---**
         */
-function ConClear() {
+function ConClear()
+{
     return ContextClear('fw');
 }
 
@@ -7557,7 +4910,8 @@ function ConClear() {
          *
          *---**
         */
-function ContextClear($prefix = '') {
+function ContextClear($prefix = '')
+{
     if ($prefix == '') {
         if (isset($GLOBALS['gpContext'])) {
             unset($GLOBALS['gpContext']);
@@ -7579,31 +4933,11 @@ function ContextClear($prefix = '') {
 
 
 /**
-name:_default_
-parent:Notices and Errors
+ * name:_default_
+ * parent:Notices and Errors
  */
 
 // ------------------------------------------------------------------
-
-
-/**
-name:Notices and Errors
-parent:Framework API Reference
-Andromeda supports (and in fact requires) delayed error reporting.
-When an error occurs in code, the error is saved temporarily using
-[[ErrorAdd]], and execution then always continues to the end.  The
-errors are then reported when the HTML is sent to the browser.
-There can be multiple errors in one request.  Any framework function
-that sends commands to the database server will also take database
-server errors and run them through [[ErrorAdd]] so that they can be
-reported.
-An error is anything at all that causes the user's expected action
-not to occur.  A notice is information that the user may need that is
-not an error.
-The Andromeda default screens report all errors and notices.
-When you make a completely custom screen or template, you must make
-provision to report errors and notices.
- */
 
 /**
  * Adds a notice to the list of notices to report to the user.
@@ -7615,7 +4949,8 @@ provision to report errors and notices.
 /* CODE PURGE CANDIDATE */
 
 /* this routine is not used by the framework */
-function NoticeAdd($notice) {
+function NoticeAdd($notice)
+{
     $GLOBALS["AG"]["messages"][] = $notice;
 }
 
@@ -7626,9 +4961,13 @@ function NoticeAdd($notice) {
  * RETURN
  * boolean
  */
-function Notices() {
-    if (count($GLOBALS["AG"]["messages"]) > 0) return true;
-    else return false;
+function Notices()
+{
+    if (count($GLOBALS["AG"]["messages"]) > 0) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 /**
@@ -7642,7 +4981,8 @@ function Notices() {
 /* CODE PURGE CANDIDATE */
 
 /* this routine is not used by the framework */
-function NoticesGet() {
+function NoticesGet()
+{
     $retval = isset($GLOBALS['AG']['messages']) ? $GLOBALS['AG']['messages'] : array();
     return $retval;
 }
@@ -7653,7 +4993,8 @@ function NoticesGet() {
  * INPUTS
  * string $error Error Text
  */
-function ErrorAdd($error) {
+function ErrorAdd($error)
+{
     $error = preg_replace('/^[Ee][Rr][Rr][Oo][Rr]:\w*(.*)/', '$1', $error);
     $GLOBALS["AG"]["trx_errors"][] = $error;
 }
@@ -7664,7 +5005,8 @@ function ErrorAdd($error) {
  * INPUTS
  * array $semilist list of errors to add
  */
-function ErrorsAdd($semilist) {
+function ErrorsAdd($semilist)
+{
     $arr = explode(";", $semilist);
     foreach ($arr as $err) {
         ErrorAdd($err);
@@ -7676,7 +5018,8 @@ function ErrorsAdd($semilist) {
  *
  * INPUTS
  */
-function ErrorsClear() {
+function ErrorsClear()
+{
     $GLOBALS['AG']['trx_errors'] = array();
 }
 
@@ -7687,27 +5030,38 @@ function ErrorsClear() {
  * RETURN
  * boolean
  */
-function Errors($prefix = '') {
+function Errors($prefix = '')
+{
     return ErrorsExist($prefix);
 }
 
 /**
  * INPUTS
+ *
  * @deprecated
  */
-function ErrorsExist($prefix = '') {
+function ErrorsExist($prefix = '')
+{
     global $AG;
-    if (!isset($AG["trx_errors"])) return false;
+    if (!isset($AG["trx_errors"])) {
+        return false;
+    }
     // never set, no errors
-    if (count($AG["trx_errors"]) == 0) return false;
+    if (count($AG["trx_errors"]) == 0) {
+        return false;
+    }
     // empty list of errors
-    if ($prefix == '') return true;
+    if ($prefix == '') {
+        return true;
+    }
     // no distinguishing prefix, any error=true
 
     // finally, look through each error for the prefix.  first found
     // returns true
     foreach ($AG['trx_errors'] as $err) {
-        if (substr(trim($err), 0, strlen($prefix)) == $prefix) return true;
+        if (substr(trim($err), 0, strlen($prefix)) == $prefix) {
+            return true;
+        }
     }
     return false;
 }
@@ -7720,17 +5074,22 @@ function ErrorsExist($prefix = '') {
  * RETURN
  * array   Error's Texts
  */
-function ErrorsGet($errorsclear = false) {
+function ErrorsGet($errorsclear = false)
+{
     $retval = isset($GLOBALS['AG']['trx_errors']) ? $GLOBALS['AG']['trx_errors'] : array();
-    if ($errorsclear) ErrorsClear();
+    if ($errorsclear) {
+        ErrorsClear();
+    }
     return $retval;
 }
 
 /**
  * INPUTS
+ *
  * @deprecated
  */
-function aErrorsClean() {
+function aErrorsClean()
+{
     if (!isset($GLOBALS['AG']['trx_errors'])) {
         $retval = array();
     } else {
@@ -7742,9 +5101,11 @@ function aErrorsClean() {
 
 /**
  * INPUTS
+ *
  * @deprecated
  */
-function aNoticesClean() {
+function aNoticesClean()
+{
     if (!isset($GLOBALS['AG']['messages'])) {
         $retval = array();
     } else {
@@ -7777,7 +5138,8 @@ function aNoticesClean() {
  * RETURN
  * string HTML_Fragment
  */
-function hErrors($class = 'alert alert-error') {
+function hErrors($class = 'alert alert-error')
+{
     $retval = "";
 
     global $AG;
@@ -7800,7 +5162,8 @@ function hErrors($class = 'alert alert-error') {
  * RETURN
  * string  errors string
  */
-function asErrors() {
+function asErrors()
+{
     global $AG;
     $retval = "";
     $errors = ErrorsGet();
@@ -7833,7 +5196,8 @@ function asErrors() {
  * RETURN
  * string  html notices
  */
-function hNotices($class = 'noticebox') {
+function hNotices($class = 'noticebox')
+{
     global $AG;
     $retval = "";
     $notices = NoticesGet();
@@ -7855,8 +5219,8 @@ function hNotices($class = 'noticebox') {
 
 
 /**
-name:_default_
-parent:User Preferences
+ * name:_default_
+ * parent:User Preferences
  */
 
 // ------------------------------------------------------------------
@@ -7885,7 +5249,8 @@ parent:User Preferences
  * string $key key for preference
  * mixed $default  default value for preference
  */
-function userPref($key, $default) {
+function userPref($key, $default)
+{
     $array = vgfGet('this_user_prefs');
     return ArraySafe($array, $key, $default);
 }
@@ -7907,7 +5272,8 @@ function userPref($key, $default) {
  *
  * @category User Preferences
  */
-function userPrefsLoad() {
+function userPrefsLoad()
+{
     $table = vgaGet('user_preferences');
     if ($table == '') {
         $row = array();
@@ -7925,29 +5291,29 @@ function userPrefsLoad() {
 
 
 /**
-name:_default_
-parent:Simple HTML Generation
+ * name:_default_
+ * parent:Simple HTML Generation
  */
 
 // ------------------------------------------------------------------
 
 
 /**
-name:Simple HTML Generation
-parent:Framework API Reference
-Andromeda contains a very large number of routines that generate
-simple snippets of HTML.  The real purpose of these routines is to
-avoid messy mixtures of HTML and PHP, mixtures that are difficult
-to write and very difficult to maintain.
+ * name:Simple HTML Generation
+ * parent:Framework API Reference
+ * Andromeda contains a very large number of routines that generate
+ * simple snippets of HTML.  The real purpose of these routines is to
+ * avoid messy mixtures of HTML and PHP, mixtures that are difficult
+ * to write and very difficult to maintain.
  */
 
 /**
-name:Optional CSS Class
-Almost all HTML generation functions allow you to specify the
-CSS class of the generated element, and almost all of them allow
-this to be specified as the first parameter to the function.
-The CSS Class can always be safely passed as an empty string, in which
-case no class assignment is made.
+ * name:Optional CSS Class
+ * Almost all HTML generation functions allow you to specify the
+ * CSS class of the generated element, and almost all of them allow
+ * this to be specified as the first parameter to the function.
+ * The CSS Class can always be safely passed as an empty string, in which
+ * case no class assignment is made.
  */
 
 /**
@@ -7973,12 +5339,12 @@ case no class assignment is made.
  * RETURN
  * string  HTML Tag Property
  */
-function hTagParm($parmname, $parmval) {
+function hTagParm($parmname, $parmval)
+{
     return $parmval == '' ? '' : $parmname . ' ="' . trim($parmval) . '"';
 }
 
 /**
- *
  * This function generates a single arbitrary HTML element, with open and close tags
  * and optional class asignment.  It does not save a great deal of typing
  * but it does allow you to avoid to confusing mixtures of PHP and HTML.
@@ -7992,13 +5358,13 @@ function hTagParm($parmname, $parmval) {
  * RETURN
  * string  HTML Generated
  */
-function hElement($class, $element, $innerHTML) {
+function hElement($class, $element, $innerHTML)
+{
     $hclass = hTagParm("class", $class);
     return "<" . $element . ' ' . $hclass . '>' . $innerHTML . "</$element>";
 }
 
 /**
- *
  * Returns an HTML TD element with open and close tags.
  *
  * The first parameter is the [[Optional CSS Class]].
@@ -8010,7 +5376,8 @@ function hElement($class, $element, $innerHTML) {
  * RETURN
  * string  Generated HTML
  */
-function hTD($class, $value, $extra = '') {
+function hTD($class, $value, $extra = '')
+{
     $class = hTagParm('class', $class);
     return "\n  <td $class " . $extra . ">" . $value . "</td>";
 }
@@ -8027,7 +5394,8 @@ function hTD($class, $value, $extra = '') {
  * RETURN
  * string  Generated HTML
  */
-function hSpan($class, $value, $extra = '') {
+function hSpan($class, $value, $extra = '')
+{
     $class = hTagParm('class', $class);
     return "\n  <span $class " . $extra . ">" . $value . "</span>";
 }
@@ -8045,7 +5413,8 @@ function hSpan($class, $value, $extra = '') {
  * RETURN
  * string  Generated HTML
  */
-function hTRFromRow($class, $row) {
+function hTRFromRow($class, $row)
+{
     $hclass = hTagParm('class', $class);
     $retval = "<tr $hclass>";
     foreach ($row as $key => $value) {
@@ -8066,16 +5435,19 @@ function hTRFromRow($class, $row) {
  * RETURN
  * string  Generated HTML
  */
-function hTRFiller($height, $colspan = '') {
+function hTRFiller($height, $colspan = '')
+{
     $colspan = hTagParm('colspan', $colspan);
     return "<tr><td height=" . $height . " $colspan></td></tr>";
 }
 
 /**
  * INPUTS
+ *
  * @deprecated
  */
-function hTable($width = 0, $height = 0) {
+function hTable($width = 0, $height = 0)
+{
     $pw = $width = 0 ? '' : ' WIDTH="' . $width . '%" ';
     $ph = $height = 0 ? '' : ' HEIGHT="' . $height . '%" ';
     return '<table' . $pw . $ph . ' border="0" cellpadding="0" cellspacing="0">';
@@ -8092,7 +5464,8 @@ function hTable($width = 0, $height = 0) {
  * RETURN
  * string  Generated HTML
  */
-function hPct($inputval, $decimals = 1, $trailing_pct = false) {
+function hPct($inputval, $decimals = 1, $trailing_pct = false)
+{
     $retval = number_format($inputval * 100, $decimals);
     return $retval . ($trailing_pct ? '%' : '');
 }
@@ -8163,7 +5536,8 @@ function hPct($inputval, $decimals = 1, $trailing_pct = false) {
  * RETURN
  * string  Generated HTML
  */
-function hDate($date, $format = '') {
+function hDate($date, $format = '')
+{
     $date = dEnsureTS($date);
     if ($format == '') {
         return date('m/d/Y', $date);
@@ -8201,9 +5575,9 @@ function hDate($date, $format = '') {
  *
  * INPUTS
  */
-function hDateHelper($date, $haystack, $needle, $datearg, $extra = '') {
+function hDateHelper($date, $haystack, $needle, $datearg, $extra = '')
+{
     if (is_array($haystack)) {
-
         // For an array, split into left and right and call for them.
         // The middle is a piece that has already been processing
         $left = $haystack['left'];
@@ -8219,7 +5593,9 @@ function hDateHelper($date, $haystack, $needle, $datearg, $extra = '') {
     $strpos = strpos($haystack, $needle);
 
     //echo "<br/>Looking for $needle in $haystack, result $strpos";
-    if ($strpos === false) return $haystack;
+    if ($strpos === false) {
+        return $haystack;
+    }
 
     // Otherwise parse it and recurse
     $left = substr($haystack, 0, $strpos);
@@ -8227,8 +5603,12 @@ function hDateHelper($date, $haystack, $needle, $datearg, $extra = '') {
     $slnd = strlen($needle);
     $right = substr($haystack, $strpos + $slnd, $slhs - $slnd - $strpos);
     $middle = date($datearg, $date);
-    if ($extra == 'U') $middle = strtoupper($middle);
-    if ($extra == 'L') $middle = strtolower($middle);
+    if ($extra == 'U') {
+        $middle = strtoupper($middle);
+    }
+    if ($extra == 'L') {
+        $middle = strtolower($middle);
+    }
 
     //echo "<br/>The math was $strpos, $slhs, $slnd";
     //echo "<br/>Cut up into -$left- -$middle- -$right-";
@@ -8243,7 +5623,8 @@ function hDateHelper($date, $haystack, $needle, $datearg, $extra = '') {
  *
  * INPUTS
  */
-function hDateBuild($item) {
+function hDateBuild($item)
+{
 
     // End of a chain
     if (!is_array($item)) {
@@ -8261,7 +5642,8 @@ function hDateBuild($item) {
  * RETURN
  * string  Date with format "Weekday, Month x, YYYY".
  */
-function hDateWords($unixts) {
+function hDateWords($unixts)
+{
     return date('l, F j, Y', $unixts);
 }
 
@@ -8279,8 +5661,11 @@ function hDateWords($unixts) {
  * RETURN
  * string  Generated HTML
  */
-function hNumber($value, $zero = '') {
-    if ($value == 0) return $zero;
+function hNumber($value, $zero = '')
+{
+    if ($value == 0) {
+        return $zero;
+    }
     $retval = '' . $value;
     if (strpos($retval, '.') === false) {
         return $retval;
@@ -8313,10 +5698,14 @@ function hNumber($value, $zero = '') {
  * RETURN
  * string  Generated HTML
  */
-function hNumFormat($value, $width = 0, $decimals = 0) {
+function hNumFormat($value, $width = 0, $decimals = 0)
+{
     $retval = number_format($value, $decimals);
-    if ($width == 0) return $retval;
-    else return str_pad($retval, $width, ' ', STR_PAD_LEFT);
+    if ($width == 0) {
+        return $retval;
+    } else {
+        return str_pad($retval, $width, ' ', STR_PAD_LEFT);
+    }
 }
 
 /**
@@ -8342,22 +5731,29 @@ function hNumFormat($value, $width = 0, $decimals = 0) {
  * RETURN
  * string    Generated HTML
  */
-function hImg($table_id, $value, $column = '') {
+function hImg($table_id, $value, $column = '')
+{
     $afiles = aImg($table_id, $value, $column);
 
     // If we found anything, return it
     if (count($afiles) > 0) {
         return hImgAppPub($column, $afiles[0]);
-    } else return '';
+    } else {
+        return '';
+    }
 }
 
 /**
  * INPUTS
+ *
  * @deprecated
  */
-function hImgAppPub($filename, $column = '') {
+function hImgAppPub($filename, $column = '')
+{
     $THISROUTINEDEPRECATED = $filename;
-    if ($column <> '') $column.= '/';
+    if ($column <> '') {
+        $column.= '/';
+    }
     return "<img src='apppub/$column$filename' border=0>";
 }
 
@@ -8373,7 +5769,8 @@ function hImgAppPub($filename, $column = '') {
  * RETURN
  * array     Images with HTML
  */
-function ahImg($table_id, $value, $column = '') {
+function ahImg($table_id, $value, $column = '')
+{
     $afiles = aImg($table_id, $value, $column);
     $retval = array();
     foreach ($afiles as $afile) {
@@ -8392,7 +5789,8 @@ function ahImg($table_id, $value, $column = '') {
  * RETURN
  * array     image names
  */
-function aImg($table_id, $value, $column = '') {
+function aImg($table_id, $value, $column = '')
+{
     $NEVERUSED = $value;
     $x = $table_id;
 
@@ -8423,9 +5821,14 @@ function aImg($table_id, $value, $column = '') {
  * RETURN
  * string  Generated HTML
  */
-function hNumberPlus($value, $zero = '') {
-    if ($value == 0) return $zero;
-    if ($value <= 0) return hNumber($value, $zero);
+function hNumberPlus($value, $zero = '')
+{
+    if ($value == 0) {
+        return $zero;
+    }
+    if ($value <= 0) {
+        return hNumber($value, $zero);
+    }
     return '+' . hNumber($value, $zero);
 }
 
@@ -8437,7 +5840,8 @@ function hNumberPlus($value, $zero = '') {
  * RETURN
  * string  Generated HTML
  */
-function hMoney($input) {
+function hMoney($input)
+{
     return number_format($input, 2);
 }
 
@@ -8451,17 +5855,24 @@ function hMoney($input) {
  * RETURN
  * string  Generated HTML
  */
-function hZip9($input = '') {
-    if (strlen($input) < 6) return $input;
-    if (strpos($input, '-') !== false) return $input;
+function hZip9($input = '')
+{
+    if (strlen($input) < 6) {
+        return $input;
+    }
+    if (strpos($input, '-') !== false) {
+        return $input;
+    }
     return substr($input, 0, 5) . '-' . substr($input, 5);
 }
 
 /**
  * INPUTS
+ *
  * @deprecated
  */
-function hSimpleNumber($value) {
+function hSimpleNumber($value)
+{
     if (intval($value) == $value) {
         return number_format($value);
     } else {
@@ -8477,19 +5888,19 @@ function hSimpleNumber($value) {
 
 
 /**
-name:_default_
-parent:HTML Hyperlinks
+ * name:_default_
+ * parent:HTML Hyperlinks
  */
 
 /**
-name:HTML Hyperlinks
-parent:Framework API Reference
-The Andromeda PHP framework provides a few functions for generating
-hyperlinks easily.  Their main purpose is to provide consistency.
-All of these functions begin with the letter 'h' and return a snippet
-of HTML that can be embedded into an HTML stream.
-All of these functions take as a first parameter an optional class
-assignment.
+ * name:HTML Hyperlinks
+ * parent:Framework API Reference
+ * The Andromeda PHP framework provides a few functions for generating
+ * hyperlinks easily.  Their main purpose is to provide consistency.
+ * All of these functions begin with the letter 'h' and return a snippet
+ * of HTML that can be embedded into an HTML stream.
+ * All of these functions take as a first parameter an optional class
+ * assignment.
  */
 
 /**
@@ -8521,7 +5932,8 @@ assignment.
  * RETURN
  * string  Generated HTML
  */
-function hLink($class, $caption, $href, $extra = '') {
+function hLink($class, $caption, $href, $extra = '')
+{
     $class = hTagParm('class', $class);
 
     //if(substr($href,0,1)=='&') $href=substr($href,1);
@@ -8537,9 +5949,10 @@ function hLink($class, $caption, $href, $extra = '') {
     return "<a href=\"" . $prefix . $href . "\" " . $class . " $extra>" . $caption . "</a>";
 }
 
-function ddPageDescription($page) {
+function ddPageDescription($page)
+{
     $PAGES = 'explicity assignment avoids compiler warning';
-    include ('ddpages.php');
+    include'ddpages.php';
     //re-assings PAGES ARRAY
     return arr($PAGES, $page, 'Page ' . $page . ' is not defined');
 }
@@ -8563,11 +5976,12 @@ function ddPageDescription($page) {
  * RETURN
  * string Generated HTML
  */
-function hLinkPage($class, $page_id) {
+function hLinkPage($class, $page_id)
+{
 
     // Load the list of pages.
     $PAGES = 'explicit assignment avoids compiler warning';
-    include ('ddpages.php');
+    include'ddpages.php';
     $caption = ArraySafe($PAGES, $page_id, 'Link to unknown page: ' . $page_id);
     return hlink($class, $caption, "?gp_page=" . urlencode($page_id));
 }
@@ -8587,7 +6001,8 @@ function hLinkPage($class, $page_id) {
  * string $caption Text inside <a> element
  * string $href    Hypertext Reference
  */
-function hjxCheckFirst($caption, $href) {
+function hjxCheckFirst($caption, $href)
+{
 
     //if (substr($href,0,1)<>'?') $href='?'.$href;
     //$href='index.php'.$href;
@@ -8621,8 +6036,11 @@ function hjxCheckFirst($caption, $href) {
  * RETURN
  * string Generated HTML
  */
-function hpHref($parms) {
-    if (is_array($parms)) $parms = http_build_query($parms);
+function hpHref($parms)
+{
+    if (is_array($parms)) {
+        $parms = http_build_query($parms);
+    }
     return tmpPathInsert() . $parms;
 }
 
@@ -8636,7 +6054,8 @@ function hpHref($parms) {
  * RETURN
  * string Generated HTML
  */
-function hFileUpload() {
+function hFileUpload()
+{
     ?>
     <input type="hidden" name="MAX_FILE_SIZE" value="150000000" />
     <input type="file" name="andro_file">&nbsp;&nbsp;
@@ -8660,7 +6079,8 @@ function hFileUpload() {
  * RETURN
  * string Generated HTML
  */
-function hLinkPageRow($class, $caption, $page, $colval) {
+function hLinkPageRow($class, $caption, $page, $colval)
+{
     $class = hTagParm('class', $class);
     $href = "gp_page=" . $page . "&gp_colval=" . urlencode($colval);
     return "<a href=\"?" . $href . "\" " . $class . ">" . $caption . "</a>";
@@ -8686,11 +6106,16 @@ function hLinkPageRow($class, $caption, $page, $colval) {
  * string $caption Text within <a> element
  * string $href Hypertext reference
  */
-function hLinkFromStub($class, $caption, $href) {
+function hLinkFromStub($class, $caption, $href)
+{
     $hStub = vgaGet('hLinkStub');
     $hPrefix = $hStub == '' ? '?' : '&';
-    if (substr($href, 0, 1) == '?') $href = substr($href, 1);
-    if (substr($href, 0, 1) == '&') $href = substr($href, 1);
+    if (substr($href, 0, 1) == '?') {
+        $href = substr($href, 1);
+    }
+    if (substr($href, 0, 1) == '&') {
+        $href = substr($href, 1);
+    }
     return hLink($class, $caption, $hStub . $hPrefix . $href);
 }
 
@@ -8704,7 +6129,8 @@ function hLinkFromStub($class, $caption, $href) {
  * RETURN
  * string Generated HTML
  */
-function hLinkPopup($class, $caption, $parms) {
+function hLinkPopup($class, $caption, $parms)
+{
     $class = hTagParm('class', $class);
     $hparms = is_array($parms) ? http_build_query($parms) : $parms;
     return "<a href=\"javascript:Popup('index.php?$hparms','$caption')\"" . " $class>" . $caption . "</a>";
@@ -8725,7 +6151,8 @@ function hLinkPopup($class, $caption, $parms) {
  * RETURN
  * string Generated HTML
  */
-function hLInkSetAndPost($caption, $gp_var, $gp_val) {
+function hLInkSetAndPost($caption, $gp_var, $gp_val)
+{
     return '<a href="javascript:SetAndPost(' . "'" . $gp_var . "','" . $gp_val . "')\">" . $caption . "</a>";
 }
 
@@ -8743,7 +6170,8 @@ function hLInkSetAndPost($caption, $gp_var, $gp_val) {
  * RETURN
  * string Generated HTML
  */
-function hImageFromBytes($table_id, $colname, $pkval, $bytes) {
+function hImageFromBytes($table_id, $colname, $pkval, $bytes)
+{
 
     $filename = 'dbobj/' . $table_id . '-' . $colname . '-' . $pkval;
     $dirname = $GLOBALS['AG']['dirs']['root'] . '/';
@@ -8756,9 +6184,11 @@ function hImageFromBytes($table_id, $colname, $pkval, $bytes) {
  * Needs the CSS Class setting, and an option for checked
  *
  * INPUTS
+ *
  * @deprecated
  */
-function hCheckBox($name, $value) {
+function hCheckBox($name, $value)
+{
     return '<input type="checkbox" name="' . $name . '" value="' . $value . '">';
 }
 
@@ -8766,27 +6196,35 @@ function hCheckBox($name, $value) {
  * Needs the CSS Class setting, and an option for checked
  *
  * INPUTS
+ *
  * @deprecated
  */
-function hCheckBoxFromCBool($name, $cbool = 'N', $caption) {
+function hCheckBoxFromCBool($name, $cbool = 'N', $caption = '')
+{
     $checked = '';
-    if ($cbool == 'Y') $checked = ' CHECKED ';
+    if ($cbool == 'Y') {
+        $checked = ' CHECKED ';
+    }
     return '<input type="checkbox" ' . 'name="' . $name . '" value="Y"' . $checked . ' >' . $caption . '</input>';
 }
 
 /**
  * INPUTS
+ *
  * @deprecated
  */
-function hDateVerbose($time) {
+function hDateVerbose($time)
+{
     return date('D, F j, Y', $time);
 }
 
 /**
  * INPUTS
+ *
  * @deprecated
  */
-function hFlagLogin($caption) {
+function hFlagLogin($caption)
+{
     hidden('gp_flaglogin', '');
     $hHref = "javascript:SetAndPost('gp_flaglogin','1')";
     return '<a href="' . $hHref . '">' . $caption . '</a>';
@@ -8802,10 +6240,15 @@ function hFlagLogin($caption) {
  * RETURN
  * string Name of month
  */
-function hMonthWords($month) {
+function hMonthWords($month)
+{
     $m = array('January', 'February', 'March', 'April', 'May', 'June', 'July', 'September', 'October', 'November', 'December');
-    if ($month < 0) return '';
-    if ($month > 12) return '';
+    if ($month < 0) {
+        return '';
+    }
+    if ($month > 12) {
+        return '';
+    }
     return $m[$month - 1];
 }
 
@@ -8817,8 +6260,8 @@ function hMonthWords($month) {
 
 
 /**
-name:_default_
-parent:Template Level HTML
+ * name:_default_
+ * parent:Template Level HTML
  */
 
 // ------------------------------------------------------------------
@@ -8858,7 +6301,8 @@ parent:Template Level HTML
  *
  ******
  */
-function ehStandardContent($dotitle = false) {
+function ehStandardContent($dotitle = false)
+{
     $NEVERUSED = $dotitle;
 
     if (vgaGet('NOFORM') <> true) {
@@ -8932,9 +6376,10 @@ function ehStandardContent($dotitle = false) {
  *
  ******
  */
-function ehStandardFormOpen($id = 'Form1') {
+function ehStandardFormOpen($id = 'Form1')
+{
     $x = $id;
-//annoying jedit compiler warning
+    //annoying jedit compiler warning
     $style = vgfGet('x6') ? '' : 'style="height:100%"';
     ?>
     <form class="form-horizontal" method="post" action="index.php" id="<?php
@@ -8949,11 +6394,14 @@ function ehStandardFormOpen($id = 'Form1') {
  * INPUTS
  * @deprecated use hErrors()
  */
-function ehErrors($return = false) {
+function ehErrors($return = false)
+{
     $html = '';
     if (function_exists('app_ehErrors')) {
         $errors = ErrorsGet();
-        if (count($errors) == 0) return;
+        if (count($errors) == 0) {
+            return;
+        }
         ErrorsClear();
         app_ehErrors($errors);
     }
@@ -8962,20 +6410,17 @@ function ehErrors($return = false) {
     if (count($aErrors) > 0) {
         $html.= '<div class="alert alert-error">';
         if (vgfGet('ERROR_TITLE') == '') {
-
             // KFD 6/27/07, think this got broken by changes to SQL2 and
             // error reporting system, just take it out
             //echo "There was an error attempting to save:<br/>";
 
         } elseif (vgfGet('ERROR_TITLE') == '*') {
-
             // do nothing, the asterisk means do nothing
 
         } else {
             $html.= vgfGet('ERROR_TITLE');
         }
         foreach ($aErrors as $error) {
-
             // Don't do htmlentities on errors, as they may contain
             // hyperlinks, and they are all system generated so we consider
             // them safe.
@@ -9002,7 +6447,8 @@ function ehErrors($return = false) {
  *
  ******
  */
-function ehHiddenAndData() {
+function ehHiddenAndData()
+{
 
     // Some parts of the framework create data that should
     // be sent out as hidden variables
@@ -9044,10 +6490,11 @@ function ehHiddenAndData() {
  *
  ******
  */
-function ehStandardMenu() {
+function ehStandardMenu()
+{
     $menufile = 'menu_' . SessionGet('UID') . '.php';
     if (FILE_EXISTS_INCPATH($menufile)) {
-        include ($menufile);
+        include$menufile;
     }
 }
 
@@ -9083,17 +6530,20 @@ function ehStandardMenu() {
  *
  ******
  */
-function ehLogin($class = 'login', $id = '', $username = '') {
+function ehLogin($class = 'login', $id = '', $username = '')
+{
     ehFWLogin($class, $id, $username);
 }
-function ehFWLogin($class = 'login', $id = '', $username = '') {
+function ehFWLogin($class = 'login', $id = '', $username = '')
+{
     $hclass = hTagParm("class", $class) . hTagParm("id", $id);
     $hValue = hTagParm("value", $username);
 
     // Continue with original, the horizontal
     if (LoggedIn()) {
-        ?>
-        <table border=0 <?php
+// @codingStandardsIgnoreStart
+?>
+        <table border=0 
         echo $hclass ?> >
             <tr>
                 <td align="center" <?php
@@ -9102,8 +6552,8 @@ function ehFWLogin($class = 'login', $id = '', $username = '') {
      <span>
       <span style="font-size: 1.2em;" class="login">
       Welcome<br>
-          <?php
-          echo SessionGet('UID') ?>!
+            <?php
+            echo SessionGet('UID') ?>!
       </span>
     <span>
     <br><br>
@@ -9111,11 +6561,14 @@ function ehFWLogin($class = 'login', $id = '', $username = '') {
                 </td>
             </tr>
         </table>
-    <?php
+<?php
+// @codingStandardsIgnoreEnd
     } else {
-        ?>
+// @codingStandardsIgnoreStart
+?>
         <form class="form form-horizontal" action="?gp_page=x_login&gp_posted=1" method="post">
             <table <?php
+// @codingStandardsIgnoreEnd
             echo $hclass ?>>
                 <tr>
                     <td <?php
@@ -9161,9 +6614,10 @@ function ehFWLogin($class = 'login', $id = '', $username = '') {
  *
  ******
  */
-function ehLoginHorizontal() {
+function ehLoginHorizontal()
+{
     if (!LoggedIn()) {
-        ?>
+?>
         <form action="?gp_page=x_login&gp_posted=1" method="post" style="display:inline">
             UserID:  <input type="text"     size=10 name="loginUID" />
             Password:<input type="password" size=10 name="loginPWD" />
@@ -9172,13 +6626,16 @@ function ehLoginHorizontal() {
         <br/>
         <a href="<?php
         echo tmpPathInsert() ?>?gp_page=x_password">Help with Password</a>
-    <?php
-    } else { ?>
-        <a href="?st2logout=1">Logout <?php
-            echo SessionGet("UID") ?></a>
-    <?php
-    } ?>
 <?php
+    } else {
+?>
+        <a href="?st2logout=1">Logout
+<?php
+            echo SessionGet("UID")
+?>
+        </a>
+<?php
+    }
 }
 
 /****f* Template-Level-HTML/ehModuleCommands
@@ -9197,7 +6654,8 @@ function ehLoginHorizontal() {
  *
  ******
  */
-function ehModuleCommands() {
+function ehModuleCommands()
+{
 
     /*
             <script type="text/javascript">
@@ -9298,7 +6756,8 @@ function ehModuleCommands() {
          *
          ******
         */
-function httpWebPagePath() {
+function httpWebPagePath()
+{
     $x = $_SERVER['REQUEST_URI'];
     $y = strpos($x, '/pages/');
     if ($y !== false) {
@@ -9311,7 +6770,8 @@ function httpWebPagePath() {
     return 'http://' . $_SERVER['HTTP_HOST'] . $x;
 }
 
-function httpWebPath() {
+function httpWebPath()
+{
     $start = httpWebPagePath();
     $pos = strpos($start, 'index.php');
     if ($pos !== false) {
@@ -9338,7 +6798,8 @@ function httpWebPath() {
          *
          ******
         */
-function httpWebSite() {
+function httpWebSite()
+{
     return 'http://' . $_SERVER['HTTP_HOST'];
 }
 
@@ -9395,7 +6856,8 @@ function httpWebSite() {
          *
          ******
         */
-function httpHeadersForDownload($filespec, $attachment = false) {
+function httpHeadersForDownload($filespec, $attachment = false)
+{
     $headers = array('ai' => 'application/postscript', 'aif' => 'audio/x-aiff', 'aifc' => 'audio/x-aiff', 'aiff' => 'audio/x-aiff', 'asc' => 'text/plain', 'atom' => 'application/atom+xml', 'au' => 'audio/basic', 'avi' => 'video/x-msvideo', 'bcpio' => 'application/x-bcpio', 'bin' => 'application/octet-stream', 'bmp' => 'image/bmp', 'cdf' => 'application/x-netcdf', 'cgm' => 'image/cgm', 'class' => 'application/octet-stream', 'cpio' => 'application/x-cpio', 'cpt' => 'application/mac-compactpro', 'csh' => 'application/x-csh', 'css' => 'text/css', 'csv' => 'application/vnd.ms-excel', 'dcr' => 'application/x-director', 'dir' => 'application/x-director', 'djv' => 'image/vnd.djvu', 'djvu' => 'image/vnd.djvu', 'dll' => 'application/octet-stream', 'dmg' => 'application/octet-stream', 'dms' => 'application/octet-stream', 'doc' => 'application/msword', 'dtd' => 'application/xml-dtd', 'dvi' => 'application/x-dvi', 'dxr' => 'application/x-director', 'eps' => 'application/postscript', 'etx' => 'text/x-setext', 'exe' => 'application/octet-stream', 'ez' => 'application/andrew-inset', 'gif' => 'image/gif', 'gram' => 'application/srgs', 'grxml' => 'application/srgs+xml', 'gtar' => 'application/x-gtar', 'hdf' => 'application/x-hdf', 'hqx' => 'application/mac-binhex40', 'htm' => 'text/html', 'html' => 'text/html', 'ice' => 'x-conference/x-cooltalk', 'ico' => 'image/x-icon', 'ics' => 'text/calendar', 'ief' => 'image/ief', 'ifb' => 'text/calendar', 'iges' => 'model/iges', 'igs' => 'model/iges', 'jpe' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'jpg' => 'image/jpeg', 'js' => 'application/x-javascript', 'kar' => 'audio/midi', 'latex' => 'application/x-latex', 'lha' => 'application/octet-stream', 'lzh' => 'application/octet-stream', 'm3u' => 'audio/x-mpegurl', 'm4u' => 'video/vnd.mpegurl', 'man' => 'application/x-troff-man', 'mathml' => 'application/mathml+xml', 'me' => 'application/x-troff-me', 'mesh' => 'model/mesh', 'mid' => 'audio/midi', 'midi' => 'audio/midi', 'mif' => 'application/vnd.mif', 'mov' => 'video/quicktime', 'movie' => 'video/x-sgi-movie', 'mp2' => 'audio/mpeg', 'mp3' => 'audio/mpeg', 'mpe' => 'video/mpeg', 'mpeg' => 'video/mpeg', 'mpg' => 'video/mpeg', 'mpga' => 'audio/mpeg', 'ms' => 'application/x-troff-ms', 'msh' => 'model/mesh', 'mxu' => 'video/vnd.mpegurl', 'nc' => 'application/x-netcdf', 'oda' => 'application/oda', 'ogg' => 'application/ogg', 'pbm' => 'image/x-portable-bitmap', 'pdb' => 'chemical/x-pdb', 'pdf' => 'application/pdf', 'pgm' => 'image/x-portable-graymap', 'pgn' => 'application/x-chess-pgn', 'png' => 'image/png', 'pnm' => 'image/x-portable-anymap', 'ppm' => 'image/x-portable-pixmap', 'ppt' => 'application/vnd.ms-powerpoint', 'ps' => 'application/postscript', 'qt' => 'video/quicktime', 'ra' => 'audio/x-pn-realaudio', 'ram' => 'audio/x-pn-realaudio', 'ras' => 'image/x-cmu-raster', 'rdf' => 'application/rdf+xml', 'rgb' => 'image/x-rgb', 'rm' => 'application/vnd.rn-realmedia', 'roff' => 'application/x-troff', 'rtf' => 'text/rtf', 'rtx' => 'text/richtext', 'sgm' => 'text/sgml', 'sgml' => 'text/sgml', 'sh' => 'application/x-sh', 'shar' => 'application/x-shar', 'silo' => 'model/mesh', 'sit' => 'application/x-stuffit', 'skd' => 'application/x-koan', 'skm' => 'application/x-koan', 'skp' => 'application/x-koan', 'skt' => 'application/x-koan', 'smi' => 'application/smil', 'smil' => 'application/smil', 'snd' => 'audio/basic', 'so' => 'application/octet-stream', 'spl' => 'application/x-futuresplash', 'src' => 'application/x-wais-source', 'sv4cpio' => 'application/x-sv4cpio', 'sv4crc' => 'application/x-sv4crc', 'svg' => 'image/svg+xml', 'swf' => 'application/x-shockwave-flash', 't' => 'application/x-troff', 'tar' => 'application/x-tar', 'tcl' => 'application/x-tcl', 'tex' => 'application/x-tex', 'texi' => 'application/x-texinfo', 'texinfo' => 'application/x-texinfo', 'tgz' => 'application/x-gzip', 'tif' => 'image/tiff', 'tiff' => 'image/tiff', 'tr' => 'application/x-troff', 'tsv' => 'text/tab-separated-values', 'txt' => 'text/plain', 'ustar' => 'application/x-ustar', 'vcd' => 'application/x-cdlink', 'vrml' => 'model/vrml', 'vxml' => 'application/voicexml+xml', 'wav' => 'audio/x-wav', 'wbmp' => 'image/vnd.wap.wbmp', 'wbxml' => 'application/vnd.wap.wbxml', 'wml' => 'text/vnd.wap.wml', 'wmlc' => 'application/vnd.wap.wmlc', 'wmls' => 'text/vnd.wap.wmlscript', 'wmlsc' => 'application/vnd.wap.wmlscriptc', 'wrl' => 'model/vrml', 'xbm' => 'image/x-xbitmap', 'xht' => 'application/xhtml+xml', 'xhtml' => 'application/xhtml+xml', 'xls' => 'application/vnd.ms-excel', 'xml' => 'application/xml', 'xpm' => 'image/x-xpixmap', 'xsl' => 'application/xml', 'xslt' => 'application/xslt+xml', 'xul' => 'application/vnd.mozilla.xul+xml', 'xwd' => 'image/x-xwindowdump', 'xyz' => 'chemical/x-xyz', 'zip' => 'application/zip');
 
     $appheaders = ArraySafe($GLOBALS, 'httpMimeTypes', array());
@@ -9438,17 +6900,17 @@ function httpHeadersForDownload($filespec, $attachment = false) {
 
 
 /**
-name:_default_
-parent:User Maintenance Routines
+ * name:_default_
+ * parent:User Maintenance Routines
  */
 
 // ------------------------------------------------------------------
 
 
 /**
-name:User Maintenance Routines
-parent:Framework API Reference
-These routines are for creating users from inside of applications.
+ * name:User Maintenance Routines
+ * parent:Framework API Reference
+ * These routines are for creating users from inside of applications.
  */
 
 /**
@@ -9472,7 +6934,8 @@ These routines are for creating users from inside of applications.
  * RETURN
  * boolean True if success, False if failure
  */
-function UserAdd($UID, $PWD = '', $email = '', $user_active = 'Y') {
+function UserAdd($UID, $PWD = '', $email = '', $user_active = 'Y')
+{
     $NEVERUSED = $user_active;
     $UID = MakeUserID($UID);
     scDBConn_Push('usermaint');
@@ -9498,7 +6961,8 @@ function UserAdd($UID, $PWD = '', $email = '', $user_active = 'Y') {
  * RETURN
  * string Converted User Id
  */
-function MakeUserID($UID) {
+function MakeUserID($UID)
+{
     $UID = str_replace('@', '_', $UID);
     $UID = str_replace('.', '_', $UID);
     $UID = str_replace('-', '_', $UID);
@@ -9518,14 +6982,19 @@ function MakeUserID($UID) {
  * RETURN
  * boolean
  */
-function LoggedIn() {
+function LoggedIn()
+{
 
     // Technically this should never happen.  An empty UID should
     // be turned into the anonymous user.  But if we are wrong, better
     // a blank come back as false than as true.
     //
-    if (SessionGet('UID') == '') return false;
-    if (SessionGet('UID') == $GLOBALS['AG']['application']) return false;
+    if (SessionGet('UID') == '') {
+        return false;
+    }
+    if (SessionGet('UID') == $GLOBALS['AG']['application']) {
+        return false;
+    }
     return true;
 
     // return SessionGet('UID')=='anonymous' ? false : true;
@@ -9541,7 +7010,8 @@ function LoggedIn() {
  * RETURN
  * boolean
  */
-function inGroup($group) {
+function inGroup($group)
+{
     $agroups = SessionGet('agroups', array());
     $agroups = array();
     if (count($agroups) == 0) {
@@ -9554,7 +7024,9 @@ function inGroup($group) {
             // quotes around them, get rid of them
             $grp = str_replace("'", "", $grp);
             // Don't include the $LOGIN group
-            if ($grp == $app) continue;
+            if ($grp == $app) {
+                continue;
+            }
             // The +1 is for the underscore.  A member
             // of group "admin" in application "example"
             // will actually be in group "admin_example"
@@ -9575,7 +7047,8 @@ function inGroup($group) {
  * RETURN
  * boolean
  */
-function inUserMaint() {
+function inUserMaint()
+{
     return inGroup('usermaint');
 }
 
@@ -9588,7 +7061,8 @@ function inUserMaint() {
  * RETURN
  * boolean
  */
-function inRoot() {
+function inRoot()
+{
     return SessionGet('ROOT');
 }
 
@@ -9607,7 +7081,8 @@ function inRoot() {
  *
  * INPUTS
  */
-function PushToLogin() {
+function PushToLogin()
+{
     gpToSession();
     objPageMain('x_login');
 }
@@ -9620,18 +7095,18 @@ function PushToLogin() {
 
 
 /**
-name:_default_
-parent:Miscellaneous Functions
+ * name:_default_
+ * parent:Miscellaneous Functions
  */
 
 // ------------------------------------------------------------------
 
 
 /**
-name:Miscellaneous Functions
-parent:Framework API Reference
-These are all functions that do not fit into a neat category
-with the rest of the functions.
+ * name:Miscellaneous Functions
+ * parent:Framework API Reference
+ * These are all functions that do not fit into a neat category
+ * with the rest of the functions.
  */
 
 /**
@@ -9653,7 +7128,8 @@ with the rest of the functions.
  * RETURN
  * object Dispatch Page Object
  */
-function objPage($gp_page) {
+function objPage($gp_page)
+{
     return DispatchObject($gp_page);
 }
 
@@ -9667,8 +7143,9 @@ function objPage($gp_page) {
  * RETURN
  * object x_fpdf
  */
-function objReport($oParent, $orient = 'P') {
-    include_once ('x_fpdf.php');
+function objReport($oParent, $orient = 'P')
+{
+    include_once'x_fpdf.php';
     $retval = new x_fpdf($orient);
     $retval->trackback = $oParent;
     return $retval;
@@ -9681,7 +7158,8 @@ function objReport($oParent, $orient = 'P') {
  * RETURN
  * integer a unique value
  */
-function uniqueID() {
+function uniqueID()
+{
     $value = microtime();
     $value = str_replace('.', '', $value);
     $value = str_replace('_', '', $value);
@@ -9711,7 +7189,8 @@ function uniqueID() {
  * INPUTS
  * string $class Class Name
  */
-function objPageMain($class) {
+function objPageMain($class)
+{
     $obj = objPage($class);
     $obj->main();
 }
@@ -9724,10 +7203,10 @@ function objPageMain($class) {
  * RETURN
  * boolean True if file exists in include path
  */
-function FILE_EXISTS_INCPATH($file) {
+function FILE_EXISTS_INCPATH($file)
+{
     $paths = explode(PATH_SEPARATOR, get_include_path());
     foreach ($paths as $path) {
-
         // Formulate the absolute path
         $fullpath = $path . DIRECTORY_SEPARATOR . $file;
 
@@ -9752,13 +7231,16 @@ function FILE_EXISTS_INCPATH($file) {
  * string $Base_Path Base Path
  * string $New_Path Path inside Base Path
  */
-function fsMakeDirNested($Base_Path, $New_Path) {
+function fsMakeDirNested($Base_Path, $New_Path)
+{
     $adirs = explode('/', $New_Path);
     $sdirs = '';
     $dirx = $Base_Path;
     foreach ($adirs as $adir) {
         $dirx.= "/" . $adir;
-        if (!is_dir($dirx)) mkdir($dirx);
+        if (!is_dir($dirx)) {
+            mkdir($dirx);
+        }
     }
 }
 
@@ -9773,7 +7255,8 @@ function fsMakeDirNested($Base_Path, $New_Path) {
  * string $arrayname name of array variable
  * string $dir directory of file (default = '')
  */
-function fsFileFromArray($name, $array, $arrayname, $dir = '') {
+function fsFileFromArray($name, $array, $arrayname, $dir = '')
+{
     $annoying = $arrayname;
     $retval = "";
     $level = 0;
@@ -9803,11 +7286,14 @@ $retval
  * RETURN
  * string
  */
-function fsFileFromArrayWalk($array, $level) {
+function fsFileFromArrayWalk($array, $level)
+{
     $retval = '';
     foreach ($array as $key => $value) {
         $key = trim($key);
-        if ($retval) $retval.= ",";
+        if ($retval) {
+            $retval.= ",";
+        }
         $retval.= "\n" . str_repeat("   ", $level) . "'$key'=>";
         if (is_array($value)) {
             $retval.= " array(";
@@ -9829,9 +7315,12 @@ function fsFileFromArrayWalk($array, $level) {
  * RETURN
  * string line
  */
-function fsGets($FILE) {
+function fsGets($FILE)
+{
     $line = fgets($FILE, 5000);
-    if (!$line) return $line;
+    if (!$line) {
+        return $line;
+    }
     $line = str_replace(chr(13), '', $line);
     $line = str_replace(chr(10), '', $line);
     return $line;
@@ -9846,7 +7335,8 @@ function fsGets($FILE) {
  * RETURN
  * string directory with added slash
  */
-function AddSlash($input, $prefix = '') {
+function AddSlash($input, $prefix = '')
+{
 
     // Justin Dearing 12/26/07, detects windows
     // KFD NOTE: rem'd out because untested on windows
@@ -9859,7 +7349,9 @@ function AddSlash($input, $prefix = '') {
             $input = $prefix . $input;
         }
     }
-    if (substr($input, -1) <> $dir_delimeter) $input.= '/';
+    if (substr($input, -1) <> $dir_delimeter) {
+        $input.= '/';
+    }
     return $input;
 }
 
@@ -9875,7 +7367,8 @@ function AddSlash($input, $prefix = '') {
  *
  * INPUTS
  */
-function ehFWDevNotice() {
+function ehFWDevNotice()
+{
     ?>
     <div class="devnotice">This page is waiting for design</div>
 <?php
@@ -9891,8 +7384,11 @@ function ehFWDevNotice() {
  * RETURN
  * string Unix Timestamp
  */
-function UTSFirstOfMonth($dx = null) {
-    if (is_null($dx)) $dx = time();
+function UTSFirstOfMonth($dx = null)
+{
+    if (is_null($dx)) {
+        $dx = time();
+    }
     $date = SdFromUnixTS($dx);
     return strtotime(substr($date, 4, 2) . '/01/' . substr($date, 0, 4));
 }
@@ -9907,8 +7403,11 @@ function UTSFirstOfMonth($dx = null) {
  * RETURN
  * string Unix Timestamp
  */
-function UTSFirstOfYear($dx = null) {
-    if (is_null($dx)) $dx = time();
+function UTSFirstOfYear($dx = null)
+{
+    if (is_null($dx)) {
+        $dx = time();
+    }
     $date = SdFromUnixTS($dx);
     return strtotime('01/01/' . substr($date, 4, 2));
 }
@@ -9920,7 +7419,8 @@ function UTSFirstOfYear($dx = null) {
  * RETURN
  * string unix timestamp
  */
-function unixtsFromSD($sd) {
+function unixtsFromSD($sd)
+{
     return strtotime(substr($sd, 4, 2) . '/' . substr($sd, 6, 2) . '/' . substr($sd, 0, 4));
 }
 
@@ -9931,7 +7431,8 @@ function unixtsFromSD($sd) {
  * INPUTS
  * array $paypall Paypall information
  */
-function Paypal_SimulatePaid($paypal) {
+function Paypal_SimulatePaid($paypal)
+{
     gpSet('invoice', $paypal['invoice']);
     $log = SysLogOPen('PAYPAL');
     PayPal_IPN_Success($log);
@@ -9946,55 +7447,58 @@ function Paypal_SimulatePaid($paypal) {
 
 
 /**
-name:_default_
-parent:Array Functions
+ * name:_default_
+ * parent:Array Functions
  */
 
 /**
-name:Array Functions
-parent:Framework API Reference
-Array functions exist to supplement PHP's already impressive and
-powerful array library.
-Some function shere provide provide the general
-Andromeda flavor to things, such as "ArraySafe" which provides the
-Andromeda behavior of a [[Standard Default Value]].
-Other functions provide the kind of handling you need for database
-rows or data dictionary activities.
+ * name:Array Functions
+ * parent:Framework API Reference
+ * Array functions exist to supplement PHP's already impressive and
+ * powerful array library.
+ * Some function shere provide provide the general
+ * Andromeda flavor to things, such as "ArraySafe" which provides the
+ * Andromeda behavior of a [[Standard Default Value]].
+ * Other functions provide the kind of handling you need for database
+ * rows or data dictionary activities.
  */
 
 /**
-name:Rows Array
-A numerically indexed array of [[Row Array]]s.  This would be returned by
-from [[SQL_AllRows]].
+ * name:Rows Array
+ * A numerically indexed array of [[Row Array]]s.  This would be returned by
+ * from [[SQL_AllRows]].
  */
 
 /**
-name:Associative Rows Array
-An array of [[Row Array]]s in which the key value was take from one
-of the columns.
-These arrays are very useful when the index column is a single-column
-primary key of a table.  Use [[KeyRowsFromRows]] to get one of these
-nifty arrays.
+ * name:Associative Rows Array
+ * An array of [[Row Array]]s in which the key value was take from one
+ * of the columns.
+ * These arrays are very useful when the index column is a single-column
+ * primary key of a table.  Use [[KeyRowsFromRows]] to get one of these
+ * nifty arrays.
  */
 
 /**
-name:Mixed Rows Array
-A complex associate array.  The keys at the top level all name
-tables, and point to [[Rows Array]]s.
+ * name:Mixed Rows Array
+ * A complex associate array.  The keys at the top level all name
+ * tables, and point to [[Rows Array]]s.
  */
 
 /**
  * INPUTS
+ *
  * @deprecated
  */
-function ArrayDefault(&$arr, $key, $value) {
+function ArrayDefault(&$arr, $key, $value)
+{
     if (!isset($arr[$key])) {
         $arr[$key] = $value;
     }
 }
 
 /* NO DOCUMENTATION */
-function ArrayKeyAndValue(&$arr, $colkey, $colvalue) {
+function ArrayKeyAndValue(&$arr, $colkey, $colvalue)
+{
     $retval = array();
     if (is_array($arr)) {
         foreach ($arr as $onerow) {
@@ -10014,7 +7518,8 @@ function ArrayKeyAndValue(&$arr, $colkey, $colvalue) {
  * RETURN
  * array
  */
-function arrFromColumn($arr, $index = 0) {
+function arrFromColumn($arr, $index = 0)
+{
     $retval = array();
     foreach ($arr as $row) {
         $retval[] = trim($row[$index]);
@@ -10031,7 +7536,8 @@ function arrFromColumn($arr, $index = 0) {
  * RETURN
  * array Associative array with $keys pointing to empty arrays
  */
-function arrOfArrays($keys) {
+function arrOfArrays($keys)
+{
     $retval = array();
     foreach ($keys as $key) {
         $retval[$key] = array();
@@ -10056,8 +7562,11 @@ function arrOfArrays($keys) {
  * RETURN
  * array
  */
-function asliceFromKeys(&$haystack, $needles, $fullpop = false) {
-    if (!is_array($needles)) $needles = explode(',', $needles);
+function asliceFromKeys(&$haystack, $needles, $fullpop = false)
+{
+    if (!is_array($needles)) {
+        $needles = explode(',', $needles);
+    }
 
     $retval = array();
     foreach ($needles as $needle) {
@@ -10085,8 +7594,11 @@ function asliceFromKeys(&$haystack, $needles, $fullpop = false) {
  * RETURN
  * array
  */
-function asliceValsFromKeys(&$source, $keyvaltopull, $keylist) {
-    if (!is_array($keylist)) $keylist = explode(',', $keylist);
+function asliceValsFromKeys(&$source, $keyvaltopull, $keylist)
+{
+    if (!is_array($keylist)) {
+        $keylist = explode(',', $keylist);
+    }
     $retval = array();
     foreach ($keylist as $key) {
         if (isset($source[$key][$keyvaltopull])) {
@@ -10106,7 +7618,8 @@ function asliceValsFromKeys(&$source, $keyvaltopull, $keylist) {
  * RETURN
  * array
  */
-function raxarr_Change_Key_Case($array, $case = CASE_LOWER) {
+function raxarr_Change_Key_Case($array, $case = CASE_LOWER)
+{
     $retval = array_Change_key_Case($array, $case);
     $keys = array_keys($retval);
     foreach ($keys as $key) {
@@ -10127,17 +7640,22 @@ function raxarr_Change_Key_Case($array, $case = CASE_LOWER) {
  * mixed $key key to check
  * mixed $value value to assign
  */
-function arrDefault(&$array, $key, $value) {
-    if (!isset($array[$key])) $array[$key] = $value;
+function arrDefault(&$array, $key, $value)
+{
+    if (!isset($array[$key])) {
+        $array[$key] = $value;
+    }
 }
 
 /**
  * Processes an array an unsets any numeric indexes.
  *
  * INPUTS
+ *
  * @parm array &$array input
  */
-function arrayStripNumericIndexes(&$array) {
+function arrayStripNumericIndexes(&$array)
+{
     $keys = array_keys($array);
     foreach ($keys as $key) {
         if (is_numeric($key)) {
@@ -10160,7 +7678,8 @@ function arrayStripNumericIndexes(&$array) {
  * RETURN
  * array array with keys from $array with prefix added
  */
-function raxarr_PrefixAdd($array, $prefix, $recurse = true, $lower = false) {
+function raxarr_PrefixAdd($array, $prefix, $recurse = true, $lower = false)
+{
     $retval = array();
     $keys = array_keys($array);
     foreach ($keys as $key) {
@@ -10176,12 +7695,14 @@ function raxarr_PrefixAdd($array, $prefix, $recurse = true, $lower = false) {
 }
 
 /* NO DOCUMENTATION */
-function avkFromRows(&$rows, $colname) {
+function avkFromRows(&$rows, $colname)
+{
     return ancFromRows($rows, $colname);
 }
 
 /* NO DOCUMENTATION */
-function ancFromRows(&$rows, $colname) {
+function ancFromRows(&$rows, $colname)
+{
     $retval = array();
     $rowkeys = array_keys($rows);
     $count = 0;
@@ -10193,7 +7714,8 @@ function ancFromRows(&$rows, $colname) {
 }
 
 /* NO DOCUMENTATION */
-function asrFromMixed(&$array) {
+function asrFromMixed(&$array)
+{
     $retval = array();
     $keys = array_keys($array);
     foreach ($keys as $key) {
@@ -10219,7 +7741,8 @@ function asrFromMixed(&$array) {
  * RETURN
  * array associative array
  */
-function AAFromRows($rows, $colkey, $colval) {
+function AAFromRows($rows, $colkey, $colval)
+{
     $aa = array();
     foreach ($rows as $row) {
         $aa[$row[$colkey]] = $row[$colval];
@@ -10240,7 +7763,8 @@ function AAFromRows($rows, $colkey, $colval) {
  * RETURN
  * array
  */
-function KeyRowsFromRows($rows, $colkey) {
+function KeyRowsFromRows($rows, $colkey)
+{
     $aa = array();
     foreach ($rows as $row) {
         if (isset($row[$colkey])) {
@@ -10259,26 +7783,26 @@ function KeyRowsFromRows($rows, $colkey) {
 
 
 /**
-name:_default_
-parent:HTML For Print
+ * name:_default_
+ * parent:HTML For Print
  */
 
 /**
-name:HTML For Print
-parent:Framework API Reference
-These routines output HTML fragments that are suitable for
-printed output.
+ * name:HTML For Print
+ * parent:Framework API Reference
+ * These routines output HTML fragments that are suitable for
+ * printed output.
  */
 
 /**
-name:HTMLP_Pos
-parm:string HTML_Fragment
-parm:int top
-parm:int left
-parm:string CSS_Class
-parm:string CSS_Style
-Returns an HTML DIV element.  The DIV will be absolutely positioned
-at coordinates top and left.
+ * name:HTMLP_Pos
+ * parm:string HTML_Fragment
+ * parm:int top
+ * parm:int left
+ * parm:string CSS_Class
+ * parm:string CSS_Style
+ * Returns an HTML DIV element.  The DIV will be absolutely positioned
+ * at coordinates top and left.
  */
 
 /*
@@ -10292,9 +7816,9 @@ at coordinates top and left.
         */
 
 /**
-name:HTMLP_PageBreak
-parm:int Pagenumber
-Outputs a page break.
+ * name:HTMLP_PageBreak
+ * parm:int Pagenumber
+ * Outputs a page break.
  */
 
 /*
@@ -10314,11 +7838,11 @@ Outputs a page break.
 
 
 /**
-name:Reporting System
-All reports are run from a common reporting system.  It has a single
-object, [[x_report]], which can be used to run reports.
-There is a stub function, [[ehReport]], that can be embedded into HTML
-pages and which displays the actual output of a report.
+ * name:Reporting System
+ * All reports are run from a common reporting system.  It has a single
+ * object, [[x_report]], which can be used to run reports.
+ * There is a stub function, [[ehReport]], that can be embedded into HTML
+ * pages and which displays the actual output of a report.
  */
 
 /**
@@ -10334,8 +7858,9 @@ pages and which displays the actual output of a report.
  * string $report_id report id
  * string $display display type (HTML or PDF)
  */
-function ehReport($report_id, $display) {
-    include_once ('x_report.php');
+function ehReport($report_id, $display)
+{
+    include_once'x_report.php';
     $oReport = new x_report($report_id, $display);
     $oReport . ehMain();
 }
@@ -10348,17 +7873,17 @@ function ehReport($report_id, $display) {
 
 
 /**
-name:_default_
-parent:Wiki Functions
+ * name:_default_
+ * parent:Wiki Functions
  */
 
 /**
-name:Wiki Functions
-status:EXPERIMENTAL
-parent:Framework API Reference
-These are a collection of experimental routines that allow wiki-like
-processing.
-Most of the wiki processing is in [[x_docview.php]].
+ * name:Wiki Functions
+ * status:EXPERIMENTAL
+ * parent:Framework API Reference
+ * These are a collection of experimental routines that allow wiki-like
+ * processing.
+ * Most of the wiki processing is in [[x_docview.php]].
  */
 
 /**
@@ -10383,8 +7908,9 @@ Most of the wiki processing is in [[x_docview.php]].
  * RETURN
  * string
  */
-function hWiki($table_id, $pagename, $flag_title = true) {
-    include_once ('x_wiki.php');
+function hWiki($table_id, $pagename, $flag_title = true)
+{
+    include_once'x_wiki.php';
     $wiki = new x_wiki($table_id);
     return $wiki->hWikiFromTable($table_id, $pagename, $flag_title);
 }
@@ -10398,9 +7924,10 @@ function hWiki($table_id, $pagename, $flag_title = true) {
  * RETURN
  * string
  */
-function hWikiFromText($text) {
+function hWikiFromText($text)
+{
     $table_id = 'NEVERUSED';
-    include_once ('x_wiki.php');
+    include_once'x_wiki.php';
     $wiki = new x_wiki($table_id);
     return $wiki->hWikiFromText($text);
 }
@@ -10418,7 +7945,8 @@ function hWikiFromText($text) {
  */
 
 // CODE PURGE, almost certainly can lose this
-function adocs_makeMenu($pageroot, $pn, $parents = array(), $peers = array()) {
+function adocs_makeMenu($pageroot, $pn, $parents = array(), $peers = array())
+{
     $menu0 = adocs_Menulink($pageroot, 'class="bigger"');
 
     $menu1 = '';
@@ -10457,7 +7985,8 @@ function adocs_makeMenu($pageroot, $pn, $parents = array(), $peers = array()) {
  * RETURN
  * string link to wiki page
  */
-function adocs_MenuLink($pagename, $class = '') {
+function adocs_MenuLink($pagename, $class = '')
+{
     return "<a $class href=\"?gp_page=x_docview&gppn=" . urlencode($pagename) . "\">" . $pagename . "</a>";
 }
 
@@ -10469,15 +7998,15 @@ function adocs_MenuLink($pagename, $class = '') {
 
 
 /**
-name:_default_
-parent:PHP Compatibility Functions
+ * name:_default_
+ * parent:PHP Compatibility Functions
  */
 
 /**
-name:PHP Compatibility Functions
-parent:Framework API Reference
-These are functions to replace functions deprecated or removed from
-PHP that have no replacement as simple or useful as the original.
+ * name:PHP Compatibility Functions
+ * parent:Framework API Reference
+ * These are functions to replace functions deprecated or removed from
+ * PHP that have no replacement as simple or useful as the original.
  */
 
 /**
@@ -10494,7 +8023,8 @@ PHP that have no replacement as simple or useful as the original.
  * string
  */
 if (!function_exists('mime_content_type')) {
-    function mime_content_type($filename) {
+    function mime_content_type($filename)
+    {
         $command = 'file -bi ' . escapeshellarg($filename);
         echo $command;
         ob_start();
@@ -10535,7 +8065,8 @@ if (!function_exists('mime_content_type')) {
  * RETURN
  * array
  */
-function minmax($val1, $val2) {
+function minmax($val1, $val2)
+{
     return array(min($val1, $val2), max($val1, $val2));
 }
 
@@ -10550,14 +8081,19 @@ function minmax($val1, $val2) {
  * RETURN
  * array
  */
-function aNextPrevFromContext($table_id, $skey = 0) {
+function aNextPrevFromContext($table_id, $skey = 0)
+{
 
     // early abort
-    if ($skey == 0) return array(0, 0);
+    if ($skey == 0) {
+        return array(0, 0);
+    }
 
     // Pull context and next early abort
     $skeys = ContextGet("tables_" . $table_id . "_skeys", array());
-    if (!isset($skeys[$skey])) return array(0, 0);
+    if (!isset($skeys[$skey])) {
+        return array(0, 0);
+    }
 
     // Get the keys as their own array, so we can go back/forward
     // Note that everything is zero-indexed
@@ -10572,7 +8108,8 @@ function aNextPrevFromContext($table_id, $skey = 0) {
     return array($skprev, $sknext);
 }
 
-function sqlOBFromContext($table_id) {
+function sqlOBFromContext($table_id)
+{
     $table = DD_TableRef($table_id);
 
     // Get old and new
@@ -10582,15 +8119,12 @@ function sqlOBFromContext($table_id) {
 
     // Possibility 1, new values are blank, no new request
     if ($obnew == '') {
-
         // 1.A, old is also blank, clear it out return blank
         if ($obold == '') {
             ContextSet("tables_" . $table_id . "_orderby", "");
             ContextSet("tables_" . $table_id . "_orderasc", "");
             return '';
-        }
-
-        // 1.B, old is there, use it
+        } // 1.B, old is there, use it
         else {
             return "ORDER BY $obold $obascold";
         }
@@ -10599,13 +8133,11 @@ function sqlOBFromContext($table_id) {
     // Changed value means accept as ascending.  Repeat
     // means flip ascending/descending
     if ($obold <> $obnew) {
-
         // for new column, always go ascending
         $obascnew = 'ASC';
         ContextSet("tables_" . $table_id . "_orderby", $obnew);
         ContextSet("tables_" . $table_id . "_orderasc", "ASC");
     } else {
-
         // if repeating the same column, flip ascending/descending
         $obascnew = ($obascold == "ASC") ? "DESC" : "ASC";
         ContextSet("tables_" . $table_id . "_orderasc", $obascnew);
@@ -10625,7 +8157,8 @@ function sqlOBFromContext($table_id) {
  *
  * INPUTS
  */
-function DrilldownReset() {
+function DrilldownReset()
+{
 
     //$keys = array_keys($_SESSION);
     $keys = array_keys($GLOBALS['gpContext']);
@@ -10644,26 +8177,30 @@ function DrilldownReset() {
  * RETURN
  * int
  */
-function DrilldownLevel() {
+function DrilldownLevel()
+{
     return ContextGet('drilldown_level', 0);
 }
 
 /**
  * Fetches the drilldown variable at level $level
  */
-function DrilldownGet($level) {
+function DrilldownGet($level)
+{
     return ContextGet("drilldown_" . $level);
 }
 
 /**
  * Gets the topmost drilldown variable
  */
-function DrillDownTop() {
+function DrillDownTop()
+{
     $dd = ContextGet("drilldown");
     return array_pop($dd);
 }
 
-function DrilldownValues($nesting = 0) {
+function DrilldownValues($nesting = 0)
+{
     $level = DrilldownLevel() - $nesting;
     return DrilldownGet($level);
 }
@@ -10676,7 +8213,8 @@ function DrilldownValues($nesting = 0) {
  * RETURN
  * array
  */
-function DrillDownMatches() {
+function DrillDownMatches()
+{
     $dd = ContextGet('drilldown', array());
     if (count($dd) == 0) {
         return array();
@@ -10696,9 +8234,11 @@ function DrillDownMatches() {
  * Wrapper for DynamicSave.
  *
  * INPUTS
+ *
  * @see DynamicSave()
  */
-function DynFromh($filename, $contents) {
+function DynFromh($filename, $contents)
+{
     DynamicSave($filename, $contents);
 }
 
@@ -10710,7 +8250,8 @@ function DynFromh($filename, $contents) {
  * string $filename name of file
  * string $contents information to save
  */
-function DynamicSave($filename, $contents) {
+function DynamicSave($filename, $contents)
+{
     $FILE = fopen($GLOBALS["AG"]["dirs"]["dynamic"] . "/" . $filename, "w");
     fwrite($FILE, $contents);
     fclose($FILE);
@@ -10726,10 +8267,14 @@ function DynamicSave($filename, $contents) {
  * RETURN
  * string data held in file
  */
-function DynamicLoad($filename) {
+function DynamicLoad($filename)
+{
     $file = $GLOBALS["AG"]["dirs"]["dynamic"] . "/" . $filename;
-    if (file_exists($file)) return file_get_contents($file);
-    else return "";
+    if (file_exists($file)) {
+        return file_get_contents($file);
+    } else {
+        return "";
+    }
 }
 
 /**
@@ -10739,9 +8284,12 @@ function DynamicLoad($filename) {
  * INPUTS
  * string $filename name of file
  */
-function DynamicClear($filename) {
+function DynamicClear($filename)
+{
     $file = $GLOBALS["AG"]["dirs"]["dynamic"] . "/" . $filename;
-    if (file_exists($file)) unlink($file);
+    if (file_exists($file)) {
+        unlink($file);
+    }
 }
 
 /**
@@ -10752,11 +8300,13 @@ function DynamicClear($filename) {
  * RETURN
  * string data in file
  */
-function hFromDyn($filename) {
+function hFromDyn($filename)
+{
     return DynamicLoad($filename);
 }
 
-function CacheMember_Profiles() {
+function CacheMember_Profiles()
+{
     $sq = "select * from member_profiles " . " where user_id='" . SessionGet('UID') . "'";
     $mp = SQL_OneRow($sq);
     DynFromA('member_profiles_' . SessionGet('UID'), $mp);
@@ -10774,10 +8324,14 @@ function CacheMember_Profiles() {
  * RETURN
  * array
  */
-function aFromDyn($filename) {
+function aFromDyn($filename)
+{
     $serialized = DynamicLoad($filename);
-    if (empty($serialized)) return array();
-    else return unserialize($serialized);
+    if (empty($serialized)) {
+        return array();
+    } else {
+        return unserialize($serialized);
+    }
 }
 
 /**
@@ -10788,11 +8342,13 @@ function aFromDyn($filename) {
  * string $filename the key
  * array $contents
  */
-function DynFromA($filename, $contents) {
+function DynFromA($filename, $contents)
+{
     DynamicSave($filename, serialize($contents));
 }
 
-function CellGet($table_id, $val, $col) {
+function CellGet($table_id, $val, $col)
+{
     $retval = CacheRead('table_' . $table_id . $val . $col);
     if ($retval == '') {
         $table = DD_TableRef($table_id);
@@ -10803,7 +8359,8 @@ function CellGet($table_id, $val, $col) {
     return $retval;
 }
 
-function rowsFromCache($name, $sq) {
+function rowsFromCache($name, $sq)
+{
     $ser = CacheRead($name);
     if ($ser == '') {
         $rs = SQL_AllRows($sq);
@@ -10820,7 +8377,8 @@ function rowsFromCache($name, $sq) {
  *
  * string $name filename
  */
-function CacheRead($name) {
+function CacheRead($name)
+{
     return DynamicLoad($name);
 }
 
@@ -10830,7 +8388,8 @@ function CacheRead($name) {
  * string $name filename
  * string $value data
  */
-function CacheWrite($name, $value) {
+function CacheWrite($name, $value)
+{
     DynamicSave($name, $value);
 }
 // ===================================================================
@@ -10852,7 +8411,8 @@ function CacheWrite($name, $value) {
  * RETURN
  * false   Always returns false.
  */
-function jqDocReady($script, $insert = false) {
+function jqDocReady($script, $insert = false)
+{
     $script = preg_replace("/<script>/i", '', $script);
     $script = preg_replace("/<\/script>/i", '', $script);
     $jdr = vgfGet('jqDocReady', array());
@@ -10876,10 +8436,10 @@ function jqDocReady($script, $insert = false) {
 
 
 /**
-name:HTML Output
-These functions all return or output fragments of HTML.
-Some of them output huge amounts of HTML, while others have the
-advantage of avoiding a confusing mix of HTML and PHP.
+ * name:HTML Output
+ * These functions all return or output fragments of HTML.
+ * Some of them output huge amounts of HTML, while others have the
+ * advantage of avoiding a confusing mix of HTML and PHP.
  */
 
 /**
@@ -10891,7 +8451,8 @@ advantage of avoiding a confusing mix of HTML and PHP.
  * RETURN
  * string sanitized html
  */
-function hSanitize($v) {
+function hSanitize($v)
+{
     return htmlentities($v);
 }
 
@@ -10899,11 +8460,13 @@ function hSanitize($v) {
  * Wrapper function for HTML_Format().
  *
  * INPUTS
+ *
  * @see HTML_Format
  * string $t Type_id
  * mixed $v value
  */
-function hFormat($t, $v) {
+function hFormat($t, $v)
+{
     return HTML_Format($t, $v);
 }
 
@@ -10916,27 +8479,29 @@ function hFormat($t, $v) {
  * formatted value
  */
 
-function HTML_Format($t, $v) {
+function HTML_Format($t, $v)
+{
     switch ($t) {
-        case 'mime-x':
+        case "mime-x":
             return HTMLE_IMG_INLINE($v);
             break;
-
         case "char":
         case "vchar":
         case "text":
         case "url":
         case "obj":
         case "cbool":
-        case 'ssn':
-        case 'ph12':
+        case "ssn":
+        case "ph12":
         case "gender":
             return htmlentities(trim($v));
             break;
 
         case "dtime":
             if (!is_numeric($v)) {
-                if ($v == '') return '';
+                if ($v == '') {
+                    return '';
+                }
                 $v = strtotime($v);
             }
             return date('m/d/Y h:i:s', $v);
@@ -10947,7 +8512,9 @@ function HTML_Format($t, $v) {
 
         case "date":
             if (!is_numeric($v)) {
-                if ($v == '') return '';
+                if ($v == '') {
+                    return '';
+                }
                 $v = strtotime($v);
             }
             return hDate($v, 'mm/dd/yyyy');
@@ -10959,8 +8526,8 @@ function HTML_Format($t, $v) {
             } else {
                 return trim($v);
             }
+            //keep formatting
         case "time":
-
             // Originally we were making users type this in, and here we tried
             // to convert it.  Now we use time drop-downs, which are nifty because
             // the display times while having values of numbers, so we don't need
@@ -10980,7 +8547,8 @@ function HTML_Format($t, $v) {
  * INPUTS
  * @deprecated Elimination imminent
  */
-function hHidden($key, $value) {
+function hHidden($key, $value)
+{
     return html_hidden($key, $value);
 }
 
@@ -10988,7 +8556,8 @@ function hHidden($key, $value) {
  * INPUTS
  * @deprecated Elimination imminent
  */
-function HTML_Hidden($key, $value) {
+function HTML_Hidden($key, $value)
+{
     return '<input type="hidden" ' . ' name="' . $key . '" id="' . $key . '" ' . ' value="' . $value . "\"/>\n";
 }
 
@@ -11003,10 +8572,10 @@ function HTML_Hidden($key, $value) {
  * RETURN
  * string Generated HTML
  */
-function HTML_Dropdown($name, $resall, $value = "value", $inner = "inner") {
+function HTML_Dropdown($name, $resall, $value = "value", $inner = "inner")
+{
     $retval = "<select id=" . $name . " name=$name>";
     foreach ($resall as $row) {
-
         //echo "Reading a row";
         $retval.= "<option value=\"" . $row[$value] . "\">" . $row[$inner] . "</option>";
     }
@@ -11014,7 +8583,8 @@ function HTML_Dropdown($name, $resall, $value = "value", $inner = "inner") {
     return $retval;
 }
 
-function hDateUSFromSD($sd) {
+function hDateUSFromSD($sd)
+{
     return intval(substr($sd, 4, 2)) . '/' . intval(substr($sd, 6, 2)) . '/' . intval(substr($sd, 0, 4));
 }
 
@@ -11033,7 +8603,8 @@ function hDateUSFromSD($sd) {
  * RETURN
  * string
  */
-function urlParmsFromArray($array, $prefix = '') {
+function urlParmsFromArray($array, $prefix = '')
+{
     $retval = '';
     foreach ($array as $key => $value) {
         $retval.= ListDelim($retval, '&') . $prefix . $key . '=' . urlencode($value);
@@ -11041,7 +8612,8 @@ function urlParmsFromArray($array, $prefix = '') {
     return $retval;
 }
 
-function ehTBodyFromSQL($sq) {
+function ehTBodyFromSQL($sq)
+{
     $rows = SQL_AllRows($sq);
     ehTBodyFromRows($rows);
 }
@@ -11064,7 +8636,8 @@ function ehTBodyFromSQL($sq) {
  * RETURN
  * string Generated HTML
  */
-function hTBodyFromRows($class = '', $rows) {
+function hTBodyFromRows($class = '', $rows = [])
+{
     $retval = '';
     foreach ($rows as $row) {
         $retval.= hTRFromArray($class, $row);
@@ -11083,7 +8656,8 @@ function hTBodyFromRows($class = '', $rows) {
  * RETURN
  * string Generated HTML
  */
-function hTRFromArray($class, $array) {
+function hTRFromArray($class, $array)
+{
     $retval = "\n<tr>";
     foreach ($array as $value) {
         $retval.= hTD($class, $value);
@@ -11104,7 +8678,8 @@ function hTRFromArray($class, $array) {
  * RETURN
  * string Generated HTML
  */
-function hTDSFromArray($class, $array) {
+function hTDSFromArray($class, $array)
+{
     $retval = '';
     foreach ($array as $value) {
         $retval.= hTD($class, $value);
@@ -11123,7 +8698,8 @@ function hTDSFromArray($class, $array) {
  * RETURN
  * string Generated Table
  */
-function hTableSortable($table_id, $cols, $class = 'dhead') {
+function hTableSortable($table_id, $cols, $class = 'dhead')
+{
 
     // Since the table will be sortable, make a hidden variable
     // to keep the sort value
@@ -11160,7 +8736,8 @@ function hTableSortable($table_id, $cols, $class = 'dhead') {
  * RETURN
  * string Generated HTML
  */
-function hTable_MethodAlternate($rows, $class1, $class2) {
+function hTable_MethodAlternate($rows, $class1, $class2)
+{
     $class = $class1;
     $retval = '';
     foreach ($rows as $row) {
@@ -11177,7 +8754,8 @@ function hTable_MethodAlternate($rows, $class1, $class2) {
  * RETURN
  * string SLQ HTML Timestamp
  */
-function HTML_SQLTimestamp($val) {
+function HTML_SQLTimestamp($val)
+{
     return date('Y-m-d h:i:s A', X_SQLTS_TO_UNIX($val));
 }
 
@@ -11188,19 +8766,25 @@ function HTML_SQLTimestamp($val) {
  * RETURN
  * string HTML Unix Timestamp
  */
-function HTML_UnixTimestamp($val) {
+function HTML_UnixTimestamp($val)
+{
     return date('Y-m-d h:i:s A', $val);
 }
 
-function HTML_TIMESTAMP($date) {
+function HTML_TIMESTAMP($date)
+{
     return date("d-M-Y h:i:s a", $date);
 }
 
-function hTime($time) {
+function hTime($time)
+{
     return html_time($time);
 }
-function HTML_TIME($time) {
-    if (is_null($time)) return '--:-- --';
+function HTML_TIME($time)
+{
+    if (is_null($time)) {
+        return '--:-- --';
+    }
     $ampm = "am";
     $hours = intval($time / 60);
     $mins = $time - ($hours * 60);
@@ -11217,7 +8801,8 @@ function HTML_TIME($time) {
     return "$hours:" . $mins . " " . $ampm;
 }
 
-function HTML_TIMESLOT($slot) {
+function HTML_TIMESLOT($slot)
+{
     if ($slot == 0) {
         return 'Midnight';
     }
@@ -11270,7 +8855,8 @@ function HTML_TIMESLOT($slot) {
  * RETURN
  * array (HTML_Caption,HTML_Parm_Accesskey)
  */
-function FindAccessKey($caption) {
+function FindAccessKey($caption)
+{
     $akey = '';
     $x = strpos($caption, "\\");
     if ($x !== false) {
@@ -11289,15 +8875,15 @@ function FindAccessKey($caption) {
 
 
 /**
-name:Partial Date Functions
-parent:Framework API Reference
-This is a category reserved for functions that take date parts, like a
-month number, and return strings, and vice-versa.
+ * name:Partial Date Functions
+ * parent:Framework API Reference
+ * This is a category reserved for functions that take date parts, like a
+ * month number, and return strings, and vice-versa.
  */
 
 /**
-name:_default_
-parent:Partial Date Functions
+ * name:_default_
+ * parent:Partial Date Functions
  */
 
 /**
@@ -11308,7 +8894,8 @@ parent:Partial Date Functions
  * RETURN
  * string Month Name 3 Letter
  */
-function dMonFromNum($xmonth) {
+function dMonFromNum($xmonth)
+{
     $arr = array('', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jly', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec');
     return $arr[$xmonth];
 }
@@ -11329,7 +8916,8 @@ function dMonFromNum($xmonth) {
  * RETURN
  * string unix_ts End Date
  */
-function dMonthEnd($datein, $months) {
+function dMonthEnd($datein, $months)
+{
     $dateout = dEnsureTS($datein);
     $dateout = dEnsureTS(date('m/1/Y', $dateout));
     $dateout = strtotime("+ $months months", $dateout);
@@ -11349,9 +8937,13 @@ function dMonthEnd($datein, $months) {
  * RETURN
  * string unix_ts
  */
-function dEnsureTS($datein) {
-    if (is_numeric($datein)) return $datein;
-    else return strtotime($datein);
+function dEnsureTS($datein)
+{
+    if (is_numeric($datein)) {
+        return $datein;
+    } else {
+        return strtotime($datein);
+    }
 }
 
 /**
@@ -11362,7 +8954,8 @@ function dEnsureTS($datein) {
  * RETURN
  * string Month Name
  */
-function dMonthFromNum($xmonth) {
+function dMonthFromNum($xmonth)
+{
     $x = array('', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December');
     return $x[$xmonth];
 }
@@ -11374,7 +8967,8 @@ function dMonthFromNum($xmonth) {
  * RETURN
  * int year
  */
-function dYEar() {
+function dYEar()
+{
     return date('Y', time());
 }
 
@@ -11392,7 +8986,8 @@ function dYEar() {
  * RETURN
  * string filename
  */
-function scFileName($filespec) {
+function scFileName($filespec)
+{
     $pathinfo = pathinfo($filespec);
     if (isset($pathinfo['basename'])) {
         return $pathinfo['basename'];
@@ -11401,7 +8996,8 @@ function scFileName($filespec) {
     }
 }
 
-function scBaseName($filespec) {
+function scBaseName($filespec)
+{
     $filename = scFileName($filespec);
     $list = explode(".", $filename);
     if (count($list) > 1) {
@@ -11419,7 +9015,8 @@ function scBaseName($filespec) {
  * RETURN
  * string extension to $filespec
  */
-function scFileExt($filespec) {
+function scFileExt($filespec)
+{
     $pathinfo = pathinfo($filespec);
     if (isset($pathinfo['extension'])) {
         return $pathinfo['extension'];
@@ -11428,23 +9025,27 @@ function scFileExt($filespec) {
     }
 }
 
-/**  Add a slash to a directory path
+/**
+  * Add a slash to a directory path
  *
  *  Puts a slash onto the end of string, if there is not
  *  one there already.  Good to make sure directory paths
  *  can always be safely used.
  *
  *  INPUTS
- *  @example  $complete = scAddSlash($dir).$filename;
+ *
+ *  @example $complete = scAddSlash($dir).$filename;
  *      string $path
  *  RETURN
  *   string
  */
-function raxAddSlash($path) {
+function raxAddSlash($path)
+{
     $path = trim($path);
     return $path . (substr($path, -1, 1) == '/' ? '' : '/');
 }
-function scAddSlash($path) {
+function scAddSlash($path)
+{
     return raxAddSlash($path);
 }
 
@@ -11465,7 +9066,8 @@ function scAddSlash($path) {
  * RETURN
  * string original string or string with $item removed from the beginning
  */
-function scClipStart($input, $item) {
+function scClipStart($input, $item)
+{
     $len = strlen($item);
     if (substr($input, 0, $len) == $item) {
         $input = substr($input, $len);
@@ -11485,7 +9087,8 @@ function scClipStart($input, $item) {
  * RETURN
  * string string without $item at the end
  */
-function scClipAfter($input, $item) {
+function scClipAfter($input, $item)
+{
     if (strpos($input, $item) !== false) {
         $input = substr($input, 0, strpos($input, $item));
     }
@@ -11506,7 +9109,8 @@ function scClipAfter($input, $item) {
  * RETURN
  * string Unix Timestamp
  */
-function X_SQLTS_TO_UNIX($dttm2timestamp_in) {
+function X_SQLTS_TO_UNIX($dttm2timestamp_in)
+{
     $date_time = explode(" ", $dttm2timestamp_in);
     $date = explode("-", $date_time[0]);
     if (!isset($date_time[1])) {
@@ -11514,8 +9118,11 @@ function X_SQLTS_TO_UNIX($dttm2timestamp_in) {
     }
     $time = explode(":", $date_time[1]);
     unset($date_time);
-    if (!isset($date[1])) list($year, $month, $day) = array(1970, 1, 1);
-    else list($year, $month, $day) = $date;
+    if (!isset($date[1])) {
+        list($year, $month, $day) = array(1970, 1, 1);
+    } else {
+        list($year, $month, $day) = $date;
+    }
     list($hour, $minute, $second) = $time;
     return mktime(intval($hour), intval($minute), intval($second), intval($month), intval($day), intval($year));
 }
@@ -11530,7 +9137,8 @@ function X_SQLTS_TO_UNIX($dttm2timestamp_in) {
  * RETURN
  * string sql timestamp
  */
-function X_UNIX_TO_SQLTS($dt, $skipquotes = false) {
+function X_UNIX_TO_SQLTS($dt, $skipquotes = false)
+{
     if ($skipquotes) {
         $q = "";
     } else {
@@ -11549,7 +9157,8 @@ function X_UNIX_TO_SQLTS($dt, $skipquotes = false) {
  * RETURN
  * string sql date
  */
-function X_UNIX_TO_SQLDATE($dt, $skipquotes = false) {
+function X_UNIX_TO_SQLDATE($dt, $skipquotes = false)
+{
     if ($skipquotes) {
         $q = "";
     } else {
@@ -11565,7 +9174,8 @@ function X_UNIX_TO_SQLDATE($dt, $skipquotes = false) {
 // Table triggers
 // ===============================================================
 
-function variables_writeAfter($row) {
+function variables_writeAfter($row)
+{
     $rows = SQL_AllRows("select * from variables");
     $cache = array();
     foreach ($rows as $row) {
@@ -11575,11 +9185,13 @@ function variables_writeAfter($row) {
     fsFileFromArray('table_variables.php', $cache, "GLOBALS['AG']['table_variables']");
 }
 
-function OptionGet($varname, $default = '') {
+function OptionGet($varname, $default = '')
+{
     return Option_Get($varname, $default);
 }
 
-function getRegexOptionVal($matches) {
+function getRegexOptionVal($matches)
+{
 
     //return OptionGet( $matches[1] );
     $query = "SELECT * FROM variables WHERE variable='" . $matches[1] . "'";
@@ -11591,7 +9203,8 @@ function getRegexOptionVal($matches) {
     return $ret;
 }
 
-function Option_Get($varname, $default = '') {
+function Option_Get($varname, $default = '')
+{
     // KFD 6/12/08, eliminate caching on disk, it is problematic
     //              in x4 and we want to replace it with memcached
     if ($varname == 'X') {
@@ -11601,9 +9214,13 @@ function Option_Get($varname, $default = '') {
     if (!file_exists_incpath('table_variables.php')) {
         // if not connected, connect now
         $dbconnected = SQLConnected();
-        if (!$dbconnected) SQL_ConnPush();
+        if (!$dbconnected) {
+            SQL_ConnPush();
+        }
         variables_writeAfter(array());
-        if (!$dbconnected) SQL_ConnPop();
+        if (!$dbconnected) {
+            SQL_ConnPop();
+        }
 
         /*
                     // Retrieve the file
@@ -11622,11 +9239,12 @@ function Option_Get($varname, $default = '') {
                     );
                     */
     }
-    include ('table_variables.php');
+    include'table_variables.php';
     return ArraySafe($GLOBALS['AG']['table_variables'], trim($varname), $default);
 }
 
-/** Use rows of a table to simulate columns
+/**
+ * Use rows of a table to simulate columns
  *
  * Takes a table name, one column to pull for values
  * and other to pull as description, and makes a data
@@ -11639,7 +9257,8 @@ function Option_Get($varname, $default = '') {
  * string $colcoldesc column with values
  * string $colinfo column with data
  */
-function DD_RowsAsTable($table_id, $colcolname, $colcoldesc, $colinfo) {
+function DD_RowsAsTable($table_id, $colcolname, $colcoldesc, $colinfo)
+{
     $table = DD_Table($table_id);
     $table["table_id"] = "x_" . $table_id;
 
@@ -11657,7 +9276,8 @@ function DD_RowsAsTable($table_id, $colcolname, $colcoldesc, $colinfo) {
     $GLOBALS["AG"]["tables"]["x_" . $table_id] = $table;
 }
 
-function DDProjectionResolve(&$table, $projection = '') {
+function DDProjectionResolve(&$table, $projection = '')
+{
 
     // Pass 1 is security projection.  Drop columns completely
     // if they are not in the view
@@ -11693,7 +9313,6 @@ function DDProjectionResolve(&$table, $projection = '') {
         $projcand = $projection;
     } else {
         if (!isset($table['projections'][$projection])) {
-
             // This case also catches where no projection was specified
             $projcand = array_keys($table['flat']);
         } else {
@@ -11702,9 +9321,15 @@ function DDProjectionResolve(&$table, $projection = '') {
     }
     $acols = array();
     foreach ($projcand as $colname) {
-        if (!isset($table['flat'][$colname])) continue;
-        if ($colname == 'skey') continue;
-        if (ArraySafe($table['flat'][$colname], 'uino') == 'Y') continue;
+        if (!isset($table['flat'][$colname])) {
+            continue;
+        }
+        if ($colname == 'skey') {
+            continue;
+        }
+        if (ArraySafe($table['flat'][$colname], 'uino') == 'Y') {
+            continue;
+        }
         $acols[] = $colname;
     }
     return $acols;
@@ -11725,7 +9350,8 @@ function DDProjectionResolve(&$table, $projection = '') {
  * RETURN
  * boolean is it valid?
  */
-function CheckTextDate($input) {
+function CheckTextDate($input)
+{
     $arr = explode("/", $input);
     if (Count($arr) != 3) {
         return false;
@@ -11742,11 +9368,13 @@ function CheckTextDate($input) {
  *
  * INPUTS
  */
-function databaseFromPost() {
+function databaseFromPost()
+{
     return processPost();
 }
 
-function processPost() {
+function processPost()
+{
 
     // If they are doing a dupe check, convert it into a
     // search
@@ -11758,7 +9386,6 @@ function processPost() {
     //KenDebug('Entered process post');
     $row = aFromGP('x2t_');
     if (count($row) > 0) {
-
         //KenDebug('Going into textboxes');
         processPost_TextBoxes($row);
     }
@@ -11798,11 +9425,9 @@ function processPost() {
         $obascold = ConGet("table", $table_id, "orderasc");
         if ($obnew <> '') {
             if ($obold <> $obnew) {
-
                 // for new column, always go ascending
                 ConSet("table", $table_id, "orderasc", "ASC");
             } else {
-
                 // if repeating the same column, flip ascending/descending
                 $obascnew = ($obascold == "ASC") ? "DESC" : "ASC";
                 ConSet("table", $table_id, "orderasc", $obascnew);
@@ -11820,18 +9445,16 @@ function processPost() {
         switch ($pagecommand) {
             case '':
                 $newpage = 0;
+                // really it should be 1
             case '0':
                 $newpage = 1;
                 break;
-
             case '1':
                 $newpage = ($spage <= 1) ? 1 : $spage - 1;
                 break;
-
             case '2':
                 $newpage = ($spage >= $maxpage) ? $maxpage : $spage + 1;
                 break;
-
             case '3':
                 $newpage = $maxpage;
                 break;
@@ -11852,7 +9475,8 @@ function processPost() {
     }
 }
 
-function processPost_TableSearchResultsClear($table_id) {
+function processPost_TableSearchResultsClear($table_id)
+{
     ConSet("table", $table_id, "skeys", '');
     // wipe out results
     ConSet("table", $table_id, "spage", '0');
@@ -11860,16 +9484,20 @@ function processPost_TableSearchResultsClear($table_id) {
 
 }
 
-function arrPageInfo($table_id) {
+function arrPageInfo($table_id)
+{
     $spage = ConGet('table', $table_id, 'spage', 1);
     $srows = ConGet('table', $table_id, 'srows', 0);
     $srppg = ConGet('table', $table_id, 'rppage', 25);
     $maxpg = intval($srows / $srppg);
-    if ($srows % $srppg > 0) ++$maxpg;
+    if ($srows % $srppg > 0) {
+        ++$maxpg;
+    }
     return array($spage, $srows, $srppg, $maxpg);
 }
 
-function processPost_Database() {
+function processPost_Database()
+{
 
     // Obtain controls.  Convert to set of tables that
     // can be processed as inserts, updates, or deletes
@@ -11879,10 +9507,11 @@ function processPost_Database() {
     foreach ($controls as $index => $info) {
         $value = null;
         if (!gpExists('array_' . $index)) {
-
             // tough call. If did not come back, assume an
             // unchecked check box.
-            if ($info['v'] == 'Y') $value = 'N';
+            if ($info['v'] == 'Y') {
+                $value = 'N';
+            }
         } else {
             $x = gp('array_' . $index);
             if (trim($x) !== trim($info['v'])) {
@@ -11890,7 +9519,9 @@ function processPost_Database() {
             }
 
             // on inserts, take every value
-            if ($info['s'] < 0) $value = $x;
+            if ($info['s'] < 0) {
+                $value = $x;
+            }
         }
         if (!is_null($value)) {
             $data[$info['t']][$info['s']][$info['c']] = $value;
@@ -11919,7 +9550,6 @@ function processPost_Database() {
             }
             if ($skey < 0) {
                 if (gp('gp_skey') == 'X') {
-
                     // Merge in any values from parent and claim they
                     // were there all along
                     //$rowins = array_merge($row,$parents);
@@ -11936,7 +9566,8 @@ function processPost_Database() {
     return $data;
 }
 
-function processPost_Textboxes($row) {
+function processPost_Textboxes($row)
+{
     $gp_action = gp('gp_action');
     $gp_mode = gp('gpx_mode');
     $gp_skey = gp('gpx_skey');
@@ -11966,19 +9597,21 @@ function processPost_Textboxes($row) {
 
     // Saving an insert requires an explicit command
     if ($gp_action == 'save' && $gp_mode == 'ins') {
-
         // KFD 6/15/07, remove blanks from an insert.
         foreach ($row as $key => $value) {
-            if (trim($value == '')) unset($row[$key]);
+            if (trim($value == '')) {
+                unset($row[$key]);
+            }
         }
         $skey = SQLX_Insert($table, $row);
         if (Errors()) {
-
             // ERRORROW CHANGE 5/30/07, moved to SQLX_* routines
             //vgfSet('ErrorRow',$row);
 
         } else {
-            if ($user_pref) UserPrefsLoad();
+            if ($user_pref) {
+                UserPrefsLoad();
+            }
             processPost_TableSearchResultsClear($table_id);
 
             // If there was a page set to return to, do that now
@@ -12007,7 +9640,6 @@ function processPost_Textboxes($row) {
     // Finally, if the old mode was view (update), then look for
     // changed values and figure out if we need to do an update
     if ($gp_mode == 'upd') {
-
         //echo "i am trying to update, here are old controls: ";
         $controls = ContextGet('OldRow', array());
 
@@ -12017,12 +9649,12 @@ function processPost_Textboxes($row) {
         foreach ($controls as $colname => $colvalue) {
             $value = null;
             if (!isset($row[$colname])) {
-
                 // tough call. If did not come back, assume an
                 // unchecked check box.
-                if ($colvalue == 'Y') $changed[$colname] = 'N';
+                if ($colvalue == 'Y') {
+                    $changed[$colname] = 'N';
+                }
             } else {
-
                 // KFD 6/27/07, allow explicit force save of all values
                 if (gpExists('gp_forcesave') || trim($colvalue) !== trim($row[$colname])) {
                     $changed[$colname] = $row[$colname];
@@ -12036,12 +9668,13 @@ function processPost_Textboxes($row) {
             //hprint_r($changed);
             SQLX_Update($table, $changed, $errrow);
             if (Errors()) {
-
                 // ERRORROW CHANGE 5/30/07, moved to SQLX_* routines
                 //vgfSet('ErrorRow',$row);
 
             } else {
-                if ($user_pref) UserPrefsLoad();
+                if ($user_pref) {
+                    UserPrefsLoad();
+                }
 
                 /*
                             if($cache_pk<>'') {
@@ -12071,7 +9704,8 @@ function processPost_Textboxes($row) {
 // Closely related routine, depends
 // entirely upon the context
 // - - - - - - - - - - - - - - - - -  -
-function rowsFromUserSearch(&$table, $lcols = null, $matches = array(), $child = false) {
+function rowsFromUserSearch(&$table, $lcols = null, $matches = array(), $child = false)
+{
     $table_id = $table['table_id'];
     $view_id = DDTable_IDResolve($table_id);
 
@@ -12116,10 +9750,14 @@ function rowsFromUserSearch(&$table, $lcols = null, $matches = array(), $child =
         $skeysl = array_slice($skeys, ($gp_spage - 1) * $gp_rpp, $gp_rpp);
     }
     $skeysl = implode(',', $skeysl);
-    if ($skeysl == '') return array();
+    if ($skeysl == '') {
+        return array();
+    }
     // Early return
 
-    if (is_null($lcols)) $cols = $table['projections']['_uisearch'];
+    if (is_null($lcols)) {
+        $cols = $table['projections']['_uisearch'];
+    }
     $colslist = 'skey,' . $lcols;
 
     $sob = ConGet('table', $table_id, 'complex_orderby');
@@ -12130,7 +9768,8 @@ function rowsFromUserSearch(&$table, $lcols = null, $matches = array(), $child =
 }
 
 // This routine retrieves the skey values only
-function rowsFromUserSearch_Execute(&$table, $matches = array()) {
+function rowsFromUserSearch_Execute(&$table, $matches = array())
+{
     $table_id = $table["table_id"];
     $tabflat = $table["flat"];
     $filters = ConGet('table', $table_id, 'search', array());
@@ -12151,7 +9790,8 @@ function rowsFromUserSearch_Execute(&$table, $matches = array()) {
     return $skeys;
 }
 
-function rowsFromFilters(&$table, $filters, $cols, $matches = array()) {
+function rowsFromFilters(&$table, $filters, $cols, $matches = array())
+{
     $tabflat = $table['flat'];
     $table_id = $table['table_id'];
     $view_id = DDTable_IDResolve($table_id);
@@ -12176,7 +9816,6 @@ function rowsFromFilters(&$table, $filters, $cols, $matches = array()) {
                 $tcv = dEnsureTS($tcv);
             }
             if ($tcv != "") {
-
                 // trap for a % sign in non-string
                 $sw[] = '(' . sqlFilter($colinfo, $tcv) . ')';
             }
@@ -12212,7 +9851,9 @@ function rowsFromFilters(&$table, $filters, $cols, $matches = array()) {
     if ($ob == '') {
         foreach ($lob as $onecol) {
             $aid = $table['flat'][$onecol]['automation_id'];
-            if (in_array($aid, array('SEQUENCE', 'SEQDEFAULT'))) continue;
+            if (in_array($aid, array('SEQUENCE', 'SEQDEFAULT'))) {
+                continue;
+            }
             $ob = $onecol;
             ConSet('table', $table_id, 'orderby', $ob);
         }
@@ -12220,7 +9861,9 @@ function rowsFromFilters(&$table, $filters, $cols, $matches = array()) {
     $sob = $ob . ' ' . $obasc;
     foreach ($lob as $onecol) {
         $aid = $table['flat'][$onecol]['automation_id'];
-        if (in_array($aid, array('SEQUENCE', 'SEQDEFAULT'))) continue;
+        if (in_array($aid, array('SEQUENCE', 'SEQDEFAULT'))) {
+            continue;
+        }
         if ($onecol <> $ob) {
             $sob.= "\n, " . $onecol . ' ' . $obasc;
         }
@@ -12255,7 +9898,8 @@ function rowsFromFilters(&$table, $filters, $cols, $matches = array()) {
  * INPUTS
  * @deprecated Copied to SQLFilter()
  */
-function rff_OneCol($colinfo, $colname, $tcv) {
+function rff_OneCol($colinfo, $colname, $tcv)
+{
     $tid = $colinfo['type_id'];
     $uiid = ArraySafe($colinfo, 'uisearch_ignore_dash', 'N');
     $values = explode(',', $tcv);
@@ -12263,7 +9907,6 @@ function rff_OneCol($colinfo, $colname, $tcv) {
     foreach ($values as $tcv) {
         $aStrings = array('char' => 0, 'vchar' => 0, 'text' => 0);
         if (substr($tcv, 0, 1) == '>' || substr($tcv, 0, 1) == '<') {
-
             // This is a greater than/less than situation,
             // we ignore anything else they may have done
             $new = $colname . substr($tcv, 0, 1) . SQL_FORMAT($tid, substr($tcv, 1));
@@ -12310,7 +9953,8 @@ function rff_OneCol($colinfo, $colname, $tcv) {
  * RETURN
  * string Control Name
  */
-function AddControl($table_id, $skey, $colname, $colvalue) {
+function AddControl($table_id, $skey, $colname, $colvalue)
+{
     $controls = vgfGet('gpControls', array());
     $index = count($controls) + 1;
     $controls[$index] = array('t' => $table_id, 's' => $skey, 'c' => $colname, 'v' => $colvalue);
@@ -12318,7 +9962,8 @@ function AddControl($table_id, $skey, $colname, $colvalue) {
     return 'array_' . $index;
 }
 
-function ahFromRows(&$rows, $inputs, $table_id = null) {
+function ahFromRows(&$rows, $inputs, $table_id = null)
+{
 
     // Generate the appropriate input types for the table
     $hinputs = ahInputsFromProjection($table_id, $inputs);
@@ -12366,7 +10011,8 @@ function ahFromRows(&$rows, $inputs, $table_id = null) {
  * RETURN
  * string
  */
-function hWidget($type_id, $name, $value = '', $opts = array()) {
+function hWidget($type_id, $name, $value = '', $opts = array())
+{
 
     // Establish an array.  This uses the same basic structure
     // as ahInputsComprehensive below.
@@ -12452,7 +10098,8 @@ function hWidget($type_id, $name, $value = '', $opts = array()) {
 /**
  * @deprecated
  */
-function ahInputsComprehensive(&$table, $mode, $row = array(), $projection = '', $opts = array()) {
+function ahInputsComprehensive(&$table, $mode, $row = array(), $projection = '', $opts = array())
+{
     $table_id = $table['table_id'];
     $ahcols = array();
 
@@ -12462,8 +10109,11 @@ function ahInputsComprehensive(&$table, $mode, $row = array(), $projection = '',
     $colerrs = vgfget('errorsCOL', array());
 
     $acols = DDProjectionResolve($table, $projection);
-    if (isset($opts['drilldownmatches'])) $ddmatches = $opts['drilldownmatches'];
-    else $ddmatches = DrillDownMatches();
+    if (isset($opts['drilldownmatches'])) {
+        $ddmatches = $opts['drilldownmatches'];
+    } else {
+        $ddmatches = DrillDownMatches();
+    }
 
     $name_prefix = isset($opts['name_prefix']) ? $opts['name_prefix'] : 'x2t_';
 
@@ -12519,7 +10169,9 @@ function ahInputsComprehensive(&$table, $mode, $row = array(), $projection = '',
     //$tabindex=1;
     foreach ($acols as $colname) {
         // HACK KFD 6/2/08.
-        if ($colname == '') continue;
+        if ($colname == '') {
+            continue;
+        }
         $colinfo = & $table['flat'][$colname];
         $value = ColumnValue($table, $row, $mode, $colname);
 
@@ -12600,7 +10252,9 @@ function ahInputsComprehensive(&$table, $mode, $row = array(), $projection = '',
     // do any overrides and extra stuff that may be necessary
     foreach ($acols as $colname) {
         // HACK KFD 6/2/08.
-        if ($colname == '') continue;
+        if ($colname == '') {
+            continue;
+        }
         $col = & $ahcols[$colname];
         $colinfo = & $table['flat'][$colname];
         $col['input'] = 'input';
@@ -12610,6 +10264,7 @@ function ahInputsComprehensive(&$table, $mode, $row = array(), $projection = '',
         switch ($coltype) {
             case 'date':
                 $col['parms']['data-date-format'] = 'yyyy-mm-dd';
+                //keep formatting
             case 'time':
                 $col['input'] = 'select';
                 $v = $col['parms']['value'];
@@ -12648,7 +10303,6 @@ function ahInputsComprehensive(&$table, $mode, $row = array(), $projection = '',
             case 'text':
             case 'mime-h-f':
             case 'mime-h':
-
                 //$x=SQL_UNESCAPE_BINARY($col['parms']['value']);
                 //ob_start();
                 //ehFCKEditor($col['parms']['name'],$x);
@@ -12679,9 +10333,9 @@ function ahInputsComprehensive(&$table, $mode, $row = array(), $projection = '',
                     break;
                 }
 
-            //default:
-            //   $col['parms']['type']='textbox';
-            //   break;
+                //default:
+                //   $col['parms']['type']='textbox';
+                //   break;
 
         }
 
@@ -12689,7 +10343,6 @@ function ahInputsComprehensive(&$table, $mode, $row = array(), $projection = '',
         //  if present
         $table_id_fko = isset($columnoverrides[$colname]['table_id_fko']) ? $columnoverrides[$colname]['table_id_fko'] : $colinfo['table_id_fko'];
         if ($table_id_fko <> '' && $colinfo['type_id'] <> 'date') {
-
             // Add in the html off to the right
             $col['hright'] = "<a tabindex=999 href=\"javascript:Info2('" . $table_id_fko . "','" . $col['parms']['name'] . "')\">Info</a>";
 
@@ -12709,7 +10362,6 @@ function ahInputsComprehensive(&$table, $mode, $row = array(), $projection = '',
                 // This branch is the HTML SELECT, for small lists
                 //if($fkdisplay<>'dynamic') {
                 if ($fkdisplay <> 'dynamic') {
-
                     // KFD 2/16/07.  Figure out if there is a filter column
                     $fkk = $colinfo['table_id_fko'] . $colinfo['suffix'];
                     $uifc = trim(ArraySafe($table['fk_parents'][$fkk], 'uifiltercolumn'));
@@ -12732,7 +10384,6 @@ function ahInputsComprehensive(&$table, $mode, $row = array(), $projection = '',
                     unset($col['parms']['type']);
                     unset($col['parms']['size']);
                 } else {
-
                     // Turn on this branch with fk_coldisplay=dynamic,
                     // gives us an ajax display
                     //$fkparms='gp_dropdown='.$table_id.'&gp_col='.$colname;
@@ -12743,7 +10394,6 @@ function ahInputsComprehensive(&$table, $mode, $row = array(), $projection = '',
                         $fkparms.= "&adl_$xcdp='+ob('$xcdpn').value+'";
                     }
                     if ($col['writeable']) {
-
                         //$col['input']='select';
                         $col['parms']['onkeyup'] = "androSelect_onKeyUp(this,'$fkparms',event)";
                         $col['parms']['onkeydown'] = "androSelect_onKeyDown(event)";
@@ -12770,12 +10420,13 @@ function ahInputsComprehensive(&$table, $mode, $row = array(), $projection = '',
     // cases for checkboxes, readonly, and so forth
     foreach ($acols as $colname) {
         // HACK KFD 6/2/08.
-        if ($colname == '') continue;
+        if ($colname == '') {
+            continue;
+        }
 
         // Some things, like Images, are completely setup earlier,
         // so just skip them completely
         if ($ahcols[$colname]['html'] <> '') {
-
             // echo "Did it for $colname";
             continue;
         }
@@ -12833,11 +10484,14 @@ function ahInputsComprehensive(&$table, $mode, $row = array(), $projection = '',
 
 // An experimental routine from an early draft of AJAX X3,
 // will be retired and removed.
-function ajsFromDD($table, $prefix) {
+function ajsFromDD($table, $prefix)
+{
 
     // Generates all AJAX commands for each column in a table
     // based on various things like FETCHDEF and so forth.
-    if (!vgaGet('AJAX_X3', false) == true) return array();
+    if (!vgaGet('AJAX_X3', false) == true) {
+        return array();
+    }
 
     // All controls get a CalcRow at the end
     $retval = array();
@@ -12852,7 +10506,6 @@ function ajsFromDD($table, $prefix) {
         // If there are FETCH/DIST entries then assign
         // the ajax call to each child table column
         if (isset($table['FETCHDIST'][$fk])) {
-
             // Obtain pk of parent table, list of cols in that pk
             $ddpar = DD_TableRef($fkp['table_id_par']);
             $apks = explode(',', $ddpar['pks']);
@@ -12895,7 +10548,8 @@ function ajsFromDD($table, $prefix) {
 /**
  * @deprecated
  */
-function ahInputsFromProjection($table_id, $colnames) {
+function ahInputsFromProjection($table_id, $colnames)
+{
     $retval = array();
     if (is_null($table_id)) {
         foreach ($colnames as $colname => $x) {
@@ -12925,19 +10579,21 @@ function ahInputsFromProjection($table_id, $colnames) {
     return $hinputs;
 }
 
-function ColumnValue(&$table, &$row, $mode, $colname) {
+function ColumnValue(&$table, &$row, $mode, $colname)
+{
     if (isset($row[$colname])) {
         return $row[$colname];
     }
 
-    if ($mode <> 'ins') return '';
+    if ($mode <> 'ins') {
+        return '';
+    }
 
     // All the rest is for inserts
     $colinfo = & $table['flat'][$colname];
     if ($colinfo['automation_id'] <> 'DEFAULT') {
         return '';
     } else {
-
         // These are different kinds of default values
         if ($colinfo['auto_formula'] <> '%now') {
             $val = $colinfo['auto_formula'];
@@ -12956,14 +10612,16 @@ function ColumnValue(&$table, &$row, $mode, $colname) {
     }
 }
 
-function CacheRowPutBySkey(&$table, $skey) {
+function CacheRowPutBySkey(&$table, $skey)
+{
     $sq = "SELECT * FROM " . $table['table_id'] . " WHERE skey = " . $skey;
     $row = SQL_OneRow($sq);
     $pkcol = $table['pks'];
     $pkval = $row[$pkcol];
     DynFromA($table['table_id'] . "_" . $pkval, $row);
 }
-function CacheRowPut(&$table, &$row) {
+function CacheRowPut(&$table, &$row)
+{
     $pkcol = $table['pks'];
     $pkval = $row[$pkcol];
     $pktyp = $table['flat'][$pkcol]['type_id'];
@@ -12971,7 +10629,8 @@ function CacheRowPut(&$table, &$row) {
     $row = SQL_OneRow($sq);
     DynFromA($table['table_id'] . "_" . $pkval, $row);
 }
-function CacheRowGet($table_id, $pkval) {
+function CacheRowGet($table_id, $pkval)
+{
     return AFromDyn($table_id . "_" . $pkval);
 }
 
@@ -12988,7 +10647,8 @@ function CacheRowGet($table_id, $pkval) {
  * string $message
  * string $level
  */
-function x_EchoFlush($message, $level = null) {
+function x_EchoFlush($message, $level = null)
+{
     $eopen = $eclose = "";
     if ($level) {
         $eopen = "<h$level>";
@@ -13009,7 +10669,8 @@ function x_EchoFlush($message, $level = null) {
 
 }
 
-/** Output a Line w/newline to a file stream
+/**
+ * Output a Line w/newline to a file stream
  *
  * For some reason the fputs() does not put out a newline,
  * so this routine does it for you.
@@ -13017,11 +10678,13 @@ function x_EchoFlush($message, $level = null) {
  * resource $FILE
  * string $text
  */
-function raxFLn($FILE, $text) {
+function raxFLn($FILE, $text)
+{
     fputs($FILE, $text . "\n");
 }
 
-/** Returns array element or empty string
+/**
+ * Returns array element or empty string
  *
  * This routine checks for the existence of a named
  * array element and returns it if found, otherwise
@@ -13033,7 +10696,8 @@ function raxFLn($FILE, $text) {
  * reference &$array
  * string $key
  */
-function raxArray(&$array, $key) {
+function raxArray(&$array, $key)
+{
     return isset($array[$key]) ? $array[$key] : '';
 }
 
@@ -13054,7 +10718,8 @@ function raxArray(&$array, $key) {
  * string $body
  * string $headers
  */
-function Email_Exp($from, $to, $subject, $body, $headers) {
+function Email_Exp($from, $to, $subject, $body, $headers)
+{
     if (is_array($to)) {
         $to = implode(",", $to);
     }
@@ -13064,7 +10729,7 @@ function Email_Exp($from, $to, $subject, $body, $headers) {
     //html_vardump($subject);
     //html_vardump($body);
 
-    include_once ('Mail.php');
+    include_once'Mail.php';
     $recipients = $to;
     $headers['From'] = trim($from);
     $headers['From'] = 'ken@secdat.com';
@@ -13139,11 +10804,12 @@ function Email_Exp($from, $to, $subject, $body, $headers) {
  *   * x_email.php
  *
  ******/
-function EmailSend($to, $subject, $message, $headers = array()) {
+function EmailSend($to, $subject, $message, $headers = array())
+{
     ddTable('adm_emails');
     //include_once("ddtable_adm_emails.php");
-    include_once ("x_email.php");
-    return X_EMAIL_SEND(ARRAY("email_to" => trim($to), "email_subject" => trim($subject), "email_message" => trim($message), 'headers' => $headers));
+    include_once"x_email.php";
+    return X_EMAIL_SEND(array("email_to" => trim($to), "email_subject" => trim($subject), "email_message" => trim($message), 'headers' => $headers));
 }
 
 /****f* Email Functions/EmailSendHTML
@@ -13174,18 +10840,20 @@ function EmailSend($to, $subject, $message, $headers = array()) {
  *   * x_email.php
  *
  ******/
-function EmailSendHtml($to, $subject, $message) {
-    include_once ("ddtable_adm_emails.php");
-    include_once ("x_email.php");
+function EmailSendHtml($to, $subject, $message)
+{
+    include_once"ddtable_adm_emails.php";
+    include_once"x_email.php";
 
     $message = "<html><body>" . $message . "</body></html>";
-    return X_EMAIL_SEND(ARRAY("email_to" => trim($to), "email_subject" => trim($subject), "email_message" => trim($message), 'headers' => array('MIME-Version' => '1.0', 'Content-type' => 'text/html; charset=iso-8859-1')));
+    return X_EMAIL_SEND(array("email_to" => trim($to), "email_subject" => trim($subject), "email_message" => trim($message), 'headers' => array('MIME-Version' => '1.0', 'Content-type' => 'text/html; charset=iso-8859-1')));
 }
 
-function XML_RPC($callcode, $arr_inputs) {
+function XML_RPC($callcode, $arr_inputs)
+{
     global $AG;
-    $AG["xmlrpc"] = ARRAY("callcode" => $callcode, "inputs" => $arr_inputs);
-    include ("x_xmlrpc.php");
+    $AG["xmlrpc"] = array("callcode" => $callcode, "inputs" => $arr_inputs);
+    include"x_xmlrpc.php";
 }
 
 /**
@@ -13195,7 +10863,8 @@ function XML_RPC($callcode, $arr_inputs) {
  * string $name
  * reference &$value
  */
-function ehFCKEditor($name, &$value) {
+function ehFCKEditor($name, &$value)
+{
     $x = $name;
     $x = $value;
     //annoying jedit compile warning
@@ -13234,7 +10903,8 @@ function ehFCKEditor($name, &$value) {
  * RETURN
  * string Generated Option Elements
  */
-function hOptions($rows, $current, $colval, $coldis) {
+function hOptions($rows, $current, $colval, $coldis)
+{
     if (!is_array($coldis)) {
         $coldis = explode(',', $coldis);
     }
@@ -13270,7 +10940,8 @@ function hOptions($rows, $current, $colval, $coldis) {
  * RETURN
  * string Generated HTML option element string
  */
-function hOptionsFromTable($table_id, $curval = '', $firstletters = '', $matches = array(), $distinct = '') {
+function hOptionsFromTable($table_id, $curval = '', $firstletters = '', $matches = array(), $distinct = '')
+{
 
     // Pull data dictionary of target table
     $table = DD_TableRef($table_id);
@@ -13309,9 +10980,12 @@ function hOptionsFromTable($table_id, $curval = '', $firstletters = '', $matches
  * RETURN
  * string
  */
-function hValueForSelect($table_id, $pkval) {
+function hValueForSelect($table_id, $pkval)
+{
     $table = DD_TableRef($table_id);
-    if (!$pkval) return '';
+    if (!$pkval) {
+        return '';
+    }
 
     // Determine which columns to pull and get them
     if (ArraySafe($table['projections'], 'dropdown') == '') {
@@ -13338,7 +11012,8 @@ function hValueForSelect($table_id, $pkval) {
  * RETURN
  * int
  */
-function hpTabIndexNext($offset = 0) {
+function hpTabIndexNext($offset = 0)
+{
     $tabindex = vgfGet('tabindex', 0) + 1;
     vgfSet('tabindex', $tabindex);
     return $tabindex + $offset;
@@ -13359,7 +11034,8 @@ function hpTabIndexNext($offset = 0) {
  * RETURN
  * string Generated HTML
  */
-function hOptionsFromRows($rows, $col_value, $col_inner) {
+function hOptionsFromRows($rows, $col_value, $col_inner)
+{
     $retval = '';
     foreach ($rows as $row) {
         $retval.= "\n" . '<OPTION VALUE="' . $row[$col_value] . '">' . $row[$col_inner] . '</OPTION>';
@@ -13369,7 +11045,8 @@ function hOptionsFromRows($rows, $col_value, $col_inner) {
 
 /**
  */
-function H_SELECT_OPTS($dbrows, $skey, $table, $colsdsp, $init = false) {
+function H_SELECT_OPTS($dbrows, $skey, $table, $colsdsp, $init = false)
+{
 
     // If table dd was not passed, get it now
     if (!is_array($table)) {
@@ -13412,7 +11089,8 @@ function H_SELECT_OPTS($dbrows, $skey, $table, $colsdsp, $init = false) {
  * RETURN
  * string Generated HTML selection element
  */
-function hSelectMultiFromRows($name, $rows, $colkey, $colval, $selected = '', $extra = '') {
+function hSelectMultiFromRows($name, $rows, $colkey, $colval, $selected = '', $extra = '')
+{
     $aa = AAFromRows($rows, $colkey, $colval);
     return hSelectMultiFromAA($aa, $name, $selected, $extra);
 }
@@ -13429,14 +11107,16 @@ function hSelectMultiFromRows($name, $rows, $colkey, $colval, $selected = '', $e
  * RETURN
  * string Generated HTML selection element
  */
-function hSelectFromRows($name, $rows, $colkey, $colval, $selected = '', $extra = '') {
+function hSelectFromRows($name, $rows, $colkey, $colval, $selected = '', $extra = '')
+{
     $aa = AAFromRows($rows, $colkey, $colval);
     return hSelectFromAA($aa, $name, $selected, $extra);
 }
 
 /**
  */
-function hSelectFiltered($table_id, $columns, $name = '', $selected = '', $extra = '', $failsafe = array()) {
+function hSelectFiltered($table_id, $columns, $name = '', $selected = '', $extra = '', $failsafe = array())
+{
 
     // Make an empty select to return on failure
     // Get the correct table_id
@@ -13446,7 +11126,9 @@ function hSelectFiltered($table_id, $columns, $name = '', $selected = '', $extra
     $failed = count($failsafe) > 0 ? hSelectFromAA($failsafe, $name, $selected, $extra) : hSelect($name, $selected, '', $extra);
 
     // Quit on obvious problem
-    if (count($columns) == 0 || (!$table_id)) return $failed;
+    if (count($columns) == 0 || (!$table_id)) {
+        return $failed;
+    }
 
     // Find out what column we are missing
     // And generate the where clause for the upcoming select
@@ -13461,10 +11143,13 @@ function hSelectFiltered($table_id, $columns, $name = '', $selected = '', $extra
             $missing[] = $pkey;
         }
     }
-    $where = implode(' AND ', $where);;
+    $where = implode(' AND ', $where);
+    ;
 
     // Quit if we are not missing exactly 1 column
-    if (count($missing) <> 1) return $failed;
+    if (count($missing) <> 1) {
+        return $failed;
+    }
     $missing = implode($missing, ',');
 
     // Find the possible values of the missing key
@@ -13497,7 +11182,8 @@ function hSelectFiltered($table_id, $columns, $name = '', $selected = '', $extra
  * RETURN
  * string Generated <select> block
  */
-function hSelectFromAA($aa, $name, $selected = '', $extra = '') {
+function hSelectFromAA($aa, $name, $selected = '', $extra = '')
+{
     $hOpts = '';
     foreach ($aa as $value => $caption) {
         $hSELECTED = (trim($value) == trim($selected)) ? ' SELECTED ' : '';
@@ -13521,7 +11207,8 @@ function hSelectFromAA($aa, $name, $selected = '', $extra = '') {
  * RETURN
  * string Generated HTML Select element
  */
-function hSelectMultiFromAA($aa, $name, $selected = '', $extra = '') {
+function hSelectMultiFromAA($aa, $name, $selected = '', $extra = '')
+{
     $hOpts = '';
     foreach ($aa as $value => $caption) {
         $hSELECTED = ($value == $selected) ? ' SELECTED ' : '';
@@ -13541,7 +11228,8 @@ function hSelectMultiFromAA($aa, $name, $selected = '', $extra = '') {
  * RETURN
  * string Generated Select Element
  */
-function hSELECT($name, $value, $inner, $extra = '') {
+function hSELECT($name, $value, $inner, $extra = '')
+{
     $inner = str_replace('value"' . $value . '"', 'selected value="' . $value . '"', $inner);
     return "<SELECT id=\"$name\" name=\"$name\" " . " value=\"$value\" $extra>" . $inner . "</SELECT>";
 }
@@ -13558,12 +11246,14 @@ function hSELECT($name, $value, $inner, $extra = '') {
  * RETURN
  * string Generated select element
  */
-function hSelectMulti($name, $value, $inner, $extra = '') {
+function hSelectMulti($name, $value, $inner, $extra = '')
+{
     $x = $extra;
     return '<SELECT id="' . $name . '" name="' . $name . '[]" ' . ' value = "' . $value . '" size=10 multiple style="width: 30em">' . $inner . '</SELECT>';
 }
 
-function rHE_IMG_Inline($src) {
+function rHE_IMG_Inline($src)
+{
     if ($src == '') {
         $srcfile = file_get_contents('rax-blank.jpg', true);
         $src = base64_encode($srcfile);
@@ -13595,11 +11285,13 @@ function rHE_IMG_Inline($src) {
  * RETURN
  * string Generated HTML
  */
-function HLINK_Page($page, $caption, $skey) {
+function HLINK_Page($page, $caption, $skey)
+{
     return '<a href="index.php?gp_page=' . $page . '&gp_skey=' . $skey . '">' . $caption . '</a>';
 }
 
-function rH_Concat($listvals, $row) {
+function rH_Concat($listvals, $row)
+{
     $arrvals = explode(',', $listvals);
     $retval = '';
     foreach ($arrvals as $val) {
@@ -13623,7 +11315,8 @@ function rH_Concat($listvals, $row) {
  * RETURN
  * mixed
  */
-function raxarr_FindRow(&$arr, $keyname, $keyvalue) {
+function raxarr_FindRow(&$arr, $keyname, $keyvalue)
+{
     $keys = array_keys($arr);
     foreach ($keys as $key) {
         if ($arr[$key][$keyname] == $keyvalue) {
@@ -13641,9 +11334,10 @@ function raxarr_FindRow(&$arr, $keyname, $keyvalue) {
  * RETURN
  * array
  */
-function raxIncludeArray($filename) {
+function raxIncludeArray($filename)
+{
     $temp = array();
-    @include ($filename);
+    @include$filename;
     return $temp;
 }
 
@@ -13656,10 +11350,13 @@ function raxIncludeArray($filename) {
  * RETURN
  * mixed first non-null non-emptystring value
  */
-function raxCoalesce($args) {
+function raxCoalesce($args)
+{
     foreach ($args as $arg) {
         if (!is_null($arg)) {
-            if ($arg <> '') return $arg;
+            if ($arg <> '') {
+                return $arg;
+            }
         }
     }
     return '';
@@ -13674,7 +11371,8 @@ function raxCoalesce($args) {
  * RETURN
  * mixed first non null value
  */
-function CleanCoalesceSkey($default = 0) {
+function CleanCoalesceSkey($default = 0)
+{
     return raxCoalesce(array(CleanGet('gp_skey', '', false), CleanGet('txt_skey', '', false), $default));
 }
 
@@ -13687,7 +11385,8 @@ function CleanCoalesceSkey($default = 0) {
  * RETURN
  * array
  */
-function raxExplodeToKeys($delim, $string) {
+function raxExplodeToKeys($delim, $string)
+{
     $retval = array();
     $arr1 = explode($delim, $string);
     foreach ($arr1 as $value) {
@@ -13708,17 +11407,16 @@ function raxExplodeToKeys($delim, $string) {
  * RETURN
  * string Generated HTML Table
  */
-function HTMLE_Table(&$dbrows, $args = array()) {
+function HTMLE_Table(&$dbrows, $args = array())
+{
 
     // Set up list of columns.  If An explicit list is passed,
     // use that.  If not, use all columns except the suppressed ones
     //
     if (isset($args['cols'])) {
-
         // use all parameters as they were passed in
         $cols = $args['cols'];
     } else {
-
         // Make list of non-numeric non-suppressed keys
         $colsx = raxExplodeToKeys(',', ArraySafe($args, 'colsxlist', ''));
         $x = array_keys($dbrows[0]);
@@ -13766,7 +11464,8 @@ function HTMLE_Table(&$dbrows, $args = array()) {
  * RETURN
  * string
  */
-function lFGets($F) {
+function lFGets($F)
+{
     return raxFGETS($F);
 }
 
@@ -13778,7 +11477,8 @@ function lFGets($F) {
  * RETURN
  * string
  */
-function raxFGETS($F) {
+function raxFGETS($F)
+{
     $retval = fgets($F);
     $retval = str_replace("\n", "", $retval);
     $retval = str_replace("\r", "", $retval);
@@ -13794,7 +11494,8 @@ function raxFGETS($F) {
  * RETURN
  * string
  */
-function raxLinkBySkey($page, $skey) {
+function raxLinkBySkey($page, $skey)
+{
     return 'index.php?gp_page=' . $page . '&gp_skey=' . $skey;
 }
 
@@ -13805,7 +11506,8 @@ function raxLinkBySkey($page, $skey) {
  * RETURN
  * string
  */
-function raxNoDotZero($string) {
+function raxNoDotZero($string)
+{
     return str_replace('.0', '', $string);
 }
 
@@ -13817,7 +11519,8 @@ function raxNoDotZero($string) {
  * reference &$dest
  * reference &$source
  */
-function raxArrayTotals(&$dest, &$source) {
+function raxArrayTotals(&$dest, &$source)
+{
     foreach ($source as $key => $value) {
         $old = isset($dest[$key]) ? $dest[$key] : 0;
         $dest[$key] = $value + $old;
@@ -13828,7 +11531,8 @@ function raxArrayTotals(&$dest, &$source) {
 // Two functions for xml public feeds
 //---------------------------------------------------------------------
 // CODE PURGE 7/6/07, Almost certainly not used
-function ehXMLDoc($feed_id, $atts, $xmlresult) {
+function ehXMLDoc($feed_id, $atts, $xmlresult)
+{
 
     // Determine success or failure, default was fail
     if ($atts['result'] == 'fail') {
@@ -13874,7 +11578,8 @@ function ehXMLDoc($feed_id, $atts, $xmlresult) {
     ehXMLData($xmlresult);
 }
 
-function genXMLdoctype(&$node, &$aelements) {
+function genXMLdoctype(&$node, &$aelements)
+{
 
     // Each "node" is a collection of element names to process
     // and each element contains one or more rows to output
@@ -13883,7 +11588,6 @@ function genXMLdoctype(&$node, &$aelements) {
             $aelements[$element] = array('attributes' => array(), 'children' => array());
         }
         foreach ($rows as $row) {
-
             // if there are attributes, process those
             if (isset($row['attributes'])) {
                 $atts = '';
@@ -13900,13 +11604,13 @@ function genXMLdoctype(&$node, &$aelements) {
     }
 }
 
-function ehXMLData(&$node) {
+function ehXMLData(&$node)
+{
 
     // Each "node" is a collection of element names to process
     // and each element contains one or more rows to output
     foreach ($node as $element => $rows) {
         foreach ($rows as $row) {
-
             // if there are attributes, process those
             if (isset($row['attributes'])) {
                 $atts = '';
@@ -13939,8 +11643,11 @@ function ehXMLData(&$node) {
  * RETURN
  * string string date
  */
-function sdFromUnixTS($unix_ts = null) {
-    if (is_null($unix_ts)) $unix_ts = time();
+function sdFromUnixTS($unix_ts = null)
+{
+    if (is_null($unix_ts)) {
+        $unix_ts = time();
+    }
     return date('Ymd', $unix_ts);
 }
 
@@ -13951,9 +11658,13 @@ function sdFromUnixTS($unix_ts = null) {
  * RETURN
  * string no zeroes
  */
-function NoZeroes($value) {
-    if (intval($value) == 0) return '';
-    else return str_replace('.0', '', $value);
+function NoZeroes($value)
+{
+    if (intval($value) == 0) {
+        return '';
+    } else {
+        return str_replace('.0', '', $value);
+    }
 }
 
 /**
@@ -13962,9 +11673,10 @@ function NoZeroes($value) {
  *
  * string $file
  */
-function include_incpath($file) {
+function include_incpath($file)
+{
     if (file_exists_incpath($file)) {
-        include ($file);
+        include$file;
     }
 }
 
@@ -13977,21 +11689,30 @@ function include_incpath($file) {
  * RETURN
  * boolean
  */
-function isValidName($value) {
+function isValidName($value)
+{
     $value = trim($value);
-    if (strlen($value) == 0) return false;
+    if (strlen($value) == 0) {
+        return false;
+    }
     $lkeep = 'a b c d e f g h i j k l m n o p q r s t u v w x y z' . ' 0 1 2 3 4 5 6 7 8 9 _';
     $akeep = explode(' ', $lkeep);
     $new = str_replace($akeep, '', $value);
-    if (strlen($new) == 0) return true;
-    else return false;
+    if (strlen($new) == 0) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 /**
  * Stores the current time
  */
-function eTimeBegin() {
-    if (!isset($GLOBALS['AG']['etimes'])) $GLOBALS['AG']['etimes'] = array();
+function eTimeBegin()
+{
+    if (!isset($GLOBALS['AG']['etimes'])) {
+        $GLOBALS['AG']['etimes'] = array();
+    }
     $GLOBALS['AG']['etimes'][] = time();
 }
 
@@ -14001,9 +11722,14 @@ function eTimeBegin() {
  * initialized, then the function returns -1.  If there are no stored
  * times, then it returns -2.
  */
-function eTimeEnd() {
-    if (!isset($GLOBALS['AG']['etimes'])) return -1;
-    if (count($GLOBALS['AG']['etimes']) == 0) return -2;
+function eTimeEnd()
+{
+    if (!isset($GLOBALS['AG']['etimes'])) {
+        return -1;
+    }
+    if (count($GLOBALS['AG']['etimes']) == 0) {
+        return -2;
+    }
     return time() - array_pop($GLOBALS['AG']['etimes']);
 }
 
@@ -14016,7 +11742,8 @@ function eTimeEnd() {
  * RETURN
  * string matched value
  */
-function strFrompreg_match($pattern, $subject) {
+function strFrompreg_match($pattern, $subject)
+{
     $matches = array();
     preg_match($pattern, $subject, $matches);
     return ArraySafe($matches, 0, '');
@@ -14031,7 +11758,8 @@ function strFrompreg_match($pattern, $subject) {
  * RETURN
  * string matched value
  */
-function substrFrompreg_match($pattern, $subject) {
+function substrFrompreg_match($pattern, $subject)
+{
     $matches = array();
     preg_match($pattern, $subject, $matches);
     return ArraySafe($matches, 1, '');
@@ -14044,19 +11772,19 @@ function substrFrompreg_match($pattern, $subject) {
 
 
 /**
-name:TableRows
-These are data that has been structured so that HTML styles can easily
-be applied for later rendering.
-The basic idea is to pull some data from a database, convert it into
-TableRows using something like [[TableRowsFromRows]], and then use
-any number of style-applying functions like [[TableRowsSetColumnClass]]
-or [[TableRowsClassAlternate]] to set CSS classes of rows and columns,
-and finally to render with [[hTableRowsRender]].
+ * name:TableRows
+ * These are data that has been structured so that HTML styles can easily
+ * be applied for later rendering.
+ * The basic idea is to pull some data from a database, convert it into
+ * TableRows using something like [[TableRowsFromRows]], and then use
+ * any number of style-applying functions like [[TableRowsSetColumnClass]]
+ * or [[TableRowsClassAlternate]] to set CSS classes of rows and columns,
+ * and finally to render with [[hTableRowsRender]].
  */
 
 /**
-name:_default_
-parent:TableRows
+ * name:_default_
+ * parent:TableRows
  */
 
 /**
@@ -14067,7 +11795,8 @@ parent:TableRows
  * RETURN
  * string Generated HTML
  */
-function hTableRowsRender(&$array) {
+function hTableRowsRender(&$array)
+{
     ob_start();
     foreach ($array as $tr) {
         echo "\n  <tr>";
@@ -14096,7 +11825,8 @@ function hTableRowsRender(&$array) {
  * RETURN
  * array Table Rows array
  */
-function TableRowsFromRows($rows) {
+function TableRowsFromRows($rows)
+{
     $retval = array();
     foreach ($rows as $row) {
         $newrow = array();
@@ -14119,7 +11849,8 @@ function TableRowsFromRows($rows) {
  * RETURN
  * array
  */
-function TableRowFromArray($array) {
+function TableRowFromArray($array)
+{
     $retval = array();
     foreach ($array as $index => $value) {
         $retval[$index] = array('v' => $value);
@@ -14136,7 +11867,8 @@ function TableRowFromArray($array) {
  * string $class css class
  * boolean $override (default = false)
  */
-function TableRowsSetClass(&$rows, $class, $override = false) {
+function TableRowsSetClass(&$rows, $class, $override = false)
+{
     $rowkeys = array_keys($rows);
     foreach ($rowkeys as $rowkey) {
         $colkeys = array_keys($rows[$rowkey]);
@@ -14163,7 +11895,8 @@ function TableRowsSetClass(&$rows, $class, $override = false) {
  * string $class css class
  * boolean $override (default = false)
  */
-function TableRowsSetColumnClass(&$rows, $colkey, $class, $override = false) {
+function TableRowsSetColumnClass(&$rows, $colkey, $class, $override = false)
+{
     $rowkeys = array_keys($rows);
     foreach ($rowkeys as $rowkey) {
         if (isset($rows[$rowkey][$colkey]['c'])) {
@@ -14188,7 +11921,8 @@ function TableRowsSetColumnClass(&$rows, $colkey, $class, $override = false) {
  * string $class2 css class 2
  * boolean $override (default = false)
  */
-function TableRowsSetClassAlternate(&$rows, $class1, $class2, $override = false) {
+function TableRowsSetClassAlternate(&$rows, $class1, $class2, $override = false)
+{
     $rowkeys = array_keys($rows);
     $class = $class1;
     foreach ($rowkeys as $rowkey) {
@@ -14219,7 +11953,8 @@ function TableRowsSetClassAlternate(&$rows, $class1, $class2, $override = false)
 /**
  * @deprecated
  */
-function explodeempty($delim, $string) {
+function explodeempty($delim, $string)
+{
     if ($string == '') {
         return array();
     } else {
@@ -14233,11 +11968,11 @@ function explodeempty($delim, $string) {
 
 
 /**
-name:Security Functions
-parent:Framework API Reference
-[[Security]] functions allow you to customize the behavior of your
-application and make use of various security features offered by
-the framework.
+ * name:Security Functions
+ * parent:Framework API Reference
+ * [[Security]] functions allow you to customize the behavior of your
+ * application and make use of various security features offered by
+ * the framework.
  */
 
 /**
@@ -14251,7 +11986,8 @@ the framework.
  * string $UID User ID
  * string $PWD Password
  */
-function Login($UID, $PWD) {
+function Login($UID, $PWD)
+{
 
     // Make it look like the UID and PWD were passed in on the
     // request, that's where x_login wants to find them.
@@ -14278,7 +12014,8 @@ function Login($UID, $PWD) {
  * any other type of transaction is completed and the terminal is expected
  * to be left open for the next user.
  */
-function POSClear() {
+function POSClear()
+{
     SessionSet("POS_PAGE", "", 'FW');
 }
 
@@ -14348,7 +12085,8 @@ function POSClear() {
 /**
  * @deprecated
  */
-function aWidgets(&$table, $row = array(), $mode = 'upd', $projection = '') {
+function aWidgets(&$table, $row = array(), $mode = 'upd', $projection = '')
+{
 
     // Do the two basics
     $acols = aColsModeProj($table, $mode, $projection);
@@ -14364,7 +12102,6 @@ function aWidgets(&$table, $row = array(), $mode = 'upd', $projection = '') {
 
     // This loop is directly lifted from hDetailFromAHCols
     foreach ($ahcols as $colname => $ahcol) {
-
         //  if no first focus, set it now
         if (vgfGet('HTML_focus') == '' && $ahcol['writable']) {
             vgfSet('HTML_focus', $ahcol['cname']);
@@ -14397,7 +12134,8 @@ function aWidgets(&$table, $row = array(), $mode = 'upd', $projection = '') {
 /**
  * @deprecated
  */
-function jsValues($ahcols, $name, $row, $h) {
+function jsValues($ahcols, $name, $row, $h)
+{
     foreach ($ahcols as $colname => $ahcol) {
         $h = jsValuesOne($ahcols, $colname, $ahcol, $name, $row, $h);
     }
@@ -14407,7 +12145,8 @@ function jsValues($ahcols, $name, $row, $h) {
 /**
  * @deprecated
  */
-function jsValuesOne($ahcols, $colname, $ahcol, $name, $row, $h) {
+function jsValuesOne($ahcols, $colname, $ahcol, $name, $row, $h)
+{
 
     // KFD 9/7/07, slip this in for mime-h columns, they are
     //             much simpler.
@@ -14416,11 +12155,13 @@ function jsValuesOne($ahcols, $colname, $ahcol, $name, $row, $h) {
         $editor = "<textarea class=\"wysiwyg\"  style=\"width: 810px; height: 200px\" x_original_value=\"" . htmlentities(trim(ArraySafe($row, $colname, ''))) . "\" class=\"wysiwyg\" name=\"$name$colname\">" . htmlentities(trim(ArraySafe($row, $colname, ''))) . "</textarea>";
         $h = str_replace('--MIME-H--' . $name . $colname . '--MIME-H--', $editor, $h);
 
-        jqDocReady("
+        jqDocReady(
+            "
                 $('.wysiwyg').each(function() {
                     $(this).wysihtml5({html: true, color: true});
                 });
-            ");
+            "
+        );
         $herr = '';
         if (count($colerrsx) > 0) {
             $herr = "<span class=\"x2columnerr\">" . implode("<br/>", $colerrsx) . "</span>";
@@ -14484,10 +12225,18 @@ function jsValuesOne($ahcols, $colname, $ahcol, $name, $row, $h) {
     $h = str_replace($name . $colname . '--VALUE--', htmlentities($colvalue), $h);
     $setInScript = false;
     // KFD 4/21/08, also set in script for value_min/max
-    if ($ahcol['type_id'] == 'time') $setInScript = true;
-    if ($ahcol['type_id'] == 'cbool') $setInScript = true;
-    if ($ahcol['type_id'] == 'gender') $setInScript = true;
-    if ($ahcol['value_min'] <> '') $setInScript = true;
+    if ($ahcol['type_id'] == 'time') {
+        $setInScript = true;
+    }
+    if ($ahcol['type_id'] == 'cbool') {
+        $setInScript = true;
+    }
+    if ($ahcol['type_id'] == 'gender') {
+        $setInScript = true;
+    }
+    if ($ahcol['value_min'] <> '') {
+        $setInScript = true;
+    }
     //if($ahcol['type_id']=='time' ||
     //    $ahcol['type_id']=='cbool' ||
     //    $ahcol['type_id']=='gender'
@@ -14510,7 +12259,6 @@ function jsValuesOne($ahcols, $colname, $ahcol, $name, $row, $h) {
     // If it's a select, we need to grab some hforSelect
     $innerHTML = '';
     if ($ahcol['table_id_fko'] <> '' && $ahcol['fkdisplay'] <> 'dynamic') {
-
         // Generate uifiltercolumns
         $uifc = trim(ArraySafe($ahcol, 'uifiltercolumn', ''));
         $matches = array();
@@ -14523,7 +12271,6 @@ function jsValuesOne($ahcols, $colname, $ahcol, $name, $row, $h) {
         $pull = true;
         $dist = '';
         if (count($fkpks) > 1) {
-
             // This is a compound.  The first column gets distinct, the
             // second and further columns get nothing
             if (trim($colname) == trim($fkpks[0])) {
@@ -14531,7 +12278,6 @@ function jsValuesOne($ahcols, $colname, $ahcol, $name, $row, $h) {
                 // pull distinct
 
             } else {
-
                 // Don't pull.  Use ajax during runtime and make a
                 // one-value dropdown now
                 $pull = false;
@@ -14586,7 +12332,8 @@ function jsValuesOne($ahcols, $colname, $ahcol, $name, $row, $h) {
 /**
  * @deprecated
  */
-function hDetailFromAHCols($ahcols, $name, $tabindex, $display = '') {
+function hDetailFromAHCols($ahcols, $name, $tabindex, $display = '')
+{
 
     // Apply the names
     ahColsNames($ahcols, $name, $tabindex);
@@ -14602,9 +12349,10 @@ function hDetailFromAHCols($ahcols, $name, $tabindex, $display = '') {
 
     ob_start();
     $first = '';
-    if ($display == '') echo "\n<fieldset>";
+    if ($display == '') {
+        echo "\n<fieldset>";
+    }
     foreach ($ahcols as $colname => $ahcol) {
-
         // Establish names of crucial items
         $cname = $ahcol['cname'];
         $cnmer = $cname . "_err";
@@ -14623,7 +12371,8 @@ function hDetailFromAHCols($ahcols, $name, $tabindex, $display = '') {
         }
 
         if ($ahcol['type_id'] == 'date') {
-            jqDocReady("$('input[data-date-format]').each(
+            jqDocReady(
+                "$('input[data-date-format]').each(
                 function() {
                     if (typeof($(this).attr('readonly')) == 'undefined') {
                         $(this).datepicker().on('changeDate',function() {
@@ -14631,7 +12380,8 @@ function hDetailFromAHCols($ahcols, $name, $tabindex, $display = '') {
                         });
                     }
                 });
-            ");
+            "
+            );
         }
 
         // Replace out the stuff to the right
@@ -14649,14 +12399,17 @@ function hDetailFromAHCols($ahcols, $name, $tabindex, $display = '') {
                 break;
         }
     }
-    if ($display == '') echo "</fieldset>";
+    if ($display == '') {
+        echo "</fieldset>";
+    }
     return ob_get_clean();
 }
 
 /**
  * @deprecated
  */
-function WidgetFromAHCols(&$ahcols, $colname, $prefix, $value, $tabindex) {
+function WidgetFromAHCols(&$ahcols, $colname, $prefix, $value, $tabindex)
+{
 
     // First clear up the names
     ahcolNames($ahcols, $colname, $prefix, $tabindex);
@@ -14678,7 +12431,8 @@ function WidgetFromAHCols(&$ahcols, $colname, $prefix, $value, $tabindex) {
 /**
  * @deprecated
  */
-function AHColsNames(&$ahcols, $name, $tabindex) {
+function AHColsNames(&$ahcols, $name, $tabindex)
+{
     foreach ($ahcols as $colname => $ahcol) {
         AHColNamesOne($ahcols, $colname, $name, $tabindex);
     }
@@ -14687,12 +12441,15 @@ function AHColsNames(&$ahcols, $name, $tabindex) {
 /**
  * @deprecated
  */
-function AHColNamesOne(&$ahcols, $colname, $name, $tabindex) {
+function AHColNamesOne(&$ahcols, $colname, $name, $tabindex)
+{
     $cname = $name . $colname;
     $ahcol = $ahcols[$colname];
     $ahcols[$colname]['cname'] = $cname;
 
-    if ($ahcol['writable'] == false) $tabindex = 10000;
+    if ($ahcol['writable'] == false) {
+        $tabindex = 10000;
+    }
 
     // Replace out the HTML
     $html = $ahcol['html'];
@@ -14719,12 +12476,15 @@ function AHColNamesOne(&$ahcols, $colname, $name, $tabindex) {
 /**
  * @deprecated
  */
-function AHColNames(&$ahcols, $colname, $name, $tabindex) {
+function AHColNames(&$ahcols, $colname, $name, $tabindex)
+{
     $cname = $name . $colname;
     $ahcol = $ahcols[$colname];
     $ahcols[$colname]['cname'] = $cname;
 
-    if ($ahcol['writable'] == false) $tabindex = 10000;
+    if ($ahcol['writable'] == false) {
+        $tabindex = 10000;
+    }
 
     // Replace out the HTML
     $html = $ahcol['html'];
@@ -14750,7 +12510,8 @@ function AHColNames(&$ahcols, $colname, $name, $tabindex) {
 /**
  * @deprecated
  */
-function ahColsFromaCols($acols, $matches = array()) {
+function ahColsFromaCols($acols, $matches = array())
+{
 
     // Here we "inject" the drilldown values into the
     // array of information for future reference.  Then
@@ -14789,7 +12550,8 @@ function ahColsFromaCols($acols, $matches = array()) {
 /**
  * @deprecated
  */
-function ahColFromACol(&$acol) {
+function ahColFromACol(&$acol)
+{
 
     // Link to the subarray and assign any defaults
     $acol['html_element'] = 'input';
@@ -14807,10 +12569,10 @@ function ahColFromACol(&$acol) {
         case 'NONE':
             $acol['hparms']['title'] = '';
             $acol['hparms']['tooltip'] = '';
+            // keep going
         case 'JQUERY_ALSO':
             $acol['hparms']['title'] = $acol['hparms']['tooltip'];
             break;
-
         case 'JQUERY_ONLY':
             $acol['hparms']['title'] = $acol['hparms']['tooltip'];
             unset($acol['hparms']['tooltip']);
@@ -14818,7 +12580,6 @@ function ahColFromACol(&$acol) {
 
     // For read-onlies, add another class
     if (!$acol['writable']) {
-
         //$acol['hparms']['class']='x3ro';
         $acol['hparms']['readonly'] = 'readonly';
     }
@@ -14836,16 +12597,15 @@ function ahColFromACol(&$acol) {
     // ------------------------------------
     switch ($acol['type_id']) {
         case 'date':
-
             //  We might put a date button off to the right,
             //  if it is writable
             /*
-                        if($acol['writable']) {
-                        $acol['html_right']
-                        .="&nbsp;&nbsp;"
-                        ."<img src='clib/dhtmlgoodies_calendar_images/calendar1.gif' value='Cal'
-                        onclick=\"displayCalendar(ob('--NAME--'),'mm/dd/yyyy',this,true)\">";
-                        }*/
+                    if($acol['writable']) {
+                    $acol['html_right']
+                    .="&nbsp;&nbsp;"
+                    ."<img src='clib/dhtmlgoodies_calendar_images/calendar1.gif' value='Cal'
+                    onclick=\"displayCalendar(ob('--NAME--'),'mm/dd/yyyy',this,true)\">";
+                    }*/
             $acol['hparams']['data-date-format'] = 'yyyy-mm-dd';
             $acol['hparms']['size'] = $acol['size'];
             if (isset($acol['maxlength'])) {
@@ -14868,7 +12628,6 @@ function ahColFromACol(&$acol) {
             break;
 
         case 'cbool':
-
             // DO 3-7-2008  Added if statement so that when column level security is present
             //              changes to field can be "disabled"
             if (!$acol['writable']) {
@@ -14881,7 +12640,6 @@ function ahColFromACol(&$acol) {
             break;
 
         case 'gender':
-
             // DO 3-7-2008  Added if statement so that when column level security is present
             //              changes to field can be "disabled"
             if (!$acol['writable']) {
@@ -14914,7 +12672,6 @@ function ahColFromACol(&$acol) {
 
         case 'mime-h-f':
         case 'mime-h':
-
             // Do nothing, it all gets done later.
 
         default:
@@ -14951,24 +12708,25 @@ function ahColFromACol(&$acol) {
     // Big deal B), foreign keys
     // ------------------------------------
     if ($acol['table_id_fko'] <> '' && $acol['type_id'] <> 'date') {
-
         // Says we want an info button next to it
         if ($acol['mode'] <> 'search') {
             $acol['html_right'].= "<span class=\"help-inline\"><a tabindex=999 href=\"javascript:Info2('" . $acol['table_id_fko'] . "'" . ",'--NAME--')\">Info</a></span>";
         }
 
         if ($acol['writable']) {
-
             // if numeric, set this back
             $acol['text-align'] = 'left';
 
             if ($acol['fkdisplay'] <> 'dynamic') {
-
                 // HTML SELECT Branch
                 $acol['html_element'] = 'SELECT';
                 $acol['html_inner'] = '--NAME----HINNER--';
-                if (array_key_exists('size', $acol['hparms'])) unset($acol['hparms']['size']);
-                if (array_key_exists('maxlength', $acol['hparms'])) unset($acol['hparms']['maxlength']);
+                if (array_key_exists('size', $acol['hparms'])) {
+                    unset($acol['hparms']['size']);
+                }
+                if (array_key_exists('maxlength', $acol['hparms'])) {
+                    unset($acol['hparms']['maxlength']);
+                }
 
                 // KFD 10/8/07 compound foreign keys.  If its the first,
                 // put in a snippet to pull the next
@@ -14982,12 +12740,10 @@ function ahColFromACol(&$acol) {
                     }
                 }
             } else {
-
                 // The core code just says do a dropdown
                 $table_id_fko = $acol['table_id_fko'];
                 $fkparms = 'gp_dropdown=' . $table_id_fko;
                 if ($acol['writable']) {
-
                     //$col['input']='select';
                     if (vgfGet('adlversion', 2) == 1) {
                         $acol['snippets']['onkeyup'][] = "ajax_showOptions(this,'$fkparms',event)";
@@ -15037,7 +12793,6 @@ function ahColFromACol(&$acol) {
     if (count(ArraySafe($acol, 'fetches', array())) > 0) {
         $fetches = $acol['fetches'];
         foreach ($fetches as $fetch) {
-
             $acol['snippets']['onchange'][] = "ajaxFetch(" . "'" . $fetch['table_id_par'] . "'" . ",'--NAME-PREFIX--'" . ",'" . $fetch['commapklist'] . "'" . ",'" . $fetch['commafklist'] . "'" . ",'" . $fetch['controls'] . "'" . ",'" . $fetch['columns'] . "'" . ",this)";
         }
     }
@@ -15046,7 +12801,6 @@ function ahColFromACol(&$acol) {
     // Does this field force recalc?
     // ------------------------------------
     if ($acol['calcs']) {
-
         // KFD 8/8/07 JS_KEYSTROKES, this will be done on server by
         //            calling back to the server when a value changes.
         //$acol['snippets']['onkeyup'][]="calcRow()";
@@ -15078,8 +12832,11 @@ function ahColFromACol(&$acol) {
 /**
  * @deprecated
  */
-function aColsModeProj(&$table, $mode, $projection = '') {
-    if (!Is_array($table)) $table = dd_tableref($table);
+function aColsModeProj(&$table, $mode, $projection = '')
+{
+    if (!Is_array($table)) {
+        $table = dd_tableref($table);
+    }
 
     // begin with the info from the data dictionary
     $cols1 = aColInfoFromDD($table);
@@ -15156,7 +12913,8 @@ function aColsModeProj(&$table, $mode, $projection = '') {
 /**
  * @deprecated
  */
-function aColsModeProjcalcRow(&$table, &$acols) {
+function aColsModeProjcalcRow(&$table, &$acols)
+{
     $retval = array();
     foreach ($table['sequenced'] as $colname) {
         if (isset($acols[$colname])) {
@@ -15171,7 +12929,8 @@ function aColsModeProjcalcRow(&$table, &$acols) {
 /**
  * @deprecated
  */
-function aColsModeProjCalcRowColumn(&$chaincalc) {
+function aColsModeProjCalcRowColumn(&$chaincalc)
+{
 
     // Extremely limited, we return the value of the first test
     // unconditionally
@@ -15193,19 +12952,20 @@ function aColsModeProjCalcRowColumn(&$chaincalc) {
 }
 
 /**
-name:aColInfoFromDD
-parent:Framework Functions
-parm:array DD_Table
-Accepts a reference to a table's data dictionary array, and returns
-an array of specific details by column.  This array contains sufficient
-detail to generate HTML w/o further reference to the data dictionary.
-This is a framework function, you would not normally call this in code.
+ * name:aColInfoFromDD
+ * parent:Framework Functions
+ * parm:array DD_Table
+ * Accepts a reference to a table's data dictionary array, and returns
+ * an array of specific details by column.  This array contains sufficient
+ * detail to generate HTML w/o further reference to the data dictionary.
+ * This is a framework function, you would not normally call this in code.
  */
 
 /**
  * @deprecated
  */
-function aColInfoFromDD($table) {
+function aColInfoFromDD($table)
+{
     $retval = array();
 
     // Go column-by-column, then apply table-level stuff
@@ -15228,7 +12988,8 @@ function aColInfoFromDD($table) {
 /**
  * @deprecated
  */
-function aColInfoFromDDColumns(&$table, &$retval) {
+function aColInfoFromDDColumns(&$table, &$retval)
+{
     $perm_upd = DDUserPerm($table['table_id'], 'upd');
 
     // ----------------------------------------------
@@ -15239,7 +13000,9 @@ function aColInfoFromDDColumns(&$table, &$retval) {
             // KFD 6/2/08, this line is required for some older programs
             // that SDS wrote that still use this family of routines.
             // Table constraints appear to be showing up as empty columns!
-            if ($colname == '') continue;
+            if ($colname == '') {
+                continue;
+            }
             hprint_r("ERROR IN BUILD, PLEASE CONTACT SECURE DATA SOFTWARE");
             echo "Column $colname";
             hprint_r($colinfo);
@@ -15247,7 +13010,9 @@ function aColInfoFromDDColumns(&$table, &$retval) {
         }
 
         // Early return, if there is no UI, don't generate at all
-        if ($colinfo['uino'] == 'Y') continue;
+        if ($colinfo['uino'] == 'Y') {
+            continue;
+        }
 
         // Clear out array
         $c = array();
@@ -15370,7 +13135,8 @@ function aColInfoFromDDColumns(&$table, &$retval) {
 /**
  * @deprecated
  */
-function aColInfoFromDDTable(&$table, &$retval) {
+function aColInfoFromDDTable(&$table, &$retval)
+{
 
     // ----------------------------------------------
     // BIG DEAL 2: Table-level stuff assigned to
@@ -15391,7 +13157,6 @@ function aColInfoFromDDTable(&$table, &$retval) {
         // If there are FETCH/DIST entries then assign
         // relevant information to each child column
         if (isset($table['FETCHDIST'][$fk])) {
-
             // Obtain pk of parent table, list of cols in that pk
             $ddpar = DD_TableRef($fkp['table_id_par']);
 
@@ -15425,98 +13190,16 @@ function aColInfoFromDDTable(&$table, &$retval) {
 /**
  * @deprecated
  */
-function acolBlank($type_id, $colprec = 0, $colscale = 0) {
+function acolBlank($type_id, $colprec = 0, $colscale = 0)
+{
     return array('description' => '', 'type_id' => $type_id, 'formshort' => $type_id, 'colprec' => $colprec, 'colscale' => $colscale, 'uiro' => 'N', 'uino' => 'N', 'automation_id' => 'NONE', 'auto_formula' => '', 'primary_key' => 'N', 'pk_change' => 'N', 'dispsize' => $colprec, 'table_id_fko' => '', 'fkdisplay' => '', 'value_min' => '', 'value_max' => '', 'uicols' => '', 'uirows' => '');
 }
 
 /**
  * @deprecated
  */
-class XMLTree
+function androloadXML($file)
 {
-    function XMLTree() {
-        $this->stack = array(0);
-        $this->nodes = array();
-    }
-
-    function openChild($node) {
-
-        // Add the node to the flat list, then get reference to it
-        $this->nodes[] = & $node;
-        $newidx = count($this->nodes) - 1;
-
-        // Add the reference to the kids of current
-        $curidx = $this->stack[count($this->stack) - 1];
-        $this->nodes[$curidx]['kids'][] = $newidx;
-
-        // Add the reference to the stack, so it is the new current
-        $this->stack[] = $newidx;
-    }
-
-    function addData($data) {
-        $curidx = $this->stack[count($this->stack) - 1];
-
-        // Absolutely do not know why these are here, they are being
-        // put in by OO.org's output.
-        $data = str_replace(chr(160), '', $data);
-        $data = str_replace(chr(194), '', $data);
-        $this->nodes[$curidx]['value'].= $data;
-    }
-
-    function closeChild() {
-        array_pop($this->stack);
-    }
-
-    function nodeCDATA($idx) {
-        $node = $this->nodes[$idx];
-        $retval = '';
-        for ($x = 0; $x < count($node['kids']); $x++) {
-            $gkid = $this->nodes[$node['kids'][$x]];
-            if ($gkid['name'] == 'CDATA') {
-                $retval.= $gkid['value'];
-                break;
-            }
-        }
-        return $retval;
-    }
-
-    function nodeHTML($idx) {
-        $retval = '';
-
-        $node = $this->nodes[$idx];
-        if ($node['name'] == 'CDATA') {
-
-            // the cdata elements just get added to the output
-            $open = $node['value'];
-            $close = '';
-        } else {
-
-            // but non-cdata elements get new tags and get recursed
-            $attsx = array();
-            $tag = $node['name'];
-            foreach ($node['atts'] as $attname => $attvalue) {
-                if ($attname == 'STYLE') continue;
-                $attsx[] = $attname . '="' . $attvalue . '"';
-            }
-            $hatts = implode(' ', $attsx);
-
-            $open = "<$tag $hatts>";
-            $close = "</$tag>";
-        }
-
-        $inner = '';
-        foreach ($this->nodes[$idx]['kids'] as $kididx) {
-            $inner.= $this->nodeHTML($kididx);
-        }
-
-        return $open . $inner . $close;
-    }
-}
-
-/**
- * @deprecated
- */
-function androloadXML($file) {
     $depth = array();
     global $tree;
     $tree = new XMLTree();
@@ -15545,7 +13228,8 @@ function androloadXML($file) {
 /**
  * @deprecated
  */
-function startElement($parser, $name, $attrs) {
+function startElement($parser, $name, $attrs)
+{
 
     // Our stuff.  Make a new node
     $newnode = array('value' => '', 'name' => $name, 'atts' => $attrs, 'kids' => array());
@@ -15556,7 +13240,8 @@ function startElement($parser, $name, $attrs) {
 /**
  * @deprecated
  */
-function endElement($parser, $name) {
+function endElement($parser, $name)
+{
     global $tree;
     $tree->closeChild();
 }
@@ -15564,7 +13249,8 @@ function endElement($parser, $name) {
 /**
  * @deprecated
  */
-function characterData($parser, $data) {
+function characterData($parser, $data)
+{
     global $tree;
 
     startElement($parser, 'CDATA', array());
@@ -15575,17 +13261,17 @@ function characterData($parser, $data) {
 /**
  * @deprecated
  */
-function cssInclude($file, $force_immediate = false) {
+function cssInclude($file, $force_immediate = false)
+{
 
     // This program echos out immediately if not in debug
     // mode, otherwise they all get output as one
     $cssExcludes = vgfGet('cssExcludes', array());
     if (!in_array($file, $cssExcludes)) {
-        if (configGet('js_css_debug', 'Y') == 'Y' || $force_immediate) {
-            ?>
-            <link rel='stylesheet' href='<?php
-            echo tmpPathInsert() . $file ?>' />
-        <?php
+        if (configGet('js_css_debug', 'Y') == 'Y' || $force_immediate) {?>
+            <link rel="stylesheet" href="<?php
+            echo tmpPathInsert() . $file ?>" />
+            <?php
         } else {
             $css = vgfGet('cssIncludes', array());
             $css[] = $file;
@@ -15597,11 +13283,14 @@ function cssInclude($file, $force_immediate = false) {
 /**
  * @deprecated
  */
-function cssOutput() {
+function cssOutput()
+{
     $cssDir = $GLOBALS['AG']['dirs']['app_root'] .'clib/';
     // Get the array of files to output and combine
     $css = vgfGet('cssIncludes', array());
-    if (count($css) == 0) return;
+    if (count($css) == 0) {
+        return;
+    }
 
     // To do a combo output, make up a filename, generate
     // the combinations, and create a link
@@ -15628,14 +13317,15 @@ function cssOutput() {
     ?>
     <link rel='stylesheet'
           href='<?php
-          echo tmpPathInsert() . "clib/css-min-$md5.css" ?>' />
+            echo tmpPathInsert() . "clib/css-min-$md5.css" ?>' />
 <?php
 }
 
 /**
  * @deprecated
  */
-function jqPlugin($file, $comments = '') {
+function jqPlugin($file, $comments = '')
+{
     $jqp = vgfGet('jqPlugins', array());
     $jqp[] = array('file' => $file, 'comments' => $comments);
     vgfSet('jqPlugins', $jqp);
@@ -15644,7 +13334,8 @@ function jqPlugin($file, $comments = '') {
 /**
  * @deprecated
  */
-function jsInclude($file, $comments = '', $immediate = false) {
+function jsInclude($file, $comments = '', $immediate = false)
+{
     // KFD 11/1/08.  Yet another mod to the meaning of immediate.
     //       It now means to slip it in as the first.  If you use
     //       this for more than one file you must do them in
@@ -15663,13 +13354,16 @@ function jsInclude($file, $comments = '', $immediate = false) {
 /**
  * @deprecated
  */
-function jsOutput() {
+function jsOutput()
+{
 
     // Get the array and see if there is anything to do
     $ajs = vgfGet('jsIncludes', array());
     $jqp = vgfGet('jqPlugins', array());
     $ajs = array_merge($ajs, $jqp);
-    if (count($ajs) == 0) return;
+    if (count($ajs) == 0) {
+        return;
+    }
 
     // Initialize array of files that must be minified
     $aj = array();
@@ -15677,45 +13371,41 @@ function jsOutput() {
     // Loop through each file and either add it to list of
     // files to minify or output it directly
     $debug = trim(ConfigGet('js_css_debug', 'N'));
-    if (vgfGet('x6')) $debug = 'Y';
-foreach ($ajs as $js) {
-    $external = false;
-    if (substr($js['file'], 0, 7) == 'http://') {
-        $external = true;
+    if (vgfGet('x6')) {
+        $debug = 'Y';
     }
+    foreach ($ajs as $js) {
+        $external = false;
+        if (substr($js['file'], 0, 7) == 'http://') {
+            $external = true;
+        }
 
-if ($debug == 'N' && $external == false) {
-
-    //if(false) {
-    $aj[] = $js['file'];
-    if ($js['comments'] <> '') {
-        ?>
-        <!--
-                <?php
-        echo $js['comments'] ?>
-                -->
-    <?php
-    }
-} else {
-    $insert = $external ? '' : tmpPathInsert();
-    ?>
-    <script type="text/javascript"
+        if ($debug == 'N' && $external == false) {
+            //if(false) {
+            $aj[] = $js['file'];
+            if ($js['comments'] <> '') {
+                echo '<!--' . $js['comments'] . '-->';
+            }
+        } else {
+            $insert = $external ? '' : tmpPathInsert();
+            ?>
+            <script type="text/javascript"
             src="<?php
             echo $insert . $js['file'] ?>" >
-        <?php
+                <?php
                         echo $js['comments'] ?>
-    </script>
-<?php
-}
-}
+            </script>
+        <?php
+        }
+    }
 
-// If they needed minification, we have to work out now
-// what that file will be, maybe generate it, and create
-// a link to it
-//
-// KFD 8/20/08, Now minifying files during the build, so we
-//              grab that file if we can find it.  See below
-/*
+    // If they needed minification, we have to work out now
+    // what that file will be, maybe generate it, and create
+    // a link to it
+    //
+    // KFD 8/20/08, Now minifying files during the build, so we
+    //              grab that file if we can find it.  See below
+    /*
                 if(count($aj)==0) return;
                 $list = implode('|',$aj);
                 $md5  = substr(md5($list),0,15);
@@ -15731,25 +13421,27 @@ if ($debug == 'N' && $external == false) {
                 file_put_contents($file,$string);
                 }
                 */
-if (count($aj) == 0) return;
-$list = implode('|', $aj);
-$md5 = substr(md5($list), 0, 15);
-$file = $GLOBALS['AG']['dirs']['app_root'] . "/clib/js-min-$md5.js";
-
-if (!file_exists($file)) {
-    $string = '';
-    foreach ($aj as $ajone) {
-        if (file_exists($ajone . '.mjs')) {
-            $string.= file_get_contents($GLOBALS['AG']['dirs']['app_root'] . $ajone . '.mjs');
-        } else {
-            $string.= file_get_contents($GLOBALS['AG']['dirs']['app_root'] . $ajone);
-        }
+    if (count($aj) == 0) {
+        return;
     }
-    file_put_contents($file, $string);
-    chmod($file, 0664);
-}
+    $list = implode('|', $aj);
+    $md5 = substr(md5($list), 0, 15);
+    $file = $GLOBALS['AG']['dirs']['app_root'] . "/clib/js-min-$md5.js";
 
-// Finally, put out the file
+    if (!file_exists($file)) {
+        $string = '';
+        foreach ($aj as $ajone) {
+            if (file_exists($ajone . '.mjs')) {
+                $string.= file_get_contents($GLOBALS['AG']['dirs']['app_root'] . $ajone . '.mjs');
+            } else {
+                $string.= file_get_contents($GLOBALS['AG']['dirs']['app_root'] . $ajone);
+            }
+        }
+        file_put_contents($file, $string);
+        chmod($file, 0664);
+    }
+
+    // Finally, put out the file
 
 ?>
     <script type="text/javascript"
@@ -15767,22 +13459,22 @@ if (!file_exists($file)) {
 
 
 /**
-name:_default_
-parent:Basic Database Commands
+ * name:_default_
+ * parent:Basic Database Commands
  */
 
 // ------------------------------------------------------------------
 
 
 /**
-name:Basic Database Commands
-parent:Framework API Reference
-Andromeda provides a handful of basic database routines that serve several
-purposes.  The primary purpose is simply to have efficient routines
-that reduce the code you need in your application.
-Multi-platform abstraction can always be added later if all basic
-SQL commands are wrapped, so this is also a goal, though at this time
-Andromeda targets only the Postgres database.
+ * name:Basic Database Commands
+ * parent:Framework API Reference
+ * Andromeda provides a handful of basic database routines that serve several
+ * purposes.  The primary purpose is simply to have efficient routines
+ * that reduce the code you need in your application.
+ * Multi-platform abstraction can always be added later if all basic
+ * SQL commands are wrapped, so this is also a goal, though at this time
+ * Andromeda targets only the Postgres database.
  */
 
 // ==================================================================
@@ -15793,35 +13485,41 @@ Andromeda targets only the Postgres database.
 
 
 /**
-name:SQL_ConnPush
-parm:string User_id
-parm:string Database_Name
-This routine attempts to make a new database connection.  If
-successfull, the currently open default connection, if there is one,
-is pushed onto a stack, and this connection becomes the new default.
-The connection is closed with [[SQL_ConnPop]].
-If the first parameter is 'ADMIN', then the connection is made as the
-superuser, otherwise the connection is always made as the username
-retrieved by the [[SessionGet]] function for the variable "UID".
+ * name:SQL_ConnPush
+ * parm:string User_id
+ * parm:string Database_Name
+ * This routine attempts to make a new database connection.  If
+ * successfull, the currently open default connection, if there is one,
+ * is pushed onto a stack, and this connection becomes the new default.
+ * The connection is closed with [[SQL_ConnPop]].
+ * If the first parameter is 'ADMIN', then the connection is made as the
+ * superuser, otherwise the connection is always made as the username
+ * retrieved by the [[SessionGet]] function for the variable "UID".
  */
-function SQL_ConnPush($role = '', $db = '') {
+function SQL_ConnPush($role = '', $db = '')
+{
     return scDBConn_Push($role, $db);
 }
 
-function SQLConnected() {
-    if (!isset($GLOBALS['dbconn'])) return false;
-    if (is_null($GLOBALS['dbconn'])) return false;
+function SQLConnected()
+{
+    if (!isset($GLOBALS['dbconn'])) {
+        return false;
+    }
+    if (is_null($GLOBALS['dbconn'])) {
+        return false;
+    }
     return true;
 }
 
 /* DEPRECATED */
-function scDBConn_Push($role = '', $db = '') {
+function scDBConn_Push($role = '', $db = '')
+{
     $dbc = isset($GLOBALS['dbconn']) ? $GLOBALS['dbconn'] : null;
     scStackPush('dbconns', $dbc);
 
     // UID is either admin or logged in user
     if ($role == $GLOBALS['AG']['application']) {
-
         //echo "Going for role!";
         $uid = $role;
         $pwd = $role;
@@ -15846,42 +13544,45 @@ function scDBConn_Push($role = '', $db = '') {
 }
 
 /**
-name:SQL_ConnPop
-returns:void
-Closes the current default connection if one is open.
-If there is a previous default connection on the stack, then that
-is popped off and it becomes the current default connection.
+ * name:SQL_ConnPop
+ * returns:void
+ * Closes the current default connection if one is open.
+ * If there is a previous default connection on the stack, then that
+ * is popped off and it becomes the current default connection.
  */
-function SQL_ConnPop() {
+function SQL_ConnPop()
+{
     return scDBConn_Pop();
 }
 
 /**
-name:SQL
-parm:string SQL_Command
-returns:resource DB_Rresult
-The basic command for all SQL Pass-through operations.  Returns a
-result resource that can be scanned.
-Use this command when you want to pull rows from a database one-by-one.
-There is also a collection of [[Specialized SQL Commands]].
+ * name:SQL
+ * parm:string SQL_Command
+ * returns:resource DB_Rresult
+ * The basic command for all SQL Pass-through operations.  Returns a
+ * result resource that can be scanned.
+ * Use this command when you want to pull rows from a database one-by-one.
+ * There is also a collection of [[Specialized SQL Commands]].
  */
-function SQL($sql, &$error = false) {
+function SQL($sql, &$error = false)
+{
     return SQL2($sql, $GLOBALS["dbconn"], $error);
 }
 
 /**
-name:SQL_Fetch_Array
-parm:resource Result
-parm:int rownum
-parm:int type
-Accepts a result resource returned by the [[SQL]] function and
-returns the next row from the server.  Returns boolean false if
-there are no more rows.
-This is the preferred method for retrieving results if the row count
-is likely to go over a hundred or so rows.  Below 100 rows, it can
-be more convenient to use [[SQL_AllRows]].
+ * name:SQL_Fetch_Array
+ * parm:resource Result
+ * parm:int rownum
+ * parm:int type
+ * Accepts a result resource returned by the [[SQL]] function and
+ * returns the next row from the server.  Returns boolean false if
+ * there are no more rows.
+ * This is the preferred method for retrieving results if the row count
+ * is likely to go over a hundred or so rows.  Below 100 rows, it can
+ * be more convenient to use [[SQL_AllRows]].
  */
-function SQL_fetch_array($results, $rownum = null, $type = null) {
+function SQL_fetch_array($results, $rownum = null, $type = null)
+{
     if (!is_null($type)) {
         return @pg_fetch_assoc($results, $rownum, $type);
     }
@@ -15892,7 +13593,8 @@ function SQL_fetch_array($results, $rownum = null, $type = null) {
 }
 
 /* DEPRECATED */
-function scDBConn_Pop() {
+function scDBConn_Pop()
+{
     if (isset($GLOBALS['dbconn'])) {
         SQL_CONNCLOSE($GLOBALS['dbconn']);
     }
@@ -15900,7 +13602,8 @@ function scDBConn_Pop() {
 }
 
 /* FRAMEWORK */
-function SQL_CONNSTRING($tuid, $tpwd, $app = "") {
+function SQL_CONNSTRING($tuid, $tpwd, $app = "")
+{
     global $AG;
 
     /*
@@ -15923,7 +13626,8 @@ function SQL_CONNSTRING($tuid, $tpwd, $app = "") {
 }
 
 /* FRAMEWORK */
-function SQL_CONN($tuid, $tpwd, $app = "") {
+function SQL_CONN($tuid, $tpwd, $app = "")
+{
     global $AG;
 
     //if ($app=="") { $app = $AG["application"]; }
@@ -15940,14 +13644,16 @@ function SQL_CONN($tuid, $tpwd, $app = "") {
 }
 
 /* FRAMEWORK */
-function SQL_CONNCLOSE($tconn) {
+function SQL_CONNCLOSE($tconn)
+{
     @pg_close($tconn);
 }
 
 /* DEPRECATED */
 
 /* Use SQL_ConnPush() */
-function SQL_CONNDEFAULT() {
+function SQL_CONNDEFAULT()
+{
     global $AG;
     $uid = SessionGet('UID', '');
     $pwd = SessionGet('PWD', '');
@@ -15955,14 +13661,15 @@ function SQL_CONNDEFAULT() {
 }
 
 /* DEPRECATED */
-function SQL3($sql) {
+function SQL3($sql)
+{
     return SQL2($sql, $GLOBALS["dbconn"]);
 }
 
 /* FRAMEWORK */
-function SQL2($sql, $dbconn, &$error = false) {
+function SQL2($sql, $dbconn, &$error = false)
+{
     if ($dbconn == null) {
-
         // 4/4/07.  Rem'd out because if this is a problem we've usually
         // got pleny of other problems.  The only time this can happen
         // w/o a problem is on a new install, and we don't want stray
@@ -16013,12 +13720,10 @@ function SQL2($sql, $dbconn, &$error = false) {
         // Made conditional 1/24/07 KFD
         //echo "Error title is".vgfGet("ERROR_TITLE");
         if (SessionGet('ADMIN', false)) {
-
             //if(true) {
             ErrorAdd("(ADMIN): You are logged in as an administrator, you will see more" . " detail than a regular user.");
             ErrorAdd("(ADMIN): " . $sql);
         } else {
-
             // KFD 6/27/07, prevent sending this message more than once
             if (!Errors()) {
                 ErrorAdd("There was an error attempting to save:");
@@ -16026,7 +13731,9 @@ function SQL2($sql, $dbconn, &$error = false) {
         }
         $ts = explode(";", $t);
         foreach ($ts as $onerr) {
-            if (trim($onerr) == '') continue;
+            if (trim($onerr) == '') {
+                continue;
+            }
 
             // KFD 6/27/07, display errors at top and at column level
             //if(SessionGet('ADMIN',true)) {
@@ -16041,7 +13748,8 @@ function SQL2($sql, $dbconn, &$error = false) {
 /* FRAMEWORK */
 
 // Comprehensive routine to work out what to do with errors
-function ErrorComprehensive($onerr) {
+function ErrorComprehensive($onerr)
+{
 
     // POSTGRES hardcode, this is what they put in the beginning of a
     // string of errors.
@@ -16068,12 +13776,10 @@ function ErrorComprehensive($onerr) {
         $column = trim($column);
 
         if ($column == '*') {
-
             // A table-level error begins with an asterisk, report this
             // as an old-fashioned error that appears at the top of the page
             ErrorAdd($text);
         } else {
-
             // This is a column level error.  It is being stored for
             // display later.
             $colerrs[$column][] = $text;
@@ -16087,21 +13793,24 @@ function ErrorComprehensive($onerr) {
     }
 }
 
-/**
-name:SQL_Num_Rows
+
+/*name:SQL_Num_Rows
 parm:resource DB_Result
 returns:int
 Accepts a result returned by a call to [[SQL]] and returns the
 number of rows in the result.
- */
-function SQL_NUM_ROWS($results) {
+*/
+function SQL_NUM_ROWS($results)
+{
     return SQL_NUMROWS($results);
 }
-function SQL_NUMROWS($results) {
+function SQL_NUMROWS($results)
+{
     return pg_numrows($results);
 }
 
-function sqlFormatRow($tabdd, $row) {
+function sqlFormatRow($tabdd, $row)
+{
     $flat = $tabdd['flat'];
     $retval = array();
     foreach ($row as $column => $value) {
@@ -16112,14 +13821,16 @@ function sqlFormatRow($tabdd, $row) {
     return $retval;
 }
 
-/**
+
+/*
 name:SQL_ESCAPE_STRING
 parm:string Any_Value
 returns:string
 Wrapper for pg_escape_string, to provide forward-compatibility with
 other back-ends.
- */
-function SQL_ESCAPE_STRING($val) {
+*/
+function SQL_ESCAPE_STRING($val)
+{
 
     // KFD 1/31/07 check for existence of pg_escape_string
     return function_exists('pg_escape_string') ? pg_escape_string(trim($val)) : str_replace("'", "''", trim($val));
@@ -16129,12 +13840,14 @@ function SQL_ESCAPE_STRING($val) {
 }
 
 /* DEPRECATED */
-function SQL_ESCAPE_BINARY($val) {
+function SQL_ESCAPE_BINARY($val)
+{
     return base64_encode($val);
 }
 
 /* DEPRECATED */
-function SQL_UNESCAPE_BINARY($val) {
+function SQL_UNESCAPE_BINARY($val)
+{
     return base64_decode($val);
 }
 
@@ -16145,15 +13858,15 @@ function SQL_UNESCAPE_BINARY($val) {
 // ==================================================================
 
 
-/**
+/*
 name:_default_
 parent:Specialized SQL Commands
- */
+*/
 
 // ------------------------------------------------------------------
 
 
-/**
+/*
 name:Specialized SQL Commands
 parent:Framework API Reference
 Specialized SQL commands allow you to use a single command for
@@ -16167,9 +13880,9 @@ recognizes.
 Generous use of Specialized SQL Commands is one of the ways to make
 the most of Andromeda, there is a command for most any common operation
 you want to perform.
- */
+*/
 
-/**
+/*
 name:SQL_OneValue
 parm:string Column_ID
 parm:string SQL_Command
@@ -16181,20 +13894,27 @@ Be careful that the SQL_Command actually return one or at most a few
 rows, if a command is issued to the server that would return 1 million
 rows, the server will execute the entire command, even though it only
 returns the first row to PHP.
- */
-function SQL_OneValue($column, $sql) {
+*/
+function SQL_OneValue($column, $sql)
+{
 
     //echo $column;
     //echo $sql;
     $results = SQL($sql);
-    if ($results === false) return false;
+    if ($results === false) {
+        return false;
+    }
     $row = SQL_FETCH_ARRAY($results);
-    if ($row === false) return false;
-    if (!isset($row[$column])) return false;
+    if ($row === false) {
+        return false;
+    }
+    if (!isset($row[$column])) {
+        return false;
+    }
     return $row[$column];
 }
 
-/**
+/*
 name:SQL_OneRow
 parm:string SQL_Query
 returns:array Row
@@ -16204,8 +13924,9 @@ Note that the query itself should return only 1 or  a few rows, using this
 routine is not a substitute for planning an efficient query.  If you hand
 this routine a query that generates 1 million rows, the server will still
 generate the entire result, even though it only gives back the first one.
- */
-function SQL_OneRow($sql) {
+*/
+function SQL_OneRow($sql)
+{
     $results = SQL($sql);
     $row = SQL_FETCH_ARRAY($results);
     return $row;
@@ -16227,10 +13948,13 @@ function SQL_OneRow($sql) {
  * RETURN
  * array
  */
-function SQL_AllRows($sql, $colname = '') {
+function SQL_AllRows($sql, $colname = '')
+{
     $results = SQL($sql);
     $rows = SQL_FETCH_ALL($results);
-    if ($rows === false) return array();
+    if ($rows === false) {
+        return array();
+    }
 
     // Simple default is just the rows
     if ($colname == '') {
@@ -16246,7 +13970,8 @@ function SQL_AllRows($sql, $colname = '') {
 }
 
 /* DEPRECATED */
-function SQL_FETCH_ARRAY_Decode($dbres, $cols) {
+function SQL_FETCH_ARRAY_Decode($dbres, $cols)
+{
     $retval = SQL_FETCH_ARRAY($dbres);
     foreach ($cols as $colname) {
         $retval[$colname] = base64_decode($retval[$colname]);
@@ -16255,18 +13980,23 @@ function SQL_FETCH_ARRAY_Decode($dbres, $cols) {
 }
 
 /* FRAMEWORK */
-function SQL_fetch_all($results) {
+function SQL_fetch_all($results)
+{
 
     // The only case where the function will not exist is on a
     // new install where it is missing.  In that case we don't want
     // errors all over the screen, we want to trap it and report it
     // gracefully
-    if (function_exists('pg_fetch_all') && $results) return pg_fetch_all($results);
-    else return false;
+    if (function_exists('pg_fetch_all') && $results) {
+        return pg_fetch_all($results);
+    } else {
+        return false;
+    }
 }
 
 /* DEPRECATED */
-function SQL_FKJOIN($pks, $fkey_suffix, $child = "", $parent = "") {
+function SQL_FKJOIN($pks, $fkey_suffix, $child = "", $parent = "")
+{
     $retval = "";
     $pksarr = explode(",", $pks);
     foreach ($pksarr as $colname) {
@@ -16275,15 +14005,18 @@ function SQL_FKJOIN($pks, $fkey_suffix, $child = "", $parent = "") {
     return $retval;
 }
 
-/**
+/*
 name:SQLX_TrxBegin
 returns:void
 Opens a transaction on the server.  On most platforms this is
 equivalent to "BEGIN TRANSACTION".
- */
-function SQLX_TrxBegin() {
+*/
+function SQLX_TrxBegin()
+{
     global $dbconn, $AG;
-    if (!isset($AG['trxlevel'])) $AG['trxlevel'] = 0;
+    if (!isset($AG['trxlevel'])) {
+        $AG['trxlevel'] = 0;
+    }
     if ($AG["trxlevel"] <> 0) {
         ErrorsAdd("ERROR: Nested transactions are not allowed");
     } else {
@@ -16293,9 +14026,12 @@ function SQLX_TrxBegin() {
 }
 
 /* FRAMEWORK */
-function SQLX_TrxCommit() {
+function SQLX_TrxCommit()
+{
     global $AG;
-    if (!isset($AG['trxlevel'])) $AG['trxlevel'] = 0;
+    if (!isset($AG['trxlevel'])) {
+        $AG['trxlevel'] = 0;
+    }
     if ($AG["trxlevel"] <> 1) {
         ErrorsAdd("Error, can only commit a trx when level is 1, it is now: " . $AG["trxlevel"]);
     } else {
@@ -16305,9 +14041,12 @@ function SQLX_TrxCommit() {
 }
 
 /* FRAMEWORK */
-function SQLX_TrxRollback() {
+function SQLX_TrxRollback()
+{
     global $AG;
-    if (!isset($AG['trxlevel'])) $AG['trxlevel'] = 0;
+    if (!isset($AG['trxlevel'])) {
+        $AG['trxlevel'] = 0;
+    }
     if ($AG["trxlevel"] <> 1) {
         ErrorsAdd("Error, can only rollback a trx when level is 1, it is now: " . $AG["trxlevel"]);
     } else {
@@ -16316,7 +14055,7 @@ function SQLX_TrxRollback() {
     }
 }
 
-/**
+/*
 name:SQLX_TrxClose
 parm:string Trx_Type_Name
 Attempts to commit a transaction.  If there are errors, it rollsback
@@ -16324,12 +14063,12 @@ the transaction and makes an entry in the [[syslogs]] table to
 record the error.
 If there is an error, and the second parameter has been provided, that
 value will go to the "syslogs_name" column of the [[syslogs]] table.
- */
-function SQLX_TrxClose($name = '') {
+*/
+function SQLX_TrxClose($name = '')
+{
     if (!Errors()) {
         SQLX_TrxCommit();
     } else {
-
         // In case of error in a transaction, we will report
         // the error
         SQLX_TrxRollBack();
@@ -16348,13 +14087,16 @@ function SQLX_TrxClose($name = '') {
 }
 
 /* FRAMEWORK */
-function SQLX_TrxLevel() {
+function SQLX_TrxLevel()
+{
     global $AG;
-    if (!isset($AG['trxlevel'])) $AG['trxlevel'] = 0;
+    if (!isset($AG['trxlevel'])) {
+        $AG['trxlevel'] = 0;
+    }
     return $AG["trxlevel"];
 }
 
-/**
+/*
 name:SQLX_Insert
 parm:string/array table
 parm:array Row
@@ -16377,11 +14119,14 @@ If the fourth parameter is true, values are clipped to column width
 to prevent overflows.  This almost guarantees the insert will succeed,
 but should only be done if it is acceptable to throw away the ends of
 columns.
- */
-function SQLX_Insert($table, $colvals, $rewrite_skey = true, $clip = false) {
+*/
+function SQLX_Insert($table, $colvals, $rewrite_skey = true, $clip = false)
+{
     // KFD 6/12/08, use new and improved
     errorsClear();
-    if (!is_array($table)) $table = DD_TableRef($table);
+    if (!is_array($table)) {
+        $table = DD_TableRef($table);
+    }
     $table_id = $table["table_id"];
     $view_id = ddTable_idResolve($table_id);
     $tabflat = & $table["flat"];
@@ -16390,7 +14135,6 @@ function SQLX_Insert($table, $colvals, $rewrite_skey = true, $clip = false) {
     $new_vals = "";
     foreach ($tabflat as $colname => $colinfo) {
         if (isset($colvals[$colname])) {
-
             //if($colvals[$colname]<>'') {
             if (DD_ColInsertsOK($colinfo, 'db')) {
                 // KFD 6/18/08, % signs really mess things up
@@ -16450,7 +14194,6 @@ function SQLX_Insert($table, $colvals, $rewrite_skey = true, $clip = false) {
 }
 
 /**
- *
  * name: SQLX_Select
  * parm: $tableId  optional  The name or data dictionary
  *
@@ -16464,9 +14207,9 @@ function SQLX_Insert($table, $colvals, $rewrite_skey = true, $clip = false) {
  * If no column list is provided, all columns are
  * provided, omitting functional columns like
  * skey_quiet and _agg are omitted, but including skey.
- *
  */
-function SQLX_Select($tableId, $columns = '', $options = array()) {
+function SQLX_Select($tableId, $columns = '', $options = array())
+{
     $dd = ddTable($tableId);
     $view = $dd['viewname'];
 
@@ -16485,7 +14228,7 @@ function SQLX_Select($tableId, $columns = '', $options = array()) {
     return SQL_AllRows("Select $columns from $view $ob");
 }
 
-/**
+/*
 name:SQLX_Inserts
 parm:Array Mixed_Rows
 parm:Array Constants
@@ -16498,24 +14241,28 @@ that do not exist in some tables will be ignored.
 If the third parameter is true, the operation will stop on the first
 error, otherwise it will continue until every row is processed, even
 if there are 10,000 rows and every one of them fails.
- */
-function SQLX_Inserts(&$mixedrows, $constants = array(), $stop = false) {
+*/
+function SQLX_Inserts(&$mixedrows, $constants = array(), $stop = false)
+{
     return SQLX_InsertMixed($mixedrows, $constants, $stop);
 }
 
 /* DEPRECATED */
-function SQLX_InsertMixed(&$mixedrows, $constants = array(), $stop = false) {
+function SQLX_InsertMixed(&$mixedrows, $constants = array(), $stop = false)
+{
     foreach ($mixedrows as $table_id => $rows) {
         $table = DD_TableRef($table_id);
         foreach ($rows as $row) {
             $rownew = array_merge($row, $constants);
             SQLX_Insert($table, $rownew, false);
-            if ($stop == true && Errors()) return;
+            if ($stop == true && Errors()) {
+                return;
+            }
         }
     }
 }
 
-/**
+/*
 name:SQLX_Update
 parm:string/array table
 parm:array Row
@@ -16526,9 +14273,12 @@ a table.  The second entry is always a [[Row Array]].  This function
 makes use of the dictionary to determine the correct formatting of all
 columns, and ignores any column in the [[Row Array]] that is not
 in the table.
- */
-function SQLX_Update($table, $colvals, $errrow = array()) {
-    if (!is_array($table)) $table = DD_TableRef($table);
+*/
+function SQLX_Update($table, $colvals, $errrow = array())
+{
+    if (!is_array($table)) {
+        $table = DD_TableRef($table);
+    }
     $table_id = $table["table_id"];
     $view_id = DDTable_IDResolve($table_id);
     $tabflat = & $table["flat"];
@@ -16572,20 +14322,22 @@ function SQLX_Update($table, $colvals, $errrow = array()) {
 //}
 
 /* DEPRECATED */
-function SQLX_FetchRow($table, $column, $value) {
+function SQLX_FetchRow($table, $column, $value)
+{
     $t = SQL3("Select * FROM " . $table . " WHERE " . $column . " = '" . $value . "'");
     return SQL_FETCH_ARRAY($t);
 }
 
 /* DEPRECATED */
-function scDBInserts($table_id, &$rows, $skey = false, $clip = false) {
+function scDBInserts($table_id, &$rows, $skey = false, $clip = false)
+{
     $table = DD_TableRef($table_id);
     foreach ($rows as $row) {
         SQLX_Insert($table, $row, $skey, $clip);
     }
 }
 
-/**
+/*
 name:SQLX_Delete
 parm:string table_id
 parm:array Row
@@ -16595,8 +14347,9 @@ Can be extremely destructive!  This routine will delete all of the
 rows of a table that match the given columns.  Calling this routine
 on an orders table and providing only a customer ID will delete all
 of the orders for that customer!
- */
-function SQLX_Delete($table_id, $row) {
+*/
+function SQLX_Delete($table_id, $row)
+{
     $table_dd = DD_TableRef($table_id);
     $view_id = DDTable_IDResolve($table_id);
 
@@ -16611,7 +14364,7 @@ function SQLX_Delete($table_id, $row) {
     SQL($SQL);
 }
 
-/**
+/*
 name:SQLX_UpdatesOrInserts
 parm:string Table_ID
 parm:array Rows
@@ -16621,20 +14374,22 @@ on primary key, if the row does not exist in the database it is inserted.
 If it does exist, then any non-primary key value in the row will be
 updated.
 All of the rows are expected to be belong to table Table_ID.
- */
-function SQLX_UpdatesOrInserts($table_id, &$rows) {
+*/
+function SQLX_UpdatesOrInserts($table_id, &$rows)
+{
     return scDBUpdatesOrInserts($table_id, $rows);
 }
 
 /* DEPRECATED */
-function scDBUpdatesOrInserts($table_id, &$rows) {
+function scDBUpdatesOrInserts($table_id, &$rows)
+{
     $table = DD_TableRef($table_id);
     foreach ($rows as $row) {
         scDBUpdateOrInsert($table, $row);
     }
 }
 
-/**
+/*
 name:SQLX_UpdatesOrInsert
 parm:ref Table_Definition
 parm:array Rows
@@ -16645,12 +14400,14 @@ If it does exist, then any non-primary key value in the row will be
 updated.
 The first parameter must be a data dictionary table definition, which
 you can get with [[DD_TableRef]].
- */
-function SQLX_UpdateOrInsert($table, $colvals) {
+*/
+function SQLX_UpdateOrInsert($table, $colvals)
+{
     return scDBUpdateOrInsert($table, $colvals);
 }
 
-function scDBUpdateOrInsert($table, $colvals) {
+function scDBUpdateOrInsert($table, $colvals)
+{
     $table_id = $table["table_id"];
     $tabflat = & $table["flat"];
 
@@ -16681,24 +14438,20 @@ function scDBUpdateOrInsert($table, $colvals) {
     //if (Errors()) echo HTMLX_Errors();
 
     if (!$skey) {
-
         //echo "insert into ".$table_id."\n";
         $retval = SQLX_Insert($table, $colvals, false);
         if (Errors()) {
-
             // STD says on 12/15/2006 that this routine should not put errors on screen
             //echo HTMLX_Errors();
             //echo $sql;
             $retval = 0;
         }
     } else {
-
         //echo "update ".$table_id." on $skey\n";
         $colvals['skey'] = $skey;
         $retval = - $skey;
         SQLX_Update($table, $colvals);
         if (Errors()) {
-
             // STD says on 12/15/2006 that this routine should not put errors on screen
             //echo HTMLX_Errors();
             //echo $sql;
@@ -16709,7 +14462,8 @@ function scDBUpdateOrInsert($table, $colvals) {
 }
 
 /* DEPRECATED */
-function scDBInsert($table_id, $row, $rewrite_skey = true) {
+function scDBInsert($table_id, $row, $rewrite_skey = true)
+{
     $table = DD_TableRef($table_id);
     return SQLX_Insert($table, $row, $rewrite_skey);
 }
@@ -16731,7 +14485,8 @@ function scDBInsert($table_id, $row, $rewrite_skey = true) {
             */
 
 /* NO DOCUMENTATION */
-function SQLX_ToDyn($table, $pkcol, $lcols, $filters = array()) {
+function SQLX_ToDyn($table, $pkcol, $lcols, $filters = array())
+{
 
     // Turn filters into two strings
     $filt_name = $filt_where = '';
@@ -16747,7 +14502,6 @@ function SQLX_ToDyn($table, $pkcol, $lcols, $filters = array()) {
 
     // Pull from memory if processed, else cache
     if (!isset($GLOBALS['cache'][$fname])) {
-
         // not in memory, is it on disk?  If not, must
         // execute the query
         $rows = aFromDyn($fname);
@@ -16767,7 +14521,8 @@ function SQLX_ToDyn($table, $pkcol, $lcols, $filters = array()) {
 }
 
 /* NO DOCUMENTATION */
-function SQLX_SelectIntoTemp($cols, $from, $into) {
+function SQLX_SelectIntoTemp($cols, $from, $into)
+{
 
     // this is a postgres version
     global $dbconn;
@@ -16776,15 +14531,16 @@ function SQLX_SelectIntoTemp($cols, $from, $into) {
 }
 
 /**
-name:SQLX_Cleanup
-parm:array Mixed_Rows
-A complete general cleanup of a mixed set of rows to ensure
-that they will all insert ok.  This will smear over errors, such
-as a value of '-' will become integer 0, strings will be
-truncated, and so forth.
-There is no return value, the array is accepted by reference.
- */
-function SQLX_Cleanup(&$mixedrows) {
+ * name:SQLX_Cleanup
+ * parm:array Mixed_Rows
+ * A complete general cleanup of a mixed set of rows to ensure
+ * that they will all insert ok.  This will smear over errors, such
+ * as a value of '-' will become integer 0, strings will be
+ * truncated, and so forth.
+ * There is no return value, the array is accepted by reference.
+ **/
+function SQLX_Cleanup(&$mixedrows)
+{
     foreach ($mixedrows as $table_id => $rows) {
         $table = DD_TableRef($table_id);
         $rowkeys = array_keys($rows);
@@ -16793,27 +14549,22 @@ function SQLX_Cleanup(&$mixedrows) {
             $colnames = array_keys($row);
             foreach ($colnames as $colname) {
                 if (isset($table['flat'][$colname])) {
-
                     switch ($table['flat'][$colname]['type_id']) {
                         case 'int':
                             $row[$colname] = intval($row[$colname]);
                             break;
-
                         case 'money':
                         case 'numb':
                             $row[$colname] = floatval($row[$colname]);
                             break;
-
                         case 'cbool':
                             $row[$colname] = str_replace('0', 'N', $row[$colname]);
                             $row[$colname] = str_replace('1', 'Y', $row[$colname]);
                             $row[$colname] = substr($row[$colname], 0, 1);
                             break;
-
                         case 'gender':
                             $row[$colname] = substr($row[$colname], 0, 1);
                             break;
-
                         case 'char':
                         case 'varchar':
                             $len = $table['flat'][$colname]['colprec'];
@@ -16826,7 +14577,7 @@ function SQLX_Cleanup(&$mixedrows) {
     }
 }
 
-/**
+/*
 name:rowsForSelect
 parm:string Table_id
 parm:string First_Letters
@@ -16842,8 +14593,9 @@ that can make inputs use Ajax when their value changes to store their
 value in the session on the server.
 This was created 1/15/07 to work with Ajax-dynamic-list from
 dhtmlgoodies.com.
- */
-function RowsForSelect($table_id, $firstletters = '', $matches = array(), $distinct = '', $allcols = false) {
+*/
+function RowsForSelect($table_id, $firstletters = '', $matches = array(), $distinct = '', $allcols = false)
+{
     $table = DD_TableRef($table_id);
 
     // Determine which columns to pull and get them
@@ -16932,13 +14684,11 @@ function RowsForSelect($table_id, $firstletters = '', $matches = array(), $disti
     $SLimit = '';
     $xWhere = array();
     if ($firstletters == '*') {
-
         // do nothing, no where clauses
 
     } elseif ($firstletters <> '') {
         $SLimit = "Limit 40 ";
         if (strpos($firstletters, ',') === false) {
-
             // original code, search all columns
             $implode = ' OR ';
             foreach ($aproj as $aproj1) {
@@ -16952,7 +14702,6 @@ function RowsForSelect($table_id, $firstletters = '', $matches = array(), $disti
                 $xWhere[] = "SUBSTRING(LOWER($aproj1$subs) FROM 1 FOR $sl)" . "=" . strtolower(SQLFC($firstletters));
             }
         } else {
-
             // New code 8/8/07, search first column, 2nd, third only,
             // based on existence of commas
             $implode = ' AND ';
@@ -17013,14 +14762,15 @@ function RowsForSelect($table_id, $firstletters = '', $matches = array(), $disti
     return $rows;
 }
 
-/**
+/*
 name:cssExclude
 parm:string file
 Removes an included css file from the css array.
 This will not work if debugging is enabled or immedate was set.
- */
+*/
 
-function cssExclude($file) {
+function cssExclude($file)
+{
     if (!empty($file)) {
         $css = vgfGet('cssIncludes', array());
         $cssExcludes = vgfGet('cssExcludes', array());

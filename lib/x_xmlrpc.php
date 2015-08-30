@@ -45,28 +45,30 @@ global $AG;
 
 $flag=false;
 if (isset($AG["clean"]["xmlrpc_callcode"])) {
-	$AG["xmlrpc"] = array("callcode"=>$AG["clean"]["xmlrpc_callcode"]);
-	$flag=true;
+    $AG["xmlrpc"] = array("callcode"=>$AG["clean"]["xmlrpc_callcode"]);
+    $flag=true;
 }
 
 // Basic reality check errors
 if (!isset($AG["xmlrpc"]["callcode"])) {
-	$AG["trx_errors"].="Call to undefined XML_RPC without defining call code;";
-	if ($flag) echo HTML_TrxErrors();
-	return;
+    $AG["trx_errors"].="Call to undefined XML_RPC without defining call code;";
+    if ($flag) { echo HTML_TrxErrors(); 
+    }
+    return;
 }
 
 // Here is where we load the dictionary definition of these calls
 $table = array();
 $table_cols = array();
 $callcode = $AG["xmlrpc"]["callcode"];
-include("ddxmlrpc_".$callcode.".php");
+require "ddxmlrpc_".$callcode.".php";
 if (!isset($table["id"])) {
-	$AG["trx_errors"].="Call to undefined XML RPC: ".$callcode.";";
-	if ($flag) echo HTML_TrxErrors();
-	return;
+    $AG["trx_errors"].="Call to undefined XML RPC: ".$callcode.";";
+    if ($flag) { echo HTML_TrxErrors(); 
+    }
+    return;
 }
-	
+    
 // Now that there are no early aborts, bring in the library
 //
 require_once 'XML/RPC.php';
@@ -79,99 +81,101 @@ $stmode = "html";
 // for easier handling.  Updateable columns are inputs, non-updateable
 //  are return values.
 if (!isset($AG["xmlrpc"]["inputs"])) {
-	// 9/21/05, this is dead code.  This would become a call
-	// to "cleanboxes()"
-	AND_HTTP_TxtToTableCols($table_cols);
-}	
+    // 9/21/05, this is dead code.  This would become a call
+    // to "cleanboxes()"
+    AND_HTTP_TxtToTableCols($table_cols);
+}    
 else {
-	$stmode = "silent";
-	$index = 0;
-	foreach ($table_cols as $key=>$column) {
-		if ($column["UPD"]=="Y") {
-			$table_cols[$key]["value"] = $AG["xmlrpc"]["inputs"][$index];
-			$index++;
-		}
-	}
+    $stmode = "silent";
+    $index = 0;
+    foreach ($table_cols as $key=>$column) {
+        if ($column["UPD"]=="Y") {
+            $table_cols[$key]["value"] = $AG["xmlrpc"]["inputs"][$index];
+            $index++;
+        }
+    }
 }
 
 // If we were not in silent mode, maybe the user has
 // posted a request to execute a call.
 //
 if ($stmode=="html" && isset($AG["clean"]["xmlrpc"])) {
-	$stmode = "post";
+    $stmode = "post";
 }
 
 // if either post or silent, we must now actually make the Remote Procedure Call
 // 
 if ($stmode == "post" || $stmode == "silent") {
-	
-	// First build up the parameters for the call
-	$params = array();
-	foreach ($table_cols as $key=>$col) {
-		if ($col["UPD"]=="Y") {
-			$params[] 
-				=new XML_RPC_Value(
-					$col["value"]
-					,trim($col["xmltype"])
-				);
-		}
-	}
-	
-	// Now the message and the client
-	$msg = new XML_RPC_Message(trim($table["callmsg"]),$params);
-	$client = new XML_RPC_Client(trim($table["path"]),trim($table["url"]),$table["port"]);
+    
+    // First build up the parameters for the call
+    $params = array();
+    foreach ($table_cols as $key=>$col) {
+        if ($col["UPD"]=="Y") {
+            $params[] 
+            =new XML_RPC_Value(
+                $col["value"], trim($col["xmltype"])
+            );
+        }
+    }
+    
+    // Now the message and the client
+    $msg = new XML_RPC_Message(trim($table["callmsg"]), $params);
+    $client = new XML_RPC_Client(trim($table["path"]), trim($table["url"]), $table["port"]);
 
-	// OK, the big moment, make the call, then proceed to results
-	$response = $client->send($msg);
-	$v = $response->value();
-	
-	//$coach_id = rand(1000,5000);
-	//echo("\nCreating random coach_id $coach_id\n");
-	//$params = array(new XML_RPC_Value($coach_id, 'int'));
-	//$msg = new XML_RPC_Message('dash.Coach.create', $params);
-	//$client = new XML_RPC_Client('/clients/dash/server.php', 'www.b16g.com', 80);
-	//$response = $client->send($msg);
-	//$v = $response->value();
-	
-	//var_dump($v);
-	if (!$response->faultCode()) {
-		$AG["xmlrpc"]["rets"] = array();
-		$result = $v->scalarval();
-		$resx = 0;
-		foreach ($table_cols as $key=>$col) {
-			if ($col["UPD"] == "N") {
-				if (is_array($result)) {
-					$resval = $result[$resx]->scalarval();
-				}
-				else {
-					$resval = $v->scalarval();	
-				}
-				$resx++;
-				$table_cols[$key]["value"] = $resval;
-				$AG["xmlrpc"]["rets"][] = $resval;
-			}
-		}
+    // OK, the big moment, make the call, then proceed to results
+    $response = $client->send($msg);
+    $v = $response->value();
+    
+    //$coach_id = rand(1000,5000);
+    //echo("\nCreating random coach_id $coach_id\n");
+    //$params = array(new XML_RPC_Value($coach_id, 'int'));
+    //$msg = new XML_RPC_Message('dash.Coach.create', $params);
+    //$client = new XML_RPC_Client('/clients/dash/server.php', 'www.b16g.com', 80);
+    //$response = $client->send($msg);
+    //$v = $response->value();
+    
+    //var_dump($v);
+    if (!$response->faultCode()) {
+        $AG["xmlrpc"]["rets"] = array();
+        $result = $v->scalarval();
+        $resx = 0;
+        foreach ($table_cols as $key=>$col) {
+            if ($col["UPD"] == "N") {
+                if (is_array($result)) {
+                    $resval = $result[$resx]->scalarval();
+                }
+                else {
+                    $resval = $v->scalarval();    
+                }
+                $resx++;
+                $table_cols[$key]["value"] = $resval;
+                $AG["xmlrpc"]["rets"][] = $resval;
+            }
+        }
 
-		/*  Working code for one value;
-		// Needs improvement, works only for single values
-		$AG["xmlrpc"]["rets"] = array();
-		foreach ($table_cols as $key=>$col) {
-			if ($col["UPD"] == "N") {
-				$table_cols[$key]["value"] = $v->scalarval();
-				$AG["xmlrpc"]["rets"][] = $v->scalarval();
-			}
-		}
-		*/
-	} 
-	else {
-		ErrorAdd("XML RPC Error call ".$callcode.
-			" Fault Code and reason: ".$response->faultCode().", ".$response->faultString());
-	}
+        /*  Working code for one value;
+        // Needs improvement, works only for single values
+        $AG["xmlrpc"]["rets"] = array();
+        foreach ($table_cols as $key=>$col) {
+        if ($col["UPD"] == "N") {
+        $table_cols[$key]["value"] = $v->scalarval();
+        $AG["xmlrpc"]["rets"][] = $v->scalarval();
+        }
+        }
+        */
+    } 
+    else {
+        ErrorAdd(
+            "XML RPC Error call ".$callcode.
+            " Fault Code and reason: ".$response->faultCode().", ".$response->faultString()
+        );
+    }
 }
 
 // on a silent call, there is nothing more to be done, exit
 //
-if ($stmode == "silent") { return; }
+if ($stmode == "silent") { return; 
+}
 
 // ==========================================================================
 // Now comes HTML
@@ -182,7 +186,7 @@ if ($stmode == "silent") { return; }
 <p>Testing call code<b>: <?php echo $callcode; ?></b>
 
 <?php if ($stmode=="post") {
-	echo "
+    echo "
 	<p>The test call has been executed.  Both the inputs are outputs
 	   are displayed below.  If you wish to run another test, change
 		the values below and submit again.</p>";
@@ -215,12 +219,12 @@ if ($stmode == "silent") { return; }
 
 <?php 
 foreach ($table_cols as $key=>$col) {
-	if ($col["UPD"]<>"Y") {
-		echo "\tob(\"txt".$key."\").disabled=true;\n";
-	} 
-	else {
-		echo "\tob(\"txt".$key."\").value=\"".$col["value"]."\";\n";
-	}
+    if ($col["UPD"]<>"Y") {
+        echo "\tob(\"txt".$key."\").disabled=true;\n";
+    } 
+    else {
+        echo "\tob(\"txt".$key."\").value=\"".$col["value"]."\";\n";
+    }
 }
 ?>
 </script>

@@ -1,29 +1,29 @@
 <?php
-# =====================================================================
-#
-# Spit out previously registered JS files.
-# The jsOutput() command decides whether to send a 
-# single minified file or to send them individually
-#
-# =====================================================================
+// =====================================================================
+// 
+// Spit out previously registered JS files.
+// The jsOutput() command decides whether to send a 
+// single minified file or to send them individually
+// 
+// =====================================================================
 jsOutput();
 
-# =====================================================================
-#
-# Old-fashioned pre-x4 pre-jquery way to set focus.
-# Don't ever use this!  It will be deprecated
-# sooner or later.
-#
-# =====================================================================
+// =====================================================================
+// 
+// Old-fashioned pre-x4 pre-jquery way to set focus.
+// Don't ever use this!  It will be deprecated
+// sooner or later.
+// 
+// =====================================================================
 if(vgfGet('HTML_focus')<>'') {
     $f = vgfGet('HTML_focus');
     jqDocReady('$("#'.$f.'").focus()');
 }
 
-# -------------------------------------------------------------
-# Put out some invisible divs that are used for modals, 
-# popups and so forth
-# -------------------------------------------------------------
+// -------------------------------------------------------------
+// Put out some invisible divs that are used for modals, 
+// popups and so forth
+// -------------------------------------------------------------
 if (!isset($GLOBALS['disableFooterOutput'])) {
 ?>
     <div style="display:none" id="idiv1" class="idiv1" onclick="x4.helpClear()">
@@ -51,17 +51,17 @@ if (!isset($GLOBALS['disableFooterOutput'])) {
        onclick = "return false">&nbsp;</div>
     <div id="x6modal"       style="display:none;" class="x6modal">
     <?php 
-        $modals = arr($GLOBALS['AG'],'modals',array());
-        foreach($modals as $modal) {
-            $modal->render();
-        }
+        $modals = arr($GLOBALS['AG'], 'modals', array());
+    foreach($modals as $modal) {
+        $modal->render();
+    }
     ?>    
     </div>
     <?php
-    # KFD 12/31/08.  Restrict the query log to people who have
-    #                set the cookie and are in the 'debuggers' group
+    // KFD 12/31/08.  Restrict the query log to people who have
+    // set the cookie and are in the 'debuggers' group
     $debugging = inGroup('debugging');
-    $cookie    = arr($_COOKIE,'log_Server',0);
+    $cookie    = arr($_COOKIE, 'log_Server', 0);
     if($debugging && $cookie) {
         echo( '<br /><div class="androQueryLog">' );
         echo( '<div class="androQueryLogTitle">
@@ -70,7 +70,7 @@ if (!isset($GLOBALS['disableFooterOutput'])) {
         foreach ( $GLOBALS['AG']['dbg']['sql'] as $key=>$line ) {
             echo( '<div class="androQueryLogItem" style="width:auto;"><strong>Query:</strong> ' 
                 .'<div><pre style="max-width:100%;">'.$line['sql'].'</pre></div>
-                <div><strong>Execution time:</strong>' .number_format( $line['time'],4 ) .'</div>
+                <div><strong>Execution time:</strong>' .number_format($line['time'], 4) .'</div>
                 <div onclick="showHide(\'stack-' .$key .'\');" style="cursor:pointer;">More Details</div>' );
             echo( '<div style="display:none;" id="stack-' .$key .'">' );
             echo "<strong>Execution Stack:</strong><pre>"
@@ -80,25 +80,25 @@ if (!isset($GLOBALS['disableFooterOutput'])) {
         echo( '</div></div>' );
     }
 
-    # =====================================================================
-    #
-    # Old-fashioned pre-x4 pre-jquery way to set focus.
-    # Don't ever use this!  It will be deprecated
-    # sooner or later.
-    #
-    # =====================================================================
-    $jqdr = vgfGet('jqDocReady',array());
+    // =====================================================================
+    // 
+    // Old-fashioned pre-x4 pre-jquery way to set focus.
+    // Don't ever use this!  It will be deprecated
+    // sooner or later.
+    // 
+    // =====================================================================
+    $jqdr = vgfGet('jqDocReady', array());
     if(count($jqdr)>0) {
         ?>
         <script type="text/javascript">
         $(document).ready(function() {
-    <?php echo implode("\n",$jqdr)?> 
+    <?php echo implode("\n", $jqdr)?> 
         });
         </script>
         <?php
     }
 
-    if(configGet('deprecated','Y')=='Y') {
+    if(configGet('deprecated', 'Y')=='Y') {
         $scriptend = ElementImplode('scriptend');
         if($scriptend<>'') {
             ?>

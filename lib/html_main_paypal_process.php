@@ -19,12 +19,12 @@
 
 //Configuration File
 // Andromeda MOD Feb 13, 2006, expects this file in application dir
-include_once('paypal_config.inc.php'); 
+require_once 'paypal_config.inc.php'; 
 //include_once('includes/config.inc.php'); 
 
 //Global Configuration File
 // Andromeda MOD Feb 13, 2006, expects this file in lib dir
-include_once('paypal_global_config.inc.php');
+require_once 'paypal_global_config.inc.php';
 //include_once('includes/global_config.inc.php');
 
 ?> 

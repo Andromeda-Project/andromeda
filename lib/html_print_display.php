@@ -29,11 +29,11 @@
 
 	<style type="text/css">
 	/* Styles generated specifically for a page */
-	<?php echo ElementOut("styles");?>
+    <?php echo ElementOut("styles");?>
 	</style>
 	<script language="javascript" type="text/javascript">
 	/* Script generated specifically for a page */
-	<?php echo ElementOut("script");?>
+    <?php echo ElementOut("script");?>
 	</script>
 
 </head>
@@ -56,14 +56,16 @@ return;
 				<br />
 				<img src="images/hrthing.jpg" width="200" height="2" border="0" alt="hrthing" />
 				<br />
-				<?php echo date('M-d-Y g:ia',time())?> (NY Time)
+				<?php echo date('M-d-Y g:ia', time())?> (NY Time)
 				<br />
             <?php
             $uid = SessionGet("UID");
-            if ($uid)
-               echo "You are logged in as: <b>$uid</b>";
-            else
-               echo 'You are not logged in'; 
+            if ($uid) {
+                echo "You are logged in as: <b>$uid</b>"; 
+            }
+            else {
+                echo 'You are not logged in'; 
+            } 
             ?>
 				<br />
 				<img src="images/hrthing.jpg" width="200" height="2" border="0" alt="hrthing" />
@@ -98,7 +100,7 @@ return;
 								<td class="btop-ttl-left"></td>
 								<td class="btop-ttl-mid">
 									<font class="nameoftable">
-									<?php echo V("PageSubtitle")?>
+            <?php echo V("PageSubtitle")?>
 									</font></td>
 								<td class="btop-ttl-right"></td>
 								<td class="btop-filler"></td>
@@ -114,29 +116,32 @@ return;
 								<td class="bmid-left"></td>
 								<!-- for 800x600 displays, use width=550 -->
 								<td class="bmid-center" colspan=5 width=720px valign="top">
-									<?php echo $HTML_Message?>
+            <?php echo $HTML_Message?>
 
-									<?php 
-									$HTML_nots = HTMLX_Notices();
-									if ($HTML_nots) {
-										if ($HTML_Message) echo "<br>"; 
-									?>
-										<div class="alert alert-info">
+            <?php 
+            $HTML_nots = HTMLX_Notices();
+            if ($HTML_nots) {
+                if ($HTML_Message) { echo "<br>"; 
+                } 
+            ?>
+             <div class="alert alert-info">
                                             <?php echo $HTML_nots?>
 									    </div>
-									<?php } ?>
+            <?php 
+            } ?>
 
 									
-									<?php 
-									$HTML_errs = HTMLX_Errors();
-									if ($HTML_errs) {
-									?>
+            <?php 
+            $HTML_errs = HTMLX_Errors();
+            if ($HTML_errs) {
+            ?>
 
-										<div class="alert alert-error">
-											<?php echo $HTML_errs?>
-										</div>
+             <div class="alert alert-error">
+                <?php echo $HTML_errs?>
+             </div>
 
-									<?php } ?>
+            <?php 
+            } ?>
 					
 								
 									<form method="post" enctype="multipart/form-data"
@@ -144,8 +149,8 @@ return;
                                  id="Form1" 
                                  name="Form1">
 				
-									<?php echo ValueGet("HTML")?>
-                           <?php echo ehHiddenAndData()?>
+            <?php echo ValueGet("HTML")?>
+                            <?php echo ehHiddenAndData()?>
 									</form>
 								</td>
 								<td class="bmid-right"></td>

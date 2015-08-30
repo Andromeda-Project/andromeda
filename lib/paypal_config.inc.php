@@ -25,8 +25,8 @@
 // Andromeda MOD, better compatibility
 global $paypal;
 
-# KFD 9/13/08, added configuration to discard ship-to info
-if(configGet('paypal_noship','N') == 'Y') {
+// KFD 9/13/08, added configuration to discard ship-to info
+if(configGet('paypal_noship', 'N') == 'Y') {
     $paypal['no_shipping'] = 1;
 }
 
@@ -35,8 +35,8 @@ if(configGet('paypal_noship','N') == 'Y') {
 // FILE HAS BEEN COPIED TO THE APPLICATION DIRECTORY.
 // -----------------------------------------------------------------
 $paypal['business']="example@example.com";
-# KFD 9/6/08, allow overrides from configuration
-if(configGet('paypal_payto','')<>'') {
+// KFD 9/6/08, allow overrides from configuration
+if(configGet('paypal_payto', '')<>'') {
     $paypal['business'] = configGet('paypal_payto');   
 }
 
@@ -44,22 +44,22 @@ $paypal['site_url']=
    'http://'.$GLOBALS['_SERVER']['HTTP_HOST']
    .$GLOBALS['_SERVER']['REQUEST_URI'];
  
-# KFD 9/6/08, allow overrides from configuration
-if(configGet('paypal_site_url','') <> '') {
+// KFD 9/6/08, allow overrides from configuration
+if(configGet('paypal_site_url', '') <> '') {
     $paypal['site_url'] = configGet('paypal_site_url');
 }
    
 $paypal['success_url']="?gpt=pp&flag=1";  // after ipn has finished
 $paypal['cancel_url']="?gpt=pp&flag=0";   // after ipn has finished
 
-# KFD 9/6/08, allow overrides from configuration
-if(configGet('paypal_v2','N')=='Y') {
+// KFD 9/6/08, allow overrides from configuration
+if(configGet('paypal_v2', 'N')=='Y') {
     $paypal['success_url'] = '?gp_page=x_paypalfinal&flag=success';
     $paypal['cancel_url'] = '?gp_page=x_paypalfinal&flag=cancel';
 }
-# KFD 1/15/09, allow program to dynamically generate a return
-#              page that will specify 
-if(vgfGet('paypal_return_url',false)) {
+// KFD 1/15/09, allow program to dynamically generate a return
+// page that will specify 
+if(vgfGet('paypal_return_url', false)) {
     $pprurl = vgfGet('paypal_return_url');
     $paypal['success_url'] = $pprurl.'&flag=success';
     $paypal['cancel_url']  = $pprurl.'&flag=cancel';
@@ -68,19 +68,19 @@ if(vgfGet('paypal_return_url',false)) {
 // -----------------------------------------------------------------
 // FLIP BETWEEN THESE TWO FOR LIVE/TEST 
 // -----------------------------------------------------------------
-# KFD 9/6/08, allow overrides from configuration
-if(configGet('paypal_test_mode','N')=='Y') {
+// KFD 9/6/08, allow overrides from configuration
+if(configGet('paypal_test_mode', 'N')=='Y') {
     $paypal['url']="https://www.sandbox.paypal.com/cgi-bin/webscr"; 
 }
 else {
     $paypal['url']="https://www.paypal.com/cgi-bin/webscr";    
 }
 
-# KFD 1/21/09, Another test system, "one dollar mode".  If 
-#              this flag is set, the trx is switched to
-#              one dollar only.  Intended for final run-throughs
-#              on live system.
-if(configGet('paypal_onedollar','N')=='Y') {
+// KFD 1/21/09, Another test system, "one dollar mode".  If 
+// this flag is set, the trx is switched to
+// one dollar only.  Intended for final run-throughs
+// on live system.
+if(configGet('paypal_onedollar', 'N')=='Y') {
     $paypal['amount'] = 1;
 }
 
@@ -90,7 +90,7 @@ if(configGet('paypal_onedollar','N')=='Y') {
 // ADD BACK IN ANYTHING YOU NEED FOR AN APPLICATION
 // -----------------------------------------------------------------
 //  An icon user sees while on paypal, personalizes it a bit
-$paypal['image_url']=configGet('paypal_image_url','');
+$paypal['image_url']=configGet('paypal_image_url', '');
  // url to call in background while user is waiting
 $paypal['notify_url']="?gp_page=x_paypalipn"; 
                                                 

@@ -2,32 +2,34 @@
 //
 // PURPOSE: Special page that just handles logins
 //
-class x_login extends x_table2 {
+class x_login extends x_table2
+{
     var $PageSubtitle = "Some kind of login title";
     var $pmenu = array();
 
-    # KFD 9/2/08, compatibility with a legacy application
+    // KFD 9/2/08, compatibility with a legacy application
     var $directlogin = false;
 
-    public function main() {
+    public function main() 
+    {
         $this->PageSubtitle = "Please Login";
         // KFD 3/6/08, changed login processing to st2login=1,
         //             its not a page anymore.
-        hidden('st2login',1);
-        hidden('gp_page','x_login');
-        hidden('gp_posted','1');
+        hidden('st2login', 1);
+        hidden('gp_page', 'x_login');
+        hidden('gp_posted', '1');
 
         // Send these out so they are available after successful login
         $gpz=aFromGp('gpz_');
         foreach($gpz as $var=>$val) {
-            hidden('gpz_'.$var,$val);
+            hidden('gpz_'.$var, $val);
         }
 
-        $loginUID = gp("loginUID","",false);
-        vgfSet("HTML_focus","loginUID");
+        $loginUID = gp("loginUID", "", false);
+        vgfSet("HTML_focus", "loginUID");
 
         // EXPERIMENTAL.  DOING THIS FOR ONLY ONE CLIENT RIGHT NOW
-        $hForgot=(vgaget('hfmode',false)==true)
+        $hForgot=(vgaget('hfmode', false)==true)
             ? 'x_password.phtml'
             : 'index.php?gp_page=x_password';
 
@@ -39,7 +41,7 @@ class x_login extends x_table2 {
          */
         if(File_exists_incpath('x_login_form.inc.html')) {
             if (vgaGet('html_main')<>('html_skin_tc')) {
-                include('x_login_form.inc.html');
+                include 'x_login_form.inc.html';
                 return;
             }
         }
@@ -55,7 +57,7 @@ class x_login extends x_table2 {
             <div class="span3"></div>
             <div class="span3">
                 <fieldset>
-                    <legend align="center"><?php echo configGet('loginbefore',$GLOBALS['AG']['app_desc'])?></legend>
+                    <legend align="center"><?php echo configGet('loginbefore', $GLOBALS['AG']['app_desc'])?></legend>
                     <div class="control-group">
                         <label class="control-label">Login Name:</label>
                         <div class="controls">
@@ -86,7 +88,8 @@ class x_login extends x_table2 {
     // ------------------------------------------------------------------
     // ------------------------------------------------------------------
     // Various helper functions
-    function _MenuX($content,$newline,$class,$id='') {
+    function _MenuX($content,$newline,$class,$id='') 
+    {
         //$id=hTagParm('id',$id);
         if ($this->pmenu['MENU_TYPE']<>'TABLE') {
             return $newline.'<div class="'.$class.'">'.$content.'</div>';
@@ -97,20 +100,22 @@ class x_login extends x_table2 {
         }
     }
 
-    function _MenuModule($content) {
-        if(vgaGet('MENU_TAG_MODL','')<>'') {
-            $mt=vgaGet('MENU_TAG_MODL','');
+    function _MenuModule($content) 
+    {
+        if(vgaGet('MENU_TAG_MODL', '')<>'') {
+            $mt=vgaGet('MENU_TAG_MODL', '');
             return "<$mt>$content</$mt>";
         }
         else {
             return $this->_MenuX(
-                $content,"\n\n",$this->pmenu['MENU_CLASS_MODL']
+                $content, "\n\n", $this->pmenu['MENU_CLASS_MODL']
             );
         }
     }
 
     // Various helper functions
-    function _MenuItem($content,$dest,$ins=false,$extra=array()) {
+    function _MenuItem($content,$dest,$ins=false,$extra=array()) 
+    {
         // The parms are the table plus maybe the insert mode
         $parms = array('gp_page'=>$dest);
         $id='menu_'.$dest;
@@ -121,33 +126,35 @@ class x_login extends x_table2 {
             $parms['gp_mode']='';
             $parms['gp_skey']='';
         }
-        $parms=array_merge($parms,$extra);
+        $parms=array_merge($parms, $extra);
 
         // Get the hyperlink with preceeding tick mark
         $class = $this->pmenu['MENU_CLASS_ITEM'];
         $href
             =$this->pmenu['MENU_TICK']
-            .hLinkPostFromArray($class,$content,$parms);
+            .hLinkPostFromArray($class, $content, $parms);
 
-        return $this->_MenuX($href,"\n",$this->pmenu['MENU_CLASS_ITEM'],$id);
+        return $this->_MenuX($href, "\n", $this->pmenu['MENU_CLASS_ITEM'], $id);
     }
 
     // ------------------------------------------------------------------
     // LOGIN PROCESS
     // ------------------------------------------------------------------
-    function Login_Process() {
+    function Login_Process() 
+    {
         $arg2=$this->directlogin==true ? 'direct'  : '';
 
         // only process if user hit "post"
-        if (gp('gp_posted','',false)=='') return;
-        vgfSet('LoginAttemptOK',false);
+        if (gp('gp_posted', '', false)=='') { return; 
+        }
+        vgfSet('LoginAttemptOK', false);
 
         // Error title
-        vgfSet('ERROR_TITLE','*');
+        vgfSet('ERROR_TITLE', '*');
 
         // If the user supplied a loginUID, this is a post and we
         // must process the request.
-        $ale=vgaGet('login_errors',array());
+        $ale=vgaGet('login_errors', array());
         $app=$GLOBALS['AG']['application'];
         $em000=
             isset($ale['000']) ? $ale['000']
@@ -166,37 +173,37 @@ class x_login extends x_table2 {
         $uid = MakeUserID($uid);
         //$uid = str_replace('@','_',$uid);
         //$uid = str_replace('.','_',$uid);
-        $pwd = gp("loginPWD","",false);
+        $pwd = gp("loginPWD", "", false);
 
         // First check, never allow the database server's superuser
         // account
         //
         if ($uid=="postgres") {
             ErrorAdd($em000);
-            if(vgfGet('loglogins',false)) {
-                sysLog(LOG_WARNING,"Andromeda:$app:Bad login attempt as postgres");
-                fwLogEntry('1011','Attempt login as postgres','',$arg2);
+            if(vgfGet('loglogins', false)) {
+                sysLog(LOG_WARNING, "Andromeda:$app:Bad login attempt as postgres");
+                fwLogEntry('1011', 'Attempt login as postgres', '', $arg2);
             }
             return;
         }
         $app=$GLOBALS['AG']['application'];
-        if (substr($uid,0,strlen($app))==$app) {
+        if (substr($uid, 0, strlen($app))==$app) {
             ErrorAdd($em001);
-            if(vgfGet('loglogins',false)) {
-                sysLog(LOG_WARNING,"Andromeda:$app:Bad login attempt as group role");
-                fwLogEntry('1012','Attempt login as group role',$uid,$arg2);
+            if(vgfGet('loglogins', false)) {
+                sysLog(LOG_WARNING, "Andromeda:$app:Bad login attempt as group role");
+                fwLogEntry('1012', 'Attempt login as group role', $uid, $arg2);
             }
             return;
         }
 
         // Begin with a connection attempt.
         // on fail, otherwise continue
-        $tcs = @SQL_CONN($uid,$pwd);
+        $tcs = @SQL_CONN($uid, $pwd);
         if ($tcs===false) {
             ErrorAdd($em099);
-            if(vgfGet('loglogins',false)) {
-                sysLog(LOG_NOTICE,"Andromeda:$app:Bad login attempt server rejected");
-                fwLogEntry('1013','Server rejected username/password',$uid,$arg2);
+            if(vgfGet('loglogins', false)) {
+                sysLog(LOG_NOTICE, "Andromeda:$app:Bad login attempt server rejected");
+                fwLogEntry('1013', 'Server rejected username/password', $uid, $arg2);
             }
             return;
         }
@@ -208,7 +215,8 @@ class x_login extends x_table2 {
         // have an error, we must close the connection before returning!
         //    ...yes, yes, that's bad form, all complaints to /dev/null
         //
-        if(vgfGet('loglogins',false)) fwLogEntry('1010','Login OK',$uid,$arg2);
+        if(vgfGet('loglogins', false)) { fwLogEntry('1010', 'Login OK', $uid, $arg2); 
+        }
         scDBConn_Push();
 
 
@@ -217,7 +225,8 @@ class x_login extends x_table2 {
         $root = false;
         $admin= false;
         $group_id_eff='';
-        $results=SQL("
+        $results=SQL(
+            "
          Select oid
            FROM pg_roles   
           WHERE rolname = CAST('$uid' as name)
@@ -236,13 +245,13 @@ class x_login extends x_table2 {
             if ($cr==0) {
                 scDBConn_Pop();
                 ErrorAdd($em002);
-                sysLog(LOG_WARNING,"Andromeda:$app:Bad login attempt code 002");
+                sysLog(LOG_WARNING, "Andromeda:$app:Bad login attempt code 002");
                 return;
             }
             else {
                 $userinfo=SQL_Fetch_Array($results);
                 $group_id_eff=$userinfo['group_id_eff'];
-                SessionSet('user_name',$userinfo['user_name']);
+                SessionSet('user_name', $userinfo['user_name']);
             }
         }
 
@@ -262,7 +271,8 @@ class x_login extends x_table2 {
         // Get the users' groups
         $groups="";
         if ($root) {
-            $results=SQL("
+            $results=SQL(
+                "
             select group_id 
               from zdd.groups 
              where COALESCE(grouplist,'')=''"
@@ -273,11 +283,11 @@ class x_login extends x_table2 {
         }
         while ($row = SQL_FETCH_ARRAY($results)) {
             $agroups[]="'".trim($row['group_id'])."'";
-            #$groups.=ListDelim($groups)."'".trim($row["group_id"])."'";
+            // $groups.=ListDelim($groups)."'".trim($row["group_id"])."'";
         }
         $groups = array();
         if (!empty($agroups)) {
-            $groups = implode(",",$agroups);
+            $groups = implode(",", $agroups);
         }
         //scDBConn_Pop();
 
@@ -298,8 +308,9 @@ class x_login extends x_table2 {
         //
         if(function_exists('app_login_process')) {
             //echo "Calling the process now";
-            if(!app_login_process($uid,$pwd,$admin,$groups))
-                return;
+            if(!app_login_process($uid, $pwd, $admin, $groups)) {
+                return; 
+            }
         }
 
         // Protect the session from hijacking, generate a new ID
@@ -308,17 +319,17 @@ class x_login extends x_table2 {
         // We now have a successful connection, set some
         // flags and lets go
         //
-        vgfSet('LoginAttemptOK',true);
-        SessionSet("UID",$uid);
-        SessionSet("PWD",$pwd);
-        SessionSet("ADMIN",$admin);
-        SessionSet("ROOT",$root);
-        SessionSet("GROUP_ID_EFF",$group_id_eff);
-        SessionSet("groups",$groups);
+        vgfSet('LoginAttemptOK', true);
+        SessionSet("UID", $uid);
+        SessionSet("PWD", $pwd);
+        SessionSet("ADMIN", $admin);
+        SessionSet("ROOT", $root);
+        SessionSet("GROUP_ID_EFF", $group_id_eff);
+        SessionSet("groups", $groups);
         if(gp('gpz_page')=='') {
-            # KFD 9/12/08, extra command to not change page
+            // KFD 9/12/08, extra command to not change page
             if(gp('st2keep')<>1) {
-                gpSet('gp_page','');
+                gpSet('gp_page', '');
             }
         }
         $GLOBALS['session_st'] = 'N';   // for "N"ormal
@@ -329,10 +340,10 @@ class x_login extends x_table2 {
         // load from database.
         //
         $this->pmenu = array(
-            'MENU_TYPE'=>vgaGet('MENU_TYPE','div')
-        ,'MENU_CLASS_MODL'=>vgaGet('MENU_CLASS_MODL','modulename')
-        ,'MENU_CLASS_ITEM'=>vgaGet('MENU_CLASS_ITEM','menuentry')
-        ,'MENU_TICK'=>vgaGET('MENU_TICK',' - ')
+            'MENU_TYPE'=>vgaGet('MENU_TYPE', 'div')
+        ,'MENU_CLASS_MODL'=>vgaGet('MENU_CLASS_MODL', 'modulename')
+        ,'MENU_CLASS_ITEM'=>vgaGet('MENU_CLASS_ITEM', 'menuentry')
+        ,'MENU_TICK'=>vgaGET('MENU_TICK', ' - ')
         );
         //$sql = "SELECT * from variables WHERE variable like 'MENU%'";
         //$dbres = SQL($sql);
@@ -347,14 +358,14 @@ class x_login extends x_table2 {
         //
         // GET AGMENU
         $AGMENU=array();  // avoid compiler warning, populated next line
-        include($GLOBALS['AG']['dirs']['generated'] ."ddmodules.php");
+        include $GLOBALS['AG']['dirs']['generated'] ."ddmodules.php";
 
         // Pull distinct modules person has any menu options in.
         $sq="SELECT DISTINCT module
              FROM zdd.perm_tabs 
             WHERE nomenu='N'
               AND group_id iN ($groups)";
-        $modules=SQL_AllRows($sq,'module');
+        $modules=SQL_AllRows($sq, 'module');
         $AGkeys=array_keys($AGMENU);
         foreach($AGkeys as $AGkey) {
             if(!isset($modules[$AGkey])) {
@@ -370,7 +381,7 @@ class x_login extends x_table2 {
                WHERE nomenu='N'
                  AND module = '$module'
                  AND group_id iN ($groups)";
-            $tables=SQL_AllRows($sq,'table_id');
+            $tables=SQL_AllRows($sq, 'table_id');
             $tkeys =array_keys($moduleinfo['items']);
             foreach($tkeys as $tkey) {
                 if(!isset($tables[$tkey])) {
@@ -383,47 +394,37 @@ class x_login extends x_table2 {
         $table_perms=SQL_AllRows(
             "Select distinct table_id FROM zdd.perm_tabs
            WHERE group_id IN ($groups)
-             AND nomenu='N'"
-            ,'table_id'
-
+             AND nomenu='N'", 'table_id'
         );
-        SessionSet('TABLEPERMSMENU',array_keys($table_perms));
+        SessionSet('TABLEPERMSMENU', array_keys($table_perms));
 
         $table_perms=SQL_AllRows(
             "Select distinct table_id FROM zdd.perm_tabs
            WHERE group_id IN ($groups)
-             AND permsel='Y'"
-            ,'table_id'
-
+             AND permsel='Y'", 'table_id'
         );
-        SessionSet('TABLEPERMSSEL',array_keys($table_perms));
+        SessionSet('TABLEPERMSSEL', array_keys($table_perms));
 
         $table_perms=SQL_AllRows(
             "Select distinct table_id FROM zdd.perm_tabs
            WHERE group_id IN ($groups)
-             AND permins='Y'"
-            ,'table_id'
-
+             AND permins='Y'", 'table_id'
         );
-        SessionSet('TABLEPERMSINS',array_keys($table_perms));
+        SessionSet('TABLEPERMSINS', array_keys($table_perms));
 
         $table_perms=SQL_AllRows(
             "Select distinct table_id FROM zdd.perm_tabs
            WHERE group_id IN ($groups)
-             AND permupd='Y'"
-            ,'table_id'
-
+             AND permupd='Y'", 'table_id'
         );
-        SessionSet('TABLEPERMSUPD',array_keys($table_perms));
+        SessionSet('TABLEPERMSUPD', array_keys($table_perms));
 
         $table_perms=SQL_AllRows(
             "Select distinct table_id FROM zdd.perm_tabs
            WHERE group_id IN ($groups)
-             AND permdel='Y'"
-            ,'table_id'
-
+             AND permdel='Y'", 'table_id'
         );
-        SessionSet('TABLEPERMSDEL',array_keys($table_perms));
+        SessionSet('TABLEPERMSDEL', array_keys($table_perms));
         //echo "<div style='background-color:white'>";
         //echo "$uid $groups $group_id_eff";
         //hprint_r(SessionGet('TABLEPERMSMENU'));
@@ -435,7 +436,7 @@ class x_login extends x_table2 {
         // options to turn them off
         //if(defined('_ANDROMEDA_JOOMLA')) {
         // In a hybrid situation, put the menu into the session
-        SessionSet('AGMENU',$AGMENU);
+        SessionSet('AGMENU', $AGMENU);
         //}
         $HTML_Menu="";
         $WML_Menu="";
@@ -496,8 +497,8 @@ class x_login extends x_table2 {
         */
 
 
-        DynamicSave("menu_".$uid.".php",$HTML_Menu);
-        DynamicSave("menu_wml_".$uid.".php",$WML_Menu);
+        DynamicSave("menu_".$uid.".php", $HTML_Menu);
+        DynamicSave("menu_wml_".$uid.".php", $WML_Menu);
 
 
         // -------------------------------------------------------------------
@@ -530,7 +531,7 @@ class x_login extends x_table2 {
             $HTML_Perms .= "\$table_perms[\"$tn\"]=array(\"ins\"=>$ti,\"upd\"=>$tu,\"del\"=>$td,\"sel\"=>$ts);\n";
         }
         $HTML_Perms.="?>\n";
-        DynamicSave("perms_".$uid.".php",$HTML_Perms);
+        DynamicSave("perms_".$uid.".php", $HTML_Perms);
 
         /* October 28, 2006, KFD.  Rem'd this all out, column and row security
            made this irrelevant
@@ -553,7 +554,8 @@ class x_login extends x_table2 {
     }
 
 
-    function GenerateMenu($AGMENU,$admin,$tables_sel,$tables_ins) {
+    function GenerateMenu($AGMENU,$admin,$tables_sel,$tables_ins) 
+    {
     }
 
 }

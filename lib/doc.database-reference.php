@@ -15,8 +15,6 @@ can be defined in an Andromeda database.
 Some of these elements will make sense to anybody who has built a 
 database, such as [[table]] and [[column]] and [[table.index]], while others
 are unique to Andromeda, such as [[table.column.chain]].
-
-
 */
 
 /**
@@ -211,7 +209,6 @@ field will actuall occur on the same line.  Given two columns named
 into all tables in the database.  Obviously should be used with caution!
 The framework defines three columns that have this flag set, being
 [[skey]], [[_agg]], and [[skey_quiet]].
-
 */
 
 /**
@@ -256,7 +253,6 @@ table itemsxvendors:
 
 ...which means that, ''for a given item'', only one vendor
 can be flagged a dominant.
-        
 */
 
 /* --------------------------------------------------- *\
@@ -354,13 +350,11 @@ not actually named '$LOGIN', it always takes the name of the database,
 such as 'andro' or 'finance'.  If you wish to make assignments to this
 default group, such as allowing that group SELECT access to some tables,
 you can make assignments to the $LOGIN group.
-
 */
 
 
 /**
 name:group.module
-
 
 A group.module definition assigns security priveleges to a group for
 a module.  This definition is nested inside of the [[group]] definition.
@@ -409,7 +403,6 @@ unique module name (module_id) followed by a colon.
 
 #permdel
 ''permdel''.  The group's DELETE permission for this module.
-
 */
 
 
@@ -466,12 +459,10 @@ followed by a colon.
 
 A module definition can contain a nested [[module.grup]] definition 
 which will assign security priveleges to a group for this module.
-
 */
 
 /**
 name:module.group
-
 
 A module.group definition assigns security priveleges to a group for
 a module.  This definition is nested inside of the [[module]] definition.
@@ -521,7 +512,6 @@ unique group name (group_id) followed by a colon.
 
 #nomenu
 ''nomenu''.  This module should not appear on the menu for this group.
-
 */
 
 
@@ -587,7 +577,6 @@ it must contain a class of the same name, and function ''main()''.
 
 A menu entry can contain a [[menu.group]] security definition which
 specifies the precise security for a group on that menu entry.
-
 */
 
 /**
@@ -626,7 +615,6 @@ Use of the group menu.group definition is ''not a security setting'',
 because it makes no changes to a user's ability to read or write 
 tables.  It is merely a ''user-interface setting'', because it affects
 what people see.  
-
 */
 
 
@@ -725,7 +713,6 @@ The following objects can be placed within a table:
 * [[table.index]]
 * [[table.upsave]]
 * [[table.history]]
-
 */
 
 
@@ -734,7 +721,6 @@ name:table.group
 A table.group definition assigns security priveleges to a group for
 a specific table. 
 This definition is nested inside of the [[table]] definition.
-
 
 !>example
 !>noformat
@@ -781,8 +767,6 @@ unique group name (group_id) followed by a colon.
 
 #nomenu
 ''nomenu''.  This module should not appear on the menu for this group.
-
-
 */
 
 
@@ -971,7 +955,6 @@ table example:
       suffix: _suf
 !<
 !<
-
 */
 
 /**
@@ -1075,7 +1058,6 @@ be in the normal search results.
 deleted when a parent table row is deleted.  Overrides the normal behavior
 which is to prevent the deletion of a parent table row if there exists
 matching child entries.
-
 */
 
 /**
@@ -1127,7 +1109,6 @@ unique group name (group_id) followed by a colon.
 
 #nomenu
 ''nomenu''.  This table should not appear on the menu for this group.
-
 */
 
 
@@ -1183,8 +1164,6 @@ class employees extends x_table2 {
 employee_id,first_name,last_name
 !<
 !<
-
-
 */
 
 
@@ -1192,7 +1171,6 @@ employee_id,first_name,last_name
 name:table.projection.column
 
 See [[table.projection]]
-
 */
 
 
@@ -1234,15 +1212,12 @@ that is unique within this table, (index_id) followed by a colon.
 #idx_unique
 ''idx_unique''.  If set to Y, the index will also become a unique
 constraint.
-
-
 */
 
 /**
 name:table.index.column
 
 See [[table.index]]
-
 */
 
 /**
@@ -1338,8 +1313,6 @@ table and have it get the value from a column in the child table.
 #column.retval
 ''column.retval''.  Allows you to explicitly write a literal value
 to a column in the parent table.
-
-
 */
 
 /**
@@ -1489,7 +1462,6 @@ practice is to name tests '00', '01', and so on.
 
 #chain.test.return
 ''chain.test.return''.  A [[Chain Return Expression]].  
-
 */
 
 
@@ -1583,7 +1555,6 @@ practice is to name tests '00', '01', and so on.
 
 #chain.test.return
 ''chain.test.return''.  A [[Chain Return Expression]].  
-
 */
 
 /**
@@ -1660,8 +1631,6 @@ the second is a comma-separated list of values, as in
 * < Less than 
 * = Equal 
 * <>Not Equal
-
-
 */
 
 /**
@@ -1754,7 +1723,6 @@ is number of characters.
 * BITOR Bitwise OR              
 * BITXOR Bitwise OR              
 * BITNOT Bitwise NOT              
-
 */
 
 

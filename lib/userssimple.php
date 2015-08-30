@@ -1,27 +1,30 @@
 <?php
-class userssimple extends x_table2 {
-    function main() {
-        if(gpExists('gp_posted')) return $this->mainDoIt();
+class userssimple extends x_table2
+{
+    function main() 
+    {
+        if(gpExists('gp_posted')) { return $this->mainDoIt(); 
+        }
         
-        # The basic idea here is to get all user-group assignments
-        # from the old instance, and prompt the user
-        $groups = SQL_AllRows("select * from zdd.groups",'group_id');
+        // The basic idea here is to get all user-group assignments
+        // from the old instance, and prompt the user
+        $groups = SQL_AllRows("select * from zdd.groups", 'group_id');
         $groupsx= SQL_AllRows(
-            "Select distinct group_id from usersxgroups"
-            ,'group_id'
+            "Select distinct group_id from usersxgroups", 'group_id'
         );
         
         $html = html('div');
-        $html->h('h1','User Migration');
-        $html->h('p','Use this program after you have migrated a database
+        $html->h('h1', 'User Migration');
+        $html->h(
+            'p', 'Use this program after you have migrated a database
             from one server to another.  It will create all users and
             put them into the correct groups.'
         );
-        $html->h('p','<B>This works only for "simple" password systems.</b>');
+        $html->h('p', '<B>This works only for "simple" password systems.</b>');
             
         
-        $html->h('h3','Group Reconciliation');
-        $html->h('p','Please tell me how to re-assign groups:');
+        $html->h('h3', 'Group Reconciliation');
+        $html->h('p', 'Please tell me how to re-assign groups:');
         
         $table =$html->h('table');
         $tbody =$table->h('tbody');
@@ -30,8 +33,8 @@ class userssimple extends x_table2 {
         $tr->h('Put into this group:');
         foreach($groupsx as $groupx=>$x) {
             $tr = $tbody->h('tr');
-            $td = $tr->h('td',$groupx);
-            $td = $tr->h('td','&nbsp;&nbsp;&nbsp;&nbsp;');
+            $td = $tr->h('td', $groupx);
+            $td = $tr->h('td', '&nbsp;&nbsp;&nbsp;&nbsp;');
             if(isset($groups[$groupx])) {
                 $input = html('input');
                 $input->hp['value'] = $groupx;
@@ -41,7 +44,7 @@ class userssimple extends x_table2 {
             else {
                 $input = html('select');
                 foreach($groups as $group=>$x) {                    
-                    $option = $input->h('option',$group);
+                    $option = $input->h('option', $group);
                     $option->hp['value'] = $group;
                 }
             }
@@ -50,8 +53,8 @@ class userssimple extends x_table2 {
             $td->addChild($input);
         }
         
-        $html->hidden('gp_page','userssimple');
-        $html->hidden('gp_posted',1);
+        $html->hidden('gp_page', 'userssimple');
+        $html->hidden('gp_posted', 1);
         
         $html->br(3);
         $but=$html->h('input');
@@ -59,17 +62,18 @@ class userssimple extends x_table2 {
         $but->hp['value'] = 'Run Now';
         
         $html->br(2);
-        $p=$html->h('p'
-            ,'<b>Please give the program up to five minutes to run.</p>'
+        $p=$html->h(
+            'p', '<b>Please give the program up to five minutes to run.</p>'
         );
         $p->hp['style'] = 'color: red';
         
         $html->render();
     }
     
-    function mainDoit() {
-        # Take the list of group assignments and reslot
-        # them into kills and changes.
+    function mainDoit() 
+    {
+        // Take the list of group assignments and reslot
+        // them into kills and changes.
         $graw  = aFromgp('grp_');
         $gsame = array();
         $gchg  = array();
@@ -82,9 +86,10 @@ class userssimple extends x_table2 {
             }
         }
         
-        # Step 1, make sure all users exist.  Pull the ones
-        #         that don't and create them
-        $users = SQL_AllRows("
+        // Step 1, make sure all users exist.  Pull the ones
+        // that don't and create them
+        $users = SQL_AllRows(
+            "
             select user_id,member_password from users
              where COALESCE(member_password,'') <> ''
                AND not exists (
@@ -98,7 +103,7 @@ class userssimple extends x_table2 {
             SQL("create role {$user['user_id']} login password '$pwd'");
         }
 
-        # Step 1.5 set passwords and let them login
+        // Step 1.5 set passwords and let them login
         $users = SQL_AllRows("select user_id,member_password from users");
         foreach($users as $user) {
             $pwd = $user['member_password'];
@@ -107,9 +112,9 @@ class userssimple extends x_table2 {
         echo "<br/>Setting passwords for ".count($users)." users.";
 
         
-        # Step 2, for all assignments that do not change,
-        #         explicitly grant the role
-        $slist = implode(',',$gsame);
+        // Step 2, for all assignments that do not change,
+        // explicitly grant the role
+        $slist = implode(',', $gsame);
         $assigns = SQL_AllRows(
             "Select user_id,group_id 
                from usersxgroups
@@ -123,9 +128,9 @@ class userssimple extends x_table2 {
         echo "<br/>$count users had existing permissions re-established";
         errorsClear();
         
-        # Step 3, for all assignments that change, 
-        #         copy rows in usersxgroups, which also
-        #         creates the role assignment
+        // Step 3, for all assignments that change, 
+        // copy rows in usersxgroups, which also
+        // creates the role assignment
         foreach($gchg as $from=>$to) {
             $sql="insert into usersxgroups (user_id,group_id)
                  select user_id,'$to' FROM usersxgroups x
@@ -140,13 +145,13 @@ class userssimple extends x_table2 {
         }
         echo "<br/>Migrated permissions for ".count($gchg)." groups";
         
-        # Step 4, Delete all defunct user-group assignments
+        // Step 4, Delete all defunct user-group assignments
         foreach($gchg as $from=>$to) {
             SQL("Delete from usersxgroups where group_id = '$from'");
         }
         echo "<br/>Deleted old user-group rows for ".count($gchg)." groups";
         
-        # Step 5, delete all defunct groups
+        // Step 5, delete all defunct groups
         echo "<br/>Deleted ".count($gchg)." groups from old database";
         foreach($gchg as $from=>$to) {
             SQL("Delete from permxtables where group_id = '$from'");

@@ -23,23 +23,25 @@
 // This is an example of an x_home page.  Place a file like this
 // into your application directory to define the home page.
 //
-class x_table_x_home extends x_table {
-   function main() {
-      $this->PageSubtitle = "Welcome to ".V("PageTitle");
-      ?>
-      <br>
-      You are on the default home page.  We need to put something
-      interesting here.
-      <br>
-      <table width=100% height=100%>
+class x_table_x_home extends x_table
+{
+    function main() 
+    {
+        $this->PageSubtitle = "Welcome to ".V("PageTitle");
+        ?>
+       <br>
+       You are on the default home page.  We need to put something
+       interesting here.
+       <br>
+       <table width=100% height=100%>
          <tr>
             <td style="width: 100%; height: 100%;
                        text-align: center; vertical-align: center;">
                <img src="images/welcome.gif">
             </td>
          </tr>
-      </table>
-      <?php
-   }
+       </table>
+        <?php
+    }
 }
 
