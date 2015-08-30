@@ -1584,12 +1584,12 @@ function index_hidden_page()
 
     // If the install page exists, it will be used, no getting
     // around it.
-    $install=$AG['dirs']['application'] .'install.php';
-    $instal2=$AG['dirs']['application'] .'install.done.php';
+    $install=$AG['dirs']['application'] .'Install.php';
+    $install2=$AG['dirs']['application'] .'Install.done.php';
     if (file_exists($install)) {
         include_once $install;
         if (gp('gp_install')=='finish') {
-            rename($install, $instal2);
+            rename($install, $install2);
         } else {
             $MPPages['install']='install';
             gpSet('gp_page', 'install');
