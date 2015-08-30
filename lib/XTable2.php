@@ -20,7 +20,7 @@
    Boston, MA  02110-1301  USA 
    or visit http://www.gnu.org/licenses/gpl.html
 \* ================================================================== */
-class x_table2
+class XTable2
 {
     // These are all handled in the default __construct() method
     public $table_id = '';

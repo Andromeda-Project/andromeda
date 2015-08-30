@@ -1,7 +1,7 @@
 <?php
 // This page is only saved as PHP because our editor, jedit, 
 // recognizes the documentation format
-/**
+/*
 name:Placeholder: Classes
 group:PHP Reference
 

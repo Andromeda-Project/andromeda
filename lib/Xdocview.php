@@ -1,5 +1,5 @@
 <?php
-class x_docview extends x_table2
+class Xdocview extends Xtable2
 {
     /*
     function custom_construct() {
@@ -9,15 +9,16 @@ class x_docview extends x_table2
       $this->button_images=false;
     }
     */
-    public function custom_construct()
+    public function __construct()
     {
+        parent::__construct();
         $this->image_directory="dbobj";
     }
    
     public function main()
     {
         // Get top page
-        $this->PageSubtitle="Documentation";
+        $this->pageSubtitle="Documentation";
         //$sq="SELECT pagename FROM docpageshier WHERE pagehier=1";
         //$pageroot=SQL_OneValue('pagename',$sq);
         $pageroot='Data Dictionary';
@@ -84,10 +85,10 @@ class x_docview extends x_table2
         // Make and save a menu out of what we've discovered
         adocs_makemenu($pageroot, $pn, $parents, $peers);
       
-        // Now format the page and save it.  No caching for now.      
+        // Now format the page and save it.  No caching for now.
         $html=$row['pagetext'];
 
-        $html=$this->WikiProcess($html);
+        $html=$this->wikiProcess($html);
       
         /*
         // Remove carriage returns, makes things much easier
@@ -155,8 +156,8 @@ class x_docview extends x_table2
          }
          
          switch(strtolower($type)) {
-            case 'ilink': $this->Linkilink($html,$match); break;
-            case 'image': $this->LinkImage($html,$match,$type); break;
+            case 'ilink': $this->linkilink($html,$match); break;
+            case 'image': $this->linkImage($html,$match,$type); break;
          }
          
          $matches=array();
@@ -219,8 +220,8 @@ class x_docview extends x_table2
       
       
         // Now the actual output and formatting
-        // 
-        $this->PageSubtitle=$pn;
+        //
+        $this->ageSubtitle=$pn;
         echo "<div class=\"hero-unit\">Database Specification</div>";
         echo $hpars."<br><br>";
         echo $hpn;
@@ -256,26 +257,26 @@ class x_docview extends x_table2
         $mode  = '';
         foreach ($ahtml as $oneline) {
             switch ($mode) {
-            case 'html':
-                $f4=substr($oneline, 0, 5);
-                if ($f4=="</div" || $f4=="</pre") {
-                    $mode='';
-                    $new =$oneline."\n";
-                } else {
-                    $new =($oneline)."\n";
-                }
-                break;
-            case 'para':
-                list($mode, $new)=$this->wikiProcessModePara($oneline);
-                $new.="\n";
-                break;
-            case 'list':
-                list($mode, $new)=$this->wikiProcessModeList($oneline);
-                $new.="\n";
-                break;
-            default:
-                list($mode, $new)=$this->wikiProcessModeBlank($oneline);
-                break;
+                case 'html':
+                    $f4=substr($oneline, 0, 5);
+                    if ($f4=="</div" || $f4=="</pre") {
+                        $mode='';
+                        $new =$oneline."\n";
+                    } else {
+                        $new =($oneline)."\n";
+                    }
+                    break;
+                case 'para':
+                    list($mode, $new)=$this->wikiProcessModePara($oneline);
+                    $new.="\n";
+                    break;
+                case 'list':
+                    list($mode, $new)=$this->wikiProcessModeList($oneline);
+                    $new.="\n";
+                    break;
+                default:
+                    list($mode, $new)=$this->wikiProcessModeBlank($oneline);
+                    break;
          
             }
             $retval.=$new;
@@ -296,22 +297,34 @@ class x_docview extends x_table2
         $retv=$oneline;
         if (substr($oneline, 0, 1)=="=" && substr($oneline, -1, 1)=="=") {
             $retv=preg_replace(
-                "/={6}(.*)={6}/xsU", '<head6>$1</head6>', $retv
+                "/={6}(.*)={6}/xsU",
+                '<head6>$1</head6>',
+                $retv
             );
             $retv=preg_replace(
-                "/={5}(.*)={5}/xsU", '<head5>$1</head5>', $retv
+                "/={5}(.*)={5}/xsU",
+                '<head5>$1</head5>',
+                $retv
             );
             $retv=preg_replace(
-                "/={4}(.*)={4}/xsU", '<head4>$1</head4>', $retv
+                "/={4}(.*)={4}/xsU",
+                '<head4>$1</head4>',
+                $retv
             );
             $retv=preg_replace(
-                "/={3}(.*)={3}/xsU", '<head3>$1</head3>', $retv
+                "/={3}(.*)={3}/xsU",
+                '<head3>$1</head3>',
+                $retv
             );
             $retv=preg_replace(
-                '/==(.*)==/', '<head2>$1</head2>', $retv
+                '/==(.*)==/',
+                '<head2>$1</head2>',
+                $retv
             );
             $retv=preg_replace(
-                '/=(.*)=/', '<head1>$1</head1>', $retv
+                '/=(.*)=/',
+                '<head1>$1</head1>',
+                $retv
             );
         } elseif (substr($oneline, 0, 4)=="<div") {
             $mode='html';
@@ -325,7 +338,7 @@ class x_docview extends x_table2
         } else {
             // assume some kind of text, open a paragraph
             $mode="para";
-            $retv="<p>".$this->wikiProcess_NormalText($oneline);
+            $retv="<p>".$this->wikiProcessNormalText($oneline);
         }
         if ($mode<>'html') {
             $retv.="\n";
@@ -341,7 +354,7 @@ class x_docview extends x_table2
             return array('',"</p>");
         }
       
-        $retv=$this->wikiProcess_NormalText($html);
+        $retv=$this->wikiProcessNormalText($html);
         return array('para',$retv);
     }
 
@@ -358,22 +371,28 @@ class x_docview extends x_table2
             $html  = substr($html, 1);
         }
       
-        $retv=$prefix.$this->wikiProcess_NormalText($html);
+        $retv=$prefix.$this->wikiProcessNormalText($html);
         return array('list',$retv);
     }
    
    
-    public function wikiProcess_NormalText($html)
+    public function wikiProcessNormalText($html)
     {
-        // Convert bold & italitcs 
+        // Convert bold & italitcs
         $html=preg_replace(
-            "/'{4,}(.*)'{4,}/xmsU", '<b><i>$1</i></b>', $html
+            "/'{4,}(.*)'{4,}/xmsU",
+            '<b><i>$1</i></b>',
+            $html
         );
         $html=preg_replace(
-            "/'{3}(.*)'{3}/xmsU", '<i>$1</i>', $html
+            "/'{3}(.*)'{3}/xmsU",
+            '<i>$1</i>',
+            $html
         );
         $html=preg_replace(
-            "/\'{2}(.*)\'{2}/xmsU", '<b>$1</b>', $html
+            "/\'{2}(.*)\'{2}/xmsU",
+            '<b>$1</b>',
+            $html
         );
      
         // convert hyperlinks and images
@@ -390,10 +409,12 @@ class x_docview extends x_table2
             }
          
             switch (strtolower($type)) {
-            case 'ilink': $this->Linkilink($html, $match);
-                break;
-            case 'image': $this->LinkImage($html, $match, $type);
-                break;
+                case 'ilink':
+                    $this->linkilink($html, $match);
+                    break;
+                case 'image':
+                    $this->linkImage($html, $match, $type);
+                    break;
             }
          
             $matches=array();
@@ -405,7 +426,7 @@ class x_docview extends x_table2
     // Process various kinds of links
     // ------------------------------------------------------------
     // Internal links
-    public function Linkilink(&$html, $match)
+    public function linkilink(&$html, $match)
     {
         $sq="SELECT pagename FROM docpages 
             WHERE pagename = '$match'";
@@ -419,7 +440,7 @@ class x_docview extends x_table2
     }
 
     // Images
-    public function LinkImage(&$html, $match, $type)
+    public function linkImage(&$html, $match, $type)
     {
         $sq="SELECT filename,description FROM media 
             WHERE filename = '$match'";

@@ -1,7 +1,7 @@
 <?php
-class x_wiki
+class XWiki
 {
-    public function _construct($table_id)
+    public function __construct($table_id)
     {
         $this->page_id=$table_id;
         echo $table_id;

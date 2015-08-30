@@ -1,5 +1,5 @@
 <?php
-class phpinfo extends x_table2
+class PhpInfo extends XTable2
 {
     public function main()
     {

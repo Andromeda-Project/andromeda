@@ -1,5 +1,5 @@
 <?php
-class yamlview extends x_table2
+class YamlView extends XTable2
 {
     public function main()
     {

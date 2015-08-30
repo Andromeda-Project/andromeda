@@ -1,12 +1,12 @@
 <?php
-class x_report extends x_table2
+class XReport extends XTable2
 {
     // Information passed in from outside
     public $report_id = '';
     public $display   = '';
    
    
-    public function x_report($report_id='', $display='')
+    public function __construct($report_id='', $display='')
     {
         $this->report_id=$report_id;
         $this->display  =$display;

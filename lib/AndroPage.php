@@ -252,7 +252,7 @@ class AndroPage
             $this->PageSubtitle = $yamlP2['options']['title'];
         }
         
-        // There are few tweaks based on x4/x_table2 version
+        // There are few tweaks based on x4/Xtable2 version
         $x4 = gp('x4Page')=='' ? false : true;
 
         // Create top-level div, x4 library is looking for this

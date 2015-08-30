@@ -1,5 +1,5 @@
 <?php
-class x_pkc extends x_table2
+class XPkc extends XTable2
 {
     function main()
     {

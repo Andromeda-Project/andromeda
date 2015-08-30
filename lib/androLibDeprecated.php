@@ -22,7 +22,7 @@ function ValueGet($key)
     }
 }
 /* DEPRECATED */
-function V($key, $value=null)
+function V($key, $value = null)
 {
     if (is_null($value)) {
         return ValueGet($key);
@@ -41,7 +41,7 @@ function raxOptionSet($name, $value)
 }
 
 /* DEPRECATED */
-function raxOptionGet($name, $default='')
+function raxOptionGet($name, $default = '')
 {
     global $rax;
     return isset($rax['options'][$name]) ? $rax['options'][$name] : $default;
@@ -76,7 +76,7 @@ function HTTP_redirect($page, $vars)
 function HTTP_Address($page, $vars)
 {
     $args = "";
-    foreach ($vars as $key=>$value) {
+    foreach ($vars as $key => $value) {
         $args.=ListDelim($args, "&").trim($key)."=$value";
     }
     if ($args) {
@@ -96,9 +96,9 @@ function CleanExists($key)
 }
 
 /* DEPRECATED */
-function CleanSetArray($arr, $prefix="")
+function CleanSetArray($arr, $prefix = "")
 {
-    foreach ($arr as $key=>$value) {
+    foreach ($arr as $key => $value) {
         CleanSet($prefix.$key, $value);
     }
 }
@@ -115,7 +115,7 @@ function CleanSet_Subset($clear_if_unset, $prefix, $arr)
 
     // First clear existing if told to
     if ($clear_if_unset) {
-        foreach ($GLOBALS["AG"]["clean"] as $colname=>$colvar) {
+        foreach ($GLOBALS["AG"]["clean"] as $colname => $colvar) {
             if (substr($colname, 0, $strlen)==$prefix) {
                 $GLOBALS["AG"]["clean"][$colname] = "";
             }
@@ -123,7 +123,7 @@ function CleanSet_Subset($clear_if_unset, $prefix, $arr)
     }
 
     // Then assign the values we were given
-    foreach ($arr as $key=>$value) {
+    foreach ($arr as $key => $value) {
         $GLOBALS["AG"]["clean"][$prefix.$key] = $value;
     }
 }
@@ -137,28 +137,28 @@ function CleanUnset($key)
 }
 
 /* DEPRECATED */
-function CleanBox($key, $tdefault="", $reportmissing=true)
+function CleanBox($key, $tdefault = "", $reportmissing = true)
 {
     return CleanGet("txt_".$key, $tdefault, $reportmissing);
 }
 
 /* DEPRECATED */
-function CleanControl($skipempty=false)
+function CleanControl($skipempty = false)
 {
     return Clean_Subset("gp_", $skipempty);
 }
 /* DEPRECATED */
-function CleanBoxes($skipempty=false)
+function CleanBoxes($skipempty = false)
 {
     return Clean_Subset("txt_", $skipempty);
 }
 
 /* DEPRECATED */
-function Clean_Subset($prefix, $skipempty=false)
+function Clean_Subset($prefix, $skipempty = false)
 {
     $strlen = strlen($prefix);
     $colvars = array();
-    foreach ($GLOBALS["AG"]["clean"] as $colname=>$colvar) {
+    foreach ($GLOBALS["AG"]["clean"] as $colname => $colvar) {
         if (substr($colname, 0, $strlen)==$prefix) {
             if ($colvar!="" || !$skipempty) {
                 $colvars[substr($colname, $strlen)] = $colvar;
@@ -178,7 +178,7 @@ function CleanGetUnset($key)
 
 
 /* DEPRECATED */
-function CleanGet($key, $tdefault="", $reportmissing=true)
+function CleanGet($key, $tdefault = "", $reportmissing = true)
 {
     $post=$GLOBALS["AG"]["clean"];
     if (!isset($post[$key])) {
@@ -195,13 +195,13 @@ function CleanGet($key, $tdefault="", $reportmissing=true)
 // HTML Generation
 // ==================================================================
 /* DEPRECATED */
-function regHidden($varname, $val='')
+function regHidden($varname, $val = '')
 {
     arrDefault($GLOBALS['AG'], 'hidden', array());
     $GLOBALS['AG']['hidden'][$varname]=$val;
 }
 /* DEPRECATED */
-function regHiddenRepeat($varname, $default='')
+function regHiddenRepeat($varname, $default = '')
 {
     $val=cleanGet($varname, $default, false);
     regHidden($varname, $default);
@@ -242,7 +242,7 @@ function HTMLE_IMG_INLINE($src)
 }
 
 /* DEPRECATED */
-function hImgFromBytes($table_id, $column_id, $skey, $bytes, $decode=true)
+function hImgFromBytes($table_id, $column_id, $skey, $bytes, $decode = true)
 {
     $x=$bytes;  //annoying compile error
     $x=$decode;
@@ -279,12 +279,12 @@ function hLinkPost($caption, $var, $val)
 }
 
 /* DEPRECATED */
-function hLinkArray($caption, $parms, $target='', $class='')
+function hLinkArray($caption, $parms, $target = '', $class = '')
 {
     return HTMLE_A_Array($caption, $parms, $target, $class);
 }
 /* DEPRECATED */
-function HTMLE_A_ARRAY($caption, $parms, $target="", $class="")
+function HTMLE_A_ARRAY($caption, $parms, $target = "", $class = "")
 {
     if ($target) {
         $target=' target="'.$target.'" ';
@@ -293,7 +293,7 @@ function HTMLE_A_ARRAY($caption, $parms, $target="", $class="")
         $class =' class="'.$class.'" ';
     }
     $parmlist = "";
-    foreach ($parms as $var=>$value) {
+    foreach ($parms as $var => $value) {
         if ($parmlist<>"") {
             $parmlist.="&";
         }
@@ -318,7 +318,7 @@ function HTMLE_A_JSSubmit()
     return HTMLE_A_JS("formSubmit()", "Save Changes");
 }
 /* DEPRECATED */
-function HTMLE_A_JS($href, $content, $class="")
+function HTMLE_A_JS($href, $content, $class = "")
 {
     if ($href) {
         $href='href="javascript:'.$href.'"';
@@ -332,7 +332,7 @@ function HTMLE_A_JS($href, $content, $class="")
 function HTMLE_A_POPUP($caption, $parms)
 {
     $parmlist = "";
-    foreach ($parms as $var=>$value) {
+    foreach ($parms as $var => $value) {
         $parmlist.=ListDelim($parmlist, "&").$var."=".urlencode($value);
     }
     return
@@ -354,7 +354,7 @@ function HTMLE_A_IMG($href, $stub, $alt)
 }
 
 /* DEPRECATED */
-function HTMLE_A_STD($caption, $page, $parms="", $target="")
+function HTMLE_A_STD($caption, $page, $parms = "", $target = "")
 {
     if ($parms) {
         $parms = "&".$parms;
@@ -411,7 +411,7 @@ function HTML_TEXTDATE($date)
    was to have a lot of more specific hTable routines, these
    are named hTable_Method*
  */
-function ehTBodyFromRows(&$rows, $columns=array(), $options=array())
+function ehTBodyFromRows(&$rows, $columns = array(), $options = array())
 {
     // For alternating dark/lite
     $flag_alt=false;
@@ -440,7 +440,7 @@ function ehTBodyFromRows(&$rows, $columns=array(), $options=array())
     }
 
     // Now flesh out various defaults, set hidden vars
-    foreach ($columns as $colname=>$colopts) {
+    foreach ($columns as $colname => $colopts) {
         if (isset($colopts['cpage']) && !isset($colopts['ccol'])) {
             $columns[$colname]['ccol']='skey';
         }
@@ -453,7 +453,7 @@ function ehTBodyFromRows(&$rows, $columns=array(), $options=array())
     $makehidden='';
     foreach ($rows as $row) {
         echo "<tr>";
-        foreach ($columns as $colname=>$colopts) {
+        foreach ($columns as $colname => $colopts) {
             $value=$row[$colname];
             if (isset($colopts['cpage'])) {
                 $pg  =$colopts['cpage'];
@@ -510,7 +510,7 @@ function HTMLX_Notices()
 }
 
 /* DEPRECATED */
-function ADMIN_LOG($code, $session="", $text="")
+function ADMIN_LOG($code, $session = "", $text = "")
 {
     $code=$session=$text='';
     return;
@@ -562,7 +562,7 @@ function ADMIN_SESSIONID($ts)
 }
 
 /* DEPRECATED */
-function G($branch="", $varname=null, $val=null)
+function G($branch = "", $varname = null, $val = null)
 {
     $branch = strtolower($branch);
     if (is_null($val)) {
@@ -575,7 +575,7 @@ function G($branch="", $varname=null, $val=null)
     } else {
         // In this branch we SET the values
         if (is_array($varname)) {
-            foreach ($varname as $key=>$value) {
+            foreach ($varname as $key => $value) {
                 $GLOBALS["AG"]["hidden"][$key] = $value;
             }
         } else {
@@ -606,7 +606,7 @@ function Hidden_make($varname)
   * of the context.
   */
 /* DEPRECATED */
-function HiddenRepeat($var, $default='')
+function HiddenRepeat($var, $default = '')
 {
     $retval = CleanGet($var, $default, false);
     hidden($var, $retval);
@@ -692,7 +692,7 @@ function ElementInit($type)
 {
     $GLOBALS["AG"][$type]=array();
 }
-function ElementReturn($type, $default=array())
+function ElementReturn($type, $default = array())
 {
     global $AG;
     if (!isset($AG[$type])) {
@@ -713,7 +713,7 @@ function Element($type)
         return false;
     }
 }
-function ElementImplode($type, $implode="\n")
+function ElementImplode($type, $implode = "\n")
 {
     if (!isset($GLOBALS['AG'][$type])) {
         return '';
@@ -721,7 +721,7 @@ function ElementImplode($type, $implode="\n")
         return implode($implode, $GLOBALS['AG'][$type]);
     }
 }
-function ElementOut($type, $dohtml=false)
+function ElementOut($type, $dohtml = false)
 {
     global $AG;
 

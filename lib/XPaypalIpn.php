@@ -19,7 +19,7 @@
  * ---------------------------------------------------------------
  *
  */
-class x_paypalipn extends x_table2
+class XPaypalIpn extends XTable2
 {
     public function main()
     {

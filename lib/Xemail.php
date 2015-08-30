@@ -34,7 +34,7 @@
     Feb 16 2005  Created, outlined, drafted
    ================================================================== 
 */
-class x_table_x_email extends x_table2
+class Xtablexemail extends Xtable2
 {
     public function main()
     {
@@ -64,7 +64,7 @@ class x_table_x_email extends x_table2
 
         // In this little trick we set "uino" to all of the columns
         // except the ones we are setting.
-        foreach ($table["flat"] as $colname=>$colinfo) {
+        foreach ($table["flat"] as $colname => $colinfo) {
             if ($colname=="email_to" || $colname=="email_subject" || $colname=="email_message") {
                 continue;
             }
@@ -134,7 +134,7 @@ function X_EMAIL_SEND($em)
             $headers['To']      = $em["email_to"];
             $headers['Subject'] = $em["email_subject"];
             $headers['Date']    = date("D, j M Y H:i:s O", time());
-            foreach ($em['headers'] as $hname=>$hval) {
+            foreach ($em['headers'] as $hname => $hval) {
                 $headers[$hname] = $hval;
             }
             $body = $em["email_message"];

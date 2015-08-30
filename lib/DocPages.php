@@ -1,5 +1,5 @@
 <?php
-class docpages extends x_table2
+class DocPages extends XTable2
 {
     // Overrideable.  Override this method for your own layout
     public function ehBoxesHTML($mode)

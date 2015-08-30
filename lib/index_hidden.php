@@ -20,7 +20,7 @@
    Boston, MA  02110-1301  USA
    or visit http://www.gnu.org/licenses/gpl.html
 \* ================================================================== */
-/**
+/*
 name:index_hidden.php
 
 This is the hidden part of the two-file universal dispatch system.
@@ -29,8 +29,8 @@ passes execution to this file.
 
 INVENTORY OF framework gp variables:
 
- * gp_page     means "classic" x_table2 page processing; the default action
- * x4Page      page processing through x4 instead of x_table2
+ * gp_page     means "classic" Xtable2 page processing; the default action
+ * x4Page      page processing through x4 instead of Xtable2
  * x4Action    server-side x4 method to invoke in class x4Page
  * st2logout   command to logout
  * st2login    command to login
@@ -88,14 +88,14 @@ $AG['clean']['gp_page'] = '';
 $AG['clean']['gp_action'] = '';
 $AG['clean'] = array_merge($AG['clean'], $_POST, $_GET);
 if (ini_get('magic_quotes_gpc')) {
-    foreach ($AG['clean'] as $var=>$value) {
+    foreach ($AG['clean'] as $var => $value) {
         if ($var=='gpContext') {
             continue;
         }
         if (!is_array($value)) {
             $AG['clean'][$var]=stripslashes($value);
         } else {
-            foreach ($value as $key=>$subval) {
+            foreach ($value as $key => $subval) {
                 $AG['clean'][$var][$key] = stripslashes($subval);
             }
         }
@@ -104,7 +104,7 @@ if (ini_get('magic_quotes_gpc')) {
 
 // >>>
 // >>> Restore the context (taken from g/p variables)
-// >>> Used only in "classic" x_table2 page handling, not in x4
+// >>> Used only in "classic" Xtable2 page handling, not in x4
 // >>>
 if (!isset($AG['clean']['gpContext'])) {
     $AG['clean']['gpContext']=array();
@@ -153,7 +153,7 @@ if (file_exists($x)) {
   This creates a global variable so that the plugin manager
   is accessible throughout the application
 */
-require_once 'vendor/andro/andromeda/lib/AndroPluginManager.php';
+
 $GLOBALS['AG']['plugins'] = new AndroPluginManager();
 
 // ==================================================================
@@ -503,8 +503,13 @@ if (gp('ajxFETCH')   =='1') {
     index_hidden_ajaxsql();
 } elseif ($x6page           <>'') {
     index_hidden_x6Dispatch(
-    $x6page, $x6file, $x6yaml, $x6profile, $x6plugin, $x6action
-);
+        $x6page,
+        $x6file,
+        $x6yaml,
+        $x6profile,
+        $x6plugin,
+        $x6action
+    );
 } elseif (gp('x4Page')      <>'') {
     index_hidden_x4Dispatch();
 } else {
@@ -522,7 +527,12 @@ return;
 // >> index_hidden_x6Dispatch
 // ------------------------------------------------------------------
 function index_hidden_x6Dispatch(
-    $x6page, $x6file, $x6yaml, $x6profile, $x6plugin, $x6action
+    $x6page,
+    $x6file,
+    $x6yaml,
+    $x6profile,
+    $x6plugin,
+    $x6action
 ) {
     // This is everything that *might* go back, make a place
     // for all of it
@@ -537,7 +547,7 @@ function index_hidden_x6Dispatch(
     vgfSet('x6', true);
 
     // KFD 12/10/08, allow dynamic lookups.
-    // 
+    //
     if (gp('x6select', false)) {
         $table_id = gp('x6page');
         $gpletters= gp('gpletters');
@@ -545,9 +555,9 @@ function index_hidden_x6Dispatch(
         $matches  = aFromGp('mtch_');
 
         $rows=RowsForSelect($table_id, $gpletters, $matches, '', true);
-        foreach ($rows as $idx=>$row) {
+        foreach ($rows as $idx => $row) {
             unset($rows[$idx]['skey']);
-            foreach ($row as $col=>$val) {
+            foreach ($row as $col => $val) {
                 if ($col<>'skey') {
                     $rows[$idx][$col] = trim($val);
                 }
@@ -565,7 +575,7 @@ function index_hidden_x6Dispatch(
     // This little bit of magic loads up the CSS information
     // for the current template and skin, allowing downstream
     // code to determine how much space they have to work with
-    // 
+    //
     $x6skin = arr($_COOKIE, 'x6skin', 'Default.Gray.1024');
     setCookie('x6skin', $x6skin);
     if ($x6skin!='') {
@@ -579,7 +589,7 @@ function index_hidden_x6Dispatch(
 
     // If they have already defined MPPages in applib, we will
     // pick it up here with this global declaration.
-    // 
+    //
     // MPPages lists pages that may be accessed w/o login
     global $MPPages;
     if (!is_array($MPPages)) {
@@ -680,7 +690,7 @@ function index_hidden_x6Dispatch(
     // is x6main, this means an unprogrammed page: there is
     // no custom program file and no profile in the yaml.
     // So we default to the conventional profile.
-    // 
+    //
     // KFD 2/17/09 Sourceforge 2546056
     // This means that bad page requests go to
     // profile_conventional(), so that is where
@@ -717,7 +727,7 @@ function index_hidden_x6Dispatch(
     // hold variables, they should go automatically
     if (gp('json')<>1) {
         if (isset($obj->hld)) {
-            foreach ($obj->hld as $name=>$value) {
+            foreach ($obj->hld as $name => $value) {
                 // KFD 3/20/09 Sourceforge 2697962
                 // Put out as hidden instead
                 hidden('hld_'.$name, $value);
@@ -827,7 +837,7 @@ function index_hidden_x4Dispatch()
 
     // If they are not logged in, or have timed out,
     // send a redirection command to the login page
-    // 
+    //
     if (!LoggedIn()) {
         if (gpExists('json')) {
             x4Script("window.location='index.php?gp_page=x_login'");
@@ -885,7 +895,7 @@ function index_hidden_x4Dispatch()
     } else {
         // Tell the client-side library to initialize the
         // 'inert' HTML that it received from us.
-        // 
+        //
         x4Script("x4.main()");
 
         // Don't need a form in x4 mode
@@ -930,18 +940,22 @@ function index_hidden_x4DB()
     // are four library routines we might call.
     $ra=$r1=false;
     switch (gp('db')) {
-    case 'del'   : x4sqlDel($table, $whr);
-        break;
-    case 'sel'   : x4sqlSel($table, $whr);
-        break;
-    case 'ins'   : x4sqlIns($table, $row, $rr);
-        break;
-    case 'upd'   : x4sqlUpd($table, $row, $whr, $rr);
-        break;
+        case 'del':
+            x4sqlDel($table, $whr);
+            break;
+        case 'sel':
+            x4sqlSel($table, $whr);
+            break;
+        case 'ins':
+            x4sqlIns($table, $row, $rr);
+            break;
+        case 'upd':
+            x4sqlUpd($table, $row, $whr, $rr);
+            break;
     }
 }
 
-function x4sqlIns($table, $row, $rowret=0)
+function x4sqlIns($table, $row, $rowret = 0)
 {
     $skey = SQLX_Insert($table, $row);
     if ($rowret) {
@@ -953,7 +967,7 @@ function x4sqlDel($table, $whr)
 {
     $view = ddView($table);
     $awhere = array();
-    foreach ($whr as $key=>$value) {
+    foreach ($whr as $key => $value) {
         $awhere[] = "$key = $value";
     }
     $swhere = implode(' AND ', $awhere);
@@ -1056,7 +1070,7 @@ function index_hidden_command()
     // Now run through the list of pages looking for the first match, but
     // look at the aliases first if they exist
     $aliases=ArraySafe($GLOBALS, 'COMMAND_ALIASES', array());
-    foreach ($aliases as $alias=>$page) {
+    foreach ($aliases as $alias => $page) {
         if (substr(strtolower($alias), 0, strlen($table_frag))==$table_frag) {
             $table_id = $page;
             break;
@@ -1119,7 +1133,7 @@ function index_hidden_command()
             $cols = explode(',', $dd['projections']['_uisearch']);
             array_shift($cols);    // pop off the first one, assume it is the pk/code
             gpUnsetPrefix('x2t_'); // clear troublesome values
-            foreach ($cols as $i=>$colname) {
+            foreach ($cols as $i => $colname) {
                 if (isset($args[$i])) {
                     gpSet('x2t_'.$colname, $args[$i]);
                 }
@@ -1127,7 +1141,7 @@ function index_hidden_command()
 
             if ($x4) {
                 gpSet('x4Page', $table_id);
-                foreach ($cols as $i=>$colname) {
+                foreach ($cols as $i => $colname) {
                     if (isset($args[$i])) {
                         gpSet('pre_'.$colname, $args[$i]);
                     }
@@ -1166,13 +1180,13 @@ function index_hidden_dropdown()
         ob_start();
         echo "androSelect|";
         echo "<table>";
-        foreach ($rows as $idx=>$row) {
+        foreach ($rows as $idx => $row) {
             $prev = $idx==0                ? '' : $rows[$idx-1]['skey'];
             $next = $idx==(count($rows)-1) ? '' : $rows[$idx+1]['skey'];
             $s = $row['skey'];
             $tds='';
             $x=-1;
-            foreach ($row as $colname=>$colvalue) {
+            foreach ($row as $colname => $colvalue) {
                 $x++;
                 if ($colname=='skey') {
                     continue;
@@ -1234,7 +1248,7 @@ function index_hidden_fetchrow()
 
     // Collapse the values
     $returns=array();
-    foreach ($row as $colname=>$colvalue) {
+    foreach ($row as $colname => $colvalue) {
         if (is_numeric($colname)) {
             continue;
         }
@@ -1295,7 +1309,7 @@ function index_hidden_ajx1ctable()
         }
 
         // Now go through each table, pull the data, and build the returns
-        foreach ($info as $table=>$tabinfo) {
+        foreach ($info as $table => $tabinfo) {
             if (!isset($tabinfo['skey'])) {
                 $returns[]="echo|No skey passed for table $table";
             } else {
@@ -1304,7 +1318,7 @@ function index_hidden_ajx1ctable()
                 $row=SQL_OneRow(
                     "SELECT $cols FROM $table WHERE skey = $sk"
                 );
-                foreach ($tabinfo['columns'] as $index=>$colname) {
+                foreach ($tabinfo['columns'] as $index => $colname) {
                     $returns[]
                         ='_value'
                         .'|'.$tabinfo['controls'][$index]
@@ -1357,7 +1371,7 @@ function index_hidden_ajxFETCH()
     if (count($acols)<>count($avals)) {
         exit;
     }
-    foreach ($acols as $x=>$acol) {
+    foreach ($acols as $x => $acol) {
         $awhere[]
             =str_replace("'", "''", $acol)
             .' = '
@@ -1384,7 +1398,7 @@ function index_hidden_ajxFETCH()
     //$returns[]='echo|'.$sq;
 
     // Build and return the controls
-    foreach ($acontrols as $x=>$acontrol) {
+    foreach ($acontrols as $x => $acontrol) {
         //$returns[]='echo|'.$acontrol;
         //$returns[]='echo|'.$acolumns[$x];
         $cn=$acolumns[$x];
@@ -1429,7 +1443,7 @@ function index_hidden_x6FETCH()
     $tfko = $dd['flat'][$column]['table_id_fko'];
     $cfko = $dd['flat'][$column]['column_id_fko'];
     $cols = array();
-    foreach ($dd['flat'] as $fcol=>$cdetails) {
+    foreach ($dd['flat'] as $fcol => $cdetails) {
         $arr = array('FETCH','FETCHDEF','DISTRIBUTE');
         if (in_array($cdetails['automation_id'], $arr)) {
             if ($cdetails['auto_table_id']==$tfko) {
@@ -1443,11 +1457,12 @@ function index_hidden_x6FETCH()
     $sql="Select ".implode(',', $cols)
         ." FROM $tfko WHERE $cfko = ".SQLFC($colvalue);
     $row = SQL_OneRow($sql);
-    foreach ($cols as $fcol=>$srccol) {
+    foreach ($cols as $fcol => $srccol) {
         $type = $dd['flat'][$fcol]['formshort'];
         if ($type=='date') {
             x6html(
-                "x6inp_{$table_id}_$fcol", date("Y-m-d", dEnsureTs($row[$srccol]))
+                "x6inp_{$table_id}_$fcol",
+                date("Y-m-d", dEnsureTs($row[$srccol]))
             );
         } else {
             x6html("x6inp_{$table_id}_$fcol", $row[$srccol]);
@@ -1475,25 +1490,25 @@ function index_hidden_sql()
 function index_hidden_ajaxsql()
 {
     switch (gp('gp_ajaxsql')) {
-    case 'update':
-        $row=aFromgp('txt_');
-        foreach ($row as $key=>$value) {
-            if ($value=='b:true') {
-                $row[$key]='Y';
+        case 'update':
+            $row=aFromgp('txt_');
+            foreach ($row as $key => $value) {
+                if ($value=='b:true') {
+                    $row[$key]='Y';
+                }
+                if ($value=='b:false') {
+                    $row[$key]='N';
+                }
             }
-            if ($value=='b:false') {
-                $row[$key]='N';
-            }
-        }
-        $table_id=gp('gp_table');
-        SQLX_Update($table_id, $row);
-        break;
-    case 'insert':
-        $row=aFromgp('txt_');
-        $table_id=gp('gp_table');
-        // XDB
-        SQLX_Insert($table_id, $row);
-        break;
+            $table_id=gp('gp_table');
+            SQLX_Update($table_id, $row);
+            break;
+        case 'insert':
+            $row=aFromgp('txt_');
+            $table_id=gp('gp_table');
+            // XDB
+            SQLX_Insert($table_id, $row);
+            break;
     }
     if (Errors()) {
         echo 'echo|'.hErrors();
@@ -1810,13 +1825,16 @@ function index_hidden_page()
             // set also by vgaSet() or by gp(gp_out)
             $html_main = vgaGet('html_main')==''? 'html_main' : vgaGet('html_main');
             switch (CleanGet("gp_out", "", false)) {
-            case "print": include "html_print.php";
-                break;
-            case "info" : include "html_info.php";
-                break;
-            case "":      include $html_main.".php";
-                break;
-            default:
+                case "print":
+                    include "html_print.php";
+                    break;
+                case "info":
+                    include "html_info.php";
+                    break;
+                case "":
+                    include $html_main.".php";
+                    break;
+                default:
             }
         }
     }
@@ -1857,7 +1875,6 @@ function index_hidden_template($mode)
             vgfSet('template', 'x6');
         }
     } else {
-
         // this is old x2/x4 mode, begin by obtaining a
         // 'candidate' they may have been set
         $candidate = vgfGet('template');

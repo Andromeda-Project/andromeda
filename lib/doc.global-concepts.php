@@ -1,12 +1,12 @@
 <?php
 // Putting this file into a PHP block gives me 
 // syntax coloring in my editor.  --KFD 4/4/07
-/**
+/*
 name:_default_
 parent:Global Concepts
 */
 
-/**
+/*
 name:Security
 date:May 22, 2007
 
@@ -84,7 +84,7 @@ explicit code:
 !>example:Explicitly requiring re-authentication
 !>php
 <?php
-class special_action extends x_table2 {
+class special_action extends Xtable2 {
    function main() {
       // Special code to give myself a bonus
       $row=array('user_id'=>SessionGet('UID'),'dollars'=>1000);
@@ -99,7 +99,7 @@ class special_action extends x_table2 {
 !<
 */
 
-/**
+/*
 name:Run-Time Error Handling
 date:April 11, 2007
 

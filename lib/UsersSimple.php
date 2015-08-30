@@ -1,5 +1,5 @@
 <?php
-class userssimple extends x_table2
+class UsersSimple extends XTable2
 {
     public function main()
     {
@@ -9,15 +9,20 @@ class userssimple extends x_table2
         
         // The basic idea here is to get all user-group assignments
         // from the old instance, and prompt the user
-        $groups = SQL_AllRows("select * from zdd.groups", 'group_id');
+        $groups = SQL_AllRows(
+            "select * from zdd.groups",
+            'group_id'
+        );
         $groupsx= SQL_AllRows(
-            "Select distinct group_id from usersxgroups", 'group_id'
+            "Select distinct group_id from usersxgroups",
+            'group_id'
         );
         
         $html = html('div');
         $html->h('h1', 'User Migration');
         $html->h(
-            'p', 'Use this program after you have migrated a database
+            'p',
+            'Use this program after you have migrated a database
             from one server to another.  It will create all users and
             put them into the correct groups.'
         );
@@ -32,7 +37,7 @@ class userssimple extends x_table2
         $tr    =$tbody->h('tr');
         $tr->h('Anybody In this Group:');
         $tr->h('Put into this group:');
-        foreach ($groupsx as $groupx=>$x) {
+        foreach ($groupsx as $groupx => $x) {
             $tr = $tbody->h('tr');
             $td = $tr->h('td', $groupx);
             $td = $tr->h('td', '&nbsp;&nbsp;&nbsp;&nbsp;');
@@ -43,7 +48,7 @@ class userssimple extends x_table2
                 $input->hp['style'] = 'border: 0';
             } else {
                 $input = html('select');
-                foreach ($groups as $group=>$x) {
+                foreach ($groups as $group => $x) {
                     $option = $input->h('option', $group);
                     $option->hp['value'] = $group;
                 }
@@ -63,7 +68,8 @@ class userssimple extends x_table2
         
         $html->br(2);
         $p=$html->h(
-            'p', '<b>Please give the program up to five minutes to run.</p>'
+            'p',
+            '<b>Please give the program up to five minutes to run.</p>'
         );
         $p->hp['style'] = 'color: red';
         
@@ -77,7 +83,7 @@ class userssimple extends x_table2
         $graw  = aFromgp('grp_');
         $gsame = array();
         $gchg  = array();
-        foreach ($graw as $from=>$to) {
+        foreach ($graw as $from => $to) {
             if ($from==$to) {
                 $gsame[] = "'$to'";
             } else {
@@ -127,10 +133,10 @@ class userssimple extends x_table2
         echo "<br/>$count users had existing permissions re-established";
         errorsClear();
         
-        // Step 3, for all assignments that change, 
+        // Step 3, for all assignments that change,
         // copy rows in usersxgroups, which also
         // creates the role assignment
-        foreach ($gchg as $from=>$to) {
+        foreach ($gchg as $from => $to) {
             $sql="insert into usersxgroups (user_id,group_id)
                  select user_id,'$to' FROM usersxgroups x
                  where group_id = '$from'
@@ -145,14 +151,14 @@ class userssimple extends x_table2
         echo "<br/>Migrated permissions for ".count($gchg)." groups";
         
         // Step 4, Delete all defunct user-group assignments
-        foreach ($gchg as $from=>$to) {
+        foreach ($gchg as $from => $to) {
             SQL("Delete from usersxgroups where group_id = '$from'");
         }
         echo "<br/>Deleted old user-group rows for ".count($gchg)." groups";
         
         // Step 5, delete all defunct groups
         echo "<br/>Deleted ".count($gchg)." groups from old database";
-        foreach ($gchg as $from=>$to) {
+        foreach ($gchg as $from => $to) {
             SQL("Delete from permxtables where group_id = '$from'");
             SQL("Delete from uimenugroups where group_id = '$from'");
             SQL("Delete from permxmodules where group_id = '$from'");

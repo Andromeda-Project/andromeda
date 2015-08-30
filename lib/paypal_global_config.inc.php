@@ -83,7 +83,7 @@ function curlPost($url, $data)
    
     //build post string
 
-    foreach ($data as $i=>$v) {
+    foreach ($data as $i => $v) {
         $postdata.= $i . "=" . urlencode($v) . "&";
     }
    
@@ -106,7 +106,7 @@ function libCurlPost($url, $data)
     //build post string
 
     $postdata='';
-    foreach ($data as $i=>$v) {
+    foreach ($data as $i => $v) {
         $postdata.= $i . "=" . urlencode($v) . "&";
     }
    
@@ -142,7 +142,7 @@ function fsockPost($url, $data)
     $postdata='';
    
     //build post string
-    foreach ($data as $i=>$v) {
+    foreach ($data as $i => $v) {
         $postdata.= $i . "=" . urlencode($v) . "&";
     }
    
@@ -162,9 +162,7 @@ function fsockPost($url, $data)
     //Error checking
     if (!$fp) {
         echo "$errnum: $errstr";
-    }
-   
-    //Post Data
+    } //Post Data
     else {
         fputs($fp, "POST {$web['path']} HTTP/1.1\r\n");
         fputs($fp, "Host: {$web['host']}\r\n");
@@ -193,18 +191,19 @@ function fsockPost($url, $data)
 function showVariables()
 {
     global $paypal;
-    foreach ($paypal as $ppvarname=>$ppvarval) {
+    foreach ($paypal as $ppvarname => $ppvarval) {
         switch ($ppvarname) {
-        case 'success_url':
-            $val=$paypal['site_url'].$ppvarval;
-            $ppvarname='return';
-            break;
-        case 'image_url':
-        case 'cancel_url':
-        case 'notify_url':
-            $val=$paypal['site_url'].$ppvarval;
-            break;
-        default: $val=$ppvarval;
+            case 'success_url':
+                $val=$paypal['site_url'].$ppvarval;
+                $ppvarname='return';
+                break;
+            case 'image_url':
+            case 'cancel_url':
+            case 'notify_url':
+                $val=$paypal['site_url'].$ppvarval;
+                break;
+            default:
+                $val=$ppvarval;
         }
         echo
          "\n<input type=\"hidden\" "

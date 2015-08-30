@@ -1,5 +1,5 @@
 <?php
-class variables extends x_table2
+class Variables extends XTable2
 {
     public function aLinks_extra($mode)
     {

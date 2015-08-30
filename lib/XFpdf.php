@@ -1,6 +1,6 @@
 <?php
 require_once 'fpdf153/fpdf.php';
-class x_fpdf extends fpdf
+class XFpdf extends fpdf
 {
     public $repType='none';
     public $fontname='Courier';

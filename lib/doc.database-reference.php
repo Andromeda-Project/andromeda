@@ -5,7 +5,7 @@
    ------------------------------------------------------
 \* ------------------------------------------------------ */
 
-/**
+/*
 name:Database Reference
 parent:Documentation
 
@@ -18,12 +18,12 @@ are unique to Andromeda, such as [[table.column.chain]].
 */
 
 /**
-name:_default_
-parent:Database Reference
+ * name:_default_
+ * parent:Database Reference
 */
 
 
-/**
+/*
 name:column
 
 In Andromeda a column is ''defined'' outside of a table and then
@@ -208,10 +208,10 @@ field will actuall occur on the same line.  Given two columns named
 ''alltables''.  A flag which causes the column to automatically be placed
 into all tables in the database.  Obviously should be used with caution!
 The framework defines three columns that have this flag set, being
-[[skey]], [[_agg]], and [[skey_quiet]].
-*/
+[[skey]], [[_agg]], and [[skey_quiet]].*/
 
-/**
+
+/*
 name:dominant
 
 This is a value for the automation_id of a [[column]] 
@@ -255,14 +255,15 @@ table itemsxvendors:
 can be flagged a dominant.
 */
 
+
 /* --------------------------------------------------- *\
    ---------------------------------------------------
    Groups
    ---------------------------------------------------
 \* --------------------------------------------------- */
 
-/**
-name:group
+
+/*name:group
 
 An Andromeda database specification will contain security assignments.
 The security system is based on the idea of assigning rights to groups.
@@ -352,9 +353,7 @@ default group, such as allowing that group SELECT access to some tables,
 you can make assignments to the $LOGIN group.
 */
 
-
-/**
-name:group.module
+/*name:group.module
 
 A group.module definition assigns security priveleges to a group for
 a module.  This definition is nested inside of the [[group]] definition.
@@ -412,7 +411,8 @@ unique module name (module_id) followed by a colon.
    ---------------------------------------------------
 \* --------------------------------------------------- */
 
-/**
+
+/*
 name:module
 
 Andromeda organizes tables into modules.  All tables must belong to a
@@ -461,7 +461,7 @@ A module definition can contain a nested [[module.grup]] definition
 which will assign security priveleges to a group for this module.
 */
 
-/**
+/*
 name:module.group
 
 A module.group definition assigns security priveleges to a group for
@@ -520,7 +520,7 @@ unique group name (group_id) followed by a colon.
    Menu
    ---------------------------------------------------
 \* --------------------------------------------------- */
-/**
+/*
 name:menu
 
 An Andromeda menu by default lists all of the tables in the database,
@@ -545,7 +545,7 @@ menu menu_id:
 !>php:A program file is required for explicit menu entries:
 <?php
 // FILE: application/menu_id.php
-class menu_id extends x_table2 {
+class menu_id extends Xtable2 {
    function main() {
       echo "You have made a custom menu entry!"
    }
@@ -579,7 +579,7 @@ A menu entry can contain a [[menu.group]] security definition which
 specifies the precise security for a group on that menu entry.
 */
 
-/**
+/*
 name:menu:group
 
 Creates a security assignment to a menu entry for a specific group. 
@@ -627,7 +627,7 @@ what people see.
 \* --------------------------------------------------- */
 
 
-/**
+/*
 name:table
 
 The table is of course the heart of the database.  In Andromeda you
@@ -716,7 +716,7 @@ The following objects can be placed within a table:
 */
 
 
-/**
+/*
 name:table.group
 A table.group definition assigns security priveleges to a group for
 a specific table. 
@@ -771,7 +771,7 @@ unique group name (group_id) followed by a colon.
 
 
 
-/**
+/*
 name:table.column
 
 In Andromeda we say that we ''place'' a column into a table.  The column
@@ -957,7 +957,7 @@ table example:
 !<
 */
 
-/**
+/*
 name:table.foreign_key
 
 Andromeda deals with foreign keys differently than most frameworks.  When 
@@ -1060,7 +1060,7 @@ which is to prevent the deletion of a parent table row if there exists
 matching child entries.
 */
 
-/**
+/*
 name:table.group
 
 A table.group definition assigns security priveleges to a group for
@@ -1112,7 +1112,7 @@ unique group name (group_id) followed by a colon.
 */
 
 
-/**
+/*
 name:table.projection
 
 A projection is nothing but a named list of columns, which you can
@@ -1151,7 +1151,7 @@ table employees:An employees table with some projections
 !<
 !>php:Pull the projection at run-time
 <?php
-class employees extends x_table2 {
+class employees extends Xtable2 {
    function main() {
       $dd=dd_tableref('employees');
       $dropdown=$dd['projections']['dropdown'];
@@ -1167,14 +1167,14 @@ employee_id,first_name,last_name
 */
 
 
-/**
+/*
 name:table.projection.column
 
 See [[table.projection]]
 */
 
 
-/**
+/*
 name:table.index
 
 A table.index definition is used to explicitly create indexes and
@@ -1214,13 +1214,13 @@ that is unique within this table, (index_id) followed by a colon.
 constraint.
 */
 
-/**
+/*
 name:table.index.column
 
 See [[table.index]]
 */
 
-/**
+/*
 name:table.upsave
 
 A table.upsave is a very flexible way to write values from a child table
@@ -1315,14 +1315,14 @@ table and have it get the value from a column in the child table.
 to a column in the parent table.
 */
 
-/**
+/*
 name:table.upsave.column
 
 See [[table.upsave]]
 */
 
 
-/**
+/*
 name:table.history
 
 A table.history is a very flexible way to record changes made to
@@ -1465,7 +1465,7 @@ practice is to name tests '00', '01', and so on.
 */
 
 
-/**
+/*
 name:table.column.chain
 
 A table.column.chain is used for two distinct purposes.  It can be used
@@ -1557,7 +1557,7 @@ practice is to name tests '00', '01', and so on.
 ''chain.test.return''.  A [[Chain Return Expression]].  
 */
 
-/**
+/*
 name:Chain Comparison Expression
 
 A Chain Comparison Expression is used in the [[table.chain]], and
@@ -1633,7 +1633,7 @@ the second is a comma-separated list of values, as in
 * <>Not Equal
 */
 
-/**
+/*
 name:Chain Return Expression
 
 A Chain Return Expression is used in the [[table.chain]], and
@@ -1731,7 +1731,7 @@ is number of characters.
    List of elements
    ===============================================
 \* =============================================== */
-/**
+/*
 name:Element Properties
 parent:Database Reference
 
@@ -1740,27 +1740,27 @@ database element with pointers back to their main pages.
 */
    
 
-/**
+/*
 name:_default_
 parent:Element Properties
 */
 
-/**
+/*
 name:alltables
 
 A property of a [[column]].
 */
-/**
+/*
 name:afterins
 
 A property of [[table.upsave]].
 */
-/**
+/*
 name:afterupd
 
 A propety of [[table.upsave]].
 */
-/**
+/*
 name:automation_id
 
 A property of a [[column]] or a [[table.column]].
@@ -1768,171 +1768,171 @@ A property of a [[column]] or a [[table.column]].
 See also [[Automations]].
 */
 
-/**
+/*
 name:auto_formula
 
 A property of a [[column]] or a [[table.column]].
 
 See also [[Automations]].
 */
-/**
+/*
 name:cascade_action
 
 A property of [[table.upsave]].
 */
-/**
+/*
 name:colprec
 
 A property of a [[column]].
 */
 
-/**
+/*
 name:colscale
 
 A property of a [[column]].
 */
-/**
+/*
 name:copysamecols
 
 A property of [[table.upsave]].
 */
-/**
+/*
 name:column_id_flag
 
 A property of [[table.upsave]].
 */
 
-/**
+/*
 name:description
 
 Description is a property of [[column]], [[table.column]], [[table]],
 [[group]], [[module]], and [[table.foreign_key.column]].
 */
 
-/**
+/*
 name:dispsize
 
 A property of a [[column]] or a [[table.column]].
 */
-/**
+/*
 name:flag_reset
 
 A property of [[table.upsave]].
 */
 
-/**
+/*
 name:group_id
 
 A property of [[group]], [[module.group]], [[table.group]].
 */
-/**
+/*
 name:idx_unique
 
 A property of [[table.index]].
 */
-/**
+/*
 name:onlychanged
 
 A property of an [[table.upsave]].
 */
-/**
+/*
 name:permdel
 
 A property of [[group]], [[module.group]], [[group.module]],
 and [[table.group]].
 */
 
-/**
+/*
 name:permins
 
 A property of [[group]], [[module.group]], [[group.module]],
 and [[table.group]].
 */
-/**
+/*
 name:permrole
 
 A Y/N property of a [[group]] that determines if members of the group may
 themselves create new users.
 */
-/**
+/*
 name:permrow
 
 A Y/N property of a [[table.column]] that establishes row-level security
 on that column.
 */
 
-/**
+/*
 name:permsel
 
 A property of [[group]], [[module.group]], [[group.module]],
 and [[table.group]].
 */
-/**
+/*
 name:permupd
 
 A property of [[group]], [[module.group]], [[group.module]],
 and [[table.group]].
 */
-/**
+/*
 name:primary_key
 
 A property of a [[table.column]] and [[table.foreign_key]].
 */
-/**
+/*
 name:pk_change
 
 A property of a [[table.column]].  Does not apply to [[table.foreign_key]].
 */
-/**
+/*
 name:range_from
 
 A property of a [[table.column]].
 */
-/** 
+/*
 name:range_to
 
 A property of a [[table.column]].
 */
-/**
+/*
 name:required
 
 A property of a [[column]] or a [[table.column]].
 */
-/**
+/*
 name:solo
 
 A property of a [[group]].  If Y, members of this group may not be in 
 any other groups.
 */
-/**
+/*
 name:table_id_dest
 
 A property of [[table.upsave]].
 */
-/**
+/*
 name:table_id_row
 
 A property of a [[table.column]] that establishes row-level security.
 */
 
-/**
+/*
 name:uicols
 
 A property of a [[column]] or a [[table.column]], applicable only
 to columns of type 'text', that specifies how many columns should be
 displayed in the HTML TEXTAREA used to edit the value.
 */
-/**
+/*
 name:uino
 
 A property of a [[column]] or a [[table.column]].
 */
-/**
+/*
 name:uiro
 
 A property of a [[column]] or a [[table.column]].
 */
-/**
+/*
 name:uirows
 
 A property of a [[column]] or a [[table.column]], applicable only
@@ -1940,22 +1940,22 @@ to columns of type 'text', that specifies how many rows should be
 displayed in the HTML TEXTAREA used to edit the value.
 */
 
-/**
+/*
 name:uisearch
 
 A property of a [[table.column]] and [[table.foreign_key]].
 */
-/**
+/*
 name:uiwithnext
 
 A property of a [[table.column]].
 */
-/**
+/*
 name:value_max
 
 The maximum allowed value of a [[column]] or [[table.column]].
 */
-/**
+/*
 name:value_min
 
 The minimum allowed value of a [[column]] or [[table.column]].

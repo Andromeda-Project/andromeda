@@ -19,7 +19,7 @@
    Boston, MA  02110-1301  USA 
    or visit http://www.gnu.org/licenses/gpl.html
 \* ================================================================== */
-class x_table_x_emailblast extends x_table
+class Xtablexemailblast extends XTable
 {
     public function main()
     {
@@ -44,7 +44,7 @@ class x_table_x_emailblast extends x_table
         $a_skeys = ContextGet("tables_".$obj->table_id."_skeys", array());
         $l_skeys = implode(',', $a_skeys);
 
-        // get this little detail taken care of 
+        // get this little detail taken care of
         //
         $this->PageSubtitle = 'Email blast to '.$obj->table['description'];
         
@@ -80,18 +80,18 @@ class x_table_x_emailblast extends x_table
         
         
         // Now that we have the results, decide whether we
-        // are sending out the email or 
+        // are sending out the email or
         if ($okToSend) {
-            $this->EmailBlast($rows, $a_skeys, $EmailColumn, $aDisplayColumns);
+            $this->emailBlast($rows, $a_skeys, $EmailColumn, $aDisplayColumns);
         } else {
-            $this->EmailHTML($rows, $a_skeys, $aDisplayColumns);
+            $this->emailHTML($rows, $a_skeys, $aDisplayColumns);
         }
     }
     
     // -----------------------------------------------------------------
     // Display options for blasting the email
     // -----------------------------------------------------------------
-    public function EmailHTML(&$rows, &$a_skeys, $aDisplayColumns)
+    public function emailHTML(&$rows, &$a_skeys, $aDisplayColumns)
     {
         ?>
      <h2>Email Blast</h2>
@@ -152,7 +152,7 @@ class x_table_x_emailblast extends x_table
 
     }
     
-    public function EmailBlast(&$rows, &$a_skeys, $EmailColumn, $aDispCols)
+    public function emailBlast(&$rows, &$a_skeys, $EmailColumn, $aDispCols)
     {
         $subject = trim(CleanGet('txt_subject'));
         $email_text=trim(CleanGet('txt_email'));

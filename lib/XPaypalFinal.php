@@ -1,5 +1,5 @@
 <?php
-class x_paypalfinal extends x_table2
+class XPaypalFinal extends XTable2
 {
     public function main()
     {

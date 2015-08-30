@@ -2,7 +2,7 @@
 //
 // PURPOSE: Special page that just handles logins
 //
-class x_login extends x_table2
+class XLogin extends XTable2
 {
     public $PageSubtitle = "Some kind of login title";
     public $pmenu = array();
@@ -21,7 +21,7 @@ class x_login extends x_table2
 
         // Send these out so they are available after successful login
         $gpz=aFromGp('gpz_');
-        foreach ($gpz as $var=>$val) {
+        foreach ($gpz as $var => $val) {
             hidden('gpz_'.$var, $val);
         }
 
@@ -33,11 +33,10 @@ class x_login extends x_table2
             ? 'x_password.phtml'
             : 'index.php?gp_page=x_password';
 
-        /**
+        /*
         name:Replace Login Form
-
         You can replace the default login form by putting a file named
-        "x_login_form.inc.html" into the [[Application Directory]].  
+        "x_login_form.inc.html" into the [[Application Directory]]. 
          */
         if (File_exists_incpath('x_login_form.inc.html')) {
             if (vgaGet('html_main')<>('html_skin_tc')) {

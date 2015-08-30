@@ -19,7 +19,7 @@
    Boston, MA  02110-1301  USA 
    or visit http://www.gnu.org/licenses/gpl.html
 \* ================================================================== */
-class x_password extends x_table2
+class XPassword extends XTable2
 {
     public function main()
     {

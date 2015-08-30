@@ -1,5 +1,5 @@
 <?php
-class x_welcome extends x_table2
+class XWelcome extends XTable2
 {
     public function main()
     {

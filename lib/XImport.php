@@ -1,5 +1,5 @@
 <?php
-class x_import extends x_table2
+class XImport extends XTable2
 {
     public function main()
     {
@@ -75,10 +75,10 @@ class x_import extends x_table2
       
         // If a file is uploaded we just output the div and then call
         // back for the content
-        // On this branch we       
-        // - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+        // On this branch we
+        // - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         // BEGIN HTML
-        // - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+        // - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         ?>
        <h1>Table Import</h1>
@@ -95,7 +95,8 @@ class x_import extends x_table2
          columns that will be imported.
        </p>
        <hr />
-        <?php 
+        <?php
+
         if ($fi) {
             ?>
            <div id="xajax"></div>
@@ -106,7 +107,8 @@ class x_import extends x_table2
            </script>
             <?php
             elementAdd(
-                'scriptend', "andrax('?gp_page=x_import&gp_table_id="
+                'scriptend',
+                "andrax('?gp_page=Ximport&gp_table_id="
                 .gp("gp_table_id")."&gp_xajax=1');"
             );
             return;
@@ -167,7 +169,9 @@ class x_import extends x_table2
         // Display a list of maps we may use
         $maps=SQL_AllRows(
             "Select importmap,name_prefix from importmaps
-           where table_id=".SQLFC($tid), 'importmap'
+               where table_id="
+            . SQLFC($tid),
+            'importmap'
         );
         //hprint_r($maps);
         ?>
@@ -236,8 +240,12 @@ class x_import extends x_table2
         // Get current map
         $mapcols=SQL_AllRows(
             "Select column_id,column_id_src FROM importmapcolumns
-           WHERE importmap=".SQLFC(gp('gp_map'))."
-             AND table_id =".SQLFC(gp('gp_table_id')), 'column_id'
+                WHERE importmap=".SQLFC(gp('gp_map'))."
+                AND table_id =".
+            SQLFC(
+                gp('gp_table_id')
+            ),
+            'column_id'
         );
           
         ?>
@@ -309,7 +317,7 @@ class x_import extends x_table2
     }
    
    
-    /**
+    /*
  * **********************************************************
    name:fbProc
    returns:echos HTML
@@ -374,12 +382,17 @@ class x_import extends x_table2
         }
 
         // Retrieve maps
-        $mapcols=SQL_AllRows(
-            "SELECT column_id,COALESCE(column_id_src,'') as src
-            FROM importmapcolumns
-           WHERE table_id=".SQLFC($t['table_id'])."
-             AND importmap=".SQLFC(gp('gp_map')), 'column_id'
-        );
+        $mapcols=
+            SQL_AllRows(
+                "SELECT column_id,COALESCE(column_id_src,'') as src
+                    FROM importmapcolumns
+                    WHERE table_id=".SQLFC($t['table_id'])."
+                    AND importmap=" .
+                SQLFC(
+                    gp('gp_map')
+                ),
+                'column_id'
+            );
         echo "<hr>";
         echo "<h2>Map is as follows: ".gp('gp_map')."</h2>";
         hprint_r($mapcols);
@@ -410,7 +423,7 @@ class x_import extends x_table2
             $row=array_combine($acols, $data);
             // Match the values from the map
             $rowi=array();
-            foreach ($mapcols as $mapcol=>$info) {
+            foreach ($mapcols as $mapcol => $info) {
                 if ($info['src']<>'') {
                     if (isset($row[$info['src']])) {
                         $rowi[$mapcol]=$row[$info['src']];

@@ -23,7 +23,7 @@
 // This is an example of an x_home page.  Place a file like this
 // into your application directory to define the home page.
 //
-class x_table_x_home extends x_table
+class Xtablexhome extends XTable
 {
     public function main()
     {

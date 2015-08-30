@@ -1,5 +1,5 @@
 <?php
-class report_run extends x_table2
+class ReportRun extends XTable2
 {
     // ---------------------------------------------------------------------
     // MAIN
@@ -95,7 +95,7 @@ class report_run extends x_table2
                 $table_par='';
                 foreach ($tables_done as $table_done) {
                     // if we got a match, take care of business
-                    $table_par=$this->ehProcessFromJoins_Match($table, $table_done);
+                    $table_par=$this->ehProcessFromJoinsMatch($table, $table_done);
                     if ($table_par<>'') {
                         $table_chd=$table_par==$table_done ? $table : $table_done;
                         $dd=dd_tableref($table_par);
@@ -118,7 +118,7 @@ class report_run extends x_table2
             }
          
             // This means we failed to join any of the tables to any
-            // other table, so something has gone wrong 
+            // other table, so something has gone wrong
             if ($tabcount==count($tables)) {
                 break;
             }
@@ -126,7 +126,7 @@ class report_run extends x_table2
       
         // Now join them all up and return
         $retval = "\n  FROM $SQL_from ";
-        foreach ($SQL_Joins as $table_id=>$SQL_Join) {
+        foreach ($SQL_Joins as $table_id => $SQL_Join) {
             $retval.="\n  JOIN $table_id ON $SQL_Join";
         }
         return $retval;
@@ -136,7 +136,7 @@ class report_run extends x_table2
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // Examine the tables involved in the query and find join conditions
     // to put them together
-    public function ehProcessFromJoins_Match($table, $table_done)
+    public function ehProcessFromJoinsMatch($table, $table_done)
     {
         // See if these two tables join as either parent or child
         $sq="SELECT COUNT(*) as cnt FROM zdd.tabfky_c 
@@ -184,7 +184,7 @@ class report_run extends x_table2
          : 'html_print';
         vgaSet('html_main', $html_main);
          
-        // Execute the query, but do not retrieve 
+        // Execute the query, but do not retrieve
         $result=SQL($SQ);
       
         // Two counters:  PageNum, and RowNum, the row number
@@ -254,7 +254,7 @@ class report_run extends x_table2
    
     public function ehPDRow($row)
     {
-        foreach ($row as $colname=>$colvalue) {
+        foreach ($row as $colname => $colvalue) {
             echo $colvalue." ";
         }
         echo "\n";

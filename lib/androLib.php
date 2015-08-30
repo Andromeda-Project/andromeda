@@ -78,6 +78,11 @@ function gp($key, $vardefault = '')
     }
 }
 
+function snakeCaseToCamelCase($string)
+{
+    return str_replace(' ', '', ucwords(str_replace('_', ' ', $string)));
+}
+
 /******/
 
 /****f* GET and POST Variables/gpExists
@@ -773,33 +778,31 @@ function DispatchObject($gp_page)
     // Get the One True Class loaded.  All table
     // processing uses it directly or uses a subclass of it
     //
-    //include_once("x_table.php");   // old version
-    //include_once ("x_table2.php");
     // How can there be two "One True" classes?
 
     // Always attempt to load a class for the page, and then
     // look for the named class
     $obj_page = null;
-    $class_page = "x_table_$gp_page";
+    $class_page = "XTable_$gp_page";
     if (class_exists($class_page)) {
-        // case 1, extension of x_table (original)
+        // case 1, extension of XTable (original)
         $obj_page = new $class_page();
         $obj_page->table_id = $gp_page;
         $obj_page->x_table_DDLoad();
     } elseif (class_exists($gp_page)) {
-        // case 2, extension of x_table2 (new way to do it)
+        // case 2, extension of Xtable2 (new way to do it)
         $obj_page = new $gp_page();
     }
 
     // if no object found, must make a default
     if (is_null($obj_page)) {
-        $default = vgaGet('x_table', 'x_table2');
-        if ($default == 'x_table') {
-            $obj_page = new x_table();
+        $default = vgaGet('XTable', 'XTable2');
+        if ($default == 'XTable') {
+            $obj_page = new XTable();
             $obj_page->table_id = $gp_page;
             $obj_page->x_table_DDLoad();
         } else {
-            $obj_page = new x_table2($gp_page);
+            $obj_page = new XTable2($gp_page);
         }
     }
     return $obj_page;
@@ -3289,6 +3292,7 @@ function _scStackInit($stackname)
     if (!isset($GLOBALS['STACK'])) {
         $GLOBALS['STACK'] = array();
     }
+
     if (!isset($GLOBALS['STACK'][$stackname])) {
         $GLOBALS['STACK'][$stackname] = array();
     }
@@ -4187,7 +4191,7 @@ function createElement($type)
 //        there is going to be a database write.
 //
 //  ehstd Standard content routines, spit out hiddens etc.
-//          Most likely move into x_table2 or the whole rendering
+//          Most likely move into Xtable2 or the whole rendering
 //          thing, and only when necessary.  This means as well the
 //          entire template decision stuff can be taken out of
 //          index_hidden and moved into there.
@@ -6286,7 +6290,7 @@ function hMonthWords($month)
  * This is the grand-daddy function that must be in every template.
  *
  * During normal processing, control always passes to some instance of
- * [[x_table2]].  That object always echos HTML directly.  However, that
+ * [[Xtable2]].  That object always echos HTML directly.  However, that
  * HTML is being buffered and is captured and saved.  This function
  * re-echos that HTML directly, plus it outputs all hidden variables
  * and various other essential goodies.
@@ -6614,6 +6618,7 @@ function ehFWLogin($class = 'login', $id = '', $username = '')
 function ehLoginHorizontal()
 {
     if (!LoggedIn()) {
+
         ?>
         <form action="?gp_page=x_login&gp_posted=1" method="post" style="display:inline">
             UserID:  <input type="text"     size=10 name="loginUID" />
@@ -6823,7 +6828,7 @@ function httpWebSite()
          * method, as in the example below.
          *
          * <?php
-         * class sendfile extends x_table2 {
+         * class sendfile extends Xtable2 {
          *   function custom_construct() {
          *   $this->flag_buffer=false;
          * }
@@ -7116,10 +7121,10 @@ function PushToLogin()
  * then that class is instantiated.
  *
  * If there is no file by the name of Page_Name, then an instance of
- * [[x_table2]] is instantiated and initialized for table Page_Name.
+ * [[Xtable2]] is instantiated and initialized for table Page_Name.
  *
  * If there is no table named Page_Name, an uninitialized instance of
- * [[x_table2]] is returned.
+ * [[Xtable2]] is returned.
  *
  * INPUTS
  * string $gp_page Page Name
@@ -9391,7 +9396,7 @@ function processPost()
     // Unless AddControl() was used to build controls, gpControls will
     // be blank and this is not called.
     //
-    // AS OF 5/10/06, these are not regularly used in x_table2
+    // AS OF 5/10/06, these are not regularly used in Xtable2
     //
     if (gp('gpControls', '') <> '') {
         $data = processPost_Database();
@@ -9401,7 +9406,7 @@ function processPost()
     // Database deletions, form: gp_delskey_<table>=<skey_value>
     //
     // AS OF 5/29/07, revived for Ajax_x3 initiative
-    // AS OF 5/10/06, these are not regularly used in x_table2
+    // AS OF 5/10/06, these are not regularly used in Xtable2
     //
     $dels = aFromGP("gp_delskey_");
     foreach ($dels as $table_id => $skey) {
