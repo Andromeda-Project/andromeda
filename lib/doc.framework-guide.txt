@@ -224,7 +224,7 @@ page that will be returned is specified by the [[GET-POST Variable]]
 Any page that you create will at bare minimum look like this:
 
 <div class="box-php">
-class example_page extends x_table2 {
+class example_page extends Xtable2 {
    function main() {
       // All code goes here.
    }
@@ -441,20 +441,20 @@ name:Modify A Table Page
 Every table in an Andromeda database has a "page" that can be used to
 directly access the data in the table.  We put the word "page" in quotes
 because there is not actually a file on disk for each of these pages, they
-are more like virtual pages that are handled by the file [[x_table2.php]].
+are more like virtual pages that are handled by the file [[Xtable2.php]].
 Andromeda does not  need to have a file on disk for each table because
-[[x_table2.php]] uses the data dictionary to lay out the HTML for each 
+[[Xtable2.php]] uses the data dictionary to lay out the HTML for each 
 table.
 
 If you want to modify the default behavior of a Table Page in any
 way, including providing a completely new look for it, you must begin
 by putting a file into the [[application directory]].  It will contain
-a class that has the same name as the table, which extends x_table2.  The
+a class that has the same name as the table, which extends Xtable2.  The
 file itself will have the same name as the table.  All file names and
 class names should be in lower case.
 
 <div class="box-php">
-class customers extends x_table2 {
+class customers extends Xtable2 {
    function custom_construct() {
       // put customized construct information here
    }
@@ -473,7 +473,7 @@ to go into the ITEMS table to add, modify and delete items.
 The following code will accomplish this:
 
 <div class="box-php">
-class items extends x_table2 {
+class items extends Xtable2 {
    function main() {
       if(vgaGet('admin',false)==true) {
          // use default Andromeda table maintenance interface
@@ -496,10 +496,10 @@ directly associated with a table.
 
 First, create a file in your [[application directory]] that has the same
 name as the page.  Have it contain a class that has the same name as your
-page that extends x_table2, like so:
+page that extends Xtable2, like so:
 
 <div class="box-php">
-class not_a_table_page extends x_table2 {
+class not_a_table_page extends Xtable2 {
    function main() {
       // this is where it all happens
    }
@@ -600,7 +600,7 @@ name:Forms And The Database
 
 The Andromeda default interface provides browse lists and input forms for
 displaying data that comes from a database.  All of the code that does this
-is in [[x_table2.php]] or [[raxlib.php]], and you can use the same code
+is in [[Xtable2.php]] or [[raxlib.php]], and you can use the same code
 on specialty pages to do similar effects.
 
 For instance, consider the case where you wish to display a user's 
@@ -608,7 +608,7 @@ profile information on a form, using boxes that are appropriate to the
 size, type, and so forth of the data.  This will do the trick:
 
 <div class="box-php">
-class users extends x_table2 {
+class users extends Xtable2 {
    
    function main() {
       $uid=SessionGet('UID');
@@ -636,7 +636,7 @@ name:Wizards and Multi-Stage Processing
 
 In many systems, the word "page" is likely to refer to a single PHP or
 even HTML file on a web server.  In Andromeda when we say "page" we
-actually mean class, specifically a class that extends [[x_table2]].
+actually mean class, specifically a class that extends [[Xtable2]].
 
 In the systems written by SDS that use Andromeda, we tend to put 
 more than one "page" into a single class.  In particular this is done for
@@ -649,7 +649,7 @@ be handled.  We always develop these with both sets of code in one class.
 Here is an example file that shows how to do this complete cycle:
 
 <div class="box-php">
-class register extends x_table2 {
+class register extends Xtable2 {
    function main() {
       // Pull the GET-POST variable gp_posted to see if they posted
       $continue=true;
