@@ -166,7 +166,9 @@ include('androHTMLHead.php');
 					}
 				} 
 				echo '<div class=" test span' .($left === false ? '12' : '9')  .'" style="padding-bottom:15px;">';
-
+				if (!isset($commands)) {
+					$commands = '';
+				}
 				echo str_replace( '--COMMANDS--', $commands, mosMainBody() );
 				echo '</div>';
 			?>

@@ -917,7 +917,7 @@ function html($tag, &$parent = null, $innerHTML = '', $class = '') {
         return $retval;
     }
     
-    $retval = & new androHtml();
+    $retval = new androHtml();
     $retval->setHtml($innerHTML);
     if (!empty($class)) {
         $retval->addClass($class);
@@ -953,7 +953,7 @@ function html($tag, &$parent = null, $innerHTML = '', $class = '') {
  * androHtml DIV object with a title built in and having class "fadeIn".
  ******
 */
-function &htmlMacroTop($page, $center = false) {
+function htmlMacroTop($page, $center = false) {
     $retval = html('div');
     $retval->addClass('fadein');
     $h1 = $retval->h('h1', ddPageDescription($page));
@@ -995,7 +995,7 @@ function &htmlMacroTop($page, $center = false) {
 */
 
 /*
-function &htmlMacroGridWithData($dd,$cols,$rows) {
+function htmlMacroGridWithData($dd,$cols,$rows) {
     # Make sure the list of columns is an array
     if(!is_array($cols)) {
         $cols = explode(',',$cols);   
@@ -1213,7 +1213,7 @@ class androHtml
      *
      ******
     */
-    function setHtml($value) {
+    public function setHtml($value) {
         $this->innerHtml = $value;
     }
     
@@ -1235,7 +1235,7 @@ class androHtml
      *
      ******
     */
-    function getHtml() {
+    public function getHtml() {
         return $this->innerHtml;
     }
     
@@ -1249,12 +1249,11 @@ class androHtml
      *
      * SOURCE
     */
-    function clear() {
+    public function clear() {
         $this->innerHtml = '';
         $this->children = array();
     }
-    
-    /******/
+
     
     /****m* androHtml/clearHP
      *
@@ -1266,11 +1265,10 @@ class androHtml
      *
      * SOURCE
     */
-    function clearHP() {
+    public function clearHP() {
         $this->hp = array();
     }
-    
-    /******/
+
     
     /****m* androHtml/clearAP
      *
@@ -1282,11 +1280,10 @@ class androHtml
      *
      * SOURCE
     */
-    function clearAP() {
+    public function clearAP() {
         $this->ap = array();
     }
-    
-    /******/
+
     
     /****m* androHtml/addClass
      *
@@ -1301,7 +1298,7 @@ class androHtml
      *
      * SOURCE
     */
-    function addClass($value) {
+    public function addClass($value) {
         if (is_array(value)) {
             foreach ($value as $class) {
                 $this->classes[] = $class;
@@ -1310,8 +1307,7 @@ class androHtml
             $this->classes[] = $value;
         }
     }
-    
-    /******/
+
     
     /****m* androHtml/addStyle
      *
@@ -1327,7 +1323,7 @@ class androHtml
      *
      * SOURCE
     */
-    function addStyle($value) {
+    public function addStyle($value) {
         if (substr($value, -1) != ';') $value.= ';';
         if (!isset($this->hp['style'])) {
             $this->hp['style'] = $value;
@@ -1335,8 +1331,7 @@ class androHtml
             $this->hp['style'].= $value;
         }
     }
-    
-    /******/
+
     
     /****m* androHtml/removeClass
      *
@@ -1351,12 +1346,11 @@ class androHtml
      *
      * SOURCE
     */
-    function removeClass($value) {
+    public function removeClass($value) {
         $index = array_search($value, $this->classes);
         if ($index) unset($this->classes[$index]);
     }
-    
-    /******/
+
     
     /****m* androHtml/addChild
      *
@@ -1371,11 +1365,10 @@ class androHtml
      *
      * SOURCE
     */
-    function addChild($object) {
+    public function addChild($object) {
         $this->children[] = $object;
     }
-    
-    /******/
+
     
     /****m* androHtml/html
      *
@@ -1392,13 +1385,12 @@ class androHtml
      * string $class - Css class for the html element.
      * SOURCE
     */
-    function html($tag, $innerHTML = '', $class = '') {
+    public function html($tag, $innerHTML = '', $class = '') {
         $x = html($tag, $this, $innerHTML);
         if ($class <> '') $x->addClass($class);
         return $x;
     }
-    
-    /******/
+
     
     /****m* androHtml/h
      *
@@ -1413,11 +1405,10 @@ class androHtml
      *
      * SOURCE
     */
-    function h($tag, $innerHTML = '', $class = '') {
+    public function h($tag, $innerHTML = '', $class = '') {
         return $this->html($tag, $innerHTML, $class);
     }
-    
-    /******/
+
     
     /****m* androHtml/form
      *
@@ -1438,7 +1429,7 @@ class androHtml
      *
      * SOURCE
     */
-    function &form($name = 'Form1', $method = 'POST', $action = "index.php", $x6page = '') {
+    public function form($name = 'Form1', $method = 'POST', $action = "index.php", $x6page = '') {
         $form = $this->h('form');
         $form->hp['id'] = $name;
         $form->hp['name'] = $name;
@@ -1451,8 +1442,7 @@ class androHtml
         }
         return $form;
     }
-    
-    /******/
+
     
     /****m* androHtml/hidden
      *
@@ -1470,7 +1460,7 @@ class androHtml
      *
      * SOURCE
     */
-    function hidden($name, $value = '') {
+    public function hidden($name, $value = '') {
         $h = $this->h('input');
         $h->hp['type'] = 'hidden';
         $h->hp['id'] = $name;
@@ -1478,11 +1468,10 @@ class androHtml
         $h->hp['value'] = $value;
         return $h;
     }
-    
-    /******/
+
     
     /* DEPRECATED */
-    function detailRow($dd, $column, $options = array()) {
+    public function detailRow($dd, $column, $options = array()) {
         // something we need for b/w compatibility that is
         // easier to declare and ignore than it is to
         // try to get rid of. (Also, getting rid of it will
@@ -1498,8 +1487,7 @@ class androHtml
         $td->setHtml($input->bufferedRender());
         $td->addClass('x4Input');
     }
-    
-    /******/
+
     
     /****m* androHtml/tr
      *
@@ -1516,11 +1504,10 @@ class androHtml
      *
      * SOURCE
     */
-    function tr($innerHTML = '', $class = '') {
+    public function tr($innerHTML = '', $class = '') {
         return $this->html('tr', $innerHTML, $class);
     }
-    
-    /******/
+
     
     /****m* androHtml/td
      *
@@ -1536,13 +1523,12 @@ class androHtml
      *
      * SOURCE
     */
-    function td($innerHTML = '', $class = '') {
+    public function td($innerHTML = '', $class = '') {
         return $this->html('td', $innerHTML, $class);
     }
+
     
-    /******/
-    
-    function a($innerHTML, $href, $class = '') {
+    public function a($innerHTML, $href, $class = '') {
         $a = $this->h('a', $innerHTML, $class);
         $a->hp['href'] = $href;
         return $a;
@@ -1562,13 +1548,12 @@ class androHtml
      *
      * SOURCE
     */
-    function link($href, $innerHTML) {
+    public function link($href, $innerHTML) {
         $a = $this->h('a', $innerHTML);
         $a->hp['href'] = $href;
         return $a;
     }
-    
-    /******/
+
     
     /****m* androHtml/br
      *
@@ -1584,13 +1569,12 @@ class androHtml
      *
      * SOURCE
     */
-    function br($count = 1) {
+    public function br($count = 1) {
         for ($x = 1; $x <= $count; $x++) {
             $this->children[] = '<br/>';
         }
     }
-    
-    /******/
+
     
     /****m* androHtml/hr
      *
@@ -1606,13 +1590,12 @@ class androHtml
      *
      * SOURCE
     */
-    function hr($count = 1) {
+    public function hr($count = 1) {
         for ($x = 1; $x <= $count; $x++) {
             $this->children[] = '<hr/>';
         }
     }
-    
-    /******/
+
     
     /****m* androHtml/nbsp
      *
@@ -1628,13 +1611,12 @@ class androHtml
      *
      * SOURCE
     */
-    function nbsp($count = 1) {
+    public function nbsp($count = 1) {
         for ($x = 1; $x <= $count; $x++) {
             $this->children[] = '&nbsp;';
         }
     }
-    
-    /******/
+
     
     /****m* androHtml/hiddenInputs
      *
@@ -1658,7 +1640,7 @@ class androHtml
      *    reference - reference to the invisible div.
      *
      ******/
-    function &hiddenInputs($x) {
+    public function hiddenInputs($x) {
         // Get a data dictionary
         if (is_array($x)) {
             $dd = $x;
@@ -1679,8 +1661,9 @@ class androHtml
         return $div;
     }
     
-    function addXRefs($table_id, $top, $width, $height) {
+    public function addXRefs($table_id, $top, $width, $height) {
         $child = new androHTMLxrefs($table_id, $top, $width, $height);
+        $child->output();
         $this->addChild($child);
     }
     
@@ -1716,10 +1699,10 @@ class androHtml
      *
      ******/
     // overrides default addButtonbar
-    function bbHeight() {
+    public function bbHeight() {
         return x6cssHeight('div.x6buttonBar a.button');
     }
-    function addButtonBar($list = 'new,save,cancel,delete') {
+    public function addButtonBar($list = 'new,save,cancel,delete') {
         $bbHeight = $this->bbHeight();
         $table_id = $this->hp['x6table'];
         $abuts = explode(',', $list);
@@ -1812,13 +1795,13 @@ class androHtml
         return $bb;
     }
     // overrides default addButtonbar
-    function addCustomButtons($obj) {
+    public function addCustomButtons($obj) {
         if ($obj === false) return;
         
         $this->buttonBar->addChild($obj);
     }
     
-    function &addCustomButton($table, $action, $key, $caption, $permins, $permupd) {
+    public function addCustomButton($table, $action, $key, $caption, $permins, $permupd) {
         $b = $this->h('a-void', $caption);
         $b->addClass('button');
         $b->hp['buttonKey'] = $key;
@@ -1834,7 +1817,7 @@ class androHtml
         return $b;
     }
     
-    function &addButtonBarOld($table_id, $buts = null) {
+    public function addButtonBarOld($table_id, $buts = null) {
         if (is_null($buts)) {
             $buts = 'new,duplicate,save,remove,abandon';
         }
@@ -1905,11 +1888,10 @@ class androHtml
      *
      * SOURCE
     */
-    function autoFormat($setting = true) {
+    public function autoFormat($setting = true) {
         $this->autoFormat = $setting;
     }
-    
-    /******/
+
     
     /****m* androHtml/tabIndex
      *
@@ -1947,7 +1929,7 @@ class androHtml
      *   tabFocus
      *
      ******/
-    function tabIndex($startHere = null) {
+    public function tabIndex($startHere = null) {
         if (!is_null($startHere)) {
             $tabIndex = $startHere;
         } else {
@@ -2004,13 +1986,13 @@ class androHtml
      *
      *
      ******/
-    function tabFocus($startHere = null) {
+    public function tabFocus($startHere = null) {
         $this->tabIndex($startHere);
         $this->hp['x6firstFocus'] = 'Y';
     }
     // KFD BLUNT WEAPON.  This really is meant for very simple
     //                    elements where you just make it scrollable
-    function scrollable($height = '') {
+    public function scrollable($height = '') {
         $this->addStyle('overflow-y: scroll;');
         $this->addStyle("height: $height");
     }
@@ -2028,7 +2010,7 @@ class androHtml
      * array $options - striping options
      *
      ******/
-    function &TbodyRows($rows, $options = array()) {
+    public function TbodyRows($rows, $options = array()) {
         $rowIdPrefix = 'row_';
         $stripe = $stripe1 = $stripe2 = $stripe3 = 0;
         if (a($options, 'stripe', 0) > 0) {
@@ -2080,7 +2062,7 @@ class androHtml
      *   androHtmlTable
      *
      ******/
-    function &addInput($colinfo) {
+    public function addInput($colinfo) {
         $input = input($colinfo);
         $this->addChild($input);
         return $input;
@@ -2102,13 +2084,13 @@ class androHtml
      *   androHtmlTable
      *
      ******/
-    function &addTable() {
+    public function addTable() {
         $newTable = new androHTMLTable();
         $this->addChild($newTable);
         return $newTable;
     }
     
-    function &addTableController($table_id) {
+    public function addTableController($table_id) {
         $retval = new androHTMLTableController($table_id);
         $this->addChild($retval);
         return $retval;
@@ -2138,8 +2120,9 @@ class androHtml
      *   androHtmlTable
      *
      ******/
-    function &addGrid($height, $table_id, $lookups = false, $sortable = false, $bb = false, $edit = false) {
+    public function addGrid($height, $table_id, $lookups = false, $sortable = false, $bb = false, $edit = false) {
         $newTable = new androHTMLGrid($height, $table_id, $lookups, $sortable, $bb, $edit);
+        $newTable->output();
         $this->addChild($newTable);
         
         return $newTable;
@@ -2164,7 +2147,7 @@ class androHtml
      *   androHtmlDetail
      *
      ******/
-    function &addDetail($table_id, $complete = false, $height = 300, $p = '') {
+    public function addDetail($table_id, $complete = false, $height = 300, $p = '') {
         $newDetail = new androHTMLDetail($table_id, $complete, $height, $p);
         $this->addChild($newDetail);
         return $newDetail;
@@ -2186,8 +2169,9 @@ class androHtml
      *   androHtmlTabs
      *
      ******/
-    function &addTabs($id, $height = 500, $options = array()) {
-        $newTabs = new androHTMLTabs($id, $height, $options);
+    public function addTabs($id, $height = 500, $options = array()) {
+        $newTabs = new androHTMLTabs();
+        $newTabs->output($id, $height, $options);
         $this->addChild($newTabs);
         return $newTabs;
     }
@@ -2205,14 +2189,14 @@ class androHtml
      *   androHtmlCheckList
      *
      ******/
-    function &addCheckList() {
+    public function addCheckList() {
         $newTable = new androHTMLCheckList();
         $this->addChild($newTable);
         return $newTable;
     }
     
     /* DEPRECATED */
-    function makeThead($thvalues, $class = 'dark') {
+    public function makeThead($thvalues, $class = 'dark') {
         // Make it an array if it is not already
         if (!is_array($thvalues)) {
             $thvalues = explode(',', $thvalues);
@@ -2226,7 +2210,7 @@ class androHtml
     }
     
     /* DEPRECATED */
-    function addItems($tag, $values) {
+    public function addItems($tag, $values) {
         if (!is_array($values)) {
             $values = explode(',', $values);
         }
@@ -2253,14 +2237,13 @@ class androHtml
      *
      * SOURCE
     */
-    function addOptions($rows, $value, $desc) {
+    public function addOptions($rows, $value, $desc) {
         foreach ($rows as $row) {
             $opt = $this->h('option', $row[$desc]);
             $opt->hp['value'] = $row[$value];
         }
     }
-    
-    /******/
+
     
     /****m* androHtml/setAsParent
      *
@@ -2272,13 +2255,12 @@ class androHtml
      *
      * SOURCE
     */
-    function setAsParent() {
+    public function setAsParent() {
         $this->isParent = true;
     }
-    
-    /******/
+
     // Internal use only
-    function initPlugin() {
+    public function initPlugin() {
         $plugin = $this->hp['x6plugin'];
         $table = $this->hp['x6table'];
         jqDocReady("var plugin = x6.byId('{$this->hp['id']}');");
@@ -2298,7 +2280,7 @@ class androHtml
      *
      * SOURCE
     */
-    function firstChild() {
+    public function firstChild() {
         if (count($this->children) == 0) {
             return null;
         } else {
@@ -2306,8 +2288,7 @@ class androHtml
             return $retval;
         }
     }
-    
-    /******/
+
     
     /****m* androHtml/lastChild
      *
@@ -2322,7 +2303,7 @@ class androHtml
      *
      * SOURCE
     */
-    function lastChild() {
+    public function lastChild() {
         if (count($this->children) == 0) {
             return null;
         } else {
@@ -2330,8 +2311,7 @@ class androHtml
             return $retval;
         }
     }
-    
-    /******/
+
     
     /****m* androHtml/print_r
      *
@@ -2344,15 +2324,14 @@ class androHtml
      *
      * SOURCE
     */
-    function print_r($value) {
+    public function print_r($value) {
         ob_start();
         print_r($value);
         $pre = $this->h('pre', ob_get_clean());
         $pre->hp['class'] = 'border: 1px solid gray; background-color:white;
             color: black;';
     }
-    
-    /******/
+
     
     /****m* androHtml/bufferedRender
      *
@@ -2365,13 +2344,12 @@ class androHtml
      *
      * SOURCE
     */
-    function bufferedRender($parentId = '', $singleQuotes = false) {
+    public function bufferedRender($parentId = '', $singleQuotes = false) {
         ob_start();
         $this->render($parentId, $singleQuotes);
         return ob_get_clean();
     }
-    
-    /******/
+
     
     /****m* androHtml/render
      *
@@ -2388,7 +2366,7 @@ class androHtml
      * INPUTS
      * string $parentId - parent id for this androHtml object
      ******/
-    function render($parentId = '', $singleQuotes = false, $x6wrapperPane = '') {
+    public function render($parentId = '', $singleQuotes = false, $x6wrapperPane = '') {
         // Accept a parentId, maybe assign one to
         if ($parentId <> '') {
             $this->ap['xParentId'] = $parentId;
@@ -2492,7 +2470,7 @@ class androHtml
 
 class androHTMLTableController extends androHTML
 {
-    function androHTMLTableController($table_id) {
+    public function __construct($table_id) {
         $this->htype = 'div';
         $this->hp['x6plugin'] = 'tableController';
         $this->hp['x6table'] = $table_id;
@@ -2507,7 +2485,7 @@ class androHTMLTableController extends androHTML
         $this->initPlugin();
     }
     
-    function permResolve($perm) {
+    public function permResolve($perm) {
         $tryfirst = ddUserPerm($this->hp['x6table'], $perm);
         $dd = ddTable($this->hp['x6table']);
         $trysecond = arr($dd, 'ui' . $perm, 'Y');
@@ -2579,7 +2557,11 @@ class androHTMLTabs extends androHTML
      ******/
     var $tabs = array();
     
-    function androHTMLTabs($id = '', $height = 500, $options = array()) {
+    public function __construct() {
+        
+    }
+
+    public function output($id = '', $height = 500, $options = array()) {
         // Example HTML from jquery tabs
         /*
         <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
@@ -2669,7 +2651,7 @@ class androHTMLTabs extends androHTML
      *   for the new tab.
      *
      ******/
-    function &addTab($caption, $disable = false) {
+    public function addTab($caption, $disable = false) {
         // Make an index, and add it in.
         $index = $this->ul->hp['id'] . '-' . (count($this->tabs) + 1);
         // Get the offset, if they gave one, for setting
@@ -2739,24 +2721,24 @@ class androHTMLTable extends androHTML
     var $lastRow = false;
     
     var $lastCell = false;
-    
-    function androHTMLTable() {
-        $this->htype = 'table';
+
+    public function __construct() {
+    	$this->htype = 'table';
     }
     
-    function &tbody() {
+    public function tbody() {
         $x = $this->h('tbody');
         $this->bodies[] = $x;
         $this->lastBody = $x;
         return $x;
     }
-    function &thead() {
+    public function thead() {
         $x = $this->h('thead');
         $this->bodies[] = $x;
         $this->lastBody = $x;
         return $x;
     }
-    function &tr() {
+    public function tr($innerHTML = '', $class = '') {
         if (!$this->lastBody) {
             $this->tbody();
         }
@@ -2764,7 +2746,7 @@ class androHTMLTable extends androHTML
         return $this->lastRow;
     }
     
-    function &td($mixed = '', $tag = 'td') {
+    public function td($mixed = '', $tag = 'td') {
         // Turn the input into an array no matter what
         // we were given
         /*
@@ -2802,7 +2784,7 @@ class androHTMLTable extends androHTML
         return $td;
     }
     
-    function &th($mixed = '') {
+    public function th($mixed = '') {
         return $this->td($mixed, 'th');
     }
 }
@@ -2833,8 +2815,11 @@ class androHTMLGrid extends androHTML
     var $rows = array();
     var $buttonBar = false;
     var $colOptions = array();
+
+    public function __construct() {
+    }
     
-    function androHTMLGrid($height = 300, $table, $lookups = false, $sortable = false, $bb = false, $edit = false) {
+    public function output($height = 300, $table, $lookups = false, $sortable = false, $bb = false, $edit = false) {
         $this->lookups = $lookups;
         $this->sortable = $sortable;
         $this->htype = 'div';
@@ -2909,11 +2894,11 @@ class androHTMLGrid extends androHTML
         $this->initPlugin();
     }
     
-    function setColumnOptions($options) {
+    public function setColumnOptions($options) {
         $this->colOptions = $options;
     }
     
-    function inputsRow() {
+    public function inputsRow() {
         $dd = ddTable($this->hp['x6table']);
         // Make an input for each column and build up
         // a string of HTML for these.
@@ -2965,7 +2950,7 @@ class androHTMLGrid extends androHTML
      *   - androHTML, reference to the content area for the new tab
      *
      ******/
-    function addColumn($options) {
+    public function addColumn($options) {
         $column_id = arr($options, 'column_id');
         if ($column_id == '') $column_id = rand(100000, 999999);
         $dispsize = arr($options, 'dispsize', 10);
@@ -3045,7 +3030,7 @@ class androHTMLGrid extends androHTML
      *   - $scrollable (boolean) if true, make table scrollable
      *
      ******/
-    function lastColumn($scrollable = true) {
+    public function lastColumn($scrollable = true) {
         // Save the scrollable setting, and compute the final
         // width of the table
         //$this->scrollable=$scrollable;
@@ -3100,7 +3085,7 @@ class androHTMLGrid extends androHTML
         return $width;
     }
     
-    function makeSortable() {
+    public function makeSortable() {
         $table_id = $this->hp['x6table'];
         foreach ($this->headers as $idx => $header) {
             $hdrhtml = $header->getHtml();
@@ -3116,7 +3101,7 @@ class androHTMLGrid extends androHTML
         }
     }
     
-    function addRow($id, $thead = false) {
+    public function addRow($id, $thead = false) {
         if (!$thead) {
             $this->lastRow = $this->dbody->h('div');
         } else {
@@ -3146,7 +3131,7 @@ class androHTMLGrid extends androHTML
         
         return $this->lastRow;
     }
-    function addCell($child = '', $class = '', $id = '', $convert = true) {
+    public function addCell($child = '', $class = '', $id = '', $convert = true) {
         if (is_object($child)) {
             $child = $child->bufferedRender();
         } else {
@@ -3187,7 +3172,7 @@ class androHTMLGrid extends androHTML
         $this->lastCell++;
     }
     
-    function addData($rows) {
+    public function addData($rows) {
         $dd = ddTable($this->hp['x6table']);
         foreach ($rows as $row) {
             $this->addRow($row['skey']);
@@ -3217,7 +3202,7 @@ class androHTMLGrid extends androHTML
         }
     }
     
-    function noResults() {
+    public function noResults() {
         return;
         $div = $this->dbody->h('div');
         $div->hp['id'] = $this->hp['x6table'] . '_noresults';
@@ -3225,7 +3210,7 @@ class androHTMLGrid extends androHTML
         $div->setHTML('<b>No results found</b>');
     }
     
-    function addLookupInputs() {
+    public function addLookupInputs() {
         $fakeCI = array('colprec' => '10');
         
         $table_id = $this->hp['x6table'];
@@ -3286,7 +3271,7 @@ class androHTMLDetail extends androHTML
 {
     var $firstFocus = false;
     
-    function androHTMLDetail($table_id, $complete = false, $height = 300, $p = '') {
+    public function __construct($table_id, $complete = false, $height = 300, $p = '') {
         $this->hp['x6plugin'] = 'detailDisplay';
         $this->hp['x6table'] = $table_id;
         $this->hp['id'] = 'ddisp_' . $table_id;
@@ -3305,13 +3290,13 @@ class androHTMLDetail extends androHTML
     // KFD 5/27/09 Google #21 Part of allowing override of a detail pane
     //             is to build one normally, then let the user wipe it
     //             out and start over.
-    function removeInner() {
+    public function removeInner() {
         $this->children[1]->children = array();
         $this->children[1]->setHtml('');
         return $this->children[1];
     }
     
-    function makeComplete($table_id, $height, $parTable) {
+    public function makeComplete($table_id, $height, $parTable) {
         // The complete track is much more involved, adds
         // buttons and a status bar at bottom.
         $this->addClass('box2');
@@ -3458,7 +3443,7 @@ class androHTMLDetail extends androHTML
      *
      * SOURCE
     */
-    function addTrInput(&$dd, $column, $options = array()) {
+    public function addTrInput(&$dd, $column, $options = array()) {
         // something we need for b/w compatibility that is
         // easier to declare and ignore than it is to
         // try to get rid of. (Also, getting rid of it will
@@ -3478,8 +3463,7 @@ class androHTMLDetail extends androHTML
         $td->setHtml($input->bufferedRender());
         $td->addClass('x6Input');
     }
-    
-    /******/
+
 }
 
 /****c* HTML Generation/androHtmlxrefs
@@ -3513,10 +3497,15 @@ class androHTMLxrefs extends androHTML
 {
     var $firstFocus = false;
     
-    function androHTMLxrefs($table_id, $height = 300) {
+    public function __construct($table_id, $height = 300) {
+        $this->table_id = $table_id;
+        $this->height = $height;
+    }
+
+    public function output() {
         // Extreme basics for child tables.
         $this->htype = 'div';
-        $this->hp['x6table'] = $table_id;
+        $this->hp['x6table'] = $this->table_id;
         $this->hp['xCount'] = 0;
         // First bit of business is to run through and find
         // out if we actually have any kids.
@@ -3538,7 +3527,7 @@ class androHTMLxrefs extends androHTML
         $this->hp['xCount'] = count($kids);
         
         $options = array('x6profile' => 'x6xrefs', 'x6table' => $table_id, 'styles' => array('overflow-y' => 'scroll'));
-        $tabs = $this->addTabs($table_id . '_xrefs', $height, $options);
+        $tabs = $this->addTabs($table_id . '_xrefs', $this->height, $options);
         $tabs->ul->hp['kids'] = implode("|", $atts);
         // If we are still here, we have at least one kid.  Let's
         // put in a tab bar and start adding the kids.
@@ -3558,7 +3547,7 @@ function addModal($modal) {
 
 /*
 class androHTMLModal extends androHTML {
-    function androHTMLModal($id,$title='') {
+    public function androHTMLModal($id,$title='') {
         # First stuff is basic stuff for any plugin
         $this->htype='div';
         $this->addClass('x6modal');
@@ -4431,7 +4420,7 @@ class androText
     var $cpl = 85;
     var $lpp = 66;
     
-    function androText($topMargin = 6, $leftMargin = 5, $cpi = 10) {
+    public function __construct($topMargin = 6, $leftMargin = 5, $cpi = 10) {
         $this->topMargin = $topMargin;
         $this->leftMargin = $leftMargin;
         $this->cpi = $cpi;
@@ -4439,11 +4428,11 @@ class androText
         $this->cpl = ($this->cpi * 8.5) - $this->leftMargin;
     }
     
-    function newPage() {
+    public function newPage() {
         $this->pages[] = array();
     }
     
-    function box($line, $position, $text, $orientation = 'L') {
+    public function box($line, $position, $text, $orientation = 'L') {
         // Adjust for margins
         $line+= $this->topMargin;
         if ($orientation == 'R' && $position == 0) {
@@ -4480,7 +4469,7 @@ class androText
         $this->pages[$page][$line] = $lineText;
     }
     
-    function renderAsText() {
+    public function renderAsText() {
         $text = '';
         foreach ($this->pages as $pagelines) {
             for ($x = 1; $x <= 66; $x++) {
@@ -4747,8 +4736,7 @@ function SQL_FORMAT($t, $v, $clip = 0) {
     function SQLFC($value) {
         return SQL_Format('char', $value);
     }
-    
-    /******/
+
     
     /*f* SQL-Generation/SQLFN
      *
@@ -4769,8 +4757,7 @@ function SQL_FORMAT($t, $v, $clip = 0) {
     function SQLFN($value) {
         return SQL_Format('numb', $value);
     }
-    
-    /******/
+
     
     /*f* SQL-Generation/SQLFD
      *
@@ -4791,8 +4778,7 @@ function SQL_FORMAT($t, $v, $clip = 0) {
     function SQLFD($value) {
         return SQL_Format('date', $value);
     }
-    
-    /******/
+
     
     /*f* SQL-Generation/SQLFDT
      *
@@ -4813,8 +4799,7 @@ function SQL_FORMAT($t, $v, $clip = 0) {
     function SQLFDT($value) {
         return SQL_Format('dtime', $value);
     }
-    
-    /******/
+
     
     /*f* SQL-Generation/sqlFilter
      *
@@ -5160,7 +5145,7 @@ function SQL_FORMAT($t, $v, $clip = 0) {
             // KFD 2/25/08 added for
             var $_session = array();
             
-            function getTemplate() {
+            public function getTemplate() {
                 return $this->template_name;
             }
         }
@@ -6209,7 +6194,7 @@ function SQL_FORMAT($t, $v, $clip = 0) {
          *
          ******
         */
-        function &ddTable($table_id) {
+        function ddTable($table_id) {
             // Don't repeat all of this work. If this has already
             // been run don't run't it again
             if (is_array($table_id)) {
@@ -6649,7 +6634,7 @@ function SQL_FORMAT($t, $v, $clip = 0) {
          *
          *---**
         */
-        function &DD_TableRef($table_id) {
+        function DD_TableRef($table_id) {
             $retval = ddTable($table_id);
             return $retval;
             if (!isset($GLOBALS["AG"]["tables"][$table_id])) {
@@ -6769,7 +6754,7 @@ function SQL_FORMAT($t, $v, $clip = 0) {
             var $style = array();
             var $atts = array();
             
-            function androHElement($type) {
+            function __construct($type) {
                 $this->type = $type;
                 $this->children = array();
                 $this->atts = array();
@@ -14636,7 +14621,7 @@ $retval
                     
                     if ($ahcol['type_id'] == 'date') {
                         jqDocReady("$('input[data-date-format]').each(
-                function() {
+                function () {
                     if (typeof($(this).attr('readonly')) == 'undefined') {
                         $(this).datepicker().on('changeDate',function() {
                             $(this).datepicker('hide');
@@ -15446,12 +15431,12 @@ $retval
              */
             class XMLTree
             {
-                function XMLTree() {
+                public function __construct() {
                     $this->stack = array(0);
                     $this->nodes = array();
                 }
                 
-                function openChild($node) {
+                public function openChild($node) {
                     
                     // Add the node to the flat list, then get reference to it
                     $this->nodes[] = & $node;
@@ -15465,7 +15450,7 @@ $retval
                     $this->stack[] = $newidx;
                 }
                 
-                function addData($data) {
+                public function addData($data) {
                     $curidx = $this->stack[count($this->stack) - 1];
                     
                     // Absolutely do not know why these are here, they are being
@@ -15475,11 +15460,11 @@ $retval
                     $this->nodes[$curidx]['value'].= $data;
                 }
                 
-                function closeChild() {
+                public function closeChild() {
                     array_pop($this->stack);
                 }
                 
-                function nodeCDATA($idx) {
+                public function nodeCDATA($idx) {
                     $node = $this->nodes[$idx];
                     $retval = '';
                     for ($x = 0; $x < count($node['kids']); $x++) {
@@ -15492,7 +15477,7 @@ $retval
                     return $retval;
                 }
                 
-                function nodeHTML($idx) {
+                public function nodeHTML($idx) {
                     $retval = '';
                     
                     $node = $this->nodes[$idx];
@@ -16579,7 +16564,7 @@ $retval
             
             /* DEPRECATED */
             
-            //function  SQLX_Delete($table_id,$skey) {
+            //function SQLX_Delete($table_id,$skey) {
             //  SQL("Delete from ".$table_id." where skey = ".$skey);
             //}
             

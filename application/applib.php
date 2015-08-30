@@ -214,8 +214,8 @@ function GetOS() {
 }
 
 function isWindows() {
-   $x=eregi('WINNT',PHP_OS);
-   return $x===false ? false : true;
+   $x = preg_match('/winnt/i', PHP_OS);
+   return $x===1 ? true : false;
 }
 
 ?>

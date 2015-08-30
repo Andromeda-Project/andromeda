@@ -48,7 +48,7 @@ $o->main();
 // ===================================================================
 // ===================================================================
 class x_builder {
-    function x_builder() {    
+    public function __construct() {    
         // used to sequence all dd entries, mostly used for columns    
         $this->uicolseq= 0;
         
@@ -70,7 +70,7 @@ class x_builder {
         $this->cmdsubseq=0;
     }
     
-    function main() {
+    public function main() {
         $ts=time();
         $this->ts=$ts;
         // First come the most basic reality checks, that the
@@ -158,7 +158,7 @@ class x_builder {
     // ===================================================================
     // ===================================================================
 
-    function recursiveCopy($src, $dest) {
+    public function recursiveCopy($src, $dest) {
         if(is_dir($src)) {
             $dir_handle=opendir($src);
             while($file=readdir($dir_handle)){
