@@ -60,7 +60,7 @@ header("Cache-control: private");
 // >>>
 // ==================================================================
 
-$appInfoFile = $AG['dirs']['generated'] .'appinfo.php'
+$appInfoFile = $AG['dirs']['generated'] .'appinfo.php';
 if (file_exists($appInfoFile)) {
     include($appInfoFile);
 }
