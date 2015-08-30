@@ -233,7 +233,7 @@ underlined letters that show this, so:
         // ob_start();
         // hprint_r($_SESSION);
         // $x4Window->h('div',ob_get_clean());
-        
+
         
         // This is the top level display item
         //
@@ -383,14 +383,14 @@ underlined letters that show this, so:
         // $a->hp['id']='button-snw';
         // $a->hp['xLabel']='CtrlN';
         // $a->hp['xAction'] = 'saveRowAndNewRow';
-        
+
         // Removed by KFD 5/29/08, Esc will do the same thing.
         // $a = html('a-void',$mbl,'Save &amp; E<u>x</u>it');
         // $a->hp['onclick']="x4.parent(this).keyPress(this.getAttribute('xAction'))";
         // $a->hp['id']='button-sxt';
         // $a->hp['xLabel']='CtrlX';
         // $a->hp['xAction'] = 'saveRowAndExit';
-        
+
         
         $a = html('a-void', $mbl, "ESC: Quit");
         $a->hp['onclick']="x4.parent(this).keyPress(this.getAttribute('xAction'))";
@@ -517,7 +517,7 @@ underlined letters that show this, so:
         // if find that invoke that instead
         $method = $dd['table_id'].'_detail';
         if (method_exists($this, $method)) {
-            $retval=$this->$method($dd,$div,$parentTable);
+            $retval=$this->$method($dd, $div, $parentTable);
             if ($retval!==false) {
                 return $retval;
             }
@@ -536,8 +536,7 @@ underlined letters that show this, so:
             $this->dd,
             '',
             $tabLoop,
-            array('colbreak'=>a($dd, 'colbreak', 17)
-                ,'breakafter'=>a($dd, 'breakafter', array())
+            array('colbreak'=>a($dd, 'colbreak', 17), 'breakafter'=>a($dd, 'breakafter', array())
             )
         );
         $tdx->addChild($inputs);
@@ -782,7 +781,6 @@ underlined letters that show this, so:
         
         x4Data('browseFetch', $answer);
         return;
-
     }
     
     // ===================================================================
@@ -911,7 +909,6 @@ underlined letters that show this, so:
                 return;
             }
         }
-        
     }
     
     // ===================================================================

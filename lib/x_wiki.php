@@ -1,13 +1,13 @@
 <?php
 class x_wiki
 {
-    function _construct($table_id) 
+    public function _construct($table_id)
     {
         $this->page_id=$table_id;
         echo $table_id;
     }
    
-    function hWikiFromTable($table_id,$pagename,$flag_title=true) 
+    public function hWikiFromTable($table_id, $pagename, $flag_title=true)
     {
         $tid=SQL_ESCAPE_STRING($table_id);
         $pn=SQLFC($pagename);
@@ -17,13 +17,13 @@ class x_wiki
         return $this->hWiki($table_id, $pagename, $row['pagewiki'], $title);
     }
    
-    function hWikiFromText($input) 
+    public function hWikiFromText($input)
     {
         return $this->hWiki('', '', $input, '');
     }
 
    
-    function hWiki($table_id,$pagename,$input,$title='') 
+    public function hWiki($table_id, $pagename, $input, $title='')
     {
         $this->table_id=$table_id;
       
@@ -31,7 +31,7 @@ class x_wiki
         $html=str_replace("\r", '', $input);
 
         // Put in an "edit this page" if user is logged in
-        if(LoggedIn() && $table_id<>'') {
+        if (LoggedIn() && $table_id<>'') {
             echo "<br><div>";
             echo '<a href="?gp_page=pages&gp_pk='.urlencode($pagename).'">EDIT THIS PAGE</a>';
             echo "</div>";
@@ -43,28 +43,27 @@ class x_wiki
         // Break into lines and begin outputting
         $ahtml = explode("\n", $html);
         $mode  = '';
-        foreach($ahtml as $oneline) {
-            switch($mode) {
+        foreach ($ahtml as $oneline) {
+            switch ($mode) {
             case 'html':
                 $f4=substr($oneline, 0, 5);
-                if($f4=="</div" || $f4=="</pre") {
+                if ($f4=="</div" || $f4=="</pre") {
                     $mode='';
                     $new =$oneline."\n";
-                }
-                else {
+                } else {
                     $new =($oneline)."\n";
                 }
                 break;
             case 'para':
-                list($mode,$new)=$this->wikiProcessModePara($oneline);
+                list($mode, $new)=$this->wikiProcessModePara($oneline);
                 $new.="\n";
                 break;
             case 'list':
-                list($mode,$new)=$this->wikiProcessModeList($oneline);
+                list($mode, $new)=$this->wikiProcessModeList($oneline);
                 $new.="\n";
                 break;
             default:
-                list($mode,$new)=$this->wikiProcessModeBlank($oneline);
+                list($mode, $new)=$this->wikiProcessModeBlank($oneline);
                 break;
          
             }
@@ -73,17 +72,18 @@ class x_wiki
         return $retval;
     }
    
-    function wikiProcessModeBlank($oneline) 
+    public function wikiProcessModeBlank($oneline)
     {
         // easy one, an empty line
         $oneline=trim($oneline);
-        if (strlen($oneline)==0) { return array('',''); 
+        if (strlen($oneline)==0) {
+            return array('','');
         }
       
         // if a title, no change in mode
         $mode='';
         $retv=$oneline;
-        if(substr($oneline, 0, 1)=="=" && substr($oneline, -1, 1)=="=") {
+        if (substr($oneline, 0, 1)=="=" && substr($oneline, -1, 1)=="=") {
             $retv=preg_replace(
                 "/={6}(.*)={6}/xsU", '<h6>$1</h6>', $retv
             );
@@ -102,20 +102,16 @@ class x_wiki
             $retv=preg_replace(
                 '/=(.*)=/', '<h1>$1</h1>', $retv
             );
-        }
-        elseif (substr($oneline, 0, 4)=="<div" ) {
+        } elseif (substr($oneline, 0, 4)=="<div") {
             $mode='html';
             $retv=$oneline;
-        }  
-        elseif (substr($oneline, 0, 4)=="<pre" ) {
+        } elseif (substr($oneline, 0, 4)=="<pre") {
             $mode='html';
             $retv=$oneline;
-        }
-        elseif (substr($oneline, 0, 1)=="*" ) {
+        } elseif (substr($oneline, 0, 1)=="*") {
             $mode='list';
             $retv='<ul><li>'.substr($oneline, 1);
-        }
-        else {
+        } else {
             // assume some kind of text, open a paragraph
             $mode="para";
             $retv="<p>".$this->wikiProcess_NormalText($oneline);
@@ -123,14 +119,14 @@ class x_wiki
         if ($mode<>'html') {
             $retv.="\n";
         }
-        return array($mode,$retv); 
+        return array($mode,$retv);
     }
    
-    function wikiProcessModePara($html) 
+    public function wikiProcessModePara($html)
     {
         // Early exit;
         $html=trim($html);
-        if(strlen($html)=='') {
+        if (strlen($html)=='') {
             return array('',"</p>");
         }
       
@@ -138,15 +134,15 @@ class x_wiki
         return array('para',$retv);
     }
 
-    function wikiProcessModelist($html) 
+    public function wikiProcessModelist($html)
     {
         // Early exit;
         $html=trim($html);
-        if(strlen($html)=='') {
+        if (strlen($html)=='') {
             return array('',"</ul>");
         }
         $prefix="";
-        if(substr($html, 0, 1)=='*') {
+        if (substr($html, 0, 1)=='*') {
             $prefix="<li>";
             $html  = substr($html, 1);
         }
@@ -155,13 +151,13 @@ class x_wiki
         return array('list',$retv);
     }
    
-    function hFromWiki($wiki) 
+    public function hFromWiki($wiki)
     {
         return $this->wikiProcess_NormalText($wiki);
     }
    
-    function wikiProcess_NormalText($html) 
-    {      
+    public function wikiProcess_NormalText($html)
+    {
         // Convert bold & italitcs 
         $html=preg_replace(
             "/'{4,}(.*)'{4,}/xmsU", '<b><i>$1</i></b>', $html
@@ -175,24 +171,23 @@ class x_wiki
      
         // convert hyperlinks and images
         $matches=array();
-        while(preg_match('/\[{2,}(.*)\]{2,}/xmsU', $html, $matches)>0) {
+        while (preg_match('/\[{2,}(.*)\]{2,}/xmsU', $html, $matches)>0) {
             $search=$matches[1];
             $asearch=explode(':', $search);
-            if(count($asearch)==2) {
+            if (count($asearch)==2) {
                 $type=$asearch[0];
                 $match=$asearch[1];
-            }
-            else {
+            } else {
                 $type='ilink';
                 $match=$search;
             }
          
-            switch(strtolower($type)) {
-            case 'ilink': $this->Linkilink($html, $match);       
+            switch (strtolower($type)) {
+            case 'ilink': $this->Linkilink($html, $match);
                 break;
-            case 'image': $this->LinkImage($html, $match, $type); 
+            case 'image': $this->LinkImage($html, $match, $type);
                 break;
-            default     : $this->LinkUnknown($html, $search);    
+            default     : $this->LinkUnknown($html, $search);
                 break;
             }
          
@@ -205,32 +200,30 @@ class x_wiki
     // Process various kinds of links
     // ------------------------------------------------------------
     // Internal links
-    function Linkilink(&$html,$match) 
+    public function Linkilink(&$html, $match)
     {
         $tid=SQL_ESCAPE_STRING($this->table_id);
         $sq="SELECT pagename FROM $tid
             WHERE pagename = '$match'";
         $rs=SQL_OneValue('pagename', $sq);
-        if(!$rs) {
+        if (!$rs) {
             $newval='<span class="nolink">'.$match.'</span>';
-        }
-        else {
+        } else {
             $newval='<a href="?gp_page=x_docview&gppn='.urlencode($rs).'">'.$rs.'</a>';
         }
         $html=str_replace('[['.$match.']]', $newval, $html);
     }
 
     // Images
-    function LinkImage(&$html,$match,$type) 
+    public function LinkImage(&$html, $match, $type)
     {
         $newval='<img src="' .tmpPathInsert().'apppub/'.$match.'">';
         $html=preg_replace('/\[\['.$type.":".$match.'\]\]/', $newval, $html);
     }
 
-    function LinkUnknown(&$html,$match) 
+    public function LinkUnknown(&$html, $match)
     {
         $newval = '<span class="nolink">UNSUPPORTED LINK: '.$match.'</span>';
         $html=str_replace('[['.$match.']]', $newval, $html);
-    }   
+    }
 }
-?>

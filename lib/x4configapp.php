@@ -1,7 +1,7 @@
 <?php
 class x4configapp extends androX4
 {
-    function mainLayout($container) 
+    public function mainLayout($container)
     {
         // Erase default help message
         vgfSet('htmlHelp', '');
@@ -9,4 +9,3 @@ class x4configapp extends androX4
         configLayoutX4($container, 'Application');
     }
 }
-?>

@@ -21,28 +21,27 @@
 \* ================================================================== */
 /* ==================================================================
    APP_Post.php
-	
-	Library to process EMAIL.  Detects three states:
-	-> $AG["email"] exists, execute a send immediately
-	-> $AG["clean"]["emailto"] exists, a postback, read vars and send
-	-> otherwise, put up HTML form to user to send test email
-	
-	Revisions:
-	Apr 29 2005  Modified for new gp vars and x_page class system
-	Mar 18 2005  CLASSified
-	Feb 23 2005  Revised for new state system
-	Feb 16 2005  Created, outlined, drafted
+    
+    Library to process EMAIL.  Detects three states:
+    -> $AG["email"] exists, execute a send immediately
+    -> $AG["clean"]["emailto"] exists, a postback, read vars and send
+    -> otherwise, put up HTML form to user to send test email
+    
+    Revisions:
+    Apr 29 2005  Modified for new gp vars and x_page class system
+    Mar 18 2005  CLASSified
+    Feb 23 2005  Revised for new state system
+    Feb 16 2005  Created, outlined, drafted
    ================================================================== 
 */
 class x_table_x_email extends x_table2
 {
-    
-    function main() 
+    public function main()
     {
         $this->PageSubtitle="Send a Test Email";
         include_once "ddtable_adm_emails.php";
 
-        Hidden("gp_page", "x_email");    
+        Hidden("gp_page", "x_email");
         
         $table = &$GLOBALS["AG"]["tables"]["adm_emails"];
         $em = array(
@@ -67,14 +66,16 @@ class x_table_x_email extends x_table2
         // except the ones we are setting.
         foreach ($table["flat"] as $colname=>$colinfo) {
             if ($colname=="email_to" || $colname=="email_subject" || $colname=="email_message") {
-                continue; 
+                continue;
             }
             $table["flat"][$colname]["uino"] = "Y";
         }
             
         ?>
-        <?php echo HTMLX_Errors(); ?>
-        <?php echo ElementOut("msg", true); ?>
+        <?php echo HTMLX_Errors();
+        ?>
+        <?php echo ElementOut("msg", true);
+        ?>
 		
 		
      <p>This is a very minimal page that can be used to verify that this system
@@ -82,14 +83,17 @@ class x_table_x_email extends x_table2
       and then click on the [SEND] button.</p>
 			
      <table>
-        <?php echo $this->HTML_INPUTS($GLOBALS["AG"]["tables"]["adm_emails"], $em, "ins", true);?>
+        <?php echo $this->HTML_INPUTS($GLOBALS["AG"]["tables"]["adm_emails"], $em, "ins", true);
+        ?>
      </table>
 		
 		
      <br>
      <br>
-        <?php echo HTMLE_A_JS("formSubmit()", "Send Email Now");?>
+        <?php echo HTMLE_A_JS("formSubmit()", "Send Email Now");
+        ?>
         <?php
+
     }
 }
 
@@ -97,19 +101,17 @@ class x_table_x_email extends x_table2
 // send the email.  Library function, not part of the class
 // =======================================================================
 
-function X_EMAIL_SEND($em)    
+function X_EMAIL_SEND($em)
 {
     $retval = false;
     //scDBConn_Push('admin');
     if (SQLX_TrxLevel() > 0) {
         ErrorAdd("ERROR: Cannot send an email within a transaction");
-    }
-    else {
-        if(configGet('email_fromaddr')) {
+    } else {
+        if (configGet('email_fromaddr')) {
             $from_addr = configGet('email_fromaddr');
             $from_name = configGet('email_fromname');
-        }
-        else {
+        } else {
             $from_addr  = trim(OPTION_GET("EMAILFROM_ADDR"));
             $from_name  = trim(OPTION_GET("EMAILFROM_NAME"));
         }
@@ -117,12 +119,12 @@ function X_EMAIL_SEND($em)
         if ($from_addr=="") {
             ErrorAdd(
                 "The system's return email address, defined in system variable ".
-                "EMAILFROM_ADDR, must be set to a valid email address.  ".  
+                "EMAILFROM_ADDR, must be set to a valid email address.  ".
                 HTMLE_A_STD("System Variables", "variables", "")
             );
-        }
-        else {
-            if ($from_name!="") { $from_name = '"'.$from_name.'"'; 
+        } else {
+            if ($from_name!="") {
+                $from_name = '"'.$from_name.'"';
             }
             $from = "From: ".$from_name." <".$from_addr.">";
             
@@ -132,7 +134,7 @@ function X_EMAIL_SEND($em)
             $headers['To']      = $em["email_to"];
             $headers['Subject'] = $em["email_subject"];
             $headers['Date']    = date("D, j M Y H:i:s O", time());
-            foreach($em['headers'] as $hname=>$hval) {
+            foreach ($em['headers'] as $hname=>$hval) {
                 $headers[$hname] = $hval;
             }
             $body = $em["email_message"];
@@ -144,8 +146,7 @@ function X_EMAIL_SEND($em)
         
             if (!$mail_object) {
                 ErrorAdd("Email was not accepted by server");
-            }
-            else {
+            } else {
                 $table_ref =DD_TableRef('adm_emails');
                 SQLX_Insert($table_ref, $em, false);
                 $retval=false;

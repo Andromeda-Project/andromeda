@@ -13,15 +13,16 @@
 // @codingStandardsIgnoreStart
 class joomla_fake
 {
-    var $id = false;
-    var $template_name = '';
+    public $id = false;
+    public $template_name = '';
 
     // KFD 2/25/08 added for
-    var $_session = array();
+    public $_session = array();
 
-    function getTemplate()
+    public function getTemplate()
     {
         return $this->template_name;
     }
 }
 // @codingStandardsIgnoreEnd
+

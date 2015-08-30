@@ -9,12 +9,12 @@ class x_docview extends x_table2
       $this->button_images=false;
     }
     */
-    function custom_construct() 
+    public function custom_construct()
     {
         $this->image_directory="dbobj";
     }
    
-    function main() 
+    public function main()
     {
         // Get top page
         $this->PageSubtitle="Documentation";
@@ -23,12 +23,12 @@ class x_docview extends x_table2
         $pageroot='Data Dictionary';
       
         $pn=gp('gppn');
-        $pn=($pn=='') ? $pageroot : $pn; 
+        $pn=($pn=='') ? $pageroot : $pn;
         $sq="SELECT * from docpages 
             WHERE pagename = ".sql_format('char', $pn);
         $row=SQL_oneRow($sq);
       
-        if($row===false) {
+        if ($row===false) {
             echo "Page does not exist: ".$pn;
             return;
         }
@@ -42,7 +42,7 @@ class x_docview extends x_table2
         $kids=array();
         $pparent = $pprev = $pnext = '';
         $plast = $pn;
-        while($plast<>$pageroot) {
+        while ($plast<>$pageroot) {
             $sq="SELECT pagename_par FROM docpages 
                WHERE pagename = '$plast'";
             $rownew = SQL_AllRows($sq);
@@ -52,12 +52,12 @@ class x_docview extends x_table2
             //   break;
             //}
         }
-        if(count($parents)>0) { 
-            $parents=array_reverse($parents); 
+        if (count($parents)>0) {
+            $parents=array_reverse($parents);
             //$hmenu=adocs_makemenu($parents,'Parent Topics');
 
             // Grab this page's peers
-            $pparent = $parents[count($parents)-1];         
+            $pparent = $parents[count($parents)-1];
             $sq="SELECT pagename FROM docpages 
                WHERE pagename_par = '$pparent'
                ORDER BY sequence";
@@ -67,10 +67,10 @@ class x_docview extends x_table2
             }
             $peersr = array_flip($peers);
             $pprev = $peersr[$pn] == 0 ? '' : $peers[$peersr[$pn]-1];
-            $pnext = $peersr[$pn] == count($peers)-1 
-            ? '' 
+            $pnext = $peersr[$pn] == count($peers)-1
+            ? ''
             : $peers[$peersr[$pn]+1];
-        }  
+        }
       
         // Now pull out the kids
         $sq="SELECT pagename FROM docpages 
@@ -164,25 +164,24 @@ class x_docview extends x_table2
         */
       
         // Prepare a list of parents
-        if(count($parents)==0) {
+        if (count($parents)==0) {
             $apars = array($pn);
-        }
-        else {
+        } else {
             $apars = $parents;
             $apars[] = $pn;
         }
         $hpars = '';
-        foreach($apars as $apar) {
+        foreach ($apars as $apar) {
             $hpars.=($hpars=='' ? '' : ' &gt; ')
             .'<a href="?gp_page=x_docview&gppn='.urlencode($apar).'">'.$apar.'</a>';
         }
       
         // Prepare the prev, next stuff
         $hpn='';
-        if($pprev.$pnext<>'') {
-            $hp=$pprev=='' ? '' 
+        if ($pprev.$pnext<>'') {
+            $hp=$pprev=='' ? ''
             : '<a href="?gp_page=x_docview&gppn='.urlencode($pprev).'">PREV: '.$pprev.'</a>';
-            $hn=$pnext=='' ? '' 
+            $hn=$pnext=='' ? ''
             : '<a href="?gp_page=x_docview&gppn='.urlencode($pnext).'">NEXT: '.$pnext.'</a>';
             $hpn="
 			<div class=\"row\">
@@ -231,7 +230,7 @@ class x_docview extends x_table2
         if (count($kids)>0 && $pn=='Data Dictionary') {
             echo "\n<hr>";
             echo "\n<head2>Child Topics</head2>";
-            foreach($kids as $kid) {
+            foreach ($kids as $kid) {
                 echo "\n<div><a href=\"?gp_page=x_docview&gppn=".urlencode($kid)."\">$kid</a></div>";
             }
         }
@@ -243,9 +242,10 @@ class x_docview extends x_table2
        Page last modified <?php echo date('r', dEnsureTS($row['ts_upd']))?> by 
             <?php echo $row['uid_upd']?><br><br>
         <?php
+
     }
    
-    function wikiProcess($input) 
+    public function wikiProcess($input)
     {
         // Remove carriage returns, makes things much easier
         $html=str_replace("\r", '', $input);
@@ -254,28 +254,27 @@ class x_docview extends x_table2
         $retval='';
         $ahtml = explode("\n", $html);
         $mode  = '';
-        foreach($ahtml as $oneline) {
-            switch($mode) {
+        foreach ($ahtml as $oneline) {
+            switch ($mode) {
             case 'html':
                 $f4=substr($oneline, 0, 5);
-                if($f4=="</div" || $f4=="</pre") {
+                if ($f4=="</div" || $f4=="</pre") {
                     $mode='';
                     $new =$oneline."\n";
-                }
-                else {
+                } else {
                     $new =($oneline)."\n";
                 }
                 break;
             case 'para':
-                list($mode,$new)=$this->wikiProcessModePara($oneline);
+                list($mode, $new)=$this->wikiProcessModePara($oneline);
                 $new.="\n";
                 break;
             case 'list':
-                list($mode,$new)=$this->wikiProcessModeList($oneline);
+                list($mode, $new)=$this->wikiProcessModeList($oneline);
                 $new.="\n";
                 break;
             default:
-                list($mode,$new)=$this->wikiProcessModeBlank($oneline);
+                list($mode, $new)=$this->wikiProcessModeBlank($oneline);
                 break;
          
             }
@@ -284,17 +283,18 @@ class x_docview extends x_table2
         return $retval;
     }
    
-    function wikiProcessModeBlank($oneline) 
+    public function wikiProcessModeBlank($oneline)
     {
         // easy one, an empty line
         $oneline=trim($oneline);
-        if (strlen($oneline)==0) { return array('',''); 
+        if (strlen($oneline)==0) {
+            return array('','');
         }
       
         // if a title, no change in mode
         $mode='';
         $retv=$oneline;
-        if(substr($oneline, 0, 1)=="=" && substr($oneline, -1, 1)=="=") {
+        if (substr($oneline, 0, 1)=="=" && substr($oneline, -1, 1)=="=") {
             $retv=preg_replace(
                 "/={6}(.*)={6}/xsU", '<head6>$1</head6>', $retv
             );
@@ -313,20 +313,16 @@ class x_docview extends x_table2
             $retv=preg_replace(
                 '/=(.*)=/', '<head1>$1</head1>', $retv
             );
-        }
-        elseif (substr($oneline, 0, 4)=="<div" ) {
+        } elseif (substr($oneline, 0, 4)=="<div") {
             $mode='html';
             $retv=$oneline;
-        }  
-        elseif (substr($oneline, 0, 4)=="<pre" ) {
+        } elseif (substr($oneline, 0, 4)=="<pre") {
             $mode='html';
             $retv=$oneline;
-        }
-        elseif (substr($oneline, 0, 1)=="*" ) {
+        } elseif (substr($oneline, 0, 1)=="*") {
             $mode='list';
             $retv='<ul><li>'.substr($oneline, 1);
-        }
-        else {
+        } else {
             // assume some kind of text, open a paragraph
             $mode="para";
             $retv="<p>".$this->wikiProcess_NormalText($oneline);
@@ -334,14 +330,14 @@ class x_docview extends x_table2
         if ($mode<>'html') {
             $retv.="\n";
         }
-        return array($mode,$retv); 
+        return array($mode,$retv);
     }
    
-    function wikiProcessModePara($html) 
+    public function wikiProcessModePara($html)
     {
         // Early exit;
         $html=trim($html);
-        if(strlen($html)=='') {
+        if (strlen($html)=='') {
             return array('',"</p>");
         }
       
@@ -349,15 +345,15 @@ class x_docview extends x_table2
         return array('para',$retv);
     }
 
-    function wikiProcessModelist($html) 
+    public function wikiProcessModelist($html)
     {
         // Early exit;
         $html=trim($html);
-        if(strlen($html)=='') {
+        if (strlen($html)=='') {
             return array('',"</ul>");
         }
         $prefix="";
-        if(substr($html, 0, 1)=='*') {
+        if (substr($html, 0, 1)=='*') {
             $prefix="<li>";
             $html  = substr($html, 1);
         }
@@ -367,8 +363,8 @@ class x_docview extends x_table2
     }
    
    
-    function wikiProcess_NormalText($html) 
-    {      
+    public function wikiProcess_NormalText($html)
+    {
         // Convert bold & italitcs 
         $html=preg_replace(
             "/'{4,}(.*)'{4,}/xmsU", '<b><i>$1</i></b>', $html
@@ -382,22 +378,21 @@ class x_docview extends x_table2
      
         // convert hyperlinks and images
         $matches=array();
-        while(preg_match('/\[{2,}(.*)\]{2,}/xmsU', $html, $matches)>0) {
+        while (preg_match('/\[{2,}(.*)\]{2,}/xmsU', $html, $matches)>0) {
             $search=$matches[1];
             $asearch=explode(':', $search);
-            if(count($asearch)==2) {
+            if (count($asearch)==2) {
                 $type=$asearch[0];
                 $match=$asearch[1];
-            }
-            else {
+            } else {
                 $type='ilink';
                 $match=$search;
             }
          
-            switch(strtolower($type)) {
-            case 'ilink': $this->Linkilink($html, $match); 
+            switch (strtolower($type)) {
+            case 'ilink': $this->Linkilink($html, $match);
                 break;
-            case 'image': $this->LinkImage($html, $match, $type); 
+            case 'image': $this->LinkImage($html, $match, $type);
                 break;
             }
          
@@ -410,34 +405,31 @@ class x_docview extends x_table2
     // Process various kinds of links
     // ------------------------------------------------------------
     // Internal links
-    function Linkilink(&$html,$match) 
+    public function Linkilink(&$html, $match)
     {
         $sq="SELECT pagename FROM docpages 
             WHERE pagename = '$match'";
         $rs=SQL_OneValue('pagename', $sq);
-        if(!$rs) {
+        if (!$rs) {
             $newval='<span class="nolink">'.$match.'</span>';
-        }
-        else {
+        } else {
             $newval='<a href="?gp_page=x_docview&gppn='.urlencode($rs).'">'.$rs.'</a>';
         }
         $html=str_replace('[['.$match.']]', $newval, $html);
     }
 
     // Images
-    function LinkImage(&$html,$match,$type) 
+    public function LinkImage(&$html, $match, $type)
     {
         $sq="SELECT filename,description FROM media 
             WHERE filename = '$match'";
         $rs=SQL_OneValue('filename', $sq);
-        if(!$rs) {
+        if (!$rs) {
             $newval='<span class="nolink">MISSING IMAGE: '.$match.'</span>';
-        }
-        else {
+        } else {
             $newval='<img src="'.$this->image_directory.'/'.$match.'">';
         }
         $html=preg_replace('/\[\['.$type.":".$match.'\]\]/', $newval, $html);
     }
-   
 }
 ?>

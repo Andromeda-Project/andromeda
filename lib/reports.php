@@ -4,18 +4,21 @@ class reports extends x_table2
     // ---------------------------------------------------------------------
     // Basic overrides
     // ---------------------------------------------------------------------
-    function custom_construct() 
+    public function custom_construct()
     {
-        if(gp('gp_ajax')<>'') { $this->flag_buffer=false; 
+        if (gp('gp_ajax')<>'') {
+            $this->flag_buffer=false;
         }
         $this->Ajax_notice='';
     }
 
-    function main() 
+    public function main()
     {
-        if(gp('gp_process', 0)>0) { return $this->ehProcess(); 
+        if (gp('gp_process', 0)>0) {
+            return $this->ehProcess();
         }
-        if(gp('gp_ajax')<>'') { return $this->ehAjax(); 
+        if (gp('gp_ajax')<>'') {
+            return $this->ehAjax();
         }
         parent::main();
     }
@@ -29,11 +32,11 @@ class reports extends x_table2
     // ---------------------------------------------------------------------
     // ---------------------------------------------------------------------
     // ---------------------------------------------------------------------
-    function ehMain() 
+    public function ehMain()
     {
         hidden('gp_page', 'reports');
         hidden('gp_skey', gp('gp_skey'));
-        if($this->mode<>'upd') {
+        if ($this->mode<>'upd') {
             parent::ehMain();
             return;
         }
@@ -101,7 +104,8 @@ class reports extends x_table2
           <td>
             <hr/>
             <div class="x2menubar" id="x2tabbar" name="x2tabbar">
-            <?php echo $this->ehTabbar(false);?>
+            <?php echo $this->ehTabbar(false);
+        ?>
             <hr/>
             </div>
           </td>
@@ -127,55 +131,55 @@ class reports extends x_table2
    
    Universal dispatcher for ajax functions related to reports.  
    */
-    function ehAjax() 
+    public function ehAjax()
     {
-        switch(gp('gp_ajax')) {
+        switch (gp('gp_ajax')) {
          // All tabs covered in this routine
-        case 'tab':           $this->ehAjax_tabs();     
+        case 'tab':           $this->ehAjax_tabs();
             break;
          // Main tab: save report description
-        case 'repdesc':       $this->Ajax_RepDesc();   
+        case 'repdesc':       $this->Ajax_RepDesc();
             break;
          // Tables tab: clicking a table shows related tables
-        case 'tablesavl':     $this->ehTablesAvl();   
+        case 'tablesavl':     $this->ehTablesAvl();
             break;
-        case 'tabledel':      $this->TableDel();      
+        case 'tabledel':      $this->TableDel();
             break;
-        case 'tableadd':      $this->TableAdd();      
+        case 'tableadd':      $this->TableAdd();
             break;
 
          // Columns tab:  Adding a column
-        case 'columnadd':     $this->Ajax_ColumnAdd(); 
+        case 'columnadd':     $this->Ajax_ColumnAdd();
             break;
         case 'colup':
-        case 'coldn':         $this->ehAjax_Colmove();  
+        case 'coldn':         $this->ehAjax_Colmove();
             break;
-        case 'coldl':         $this->ehAjax_ColDel();   
+        case 'coldl':         $this->ehAjax_ColDel();
             break;
-        case 'colsort':       $this->ehAjax_ColSort();  
+        case 'colsort':       $this->ehAjax_ColSort();
             break;
-        case 'colsave':       $this->Ajax_ColSave(); 
+        case 'colsave':       $this->Ajax_ColSave();
             break;
          
          // Levels Change
         case 'levmod':
         case 'levadd':
-        case 'levdel':        $this->ehAjax_Levels(); 
+        case 'levdel':        $this->ehAjax_Levels();
             break;
          
          // Sorting tab: Remove or add a column
         case 'columnsort':
-        case 'columnunsort':  $this->ehAjax_Sort();     
+        case 'columnunsort':  $this->ehAjax_Sort();
             break;
          
          // Filters
         case 'filtrep':
-        case 'filtlev':        $this->ehTab_Filters(); 
+        case 'filtlev':        $this->ehTab_Filters();
             break;
        
          
-        case 'echo': 
-            echo 'echo|--'.gp('gp_ajax_echo').'--'; 
+        case 'echo':
+            echo 'echo|--'.gp('gp_ajax_echo').'--';
             break;
         }
     }
@@ -185,30 +189,30 @@ class reports extends x_table2
     // AJAX Processing for complete tabs
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // ---------------------------------------------------------------------
-    function ehAjax_Tabs() 
+    public function ehAjax_Tabs()
     {
         // In all cases generate the tabbar
         $this->ehTabBar();
         echo "|-|";
         echo "x2_content|";
       
-        switch(gp('gp_ajax_tab')) {
-        case 'Main':     $this->ehTab_Main();   
+        switch (gp('gp_ajax_tab')) {
+        case 'Main':     $this->ehTab_Main();
             break;
-        case 'Tables':   $this->ehTab_Tables(); 
+        case 'Tables':   $this->ehTab_Tables();
             break;
         case 'Columns':  $this->ehTab_columns();
             break;
          //case 'Sorting':  $this->ehTab_Sort(); break; 
-        case 'Levels':   $this->ehTab_Levels(false); 
-            break; 
+        case 'Levels':   $this->ehTab_Levels(false);
+            break;
         case 'Filters':  $this->ehTab_Filters(false);
             break;
         }
     }
    
     // ---------- TAB: MAIN -------------------------
-    function ehTab_Main() 
+    public function ehTab_Main()
     {
         $skey=SQL_Format('numb', gp('gp_skey'));
         $this->row=SQL_OneRow("Select * from reports where skey=$skey");
@@ -249,7 +253,7 @@ class reports extends x_table2
           <input value="<?php echo $desc?>" name="ajx_description"
                  onblur="sndReq('&gp_ajax=repdesc&gp_new='+this.value)">
           <br/><br/>
-          Landscape: <input type="checkbox" <?php echo ($flnd=='Y'?'CHECKED':'')?> 
+          Landscape: <input type="checkbox" <?php echo($flnd=='Y'?'CHECKED':'')?> 
                  name="ajax_checkbox"
                  onchange="andrax('<?php echo $h5?>)">
           </td>
@@ -262,9 +266,10 @@ class reports extends x_table2
         </tr>
        </table>         
         <?php
+
     }
 
-    function Ajax_RepDesc() 
+    public function Ajax_RepDesc()
     {
         $desc=SQL_Format('char', gp('gp_new'));
         $skey=SQL_Format('numb', gp('gp_skey'));
@@ -274,7 +279,7 @@ class reports extends x_table2
     }
 
     // ---------- TAB: Table Selection -------------------------
-    function ehTab_Tables() 
+    public function ehTab_Tables()
     {
         $skey=SQL_Format('numb', gp('gp_skey'));
       
@@ -301,12 +306,14 @@ class reports extends x_table2
             <?php echo $this->ehTablesAvl(false)?>
         </tr>
         <?php
+
     }
    
    
-    function ehTablesRep($ajax=true) 
+    public function ehTablesRep($ajax=true)
     {
-        if($ajax) { echo "ajx_tablesrep|"; 
+        if ($ajax) {
+            echo "ajx_tablesrep|";
         }
       
         $gp_skey=SQL_Format('numb', gp('gp_skey'));
@@ -324,14 +331,14 @@ class reports extends x_table2
             .$row['description']
             ."</option>";
         }
-        echo  
+        echo
          '<select name="sel_tablesrep" id="sel_tablesrep"
-            multiple size=7 style="width: 300px">' 
+            multiple size=7 style="width: 300px">'
          .$retval
          ."\n</select>";
     }
 
-    function ehTablesAvl($ajax=true) 
+    public function ehTablesAvl($ajax=true)
     {
         $skey    =SQL_Format('numb', gp('gp_skey'));
 
@@ -344,13 +351,13 @@ class reports extends x_table2
            WHERE r.skey = $skey"
         );
         $atables=array();
-        foreach($tables as $table) {
+        foreach ($tables as $table) {
             $atables[] = "'".trim($table['table_id'])."'";
         }
         $stables=implode(',', $atables);
       
       
-        if($stables<>'') {
+        if ($stables<>'') {
             // They requested a particular table
             $sq=
             "select distinct t.table_id,t.description
@@ -366,15 +373,14 @@ class reports extends x_table2
                WHERE fky.table_id_par in ($stables)
                  AND t.table_id NOT IN ($stables) 
                ORDER BY t.description";
-        } 
-        else {
+        } else {
             $sq="select table_id,description
                   FROM tables 
                  order by description";
         }
         $dbres=SQL($sq);
         $retval='';
-        while($row=SQL_Fetch_Array($dbres)) {
+        while ($row=SQL_Fetch_Array($dbres)) {
             $retval
             .="\n<option value=\"".$row['table_id']."\">"
             .$row['description']
@@ -384,9 +390,10 @@ class reports extends x_table2
         // Echo the output
         //echo "echo|$sq";
         //return;
-        if($ajax) { echo "ajx_tablesavl|"; 
+        if ($ajax) {
+            echo "ajx_tablesavl|";
         }
-        echo 
+        echo
          "<select multiple size=7 style=\"width: 300px\"
                   name=\"sel_tablesavl\" id=\"sel_tablesavl\"
                   >"
@@ -394,7 +401,7 @@ class reports extends x_table2
          ."</select>";
     }
    
-    function TableDel() 
+    public function TableDel()
     {
         $table_id=SQL_Format('char', gp('gp_rtable'));
         $skey=SQL_Format('numb', gp('gp_skey'));
@@ -417,7 +424,7 @@ class reports extends x_table2
         $this->ehTablesRep();
     }
    
-    function TableAdd() 
+    public function TableAdd()
     {
         $table_id=SQL_Format('char', gp('gp_rtable'));
         $skey=SQL_Format('numb', gp('gp_skey'));
@@ -435,7 +442,7 @@ class reports extends x_table2
     }
 
     // ---------- TAB: COLUMNS -------------------------
-    function ehTab_Columns() 
+    public function ehTab_Columns()
     {
         $skey=SQL_Format('numb', gp('gp_skey'));
         $cols=SQL_AllRows(
@@ -449,11 +456,11 @@ class reports extends x_table2
             JOIN tabflat       flat ON rt.table_id   = flat.table_id
            WHERE r.skey=$skey
              AND flat.columN_id not in ('skey','skey_quiet','_agg')
-           ORDER by t.description,flat.description" 
+           ORDER by t.description,flat.description"
         );
         $hOpts='';
         //hprint_r($cols);
-        foreach($cols as $col) {
+        foreach ($cols as $col) {
             $hOpts
             .="<option value=\"".$col['table_id'].":".$col['column_id']."\">"
             ."(".$col['tabdesc'].") ".$col['coldesc']
@@ -488,6 +495,7 @@ class reports extends x_table2
        </tr>
        </table>
         <?php
+
     }
 
     /**
@@ -497,17 +505,18 @@ class reports extends x_table2
    Returns a complete HTML table element listing all columns in a report.
    Each time this is called it completely replaces what came before.
    */
-    function ehColumns($ajax=true) 
+    public function ehColumns($ajax=true)
     {
-        if($ajax) { echo "ajx_columnsrep|"; 
-        } 
+        if ($ajax) {
+            echo "ajx_columnsrep|";
+        }
         $gp_skey=SQL_Format('numb', gp('gp_skey'));
 
         //$retval=$this->repColTitles();
         echo
          "<table width=100%>"
          .hTRFromArray(
-             'dhead', array('Delete','Up','Column','Down','Caption','Size','Sort')
+             'dhead', array('Delete', 'Up', 'Column', 'Down', 'Caption', 'Size', 'Sort')
          );
       
         $sq="SELECT rc.*
@@ -522,7 +531,7 @@ class reports extends x_table2
             ORDER BY rc.uicolseq";
         $rows=SQL_AllRows($sq);
         $retval="";
-        foreach($rows as $row) {
+        foreach ($rows as $row) {
             $coldl="&gp_ajax=coldl&gp_skcol=".$row['skey'];
             $colup="&gp_ajax=colup"
             ."&gp_csorg=".trim($row['uicolseq'])."&gp_skorg=".$row['skey'];
@@ -567,15 +576,16 @@ class reports extends x_table2
            <td><input type=checkbox <?php echo $CHKD?> value="Y"
                onchange="javascript:sndReq('<?php echo $colst?>')">
             <?php
+
         }
         echo "</table>";
     }
    
-    function Ajax_ColumnAdd() 
+    public function Ajax_ColumnAdd()
     {
         $gp=gp('gp_rcolumn');
         $skey=gp('gp_skey');
-        list($table_id,$column_id) = explode(':', $gp);
+        list($table_id, $column_id) = explode(':', $gp);
       
         $maxui=SQL_OneValue(
             'ui',
@@ -595,7 +605,7 @@ class reports extends x_table2
         SQL($sq);
         //echo($sq);
         //echo hErrors();
-      
+
         // Redraw the list of columns
         $this->ehColumns();
     }
@@ -606,21 +616,20 @@ class reports extends x_table2
    
    Moves a column up or down by altering its uicolseq
    */
-    function ehAjax_ColMove() 
+    public function ehAjax_ColMove()
     {
         $gp_skey = gp('gp_skey');
         $cs_org  = gp('gp_csorg');
         //$cs_org  = str_pad($cs_org,4,STR_PAD_LEFT,'0');
         $sk_org  = gp('gp_skorg');
-        if(gp('gp_ajax')=='coldn') {
+        if (gp('gp_ajax')=='coldn') {
             $sq="select rc.skey,rc.uicolseq 
                from reportcolumns rc 
                JOIN reports r  ON r.report = rc.report
               WHERE r.skey = $gp_skey
                 AND rc.uicolseq > '$cs_org'
               ORDER BY rc.uicolseq ASC LIMIT 1";
-        }
-        else {
+        } else {
             $sq="select rc.skey,rc.uicolseq 
                from reportcolumns rc 
                JOIN reports r  ON r.report = rc.report
@@ -637,7 +646,7 @@ class reports extends x_table2
         $sq="update reportcolumns set uicolseq='$swap_cs' where skey=".$sk_org;
         SQL($sq);
 
-        $this->ehColumns();      
+        $this->ehColumns();
     }
 
    
@@ -647,11 +656,11 @@ class reports extends x_table2
    
    Delete a column from a report
    */
-    function ehAjax_ColDel() 
+    public function ehAjax_ColDel()
     {
         $sk_org  = SQL_Format('numb', gp('gp_skcol'));
         SQL("DELETE FROM reportcolumns where skey=$sk_org");
-        echo $this->ehColumns();      
+        echo $this->ehColumns();
     }
    
     /**
@@ -659,7 +668,7 @@ class reports extends x_table2
    
    Flips the sort flag (flag_sort) for a given skey
    */
-    function ehAjax_ColSort() 
+    public function ehAjax_ColSort()
     {
         $skey=SQLFN(gp('gp_skcol'));
         SQL(
@@ -667,7 +676,7 @@ class reports extends x_table2
              CASE WHEN COALESCE(flag_sort,'N')='N' THEN 'Y' ELSE 'N' END
             WHERE skey = $skey"
         );
-        $this->ehColumns();      
+        $this->ehColumns();
     }
 
    
@@ -676,7 +685,7 @@ class reports extends x_table2
    
    saves a single column of a single row.  Does no refresh
    */
-    function Ajax_ColSave() 
+    public function Ajax_ColSave()
     {
         $cskey=gp('gp_colsk');
         $colnm=gp('gp_col');
@@ -686,10 +695,11 @@ class reports extends x_table2
    
    
     // ---------- TAB: Levels/Breaking Definitions
-    function ehTab_Levels($ajax=true) 
+    public function ehTab_Levels($ajax=true)
     {
-        if($ajax) { echo "x2_content|"; 
-        } 
+        if ($ajax) {
+            echo "x2_content|";
+        }
       
         // First get basic rows, and start an array that contains level info
         $skey=SQLFN(gp('gp_skey'));
@@ -700,7 +710,7 @@ class reports extends x_table2
             ORDER BY rc.uicolseq";
         $rows=SQL_AllRows($sq, 'column_id');
         $hCols=array();
-        foreach($rows as $row) {
+        foreach ($rows as $row) {
             $hCols[$row['column_id']]=array($row['description']);
         }
       
@@ -713,7 +723,7 @@ class reports extends x_table2
             WHERE r.skey = $skey
             ORDER BY cl.reportlevel";
         $levels=SQL_AllRows($sq);
-        foreach($levels as $lev) {
+        foreach ($levels as $lev) {
             $js="javascript:sndReq('"
             ."&gp_ajax=levmod"
             ."&gp_skeycl=".$lev['skey']
@@ -738,19 +748,20 @@ class reports extends x_table2
        <table>
         <tr>
         <?php
-        foreach($hTitles as $hTitle) {
+        foreach ($hTitles as $hTitle) {
             echo "<td class='dhead' style='width:10em'>$hTitle</td>";
         }
-         echo "</tr>";
-        foreach($hCols as $hCol) {
+        echo "</tr>";
+        foreach ($hCols as $hCol) {
             echo hTRFromArray('', $hCol);
         }
-            ?>
+        ?>
        </table>
         <?php
+
     }
 
-    function ehAjax_Levels() 
+    public function ehAjax_Levels()
     {
         $skey=SQLFN(gp('gp_skey'));
         $report=SQL_OneValue(
@@ -761,7 +772,7 @@ class reports extends x_table2
             FROM reportcollevels WHERE report = '$report'";
         $maxlev=SQL_AllRows($sq);
         $maxlev=count($maxlev)==0 ? 1 : $maxlev[0]['maxlev'];
-        if($levaction=='levadd') {
+        if ($levaction=='levadd') {
             //if(is_null($maxlev)) $maxlev=1; else $maxlev++;
             $maxlev++;
             SQL(
@@ -772,18 +783,16 @@ class reports extends x_table2
                WHERE report='$report'"
             );
             echo hErrors();
-        }
-        elseif($levaction=='levdel') {
+        } elseif ($levaction=='levdel') {
             //echo "hi".$maxlev.'hi';
             $sq="Delete from reportcollevels
                where report='$report'
                  AND reportlevel = $maxlev";
             SQL($sq);
             //echo $sq;
-        
+
             //if(Errors()) echo hErrors();
-        }
-        elseif($levaction=='levmod') {
+        } elseif ($levaction=='levmod') {
             $skeycl=SQLFN(gp('gp_skeycl'));
             $newval=SQLFC(gp('gp_value'));
             SQL(
@@ -798,10 +807,11 @@ class reports extends x_table2
 
     // ---------- TAB: FILTERS ---------------------
     // DEFUNCT, use new code now
-    function ehTab_Filters($ajax=true) 
+    public function ehTab_Filters($ajax=true)
     {
-        if($ajax) { echo "x2_content|"; 
-        } 
+        if ($ajax) {
+            echo "x2_content|";
+        }
 
         $skey=SQLFN(gp('gp_skey'));
         $report=SQL_OneValue(
@@ -809,12 +819,12 @@ class reports extends x_table2
         );
       
         // Do any processing that may have come through
-        if(gp('gp_ajax')=='filtrep') {
+        if (gp('gp_ajax')=='filtrep') {
             $repfilters=SQLFC(gp('gp_val'));
             //echo "we are setting $repfilters";
             SQL("UPDATE reports SET repfilters=$repfilters WHERE skey=$skey");
         }
-        if(gp('gp_ajax')=='filtlev') {
+        if (gp('gp_ajax')=='filtlev') {
             $repfilters=SQLFC(gp('gp_val'));
             $skeylev=SQLFN(gp('gp_skeylev'));
             SQL(
@@ -837,7 +847,7 @@ class reports extends x_table2
             AND report='$report'"
         );
         //echo hErrors();
-      
+
         // Now for each level list some filters
         ?>
        <table>
@@ -857,7 +867,7 @@ class reports extends x_table2
 
         </tr>
         <?php
-        foreach($levs as $lev) {
+        foreach ($levs as $lev) {
             $js='&gp_ajax=filtlev&gp_skeylev='.$lev['skey'];
             ?>
            <tr>
@@ -870,6 +880,7 @@ class reports extends x_table2
                  ><?php echo $lev['repfilters']?></textarea></td>
            </tr>
             <?php
+
         }
         ?>
        </table>
@@ -886,22 +897,23 @@ class reports extends x_table2
          $sql="SELECT description,table_id,column_id from reportcolumns
                 WHERE report = '$report'
                 ORDER BY description";
-         $cols=SQL_Allrows($sql);
-        foreach($cols as $col) {
+        $cols=SQL_Allrows($sql);
+        foreach ($cols as $col) {
             ?>
             <tr><td><?php echo $col['description']?>
                <td><?php echo $col['table_id']?>
                <td><?php echo $col['column_id']?>
             <?php
+
         }
-            ?>
+        ?>
        </table>
-        <?php  
+        <?php 
     }
    
     // ---------- TAB: FILTERS ---------------------
     // DEFUNCT, use new code now
-    function ehTab_Filters_OLD() 
+    public function ehTab_Filters_OLD()
     {
         $skey=SQL_Format('numb', gp('gp_skey'));
         $sq=
@@ -920,7 +932,7 @@ class reports extends x_table2
         $rows=SQL_AllRows($sq);
         $opts=array('','=','!=','>','<','>=','<=');
         ob_start();
-        foreach($rows as $row) {
+        foreach ($rows as $row) {
             $row['compoper']=trim($row['compoper']);
             $hSelBase
             ="'&gp_ajax=colsave&gp_colsk=".$row['skey']
@@ -928,7 +940,7 @@ class reports extends x_table2
             $hSel1=$hSelBase."compoper'";
             $hSel2=$hSelBase."compval'";
             $hOpts='';
-            foreach($opts as $opt) {
+            foreach ($opts as $opt) {
                 $sel=$row['compoper']==$opt ? ' SELECTED ' : '';
                 $hOpts.="\n<option $sel value=\"$opt\">"
                 .htmlentities($opt)."</option>";
@@ -945,6 +957,7 @@ class reports extends x_table2
                 size=70 maxlength=100>
            </tr>   
             <?php
+
         }
         $hHTML=ob_get_clean();
            
@@ -959,15 +972,17 @@ class reports extends x_table2
             <?php echo $hHTML?>
        </table>
         <?php
+
     }
    
     // - - - - - - - - - - - - - - - - - - 
     // HELPER: Just the tabbar
     // - - - - - - - - - - - - - - - - - -
-    function ehTabBar($ajax=true) 
+    public function ehTabBar($ajax=true)
     {
         // If in ajax mode, put out id, else set for first tab
-        if($ajax) { echo "x2tabbar|"; 
+        if ($ajax) {
+            echo "x2tabbar|";
         }
       
         // fixed values for the tabs
@@ -980,15 +995,14 @@ class reports extends x_table2
       
         // Now generate the tab bar
         $ctab=gp('gp_ajax_tab', 'Main');
-        foreach($tabs as $tab) {
+        foreach ($tabs as $tab) {
             $hlink="sndReq('&gp_ajax=tab&gp_ajax_tab=".$tab."')";
-            if($ctab==$tab) {
+            if ($ctab==$tab) {
                 echo "<span>$tab</span>&nbsp;&nbsp;";
-            }
-            else {
+            } else {
                 echo "<a href=\"javascript:$hlink\">$tab</a>&nbsp;&nbsp;</a>";
             }
         }
-    }   
+    }
 }
 ?>

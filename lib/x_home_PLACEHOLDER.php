@@ -25,7 +25,7 @@
 //
 class x_table_x_home extends x_table
 {
-    function main() 
+    public function main()
     {
         $this->PageSubtitle = "Welcome to ".V("PageTitle");
         ?>
@@ -42,6 +42,6 @@ class x_table_x_home extends x_table
          </tr>
        </table>
         <?php
+
     }
 }
-

@@ -54,16 +54,18 @@ discarded.
 */
 class x_docgen extends x_table2
 {
-    function construct_custom() 
+    public function construct_custom()
     {
-        if(gp('gp_posted')<>'') { $this->flag_buffer=false; 
+        if (gp('gp_posted')<>'') {
+            $this->flag_buffer=false;
         }
     }
    
-    function main() 
+    public function main()
     {
         $this->PageSubtitle = "Documentation Generation";
-        if(gp('gp_posted')=='1') { return $this->ehProcess(); 
+        if (gp('gp_posted')=='1') {
+            return $this->ehProcess();
         }
         ?>
        <h1>Code And Data Dictionary Scanning</h1>
@@ -89,9 +91,10 @@ class x_docgen extends x_table2
        <a href="javascript:Popup('?gp_page=x_docgen&gp_posted=1','Code Scan')">
          Generate Documentation</a>
         <?php
+
     }
 
-    function ehProcess() 
+    public function ehProcess()
     {
         ob_start();
         // Delete all current pages, then create the master category
@@ -164,7 +167,7 @@ class x_docgen extends x_table2
     //
     // ================================================================= \\
     // ================================================================= \\
-    function ehProcessCode($PageAPI,$PageApp) 
+    public function ehProcessCode($PageAPI, $PageApp)
     {
         // Grab the base directory, and the list of dirs
         $p=$GLOBALS['AG']['dirs']['root'];
@@ -184,8 +187,9 @@ class x_docgen extends x_table2
 
         // Look only at "copy" directories, those that are published,
         // and list either under "Framework and API" or "Application"
-        foreach($dirs as $dir) {
-            if($dir['flag_copy']<>'Y') { continue; 
+        foreach ($dirs as $dir) {
+            if ($dir['flag_copy']<>'Y') {
+                continue;
             }
          
             $parent=$dir['flag_lib']=='Y' ? $PageAPI : $PageApp;
@@ -194,28 +198,29 @@ class x_docgen extends x_table2
         }
     }
 
-    function processCodeDir($basedir,$branch,$parent) 
+    public function processCodeDir($basedir, $branch, $parent)
     {
         $path=$basedir.$branch;
         x_EchoFlush("");
         x_EchoFlush(" :: DIRECTORY $path");
         $FILE=opendir($path);
-        while( ($filename=readdir($FILE))!==false ) {
-            if($filename=='.') { continue; 
+        while (($filename=readdir($FILE))!==false) {
+            if ($filename=='.') {
+                continue;
             }
-            if($filename=='..') { continue; 
+            if ($filename=='..') {
+                continue;
             }
             x_EchoFlush("File: $filename");
-            if(is_dir($path.$filename)) {
-                $this->ProcessCodeDir($basedir, $branch.$filename."/", $parent);  
-            }
-            else {
+            if (is_dir($path.$filename)) {
+                $this->ProcessCodeDir($basedir, $branch.$filename."/", $parent);
+            } else {
                 $this->ProcessCode_File($path, $filename, $parent);
             }
         }
     }
    
-    function ProcessCode_File($path,$filename,$parent) 
+    public function ProcessCode_File($path, $filename, $parent)
     {
         $table=DD_TableRef('docpages');
       
@@ -223,18 +228,18 @@ class x_docgen extends x_table2
         $file=file_get_contents($path.'/'.$filename);
         $matches=array();
         preg_match_all('/\n\/\*\*\n(.*)\n\*\//xmsU', $file, $matches);
-        if(isset($matches[1])) {
+        if (isset($matches[1])) {
             x_echoflush('count of returns: '.count($matches[1]));
             $defaults=array();
-            foreach($matches[1] as $matchno=>$match) {
+            foreach ($matches[1] as $matchno=>$match) {
                 $sequence = 0;
                 $flag_function=false;
                 //x_EchoFlush($matchno);
                 $match=str_replace("\r", '', $match);  // simplify any cr/lf
-            
+
                 // separate parms from text
                 $match.="\n\n ";  // makes next line fail-safe
-                list($parmstext,$pagetext)=explode("\n\n", $match, 2);
+                list($parmstext, $pagetext)=explode("\n\n", $match, 2);
             
                 // Split up and process parms.  If the name is "_default_",
                 // then use these to overwrite defaults
@@ -243,9 +248,9 @@ class x_docgen extends x_table2
                 $udate = 'unknown';
                 $varlines= explode("\n", $parmstext);
                 $avars=$varlines[0]=='name:_default_' ? array() : $defaults;
-                foreach($varlines as $varline) {
+                foreach ($varlines as $varline) {
                     $varpieces=explode(':', $varline);
-                    if(count($varpieces)==2) {
+                    if (count($varpieces)==2) {
                         switch ($varpieces[0]) {
                         case 'testtypes':
                             $testtypes=explode(',', $varpieces[1]);
@@ -274,18 +279,19 @@ class x_docgen extends x_table2
                         }
                     }
                 }
-                if($varlines[0]=='name:_default_') {
+                if ($varlines[0]=='name:_default_') {
                     unset($avars['name']);
                     $defaults=$avars;
                     continue;
                 }
             
                 // happily skip something that doesn't have a name
-                if(!isset($avars['name'])) { continue; 
+                if (!isset($avars['name'])) {
+                    continue;
                 }
                 $pagename = $avars['name'];
             
-                if(isset($avars['parm']) || isset($avars['returns'])) {
+                if (isset($avars['parm']) || isset($avars['returns'])) {
                     $flag_function=true;
                 }
 
@@ -294,11 +300,11 @@ class x_docgen extends x_table2
                 if ($flag_function) {
                     $nametext
                     ="\n<pre>"
-                    .(isset($avars['returns']) ? $avars['returns'].' ' : '') 
+                    .(isset($avars['returns']) ? $avars['returns'].' ' : '')
                     ."<b>".$pagename."</b>(\n";
                     $parmtext='';
-                    if(isset($avars['parm'])) {
-                        foreach($avars['parm'] as $parm) {
+                    if (isset($avars['parm'])) {
+                        foreach ($avars['parm'] as $parm) {
                             $parmtext.="\n    ".$parm;
                         }
                         $parmtext.="\n";
@@ -307,14 +313,14 @@ class x_docgen extends x_table2
                 }
             
                 if (isset($avars['flag']['framework'])) {
-                    $pagetext = 
+                    $pagetext =
                     "''''This is a framework internal function.''''\n\n"
                     .$pagetext;
                 }
             
                 // if there is no parent page, assign the current default
-                if(!isset($avars['parent'])) {
-                    $avars['parent']=$parent;  
+                if (!isset($avars['parent'])) {
+                    $avars['parent']=$parent;
                 }
             
                 // Add the date to name text
@@ -333,27 +339,28 @@ class x_docgen extends x_table2
         echo htmlx_errors();
     }
    
-    function RunTests($pagename,$testtypes,$tests) 
+    public function RunTests($pagename, $testtypes, $tests)
     {
-        if(count($testtypes)==0) { return ''; 
+        if (count($testtypes)==0) {
+            return '';
         }
-        if(count($tests)    ==0) { return ''; 
+        if (count($tests)    ==0) {
+            return '';
         }
       
         // If there are tests to run, do them now
         $hError='';
         $hTests='';
-        foreach($tests as $test) {
+        foreach ($tests as $test) {
             // Explode parameters and build a function call
             $parms=explode(',', $test);
-            if(count($parms)<>count($testtypes)) {
+            if (count($parms)<>count($testtypes)) {
                 $hError="\n\n''There was a column count error in the
                     in-line test declarations for this function''\n";
-            }
-            else {
+            } else {
                 // Turn some of the values into quotes values
-                foreach($parms as $index=>$parm) {
-                    if($testtypes[$index]=='char') {
+                foreach ($parms as $index=>$parm) {
+                    if ($testtypes[$index]=='char') {
                         $parms[$index] = "'".$parm."'";
                     }
                 }
@@ -373,8 +380,8 @@ class x_docgen extends x_table2
                 $hTests.="\n".hTrFromArray('', $parms);
             }
         }
-        if($hTests) {
-            foreach($testtypes as $index=>$testtype) {
+        if ($hTests) {
+            foreach ($testtypes as $index=>$testtype) {
                 $htitles[]='Parm '.($index+1);
             }
             $htitles[]='Output';
@@ -387,7 +394,7 @@ class x_docgen extends x_table2
             ."\n</table>\n\n";
         }
       
-        return $hTests; 
+        return $hTests;
     }
       
     // ================================================================= \\
@@ -400,7 +407,7 @@ class x_docgen extends x_table2
     //
     // ================================================================= \\
     // ================================================================= \\
-    function ehProcessData() 
+    public function ehProcessData()
     {
         x_EchoFlush("Processing Tables");
         $this->PageUpdate('Tables', '', 'Data Dictionary');
@@ -410,7 +417,7 @@ class x_docgen extends x_table2
         $this->PageUpdate('Groups', '', 'Data Dictionary');
         x_EchoFlush("Processing Column Definitions");
         $this->PageUpdate('Column Definitions', '', 'Data Dictionary');
-        x_EchoFlush("Processing Spec Files");      
+        x_EchoFlush("Processing Spec Files");
         $this->PageUpdate('Spec Files', '', 'Data Dictionary');
 
       
@@ -424,7 +431,7 @@ class x_docgen extends x_table2
         echo hErrors();
     }
    
-    function ProcessData_Top() 
+    public function ProcessData_Top()
     {
         // generate the top-level page
         ob_start();
@@ -461,7 +468,7 @@ class x_docgen extends x_table2
     // ---------------------------------------------------------------
     // Columns
     // ---------------------------------------------------------------
-    function ProcessData_Columns() 
+    public function ProcessData_Columns()
     {
         ob_start();
         ?>
@@ -480,17 +487,16 @@ class x_docgen extends x_table2
         <?php
         $sq="SELECT * from zdd.columns order by column_id";
         $cols=SQL_AllRows($sq);
-        foreach($cols as $row) {
+        foreach ($cols as $row) {
             $tabs=SQL_AllRows(
                 "SELECT table_id,column_id FROM zdd.tabflat
               WHERE columN_id_src='{$row['column_id']}'"
             );
             $ahtabs=array();
-            if($row['alltables']=='Y') {
+            if ($row['alltables']=='Y') {
                 $ahtabs[]="All Tables";
-            }
-            else {
-                foreach($tabs as $tab) {
+            } else {
+                foreach ($tabs as $tab) {
                     $gpp=urlencode('Table:'.$tab['table_id']);
                     $ahtabs[]
                     =$this->pageLink('Table', $tab['table_id'])
@@ -516,7 +522,7 @@ class x_docgen extends x_table2
     // ---------------------------------------------------------------
     // MODULES
     // ---------------------------------------------------------------
-    function ProcessData_Modules() 
+    public function ProcessData_Modules()
     {
         ob_start();
         echo "These are the modules in this system:<Br>";
@@ -524,7 +530,7 @@ class x_docgen extends x_table2
         $titles = array('Module','Source','Description');
         echo hTRFromArray('adocs_th', $titles);
         $mods=SQL_AllRows('SELECT * from zdd.modules order by module');
-        foreach($mods as $mod) {
+        foreach ($mods as $mod) {
             $display=array(
             $this->pageLink('Module', $mod['module'])
             ,$this->pageLink('Spec file', $mod['srcfile'])
@@ -538,7 +544,7 @@ class x_docgen extends x_table2
         $this->PageUpdate('Modules', $page_text, 'Data Dictionary');
     }
    
-    function ProcessData_OneModule($row) 
+    public function ProcessData_OneModule($row)
     {
         ob_start();
 
@@ -551,7 +557,7 @@ class x_docgen extends x_table2
            WHERE module='".$row['module']."'"
         );
         $htabs=array();
-        foreach($tabs as $tab) {
+        foreach ($tabs as $tab) {
             $htabs[]=$this->PageLink('Table', $tab['table_id']);
         }
         echo implode(',&nbsp; ', $htabs);
@@ -561,13 +567,13 @@ class x_docgen extends x_table2
             WHERE module = '".$row['module']."'
             ORDER BY group_id"
         );
-        if(count($bymods)>0) {
+        if (count($bymods)>0) {
             echo "<br><br>";
-            echo "Default permission for this module"; 
+            echo "Default permission for this module";
             $this->ehtableheader();
-            $headers=Array('Group','Select','Insert','Update','Delete');
+            $headers=array('Group','Select','Insert','Update','Delete');
             echo hTRFromArray('adocs_th', $headers);
-            foreach($bymods as $bymod) {
+            foreach ($bymods as $bymod) {
                 $display=array(
                 $this->pageLink('Group', $bymod['group_id'])
                 ,$this->PermResolve($bymod['permsel'])
@@ -586,7 +592,7 @@ class x_docgen extends x_table2
     // ---------------------------------------------------------------
     // GROUPS
     // ---------------------------------------------------------------
-    function ProcessData_Groups() 
+    public function ProcessData_Groups()
     {
         ob_start();
         ?>
@@ -619,9 +625,10 @@ class x_docgen extends x_table2
    <tbody>
         <?php
         $groups=SQL_AllRows("select * from zdd.groups order by group_id");
-        foreach($groups as $row) {
+        foreach ($groups as $row) {
             // Don't look at the "effective" groups
-            if(!$this->ProcessGroup($row['group_id'])) { continue; 
+            if (!$this->ProcessGroup($row['group_id'])) {
+                continue;
             } ;
          
             $display=array(
@@ -637,7 +644,7 @@ class x_docgen extends x_table2
             $this->ProcessData_OneGroup($row);
         }
         echo "</tbody>";
-    ?>
+        ?>
       </table>
         <?php
         $page_text=ob_get_clean();
@@ -646,7 +653,7 @@ class x_docgen extends x_table2
    
     // - - - - - - - - - - - - - - - - - - - - - - - - - - 
     // One Group
-    function ProcessData_OneGroup($row) 
+    public function ProcessData_OneGroup($row)
     {
         ob_start();
         echo "Defined in: ".$row['srcfile']."<br>";
@@ -658,14 +665,14 @@ class x_docgen extends x_table2
         echo "<br><br>";
         echo "This group's permissions by module: ";
         $this->ehtableheader();
-        $headers=Array('Module','Select','Insert','Update','Delete');
+        $headers=array('Module','Select','Insert','Update','Delete');
         echo hTRFromArray('adocs_th', $headers);
         $bymods=SQL_AllRows(
             "SELECT * FROM zdd.permxmodules
             WHERE group_id = '".$row['group_id']."'
             ORDER BY module"
         );
-        foreach($bymods as $bymod) {
+        foreach ($bymods as $bymod) {
             $display=array(
             $this->pageLink('Module', $bymod['module'])
             ,$this->PermResolve($bymod['permsel'])
@@ -680,14 +687,14 @@ class x_docgen extends x_table2
         echo "<br><br>";
         echo "This group's permissions by table: ";
         $this->ehtableheader();
-        $headers=Array('Module','Select','Insert','Update','Delete');
+        $headers=array('Module','Select','Insert','Update','Delete');
         echo hTRFromArray('adocs_th', $headers);
         $bymods=SQL_AllRows(
             "SELECT * FROM zdd.perm_tabs
             WHERE group_id = '".$row['group_id']."'
             ORDER BY module"
         );
-        foreach($bymods as $bymod) {
+        foreach ($bymods as $bymod) {
             $display=array(
             $this->pageLink('Table', $bymod['table_id'])
             ,$this->PermResolve($bymod['permsel'])
@@ -708,7 +715,7 @@ class x_docgen extends x_table2
     // ---------------------------------------------------------------
     // Spec Files
     // ---------------------------------------------------------------
-    function ProcessData_SpecFiles() 
+    public function ProcessData_SpecFiles()
     {
         ob_start();
         echo "These are the spec files that were used to build this system.";
@@ -723,8 +730,9 @@ class x_docgen extends x_table2
           SELECT distinct srcfile FROM zdd.groups"
         );
         foreach ($specs as $spec) {
-            if($spec['srcfile']=='') { continue; 
-            } 
+            if ($spec['srcfile']=='') {
+                continue;
+            }
             echo "<br><br>Specification file: ".
             $this->pagelink('Spec file', $spec['srcfile']);
             $this->ProcessData_OneSPecFile($spec['srcfile']);
@@ -733,7 +741,7 @@ class x_docgen extends x_table2
         $this->PageUpdate('Spec Files', $page_text, 'Data Dictionary');
     }
    
-    function ProcessData_OneSpecFile($specfile) 
+    public function ProcessData_OneSpecFile($specfile)
     {
         ob_start();
         $x=$specfile;
@@ -796,7 +804,7 @@ class x_docgen extends x_table2
     // ---------------------------------------------------------------
     // Spec Files
     // ---------------------------------------------------------------
-    function ProcessData_Tables() 
+    public function ProcessData_Tables()
     {
         ob_start();
         ?>
@@ -811,7 +819,7 @@ class x_docgen extends x_table2
    </thead>
    <tbody>
         <?php 
-        $sql = 
+        $sql =
          "SELECT t.table_id,t.srcfile,t.description,t.module 
            FROM zdd.tables t
            JOIN zdd.modules m
@@ -837,7 +845,7 @@ class x_docgen extends x_table2
         $this->PageUpdate('Tables', $page_text, 'Data Dictionary');
     }
 
-    function ProcessData_OneTable($table) 
+    public function ProcessData_OneTable($table)
     {
         $tab = trim($table["table_id"]);
         ob_start();
@@ -859,7 +867,7 @@ class x_docgen extends x_table2
         );
         $hpars = array();
         echo "<td>";
-        foreach($pars as $par) {
+        foreach ($pars as $par) {
             $hpars[]=$this->pagelink('Table', $par['table_id_par']);
         }
         echo implode(',&nbsp; ', $hpars);
@@ -870,7 +878,7 @@ class x_docgen extends x_table2
            WHERE table_id_par = '$tab'"
         );
         $hpars = array();
-        foreach($pars as $par) {
+        foreach ($pars as $par) {
             $hpars[]=$this->pagelink('Table', $par['table_id']);
         }
         echo implode(',&nbsp; ', $hpars);
@@ -888,7 +896,7 @@ class x_docgen extends x_table2
           ORDER BY uicolseq", 'column_id'
         );
         $hCalcCon=array();
-        foreach($cols as $row) {
+        foreach ($cols as $row) {
             $column_id=$row['column_id'];
             $display=array(
             $row['column_id']
@@ -916,10 +924,10 @@ Select c.* from zdd.colchains c
         );
         echo "<br>";
         echo "<div class=\"head1\">Column Calculations and Constraints</div>";
-        if(count($colsCons)==0) {
+        if (count($colsCons)==0) {
             echo "There are no constraints or calculations for this table.";
         }
-        foreach($colsCons as $colsCon) {
+        foreach ($colsCons as $colsCon) {
             $column_id=$colsCon['column_id'];
             echo "<br>";
             echo "<div class=head2>"
@@ -945,34 +953,35 @@ select arg.*,test.funcoper,test.compoper
     ON arg.uicolseq = test.uicolseq
  WHERE arg.table_id = '$tab'
    AND arg.column_id = ".SQLFC($column_id)."
- ORDER by uicolseq,argtype,sequence"      
+ ORDER by uicolseq,argtype,sequence"
             );
             $cat='';
             $cui=0;
-            foreach($tests as $test) {
+            foreach ($tests as $test) {
                 $at=$test['argtype'];
                 $ui=$test['uicolseq'];
                 // Change from one row to the other requires closeup 
-                if($cui<>$ui) {
-                    if($cui<>0) { echo "</tr>"; // close prior row
-                    }                 $cui=$ui;
+                if ($cui<>$ui) {
+                    if ($cui<>0) {
+                        echo "</tr>"; // close prior row
+                    }
+                    $cui=$ui;
                     echo "<tr><td>";          // open new row and cell
-                    if($at==0) {
+                    if ($at==0) {
                         echo $test['compoper']."&nbsp;";
                     }
                     $cat=0;
                 }
              
                 // when changing from comparison to 
-                if($at==1 && $cat==0) {
+                if ($at==1 && $cat==0) {
                     echo "<td>".$test['funcoper']."&nbsp;";
                     $cat=$at;
                 }
              
-                if($test['column_id_arg']<>'') {
+                if ($test['column_id_arg']<>'') {
                     echo "@".$test['column_id_arg']."&nbsp;";
-                }
-                else {
+                } else {
                     echo $test['literal_arg']."&nbsp;";
                 }
             }
@@ -984,15 +993,16 @@ select arg.*,test.funcoper,test.compoper
         echo "<br><br>";
         echo "This tables's permissions by group: ";
         $this->ehtableheader();
-        $headers=Array('Group','Select','Insert','Update','Delete');
+        $headers=array('Group','Select','Insert','Update','Delete');
         echo hTRFromArray('adocs_th', $headers);
         $bymods=SQL_AllRows(
             "SELECT * FROM zdd.perm_tabs
             WHERE table_id = '$tab'
             ORDER BY group_id"
         );
-        foreach($bymods as $bymod) {
-            if(!$this->ProcessGroup($bymod['group_id'])) { continue; 
+        foreach ($bymods as $bymod) {
+            if (!$this->ProcessGroup($bymod['group_id'])) {
+                continue;
             } ;
             $display=array(
             $this->pageLink('Group', $bymod['group_id'])
@@ -1016,7 +1026,7 @@ select arg.*,test.funcoper,test.compoper
     // HELPER FUNCTIONS
     // ================================================================= \\
     // ================================================================= \\
-    function PageUpdate($pagename,$pagetext,$pagename_par=null,$seq=null) 
+    public function PageUpdate($pagename, $pagetext, $pagename_par=null, $seq=null)
     {
         $table_pg=DD_TableRef('docpages');
         $table_hi=DD_TableRef('dochiers');
@@ -1045,22 +1055,22 @@ select arg.*,test.funcoper,test.compoper
         */
     }
    
-    function linkTableFromRow($row) 
+    public function linkTableFromRow($row)
     {
         $xtab = $this->TableIDFromRow($row);
         $htab = urlencode($xtab);
         return "<a href=\"?gp_page=x_docview&gppn=$htab\">$xtab</a>";
     }
    
-    function TableIDFromRow($row) 
+    public function TableIDFromRow($row)
     {
         return trim($row['description']).' ('.trim($row['table_id']).')';
     }
    
    
-    function MakeFormula($row) 
+    public function MakeFormula($row)
     {
-        switch($row['type_id']) {
+        switch ($row['type_id']) {
         case 'numb':
             $retval='numeric('.$row['colprec'].','.$row['colscale'].')';
             break;
@@ -1076,40 +1086,41 @@ select arg.*,test.funcoper,test.compoper
         return $retval;
     }
    
-    function MakeAutomation($row) 
+    public function MakeAutomation($row)
     {
-        if($row['automation_id']=='NONE') { return ''; 
+        if ($row['automation_id']=='NONE') {
+            return '';
         }
       
         // special case, extended columns
         //if($row['automation_id']=='EXTEND') {
         //   return '<a href="#extend_'.$row['column_id'].'">CALCULATE</a>';
         //}
-      
-        if($row['auto_formula']=='') { return $row['automation_id']; 
+
+        if ($row['auto_formula']=='') {
+            return $row['automation_id'];
+        } else {
+            return $row['automation_id'].':'.$row['auto_formula'];
         }
-        else { return $row['automation_id'].':'.$row['auto_formula']; 
-        }
-      
     }
    
-    function PageLink($prefix,$item) 
+    public function PageLink($prefix, $item)
     {
         $href="?gp_page=x_docview&gppn=".urlencode($prefix.": ".$item);
         return "<a href=\"$href\">$item</a>";
     }
    
-    function ehTableHeader() 
+    public function ehTableHeader()
     {
         echo "<table class=\"table table-striped table-condensed table-hover table-bordered\">";
     }
    
-    function PermResolve($perm) 
+    public function PermResolve($perm)
     {
         return $perm=='Y' ? 'YES' : '-';
     }
    
-    function ProcessGroup($group_id) 
+    public function ProcessGroup($group_id)
     {
         $app=$GLOBALS['AG']['application'];
         $appe =$GLOBALS['AG']['application']."_eff_";

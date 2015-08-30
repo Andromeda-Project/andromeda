@@ -1,7 +1,7 @@
 <?php
 class x4configconfirm extends androX4
 {
-    function mainLayout($container) 
+    public function mainLayout($container)
     {
         // Erase default help message
         vgfSet('htmlHelp', '');
@@ -22,16 +22,16 @@ class x4configconfirm extends androX4
         // Include any of the files that exist        
         $dir = fsDirTop()."/dynamic/table_config";
         $configfw = $configapp = $configinst = $configuser = array();
-        if(file_exists($dir.'fw.php')) {
+        if (file_exists($dir.'fw.php')) {
             include $dir.'fw.php';
         }
-        if(file_exists($dir.'app.php')) {
+        if (file_exists($dir.'app.php')) {
             include $dir.'app.php';
         }
-        if(file_exists($dir.'inst.php')) {
+        if (file_exists($dir.'inst.php')) {
             include $dir.'inst.php';
         }
-        if(file_exists($dir.'user_'.SessionGet('UID').'.php')) {
+        if (file_exists($dir.'user_'.SessionGet('UID').'.php')) {
             include $dir.'user_'.SessionGet('UID').'.php';
         }
         
@@ -39,21 +39,22 @@ class x4configconfirm extends androX4
         $askip = array('recnum','skey','skey_quiet','_agg','uid_ins');
         $tbody = html('tbody', $table);
         $flipper = 0;
-        foreach($dd['flat'] as $column_id=>$colinfo) {
-            if(in_array($column_id, $askip)) { continue; 
+        foreach ($dd['flat'] as $column_id=>$colinfo) {
+            if (in_array($column_id, $askip)) {
+                continue;
             }
             
             $tr = html('tr', $tbody);
-            if($flipper>2) {
+            if ($flipper>2) {
                 $tr->addClass('lightgray');
-            }
-            else {
-                if($flipper<>2) {
+            } else {
+                if ($flipper<>2) {
                     $tr->addClass('lightgraybottom');
                 }
             }
             $flipper+=1;
-            if($flipper==6) { $flipper=0; 
+            if ($flipper==6) {
+                $flipper=0;
             }
             html('td', $tr, $colinfo['description']);
             
@@ -61,17 +62,14 @@ class x4configconfirm extends androX4
             html('td', $tr, a($configfw, $column_id));
             html('td', $tr, a($configapp, $column_id));
             html('td', $tr, a($configinst, $column_id));
-            if(a($colinfo, 'flagcarry', 'N') == 'Y') {
+            if (a($colinfo, 'flagcarry', 'N') == 'Y') {
                 html('td', $tr, a($configuser, $column_id));
-            }
-            else {
+            } else {
                 html('td', $tr, 'n/a');
             }
             
             // The final resolved value
             html('td', $tr, ConfigGet($column_id));
         }
-    
     }
 }
-?>

@@ -40,7 +40,6 @@
  */
 class AndroHtmlTabs extends AndroHtml
 {
-
     /****v* AndroHtml/AndroHtmlTabs
      *
      * NAME

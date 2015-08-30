@@ -1,7 +1,7 @@
 <?php
 class x6menu extends androX6
 {
-    function x6main() 
+    public function x6main()
     {
         $top = html('div');
         $top->hp['style'] = 'text-align: center;';
@@ -24,7 +24,7 @@ class x6menu extends androX6
         $outer->hp['xWidth1']  = $width1;
         $outer->hp['xWidth1b'] = $width1b;
         $outer->hp['xWidth2']  = $width2;
-        $outer->hp['style'] 
+        $outer->hp['style']
             = "padding: {$width1b}px {$width1}px;
                text-align: left;";
 
@@ -35,7 +35,7 @@ class x6menu extends androX6
         
         $inner=$outer->h('div');
         $inner->hp['id'] = 'x6menu_inner';
-        $inner->hp['style'] 
+        $inner->hp['style']
             =" border: 1px solid ".x6cssDefine('bgcdark').";
                height: {$iHeight}px;
                padding:{$width2}px";
@@ -44,20 +44,21 @@ class x6menu extends androX6
         $lHeight = $iHeight - $width2;
         $leftDiv = $inner->h('div');
         $leftDiv->hp['id']    = 'x6menu_left';
-        $leftDiv->hp['style'] = 
+        $leftDiv->hp['style'] =
             "background-color: ".x6cssDefine('bgcdark').";
              float: left;
              height: {$lHeight}px;
              width: {$widthl}px";
         $rightDiv = $inner->h('div');
         $rightDiv->hp['id']    = 'x6menu_right';
-        $rightDiv->hp['style'] = 
+        $rightDiv->hp['style'] =
             "position: relative; float: left; width: {$widthr}px;";
         
         $AGMENU = SessionGet('AGMENU');
         $countLeft = 1;
-        foreach($AGMENU as $menuid=>$menuinfo) {
-            if(count(arr($menuinfo, 'items', array()))==0) { continue; 
+        foreach ($AGMENU as $menuid=>$menuinfo) {
+            if (count(arr($menuinfo, 'items', array()))==0) {
+                continue;
             }
             $h2 = $leftDiv->h('div', $countLeft.": ".$menuinfo['description']);
             $h2->hp['xKey'] = $countLeft;
@@ -73,14 +74,16 @@ class x6menu extends androX6
             $idLeft = $width2 * 2;
             $itemsDiv = $rightDiv->h('div');
             $itemsDiv->hp['id'] = 'items_'.$menuid;
-            $itemsDiv->hp['style'] = 
+            $itemsDiv->hp['style'] =
             "position: absolute; top: 0; left: {$idLeft}px; display: none";
             $countRight = 65;
-            foreach($menuinfo['items'] as $page=>$pageinfo) {
+            foreach ($menuinfo['items'] as $page=>$pageinfo) {
                 // Special hardcoded hack for x6 to remove some items
-                if($page == 'apppub') { continue; 
+                if ($page == 'apppub') {
+                    continue;
                 }
-                if($page == 'userssimple') { continue; 
+                if ($page == 'userssimple') {
+                    continue;
                 }
                 
                 $pd = strtolower(chr($countRight))
@@ -90,22 +93,21 @@ class x6menu extends androX6
                 $a->hp['xKey'] = strtolower(chr($countRight));
                 $a->hp['xactive'] ='N';
                 $countRight++;
-                $a->hp['onmouseover'] = 
+                $a->hp['onmouseover'] =
                     "$('#x6menu_right .hilight').removeClass('hilight');
                      $(this).addClass('hilight')";
                  
                 // DUPLICATE CODE ALERT.  THIS CODE IS ALSO IN
                 // TEMPLATES/X6/X6MENUTOP.PHP
                 // KFD 2/20/09 Sourceforge 2616802
-                if($pageinfo['uix2'] == 'Y') {
+                if ($pageinfo['uix2'] == 'Y') {
                     $href = "?gp_page=$page&amp;x2=1";
-                }
-                else {
+                } else {
                     $href = "?x6page=$page&amp;x6module=$menuid";
                 }
                 $a->hp['onclick'] = "window.location='$href'";
                 $a->hp['id'] = 'page_'.$page;
-                if(arr($pageinfo, 'spaceafter', 'N')=='Y') {
+                if (arr($pageinfo, 'spaceafter', 'N')=='Y') {
                     $itemsDiv->h('hr');
                 }
             }
@@ -113,7 +115,7 @@ class x6menu extends androX6
         $top->render();
     }
     
-    function x6Script() 
+    public function x6Script()
     {
         ?>
         <script>
@@ -233,6 +235,7 @@ class x6menu extends androX6
         
         </script>
         <?php
+
     }
 }
 ?>

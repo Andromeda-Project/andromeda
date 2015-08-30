@@ -6,7 +6,7 @@ class x4apppub extends androX4
     // SECTION 1: Main Layout
     // 
     // =========================================================
-    function mainLayout($c) 
+    public function mainLayout($c)
     {
         // Get the basic title going
         $c->h('h1', 'Images and Files');
@@ -49,12 +49,15 @@ class x4apppub extends androX4
         $dir = fsDirTop().'apppub/';
         $files = scandir($dir);
         asort($files);
-        foreach($files as $file) {
-            if($file=='.') {    continue; 
+        foreach ($files as $file) {
+            if ($file=='.') {
+                continue;
             }
-            if($file=='..') {   continue; 
+            if ($file=='..') {
+                continue;
             }
-            if(is_dir($dir.$file)) { continue; 
+            if (is_dir($dir.$file)) {
+                continue;
             }
             
             $div = $right->h('div');
@@ -75,27 +78,30 @@ class x4apppub extends androX4
             // $img = $div->h('img');
             // $img->hp['src'] = 'apppub/'.$file;
             // }
-            
+
             $right->br(2);
         }
     }
     
-    function mainUpload(&$c) 
+    public function mainUpload(&$c)
     {
         // Make sure we have a file
-        if(!isset($_FILES['apppub'])) { return; 
+        if (!isset($_FILES['apppub'])) {
+            return;
         }
         
         // If user is not logged in or a member of filemaint,
         // quietly ignore the request
-        if(!LoggedIn()) { return; 
+        if (!LoggedIn()) {
+            return;
         }
-        if(!ingroup('filemaint')) { return; 
+        if (!ingroup('filemaint')) {
+            return;
         }
         
         // If an error, report it:
         $upload = $_FILES['apppub'];
-        if($upload['error']<>0) {
+        if ($upload['error']<>0) {
             $c->h('hr');
             $c->h('h3', 'File Upload Error');
             $c->h('p', 'The upload error number was '.$upload['error']);
@@ -120,7 +126,7 @@ class x4apppub extends androX4
     // SECTION 2: Script
     // 
     // =========================================================
-    function extraScript() 
+    public function extraScript()
     {
         ?>
         <script>
@@ -140,6 +146,7 @@ class x4apppub extends androX4
         }
         </script>
         <?php
+
     }
     
     // =========================================================
@@ -147,13 +154,15 @@ class x4apppub extends androX4
     // SECTION 3: Server-Side Code
     // 
     // =========================================================
-    function delfile() 
+    public function delfile()
     {
         // If user is not logged in and not in file maintenance,
         // quietly ignore
-        if(!LoggedIn()) { return; 
+        if (!LoggedIn()) {
+            return;
         }
-        if(!inGroup('filemaint')) { return; 
+        if (!inGroup('filemaint')) {
+            return;
         }
         
         $filename = fsDirTop().'apppub/'.gp('file');

@@ -1222,7 +1222,7 @@ function input($colinfo, &$tabLoop = null, $options = array())
         if (!isset($colinfo['dispsize'])) {
             if ($type_id == 'date') {
                 $colinfo['dispsize'] = 11;
-            } else if (isset($colinfo['colprec'])) {
+            } elseif (isset($colinfo['colprec'])) {
                 $colinfo['dispsize'] = $colinfo['colprec'] + 1;
             }
         }
@@ -1383,7 +1383,7 @@ function inputForX6($input, $colinfo, $options)
             $input->hp['xValues'] = 'M|Male||F|Female||U|Unknown||H|Hermaphrodite';
             $input->hp['x6rowCount'] = 4;
         }
-    } else if (arr($colinfo, 'table_id_fko') <> '') {
+    } elseif (arr($colinfo, 'table_id_fko') <> '') {
         $fko = $colinfo['table_id_fko'];
         $ddpar = ddTable($fko);
         $uis = $ddpar['projections']['_uisearch'];
@@ -2338,13 +2338,13 @@ function sqlFilter($colinfo, $tcv, $table = '')
                         if (strlen($pieces[0]) == 4) {
                             $new = "EXTRACT(YEAR FROM $c::timestamp)=" . SQLFN($pieces[0]);
                         }
-                    } else if (count($pieces) == 2) {
+                    } elseif (count($pieces) == 2) {
                         if (strlen($pieces[1]) == 4) {
                             $new = "EXTRACT(MONTH FROM $c::timestamp)=" . SQLFN($pieces[0]) . " AND EXTRACT(YEAR FROM $c::timestamp)=" . SQLFN($pieces[1]);
-                        } else if (strlen($pieces[1]) < 3 && strlen($pieces[1]) > 0) {
+                        } elseif (strlen($pieces[1]) < 3 && strlen($pieces[1]) > 0) {
                             $new = "EXTRACT(MONTH FROM $c::timestamp)=" . SQLFN($pieces[0]) . " AND EXTRACT(DAY FROM $c::timestamp)=" . SQLFN($pieces[1]);
                         }
-                    } else if (strtotime($tcv)) {
+                    } elseif (strtotime($tcv)) {
                         $tcv = str_replace('%', '', $tcv);
                         $tcv = SQLFD($tcv);
                         $new = "$c = $tcv";
@@ -2659,7 +2659,6 @@ function mosPathWay()
 {
 
     //echo "mosPathway";
-
 }
 
 /*f* Joomla-CompatibilitymosMainBody
@@ -3203,7 +3202,6 @@ function vgfGetHC($key, $default = '')
                     $base = trim($base) . ": " . trim(vgaGet('PageTitleSuffix'));
                 }
                 return $base;
-                
             }
             break;
         default:
@@ -3912,7 +3910,7 @@ function DDTable_IDResolve($table_id)
     $views = ArraySafe($ddTable, 'tableresolve', array());
     if (count($views) == 0) {
         return $table_id;
-    } else if (LoggedIn()) {
+    } elseif (LoggedIn()) {
         // KFD 1/23/08.  This code takes advantage of the fact that
         //   the public user by itself is always the very last
         //   effective group.  Therefore, if a user is not logged
@@ -5684,7 +5682,6 @@ function hNumber($value, $zero = '')
     }
 
     //return str_replace('.0','',$retval);
-
 }
 
 /**
@@ -6061,6 +6058,7 @@ function hFileUpload()
     <input type="file" name="andro_file">&nbsp;&nbsp;
     <button type="submit" value="1">Upload Now</button>
 <?php
+
 }
 
 /**
@@ -6172,7 +6170,6 @@ function hLInkSetAndPost($caption, $gp_var, $gp_val)
  */
 function hImageFromBytes($table_id, $colname, $pkval, $bytes)
 {
-
     $filename = 'dbobj/' . $table_id . '-' . $colname . '-' . $pkval;
     $dirname = $GLOBALS['AG']['dirs']['root'] . '/';
 
@@ -6388,6 +6385,7 @@ function ehStandardFormOpen($id = 'Form1')
     name="Form1" <?php
     echo $style ?> >
 <?php
+
 }
 
 /**
@@ -6413,10 +6411,8 @@ function ehErrors($return = false)
             // KFD 6/27/07, think this got broken by changes to SQL2 and
             // error reporting system, just take it out
             //echo "There was an error attempting to save:<br/>";
-
         } elseif (vgfGet('ERROR_TITLE') == '*') {
             // do nothing, the asterisk means do nothing
-
         } else {
             $html.= vgfGet('ERROR_TITLE');
         }
@@ -6432,7 +6428,7 @@ function ehErrors($return = false)
     if ($return === true) {
         return $html;
     } else {
-        echo ($html);
+        echo($html);
     }
 }
 
@@ -6541,7 +6537,7 @@ function ehFWLogin($class = 'login', $id = '', $username = '')
 
     // Continue with original, the horizontal
     if (LoggedIn()) {
-// @codingStandardsIgnoreStart
+        // @codingStandardsIgnoreStart
 ?>
         <table border=0 
         echo $hclass ?> >
@@ -6564,7 +6560,7 @@ function ehFWLogin($class = 'login', $id = '', $username = '')
 <?php
 // @codingStandardsIgnoreEnd
     } else {
-// @codingStandardsIgnoreStart
+        // @codingStandardsIgnoreStart
 ?>
         <form class="form form-horizontal" action="?gp_page=x_login&gp_posted=1" method="post">
             <table <?php
@@ -6597,6 +6593,7 @@ function ehFWLogin($class = 'login', $id = '', $username = '')
         <br><br>
         <a href="?gp_page=x_password">Help with Password</a>
     <?php
+
     }
 }
 
@@ -6617,7 +6614,7 @@ function ehFWLogin($class = 'login', $id = '', $username = '')
 function ehLoginHorizontal()
 {
     if (!LoggedIn()) {
-?>
+        ?>
         <form action="?gp_page=x_login&gp_posted=1" method="post" style="display:inline">
             UserID:  <input type="text"     size=10 name="loginUID" />
             Password:<input type="password" size=10 name="loginPWD" />
@@ -6627,14 +6624,16 @@ function ehLoginHorizontal()
         <a href="<?php
         echo tmpPathInsert() ?>?gp_page=x_password">Help with Password</a>
 <?php
+
     } else {
-?>
+        ?>
         <a href="?st2logout=1">Logout
 <?php
             echo SessionGet("UID")
 ?>
         </a>
 <?php
+
     }
 }
 
@@ -6998,7 +6997,6 @@ function LoggedIn()
     return true;
 
     // return SessionGet('UID')=='anonymous' ? false : true;
-
 }
 
 /**
@@ -7272,7 +7270,6 @@ $retval
     file_put_contents($file, $retval);
 
     //  hprint_r($array);
-
 }
 
 /**
@@ -7372,6 +7369,7 @@ function ehFWDevNotice()
     ?>
     <div class="devnotice">This page is waiting for design</div>
 <?php
+
 }
 
 /**
@@ -8866,7 +8864,6 @@ function FindAccessKey($caption)
     return array($caption, $akey);
 
     //return array($caption,'');
-
 }
 
 // ==================================================================
@@ -9481,7 +9478,6 @@ function processPost_TableSearchResultsClear($table_id)
     // wipe out results
     ConSet("table", $table_id, "spage", '0');
     // set to page one
-
 }
 
 function arrPageInfo($table_id)
@@ -9592,7 +9588,6 @@ function processPost_Textboxes($row)
         return;
 
         // <<<<<<<<<< RETURN
-
     }
 
     // Saving an insert requires an explicit command
@@ -9607,7 +9602,6 @@ function processPost_Textboxes($row)
         if (Errors()) {
             // ERRORROW CHANGE 5/30/07, moved to SQLX_* routines
             //vgfSet('ErrorRow',$row);
-
         } else {
             if ($user_pref) {
                 UserPrefsLoad();
@@ -9624,7 +9618,6 @@ function processPost_Textboxes($row)
         return;
 
         // <<<<<<<<<< RETURN
-
     }
 
     // If the old mode was search, then set the new search criteria
@@ -9634,7 +9627,6 @@ function processPost_Textboxes($row)
         return;
 
         // <<<<<<<<<< RETURN
-
     }
 
     // Finally, if the old mode was view (update), then look for
@@ -9670,7 +9662,6 @@ function processPost_Textboxes($row)
             if (Errors()) {
                 // ERRORROW CHANGE 5/30/07, moved to SQLX_* routines
                 //vgfSet('ErrorRow',$row);
-
             } else {
                 if ($user_pref) {
                     UserPrefsLoad();
@@ -9696,7 +9687,6 @@ function processPost_Textboxes($row)
         return;
 
         // <<<<<<<<<< RETURN
-
     }
 }
 
@@ -9807,7 +9797,6 @@ function rowsFromFilters(&$table, $filters, $cols, $matches = array())
                 $sw[] = $colname . "=" . $tcsql;
 
                 //$sql_where.=ListDelim($sql_where," AND ").$colname."=".$tcsql;
-
             }
         } elseif (isset($filters[$colname])) {
             $tcv = trim($filters[$colname]);
@@ -9984,7 +9973,6 @@ function ahFromRows(&$rows, $inputs, $table_id = null)
                     $checked = $row[$colname] == 'Y' ? ' CHECKED ' : '';
                     $row[$colname] = 'Y';
                     // forces it to always come back as 'Y'
-
                 }
                 $hrow[] = $hinputs[$colname]['open'] . ' name="' . $input_name . '" id="' . $input_name . '"' . $checked . ' value="' . $row[$colname] . '">' . $hinputs[$colname]['close'];
             }
@@ -10240,7 +10228,6 @@ function ahInputsComprehensive(&$table, $mode, $row = array(), $projection = '',
         //   $ahcols[$colname]['parms']['onchange']
         //      ="andrax('?gp_ajax2ssn=$colname&gp_val='+ob('$x').value)";
         //}
-
     }
 
     /* KFD 5/10/06, will be used to store original values */
@@ -10400,8 +10387,6 @@ function ahInputsComprehensive(&$table, $mode, $row = array(), $projection = '',
 
                         //$col['parms']['onkeyup']
                         //  ="ajax_showOptions(this,'$fkparms',event)";
-
-
                     }
 
                     // The dynamic list assigns value of key here:
@@ -10666,7 +10651,6 @@ function x_EchoFlush($message, $level = null)
     flush();
 
     //}
-
 }
 
 /**
@@ -10755,7 +10739,6 @@ function Email_Exp($from, $to, $subject, $body, $headers)
     //SQLX_Insert($table_ref,$em,false);
     //$retval=false;
     //}
-
 }
 
 // ==================================================================
@@ -10888,7 +10871,6 @@ function ehFCKEditor($name, &$value)
     //$oFCKeditor->BasePath = 'FCKeditor/';
     //$oFCKeditor->Value = $value;
     //$oFCKeditor->Create() ;
-
 }
 
 /**
@@ -11270,8 +11252,6 @@ function rHE_IMG_Inline($src)
     //   .'</object></span>';
 
     //.'  type="image/jpeg" data="data:;base64,'.$src.'">'
-
-
 }
 
 /**
@@ -12113,8 +12093,7 @@ function aWidgets(&$table, $row = array(), $mode = 'upd', $projection = '')
             $ahcols[$colname]['htmlnamed'] = '--MIME-H--' . $ahcol['cname'] . '--MIME-H--';
 
             //$html = '--MIME-H--'.$ahcol['cname'].'--MIME-H--';
-
-        } else if ($ahcol['type_id'] == 'date') {
+        } elseif ($ahcol['type_id'] == 'date') {
             $ahcols[$colname]['parms']['data-date-format'] = 'yyyy-mm-dd';
         }
     }
@@ -12169,7 +12148,6 @@ function jsValuesOne($ahcols, $colname, $ahcol, $name, $row, $h)
             $scr = "ob('$name$colname').attributes." . $scr;
             //E*lementAdd('ajax',"_script|$scr");
             //E*lementAdd('ajax',"_script|ob('$name$colname').className='x3err'");
-
         }
         if (!empty($herr)) {
             $h = str_replace($name . $colname . '--ERROR--CLASS', 'error', $h);
@@ -12244,7 +12222,6 @@ function jsValuesOne($ahcols, $colname, $ahcol, $name, $row, $h)
     if ($setInScript) {
         if (gp('ajxBUFFER')) {
             //E*lementAdd('ajax',"_script|ob('$name$colname').value='$colvalue'");
-
         } else {
             jqDocReady("ob('$name$colname').value='$colvalue'");
         }
@@ -12276,7 +12253,6 @@ function jsValuesOne($ahcols, $colname, $ahcol, $name, $row, $h)
             if (trim($colname) == trim($fkpks[0])) {
                 $dist = $colname;
                 // pull distinct
-
             } else {
                 // Don't pull.  Use ajax during runtime and make a
                 // one-value dropdown now
@@ -12310,7 +12286,6 @@ function jsValuesOne($ahcols, $colname, $ahcol, $name, $row, $h)
         $scr = "ob('$name$colname').attributes." . $scr;
         //E*lementAdd('ajax',"_script|$scr");
         //E*lementAdd('ajax',"_script|ob('$name$colname').className='x3err'");
-
     }
     if (!empty($herr)) {
         $h = str_replace($name . $colname . '--ERROR--CLASS', 'error', $h);
@@ -13268,10 +13243,12 @@ function cssInclude($file, $force_immediate = false)
     // mode, otherwise they all get output as one
     $cssExcludes = vgfGet('cssExcludes', array());
     if (!in_array($file, $cssExcludes)) {
-        if (configGet('js_css_debug', 'Y') == 'Y' || $force_immediate) {?>
+        if (configGet('js_css_debug', 'Y') == 'Y' || $force_immediate) {
+            ?>
             <link rel="stylesheet" href="<?php
             echo tmpPathInsert() . $file ?>" />
             <?php
+
         } else {
             $css = vgfGet('cssIncludes', array());
             $css[] = $file;
@@ -13319,6 +13296,7 @@ function cssOutput()
           href='<?php
             echo tmpPathInsert() . "clib/css-min-$md5.css" ?>' />
 <?php
+
 }
 
 /**
@@ -13396,6 +13374,7 @@ function jsOutput()
                         echo $js['comments'] ?>
             </script>
         <?php
+
         }
     }
 
@@ -13449,6 +13428,7 @@ function jsOutput()
             echo tmpPathInsert() . "clib/js-min-$md5.js" ?>" >
     </script>
 <?php
+
 }
 
 // ==================================================================
@@ -13836,7 +13816,6 @@ function SQL_ESCAPE_STRING($val)
     return function_exists('pg_escape_string') ? pg_escape_string(trim($val)) : str_replace("'", "''", trim($val));
 
     //return p*g_escape_string($val);
-
 }
 
 /* DEPRECATED */
@@ -14149,7 +14128,6 @@ function SQLX_Insert($table, $colvals, $rewrite_skey = true, $clip = false)
             }
 
             //}
-
         }
     }
     if (!Errors()) {
@@ -14685,7 +14663,6 @@ function RowsForSelect($table_id, $firstletters = '', $matches = array(), $disti
     $xWhere = array();
     if ($firstletters == '*') {
         // do nothing, no where clauses
-
     } elseif ($firstletters <> '') {
         $SLimit = "Limit 40 ";
         if (strpos($firstletters, ',') === false) {

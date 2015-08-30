@@ -1,7 +1,7 @@
 <?php
 class x6useroptions extends androX6
 {
-    function x6main() 
+    public function x6main()
     {
         $top = html('div');
         $top->addClass('fadein');
@@ -18,17 +18,18 @@ class x6useroptions extends androX6
         // --------------------------------------------------------------
         $tab1 = $tabs->addTab('Appearance');
         
-        $tab1->hp['style'] = "padding: {$pad1}px"; 
+        $tab1->hp['style'] = "padding: {$pad1}px";
         
         $file = fsDirTop().'templates/x6/skinsphp/x6skins.ser.txt';
         $skins = unserialize(file_get_contents($file));
         $select = html('select');
         $cookie = arr($_COOKIE, 'x6skin', 'Default.Gray.1024');
-        foreach($skins as $name=>$stats) {
+        foreach ($skins as $name=>$stats) {
             $option = $select->h('option', $name);
             $option->hp['value'] = $stats;
             // Note that $cookie was defined above 
-            if($cookie==$stats) { $option->hp['selected'] = 'selected'; 
+            if ($cookie==$stats) {
+                $option->hp['selected'] = 'selected';
             }
         }
         $select->hp['onchange']='x6ChangeSkin(this)';
@@ -51,7 +52,7 @@ class x6useroptions extends androX6
         
         // <------- EARLY RETURN
         // 
-        if(!inGroup('debugging')) {
+        if (!inGroup('debugging')) {
             $top->render();
             return;
         }
@@ -127,7 +128,7 @@ JS;
             ,'Error'=>'Errors'
             ,'Time'=>'Time start/end (requires firebug)'
         );
-        foreach($loptions as $loption=>$description) {
+        foreach ($loptions as $loption=>$description) {
             $input = html('input');
             $input->hp['type'] = 'checkbox';
             $input->hp['command']= $loption;
@@ -145,16 +146,15 @@ JS;
                 }
             }
 JS;
-            if(arr($_COOKIE, 'log_'.$loption, 0)==1) {
+            if (arr($_COOKIE, 'log_'.$loption, 0)==1) {
                 $input->hp['checked'] = 'checked';
             }
             $tab2->addChild($input);
             $tab2->h('span', $description);
             $tab2->br();
-            if($loption=='Server') {
+            if ($loption=='Server') {
                 $tab2->br();
             }
-            
         }
         // --------------------------------------------------------------
         // End of the line

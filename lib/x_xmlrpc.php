@@ -21,24 +21,24 @@
 \* ================================================================== */
 /* ==========================================================================
    U_XMLRPC.php
-	
-	REQUIRES: $AG["xmlrpc"]["callcode"]
-	
-	REQUIRES: file ddxmlrpc_<callcode>.php, expects $table and $table_cols
-	          to simulate the same structure as dd table files.
-	
-	Library to handle any XML RPC Call.  Behavior:
-	-> $AG["xmlrpc"]["inputs"] exists, execute a call immediately
-	-> otherwise: 
-	   -> $AG["clean"]["xmlrpc"] not exist, put up HTML to show user
-		-> $AG["clean"]["xmlrpc"] exists, use POST data to make call
-		
+    
+    REQUIRES: $AG["xmlrpc"]["callcode"]
+    
+    REQUIRES: file ddxmlrpc_<callcode>.php, expects $table and $table_cols
+              to simulate the same structure as dd table files.
+    
+    Library to handle any XML RPC Call.  Behavior:
+    -> $AG["xmlrpc"]["inputs"] exists, execute a call immediately
+    -> otherwise: 
+       -> $AG["clean"]["xmlrpc"] not exist, put up HTML to show user
+        -> $AG["clean"]["xmlrpc"] exists, use POST data to make call
+        
 
-	NOTE THE STRONG ASSUMPTION THAT WE ARE BEING CALLED FROM A SUBROUTINE
-	OR INDEPENDENTLY, $TABLE and $TABLE_COLS ARE REDEFINED IN THIS ROUTINE
-	
-	Revisions:
-	Feb 18 2005  Created, outlined, drafted
+    NOTE THE STRONG ASSUMPTION THAT WE ARE BEING CALLED FROM A SUBROUTINE
+    OR INDEPENDENTLY, $TABLE and $TABLE_COLS ARE REDEFINED IN THIS ROUTINE
+    
+    Revisions:
+    Feb 18 2005  Created, outlined, drafted
    ========================================================================== 
 */
 global $AG;
@@ -52,7 +52,8 @@ if (isset($AG["clean"]["xmlrpc_callcode"])) {
 // Basic reality check errors
 if (!isset($AG["xmlrpc"]["callcode"])) {
     $AG["trx_errors"].="Call to undefined XML_RPC without defining call code;";
-    if ($flag) { echo HTML_TrxErrors(); 
+    if ($flag) {
+        echo HTML_TrxErrors();
     }
     return;
 }
@@ -64,7 +65,8 @@ $callcode = $AG["xmlrpc"]["callcode"];
 require "ddxmlrpc_".$callcode.".php";
 if (!isset($table["id"])) {
     $AG["trx_errors"].="Call to undefined XML RPC: ".$callcode.";";
-    if ($flag) { echo HTML_TrxErrors(); 
+    if ($flag) {
+        echo HTML_TrxErrors();
     }
     return;
 }
@@ -84,8 +86,7 @@ if (!isset($AG["xmlrpc"]["inputs"])) {
     // 9/21/05, this is dead code.  This would become a call
     // to "cleanboxes()"
     AND_HTTP_TxtToTableCols($table_cols);
-}    
-else {
+} else {
     $stmode = "silent";
     $index = 0;
     foreach ($table_cols as $key=>$column) {
@@ -111,7 +112,7 @@ if ($stmode == "post" || $stmode == "silent") {
     $params = array();
     foreach ($table_cols as $key=>$col) {
         if ($col["UPD"]=="Y") {
-            $params[] 
+            $params[]
             =new XML_RPC_Value(
                 $col["value"], trim($col["xmltype"])
             );
@@ -133,7 +134,7 @@ if ($stmode == "post" || $stmode == "silent") {
     //$client = new XML_RPC_Client('/clients/dash/server.php', 'www.b16g.com', 80);
     //$response = $client->send($msg);
     //$v = $response->value();
-    
+
     //var_dump($v);
     if (!$response->faultCode()) {
         $AG["xmlrpc"]["rets"] = array();
@@ -143,9 +144,8 @@ if ($stmode == "post" || $stmode == "silent") {
             if ($col["UPD"] == "N") {
                 if (is_array($result)) {
                     $resval = $result[$resx]->scalarval();
-                }
-                else {
-                    $resval = $v->scalarval();    
+                } else {
+                    $resval = $v->scalarval();
                 }
                 $resx++;
                 $table_cols[$key]["value"] = $resval;
@@ -163,8 +163,7 @@ if ($stmode == "post" || $stmode == "silent") {
         }
         }
         */
-    } 
-    else {
+    } else {
         ErrorAdd(
             "XML RPC Error call ".$callcode.
             " Fault Code and reason: ".$response->faultCode().", ".$response->faultString()
@@ -174,7 +173,8 @@ if ($stmode == "post" || $stmode == "silent") {
 
 // on a silent call, there is nothing more to be done, exit
 //
-if ($stmode == "silent") { return; 
+if ($stmode == "silent") {
+    return;
 }
 
 // ==========================================================================
@@ -221,8 +221,7 @@ if ($stmode == "silent") { return;
 foreach ($table_cols as $key=>$col) {
     if ($col["UPD"]<>"Y") {
         echo "\tob(\"txt".$key."\").disabled=true;\n";
-    } 
-    else {
+    } else {
         echo "\tob(\"txt".$key."\").value=\"".$col["value"]."\";\n";
     }
 }

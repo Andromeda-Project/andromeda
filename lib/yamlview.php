@@ -1,7 +1,7 @@
 <?php
 class yamlview extends x_table2
 {
-    function main() 
+    public function main()
     {
         $file=$GLOBALS['AG']['dirs']['root'].'application/'.gp('file');
         include_once "spyc.php";
@@ -15,4 +15,3 @@ class yamlview extends x_table2
         hprint_r($temparray);
     }
 }
-?>

@@ -4,7 +4,7 @@ class x4configuser extends androX4
     // =================================================================
     // Area 1: 
     // =================================================================
-    function mainLayout($container) 
+    public function mainLayout($container)
     {
         // Erase default help message
         vgfSet('htmlHelp', '');
@@ -16,10 +16,9 @@ class x4configuser extends androX4
         $dd = ddTable("configuser");
         $view = ddView('configuser');
         $row = SQL_AllRows("Select * from $view");
-        if(count($row)==1) {
+        if (count($row)==1) {
             $row = $row[0];
-        }
-        else {
+        } else {
             SQL("Insert into $view (skey_quiet) values ('N')");
             $row = SQL_OneRow("Select * from $view");
         }
@@ -43,8 +42,9 @@ class x4configuser extends androX4
         // Now put out inputs for each one
         $tbody = html('tbody', $table);
         $askip = array('recnum','_agg','skey_quiet','skey','uid_ins');
-        foreach($this->flat as $column_id =>$colinfo) {
-            if(in_array($column_id, $askip)) { continue; 
+        foreach ($this->flat as $column_id =>$colinfo) {
+            if (in_array($column_id, $askip)) {
+                continue;
             }
             $tr = html('tr', $tbody);
             $tr->hp['id'] = 'tr_'.$column_id;
@@ -54,10 +54,9 @@ class x4configuser extends androX4
             // the input
             $input = input($colinfo);
             $input->hp['id'] = 'inp_'.$column_id;
-            if($colinfo['type_id']=='text') { 
-                $input->setHTML($row[$column_id]); 
-            }
-            else {
+            if ($colinfo['type_id']=='text') {
+                $input->setHTML($row[$column_id]);
+            } else {
                 $input->hp['value'] = $row[$column_id];
                 x4Script(
                     '$a.byId("'.$input->hp['id'].'").value="'
@@ -88,7 +87,7 @@ class x4configuser extends androX4
     // library routines.  The class x4configuser calls the
     // same routines
     // =================================================================
-    function extraScript() 
+    public function extraScript()
     {
         ?>
         <script>
@@ -118,9 +117,10 @@ class x4configuser extends androX4
         }
         </script>
         <?php
+
     }
     
-    function instaSave() 
+    public function instaSave()
     {
         $val = trim(urldecode(gp('value')));
         $row = array(
@@ -128,15 +128,15 @@ class x4configuser extends androX4
             ,gp('column')=>$val
         );
         SQLX_Update('configuser', $row);
-        configWrite('user');        
+        configWrite('user');
     }
 
-    function makeDefault() 
+    public function makeDefault()
     {
         $col = SQLFN(gp('column'));
         $skey= SQLFN(gp('skey'));
         SQL("update configuser set $col = null WHERE skey = $skey");
-        configWrite('user');        
+        configWrite('user');
     }
 }
 ?>

@@ -33,12 +33,13 @@ class x6example extends androX6
     // off to processing routines.
     // 
     // ----------------------------------------------------------
-    function x6main() 
+    public function x6main()
     {
         echo "My Example Page!";
         ?>
         <div id="example">This div has an id.</div>
         <?php
+
     }
     
     // ----------------------------------------------------------
@@ -54,7 +55,7 @@ class x6example extends androX6
     // not execute in global scope.
     // 
     // ----------------------------------------------------------
-    function x6script() 
+    public function x6script()
     {
         // The script tag is not necessary, but your editor
         // should provide syntax coloring, so it is usually
@@ -80,6 +81,7 @@ class x6example extends androX6
         );
         </script>
         <?php
+
     }
 }
 ?>

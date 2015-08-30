@@ -61,11 +61,10 @@ return;
             <?php
             $uid = SessionGet("UID");
             if ($uid) {
-                echo "You are logged in as: <b>$uid</b>"; 
+                echo "You are logged in as: <b>$uid</b>";
+            } else {
+                echo 'You are not logged in';
             }
-            else {
-                echo 'You are not logged in'; 
-            } 
             ?>
 				<br />
 				<img src="images/hrthing.jpg" width="200" height="2" border="0" alt="hrthing" />
@@ -121,9 +120,10 @@ return;
             <?php 
             $HTML_nots = HTMLX_Notices();
             if ($HTML_nots) {
-                if ($HTML_Message) { echo "<br>"; 
-                } 
-            ?>
+                if ($HTML_Message) {
+                    echo "<br>";
+                }
+                ?>
              <div class="alert alert-info">
                                             <?php echo $HTML_nots?>
 									    </div>
@@ -134,7 +134,7 @@ return;
             <?php 
             $HTML_errs = HTMLX_Errors();
             if ($HTML_errs) {
-            ?>
+                ?>
 
              <div class="alert alert-error">
                 <?php echo $HTML_errs?>

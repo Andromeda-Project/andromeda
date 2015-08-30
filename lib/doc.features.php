@@ -513,7 +513,4 @@ sales orders, a user can enter '100,&lt;50,200-220,&gt;9000' and get
 all matching results.
 
 |--
-*/
-
-
-?>
+*/;

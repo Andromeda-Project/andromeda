@@ -21,24 +21,32 @@
 \* ================================================================== */
 class x_password extends x_table2
 {
-    function main() 
+    public function main()
     {
         echo "<h1>Password Processing</h1>";
         
         Hidden("gp_page", "x_password");
         
-        if($GLOBALS['AG']['flag_pwmd5']=='Y') { return $this->MainMD5(); 
+        if ($GLOBALS['AG']['flag_pwmd5']=='Y') {
+            return $this->MainMD5();
         }
         
         $gpp = gp('gpp');
-        if (gp('gpp')=='3') {       $this->PW_ForgotPage3();  // process new pw
-        }        if (gp('gpp')=='2') {       $this->PW_ForgotPage2();  // link back
-        }        if (gp('gpp')=='1') {       $this->PW_ForgotPage1();  // send email
-        }        if (Errors() || $gpp=='') { $this->PW_ForgotPage0();  // get info
-        }        
+        if (gp('gpp')=='3') {
+            $this->PW_ForgotPage3();  // process new pw
+        }
+        if (gp('gpp')=='2') {
+            $this->PW_ForgotPage2();  // link back
+        }
+        if (gp('gpp')=='1') {
+            $this->PW_ForgotPage1();  // send email
+        }
+        if (Errors() || $gpp=='') {
+            $this->PW_ForgotPage0();  // get info
+        }
     }
     
-    function PW_ForgotPage0() 
+    public function PW_ForgotPage0()
     {
         // Next time around go to page 1
         vgfSet("HTML_focus", "txt_email");
@@ -61,9 +69,10 @@ class x_password extends x_table2
      <button type="submit" value="Submit">Submit</button>
 
     <?php
+
     }
         
-    function PW_ForgotPage1() 
+    public function PW_ForgotPage1()
     {
         // KFD 11/13/06.  Heavily modified for new system, threw out
         //   the older code entirely, now that all apps have a users
@@ -81,8 +90,7 @@ class x_password extends x_table2
         // Nothing of any kind is a bummer, we can't do anything
         if (count($member)== 0) {
             ErrorAdd('There are no active accounts with that email address');
-        }
-        else {
+        } else {
             $leml=MakeUserID($eml);
             $member=$member[0];
             // If we know who they are, send a password and allow them to change it
@@ -116,12 +124,12 @@ If you would like to change your password, click here:
         }
     }
       
-    function PW_ForgotPage2() 
+    public function PW_ForgotPage2()
     {
         $retval=false;
         
         $eml = strtolower(gp('eml'));
-         $hash= gp('hash');
+        $hash= gp('hash');
             
         // confirm that user/hash is ok
         //
@@ -132,7 +140,7 @@ Select count(*) as cnt
  where LOWER(email) =".SQLFC($eml)."
    and user_pwkey   =".SQLFC($hash)."
    and user_disabled<>'Y'";
-         $cnt = SQL_OneValue('cnt', $sql);
+        $cnt = SQL_OneValue('cnt', $sql);
         if ($cnt==0) {
             ?>
             <p>The link that you provided to this page has either expired, been
@@ -141,8 +149,8 @@ Select count(*) as cnt
             return;
         }
       
-         hidden('eml', $eml);
-         hidden('hash', $hash);
+        hidden('eml', $eml);
+        hidden('hash', $hash);
         ?>
          <input type="hidden" name="gpp"  value="3">
          <input type="hidden" name="hash" value="<?php echo hSanitize($hash)?>">
@@ -167,21 +175,23 @@ Select count(*) as cnt
          scDBConn_Pop();
     }
 
-    function PW_ForgotPage3() 
+    public function PW_ForgotPage3()
     {
         $retval=false;
         
         $UID = gp('uid');
-         $eml = gp('eml');
-         $hash= gp('hash');
-         $pw1 = gp('pw1');
-         $pw2 = gp('pw2');
+        $eml = gp('eml');
+        $hash= gp('hash');
+        $pw1 = gp('pw1');
+        $pw2 = gp('pw2');
             
-        if($pw1<>$pw2) {ErrorAdd("Password values did not match"); 
+        if ($pw1<>$pw2) {
+            ErrorAdd("Password values did not match");
         }
-        if(strlen($pw1)<5) {ErrorAdd("Password must be at least 5 characters");
+        if (strlen($pw1)<5) {
+            ErrorAdd("Password must be at least 5 characters");
         }
-        if(Errors()) {
+        if (Errors()) {
             echo hErrors();
             gpSet('gpp', '2');
             ErrorsClear();
@@ -197,11 +207,11 @@ Select count(*) as cnt
  where LOWER(email) =".SQLFC($eml)."
    and user_pwkey   =".SQLFC($hash)."
    and user_disabled<>'Y'";
-         $cnt = SQL_OneValue('cnt', $sql);
+        $cnt = SQL_OneValue('cnt', $sql);
         if ($cnt==0) {
             ErrorAdd("Bad Link, cannot reset password.");
         }
-         scDBConn_Pop();
+        scDBConn_Pop();
         if (Errors()) {
             echo hErrors();
             gpSet('gpp', '2');
@@ -214,17 +224,15 @@ Select count(*) as cnt
         $sql="
 UPDATE users SET member_password=".SQLFC($pw1)."
  WHERE email = ".SQLFC($eml);
-         SQL($sql);
-         scDBConn_Pop();
+        SQL($sql);
+        scDBConn_Pop();
         if (Errors()) {
             echo hErrors();
             gpSet('gpp', '2');
             ErrorsClear();
+        } else {
+            echo "Password has been reset!";
         }
-        else {
-            echo "Password has been reset!";  
-        }
-      
     }
    
     // ============================================================
@@ -232,27 +240,34 @@ UPDATE users SET member_password=".SQLFC($pw1)."
     // SECOND MAIN BRANCH, WHERE MD5 CHALLENGES ARE REQUIRED
     // ============================================================
     // ============================================================
-    function mainMD5() 
+    public function mainMD5()
     {
-        if(gpexists('md5') && !gpExists('gpp')) { gpSet('gpp', '2'); 
+        if (gpexists('md5') && !gpExists('gpp')) {
+            gpSet('gpp', '2');
         }
         $gpp = gp('gpp');
       
-        if (gp('gpp')=='3') {       $this->MD5_ForgotPage3();  // process new pw
-        }   if (gp('gpp')=='2') {       $this->MD5_ForgotPage2();  // link back
-        }   if (gp('gpp')=='1') {       $this->MD5_ForgotPage1();  // send email
-        }   if (Errors() || $gpp=='') { $this->MD5_ForgotPage0();  // get info
-        }        
+        if (gp('gpp')=='3') {
+            $this->MD5_ForgotPage3();  // process new pw
+        }
+        if (gp('gpp')=='2') {
+            $this->MD5_ForgotPage2();  // link back
+        }
+        if (gp('gpp')=='1') {
+            $this->MD5_ForgotPage1();  // send email
+        }
+        if (Errors() || $gpp=='') {
+            $this->MD5_ForgotPage0();  // get info
+        }
         Hidden("gp_page", "x_password");
-      
     }
    
-    function MD5_ForgotPage0() 
+    public function MD5_ForgotPage0()
     {
         // Next time around go to page 1
         vgfSet("HTML_focus", "txt_email");
 
-         echo hErrors();
+        echo hErrors();
         ?>
          <input type="hidden" name="gpp" value="1">
      <p>Please enter your user_id below so that we can process your
@@ -270,15 +285,16 @@ UPDATE users SET member_password=".SQLFC($pw1)."
      <button type="submit" value="Submit">Submit</button>
 
     <?php
+
     }
 
-    function MD5_ForgotPage1() 
+    public function MD5_ForgotPage1()
     {
-         fwLogEntry('1020', 'PW Reset Request', gp('txt_user_id'));
-         $row=array('user_id'=>gp('txt_user_id'));
-         SQLX_Insert('users_pwrequests', $row);
+        fwLogEntry('1020', 'PW Reset Request', gp('txt_user_id'));
+        $row=array('user_id'=>gp('txt_user_id'));
+        SQLX_Insert('users_pwrequests', $row);
       
-        if(!Errors()) {
+        if (!Errors()) {
             ?>
             <p>An email has been sent to the email address that we have on
             file for that user id.  Please consult your email for
@@ -286,15 +302,15 @@ UPDATE users SET member_password=".SQLFC($pw1)."
             </p>
          
             <a href="javascript:window.close()">Close This Window</a>
-            <?php         
+            <?php 
         }
     }
    
-    function MD5_ForgotPage2() 
+    public function MD5_ForgotPage2()
     {
-         $md5= gp('md5');
+        $md5= gp('md5');
         hidden('gpp', 3);
-         hidden('md5', $md5);
+        hidden('md5', $md5);
         ?>
      <p>This is the change password page.  Enter your account ID 
          and new password below to change your password.</p>
@@ -314,57 +330,59 @@ UPDATE users SET member_password=".SQLFC($pw1)."
      <br><br>
      <button type="submit">Save New Password</button>
             <?php
+
     }
    
-    function MD5_ForgotPage3() 
+    public function MD5_ForgotPage3()
     {
-        
         $UID = gp('uid');
-         $md5 = gp('md5');
-         $pw1 = gp('pw1');
-         $pw2 = gp('pw2');
-         fwLogEntry('1025', 'PW Change Attempt', $UID);
+        $md5 = gp('md5');
+        $pw1 = gp('pw1');
+        $pw2 = gp('pw2');
+        fwLogEntry('1025', 'PW Change Attempt', $UID);
       
-        if($pw1<>$pw2) { ErrorAdd("Password values did not match"); 
+        if ($pw1<>$pw2) {
+            ErrorAdd("Password values did not match");
         }
-        if(strlen($pw1)<6) { ErrorAdd("Password must be at least 5 characters");
+        if (strlen($pw1)<6) {
+            ErrorAdd("Password must be at least 5 characters");
         }
-        if(!preg_match("/[0-9]/", $pw1)) {
-            ErrorAdd("Password must contain at least one numeric digit");  
+        if (!preg_match("/[0-9]/", $pw1)) {
+            ErrorAdd("Password must contain at least one numeric digit");
         }
-        if(!preg_match("/[a-z]/", $pw1)) {
-            ErrorAdd("Password must contain at least one lower case character");  
+        if (!preg_match("/[a-z]/", $pw1)) {
+            ErrorAdd("Password must contain at least one lower case character");
         }
-        if(!preg_match("/[A-Z]/", $pw1)) {
-            ErrorAdd("Password must contain at least one upper case character");  
+        if (!preg_match("/[A-Z]/", $pw1)) {
+            ErrorAdd("Password must contain at least one upper case character");
         }
-        if(strpos(strtolower($pw1), strtolower($UID))!==false) {
-            ErrorAdd("You cannot use your user_id in your password!");  
+        if (strpos(strtolower($pw1), strtolower($UID))!==false) {
+            ErrorAdd("You cannot use your user_id in your password!");
         }
-        if(Errors()) {
+        if (Errors()) {
             echo hErrors();
             gpSet('gpp', '2');
             ErrorsClear();
             return;
         }
 
-         $row=array('user_id'=>$UID,'md5'=>$md5,'member_password'=>$pw1);
-         SQLX_Insert('users_pwverifies', $row);
+        $row=array('user_id'=>$UID,'md5'=>$md5,'member_password'=>$pw1);
+        SQLX_Insert('users_pwverifies', $row);
       
       
-        if(Errors()) {
+        if (Errors()) {
             echo hErrors();
             gpSet('gpp', '2');
             ErrorsClear();
             return;
-        }
-        else {
+        } else {
             fwLogEntry('1026', 'PW Change Success', $UID);
             ?>
             <p>Your password has been set, you can now 
             <a href="?gp_page=x_login">Login</a>.
          
             <?php
+
         }
     }
 }

@@ -1959,6 +1959,4 @@ The maximum allowed value of a [[column]] or [[table.column]].
 name:value_min
 
 The minimum allowed value of a [[column]] or [[table.column]].
-*/
-
-?>
+*/;

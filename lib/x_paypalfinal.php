@@ -1,7 +1,7 @@
 <?php
 class x_paypalfinal extends x_table2
 {
-    function main() 
+    public function main()
     {
         ?>
         <h1>Paypal Success Page</h1>
@@ -15,6 +15,7 @@ class x_paypalfinal extends x_table2
         directory.
         </p>
         <?php
+
     }
 }
 ?>

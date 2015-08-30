@@ -1,7 +1,7 @@
 <?php
 class x6skinShow extends androX6
 {
-    function x6main() 
+    public function x6main()
     {
         ?>
         <h1>Skin Details</h1>
@@ -9,13 +9,11 @@ class x6skinShow extends androX6
         <p><b>Current Skin:</b><?php echo arr($_COOKIE, 'x6skin', 'win2k.gray.1024')?>
         </p>
         <?php
-        if(isset($GLOBALS['AG']['x6skin'])) {
+        if (isset($GLOBALS['AG']['x6skin'])) {
             hprint_r($GLOBALS['AG']['x6skin']);
-        }
-        else {
+        } else {
             echo "The skin was not loaded.";
         }
-        
     }
 }
 ?>

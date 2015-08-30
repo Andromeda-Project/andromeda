@@ -1,26 +1,25 @@
 <?php
 class X4Menu extends androX4
 {
-    
     // ===================================================================
     // 
     // Major Area 0: Put out the menu
     // 
     // ===================================================================
-    public function mainLayout($container) 
+    public function mainLayout($container)
     {
         // load the javascript        
         jsInclude("clib/androX4Menu.js");
 
         // Set focus if requested
-        if(($focus=gp('x4Focus'))!='') {
-            x4Script("$('#x4Menu')[0].lastFocusId = 'x4menu_$focus'");    
+        if (($focus=gp('x4Focus'))!='') {
+            x4Script("$('#x4Menu')[0].lastFocusId = 'x4menu_$focus'");
         }
 
         // Other miscellaneous commands
         vgfSet('suppress_hidden', true);
         //vgfSet('show_menu',false);
-        
+
         // Fetch some text
         $h1 = configGet("x4menutitle", "Extended Desktop Menu");
         $text = configGet("x4menutext", "");
@@ -46,8 +45,8 @@ class X4Menu extends androX4
         );
         $col = 0;
         $grid = array();
-        foreach($array as $module=>$modinfo) {
-            if(!$first) {
+        foreach ($array as $module=>$modinfo) {
+            if (!$first) {
                 $td = html('td', $tr);
                 $td->hp['style'] = 'width: 10px';
             }
@@ -59,7 +58,7 @@ class X4Menu extends androX4
             $h3->setHtml(($letters[$col]).') '.$modinfo['description']);
             
             $row = 0;
-            foreach($modinfo['items'] as $page=>$info) {
+            foreach ($modinfo['items'] as $page=>$info) {
                 // Add the link
                 $a = html('a', $td);
                 $a->hp['id']='x4menu_'. $page;

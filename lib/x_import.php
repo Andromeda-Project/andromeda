@@ -1,27 +1,31 @@
 <?php
 class x_import extends x_table2
 {
-    function main() 
+    public function main()
     {
         $this->PageSubtitle="Imports";
         // Process uploaded files if there are any
-        if(!gpExists('gp_xajax')) {
-            foreach($_FILES as $onefile) {
-                if(!$onefile['error']) {
+        if (!gpExists('gp_xajax')) {
+            foreach ($_FILES as $onefile) {
+                if (!$onefile['error']) {
                     // Generate a previously unused name, give up after 20 tries
                     $dir=$GLOBALS['AG']['dirs']['root'].'tmp/';
                     $count=0;
-                    while(true) {
+                    while (true) {
                         $fn=$onefile['name'].'.'.(rand(1000, 9999));
                         $fs=$dir.$fn;
-                        if(!file_exists($fs)) { break; 
+                        if (!file_exists($fs)) {
+                            break;
                         }
                         $count++;
-                        if($count>20) { $fn=''; break; 
+                        if ($count>20) {
+                            $fn='';
+                            break;
                         }
                     }
-                    if($fn=='') { continue;  // skip this file, we couldn't name it
-                    }               
+                    if ($fn=='') {
+                        continue;  // skip this file, we couldn't name it
+                    }
                     // If we got to here, then we have a good name to use, lets copy
                     // the file over.
                     move_uploaded_file($onefile['tmp_name'], $fs);
@@ -40,9 +44,11 @@ class x_import extends x_table2
         }
 
         // Routing
-        if(gp('gp_fbproc')=='1') { return $this->fbProc(); 
+        if (gp('gp_fbproc')=='1') {
+            return $this->fbProc();
         }
-        if(gpExists('gp_xajax')) { return $this->xAjax(); 
+        if (gpExists('gp_xajax')) {
+            return $this->xAjax();
         }
       
         // Obtain the basic parameters we need on this page, and then assign
@@ -58,11 +64,11 @@ class x_import extends x_table2
         //  throw it away.
         $files=vgfGet('files', array());
         $fi=null;
-        if(isset($files[0])) {
+        if (isset($files[0])) {
             $fi=$files[0];
             SessionSet('importfile', $fi);
         }
-        if(gp('gp_nofile')==1) {
+        if (gp('gp_nofile')==1) {
             SessionUnSet('importfile');
             $fi=null;
         }
@@ -73,7 +79,7 @@ class x_import extends x_table2
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
         // BEGIN HTML
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-      
+
         ?>
        <h1>Table Import</h1>
        <p><b>Destination Table:</b><?php echo hLinkPage('', $tid)?>
@@ -89,8 +95,8 @@ class x_import extends x_table2
          columns that will be imported.
        </p>
        <hr />
-        <?php      
-        if($fi) {
+        <?php 
+        if ($fi) {
             ?>
            <div id="xajax"></div>
            <div id="xajaxm"></div>
@@ -104,19 +110,21 @@ class x_import extends x_table2
                 .gp("gp_table_id")."&gp_xajax=1');"
             );
             return;
-        }
-        else {
+        } else {
             ?>
            <h2>File Upload</h2>
            <p>Please upload a file to process.
-           <p><?php echo hFileUpload();?>
+           <p><?php echo hFileUpload();
+            ?>
             <?php
+
         }
     }
    
-    function xajax() 
+    public function xajax()
     {
-        if(gp('gp_xajax')<>'1') { return $this->xAjaxColSave(); 
+        if (gp('gp_xajax')<>'1') {
+            return $this->xAjaxColSave();
         }
       
         // No conditionals here, this is always ajax
@@ -132,11 +140,11 @@ class x_import extends x_table2
         //hprint_r($a1);
         //$a2=aFromgp('txt_');
         //hprint_r($a2);
-      
+
         // Look for a map delete command
-        if(gpExists('gp_del')) {
+        if (gpExists('gp_del')) {
             SQL("Delete from importmaps where importmap=".SQLFC(gp('gp_del')));
-            if(gp('gp_del')==gp('gp_map')) {
+            if (gp('gp_del')==gp('gp_map')) {
                 gpSet('gp_map', '');
                 $parms['gp_map']='';
             }
@@ -145,11 +153,11 @@ class x_import extends x_table2
         // Look for a map insert command. If found and works, automatically
         // select this as the map we want.
         $row=aFromGP('txt_');
-        if(count($row)>0 && gpExists('gp_new')) {
+        if (count($row)>0 && gpExists('gp_new')) {
             $dd=DD_TableRef('importmaps');
             $row['table_id']=gp('gp_table_id');
             SQLX_Insert($dd, $row);
-            if(!Errors()) {
+            if (!Errors()) {
                 gpSet('gp_map', $row['importmap']);
                 $parms['gp_map']=gp('gp_map');
             }
@@ -178,13 +186,13 @@ class x_import extends x_table2
         </thead>
         <tbody>
         <?php
-        foreach($maps as $map) {
+        foreach ($maps as $map) {
             $px=$parms;
             $px['gp_map']=$map['importmap'];
             $hp1=http_build_query($px);
             $px['gp_del']=$map['importmap'];
             $hp2=http_build_query($px);
-            echo $map['importmap']==$parms['gp_map'] 
+            echo $map['importmap']==$parms['gp_map']
             ? '<tr class="hilite">'
             : '<tr>';
             ?>
@@ -192,6 +200,7 @@ class x_import extends x_table2
            <td><a href="javascript:andrax('?<?php echo $hp1?>')">Select</a>
            <td><a href="javascript:andrax('?<?php echo $hp2?>')">Delete</a>
             <?php
+
         }
         // Now the row for a new entry
         $px=$parms;
@@ -204,10 +213,11 @@ class x_import extends x_table2
              <td><a href="javascript:andrax(<?php echo $hp?>)">Create</a>
        </table>
         <?php
-             
+
         // If they have not picked a map, we are done.  If we continue
         // we will let them pick individual columns.
-        if($parms['gp_map']=='') { return; 
+        if ($parms['gp_map']=='') {
+            return;
         }
       
         // Get column listing from dictionary
@@ -240,7 +250,7 @@ class x_import extends x_table2
         </thead>
         <tbody>
         <?php
-        foreach($cols as $col) {
+        foreach ($cols as $col) {
             $value=ArraySafe($mapcols, $col, array());
             $value=ArraySafe($value, 'column_id_src', '');
             $px=$parms;
@@ -248,19 +258,20 @@ class x_import extends x_table2
             $andrax="?".http_build_query($px);
             $extra="onchange=\"andrax('$andrax&gp_xval='+this.value)\"";
             $hSelect=hSelectFromAA($aline, 'anycol', $value, $extra);
-            if($dd['flat'][$col]['uino']<>'Y') {
+            if ($dd['flat'][$col]['uino']<>'Y') {
                 ?>
                <tr><td><?php echo $col?>
                 <td><?php echo $dd['flat'][$col]['description']?>
                 <td><?php echo $hSelect?>
                 <?php
+
             }
         }
         ?>
         </tbody>
        </table>
         <?php
-      
+
         $href='?gp_page=x_import&gp_table_id='
          .$tid.'&gp_fbproc=1'
          .'&gp_map='.$parms['gp_map'];
@@ -281,9 +292,10 @@ class x_import extends x_table2
        </p>
       
         <?php
+
     }
    
-    function xAjaxColSave() 
+    public function xAjaxColSave()
     {
         echo "xajaxm|";
         $row=array(
@@ -304,14 +316,14 @@ class x_import extends x_table2
    
    Does actual processing.  
    */
-    function fbProc() 
+    public function fbProc()
     {
         ob_start();
         $tid=gp('gp_table_id');
         $fi = SessionGet('importfile', array());
         $t=DD_TableRef($tid);
       
-        if(!isset($t['description']) || count($fi)==0) {
+        if (!isset($t['description']) || count($fi)==0) {
             echo "Problem with uploads";
             return;
         }
@@ -324,18 +336,18 @@ class x_import extends x_table2
        <hr>
        <pre>
         <?php
-        list($linenum,$linesok)=$this->fbProcInner($fi, $t);
+        list($linenum, $linesok)=$this->fbProcInner($fi, $t);
         echo "</pre>";
         echo "<hr>";
         echo "Processed $linesok of $linenum lines without errors";
         echo ob_get_clean();
     }
    
-    function fbProcInner($fi,$t) 
+    public function fbProcInner($fi, $t)
     {
         x_EchoFlush("BEGIN FILE PROCESSING");
         $FILE=fopen($fi['uname'], 'r');
-        if(!$FILE) {
+        if (!$FILE) {
             x_EchoFlush("Trouble opening local uploaded file.");
             x_EchoFlush("ABORT WITH ERROR");
             return 0;
@@ -343,12 +355,12 @@ class x_import extends x_table2
       
         // Make sure first line is ok
         $line1=fsGets($FILE);
-        if(strlen($line1)==0) {
+        if (strlen($line1)==0) {
             x_EchoFlush("Failed reading first line, file is empty?");
             x_EchoFlush("ABORT WITH ERROR");
             return 0;
         }
-        if(strlen($line1)>4998) {
+        if (strlen($line1)>4998) {
             x_EchoFlush("First line is &gt; 4998 bytes, this cannot be right.");
             x_EchoFlush("ABORT WITH ERROR");
             return 0;
@@ -357,7 +369,7 @@ class x_import extends x_table2
         // Now convert the first line into the list of columns
         $acols=explode('|', $line1);
         x_echoFlush("COLUMNS IN FILE:");
-        foreach($acols as $acol) {
+        foreach ($acols as $acol) {
             x_EchoFlush($acol);
         }
 
@@ -377,16 +389,16 @@ class x_import extends x_table2
         // Now convert each line as we go
         $linenum=0;
         $linesok=0;
-        while( ($oneline=fsGets($FILE))!==false ) {
+        while (($oneline=fsGets($FILE))!==false) {
             $linenum++;
             // Give the user something to believe in
-            if($linenum %100 ==0) {
+            if ($linenum %100 ==0) {
                 x_EchoFlush("Line: $linenum processing");
             }
             // Pull the line
             $data=explode('|', $oneline);
             // Maybe a problem?
-            if(count($data)<>count($acols)) {
+            if (count($data)<>count($acols)) {
                 x_EchoFlush("ERROR LINE $linenum");
                 x_EchoFlush("Too many or too few values");
                 hprint_r($data);
@@ -398,9 +410,9 @@ class x_import extends x_table2
             $row=array_combine($acols, $data);
             // Match the values from the map
             $rowi=array();
-            foreach($mapcols as $mapcol=>$info) {
-                if($info['src']<>'') {
-                    if(isset($row[$info['src']])) {
+            foreach ($mapcols as $mapcol=>$info) {
+                if ($info['src']<>'') {
+                    if (isset($row[$info['src']])) {
                         $rowi[$mapcol]=$row[$info['src']];
                     }
                 }
@@ -410,7 +422,7 @@ class x_import extends x_table2
             SQLX_insert($t, $mixed[$t['table_id']][0]);
          
             // Complaints?  Problems? Report them!
-            if(Errors() && strpos(hErrors(), 'Duplicate Value')===false) {
+            if (Errors() && strpos(hErrors(), 'Duplicate Value')===false) {
                 x_EchoFlush('------------------------------------------------');
                 x_EchoFlush("ERROR LINE $linenum when attempting to insert");
                 x_EchoFlush(hErrors());

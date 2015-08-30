@@ -25,7 +25,7 @@ class x4_fpdf extends fpdf
      *  @var lastCol
      *  @access private
      */
-    var $lastCol = -1;
+    public $lastCol = -1;
 
     /**
      *  An array of derived column information such
@@ -33,14 +33,14 @@ class x4_fpdf extends fpdf
      *  @var cols
      *  @access private
      */
-    var $cols = array();
+    public $cols = array();
 
     /**
      *  The gutter width in points
      *  @var cols
      *  @access private
      */
-    var $gutter = 0;
+    public $gutter = 0;
     
     /**
      *  Constructor.  Clears all definitions and
@@ -54,7 +54,7 @@ class x4_fpdf extends fpdf
      *  @access public
      *  @since  0.1
      */
-    function x4_fpdf($ori='l',$uom='pt',$paper='letter') 
+    public function x4_fpdf($ori='l', $uom='pt', $paper='letter')
     {
         // Tab Stops
         $this->cols  = array();
@@ -74,7 +74,7 @@ class x4_fpdf extends fpdf
      *
      *  @since 12/16/07
      */
-    function overAndOut($name="report.pdf",$nature='I') 
+    public function overAndOut($name="report.pdf", $nature='I')
     {
         header('Pragma:', true);
         $this->Output($name, $nature);
@@ -94,14 +94,14 @@ class x4_fpdf extends fpdf
      *  @param string $fontsize   In points, default 12  
      *  @param string $lineheight default 1, single spacing
      */
-    function setupReport($ori='p',$fontname='Times',$fontsize=12,$linespacing=1) 
+    public function setupReport($ori='p', $fontname='Times', $fontsize=12, $linespacing=1)
     {
         $this->reportSetup($ori, $fontname, $fontsize, $linespacing);
     }
     
     // Deprecated original name of rotuine, some code still
     // calls this
-    function reportSetup($ori='p',$fontname='Times',$fontsize=12,$linespacing=1) 
+    public function reportSetup($ori='p', $fontname='Times', $fontsize=12, $linespacing=1)
     {
         $this->margin_left = 36;
         $this->margin_top = 36;
@@ -135,36 +135,36 @@ class x4_fpdf extends fpdf
      *  1 inch, 2 inches, 1 inch and 1 inch respectively.  The 
      *  latter two columns will be right justified.
      */
-    function setupColumns($gutter,$commalist) 
+    public function setupColumns($gutter, $commalist)
     {
         $this->setupCols($gutter, $commalist);
     }
-    function setupCols($gutter,$commalist) 
+    public function setupCols($gutter, $commalist)
     {
         $this->lastCol = -1;
         $this->cols = array();
         $this->gutter = $gutter * 72;
-        if(is_array($commalist)) {
+        if (is_array($commalist)) {
             $alist = $commalist;
-        }
-        else {
+        } else {
             $alist = explode(',', $commalist);
         }
         $posx = $this->margin_left;
-        foreach($alist as $onestop) {
+        foreach ($alist as $onestop) {
             $colstuff = explode(':', $onestop);
             $width = array_shift($colstuff);
             $align='L';
             $money = false;
             $multi = false;
-            if(count($colstuff)>0) {
+            if (count($colstuff)>0) {
                 $align = array_shift($colstuff);
             }
             // KFD 9/24/08, look for second to be money and third
             // to be "notes", or multi-line
-            if(count($colstuff)>0) {
+            if (count($colstuff)>0) {
                 $x = array_shift($colstuff);
-                if($x<>'') { $money = true; 
+                if ($x<>'') {
+                    $money = true;
                 }
             }
             $multi = count($colstuff)>0;
@@ -192,23 +192,25 @@ class x4_fpdf extends fpdf
      * @param string $size  Font size in points. Defaults to  current font size.
      *                     current font size.
      */
-    function CenteredLine($text,$style='',$size=null) 
+    public function CenteredLine($text, $style='', $size=null)
     {
-        if(is_null($size)) { $size=$this->fontsize; 
+        if (is_null($size)) {
+            $size=$this->fontsize;
         }
         $this->setFont($this->fontname, $style, $size);
         $this->Cell(0, 0, $text, 0, 0, 'C'); // DOC: 0 width=all
-        $this->Ln($size * $this->linespacing);      
+        $this->Ln($size * $this->linespacing);
         $this->setFont($this->fontname, '', $this->fontsize);
     }
 
-    function OutputLine($text,$style='',$size=null) 
+    public function OutputLine($text, $style='', $size=null)
     {
-        if(is_null($size)) { $size=$this->fontsize; 
+        if (is_null($size)) {
+            $size=$this->fontsize;
         }
         $this->setFont($this->fontname, $style, $size);
         $this->Cell(0, 0, $text, 0, 0, 'L'); // DOC: 0 width=all
-        $this->Ln($size * $this->linespacing);      
+        $this->Ln($size * $this->linespacing);
         $this->setFont($this->fontname, '', $this->fontsize);
     }
     
@@ -218,7 +220,7 @@ class x4_fpdf extends fpdf
      *
      * Good for use in headers.
      */
-    function DateAndPage() 
+    public function DateAndPage()
     {
         $this->Cell(0, 0, date('m/d/Y', time()), 0, 1, 'L');
         $this->Cell(0, 0, 'Page '.$this->PageNo(), 0, 0, 'R');
@@ -229,7 +231,7 @@ class x4_fpdf extends fpdf
      * Goes to the next line.  Also resets the column position
      * so that "AtNextCol" will begin at the let.
      */
-    function nextLine($color=false) 
+    public function nextLine($color=false)
     {
         // $this->Ln($this->lineheight);
         // if(isset($this->realHeight)) {
@@ -260,7 +262,7 @@ class x4_fpdf extends fpdf
      *   $this->linesForColumns();
      * }
      */
-    function outFromList($commalist) 
+    public function outFromList($commalist)
     {
         $this->lineFromArray(explode(',', $commalist));
     }
@@ -279,9 +281,9 @@ class x4_fpdf extends fpdf
      *   $this->outFromArray($row);
      * }
      */
-    function outFromArray($alist) 
+    public function outFromArray($alist)
     {
-        while($value = array_shift($alist)) {
+        while ($value = array_shift($alist)) {
             $this->atNextCol($value);
         }
         $this->nextLine();
@@ -300,16 +302,16 @@ class x4_fpdf extends fpdf
      *                    orientation as established by 
      *                    prior call to setupColumns()
      */
-    function AtCol($col,$text,$flush='L') 
+    public function AtCol($col, $text, $flush='L')
     {
-        if(!isset($this->cols[$col])) {
+        if (!isset($this->cols[$col])) {
             echo "<b>ERROR: Output past last column, did you 
             forget a \$this->nextLine()?";
             exit;
         }
        
         // Figure out if we need to reformat as money
-        if($this->cols[$col]['money'] &&is_numeric($text)) {
+        if ($this->cols[$col]['money'] &&is_numeric($text)) {
             $text = hmoney($text);
         }
        
@@ -319,7 +321,7 @@ class x4_fpdf extends fpdf
         $align     = $this->cols[$col]['align'];
         $this->Setx($xposition);
         // KFD 9/24/08. Capture Y, figure how many lines
-        if($this->cols[$col]['multi']) {
+        if ($this->cols[$col]['multi']) {
             $ybeg = $this->getY();
             $xbeg = $this->getX();
             $this->setY($ybeg-5);
@@ -329,8 +331,7 @@ class x4_fpdf extends fpdf
             // if(!isset($this->realHeight)) $this->realHeight = $this->lineheight;
             // $this->realHeight = max($yend-$ybeg,$this->realHeight);
             // $this->setY($ybeg);
-        }
-        else {
+        } else {
             $this->Cell($width, 0, $text, 0, 0, $align);
         }
         // KFD 9/24/08. (END)
@@ -350,7 +351,7 @@ class x4_fpdf extends fpdf
      *                    orientation as established by 
      *                    prior call to setupColumns()
      */
-    function AtNextCol($text,$flush='L') 
+    public function AtNextCol($text, $flush='L')
     {
         $this->AtCol($this->lastCol+1, $text, $flush);
     }
@@ -360,15 +361,15 @@ class x4_fpdf extends fpdf
      * width of each column.  Often used as the last call
      * in a page header.
      */
-    function LinesForColumns() 
+    public function LinesForColumns()
     {
         $posy = $this->getY();
-        foreach($this->cols as $onecol=>$colinfo) {
+        foreach ($this->cols as $onecol=>$colinfo) {
             $this->Line(
                 $colinfo['xpos'], $posy, $colinfo['xpos']+$colinfo['width'], $posy
             );
         }
-        $this->nextLine();       
+        $this->nextLine();
     }
    
     /**
@@ -379,11 +380,11 @@ class x4_fpdf extends fpdf
      * @param int $start First column (zero indexed)
      * @param int $end   Last Column (zero indexed)
      */
-    function lineAcrossColumns($start,$end) 
+    public function lineAcrossColumns($start, $end)
     {
         $posx1 = $this->cols[$start]['xpos'];
         $posx2 = $this->cols[$start]['xpos'];
-        for($x = $start;$x<=$end;$x++) {
+        for ($x = $start;$x<=$end;$x++) {
             $posx2 += $this->cols[$x]['width'];
         }
         $posx2 += $this->gutter * ($end - $start);
@@ -413,17 +414,15 @@ class x4_fpdf extends fpdf
      * );
      * $this->LinesAcrossColumns();
      */
-    function valueAcrossColumns($start,$end,$text,$align='C') 
+    public function valueAcrossColumns($start, $end, $text, $align='C')
     {
         $posx1 = $this->cols[$start]['xpos'];
         $width = 0;
-        for($x = $start;$x<=$end;$x++) {
+        for ($x = $start;$x<=$end;$x++) {
             $width += $this->cols[$x]['width'];
         }
         $width += $this->gutter * ($end - $start);
         $this->Setx($posx1);
         $this->Cell($width, 0, $text, 0, 0, $align);
     }
-   
 }
-?>

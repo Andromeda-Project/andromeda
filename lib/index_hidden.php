@@ -87,15 +87,15 @@ $AG['clean']= array();
 $AG['clean']['gp_page'] = '';
 $AG['clean']['gp_action'] = '';
 $AG['clean'] = array_merge($AG['clean'], $_POST, $_GET);
-if(ini_get('magic_quotes_gpc')) {
-    foreach($AG['clean'] as $var=>$value) {
-        if($var=='gpContext') { continue; 
+if (ini_get('magic_quotes_gpc')) {
+    foreach ($AG['clean'] as $var=>$value) {
+        if ($var=='gpContext') {
+            continue;
         }
-        if(!is_array($value)) {
+        if (!is_array($value)) {
             $AG['clean'][$var]=stripslashes($value);
-        }
-        else {
-            foreach($value as $key=>$subval) {
+        } else {
+            foreach ($value as $key=>$subval) {
                 $AG['clean'][$var][$key] = stripslashes($subval);
             }
         }
@@ -106,14 +106,12 @@ if(ini_get('magic_quotes_gpc')) {
 // >>> Restore the context (taken from g/p variables)
 // >>> Used only in "classic" x_table2 page handling, not in x4
 // >>>
-if(!isset($AG['clean']['gpContext'])) {
+if (!isset($AG['clean']['gpContext'])) {
     $AG['clean']['gpContext']=array();
-}
-else {
-    if(!isset($AG['clean']['gpContext'])) {
+} else {
+    if (!isset($AG['clean']['gpContext'])) {
         $t2=array();
-    }
-    else {
+    } else {
         $t2 = base64_decode($AG['clean']['gpContext']);
         $t2 = gzuncompress($t2);
         $t2 = unserialize($t2);
@@ -128,7 +126,7 @@ else {
 // >>>
 // ==================================================================
 require_once 'androLib.php';
-if(configGet('deprecated', 'Y')=='Y') {
+if (configGet('deprecated', 'Y')=='Y') {
     include_once 'androLibDeprecated.php';
 }
 
@@ -178,16 +176,16 @@ SessionSet('count', SessionGet('count')+1);
 // ==================================================================
 
 // A logout command comes first
-if(gp('st2logout')<>'') {
-    if(gpExists('st2keep')) {
-        if(gp('st2keep')==1) {
+if (gp('st2logout')<>'') {
+    if (gpExists('st2keep')) {
+        if (gp('st2keep')==1) {
             // This just clears user leaves rest of session
             SessionSet('UID', $AG['application']);
             SessionSet('PWD', $AG['application']);
         } else {
             SessionReset();
         }
-    } elseif(configGet('logout_clear', 'Y')=='N') {
+    } elseif (configGet('logout_clear', 'Y')=='N') {
         // Another way to clear user and leave session
         SessionSet('UID', $AG['application']);
         SessionSet('PWD', $AG['application']);
@@ -204,7 +202,7 @@ if(gp('st2logout')<>'') {
 // the first visit.
 //
 $uid = SessionGet('UID', '');
-if($uid=='') {
+if ($uid=='') {
     SessionReset();
     SessionSet('UID', $AG['application']);
     SessionSet('PWD', $AG['application']);
@@ -232,24 +230,24 @@ if (gp('st2login')==1) {
     $obj_login = dispatchObject('x_login');
     $obj_login->directlogin = $directlogin;
     $obj_login->Login_Process();
-    if(LoggedIn()) {
+    if (LoggedIn()) {
         // A direct login restores the "clean" array as it was
-        if($directlogin) {
+        if ($directlogin) {
             unset($directclean['gp_uid']);
             unset($directclean['gp_pwd']);
             unset($directclean['loginUID']);
             unset($directclean['loginPWD']);
             $AG['clean']=$directclean;
-        } elseif(count(SessionGet('clean', array()))<>0) {
+        } elseif (count(SessionGet('clean', array()))<>0) {
             // These were a page attempt made w/o being logged in,
             // which is now being ok'd since the user is logged in.
             $GLOBALS['AG']['clean'] = SessionGet('clean');
-            if(isset($GLOBALS['AG']['clean']['ajxBUFFER'])) {
+            if (isset($GLOBALS['AG']['clean']['ajxBUFFER'])) {
                 unset($GLOBALS['AG']['clean']['ajxBUFFER']);
             }
             SessionUnSet('clean');
             // In pos systems, save the page they are authenticated for
-            if(vgaGET('POS_SECURITY', false)==true) {
+            if (vgaGET('POS_SECURITY', false)==true) {
                 SessionSet('POS_PAGE', gp('gp_page'), 'FW');
             }
         }
@@ -267,8 +265,8 @@ if (gp('st2login')==1) {
 $uid=trim(SessionGet('UID'));
 $app=trim($AG['application']);
 $uidx=substr($uid, 0, strlen($app));
-if(!trim($uid)==trim($app)) {
-    if($uid=='postgres' || $uidx == $app) {
+if (!trim($uid)==trim($app)) {
+    if ($uid=='postgres' || $uidx == $app) {
         SessionReset();
         SessionSet('UID', $app);
         SessionSet('PWD', $app);
@@ -278,7 +276,7 @@ if(!trim($uid)==trim($app)) {
 
 // After all login activity, if the person is not logged in,
 // set an effective group id
-if(!LoggedIn()) {
+if (!LoggedIn()) {
     SessionSet('GROUP_ID_EFF', arr($GLOBALS['AG'], 'group_login', ''));
 }
 
@@ -287,11 +285,14 @@ if(!LoggedIn()) {
 // >>> Command line programs now exit after loading framework
 // >>>
 // ==================================================================
-if(!isset($_SERVER['HTTP_HOST'])) { return; 
+if (!isset($_SERVER['HTTP_HOST'])) {
+    return;
 }
-if(isset($force_cli)) {   return; 
+if (isset($force_cli)) {
+    return;
 }
-if(isset($header_mode)) { return; 
+if (isset($header_mode)) {
+    return;
 }
 
 // ==================================================================
@@ -314,7 +315,7 @@ if(isset($header_mode)) { return;
 // ==================================================================
 
 // If making an ajax call and session time out, send to logout
-if(Count(SessionGet('clean', array()))>0 && gpExists('ajxBUFFER')) {
+if (Count(SessionGet('clean', array()))>0 && gpExists('ajxBUFFER')) {
     echo '_redirect|?st2logout=1';
     return;
 }
@@ -322,31 +323,32 @@ if(Count(SessionGet('clean', array()))>0 && gpExists('ajxBUFFER')) {
 // Everything after assumes we need a database connection
 // KFD 3/18/08 If a user has passed in an "impersonation"
 // user_id, save that in the session
-if(gpExists('gpimp')) { SessionSet('UID_IMPERSONATE', gp('gpimp')); 
+if (gpExists('gpimp')) {
+    SessionSet('UID_IMPERSONATE', gp('gpimp'));
 }
 scDBConn_Push();
 
 // KFD 6/7/07, make any calls just after db connection
-if(function_exists('app_after_db_connect')) {
+if (function_exists('app_after_db_connect')) {
     app_after_db_connect();
 }
 
 // KFD 12/20/08.  After we are connected, if we are root and
 // firePHP is found, and this is a JSON call,
 // then activate a few things.
-if(SessionGet('ROOT')==1) {
+if (SessionGet('ROOT')==1) {
     try {
         include_once 'FirePHPCore/FirePHP.class.php';
-    } catch(Exception $e) {
+    } catch (Exception $e) {
         // do nothing on error, we ignore
     }
-    if(class_exists('FirePHP')) {
+    if (class_exists('FirePHP')) {
         // notice this is a global
         $firephp = FirePHP::getInstance(true);
 
         include_once 'FirePHPCore/fb.php';
 
-        if(gp('json')==1) {
+        if (gp('json')==1) {
             $firephp->registerErrorHandler();
             $firephp->registerExceptionHandler();
         }
@@ -362,7 +364,7 @@ if(SessionGet('ROOT')==1) {
 $x4Required = array(
     'configfw','configapp','configinst','configuser','configconfirm'
 );
-if(in_array(gp('gp_page'), $x4Required)) {
+if (in_array(gp('gp_page'), $x4Required)) {
     gpSet('x4Page', gp('gp_page'));
 }
 
@@ -374,14 +376,14 @@ if(in_array(gp('gp_page'), $x4Required)) {
 // may have come in, such as gp_dropdown, which causes
 // this to be ignored.
 // 
-if(gp('x4Page')=='' && gp('gp_page')=='' &&gp('x6page')=='') {
-    if(function_exists('app_nopage')) {
+if (gp('x4Page')=='' && gp('gp_page')=='' &&gp('x6page')=='') {
+    if (function_exists('app_nopage')) {
         app_nopage();
     } else {
         // for x4 apps only, if we have no page
         // set it to the menu
         $x4menu = configGet('x4menu');
-        if($x4menu=='Y' && LoggedIn()) {
+        if ($x4menu=='Y' && LoggedIn()) {
             gpSet('x4Page', 'menu');
         }
     }
@@ -391,7 +393,8 @@ if(gp('x4Page')=='' && gp('gp_page')=='' &&gp('x6page')=='') {
 // Entries made in the command box can rewrite get/post
 // variables and affect downstream processing.  Do those
 // now if required.
-if(gpExists('gp_command')) { index_hidden_command(); 
+if (gpExists('gp_command')) {
+    index_hidden_command();
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -436,7 +439,7 @@ if($flagx6=='Y' && $x6page=='') {
 
 // A custom file for this page
 $x = "x6$x6page.php";
-if(file_exists_incpath($x)) {
+if (file_exists_incpath($x)) {
     $x6file = $x;
 }
 
@@ -444,13 +447,13 @@ if(file_exists_incpath($x)) {
 // or overridden in applib.
 $fx6profiles = fsDirTop().'generated/ddx6profiles.php';
 $GLOBALS['AG']['x6profiles'] = array();
-if(file_exists($fx6profiles)) {
+if (file_exists($fx6profiles)) {
     include $fx6profiles;
 }
-if(function_exists('app_x6profiles')) {
+if (function_exists('app_x6profiles')) {
     app_x6profiles();
 }
-if(isset($GLOBALS['AG']['x6profiles'][$x6page])) {
+if (isset($GLOBALS['AG']['x6profiles'][$x6page])) {
     $x6profile = $GLOBALS['AG']['x6profiles'][$x6page];
 }
 
@@ -480,21 +483,32 @@ $x6action = gp('x6action');
 // Only one path can be chosen, and each path is completely
 // responsible for returning all headers, HTML or anything
 // else it wants to send back.
-if(gp('ajxFETCH')   =='1') { index_hidden_ajxFETCH(); 
-}
-elseif(gp('x6fetch')     <>'') index_hidden_x6FETCH();
-elseif(gp('ajxfSELECT')  <>'') index_hidden_ajxfSELECT();
-elseif(gp('ajxc1table')  <>'') index_hidden_ajx1ctable();
-elseif(gp('gp_function') <>'') index_hidden_function();
-elseif(gp('gp_dropdown') <>'') index_hidden_dropdown();
-elseif(gp('gp_fetchrow') <>'') index_hidden_fetchrow();
-elseif(gp('gp_sql')      <>'') index_hidden_sql();
-elseif(gp('gp_ajaxsql')  <>'') index_hidden_ajaxsql();
-elseif($x6page           <>'') index_hidden_x6Dispatch(
+if (gp('ajxFETCH')   =='1') {
+    index_hidden_ajxFETCH();
+} elseif (gp('x6fetch')     <>'') {
+    index_hidden_x6FETCH();
+} elseif (gp('ajxfSELECT')  <>'') {
+    index_hidden_ajxfSELECT();
+} elseif (gp('ajxc1table')  <>'') {
+    index_hidden_ajx1ctable();
+} elseif (gp('gp_function') <>'') {
+    index_hidden_function();
+} elseif (gp('gp_dropdown') <>'') {
+    index_hidden_dropdown();
+} elseif (gp('gp_fetchrow') <>'') {
+    index_hidden_fetchrow();
+} elseif (gp('gp_sql')      <>'') {
+    index_hidden_sql();
+} elseif (gp('gp_ajaxsql')  <>'') {
+    index_hidden_ajaxsql();
+} elseif ($x6page           <>'') {
+    index_hidden_x6Dispatch(
     $x6page, $x6file, $x6yaml, $x6profile, $x6plugin, $x6action
 );
-elseif(gp('x4Page')      <>'') index_hidden_x4Dispatch();
-else {                           index_hidden_page(); 
+} elseif (gp('x4Page')      <>'') {
+    index_hidden_x4Dispatch();
+} else {
+    index_hidden_page();
 }
 
 // All finished, disconnect and leave.
@@ -508,7 +522,7 @@ return;
 // >> index_hidden_x6Dispatch
 // ------------------------------------------------------------------
 function index_hidden_x6Dispatch(
-    $x6page,$x6file,$x6yaml,$x6profile,$x6plugin,$x6action
+    $x6page, $x6file, $x6yaml, $x6profile, $x6plugin, $x6action
 ) {
     // This is everything that *might* go back, make a place
     // for all of it
@@ -524,17 +538,17 @@ function index_hidden_x6Dispatch(
 
     // KFD 12/10/08, allow dynamic lookups.
     // 
-    if(gp('x6select', false)) {
+    if (gp('x6select', false)) {
         $table_id = gp('x6page');
         $gpletters= gp('gpletters');
         // KFD 4/11/09 Sourceforge 2753358 do real matches
         $matches  = aFromGp('mtch_');
 
         $rows=RowsForSelect($table_id, $gpletters, $matches, '', true);
-        foreach($rows as $idx=>$row) {
+        foreach ($rows as $idx=>$row) {
             unset($rows[$idx]['skey']);
-            foreach($row as $col=>$val) {
-                if($col<>'skey') {
+            foreach ($row as $col=>$val) {
+                if ($col<>'skey') {
                     $rows[$idx][$col] = trim($val);
                 }
             }
@@ -554,9 +568,9 @@ function index_hidden_x6Dispatch(
     // 
     $x6skin = arr($_COOKIE, 'x6skin', 'Default.Gray.1024');
     setCookie('x6skin', $x6skin);
-    if($x6skin!='') {
+    if ($x6skin!='') {
         $filename  = fsDirTop()."templates/x6/skinsphp/x6skin.$x6skin.ser.txt";
-        if(file_exists($filename)) {
+        if (file_exists($filename)) {
             $serialized=file_get_contents($filename);
             $GLOBALS['AG']['x6skin'] = unserialize($serialized);
         }
@@ -568,7 +582,7 @@ function index_hidden_x6Dispatch(
     // 
     // MPPages lists pages that may be accessed w/o login
     global $MPPages;
-    if(!is_array($MPPages)) {
+    if (!is_array($MPPages)) {
         $MPPages = array();
     }
     $MPPages['x_home']='Home Page';
@@ -580,12 +594,11 @@ function index_hidden_x6Dispatch(
 
     // Session timeouts.  Need to code for basic page access
     // and code for ajax timeouts.
-    if(!LoggedIn() && !in_array($x6page, array_keys($MPPages))) {
-        if(gpExists('json')) {
+    if (!LoggedIn() && !in_array($x6page, array_keys($MPPages))) {
+        if (gpExists('json')) {
             x4Script("window.location='index.php?gp_page=x_login'");
             echo json_encode($GLOBALS['AG']['x4']);
-        }
-        else {
+        } else {
             echo "<script>window.location='index.php?gp_page=x_login&x2=1'</script>";
         }
         return;
@@ -602,7 +615,7 @@ function index_hidden_x6Dispatch(
     // because we support 3 different kinds of pages (yaml, profile
     // and custom) plus calls from plugins to refresh, plus JSON
     // calls to do database stuff.
-    if($x6plugin<>'') {
+    if ($x6plugin<>'') {
         // DEFUNCT.  We don't use plugins, they were an early
         // idea, but profiles and androHTML classes
         // made them unecessary.
@@ -614,13 +627,12 @@ function index_hidden_x6Dispatch(
         // $x6class = 'x6plugin'.$x6plugin;
         // $x6method= $x6action;
         // include($x6class.'.php');
-    }
-    else {
+    } else {
         // No plugin means we are either using the base andromeda
         // class androX6, or using a custom class.  We only use
         // a custom class if the programmer has supplied a file.
         // So if that file exists we load that and use it.
-        if($x6file<>'') {
+        if ($x6file<>'') {
             $x6class = 'x6'.$x6page;
             //include($x6class.'.php');
         }
@@ -628,25 +640,22 @@ function index_hidden_x6Dispatch(
         // The next major decision is whether we are calling some
         // specific action, or loading a page.  If an action was
         // specified that wins.
-        if($x6action<>'') {
+        if ($x6action<>'') {
             $x6method = $x6action;
-        }
-        else {
+        } else {
             // KFD 12/22/08.  Support for androPage! Extremely important!
-            if(file_exists("application/$x6page.page.yaml")) {
+            if (file_exists("application/$x6page.page.yaml")) {
                 $x6class = 'androPage';
                 $x6method= 'x6main';
                 //include('androPage.php');
-            }
-            else {
+            } else {
                 // Now we must be loading a page, because no plugin was
                 // specified and no action.  At this point all that is
                 // left to figure out is whether we load a profile or
                 // go for the default "x6main" routine.
-                if($x6profile<>'') {
+                if ($x6profile<>'') {
                     $x6method = 'profile_'.$x6profile;
-                }
-                else {
+                } else {
                     $x6method = 'x6main';
                 }
             }
@@ -658,7 +667,7 @@ function index_hidden_x6Dispatch(
             // KFD 12/23/08, see if they set a cookie for an
             // alternate location.
             // KFD 1/22/09 , Yikes! Don't do this if JSON was passed
-            if(gp('json', '')<>'1') {
+            if (gp('json', '')<>'1') {
                 $xpath = arr($_COOKIE, 'altjs', 'clib/');
                 jsInclude($xpath.'x6.js');
                 // jsInclude('clib/jquery.maskedinput-1.1.4.js');
@@ -676,14 +685,14 @@ function index_hidden_x6Dispatch(
     // This means that bad page requests go to
     // profile_conventional(), so that is where
     // we trap for them.  See androX6::profile_conventional()
-    if($x6method=='x6main' && $x6class=='androX6') {
+    if ($x6method=='x6main' && $x6class=='androX6') {
         $x6method = 'profile_conventional';
 
         // KFD 2/2/09.  Allow fallback to x2 processing.  If the
         // app is set for it, and a file exists, call
         // that instead
-        if(configGet('x6_x2', 'N')=='Y') {
-            if(file_exists(fsDirTop().'application/'.$x6page.'.php')) {
+        if (configGet('x6_x2', 'N')=='Y') {
+            if (file_exists(fsDirTop().'application/'.$x6page.'.php')) {
                 $x6class = $x6page;
                 $x6method= "main";
             }
@@ -706,9 +715,9 @@ function index_hidden_x6Dispatch(
     // KFD 3/20/09 Sourceforge 2697962
     // Make sure programmer never has to send out
     // hold variables, they should go automatically
-    if(gp('json')<>1) {
-        if(isset($obj->hld)) {
-            foreach($obj->hld as $name=>$value) {
+    if (gp('json')<>1) {
+        if (isset($obj->hld)) {
+            foreach ($obj->hld as $name=>$value) {
                 // KFD 3/20/09 Sourceforge 2697962
                 // Put out as hidden instead
                 hidden('hld_'.$name, $value);
@@ -722,16 +731,16 @@ function index_hidden_x6Dispatch(
 
     // Now if they made a "main" call, see if they want us to
     // send back some script as well
-    if($x6method=='x6main') {
-        if(method_exists($obj, 'x6script')) {
+    if ($x6method=='x6main') {
+        if (method_exists($obj, 'x6script')) {
             ob_start();
             $obj->x6script();
             x6script(ob_get_clean());
         }
     }
     // And again see if they are sending out any popups
-    if($x6method=='x6main') {
-        if(method_exists($obj, 'x6modals')) {
+    if ($x6method=='x6main') {
+        if (method_exists($obj, 'x6modals')) {
             ob_start();
             $obj->x6modals();
             $HTML.=ob_get_clean();
@@ -740,9 +749,9 @@ function index_hidden_x6Dispatch(
     x6HTML('*MAIN*', $HTML);
 
     // Put errors in that were reported by database operations
-    if(Errors()) {
+    if (Errors()) {
         $errs = errorsGet();
-        foreach($errs as $err) {
+        foreach ($errs as $err) {
             x4Error($err);
         }
     }
@@ -752,10 +761,9 @@ function index_hidden_x6Dispatch(
     // if the "json" flag is set, we return all output as JSON,
     // otherwise we package it up with the normal template and
     // return it as main content
-    if(gp('json')==1) {
+    if (gp('json')==1) {
         echo json_encode_safe($GLOBALS['AG']['x4']);
-    }
-    else {
+    } else {
         // Don't need a form in x6 mode
         vgaSet('NOFORM', true);
 
@@ -763,7 +771,7 @@ function index_hidden_x6Dispatch(
         vgfSet('HTML', $GLOBALS['AG']['x4']['html']['*MAIN*']);
 
         // If there was some script, add that in
-        foreach($GLOBALS['AG']['x4']['script'] as $script) {
+        foreach ($GLOBALS['AG']['x4']['script'] as $script) {
             jqDocReady($script);
         }
 
@@ -794,7 +802,7 @@ function index_hidden_x6Dispatch(
 // ------------------------------------------------------------------
 // >> index_hidden_x4Dispatch
 // ------------------------------------------------------------------
-function index_hidden_x4Dispatch() 
+function index_hidden_x4Dispatch()
 {
     // This is everything that *might* go back, make a place
     // for all of it
@@ -820,12 +828,11 @@ function index_hidden_x4Dispatch()
     // If they are not logged in, or have timed out,
     // send a redirection command to the login page
     // 
-    if(!LoggedIn()) {
-        if(gpExists('json')) {
+    if (!LoggedIn()) {
+        if (gpExists('json')) {
             x4Script("window.location='index.php?gp_page=x_login'");
             echo json_encode_safe($GLOBALS['AG']['x4']);
-        }
-        else {
+        } else {
             echo "<script>window.location='index.php?gp_page=x_login'</script>";
         }
         return;
@@ -836,20 +843,19 @@ function index_hidden_x4Dispatch()
     //
     $x4Page = gp('x4Page');
     hidden('x4Page', $x4Page);  // makes form submits come back here
-    if(gpExists('db')) {
+    if (gpExists('db')) {
         index_hidden_x4DB();
-    }
-    else if(file_exists("application/$x4Page.page.yaml")) {
+    } elseif (file_exists("application/$x4Page.page.yaml")) {
         //include 'androPage.php';
         $obj_page = new androPage();
-        if ($obj_page->flag_buffer) { ob_start(); 
+        if ($obj_page->flag_buffer) {
+            ob_start();
         }
         $obj_page->main($x4Page);
         if ($obj_page->flag_buffer) {
             x4HTML("*MAIN*", ob_get_clean());
         }
-    }
-    else {
+    } else {
         $object = x4Object($x4Page);
 
         // Determine method and invoke it.  Notice any
@@ -858,15 +864,15 @@ function index_hidden_x4Dispatch()
         ob_start();
         $object->$method();
         $errors = ob_get_clean();
-        if($errors <> '') {
+        if ($errors <> '') {
             x4Error($errors);
         }
     }
 
     // Put errors in that were reported by database operations
-    if(Errors()) {
+    if (Errors()) {
         $errs = errorsGet();
-        foreach($errs as $err) {
+        foreach ($errs as $err) {
             x4Error($err);
         }
     }
@@ -874,10 +880,9 @@ function index_hidden_x4Dispatch()
     // if the "json" flag is set, we return all output as JSON,
     // otherwise we package it up with the normal template and
     // return it as main content
-    if(gp('json')==1) {
+    if (gp('json')==1) {
         echo json_encode_safe($GLOBALS['AG']['x4']);
-    }
-    else {
+    } else {
         // Tell the client-side library to initialize the
         // 'inert' HTML that it received from us.
         // 
@@ -888,7 +893,7 @@ function index_hidden_x4Dispatch()
 
         // Put things where the template expects to find them
         vgfSet('HTML', $GLOBALS['AG']['x4']['html']['*MAIN*']);
-        foreach($GLOBALS['AG']['x4']['script'] as $script) {
+        foreach ($GLOBALS['AG']['x4']['script'] as $script) {
             jqDocReady($script);
         }
 
@@ -912,7 +917,7 @@ function index_hidden_x4Dispatch()
 // ------------------------------------------------------------------
 // >> X4 Direct database access
 // ------------------------------------------------------------------
-function index_hidden_x4DB() 
+function index_hidden_x4DB()
 {
     // For all raw access, there will be an array
     // of column values, and a table to hit.
@@ -924,58 +929,57 @@ function index_hidden_x4DB()
     // There are four different database functions, so there
     // are four library routines we might call.
     $ra=$r1=false;
-    switch(gp('db')) {
-    case 'del'   : x4sqlDel($table, $whr);          
+    switch (gp('db')) {
+    case 'del'   : x4sqlDel($table, $whr);
         break;
-    case 'sel'   : x4sqlSel($table, $whr);          
+    case 'sel'   : x4sqlSel($table, $whr);
         break;
-    case 'ins'   : x4sqlIns($table, $row, $rr);      
+    case 'ins'   : x4sqlIns($table, $row, $rr);
         break;
-    case 'upd'   : x4sqlUpd($table, $row, $whr, $rr); 
+    case 'upd'   : x4sqlUpd($table, $row, $whr, $rr);
         break;
     }
 }
 
-function x4sqlIns($table,$row,$rowret=0) 
+function x4sqlIns($table, $row, $rowret=0)
 {
     $skey = SQLX_Insert($table, $row);
-    if($rowret) {
+    if ($rowret) {
         $row = SQL_OneRow("Select * from $table where skey = $skey");
         x4Data('row', $row);
     }
 }
-function x4sqlDel($table,$whr) 
+function x4sqlDel($table, $whr)
 {
     $view = ddView($table);
     $awhere = array();
-    foreach($whr as $key=>$value) {
+    foreach ($whr as $key=>$value) {
         $awhere[] = "$key = $value";
     }
     $swhere = implode(' AND ', $awhere);
     SQL("Delete from $view WHERE $swhere");
-    if(Errors()) {
+    if (Errors()) {
         x4Error(hErrors());
     }
 }
 
-function x4sqlSel($table,$whr) 
+function x4sqlSel($table, $whr)
 {
     $options = array();
-    if(gp('ob')<>'') {
+    if (gp('ob')<>'') {
         $options=array('ob',gp('ob'));
     }
     x4Data('rows', SQLX_Select($table, '', $options));
 }
-function x4sqlUpd($table,$row,$whr) 
+function x4sqlUpd($table, $row, $whr)
 {
-    if(!isset($whr['skey'])) {
+    if (!isset($whr['skey'])) {
         x4Error(
             "The database update cannot be performed because the"
             ." 'skey' column is not present.  This is very likely a"
             ." programming error, please contact your programmer."
         );
-    }
-    else {
+    } else {
         $view = ddView($table);
         $row = array_merge($row, $whr);
         SQLX_Update($table, $row);
@@ -985,7 +989,7 @@ function x4sqlUpd($table,$row,$whr)
 // ------------------------------------------------------------------
 // >> Ajax refresh a select that is 2nd column in foreign key
 // ------------------------------------------------------------------
-function index_hidden_ajxfSELECT() 
+function index_hidden_ajxfSELECT()
 {
     // fetch parms
     $table   = gp('ajxfSELECT');
@@ -1007,14 +1011,13 @@ function index_hidden_ajxfSELECT()
 // ------------------------------------------------------------------
 // >> Call from browser to server-side function
 // ------------------------------------------------------------------
-function index_hidden_function() 
+function index_hidden_function()
 {
-    if(!function_exists('app_server_side_functions')) {
+    if (!function_exists('app_server_side_functions')) {
         echo '_script|function_return_value=false';
         echo '|-|echo|No server-side dispatcher on this application';
         return;
-    }
-    else {
+    } else {
         app_server_side_functions();
     }
 }
@@ -1024,7 +1027,7 @@ function index_hidden_function()
 // >>    medical program.  Only support in first version is
 // >>    to give a quick route to lookups
 // ------------------------------------------------------------------
-function index_hidden_command() 
+function index_hidden_command()
 {
     // Get command, strip out multiple spaces, split up and
     // grab the command separate from the arguments
@@ -1046,15 +1049,15 @@ function index_hidden_command()
 
     // If a special command was added, pull it out
     $dotcmd='';
-    if(strpos($table_frag, '.')!==false) {
-        list($table_frag,$dotcmd)=explode('.', $table_frag, 2);
+    if (strpos($table_frag, '.')!==false) {
+        list($table_frag, $dotcmd)=explode('.', $table_frag, 2);
     }
 
     // Now run through the list of pages looking for the first match, but
     // look at the aliases first if they exist
-    $aliases=ArraySafe($GLOBALS, 'COMMAND_ALIASES', ARRAY());
-    foreach($aliases as $alias=>$page) {
-        if(substr(strtolower($alias), 0, strlen($table_frag))==$table_frag) {
+    $aliases=ArraySafe($GLOBALS, 'COMMAND_ALIASES', array());
+    foreach ($aliases as $alias=>$page) {
+        if (substr(strtolower($alias), 0, strlen($table_frag))==$table_frag) {
             $table_id = $page;
             break;
         }
@@ -1062,8 +1065,8 @@ function index_hidden_command()
     $PAGES=array();
     include 'ddpages.php';
     $pages = array_keys($PAGES);
-    foreach($pages as $page) {
-        if(substr(strtolower($page), 0, strlen($table_frag))==$table_frag) {
+    foreach ($pages as $page) {
+        if (substr(strtolower($page), 0, strlen($table_frag))==$table_frag) {
             $table_id = $page;
             break;
         }
@@ -1072,36 +1075,33 @@ function index_hidden_command()
     $x4 = configGet('x4welcome', 'N')=='Y' ? true : false;
 
     // Can't figure it, have to leave
-    if(!isset($table_id)) {
+    if (!isset($table_id)) {
         vgfSet('command_error', 'Unknown: '.$table_frag);
         return;
     }
 
     // Now decide what to do.
-    if($dotcmd=='new'                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         ) {
-        if($x4) {
+    if ($dotcmd=='new') {
+        if ($x4) {
             gpSet('x4Page', $table_id);
             gpSet('x4Mode', 'new');
-        }
-        else {
+        } else {
             gpSet('gp_mode', 'ins');
             gpSet('gp_page', $table_id);
         }
-    }
-    else if ($dotcmd<>'') {
+    } elseif ($dotcmd<>'') {
         vgfSet('command_error', 'Unknown Command: '.$table_frag.'.'.$dotcmd);
         return;
-    }
-    else {
+    } else {
         // for now we assume everything else is a lookup
-        if(count($args)==0) {
+        if (count($args)==0) {
             // No arguments means go to lookup mode
             gpSet('gp_mode', 'search');
             gpSet('gp_page', $table_id);
-            if($x4) { gpSet('x4Page', $table_id); 
+            if ($x4) {
+                gpSet('x4Page', $table_id);
             }
-        }
-        else {
+        } else {
             // Clear prior search results
             processPost_TableSearchResultsClear($table_id);
 
@@ -1119,16 +1119,16 @@ function index_hidden_command()
             $cols = explode(',', $dd['projections']['_uisearch']);
             array_shift($cols);    // pop off the first one, assume it is the pk/code
             gpUnsetPrefix('x2t_'); // clear troublesome values
-            foreach($cols as $i=>$colname) {
-                if(isset($args[$i])) {
+            foreach ($cols as $i=>$colname) {
+                if (isset($args[$i])) {
                     gpSet('x2t_'.$colname, $args[$i]);
                 }
             }
 
-            if($x4) {
+            if ($x4) {
                 gpSet('x4Page', $table_id);
-                foreach($cols as $i=>$colname) {
-                    if(isset($args[$i])) {
+                foreach ($cols as $i=>$colname) {
+                    if (isset($args[$i])) {
                         gpSet('pre_'.$colname, $args[$i]);
                     }
                 }
@@ -1141,7 +1141,7 @@ function index_hidden_command()
 // >> Return data to a call from dhtmlgoodies_ajax_list
 //    Active 1/17/07, used by ajax-dyanmic-list
 // ------------------------------------------------------------------
-function index_hidden_dropdown() 
+function index_hidden_dropdown()
 {
     // Get the target table that we need
     $table_id_fk=gp('gp_dropdown');
@@ -1153,31 +1153,32 @@ function index_hidden_dropdown()
     $matches = aFromGP('match_');
 
     // Pull the rows from handy library routine.
-    if(gp('gpv')=='2') {
+    if (gp('gpv')=='2') {
         // KFD 7/21/08
         $rows=RowsForSelect($table_id_fk, $gpletters, $matches, '', true);
         // $rows=RowsForSelect($table_id_fk,$gpletters,array(),'',true);
-    }
-    else {
+    } else {
         $rows=rowsForSelect($table_id_fk, $gpletters);
     }
 
     // KFD 11/4/07.  If "version 2", then turn into a table
-    if(gp('gpv')=='2') {
+    if (gp('gpv')=='2') {
         ob_start();
         echo "androSelect|";
         echo "<table>";
-        foreach($rows as $idx=>$row) {
+        foreach ($rows as $idx=>$row) {
             $prev = $idx==0                ? '' : $rows[$idx-1]['skey'];
             $next = $idx==(count($rows)-1) ? '' : $rows[$idx+1]['skey'];
             $s = $row['skey'];
             $tds='';
             $x=-1;
-            foreach($row as $colname=>$colvalue) {
+            foreach ($row as $colname=>$colvalue) {
                 $x++;
-                if($colname=='skey') { continue; 
+                if ($colname=='skey') {
+                    continue;
                 }
-                if($x==1) { $value = $colvalue; 
+                if ($x==1) {
+                    $value = $colvalue;
                 }
                 $tds.="<td>$colvalue";
             }
@@ -1196,10 +1197,10 @@ function index_hidden_dropdown()
 
 
     // Echo out the return
-    foreach($rows as $row) {
+    foreach ($rows as $row) {
         echo $row['_value']."###".$row['_display']."<br>";
     }
-    if(Errors()) {
+    if (Errors()) {
         $he=hErrors();
         syslog(LOG_INFO, $he);
     }
@@ -1208,7 +1209,7 @@ function index_hidden_dropdown()
 // >> Return a single row from a table
 //    Created 4/18/07 originally for project "jewel"
 // ------------------------------------------------------------------
-function index_hidden_fetchrow() 
+function index_hidden_fetchrow()
 {
     // Get the target table that we need
     $table_id=gp('gp_fetchrow');
@@ -1225,17 +1226,17 @@ function index_hidden_fetchrow()
     $answers=SQL_AllRows(
         "SELECT * from $table_id WHERE $pkcol=$pkval"
     );
-    if(count($answers)==0) {
+    if (count($answers)==0) {
         $row=array($pkcol=>$pkval);
-    }
-    else {
+    } else {
         $row = $answers[0];
     }
 
     // Collapse the values
     $returns=array();
-    foreach($row as $colname=>$colvalue) {
-        if(is_numeric($colname)) { continue; 
+    foreach ($row as $colname=>$colvalue) {
+        if (is_numeric($colname)) {
+            continue;
         }
         $returns[]="_value|$table_id"."_$colname|".$colvalue;
     }
@@ -1248,7 +1249,7 @@ function index_hidden_fetchrow()
 //    values and assign them to controls.
 //    Created 4/19/07 KFD for the POS screen of project 'jewel'
 // ------------------------------------------------------------------
-function index_hidden_ajx1ctable() 
+function index_hidden_ajx1ctable()
 {
     // First fetch the values
     $table_id = gp('ajxc1table');
@@ -1262,13 +1263,13 @@ function index_hidden_ajx1ctable()
     SQL("UPDATE $table_id SET $colname = $colvalue WHERE skey = $skey");
 
     // Errors will appear as a popup
-    if(Errors()) {
+    if (Errors()) {
         echo "echo|".hErrors();
         return;
     }
 
     // If they requested values back, provide those now
-    if(gp('ajxlist')<>'' && gp('ajxlist')<>'X') {
+    if (gp('ajxlist')<>'' && gp('ajxlist')<>'X') {
         // Initialize the array of information about the queries we will make
         $info=array(
             $table_id=>array('skey'=>$skey)
@@ -1278,14 +1279,13 @@ function index_hidden_ajx1ctable()
         // run queries and generate return values for display
         $raw=explode(',', gp('ajxlist'));
         $returns=array();
-        foreach($raw as $rawone) {
+        foreach ($raw as $rawone) {
             // Parse each value into the three values it contains
-            list($control,$table,$column)=explode(".", $rawone);
-            if($control=='-skey-') {
+            list($control, $table, $column)=explode(".", $rawone);
+            if ($control=='-skey-') {
                 // this is magic value that tells us its the skey
                 $info[$table]['skey']=$column; //column actually is skey here
-            }
-            else {
+            } else {
                 // normal case, we've been told a control, table, and column.
                 // If no table given, assume the table we updated
                 $table=$table=='' ? $table_id : $table;
@@ -1295,17 +1295,16 @@ function index_hidden_ajx1ctable()
         }
 
         // Now go through each table, pull the data, and build the returns
-        foreach($info as $table=>$tabinfo) {
-            if(!isset($tabinfo['skey'])) {
+        foreach ($info as $table=>$tabinfo) {
+            if (!isset($tabinfo['skey'])) {
                 $returns[]="echo|No skey passed for table $table";
-            }
-            else {
+            } else {
                 $sk=$tabinfo['skey'];
                 $cols=implode(',', $tabinfo['columns']);
                 $row=SQL_OneRow(
                     "SELECT $cols FROM $table WHERE skey = $sk"
                 );
-                foreach($tabinfo['columns'] as $index=>$colname) {
+                foreach ($tabinfo['columns'] as $index=>$colname) {
                     $returns[]
                         ='_value'
                         .'|'.$tabinfo['controls'][$index]
@@ -1324,7 +1323,7 @@ function index_hidden_ajx1ctable()
 //    Created 5/21/07 KFD for the inventory receiving of 'jewel'
 //    project, with general application eventually to any project.
 // ------------------------------------------------------------------
-function index_hidden_ajxFETCH() 
+function index_hidden_ajxFETCH()
 {
     $returns=array();
 
@@ -1340,11 +1339,14 @@ function index_hidden_ajxFETCH()
 
     // Since this is an ajax call, malformed requests exit with
     // no error or explanation
-    if(count($acontrols)<>count($acolumns)) { exit; 
+    if (count($acontrols)<>count($acolumns)) {
+        exit;
     }
-    if(count($acontrols)=='') { exit; 
+    if (count($acontrols)=='') {
+        exit;
     }
-    if($colvalue=='') { exit; 
+    if ($colvalue=='') {
+        exit;
     }
 
     // Split column names and values and build a where clause
@@ -1352,9 +1354,10 @@ function index_hidden_ajxFETCH()
     $acols=explode(',', $colname);
     $avals=explode(',', $colvalue);
     $awhere=array();
-    if(count($acols)<>count($avals)) { exit; 
+    if (count($acols)<>count($avals)) {
+        exit;
     }
-    foreach($acols as $x=>$acol) {
+    foreach ($acols as $x=>$acol) {
         $awhere[]
             =str_replace("'", "''", $acol)
             .' = '
@@ -1368,10 +1371,10 @@ function index_hidden_ajxFETCH()
     $row=SQL_OneRow($sq);
 
     // Any unusable results return with no error or complaint
-    if(!is_array($row)) {
+    if (!is_array($row)) {
         return false;
     }
-    if(count($row)==0) {
+    if (count($row)==0) {
         return false;
     }
 
@@ -1381,17 +1384,16 @@ function index_hidden_ajxFETCH()
     //$returns[]='echo|'.$sq;
 
     // Build and return the controls
-    foreach($acontrols as $x=>$acontrol) {
+    foreach ($acontrols as $x=>$acontrol) {
         //$returns[]='echo|'.$acontrol;
         //$returns[]='echo|'.$acolumns[$x];
         $cn=$acolumns[$x];
-        if($table_dd['flat'][$cn]['type_id']=='date') {
+        if ($table_dd['flat'][$cn]['type_id']=='date') {
             $row[$cn] = hFormat('date', $row[$cn]);
         }
-        if(is_null($row[$cn])) {
+        if (is_null($row[$cn])) {
             $row[$cn]='';
-        }
-        else {
+        } else {
             $row[$cn] = trim($row[$cn]);
         }
         $returns[]='_value|'.$acontrol.'|'.trim($row[$acolumns[$x]]);
@@ -1402,7 +1404,7 @@ function index_hidden_ajxFETCH()
 // KFD 5/27/09
 // Google #14.  X6 must do FETCH operations when user navigates off
 // autoselect columns.
-function index_hidden_x6FETCH() 
+function index_hidden_x6FETCH()
 {
     $returns=array();
 
@@ -1427,10 +1429,10 @@ function index_hidden_x6FETCH()
     $tfko = $dd['flat'][$column]['table_id_fko'];
     $cfko = $dd['flat'][$column]['column_id_fko'];
     $cols = array();
-    foreach($dd['flat'] as $fcol=>$cdetails) {
+    foreach ($dd['flat'] as $fcol=>$cdetails) {
         $arr = array('FETCH','FETCHDEF','DISTRIBUTE');
-        if(in_array($cdetails['automation_id'], $arr)) {
-            if($cdetails['auto_table_id']==$tfko) {
+        if (in_array($cdetails['automation_id'], $arr)) {
+            if ($cdetails['auto_table_id']==$tfko) {
                 $cols[$fcol] = $cdetails['auto_column_id'];
             }
         }
@@ -1441,14 +1443,13 @@ function index_hidden_x6FETCH()
     $sql="Select ".implode(',', $cols)
         ." FROM $tfko WHERE $cfko = ".SQLFC($colvalue);
     $row = SQL_OneRow($sql);
-    foreach($cols as $fcol=>$srccol) {
+    foreach ($cols as $fcol=>$srccol) {
         $type = $dd['flat'][$fcol]['formshort'];
-        if($type=='date') {
+        if ($type=='date') {
             x6html(
                 "x6inp_{$table_id}_$fcol", date("Y-m-d", dEnsureTs($row[$srccol]))
             );
-        }
-        else {
+        } else {
             x6html("x6inp_{$table_id}_$fcol", $row[$srccol]);
         }
     }
@@ -1462,7 +1463,7 @@ function index_hidden_x6FETCH()
 // >> Simple SQL Query, return SQL_Allrows array
 //    Active 1/17/07, known to be used by andro/a_pullcode.php
 // ------------------------------------------------------------------
-function index_hidden_sql() 
+function index_hidden_sql()
 {
     $rows=SQL_AllRows(gp('gp_sql'), gp('gp_col'));
     echo "<html>".serialize($rows)."</html>";
@@ -1471,15 +1472,17 @@ function index_hidden_sql()
 // >> Simple SQL Statement
 //    Active 1/17/07, known to be used by quicktime.php
 // ------------------------------------------------------------------
-function index_hidden_ajaxsql() 
+function index_hidden_ajaxsql()
 {
-    switch(gp('gp_ajaxsql')) {
+    switch (gp('gp_ajaxsql')) {
     case 'update':
         $row=aFromgp('txt_');
-        foreach($row as $key=>$value) {
-            if($value=='b:true') { $row[$key]='Y'; 
+        foreach ($row as $key=>$value) {
+            if ($value=='b:true') {
+                $row[$key]='Y';
             }
-            if($value=='b:false') { $row[$key]='N'; 
+            if ($value=='b:false') {
+                $row[$key]='N';
             }
         }
         $table_id=gp('gp_table');
@@ -1492,7 +1495,7 @@ function index_hidden_ajaxsql()
         SQLX_Insert($table_id, $row);
         break;
     }
-    if(Errors()) {
+    if (Errors()) {
         echo 'echo|'.hErrors();
     }
 }
@@ -1500,7 +1503,7 @@ function index_hidden_ajaxsql()
 // ------------------------------------------------------------------
 // >> HTML, object pulls
 // ------------------------------------------------------------------
-function index_hidden_page_mime() 
+function index_hidden_page_mime()
 {
     $x_mime  = CleanGet('x_mime');
     $x_table = CleanGet("gp_page");
@@ -1524,24 +1527,23 @@ function index_hidden_page_mime()
 // ------------------------------------------------------------------
 // >> HTML, conventional web page
 // ------------------------------------------------------------------
-function index_hidden_page() 
+function index_hidden_page()
 {
     global $AG;
     $sessok=!LoggedIn() ? false : true;
 
     // KFD 3/6/08, moved here from the main stream of index_hidden
     //             because these are relevant only to page processing
-    if(gpExists('x_module')) {
+    if (gpExists('x_module')) {
         SessionSet('AGMENU_MODULE', gp('x_module'));
-    }
-    elseif(vgaGet('nomodule')<>'' && SessionGet('AGMENU_MODULE')=='') {
+    } elseif (vgaGet('nomodule')<>'' && SessionGet('AGMENU_MODULE')=='') {
         SessionSet('AGMENU_MODULE', vgaGet('nomodule'));
     }
 
 
     // If the search flag is set, we need to know what class for this
     // application handles searchs
-    if(gpExists('gp_search')) {
+    if (gpExists('gp_search')) {
         gpSet('gp_page', vgaGet('SEARCH_CLASS'));
     }
 
@@ -1552,10 +1554,10 @@ function index_hidden_page()
     $MP     = array();
     //$MPPages= array();
     // This is the old method, load $MPPages from its own file
-    if(file_exists_incpath('appPublicMenu.php')) {
+    if (file_exists_incpath('appPublicMenu.php')) {
         include_once 'appPublicMenu.php';
     }
-    if(!is_array($MPPages)) {
+    if (!is_array($MPPages)) {
         $MPPages = array();
     }
     $MPPages['x_home']='Home Page';
@@ -1569,9 +1571,9 @@ function index_hidden_page()
     // around it.
     $install=$AG['dirs']['application'] .'install.php';
     $instal2=$AG['dirs']['application'] .'install.done.php';
-    if(file_exists($install)) {
+    if (file_exists($install)) {
         include_once $install;
-        if(gp('gp_install')=='finish') {
+        if (gp('gp_install')=='finish') {
             rename($install, $instal2);
         } else {
             $MPPages['install']='install';
@@ -1594,26 +1596,21 @@ function index_hidden_page()
     //
     $gp_page = gp('gp_page');
     if ($gp_page=='') {
-        if(vgfGet('LoginAttemptOK')===true && vgfGet('x4')===true) {
+        if (vgfGet('LoginAttemptOK')===true && vgfGet('x4')===true) {
             $gp_page='x4init';
             gpSet('gp_page', 'x4init');
             SessionSet('TEMPLATE', 'x4');
-        }
-        else {
-
-            if(function_exists('appNoPage')) {
+        } else {
+            if (function_exists('appNoPage')) {
                 $gp_page=appNoPage();
-            }
-            else {
-                if(!LoggedIn()) {
+            } else {
+                if (!LoggedIn()) {
                     $gp_page = FILE_EXISTS_INCPATH('x_home.php') ? 'x_home' : 'x_login';
-                }
-                else {
+                } else {
                     // KFD 3/2/07, pull vga stuff to figure defaults
-                    if(vgaGet('nopage')<>'') {
+                    if (vgaGet('nopage')<>'') {
                         $gp_page = vgaGet('nopage');
-                    }
-                    else {
+                    } else {
                         $gp_page = 'x_welcome';
                     }
                 }
@@ -1622,8 +1619,8 @@ function index_hidden_page()
     }
     // If they are trying to access a restricted page and are not
     // logged in, cache their request and redirect to login page
-    if(!$sessok && !isset($MPPages[$gp_page])) {
-        if(vgfGet('loglogins', false)) {
+    if (!$sessok && !isset($MPPages[$gp_page])) {
+        if (vgfGet('loglogins', false)) {
             fwLogEntry('1014', 'Page access w/o login', $gp_page);
         }
         gpToSession();
@@ -1631,8 +1628,8 @@ function index_hidden_page()
     }
     // If pos is activated and the current requested page does not
     // match what they are cleared for, redirect to login
-    if(vgaGet('POS_SECURITY', false)==true && SessionGet('ADMIN')==false) {
-        if(SessionGet('POS_PAGE', '', 'FW')<>$gp_page) {
+    if (vgaGet('POS_SECURITY', false)==true && SessionGet('ADMIN')==false) {
+        if (SessionGet('POS_PAGE', '', 'FW')<>$gp_page) {
             gpToSession();
             $gp_page='x_login';
         }
@@ -1675,7 +1672,8 @@ function index_hidden_page()
             gpSet('gpx_skey', $aback['skey']);
             gpSet('gpx_page', $aback['page']);
             gpSetFromArray('parent_', $aback['parent']);
-            if(!gpExists('gp_mode')) { gpSet('gp_mode', 'upd'); 
+            if (!gpExists('gp_mode')) {
+                gpSet('gp_mode', 'upd');
             }
             $dd=($spot==0) ? array() : array_slice($dd, 0, $spot);
             ContextSet('drilldown', $dd);
@@ -1683,7 +1681,7 @@ function index_hidden_page()
             //ContextSet('drilldown_level',count($dd));
         }
     }
-    if(gp('gp_dd_page')<>'' && $sessok) {
+    if (gp('gp_dd_page')<>'' && $sessok) {
         // this is drilldown...
         $matches = DrillDownMatches();
         $matches = array_merge($matches, aFromGP('parent_'));
@@ -1703,7 +1701,7 @@ function index_hidden_page()
         $tnew = gp('gp_dd_page');
         $gp_page=$tnew;
         gpSet('gp_page', $tnew);
-        if(gp('gp_dd_skey')<>'') {
+        if (gp('gp_dd_skey')<>'') {
             gpSet('gp_skey', gp('gp_dd_skey'));
             gpSet('gp_mode', 'upd');
         }
@@ -1716,7 +1714,7 @@ function index_hidden_page()
     // If no drilldown commands were received, and we are not on
     // the page that is the top, user must have picked a new page
     // altogether, wipe out the drilldown stack
-    if(gp('gp_page')<>ContextGet('drilldown_top', '')) {
+    if (gp('gp_page')<>ContextGet('drilldown_top', '')) {
         ContextSet('drilldown', array());
         ContextSet('drilldown_top', '');
     }
@@ -1736,10 +1734,11 @@ function index_hidden_page()
     UserPrefsLoad();
 
     $dir=$AG['dirs']['application'];
-    if(file_exists($dir.$gp_page.".page.yaml")) {
+    if (file_exists($dir.$gp_page.".page.yaml")) {
         //include 'androPage.php';
         $obj_page = new androPage();
-        if ($obj_page->flag_buffer) { ob_start(); 
+        if ($obj_page->flag_buffer) {
+            ob_start();
         }
         $obj_page->main($gp_page);
         if ($obj_page->flag_buffer) {
@@ -1749,7 +1748,8 @@ function index_hidden_page()
         vgfSet("PageSubtitle", $obj_page->PageSubtitle);
     } else {
         $obj_page = DispatchObject($gp_page);
-        if ($obj_page->flag_buffer) { ob_start(); 
+        if ($obj_page->flag_buffer) {
+            ob_start();
         }
         $obj_page->main();
         if ($obj_page->flag_buffer && vgfGet('HTML')=='') {
@@ -1769,25 +1769,25 @@ function index_hidden_page()
 
     // KFD 3/7/07, give the app the final opportunity to process
     //             things before the display, while logged in.
-    if(function_exists('appdisplaypre')) {
+    if (function_exists('appdisplaypre')) {
         appDisplayPre();
     }
 
     // ...and write output and we are done.  Assume if there was
     // no buffering that the output is already done.
-    if($obj_page->flag_buffer!=false) {
+    if ($obj_page->flag_buffer!=false) {
         // Work out what template we are using
         index_hidden_template('x2');
 
         // KFD 5/30/07, send back only main content if asked
-        if(gp('ajxBUFFER')==1) {
+        if (gp('ajxBUFFER')==1) {
             echo "andromeda_main_content|";
             ehStandardContent();
             echo "|-|_focus|".vgfGet('HTML_focus');
             $ajax=ElementReturn('ajax', array());
             echo '|-|'.implode('|-|', $ajax);
             echo '|-|_title|'.vgfGet('PageTitle');
-        } elseif(defined('_VALID_MOS')) {
+        } elseif (defined('_VALID_MOS')) {
             // This is the default branch, using a Joomla template
             // DUPLICATE ALERT: This code copied into
             //          index_hidden_x4Dispatch() above
@@ -1802,7 +1802,7 @@ function index_hidden_page()
                 =$AG['dirs']['app_root'].'templates/'
                 .$mainframe->GetTemplate()."/index.php";
             include $file;
-        } elseif($obj_page->html_template!=='') {
+        } elseif ($obj_page->html_template!=='') {
             // This is newer style, let the class specify the template.
             include $obj_page->html_template.'.php';
         } else {
@@ -1810,11 +1810,11 @@ function index_hidden_page()
             // set also by vgaSet() or by gp(gp_out)
             $html_main = vgaGet('html_main')==''? 'html_main' : vgaGet('html_main');
             switch (CleanGet("gp_out", "", false)) {
-            case "print": include "html_print.php"; 
+            case "print": include "html_print.php";
                 break;
-            case "info" : include "html_info.php";  
+            case "info" : include "html_info.php";
                 break;
-            case "":      include $html_main.".php";  
+            case "":      include $html_main.".php";
                 break;
             default:
             }
@@ -1826,7 +1826,7 @@ function index_hidden_page()
 
 
 
-function index_hidden_template($mode) 
+function index_hidden_template($mode)
 {
     // KFD 1/10/08.  If x6 is set, we follow a completely different
     // path, x6 settings win out.
@@ -1836,14 +1836,14 @@ function index_hidden_template($mode)
     if ($flagx6=='Y') {
         // In x6, we consider the "app_template()" function first,
         // if it returns something it always wins.
-        if(function_exists('app_template')) {
+        if (function_exists('app_template')) {
             vgfSet('template', app_template());
-        } else if($x6template=='') {
+        } elseif ($x6template=='') {
             // If app_template() does not exist, we have to figure
             // it ourselves.  If they have not given us a template,
             // we just go with x6.
             vgfSet('template', 'x6');
-        } else if(!LoggedIn() || inGroup($x6group)) {
+        } elseif (!LoggedIn() || inGroup($x6group)) {
             /*
                 Now we know they have specified a template, which
                 we will use if the user is not logged in, or is
@@ -1864,23 +1864,22 @@ function index_hidden_template($mode)
 
         // KFD 7/23/08. Give application a chance to
         // play with setting
-        if(function_exists('app_template')) {
+        if (function_exists('app_template')) {
             vgfSet('template', app_template($candidate));
         }
 
         // KFD 7/23/08. If no template has been set by vgfSet,
         // and the candidate is not empty, pick it
-        if($candidate!='' && vgfGet('template')=='') {
+        if ($candidate!='' && vgfGet('template')=='') {
             vgfSet('template', $candidate);
         }
 
         // KFD 7/23/08. Finally, if we still don't have something,
         // pick according to mode
-        if(vgfGet('template')=='') {
-            if($mode=='x4') {
+        if (vgfGet('template')=='') {
+            if ($mode=='x4') {
                 vgfSet('template', 'pixel2');
-            }
-            else {
+            } else {
                 vgfSet('template', 'rt_pixel');
             }
         }
@@ -1892,7 +1891,8 @@ function index_hidden_template($mode)
     // compatibility.  The application will use its own
     // file in the application directory that is specified
     // with vgaSet('html_pub').
-    if(vgfGet('template')=='*') { return; 
+    if (vgfGet('template')=='*') {
+        return;
     }
 
     // Tell the JOOMLA files that we are legit
@@ -1905,10 +1905,9 @@ function index_hidden_template($mode)
     $J['TEMPLATE']=vgfGet('template');
     JoomlaCompatibility($J['TEMPLATE']);
     $aphp=$AG['dirs']['root'].'/templates/'.$J['TEMPLATE'].'/andromeda.php';
-    if(file_exists($aphp)) {
+    if (file_exists($aphp)) {
         include $aphp;
     }
 
     return;
-
 }

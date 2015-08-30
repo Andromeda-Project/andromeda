@@ -1,12 +1,14 @@
 <?php
 class x_welcome extends x_table2
 {
-    function main() 
+    public function main()
     {
-        if(SessionGet('MMRMENU')=='Y') { return $this->NewMain(); 
+        if (SessionGet('MMRMENU')=='Y') {
+            return $this->NewMain();
         }
       
-        if(SessionGet("WML")) { return $this->mainWML(); 
+        if (SessionGet("WML")) {
+            return $this->mainWML();
         }
         $this->PageSubtitle="Welcome to the System!";
         ?>
@@ -26,22 +28,25 @@ class x_welcome extends x_table2
          "x_welcome" into that file.
        </p>
         <?php
+
     }
 
     // In WML Land, when you log in you get the menu   
-    function mainWML() 
+    public function mainWML()
     {
         include "menu_wml_".SessionGet("UID").".php";
     }
    
-    function NewMain() 
+    public function NewMain()
     {
         ?>
        <div style="padding-left:50px; padding-top: 40px; font-size:2em; font-family: Courier">
         <?php
-        if(gp('x_menu')  <>'') { return $this->MenuTable(); 
+        if (gp('x_menu')  <>'') {
+            return $this->MenuTable();
         }
-        if(gp('x_module')<>'') { return $this->MenuModule(); 
+        if (gp('x_module')<>'') {
+            return $this->MenuModule();
         }
       
         $AGMENU=SessionGet('AGMENU');
@@ -56,9 +61,10 @@ class x_welcome extends x_table2
         ?>
        </div>
         <?php
+
     }
    
-    function MenuModule() 
+    public function MenuModule()
     {
         $AGMENU=SessionGet('AGMENU');
         $module=gp('x_module');
@@ -73,10 +79,9 @@ class x_welcome extends x_table2
         }
         echo "Z - <a href=\"?gp_page=x_welcome\">Exit</a><br><br><br><br>";
         $ax[]='Z';
-      
     }
    
-    function MenuTable() 
+    public function MenuTable()
     {
         $AGMENU=SessionGet('AGMENU');
         $module  =gp('x_module');
@@ -98,10 +103,10 @@ class x_welcome extends x_table2
         global $extramenu;
         $rapidchanges  = $extramenu;
         $rapidchanges  = ArraySafe($rapidchanges, $table_id);
-        foreach($rapidchanges as $change => $columns){
+        foreach ($rapidchanges as $change => $columns) {
             $desc = ArraySafe($columns, '_desc');
             unset($columns['_desc']);
-            foreach($columns as $name=>$val){
+            foreach ($columns as $name=>$val) {
                 $columns[$name] = 'gp_upd_'.$name."=".$val;
             }
             $parms   = implode('&', $columns);
@@ -116,6 +121,7 @@ class x_welcome extends x_table2
        Z - <a href="?x_module=<?php echo $module?>">Exit</a>
        <br><br><br><br>
         <?php
+
     }
 }
 ?>

@@ -31,25 +31,28 @@ $xpath = arr($_COOKIE, 'altjs', 'clib/');
 
 $configJS = trim(configGet('js_css_debug', 'N'));
 
-if($deprecated=='Y') {
+if ($deprecated=='Y') {
     $styles = ElementImplode('styles');
-    if($styles<>'') {
+    if ($styles<>'') {
         ?>
         <style type="text/css">
         <?php echo $styles?>
         </style>
         <?php
+
     }
     ob_start();
     ElementOut('script');
     $script = ob_get_clean();
-    if($script<>'') {
+    if ($script<>'') {
         ?>
         <script language="javascript" type="text/javascript">
         /* Script generated specifically for a page */
-        <?php echo ElementOut("script");?>
+        <?php echo ElementOut("script");
+        ?>
         </script>
         <?php
+
     }
 }
 

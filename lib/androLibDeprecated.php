@@ -1,31 +1,33 @@
 <?php
 /* DEPRECATED */
-function ValueSet($key,$value) 
+function ValueSet($key, $value)
 {
     echo "Calling Valueset $key <br/>";
     vgfSet($key, $value);
-    if(!isset($GLOBALS['AG']['values'])) { $GLOBALS['AG']['values']=array(); 
+    if (!isset($GLOBALS['AG']['values'])) {
+        $GLOBALS['AG']['values']=array();
     }
     $GLOBALS["AG"]["values"][$key] = $value;
 }
 /* DEPRECATED */
-function ValueGet($key) 
+function ValueGet($key)
 {
-    if(!isset($GLOBALS['AG']['values'])) { $GLOBALS['AG']['values']=array(); 
+    if (!isset($GLOBALS['AG']['values'])) {
+        $GLOBALS['AG']['values']=array();
     }
     if (isset($GLOBALS["AG"]["values"][$key])) {
-        return $GLOBALS["AG"]["values"][$key]; 
-    }
-    else {
-        return ""; 
+        return $GLOBALS["AG"]["values"][$key];
+    } else {
+        return "";
     }
 }
 /* DEPRECATED */
-function V($key,$value=null) 
+function V($key, $value=null)
 {
-    if (is_null($value)) { return ValueGet($key); 
-    }
-    else { ValueSet($key, $value); 
+    if (is_null($value)) {
+        return ValueGet($key);
+    } else {
+        ValueSet($key, $value);
     }
 }
 
@@ -33,20 +35,20 @@ function V($key,$value=null)
 // Options Routines
 // ==================================================================
 /* DEPRECATED */
-function raxOptionSet($name,$value) 
+function raxOptionSet($name, $value)
 {
     raxArraySet('options', $name, $value);
 }
 
 /* DEPRECATED */
-function raxOptionGet($name,$default='') 
+function raxOptionGet($name, $default='')
 {
     global $rax;
     return isset($rax['options'][$name]) ? $rax['options'][$name] : $default;
 }
 
 /* DEPRECATED */
-function raxArrayInit($aname) 
+function raxArrayInit($aname)
 {
     global $rax;
     if (!isset($rax[$aname])) {
@@ -55,7 +57,7 @@ function raxArrayInit($aname)
 }
 
 /* DEPRECATED */
-function raxArraySet($family,$name,$value) 
+function raxArraySet($family, $name, $value)
 {
     global $rax;
     raxArrayInit($family);
@@ -65,19 +67,20 @@ function raxArraySet($family,$name,$value)
 // Headers and other HTTP stuff
 // ==================================================================
 /* DEPRECATED */
-function HTTP_redirect($page,$vars) 
+function HTTP_redirect($page, $vars)
 {
     Header("Location: ".HTTP_Address($page, $vars));
 }
 
 /* DEPRECATED */
-function HTTP_Address($page,$vars) 
+function HTTP_Address($page, $vars)
 {
     $args = "";
     foreach ($vars as $key=>$value) {
         $args.=ListDelim($args, "&").trim($key)."=$value";
     }
-    if ($args) { $args = "&".$args; 
+    if ($args) {
+        $args = "&".$args;
     }
     return "index.php?gp_page=".$page.$args;
 }
@@ -87,25 +90,26 @@ function HTTP_Address($page,$vars)
 // ==================================================================
 
 /* DEPRECATED */
-function CleanExists($key) 
+function CleanExists($key)
 {
     return isset($GLOBALS["AG"]["clean"][$key]);
 }
 
 /* DEPRECATED */
-function CleanSetArray($arr,$prefix="") 
+function CleanSetArray($arr, $prefix="")
 {
-    foreach ($arr as $key=>$value) { CleanSet($prefix.$key, $value); 
+    foreach ($arr as $key=>$value) {
+        CleanSet($prefix.$key, $value);
     }
 }
 
 /* DEPRECATED */
-function CleanSet($key,$value) 
+function CleanSet($key, $value)
 {
     $GLOBALS["AG"]["clean"][$key] = $value;
 }
 /* DEPRECATED */
-function CleanSet_Subset($clear_if_unset,$prefix,$arr) 
+function CleanSet_Subset($clear_if_unset, $prefix, $arr)
 {
     $strlen = strlen($prefix);
 
@@ -125,7 +129,7 @@ function CleanSet_Subset($clear_if_unset,$prefix,$arr)
 }
 
 /* DEPRECATED */
-function CleanUnset($key) 
+function CleanUnset($key)
 {
     if (isset($GLOBALS["AG"]["clean"][$key])) {
         unset($GLOBALS["AG"]["clean"][$key]);
@@ -133,24 +137,24 @@ function CleanUnset($key)
 }
 
 /* DEPRECATED */
-function CleanBox($key,$tdefault="",$reportmissing=true) 
+function CleanBox($key, $tdefault="", $reportmissing=true)
 {
     return CleanGet("txt_".$key, $tdefault, $reportmissing);
 }
 
 /* DEPRECATED */
-function CleanControl($skipempty=false) 
+function CleanControl($skipempty=false)
 {
-    return Clean_Subset("gp_", $skipempty);  
+    return Clean_Subset("gp_", $skipempty);
 }
 /* DEPRECATED */
-function CleanBoxes($skipempty=false)   
+function CleanBoxes($skipempty=false)
 {
-    return Clean_Subset("txt_", $skipempty); 
+    return Clean_Subset("txt_", $skipempty);
 }
 
 /* DEPRECATED */
-function Clean_Subset($prefix,$skipempty=false) 
+function Clean_Subset($prefix, $skipempty=false)
 {
     $strlen = strlen($prefix);
     $colvars = array();
@@ -165,7 +169,7 @@ function Clean_Subset($prefix,$skipempty=false)
 }
 
 /* DEPRECATED */
-function CleanGetUnset($key) 
+function CleanGetUnset($key)
 {
     $retval = CleanGet($key, "", false);
     unset($GLOBALS["AG"]["clean"][$key]);
@@ -174,7 +178,7 @@ function CleanGetUnset($key)
 
 
 /* DEPRECATED */
-function CleanGet($key,$tdefault="",$reportmissing=true) 
+function CleanGet($key, $tdefault="", $reportmissing=true)
 {
     $post=$GLOBALS["AG"]["clean"];
     if (!isset($post[$key])) {
@@ -182,8 +186,7 @@ function CleanGet($key,$tdefault="",$reportmissing=true)
         // 	ErrorAdd("System Error, Received variable does not exist: ".$key);
         // }
         return $tdefault;
-    }
-    else {
+    } else {
         return $post[$key];
     }
 }
@@ -192,19 +195,19 @@ function CleanGet($key,$tdefault="",$reportmissing=true)
 // HTML Generation
 // ==================================================================
 /* DEPRECATED */
-function regHidden($varname,$val='') 
+function regHidden($varname, $val='')
 {
     arrDefault($GLOBALS['AG'], 'hidden', array());
     $GLOBALS['AG']['hidden'][$varname]=$val;
 }
 /* DEPRECATED */
-function regHiddenRepeat($varname,$default='') 
+function regHiddenRepeat($varname, $default='')
 {
     $val=cleanGet($varname, $default, false);
     regHidden($varname, $default);
 }
 /* DEPRECATED */
-function regDataValue($varname,$varvalue) 
+function regDataValue($varname, $varvalue)
 {
     arrDefault($GLOBALS['AG'], 'data', array());
     $GLOBALS['AG']['data'][$varname]=$varvalue;
@@ -212,14 +215,14 @@ function regDataValue($varname,$varvalue)
 
 
 /* DEPRECATED */
-function HTMLE_IMG($src) 
+function HTMLE_IMG($src)
 {
     $src = htmlentities(urlencode($src));
     return "<img src=\"index.php?gp_page=x_object&oname=$src\">";
 }
 
 /* DEPRECATED */
-function HTMLE_IMG_INLINE($src) 
+function HTMLE_IMG_INLINE($src)
 {
     if ($src=='') {
         $srcfile = file_get_contents('rax-blank.jpg', true);
@@ -239,7 +242,7 @@ function HTMLE_IMG_INLINE($src)
 }
 
 /* DEPRECATED */
-function hImgFromBytes($table_id,$column_id,$skey,$bytes,$decode=true) 
+function hImgFromBytes($table_id, $column_id, $skey, $bytes, $decode=true)
 {
     $x=$bytes;  //annoying compile error
     $x=$decode;
@@ -268,7 +271,7 @@ function hImgFromBytes($table_id,$column_id,$skey,$bytes,$decode=true)
 
 /* DEPRECATED */
 /* See: hLinkSetAndPost */
-function hLinkPost($caption,$var,$val) 
+function hLinkPost($caption, $var, $val)
 {
     $js="SetAndPost('".$var."','".$val."')";
     regHidden($var, '');
@@ -276,20 +279,23 @@ function hLinkPost($caption,$var,$val)
 }
 
 /* DEPRECATED */
-function hLinkArray($caption,$parms,$target='',$class='') 
+function hLinkArray($caption, $parms, $target='', $class='')
 {
     return HTMLE_A_Array($caption, $parms, $target, $class);
 }
 /* DEPRECATED */
-function HTMLE_A_ARRAY($caption,$parms,$target="",$class="") 
+function HTMLE_A_ARRAY($caption, $parms, $target="", $class="")
 {
-    if ($target) { $target=' target="'.$target.'" '; 
+    if ($target) {
+        $target=' target="'.$target.'" ';
     }
-    if ($class) { $class =' class="'.$class.'" ';   
+    if ($class) {
+        $class =' class="'.$class.'" ';
     }
     $parmlist = "";
-    foreach($parms as $var=>$value) {
-        if ($parmlist<>"") { $parmlist.="&"; 
+    foreach ($parms as $var=>$value) {
+        if ($parmlist<>"") {
+            $parmlist.="&";
         }
         $parmlist .= $var."=".urlencode($value);
     }
@@ -302,29 +308,31 @@ function HTMLE_A_ARRAY($caption,$parms,$target="",$class="")
 }
 
 /* DEPRECATED */
-function HTMLE_A_JSCancel() 
+function HTMLE_A_JSCancel()
 {
     return HTMLE_A_JS("ob('Form1').reset()", "Cancel Changes");
 }
 /* DEPRECATED */
-function HTMLE_A_JSSubmit() 
+function HTMLE_A_JSSubmit()
 {
     return HTMLE_A_JS("formSubmit()", "Save Changes");
 }
 /* DEPRECATED */
-function HTMLE_A_JS($href,$content,$class="") 
+function HTMLE_A_JS($href, $content, $class="")
 {
-    if ($href) { $href='href="javascript:'.$href.'"'; 
+    if ($href) {
+        $href='href="javascript:'.$href.'"';
     }
-    if ($class) { $class='class="'.$class.'"'; 
+    if ($class) {
+        $class='class="'.$class.'"';
     }
     return '<a '.$href.' '.$class.'>'.$content.'</a>';
 }
 /* DEPRECATED */
-function HTMLE_A_POPUP($caption,$parms) 
+function HTMLE_A_POPUP($caption, $parms)
 {
     $parmlist = "";
-    foreach($parms as $var=>$value) {
+    foreach ($parms as $var=>$value) {
         $parmlist.=ListDelim($parmlist, "&").$var."=".urlencode($value);
     }
     return
@@ -333,7 +341,7 @@ function HTMLE_A_POPUP($caption,$parms)
 }
 
 /* DEPRECATED */
-function HTMLE_A_IMG($href,$stub,$alt) 
+function HTMLE_A_IMG($href, $stub, $alt)
 {
     return "
 <a href=\"".$href."\"
@@ -346,18 +354,20 @@ function HTMLE_A_IMG($href,$stub,$alt)
 }
 
 /* DEPRECATED */
-function HTMLE_A_STD($caption,$page,$parms="",$target="") 
+function HTMLE_A_STD($caption, $page, $parms="", $target="")
 {
-    if ($parms) { $parms = "&".$parms; 
+    if ($parms) {
+        $parms = "&".$parms;
     }
-    if ($target) { $target = 'target = "'.$target.'"'; 
+    if ($target) {
+        $target = 'target = "'.$target.'"';
     }
     return '<a href="index.php?gp_page='.$page.$parms.'" '.$target.'>'.$caption.'</a>';
 }
 
 
 /* DECPRECATED */
-function HTML_Format_DD($table_id,$colname,$value) 
+function HTML_Format_DD($table_id, $colname, $value)
 {
     $table=DD_TableRef($table_id);
     $type = $table['flat'][$colname]['type_id'];
@@ -366,29 +376,31 @@ function HTML_Format_DD($table_id,$colname,$value)
 
 /* DEPRECATED */
 // see hSanitize
-function HTML_Sanitize($v) 
+function HTML_Sanitize($v)
 {
     return htmlentities($v);
 }
 
 /* DEPCRECATED */
-function HTML_DATE($date) 
+function HTML_DATE($date)
 {
     return strftime('%b %d, %Y', $date);
 }
 /* DEPRECATED */
-function HTML_DATEINPUT($date) 
+function HTML_DATEINPUT($date)
 {
-    if (!$date) { return ""; 
+    if (!$date) {
+        return "";
     }
     $year = substr($date, 0, 4);
     $mnth = substr($date, 5, 2);
     $day  = substr($date, 8, 2);
     return $mnth."-".$day."-".$year;
 }
-function HTML_TEXTDATE($date) 
+function HTML_TEXTDATE($date)
 {
-    if (is_null($date)) { $date = time(); 
+    if (is_null($date)) {
+        $date = time();
     }
     return date('m/d/Y', $date);
 }
@@ -399,28 +411,28 @@ function HTML_TEXTDATE($date)
    was to have a lot of more specific hTable routines, these
    are named hTable_Method*
  */
-function ehTBodyFromRows(&$rows,$columns=array(),$options=array()) 
+function ehTBodyFromRows(&$rows, $columns=array(), $options=array())
 {
     // For alternating dark/lite
     $flag_alt=false;
-    if(isset($options['alternate'])) {
+    if (isset($options['alternate'])) {
         $flag_alt = true;
     }
     $cssRow   = 'dlite';
 
     // Error check the parameters
-    if(!is_array($rows)) {
+    if (!is_array($rows)) {
         ErrorAdd("ehTBodyFromRows: 1st parm must be array of rows");
     }
-    if(!is_array($columns)) {
+    if (!is_array($columns)) {
         ErrorAdd("ehTBodyFromRows: 2nd parm must be array of columns");
     }
     // Create columns if it was not provided.
-    if(count($columns)==0) {
+    if (count($columns)==0) {
         $colspre = array_keys($rows[0]);
-        foreach($colspre as $colname) {
-            if(!is_numeric($colname)) {
-                if($colname!='skey') {
+        foreach ($colspre as $colname) {
+            if (!is_numeric($colname)) {
+                if ($colname!='skey') {
                     $columns[$colname]=array();
                 }
             }
@@ -428,8 +440,8 @@ function ehTBodyFromRows(&$rows,$columns=array(),$options=array())
     }
 
     // Now flesh out various defaults, set hidden vars
-    foreach($columns as $colname=>$colopts) {
-        if(isset($colopts['cpage']) && !isset($colopts['ccol'])) {
+    foreach ($columns as $colname=>$colopts) {
+        if (isset($colopts['cpage']) && !isset($colopts['ccol'])) {
             $columns[$colname]['ccol']='skey';
         }
         if (isset($columns[$colname]['ccol'])) {
@@ -439,11 +451,11 @@ function ehTBodyFromRows(&$rows,$columns=array(),$options=array())
 
     // Run through the rows and output them
     $makehidden='';
-    foreach($rows as $row) {
+    foreach ($rows as $row) {
         echo "<tr>";
-        foreach($columns as $colname=>$colopts) {
+        foreach ($columns as $colname=>$colopts) {
             $value=$row[$colname];
-            if(isset($colopts['cpage'])) {
+            if (isset($colopts['cpage'])) {
                 $pg  =$colopts['cpage'];
                 $ccol=$colopts['ccol'];
                 $cval=$row[$ccol];
@@ -460,7 +472,7 @@ function ehTBodyFromRows(&$rows,$columns=array(),$options=array())
 }
 
 /* DEPRECATED */
-function HTMLX_Errors() 
+function HTMLX_Errors()
 {
     global $AG;
     $retval="";
@@ -472,16 +484,17 @@ function HTMLX_Errors()
         }
     }
     $AG["trx_errors"]=array();
-    if ($retval=="") { return ""; 
-    }
-    else { return $retval; 
+    if ($retval=="") {
+        return "";
+    } else {
+        return $retval;
     }
 }
 
 /* DEPRECATED */
 /* CODE PURGE CANDIDATE */
 /* this routine is not used by the framework */
-function HTMLX_Notices() 
+function HTMLX_Notices()
 {
     global $AG;
     $retval="";
@@ -489,14 +502,15 @@ function HTMLX_Notices()
         $retval.=ListDelim($retval, "<br><br>").$err."\n";
     }
     $AG["messages"]=array();
-    if ($retval=="") { return ""; 
-    }
-    else { return $retval; 
+    if ($retval=="") {
+        return "";
+    } else {
+        return $retval;
     }
 }
 
 /* DEPRECATED */
-function ADMIN_LOG($code,$session="",$text="") 
+function ADMIN_LOG($code, $session="", $text="")
 {
     $code=$session=$text='';
     return;
@@ -517,7 +531,7 @@ function ADMIN_LOG($code,$session="",$text="")
 
 
 /* DEPRECATED */
-function ADMIN_SESSIONCLOSE($session_id,$killcode) 
+function ADMIN_SESSIONCLOSE($session_id, $killcode)
 {
     $session_id=$killcode;
     /*
@@ -537,7 +551,7 @@ function ADMIN_SESSIONCLOSE($session_id,$killcode)
 }
 
 /* DEPRECATED */
-function ADMIN_SESSIONID($ts) 
+function ADMIN_SESSIONID($ts)
 {
     global $AG;
     //  Removed REMOTE_ADDR 5/18/05 experimentally to see if
@@ -548,24 +562,23 @@ function ADMIN_SESSIONID($ts)
 }
 
 /* DEPRECATED */
-function G($branch="",$varname=null,$val=null) 
+function G($branch="", $varname=null, $val=null)
 {
     $branch = strtolower($branch);
     if (is_null($val)) {
         // In this branch we GET the values
-        if (is_null($varname)) { return ArraySafe($GLOBALS["AG"], $branch, Array()); 
+        if (is_null($varname)) {
+            return ArraySafe($GLOBALS["AG"], $branch, array());
+        } else {
+            return ArraySafe($GLOBALS["AG"][$branch], $varname);
         }
-        else { return ArraySafe($GLOBALS["AG"][$branch], $varname); 
-        }
-    }
-    else {
+    } else {
         // In this branch we SET the values
         if (is_array($varname)) {
             foreach ($varname as $key=>$value) {
                 $GLOBALS["AG"]["hidden"][$key] = $value;
             }
-        }
-        else {
+        } else {
             $GLOBALS["AG"]["hidden"][$varname] = $val;
         }
         return true;
@@ -574,10 +587,10 @@ function G($branch="",$varname=null,$val=null)
 
 
 /* DEPRECATED */
-function Hidden_make($varname) 
+function Hidden_make($varname)
 {
     if (!isset($GLOBALS['AG']['hidden'][$varname])) {
-        $GLOBALS['AG']['hidden'][$varname] = ''; 
+        $GLOBALS['AG']['hidden'][$varname] = '';
     }
 }
 
@@ -593,7 +606,7 @@ function Hidden_make($varname)
   * of the context.
   */
 /* DEPRECATED */
-function HiddenRepeat($var,$default='') 
+function HiddenRepeat($var, $default='')
 {
     $retval = CleanGet($var, $default, false);
     hidden($var, $retval);
@@ -626,7 +639,7 @@ functions, so that the output is readable.
 // ==================================================================
 
 /* DEPRECATED */
-function HTML_vardump($array) 
+function HTML_vardump($array)
 {
     echo "<pre>\n";
     //var_dump(($array));
@@ -636,19 +649,19 @@ function HTML_vardump($array)
 
 
 /* DEPRECATED */
-function scTableObject($gp_page) 
+function scTableObject($gp_page)
 {
     return raxTableObject($gp_page);
 }
 
 /* DEPRECATED */
-function raxTableObject($gp_page) 
+function raxTableObject($gp_page)
 {
     return DispatchObject($gp_page);
 }
 
 /* DEPRECATED */
-function scObject($object_name) 
+function scObject($object_name)
 {
     include_once $object_name.'.php';
     return new $object_name;
@@ -667,48 +680,53 @@ function scObject($object_name)
 // ------------------------------------------------------------------
 // General Purpose Element listing, with specialized output
 // ------------------------------------------------------------------
-function ElementAdd($type,$msg) 
+function ElementAdd($type, $msg)
 {
-    if($type=='script' || $type=='jqueryDocumentReady') {
+    if ($type=='script' || $type=='jqueryDocumentReady') {
         $msg = preg_replace("/<script>/i", '', $msg);
         $msg = preg_replace("/<\/script>/i", '', $msg);
     }
     $GLOBALS["AG"][$type][]=$msg;
 }
-function ElementInit($type) 
+function ElementInit($type)
 {
-    $GLOBALS["AG"][$type]=array(); 
+    $GLOBALS["AG"][$type]=array();
 }
-function ElementReturn($type,$default=array()) 
-{
-    global $AG;
-    if(!isset($AG[$type])) { return $default; 
-    }
-    else { return $AG[$type]; 
-    }
-}
-function Element($type) 
+function ElementReturn($type, $default=array())
 {
     global $AG;
-    if(!isset($AG[$type])) { return false; 
-    }
-    if (count($AG[$type])>0) { return true; 
-    } else { return false; 
+    if (!isset($AG[$type])) {
+        return $default;
+    } else {
+        return $AG[$type];
     }
 }
-function ElementImplode($type,$implode="\n") 
+function Element($type)
 {
-    if(!isset($GLOBALS['AG'][$type])) { return ''; 
+    global $AG;
+    if (!isset($AG[$type])) {
+        return false;
     }
-    else { return implode($implode, $GLOBALS['AG'][$type]); 
+    if (count($AG[$type])>0) {
+        return true;
+    } else {
+        return false;
     }
 }
-function ElementOut($type,$dohtml=false) 
+function ElementImplode($type, $implode="\n")
+{
+    if (!isset($GLOBALS['AG'][$type])) {
+        return '';
+    } else {
+        return implode($implode, $GLOBALS['AG'][$type]);
+    }
+}
+function ElementOut($type, $dohtml=false)
 {
     global $AG;
 
     // Hardcoded row we want in there
-    if($type=='script') {
+    if ($type=='script') {
         //$calcRow=vgaGet('calcRow');
         //ElementAdd('script',"\nfunction calcRow() {\n$calcRow\n}");
 
@@ -722,19 +740,19 @@ function ElementOut($type,$dohtml=false)
     $array=ArraySafe($AG, $type, array());
     $retval="";
     $extra="";
-    if ($dohtml) { $extra="<br/>"; 
+    if ($dohtml) {
+        $extra="<br/>";
     }
     foreach ($array as $msg) {
         $retval.=$msg.$extra."\n";
     }
     $AG[$type]=array();
-    if (!$dohtml) { return $retval; 
+    if (!$dohtml) {
+        return $retval;
     }
-    if (!$retval) { return ""; 
-    }
-    else { return "<div class=\"$type\">$retval</div>"; 
+    if (!$retval) {
+        return "";
+    } else {
+        return "<div class=\"$type\">$retval</div>";
     }
 }
-
-
-?>

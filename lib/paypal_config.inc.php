@@ -26,7 +26,7 @@
 global $paypal;
 
 // KFD 9/13/08, added configuration to discard ship-to info
-if(configGet('paypal_noship', 'N') == 'Y') {
+if (configGet('paypal_noship', 'N') == 'Y') {
     $paypal['no_shipping'] = 1;
 }
 
@@ -36,8 +36,8 @@ if(configGet('paypal_noship', 'N') == 'Y') {
 // -----------------------------------------------------------------
 $paypal['business']="example@example.com";
 // KFD 9/6/08, allow overrides from configuration
-if(configGet('paypal_payto', '')<>'') {
-    $paypal['business'] = configGet('paypal_payto');   
+if (configGet('paypal_payto', '')<>'') {
+    $paypal['business'] = configGet('paypal_payto');
 }
 
 $paypal['site_url']=
@@ -45,7 +45,7 @@ $paypal['site_url']=
    .$GLOBALS['_SERVER']['REQUEST_URI'];
  
 // KFD 9/6/08, allow overrides from configuration
-if(configGet('paypal_site_url', '') <> '') {
+if (configGet('paypal_site_url', '') <> '') {
     $paypal['site_url'] = configGet('paypal_site_url');
 }
    
@@ -53,13 +53,13 @@ $paypal['success_url']="?gpt=pp&flag=1";  // after ipn has finished
 $paypal['cancel_url']="?gpt=pp&flag=0";   // after ipn has finished
 
 // KFD 9/6/08, allow overrides from configuration
-if(configGet('paypal_v2', 'N')=='Y') {
+if (configGet('paypal_v2', 'N')=='Y') {
     $paypal['success_url'] = '?gp_page=x_paypalfinal&flag=success';
     $paypal['cancel_url'] = '?gp_page=x_paypalfinal&flag=cancel';
 }
 // KFD 1/15/09, allow program to dynamically generate a return
 // page that will specify 
-if(vgfGet('paypal_return_url', false)) {
+if (vgfGet('paypal_return_url', false)) {
     $pprurl = vgfGet('paypal_return_url');
     $paypal['success_url'] = $pprurl.'&flag=success';
     $paypal['cancel_url']  = $pprurl.'&flag=cancel';
@@ -69,18 +69,17 @@ if(vgfGet('paypal_return_url', false)) {
 // FLIP BETWEEN THESE TWO FOR LIVE/TEST 
 // -----------------------------------------------------------------
 // KFD 9/6/08, allow overrides from configuration
-if(configGet('paypal_test_mode', 'N')=='Y') {
-    $paypal['url']="https://www.sandbox.paypal.com/cgi-bin/webscr"; 
-}
-else {
-    $paypal['url']="https://www.paypal.com/cgi-bin/webscr";    
+if (configGet('paypal_test_mode', 'N')=='Y') {
+    $paypal['url']="https://www.sandbox.paypal.com/cgi-bin/webscr";
+} else {
+    $paypal['url']="https://www.paypal.com/cgi-bin/webscr";
 }
 
 // KFD 1/21/09, Another test system, "one dollar mode".  If 
 // this flag is set, the trx is switched to
 // one dollar only.  Intended for final run-throughs
 // on live system.
-if(configGet('paypal_onedollar', 'N')=='Y') {
+if (configGet('paypal_onedollar', 'N')=='Y') {
     $paypal['amount'] = 1;
 }
 
@@ -92,7 +91,7 @@ if(configGet('paypal_onedollar', 'N')=='Y') {
 //  An icon user sees while on paypal, personalizes it a bit
 $paypal['image_url']=configGet('paypal_image_url', '');
  // url to call in background while user is waiting
-$paypal['notify_url']="?gp_page=x_paypalipn"; 
+$paypal['notify_url']="?gp_page=x_paypalipn";
                                                 
 $paypal['return_method']="1"; //1=GET 2=POST
 $paypal['currency_code']="USD"; //[USD,GBP,JPY,CAD,EUR]
@@ -100,7 +99,7 @@ $paypal['lc']="US";
 
 //fso=fsockopen(); curl=curl command line 
 //libCurl=php compiled with libCurl support
-$paypal['post_method']="fso"; 
+$paypal['post_method']="fso";
 $paypal['curl_location']="/usr/local/bin/curl";
 
 $paypal['bn']="toolkit-php";
@@ -148,6 +147,4 @@ $paypal['email']="$_POST[email]";
 $paypal['phone_1']="$_POST[phone1]";
 $paypal['phone_2']="$_POST[phone2]";
 $paypal['phone_3']="$_POST[phone3]";
-*/
-
-?>
+*/;

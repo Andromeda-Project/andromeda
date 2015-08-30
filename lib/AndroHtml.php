@@ -20,7 +20,6 @@
  */
 class AndroHtml
 {
-
     /****v* AndroHtml/children
      *
      * NAME
@@ -1464,7 +1463,6 @@ class AndroHtml
             echo "\n<!-- ELEMENT ID " . $this->hp['id'] . " (BEGIN) -->";
 
             //echo "$indent\n<!-- ELEMENT ID ".$this->hp['id']." (BEGIN) -->";
-
         }
         $parms = '';
         if (count($this->classes) > 0) {
@@ -1503,7 +1501,6 @@ class AndroHtml
             echo "\n<!-- ELEMENT ID " . $this->hp['id'] . " (END) -->";
 
             //echo "$indent\n<!-- ELEMENT ID ".$this->hp['id']." (END) -->";
-
         }
     }
 }

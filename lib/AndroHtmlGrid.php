@@ -219,10 +219,10 @@ class AndroHtmlGrid extends AndroHtml
         if ($table_id_fko <> '') {
             $iWidth-= x6cssdefine('bodyfs', '12px') * .67 * 5;
             $this->colStyles[$styleId . ' input'] = "width: {$iWidth}px; $cssExtra";
-        } else if ($type_id == 'mime-f') {
+        } elseif ($type_id == 'mime-f') {
             $iWidth-= x6cssdefine('bodyfs', '12px') * .67 * 20;
             $this->colStyles[$styleId . ' input'] = "width: {$iWidth}px; $cssExtra";
-        } else if (!in_array($type_id, array('cbool', 'gender'))) {
+        } elseif (!in_array($type_id, array('cbool', 'gender'))) {
             $this->colStyles[$styleId . ' input'] = "width: {$iWidth}px; $cssExtra";
         }
         // Finally, generate the HTML.

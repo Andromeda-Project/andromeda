@@ -92,7 +92,7 @@ class AndroPage
         }
 
         if (!isset($this->yamlP2['template'])) {
-                $this->yamlP2['template'] = '';
+            $this->yamlP2['template'] = '';
         }
 
         // Go through filters and make them all uniform
@@ -112,14 +112,14 @@ class AndroPage
             }
         }
         if (ArraySafe($this->yamlP2['options'], 'buffer', 'Y') == 'N') {
-                $this->flag_buffer = false;
+            $this->flag_buffer = false;
         }
 
         // Check to see if nofilter option is set
         if (ArraySafe($this->yamlP2['options'], 'nofilter') != '') {
-                $this->yamlP2['options']['nofilter'] = $this->yamlP2['options']['nofilter'];
+            $this->yamlP2['options']['nofilter'] = $this->yamlP2['options']['nofilter'];
         } else {
-                $this->yamlP2['options']['nofilter'] = 'N';
+            $this->yamlP2['options']['nofilter'] = 'N';
         }
 
         
@@ -201,9 +201,9 @@ class AndroPage
     {
         $this->genSQL();
         if ($this->yamlP2['template'] == '') {
-                $this->pageReport();
+            $this->pageReport();
         } else {
-                $this->pageSmarty();
+            $this->pageSmarty();
         }
     }
 
@@ -312,7 +312,7 @@ class AndroPage
             // $a->hp['onclick'] = "$('#x4AndroPage')[0].help()";
             // $a->addClass('button');
         // }
-        
+
         // Make top level container
         $tabtop = html('table', $x4D);
         $tr = html('tr', $tabtop);
@@ -426,9 +426,8 @@ class AndroPage
             } else {
                 $inp->hp['onclick'] = "SetAndPost('gp_post','csvexport')";
             }
-
         } else {
-             // First button: Run Report
+            // First button: Run Report
             $inp = html('a-void', $td1, '<u>R</u>un Report');
             $inp->ap['xLabel'] = 'CtrlR';
             $inp->hp['id'] = $ids['smarty'];
@@ -503,7 +502,7 @@ class AndroPage
             // Execute SQL and return all rows for all sections
             $sections = $this->yamlP2['section'];
             foreach ($sections as $secname => $secinfo) {
-                    $this->yamlP2['section'][$secname]['rows']
+                $this->yamlP2['section'][$secname]['rows']
                             =SQL_AllRows($secinfo['sql']);
             }
         }
@@ -566,13 +565,12 @@ class AndroPage
     {
         $yamlP2 = &$this->yamlP2['section'][$secname];
         if (count(ArraySafe($yamlP2, 'union', array())) > 0) {
-            list($table,$cols) = each($yamlP2['union']['table']);
+            list($table, $cols) = each($yamlP2['union']['table']);
             $this->yamlP2['table']=array($table=>$cols);
             return $this->genSQLSectionUnion($yamlP2['union']['table']);
         } else {
             return $this->genSQLSectionJoin($yamlP2);
         }
-        
     }
    
     /**
@@ -728,7 +726,7 @@ class AndroPage
         
         $SQL_COLSOB='';
         if (isset($yamlP2['orderby'])) {
-                $SQL_COLSOB="\n ORDER BY " .$yamlP2['orderby'];
+            $SQL_COLSOB="\n ORDER BY " .$yamlP2['orderby'];
         } else {
             if (count($SQL_COLSOBA)>0) {
                 ksort($SQL_COLSOBA);

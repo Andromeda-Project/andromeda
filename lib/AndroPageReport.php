@@ -16,7 +16,7 @@ class AndroPageReport extends fpdf
      *  @var lastCol
      *  @access private
      */
-    var $lastCol = -1;
+    public $lastCol = -1;
     
     /**
      *  An array of derived column information such
@@ -24,42 +24,42 @@ class AndroPageReport extends fpdf
      *  @var cols
      *  @access private
      */
-    var $cols = array();
+    public $cols = array();
 
     /**
      *  An array of meta-data about columns.  
      *  @var cols
      *  @access private
      */
-    var $colsmd = array();
+    public $colsmd = array();
 
     /**
      *  The gutter width in points
      *  @var cols
      *  @access private
      */
-    var $gutter = 0;
+    public $gutter = 0;
     
     /**
      *  Page orientation.  
      *  @var orientation
      *  @access private
      */
-    var $orientation = 0;
+    public $orientation = 0;
 
     /**
      *  Captions across top
      *  @var captions
      *  @access private
      */
-    var $captions = array();
+    public $captions = array();
 
     /**
      *  Data dictionary information for each column
      *  @var ddcols
      *  @access private
      */
-    var $ddcols = array();
+    public $ddcols = array();
 
     /**
      *  The format of the output.  Currently supported
@@ -67,7 +67,7 @@ class AndroPageReport extends fpdf
      *  @var format
      *  @access private
      */
-    var $format = 'pdf';
+    public $format = 'pdf';
 
     /**
      *  The rowcount of outputs.  Allows Extended Desktop code to
@@ -76,7 +76,7 @@ class AndroPageReport extends fpdf
      *  @var    rowNumber
      *  @access private
      */
-    var $rowNumber = 0;
+    public $rowNumber = 0;
     
     /**
      *  Constructor.  Clears all definitions and
@@ -90,7 +90,7 @@ class AndroPageReport extends fpdf
      *  @access public
      *  @since  0.1
      */
-    function androPageReport($ori='l',$uom='pt',$paper='letter') 
+    public function androPageReport($ori='l', $uom='pt', $paper='letter')
     {
         // Tab Stops
         $this->cols  = array();
@@ -106,12 +106,12 @@ class AndroPageReport extends fpdf
      *  @param string $fontname default "Times"
      *  @since 12/16/07
      */
-    function main($dbres,$yamlP2,$secinfo) 
+    public function main($dbres, $yamlP2, $secinfo)
     {
         // Set most important flag first!
         // KFD 9/20/08, this can now be 'csvexport' also!
         $this->format = gp('gp_post');  // pdf or onscreen
-        
+
         // Branch out to do setup...
         $this->mainSetup($yamlP2);
         
@@ -125,20 +125,18 @@ class AndroPageReport extends fpdf
         
         
         // Begin by adding the first page
-        if($this->format=='onscreen') {
+        if ($this->format=='onscreen') {
             $this->headerOnScreen();
-        }
-        elseif($this->format=='csvexport') {
+        } elseif ($this->format=='csvexport') {
             $this->csvline = array();
             $this->csvexport = '';
-        }
-        else {
+        } else {
             $this->addPage($this->orientation);
         }
         $row1 = false;
-        while($row=SQL_Fetch_Array($dbres)) {
-            if($row1) {
-                if(!$this->compareBreak($yamlP2, $break, $row)) {
+        while ($row=SQL_Fetch_Array($dbres)) {
+            if ($row1) {
+                if (!$this->compareBreak($yamlP2, $break, $row)) {
                     $this->linesForColumns();
                     $this->outFromArray($break);
                     $this->nextLine();
@@ -148,19 +146,19 @@ class AndroPageReport extends fpdf
             }
             $row1=true;
             $this->outFromArray($row);
-            if(count($break)>0) {
+            if (count($break)>0) {
                 $break = $this->processForBreak($yamlP2, $break, $row);
             }
-            if(count($bottom)>0) {
+            if (count($bottom)>0) {
                 $bottom = $this->processForBottom($yamlP2, $bottom, $row);
             }
         }
-        if(count($break)>0) {
+        if (count($break)>0) {
             $this->linesForColumns();
             $this->outFromArray($break);
             $this->nextLine();
         }
-        if(count($bottom)>0) {
+        if (count($bottom)>0) {
             $this->linesForColumns();
             $this->outFromArray($bottom);
         }
@@ -183,7 +181,7 @@ class AndroPageReport extends fpdf
      *  @param string $yamlP2 The processed page definition     
      *  @since 12/16/07
      */
-    function mainSetup($yamlP2) 
+    public function mainSetup($yamlP2)
     {
         // Default UOM is points, so these are 1/2 inch margins
         $this->margin_left = 36;
@@ -205,7 +203,7 @@ class AndroPageReport extends fpdf
         // Determine if there are filters to list:
         $uifilters = ArraySafe($yamlP2, 'uifilter', array());
         $atitle2 = array();
-        foreach($uifilters as $name=>$info) {
+        foreach ($uifilters as $name=>$info) {
             $atitle2[] = $info['description'].':'.trim(gp('ap_'.$name));
         }
         $this->title2 = count($atitle2)==0 ? '' : implode(", ", $atitle2);
@@ -219,26 +217,26 @@ class AndroPageReport extends fpdf
         // out justification and size
         $setupArr = array();
         $width = 0;
-        foreach($yamlP2['table'] as $table=>$columns) {
+        foreach ($yamlP2['table'] as $table=>$columns) {
             $dd = ddTable($table);
-            foreach($columns['column'] as $colname=>$colinfo) {
-                if(ArraySafe($colinfo, 'uino', 'N')=='Y') { continue; 
+            foreach ($columns['column'] as $colname=>$colinfo) {
+                if (ArraySafe($colinfo, 'uino', 'N')=='Y') {
+                    continue;
                 }
                 $md = array('linkskey'=>a($colinfo, 'linkskey', 'N'));
                 
                 // Use type to figure out if right or left
                 // KFD 4/29/08, constants will not exist, use char
-                if(!isset($dd['flat'][$colname]['type_id'])) {
+                if (!isset($dd['flat'][$colname]['type_id'])) {
                     $type_id = 'char';
-                }
-                else {
+                } else {
                     $type_id = $dd['flat'][$colname]['type_id'];
                 }
                 $suffix = '';
-                if(in_array(trim($type_id), array('money','numb','int'))) {
+                if (in_array(trim($type_id), array('money', 'numb', 'int'))) {
                     $suffix .= ':R';
-                    switch($type_id) {
-                    case 'money': $scale=2; 
+                    switch ($type_id) {
+                    case 'money': $scale=2;
                         break;
                     case 'numb':$scale=$dd['flat'][$colname]['colscale'];
                         break;
@@ -246,46 +244,44 @@ class AndroPageReport extends fpdf
                     }
                     $suffix .= ':'.$scale;
                 }
-                if(trim($type_id)=='money') {
+                if (trim($type_id)=='money') {
                     $suffix .= ':M';
                 }
-                if(ArraySafe($colinfo, 'dispsize', '')<>'') {
+                if (ArraySafe($colinfo, 'dispsize', '')<>'') {
                     $suffix .= ':C'.$colinfo['dispsize'];
                 }
                 
                 // Work out size using cpi setting
                 $dispsize = ArraySafe($colinfo, 'dispsize', '');
-                $dispsize = $dispsize <> '' 
+                $dispsize = $dispsize <> ''
                     ? $dispsize
                     : $dd['flat'][$colname]['dispsize'];
                 $setupArr[] = round(($dispsize/$this->cpi), 1).$suffix;
-                $width += ($dispsize*$this->cpi)+.1; 
+                $width += ($dispsize*$this->cpi)+.1;
                 
                 // Save the captions for displaying in header
                 $desc1=a($dd['flat'][$colname], 'descshort', '');
                 $desc2=a($dd['flat'][$colname], 'description', '');
                 $ddcaption = $desc1 <> '' ? $desc1 : $desc2;
                 $caption = ArraySafe($colinfo, 'description', '');
-                $caption = $caption <> '' ? $caption : $ddcaption; 
+                $caption = $caption <> '' ? $caption : $ddcaption;
                 $this->captions[] = $caption;
                 
                 // Work out if this guy is a foreign key.  If they
                 // have given a page then link unconditionally
-                if(($tlink= a($colinfo, 'linkpage', '')) <> '') {
+                if (($tlink= a($colinfo, 'linkpage', '')) <> '') {
                     $md['linkpage']=$tlink;
                     $md['linkcolumn']=$colname;
-                }
-                elseif($dd['flat'][$colname]['primary_key']=='Y') {
-                    if($colname == $dd['pks'] ) {
+                } elseif ($dd['flat'][$colname]['primary_key']=='Y') {
+                    if ($colname == $dd['pks']) {
                         $md['linkpage']=$table;
                         $md['linkcolumn']=$colname;
                     }
-                }
-                else {
+                } else {
                     $tfko = a($dd['flat'][$colname], 'table_id_fko', '');
-                    if($tfko<>'') {
+                    if ($tfko<>'') {
                         $ddpar = ddTable($tfko);
-                        if($tfko = $ddpar['pks']) {
+                        if ($tfko = $ddpar['pks']) {
                             $md['linkpage']=$tfko;
                             $md['linkcolumn']=$colname;
                         }
@@ -298,10 +294,9 @@ class AndroPageReport extends fpdf
         $this->setupColumns(.1, implode(',', $setupArr));
         
         // Finally, establish orientation by looking at size of report
-        if(($width/72) < 7.5) {
+        if (($width/72) < 7.5) {
             $this->orientation = 'P';
-        }
-        else {
+        } else {
             $this->orientation = 'L';
         }
     }
@@ -315,21 +310,21 @@ class AndroPageReport extends fpdf
      *  @param string $yamlP2 The processed page definition     
      *  @since 1/31/08
      */
-    function setupBottom($yamlP2) 
+    public function setupBottom($yamlP2)
     {
         $retval = array();
         $retcount= 0;
         
-        foreach($yamlP2['table'] as $table=>$tabinfo) {
-            foreach($tabinfo['column'] as $colname=>$colinfo) {
-                if(ArraySafe($colinfo, 'uino', 'N')=='Y') { continue; 
+        foreach ($yamlP2['table'] as $table=>$tabinfo) {
+            foreach ($tabinfo['column'] as $colname=>$colinfo) {
+                if (ArraySafe($colinfo, 'uino', 'N')=='Y') {
+                    continue;
                 }
                 $bot=ArraySafe($colinfo, 'bottom');
-                if(strtolower($bot)=='sum' || strtolower($bot)=='count') {
+                if (strtolower($bot)=='sum' || strtolower($bot)=='count') {
                     $retval[$colname] = 0;
                     $retcount++;
-                }
-                else {
+                } else {
                     $retval[$colname] = $bot=='' ? '_' : $bot;
                 }
             }
@@ -337,7 +332,8 @@ class AndroPageReport extends fpdf
         
         // The idea is to return an empty array if there is
         // nothing to do.
-        if($retcount==0) { return array(); 
+        if ($retcount==0) {
+            return array();
         }
         return $retval;
     }
@@ -350,22 +346,22 @@ class AndroPageReport extends fpdf
      *  @param string $yamlP2 The processed page definition     
      *  @since 4/3/08
      */
-    function setupBreak($yamlP2) 
+    public function setupBreak($yamlP2)
     {
         $retval = array();
         $retcount= 0;
         
-        foreach($yamlP2['table'] as $table=>$tabinfo) {
-            foreach($tabinfo['column'] as $colname=>$colinfo) {
-                if(ArraySafe($colinfo, 'uino', 'N')=='Y') { continue; 
+        foreach ($yamlP2['table'] as $table=>$tabinfo) {
+            foreach ($tabinfo['column'] as $colname=>$colinfo) {
+                if (ArraySafe($colinfo, 'uino', 'N')=='Y') {
+                    continue;
                 }
                 $bot=strtolower(ArraySafe($colinfo, 'break'));
-                if($bot=='sum' || $bot=='count') {
+                if ($bot=='sum' || $bot=='count') {
                     // this is the value that will be summed or counted
                     $retval[$colname] = 0;
                     $retcount++;
-                }
-                else {
+                } else {
                     // A magic value 
                     $retval[$colname] = '_';
                 }
@@ -374,7 +370,8 @@ class AndroPageReport extends fpdf
         
         // The idea is to return an empty array if there is
         // nothing to do.
-        if($retcount==0) { return array(); 
+        if ($retcount==0) {
+            return array();
         }
         return $retval;
     }
@@ -387,19 +384,22 @@ class AndroPageReport extends fpdf
      *  @param array $row    this particular row     
      *  @since 1/31/08
      */
-    function processForBottom($yamlP2,$bottom,$row) 
+    public function processForBottom($yamlP2, $bottom, $row)
     {
         $x=0;
         $keys=array_keys($row);
-        foreach($yamlP2['table'] as $table=>$tabinfo) {
-            foreach($tabinfo['column'] as $colname=>$colinfo) {
-                if(ArraySafe($colinfo, 'uino', 'N')=='Y') { continue; 
+        foreach ($yamlP2['table'] as $table=>$tabinfo) {
+            foreach ($tabinfo['column'] as $colname=>$colinfo) {
+                if (ArraySafe($colinfo, 'uino', 'N')=='Y') {
+                    continue;
                 }
                 $bot=strtoupper(ArraySafe($colinfo, 'bottom'));
                 $val=array_shift($row);
-                if($bot=='COUNT') { $bottom[$keys[$x]]++; 
+                if ($bot=='COUNT') {
+                    $bottom[$keys[$x]]++;
                 }
-                if($bot=='SUM') {   $bottom[$keys[$x]]+=$val; 
+                if ($bot=='SUM') {
+                    $bottom[$keys[$x]]+=$val;
                 }
                 $x++;
             }
@@ -414,21 +414,25 @@ class AndroPageReport extends fpdf
      *  @param array $row   this particular row     
      *  @since 4/3/08
      */
-    function processForBreak($yamlP2,$bottom,$row) 
+    public function processForBreak($yamlP2, $bottom, $row)
     {
         $x=0;
         $keys=array_keys($row);
-        foreach($yamlP2['table'] as $table=>$tabinfo) {
-            foreach($tabinfo['column'] as $colname=>$colinfo) {
-                if(ArraySafe($colinfo, 'uino', 'N')=='Y') { continue; 
+        foreach ($yamlP2['table'] as $table=>$tabinfo) {
+            foreach ($tabinfo['column'] as $colname=>$colinfo) {
+                if (ArraySafe($colinfo, 'uino', 'N')=='Y') {
+                    continue;
                 }
                 $bot=strtoupper(ArraySafe($colinfo, 'break'));
                 $val=array_shift($row);
-                if($bot=='COUNT') { $bottom[$keys[$x]]++; 
+                if ($bot=='COUNT') {
+                    $bottom[$keys[$x]]++;
                 }
-                if($bot=='SUM') {   $bottom[$keys[$x]]+=$val; 
+                if ($bot=='SUM') {
+                    $bottom[$keys[$x]]+=$val;
                 }
-                if($bot=='Y') {     $bottom[$keys[$x]]=$val; 
+                if ($bot=='Y') {
+                    $bottom[$keys[$x]]=$val;
                 }
                 $x++;
             }
@@ -444,13 +448,14 @@ class AndroPageReport extends fpdf
      *  @param array $row    this particular row   
      *  @since 4/3/08
      */
-    function compareBreak($yamlP2,$bottom,$row) 
+    public function compareBreak($yamlP2, $bottom, $row)
     {
-        foreach($yamlP2['table'] as $table=>$tabinfo) {
-            foreach($tabinfo['column'] as $colname=>$colinfo) {
-                if(ArraySafe($colinfo, 'break')<>'Y') { continue; 
+        foreach ($yamlP2['table'] as $table=>$tabinfo) {
+            foreach ($tabinfo['column'] as $colname=>$colinfo) {
+                if (ArraySafe($colinfo, 'break')<>'Y') {
+                    continue;
                 }
-                if($bottom[$colname]<>$row[$colname]) {
+                if ($bottom[$colname]<>$row[$colname]) {
                     return false;
                 }
             }
@@ -464,13 +469,13 @@ class AndroPageReport extends fpdf
      *  defined.  Our version of footer() is empty, but header()
      *  uses the YAML page definition to generate a header
      */
-    function footer() 
-    { 
+    public function footer()
+    {
     }
-    function header() 
+    public function header()
     {
         $this->CenteredLine($this->title1, 'B', $this->fontsize*1.2);
-        if($this->title2<>'') {
+        if ($this->title2<>'') {
             $this->CenteredLine($this->title2, 'B');
         }
         $this->DateAndPage();
@@ -482,11 +487,12 @@ class AndroPageReport extends fpdf
     /**
      *  Put out a table row containing the headers
      */
-    function headerOnScreen() 
+    public function headerOnScreen()
     {
-        if($this->x6) { return $this->headerOnScreenx6(); 
+        if ($this->x6) {
+            return $this->headerOnScreenx6();
         }
-        if(!gpExists('x4Page')) {
+        if (!gpExists('x4Page')) {
             echo "<br/><hr/><br/>";
         }
         echo "\n<table id=\"x2data1\"> <!-- generated by androPageReport -->";
@@ -494,7 +500,7 @@ class AndroPageReport extends fpdf
         $this->outFromArray($this->captions, true);
         echo "\n</tr></thead><tbody><tr id='row_0'>";
     }
-    function headerOnScreenx6() 
+    public function headerOnScreenx6()
     {
         // Obtain height as insideheight less two h1 
         $gheight = x6cssDefine('insideheight') - (x6cssHeight('h1')*2);
@@ -505,7 +511,7 @@ class AndroPageReport extends fpdf
         // androPage does not at this point have the original 
         // dictionary info available, but we can "fake it" by
         // looking at its information
-        foreach($this->cols as $idx=>$info) {
+        foreach ($this->cols as $idx=>$info) {
             $colinfo = array(
                 'type_id' => ($info['align']=='L') ? 'char' : 'numb'
                 ,'dispsize'=> $info['clip']
@@ -537,34 +543,34 @@ class AndroPageReport extends fpdf
      *  1 inch, 2 inches, 1 inch and 1 inch respectively.  The 
      *  latter two columns will be right justified.
      */
-    function setupColumns($gutter,$commalist) 
+    public function setupColumns($gutter, $commalist)
     {
         $this->lastCol = -1;
         $this->cols = array();
         $this->gutter = $gutter * 72;
-        if(is_array($commalist)) {
+        if (is_array($commalist)) {
             $alist = $commalist;
-        }
-        else {
+        } else {
             $alist = explode(',', $commalist);
         }
         $posx = $this->margin_left;
-        foreach($alist as $onestop) {
+        foreach ($alist as $onestop) {
             $colstuff = explode(':', $onestop);
             $width = array_shift($colstuff);
             $align='L';
             $clip=0;
             $money=false;  // WARNING: No longer used as of 4/9/08 KFD
             $colscale = 0;
-            foreach($colstuff as $onesetting) {
-                if($onesetting=='R') { $align='R'; 
+            foreach ($colstuff as $onesetting) {
+                if ($onesetting=='R') {
+                    $align='R';
                 }
-                if(substr($onesetting, 0, 1)=='C') {
+                if (substr($onesetting, 0, 1)=='C') {
                     $clip=substr($onesetting, 1);
                 }
                 
                 //if($onesetting=='M') $money=true;
-                if($onesetting>=1 && $onesetting<=9) {
+                if ($onesetting>=1 && $onesetting<=9) {
                     $colscale = $onesetting;
                 }
             }
@@ -594,13 +600,14 @@ class AndroPageReport extends fpdf
      * @param string $size  Font size in points. Defaults to  current font size.
      *                     current font size.
      */
-    function CenteredLine($text,$style='',$size=null) 
+    public function CenteredLine($text, $style='', $size=null)
     {
-        if(is_null($size)) { $size=$this->fontsize; 
+        if (is_null($size)) {
+            $size=$this->fontsize;
         }
         $this->setFont($this->fontname, $style, $size);
         $this->Cell(0, 0, $text, 0, 0, 'C'); // DOC: 0 width=all
-        $this->Ln($size * $this->linespacing);      
+        $this->Ln($size * $this->linespacing);
         $this->setFont($this->fontname, '', $this->fontsize);
     }
 
@@ -610,7 +617,7 @@ class AndroPageReport extends fpdf
      *
      * Good for use in headers.
      */
-    function DateAndPage() 
+    public function DateAndPage()
     {
         $this->Cell(0, 0, date('m/d/Y', time()), 0, 1, 'L');
         $this->Cell(0, 0, 'Page '.$this->PageNo(), 0, 0, 'R');
@@ -621,23 +628,22 @@ class AndroPageReport extends fpdf
      * Goes to the next line.  Also resets the column position
      * so that "AtNextCol" will begin at the left.
      */
-    function nextLine($titles=false) 
+    public function nextLine($titles=false)
     {
         $this->Ln($this->lineheight);
         $this->lastCol=-1;
-        if($this->format=='onscreen') {
-            if($this->x6) {
+        if ($this->format=='onscreen') {
+            if ($this->x6) {
                 $this->grid->addRow($this->rowNumber++);
-            }
-            else {
-                if(!$titles) {
+            } else {
+                if (!$titles) {
                     $this->rowNumber++;
                     echo "\n<tr id='row_$this->rowNumber'>";
                 }
             }
         }
         // KFD 9/20/08, put out a newline
-        if($this->format=='csvexport') {
+        if ($this->format=='csvexport') {
             $this->csvexport.=implode(',', $this->csvline)."\n";
             $this->csvline = array();
         }
@@ -661,7 +667,7 @@ class AndroPageReport extends fpdf
      *   $this->linesForColumns();
      * }
      */
-    function outFromList($commalist) 
+    public function outFromList($commalist)
     {
         $this->lineFromArray(explode(',', $commalist));
     }
@@ -680,13 +686,15 @@ class AndroPageReport extends fpdf
      *   $this->outFromArray($row);
      * }
      */
-    function outFromArray($alist,$titles=false) 
+    public function outFromArray($alist, $titles=false)
     {
         $this->source = a($alist, '_source', '');
         $this->skey   = a($alist, 'skey', '');
-        if(isset($alist['_source'])) { unset($alist['_source']); 
+        if (isset($alist['_source'])) {
+            unset($alist['_source']);
         }
-        if(isset($alist['skey'])) { unset($alist['skey']); 
+        if (isset($alist['skey'])) {
+            unset($alist['skey']);
         }
        
         /*
@@ -699,8 +707,9 @@ class AndroPageReport extends fpdf
         */
         $keys = array_keys($alist);
         $keylast = array_pop($keys);
-        foreach($alist as $idx=>$value) {
-            if($value=='_') { $value=''; 
+        foreach ($alist as $idx=>$value) {
+            if ($value=='_') {
+                $value='';
             }
             $last = $idx == $keylast ? true : false;
             $this->atNextCol($value, $titles, $last);
@@ -721,9 +730,9 @@ class AndroPageReport extends fpdf
      *                       is being written.  Suppresses conversion
      *                       of values like numbers and dates.
      */
-    function AtCol($col,$text,$titles=false,$last=false) 
+    public function AtCol($col, $text, $titles=false, $last=false)
     {
-        if(!isset($this->cols[$col])) {
+        if (!isset($this->cols[$col])) {
             echo "<b>ERROR: Output past last column, did you 
             forget a \$this->nextLine()?";
             exit;
@@ -733,9 +742,9 @@ class AndroPageReport extends fpdf
         $xposition = $this->cols[$col]['xpos'];
         $width     = $this->cols[$col]['width'];
         $align     = $this->cols[$col]['align'];
-        if($this->cols[$col]['clip']<>0) {
+        if ($this->cols[$col]['clip']<>0) {
             // KFD 1/23/09, do not clip if x6 and onscreen
-            if(!($this->format=='onscreen' && $this->x6)) {
+            if (!($this->format=='onscreen' && $this->x6)) {
                 $text = substr($text, 0, $this->cols[$col]['clip']);
             }
         }
@@ -745,58 +754,52 @@ class AndroPageReport extends fpdf
         //if($this->cols[$col]['money'] && !$titles) {
         //     $text = number_format($text);
         //}
-        if($this->cols[$col]['colscale'] > 0 && !$titles) {
+        if ($this->cols[$col]['colscale'] > 0 && !$titles) {
             $colscale = $this->cols[$col]['colscale'];
             $text = number_format($text, $colscale);
-            
         }
        
         // Onscreen version: just output a table cell
         // PDF version: output a cell and advance column counter
-        if($this->format=='csvexport') {
+        if ($this->format=='csvexport') {
             $this->csvline[] = $text;
-        }
-        elseif($this->format=='onscreen') {
+        } elseif ($this->format=='onscreen') {
             $class='';
-            if($last) { $text.="&nbsp;&nbsp;&nbsp;"; 
+            if ($last) {
+                $text.="&nbsp;&nbsp;&nbsp;";
             }
-            if(a($this->md[$col], 'linkpage')<>'' && !$titles) {
+            if (a($this->md[$col], 'linkpage')<>'' && !$titles) {
                 $class='class="link"';
                 $link = $this->md[$col]['linkpage'];
                 $lsky = a($this->md[$col], 'linkskey', 'N');
-                if($lsky=='Y') {
+                if ($lsky=='Y') {
                     $href = '&gp_skey='.$this->skey;
-                }
-                else {
+                } else {
                     $href = '&pre_'.$this->md[$col]['linkcolumn'].'='.$text;
                 }
-                if($this->source <>'') {
+                if ($this->source <>'') {
                     $href.='&gp_source='.$this->source;
                 }
-                if($this->x6) {
+                if ($this->x6) {
                     $ahref = "?x6page=$link$href&x6return=exit";
                     $text="<a href='javascript:x6.openWindow(\"$ahref\")'
                         >$text</a>";
-                }
-                else if(gpExists('x4Page')) {
+                } elseif (gpExists('x4Page')) {
                     $ahref = "?x4Page=$link$href&x4Return=exit";
                     $text="<a href='javascript:\$a.openWindow(\"$ahref\")'
                         >$text</a>";
-                }
-                else {
+                } else {
                     $text="<a href='?gp_page=$link$href'>$text</a>";
                 }
             }
             $align=($align=='R') ? 'right' : 'left';
             $final= "<td $class style=\"text-align: $align\">$text</td>";
-            if($this->x6) {
+            if ($this->x6) {
                 $this->grid->addCell($final, '', '', false);
-            }
-            else {
+            } else {
                 echo $final;
             }
-        }
-        else {
+        } else {
             $this->Setx($xposition);
             $this->Cell($width, 0, $text, 0, 0, $align);
         }
@@ -816,7 +819,7 @@ class AndroPageReport extends fpdf
      *                    orientation as established by 
      *                    prior call to setupColumns()
      */
-    function AtNextCol($text,$titles=false,$last=false) 
+    public function AtNextCol($text, $titles=false, $last=false)
     {
         $this->AtCol($this->lastCol+1, $text, $titles, $last);
     }
@@ -826,15 +829,15 @@ class AndroPageReport extends fpdf
      * width of each column.  Often used as the last call
      * in a page header.
      */
-    function LinesForColumns() 
+    public function LinesForColumns()
     {
         $posy = $this->getY();
-        foreach($this->cols as $onecol=>$colinfo) {
+        foreach ($this->cols as $onecol=>$colinfo) {
             $this->Line(
                 $colinfo['xpos'], $posy, $colinfo['xpos']+$colinfo['width'], $posy
             );
         }
-        $this->nextLine();       
+        $this->nextLine();
     }
    
     /**
@@ -845,11 +848,11 @@ class AndroPageReport extends fpdf
      * @param int $start First column (zero indexed)
      * @param int $end   Last Column (zero indexed)
      */
-    function lineAcrossColumns($start,$end) 
+    public function lineAcrossColumns($start, $end)
     {
         $posx1 = $this->cols[$start]['xpos'];
         $posx2 = $this->cols[$start]['xpos'];
-        for($x = $start;$x<=$end;$x++) {
+        for ($x = $start;$x<=$end;$x++) {
             $posx2 += $this->cols[$x]['width'];
         }
         $posx2 += $this->gutter * ($end - $start);
@@ -879,11 +882,11 @@ class AndroPageReport extends fpdf
      * );
      * $this->LinesAcrossColumns();
      */
-    function valueAcrossColumns($start,$end,$text,$align='C') 
+    public function valueAcrossColumns($start, $end, $text, $align='C')
     {
         $posx1 = $this->cols[$start]['xpos'];
         $width = 0;
-        for($x = $start;$x<=$end;$x++) {
+        for ($x = $start;$x<=$end;$x++) {
             $width += $this->cols[$x]['width'];
         }
         $width += $this->gutter * ($end - $start);
@@ -906,28 +909,26 @@ class AndroPageReport extends fpdf
      *
      *  @since 12/16/07
      */
-    function overAndOut($name="report.pdf",$nature='I') 
+    public function overAndOut($name="report.pdf", $nature='I')
     {
-        if($this->format=='csvexport') {
+        if ($this->format=='csvexport') {
             header('Cache-Control: maxage=3600'); //Adjust maxage appropriately
             header('Pragma:', true);  // required to prevent caching
-            
+
             // These are the normal ones
             header(
                 'Content-disposition: attachment; filename="export.csv"'
             );
             // header('Content-Type: text/plain');
-            header('Content-Type: application/vnd.ms-excel');           
+            header('Content-Type: application/vnd.ms-excel');
             echo $this->csvexport;
             exit;
             return;
-        }
-        elseif($this->format=='onscreen') {
-            if($this->x6) {
+        } elseif ($this->format=='onscreen') {
+            if ($this->x6) {
                 // x4HTML('*MAIN*','message from ken');
                 x6html('*MAIN*', $this->grid->bufferedRender());
-            }
-            else {
+            } else {
                 echo "\n</table> <!-- androPageReport end -->";
             }
             return;
@@ -935,6 +936,5 @@ class AndroPageReport extends fpdf
         header('Pragma:', true);
         $this->Output($name, $nature);
         exit;
-    }   
+    }
 }
-?>

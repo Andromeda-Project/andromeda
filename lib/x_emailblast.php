@@ -21,8 +21,7 @@
 \* ================================================================== */
 class x_table_x_emailblast extends x_table
 {
-    
-    function main() 
+    public function main()
     {
         hidden('gp_page', 'x_emailblast');
         hidden('gp_table', CleanGet('gp_table', '', false));
@@ -43,7 +42,7 @@ class x_table_x_emailblast extends x_table
         //
         $obj = DispatchObject($table);
         $a_skeys = ContextGet("tables_".$obj->table_id."_skeys", array());
-        $l_skeys = implode(',', $a_skeys); 
+        $l_skeys = implode(',', $a_skeys);
 
         // get this little detail taken care of 
         //
@@ -56,7 +55,7 @@ class x_table_x_emailblast extends x_table
         $lDisplayColumns =$obj->table['projections']['email'];
         $aDisplayColumns =explode(',', $lDisplayColumns);
         $EmailColumn     =$obj->table['projections']['emailaddr'];
-        $sql 
+        $sql
         ='SELECT skey,'.$EmailColumn.','.$lDisplayColumns
         .' FROM '.$table
         .' WHERE skey IN ('.$l_skeys.')';
@@ -67,14 +66,15 @@ class x_table_x_emailblast extends x_table
         }
         
         $okToSend=false;
-        if(CleanGet('gp_posted', '', false)==1) {
+        if (CleanGet('gp_posted', '', false)==1) {
             if (CleanGet('txt_subject', '', false)=='') {
                 ErrorAdd('Please fill in a subject first');
             }
             if (trim(CleanGet('txt_email', '', false))=='') {
                 ErrorAdd('Please fill in an email body');
             }
-            if (!Errors()) { $okToSend=true; 
+            if (!Errors()) {
+                $okToSend=true;
             }
         }
         
@@ -83,20 +83,16 @@ class x_table_x_emailblast extends x_table
         // are sending out the email or 
         if ($okToSend) {
             $this->EmailBlast($rows, $a_skeys, $EmailColumn, $aDisplayColumns);
+        } else {
+            $this->EmailHTML($rows, $a_skeys, $aDisplayColumns);
         }
-        else {
-            $this->EmailHTML($rows, $a_skeys, $aDisplayColumns);    
-        }
-    
-        
     }
     
     // -----------------------------------------------------------------
     // Display options for blasting the email
     // -----------------------------------------------------------------
-    function EmailHTML(&$rows,&$a_skeys,$aDisplayColumns) 
+    public function EmailHTML(&$rows, &$a_skeys, $aDisplayColumns)
     {
-        
         ?>
      <h2>Email Blast</h2>
 		
@@ -117,7 +113,7 @@ class x_table_x_emailblast extends x_table
 		
      <h2>Recipients</h2>
         <?php
-            
+
 
         
         // Now loop through and show the emails
@@ -126,7 +122,7 @@ class x_table_x_emailblast extends x_table
         foreach ($a_skeys as $skey) {
             $name="embox".$skey;
             $innerHTML = "";
-            foreach($aDisplayColumns as $col) {
+            foreach ($aDisplayColumns as $col) {
                 $innerHTML.=$rows[$skey][$col].'  ';
             }
             $checked = 'checked';
@@ -136,7 +132,7 @@ class x_table_x_emailblast extends x_table
                 }
             }
             
-            echo 
+            echo
             '<input type="checkbox" '
             .$checked
             .' value="1"'
@@ -153,9 +149,10 @@ class x_table_x_emailblast extends x_table
      <a href="javascript:formSubmit()">Send Emails Now.</a></p>
 
         <?php
+
     }
     
-    function EmailBlast(&$rows,&$a_skeys,$EmailColumn,$aDispCols) 
+    public function EmailBlast(&$rows, &$a_skeys, $EmailColumn, $aDispCols)
     {
         $subject = trim(CleanGet('txt_subject'));
         $email_text=trim(CleanGet('txt_email'));
@@ -167,24 +164,23 @@ class x_table_x_emailblast extends x_table
       correct the recipient's email address.
      </p>
         <?php
-        
+
         foreach ($a_skeys as $skey) {
-            if (CleanGet('embox'.$skey, '', false)=='' ) {
-                continue;    
+            if (CleanGet('embox'.$skey, '', false)=='') {
+                continue;
             }
             
             $namepart = '';
-            foreach($aDispCols as $col) {
+            foreach ($aDispCols as $col) {
                 $namepart.=trim($rows[$skey][$col]).'  ';
             }
-            $recipient 
+            $recipient
             =$namepart
             .'<'.$rows[$skey][$EmailColumn].'>';
             
             EmailSend($recipient, $subject, $email_text);
-            echo $namepart.'  '.$rows[$skey][$EmailColumn].'<br>'; 
+            echo $namepart.'  '.$rows[$skey][$EmailColumn].'<br>';
         }
-        
     }
 }
 ?>

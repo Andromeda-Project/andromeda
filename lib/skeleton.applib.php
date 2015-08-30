@@ -179,9 +179,4 @@ function app_template() {
         return 'x6';
     }
 }
-*/
-
-
-
-
-?>
+*/;

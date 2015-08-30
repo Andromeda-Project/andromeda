@@ -4,7 +4,7 @@ class report_run extends x_table2
     // ---------------------------------------------------------------------
     // MAIN
     // ---------------------------------------------------------------------
-    function main() 
+    public function main()
     {
         // First pull the report
         $row_rep=SQL_OneRow("SELECT * from reports where skey=".gp('gp_skey'));
@@ -29,14 +29,14 @@ class report_run extends x_table2
         $SQL_COLSA=array();
         $SQL_COLSOBA=array();
         $SQL_COLSWHA=array();
-        foreach($rows_col as $row_col) {
+        foreach ($rows_col as $row_col) {
             $SQL_COLSA[]=$row_col['table_id'].'.'.$row_col['column_id'];
-            if($row_col['uisort']<>0) {
+            if ($row_col['uisort']<>0) {
                 $SQL_COLSOBA[$row_col['uisort']]
                 =$row_col['table_id'].'.'.$row_col['column_id'];
             }
          
-            if($row_col['compoper']<>'' && $row_col['compval']<>'') {
+            if ($row_col['compoper']<>'' && $row_col['compval']<>'') {
                 $table_dd=DD_TableRef($row_col['table_id']);
                 $ddcol=&$table_dd['flat'][$row_col['column_id']];
                 $colval=SQL_Format($ddcol['type_id'], $row_col['compval']);
@@ -50,13 +50,13 @@ class report_run extends x_table2
         // Collapse the lists into strings
         $SQL_COLS=implode("\n       ,", $SQL_COLSA);
         $SQL_COLSOB='';
-        if(count($SQL_COLSOBA)>0) {
+        if (count($SQL_COLSOBA)>0) {
             ksort($SQL_COLSOBA);
             $SQL_COLSOB="\n ORDER BY ".implode(',', $SQL_COLSOBA);
         }
       
         $SQL_WHERE='';
-        if(count($SQL_COLSWHA)>0) {
+        if (count($SQL_COLSWHA)>0) {
             $SQL_WHERE="\n WHERE ".implode("\n       ", $SQL_COLSWHA);
         }
       
@@ -78,7 +78,7 @@ class report_run extends x_table2
     // Examine the tables involved in the query and find join conditions
     // to put them together
     // ---------------------------------------------------------------------
-    function ehProcessFromJoins($tables) 
+    public function ehProcessFromJoins($tables)
     {
         // pop off the first element, make it the "FROM"
         $SQL_from = array_pop($tables);
@@ -88,23 +88,23 @@ class report_run extends x_table2
         // Continue as long as we have more tables, or until
         // the joining fails (an error)
         $tabcount=count($tables);
-        while(count($tables) > 0) {
+        while (count($tables) > 0) {
             // try to match each remaining table to any table we've got
             // so far
-            foreach($tables as $table) {
+            foreach ($tables as $table) {
                 $table_par='';
-                foreach($tables_done as $table_done) {
+                foreach ($tables_done as $table_done) {
                     // if we got a match, take care of business
                     $table_par=$this->ehProcessFromJoins_Match($table, $table_done);
-                    if($table_par<>'') {
+                    if ($table_par<>'') {
                         $table_chd=$table_par==$table_done ? $table : $table_done;
                         $dd=dd_tableref($table_par);
                         $apks=explode(',', $dd['pks']);
                         $apks2=array();
-                        foreach($apks as $apk) {
+                        foreach ($apks as $apk) {
                             $apks2[]="$table_chd.$apk = $table_par.$apk";
                         }
-                        $SQL_Joins[$table] = implode(' AND ', $apks2); 
+                        $SQL_Joins[$table] = implode(' AND ', $apks2);
                   
                         // Move over to the "done" pile
                         $tables_done[] = $table;
@@ -112,20 +112,21 @@ class report_run extends x_table2
                         break;
                     }
                 }
-                if($table_par<>'') { break; 
+                if ($table_par<>'') {
+                    break;
                 }
             }
          
             // This means we failed to join any of the tables to any
             // other table, so something has gone wrong 
-            if($tabcount==count($tables)) {
+            if ($tabcount==count($tables)) {
                 break;
             }
         }
       
         // Now join them all up and return
         $retval = "\n  FROM $SQL_from ";
-        foreach($SQL_Joins as $table_id=>$SQL_Join) {
+        foreach ($SQL_Joins as $table_id=>$SQL_Join) {
             $retval.="\n  JOIN $table_id ON $SQL_Join";
         }
         return $retval;
@@ -135,7 +136,7 @@ class report_run extends x_table2
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // Examine the tables involved in the query and find join conditions
     // to put them together
-    function ehProcessFromJoins_Match($table,$table_done) 
+    public function ehProcessFromJoins_Match($table, $table_done)
     {
         // See if these two tables join as either parent or child
         $sq="SELECT COUNT(*) as cnt FROM zdd.tabfky_c 
@@ -144,7 +145,7 @@ class report_run extends x_table2
                    AND suffix='' AND prefix=''
                   )";
         $matched=SQL_oneValue('cnt', $sq);
-        if($matched>0) {
+        if ($matched>0) {
             return $table_done;
         }
 
@@ -154,7 +155,7 @@ class report_run extends x_table2
                    AND suffix='' AND prefix=''
                   )";
         $matched=SQL_oneValue('cnt', $sq);
-        if($matched>0) {
+        if ($matched>0) {
             return $table;
         }
       
@@ -171,14 +172,14 @@ class report_run extends x_table2
     // how it works out
     //
     // ---------------------------------------------------------------------
-    function ehProcessDisplay($SQ,$rows_col,$row_rep) 
+    public function ehProcessDisplay($SQ, $rows_col, $row_rep)
     {
         $gp_process=gp('gp_process');
         $this->dispmode=$gp_process==1 ? 'screen' : 'print';
       
         // Set the template
         $html_main
-         = gp('gp_process')==1 
+         = gp('gp_process')==1
          ? 'html_skin_tc_prscreen'
          : 'html_print';
         vgaSet('html_main', $html_main);
@@ -194,7 +195,7 @@ class report_run extends x_table2
       
         // In all cases, begin with a header
         $this->ehPDInit();
-        if($this->PageNum==1) {
+        if ($this->PageNum==1) {
             $this->ehPDHeader($row_rep, $rows_col);
         }
       
@@ -206,7 +207,7 @@ class report_run extends x_table2
             // Always increase row count.  For PDF, look for reset
             $RowNum++;
             if ($dispmode=='print') {
-                if($RowNum>$RowsPerPage) {
+                if ($RowNum>$RowsPerPage) {
                     $this->ehPDFooter();
                     $this->RowNum = 1;
                     $this->PageNum++;
@@ -221,23 +222,23 @@ class report_run extends x_table2
     }
    
 
-    function ehPDInit() 
+    public function ehPDInit()
     {
         echo "<pre>";
     }
    
-    function ehPDClose() 
+    public function ehPDClose()
     {
         echo "</pre>";
     }
 
-    function ehPDHeader($row_rep,$rows_col) 
+    public function ehPDHeader($row_rep, $rows_col)
     {
         //hprint_r($rows_col);
         echo "<h1>".$row_rep['description']."</h1>";
         $hcols=array();
         $line1 = $line2 = "";
-        foreach($rows_col as $row_col) {
+        foreach ($rows_col as $row_col) {
             $ds=$row_col['dispsize'];
             $line1.=str_pad($row_col['description'], $ds, ' ').' ';
             $line2.=str_pad('', $row_col['dispsize'], '=')." ";
@@ -246,13 +247,12 @@ class report_run extends x_table2
         echo $line2."\n";
     }
    
-    function ehPDFooter() 
+    public function ehPDFooter()
     {
         echo "\nEnd of Report\n";
-      
     }
    
-    function ehPDRow($row) 
+    public function ehPDRow($row)
     {
         foreach ($row as $colname=>$colvalue) {
             echo $colvalue." ";
@@ -260,4 +260,3 @@ class report_run extends x_table2
         echo "\n";
     }
 }
-?>

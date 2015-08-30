@@ -4,13 +4,13 @@
 //
 class x_login extends x_table2
 {
-    var $PageSubtitle = "Some kind of login title";
-    var $pmenu = array();
+    public $PageSubtitle = "Some kind of login title";
+    public $pmenu = array();
 
     // KFD 9/2/08, compatibility with a legacy application
-    var $directlogin = false;
+    public $directlogin = false;
 
-    public function main() 
+    public function main()
     {
         $this->PageSubtitle = "Please Login";
         // KFD 3/6/08, changed login processing to st2login=1,
@@ -21,7 +21,7 @@ class x_login extends x_table2
 
         // Send these out so they are available after successful login
         $gpz=aFromGp('gpz_');
-        foreach($gpz as $var=>$val) {
+        foreach ($gpz as $var=>$val) {
             hidden('gpz_'.$var, $val);
         }
 
@@ -39,7 +39,7 @@ class x_login extends x_table2
         You can replace the default login form by putting a file named
         "x_login_form.inc.html" into the [[Application Directory]].  
          */
-        if(File_exists_incpath('x_login_form.inc.html')) {
+        if (File_exists_incpath('x_login_form.inc.html')) {
             if (vgaGet('html_main')<>('html_skin_tc')) {
                 include 'x_login_form.inc.html';
                 return;
@@ -83,30 +83,29 @@ class x_login extends x_table2
         </div>
         <!-- LOGIN HTML (END) -->
     <?php
+
     }
 
     // ------------------------------------------------------------------
     // ------------------------------------------------------------------
     // Various helper functions
-    function _MenuX($content,$newline,$class,$id='') 
+    public function _MenuX($content, $newline, $class, $id='')
     {
         //$id=hTagParm('id',$id);
         if ($this->pmenu['MENU_TYPE']<>'TABLE') {
             return $newline.'<div class="'.$class.'">'.$content.'</div>';
-        }
-        else {
+        } else {
             return "$newline<tr><td id=\"$id\" class=\"$class\">"
             .$content."</td></tr>";
         }
     }
 
-    function _MenuModule($content) 
+    public function _MenuModule($content)
     {
-        if(vgaGet('MENU_TAG_MODL', '')<>'') {
+        if (vgaGet('MENU_TAG_MODL', '')<>'') {
             $mt=vgaGet('MENU_TAG_MODL', '');
             return "<$mt>$content</$mt>";
-        }
-        else {
+        } else {
             return $this->_MenuX(
                 $content, "\n\n", $this->pmenu['MENU_CLASS_MODL']
             );
@@ -114,15 +113,14 @@ class x_login extends x_table2
     }
 
     // Various helper functions
-    function _MenuItem($content,$dest,$ins=false,$extra=array()) 
+    public function _MenuItem($content, $dest, $ins=false, $extra=array())
     {
         // The parms are the table plus maybe the insert mode
         $parms = array('gp_page'=>$dest);
         $id='menu_'.$dest;
         if ($ins) {
             $parms['gp_mode']='ins';
-        }
-        else {
+        } else {
             $parms['gp_mode']='';
             $parms['gp_skey']='';
         }
@@ -140,12 +138,13 @@ class x_login extends x_table2
     // ------------------------------------------------------------------
     // LOGIN PROCESS
     // ------------------------------------------------------------------
-    function Login_Process() 
+    public function Login_Process()
     {
         $arg2=$this->directlogin==true ? 'direct'  : '';
 
         // only process if user hit "post"
-        if (gp('gp_posted', '', false)=='') { return; 
+        if (gp('gp_posted', '', false)=='') {
+            return;
         }
         vgfSet('LoginAttemptOK', false);
 
@@ -180,7 +179,7 @@ class x_login extends x_table2
         //
         if ($uid=="postgres") {
             ErrorAdd($em000);
-            if(vgfGet('loglogins', false)) {
+            if (vgfGet('loglogins', false)) {
                 sysLog(LOG_WARNING, "Andromeda:$app:Bad login attempt as postgres");
                 fwLogEntry('1011', 'Attempt login as postgres', '', $arg2);
             }
@@ -189,7 +188,7 @@ class x_login extends x_table2
         $app=$GLOBALS['AG']['application'];
         if (substr($uid, 0, strlen($app))==$app) {
             ErrorAdd($em001);
-            if(vgfGet('loglogins', false)) {
+            if (vgfGet('loglogins', false)) {
                 sysLog(LOG_WARNING, "Andromeda:$app:Bad login attempt as group role");
                 fwLogEntry('1012', 'Attempt login as group role', $uid, $arg2);
             }
@@ -201,13 +200,12 @@ class x_login extends x_table2
         $tcs = @SQL_CONN($uid, $pwd);
         if ($tcs===false) {
             ErrorAdd($em099);
-            if(vgfGet('loglogins', false)) {
+            if (vgfGet('loglogins', false)) {
                 sysLog(LOG_NOTICE, "Andromeda:$app:Bad login attempt server rejected");
                 fwLogEntry('1013', 'Server rejected username/password', $uid, $arg2);
             }
             return;
-        }
-        else {
+        } else {
             SQL_CONNCLOSE($tcs);
         }
 
@@ -215,7 +213,8 @@ class x_login extends x_table2
         // have an error, we must close the connection before returning!
         //    ...yes, yes, that's bad form, all complaints to /dev/null
         //
-        if(vgfGet('loglogins', false)) { fwLogEntry('1010', 'Login OK', $uid, $arg2); 
+        if (vgfGet('loglogins', false)) {
+            fwLogEntry('1010', 'Login OK', $uid, $arg2);
         }
         scDBConn_Push();
 
@@ -233,10 +232,9 @@ class x_login extends x_table2
             AND rolsuper= true"
         );
         $cr=SQL_NUMROWS($results);
-        if($cr<>0) {
+        if ($cr<>0) {
             $root=true;
-        }
-        else {
+        } else {
             $results = SQL(
                 "Select * from users WHERE LOWER(user_id)='$uid'"
                 ."AND (user_disabled<>'Y' or user_disabled IS NULL)"
@@ -247,8 +245,7 @@ class x_login extends x_table2
                 ErrorAdd($em002);
                 sysLog(LOG_WARNING, "Andromeda:$app:Bad login attempt code 002");
                 return;
-            }
-            else {
+            } else {
                 $userinfo=SQL_Fetch_Array($results);
                 $group_id_eff=$userinfo['group_id_eff'];
                 SessionSet('user_name', $userinfo['user_name']);
@@ -256,10 +253,9 @@ class x_login extends x_table2
         }
 
         // Flag if the user is an administrator
-        if($root==true) {
+        if ($root==true) {
             $admin=true;
-        }
-        else {
+        } else {
             $results = SQL(
                 "select count(*) as admin from usersxgroups "
                 ."where user_id='$uid' and group_id ='$app"."_admin'"
@@ -277,8 +273,7 @@ class x_login extends x_table2
               from zdd.groups 
              where COALESCE(grouplist,'')=''"
             );
-        }
-        else {
+        } else {
             $results=SQL("select group_id from usersxgroups WHERE LOWER(user_id)='$uid'");
         }
         while ($row = SQL_FETCH_ARRAY($results)) {
@@ -294,9 +289,9 @@ class x_login extends x_table2
         // We have a successful login.  If somebody else was already
         // logged in, we need to wipe out that person's session.  But
         // don't do this if there was an anonymous login.
-        if(LoggedIn()) {
+        if (LoggedIn()) {
             $uid_previous=SessionGet('UID');
-            if($uid<>$uid_previous) {
+            if ($uid<>$uid_previous) {
                 //Session_Destroy();
                 SessionReset();
                 //Index_Hidden_Session_Start(false);
@@ -306,10 +301,10 @@ class x_login extends x_table2
         // We know who they are and that they can connect,
         // see if there is any app-specific confirmation required
         //
-        if(function_exists('app_login_process')) {
+        if (function_exists('app_login_process')) {
             //echo "Calling the process now";
-            if(!app_login_process($uid, $pwd, $admin, $groups)) {
-                return; 
+            if (!app_login_process($uid, $pwd, $admin, $groups)) {
+                return;
             }
         }
 
@@ -326,9 +321,9 @@ class x_login extends x_table2
         SessionSet("ROOT", $root);
         SessionSet("GROUP_ID_EFF", $group_id_eff);
         SessionSet("groups", $groups);
-        if(gp('gpz_page')=='') {
+        if (gp('gpz_page')=='') {
             // KFD 9/12/08, extra command to not change page
-            if(gp('st2keep')<>1) {
+            if (gp('st2keep')<>1) {
                 gpSet('gp_page', '');
             }
         }
@@ -367,15 +362,15 @@ class x_login extends x_table2
               AND group_id iN ($groups)";
         $modules=SQL_AllRows($sq, 'module');
         $AGkeys=array_keys($AGMENU);
-        foreach($AGkeys as $AGkey) {
-            if(!isset($modules[$AGkey])) {
+        foreach ($AGkeys as $AGkey) {
+            if (!isset($modules[$AGkey])) {
                 unset($AGMENU[$AGkey]);
             }
         }
 
         // Now recurse the remaining modules and do the same trick
         // for each one, removing the tables that don't exist
-        foreach($AGMENU as $module=>$moduleinfo) {
+        foreach ($AGMENU as $module=>$moduleinfo) {
             $sq="SELECT DISTINCT table_id
                 FROM zdd.perm_tabs 
                WHERE nomenu='N'
@@ -383,8 +378,8 @@ class x_login extends x_table2
                  AND group_id iN ($groups)";
             $tables=SQL_AllRows($sq, 'table_id');
             $tkeys =array_keys($moduleinfo['items']);
-            foreach($tkeys as $tkey) {
-                if(!isset($tables[$tkey])) {
+            foreach ($tkeys as $tkey) {
+                if (!isset($tables[$tkey])) {
                     unset($AGMENU[$module]['items'][$tkey]);
                 }
             }
@@ -503,7 +498,7 @@ class x_login extends x_table2
 
         // -------------------------------------------------------------------
         // Fetch and cache user preferences
-        if(vgaGet('member_profiles')) {
+        if (vgaGet('member_profiles')) {
             cacheMember_Profiles();
         }
 
@@ -554,8 +549,7 @@ class x_login extends x_table2
     }
 
 
-    function GenerateMenu($AGMENU,$admin,$tables_sel,$tables_ins) 
+    public function GenerateMenu($AGMENU, $admin, $tables_sel, $tables_ins)
     {
     }
-
 }

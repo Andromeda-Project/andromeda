@@ -1,17 +1,13 @@
 <?php
 class phpinfo extends x_table2
 {
-    function main() 
+    public function main()
     {
-        If(SessionGet('ADMIN', false)==false) {
+        if (SessionGet('ADMIN', false)==false) {
             echo "Sorry, admins only";
-        }
-        else {
+        } else {
             hprint_r($_SERVER);
             phpinfo();
         }
-      
     }
-   
 }
-?>

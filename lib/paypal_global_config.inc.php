@@ -19,9 +19,8 @@
 
 //create variable names to perform additional order processing
 
-function create_local_variables() 
+function create_local_variables()
 {
-
     $array_name['business']=$_POST['business'];
     $array_name['receiver_email']=$_POST['receiver_email'];
     $array_name['receiver_id']=$_POST['receiver_id'];
@@ -73,47 +72,42 @@ function create_local_variables()
     $array_name['verify_sign']=$_POST['verify_sign'];
 
     return $array_name;
-
 }
 
 //post transaction data using curl
 
-function curlPost($url,$data)  
+function curlPost($url, $data)
 {
-
     global $paypal;
     $postdata='';
    
     //build post string
-   
-    foreach($data as $i=>$v) {
+
+    foreach ($data as $i=>$v) {
         $postdata.= $i . "=" . urlencode($v) . "&";
     }
    
     $postdata.="cmd=_notify-validate";
    
     //execute curl on the command line
-   
+
     exec("{$paypal['curl_location']} -d \"$postdata\" $url", $info);
    
     $info=implode(",", $info);
    
     return $info;
-
 }
 
 //posts transaction data using libCurl
 
-function libCurlPost($url,$data)  
+function libCurlPost($url, $data)
 {
 
     //build post string
-   
+
     $postdata='';
-    foreach($data as $i=>$v) {
-   
+    foreach ($data as $i=>$v) {
         $postdata.= $i . "=" . urlencode($v) . "&";
-   
     }
    
     $postdata.="cmd=_notify-validate";
@@ -140,7 +134,7 @@ function libCurlPost($url,$data)
 }
 
 //posts transaction data using fsockopen.
-function fsockPost($url,$data) 
+function fsockPost($url, $data)
 {
 
     //Parse url
@@ -148,27 +142,30 @@ function fsockPost($url,$data)
     $postdata='';
    
     //build post string
-    foreach($data as $i=>$v) {
+    foreach ($data as $i=>$v) {
         $postdata.= $i . "=" . urlencode($v) . "&";
     }
    
     $postdata.="cmd=_notify-validate";
    
     //Set the port number
-    if($web['scheme'] == "https") { $web['port']="443";  $ssl="ssl://"; 
-    } else { $web['port']="80"; 
+    if ($web['scheme'] == "https") {
+        $web['port']="443";
+        $ssl="ssl://";
+    } else {
+        $web['port']="80";
     }
    
     //Create paypal connection
     $fp=@fsockopen($ssl . $web['host'], $web['port'], $errnum, $errstr, 30);
    
     //Error checking
-    if(!$fp) { echo "$errnum: $errstr"; 
+    if (!$fp) {
+        echo "$errnum: $errstr";
     }
    
     //Post Data
     else {
-   
         fputs($fp, "POST {$web['path']} HTTP/1.1\r\n");
         fputs($fp, "Host: {$web['host']}\r\n");
         fputs($fp, "Content-type: application/x-www-form-urlencoded\r\n");
@@ -177,7 +174,8 @@ function fsockPost($url,$data)
         fputs($fp, $postdata . "\r\n\r\n");
    
         //loop through the response from the server
-        while(!feof($fp)) { $info[]=@fgets($fp, 1024); 
+        while (!feof($fp)) {
+            $info[]=@fgets($fp, 1024);
         }
    
         //close fp - we are done with it
@@ -185,20 +183,17 @@ function fsockPost($url,$data)
    
         //break up results into a string
         $info=implode(",", $info);
-   
     }
    
     return $info;
-   
 }
 
 //Display Paypal Hidden Variables
 
-function showVariables() 
+function showVariables()
 {
-
     global $paypal;
-    foreach($paypal as $ppvarname=>$ppvarval) {
+    foreach ($paypal as $ppvarname=>$ppvarval) {
         switch ($ppvarname) {
         case 'success_url':
             $val=$paypal['site_url'].$ppvarval;
@@ -211,7 +206,7 @@ function showVariables()
             break;
         default: $val=$ppvarval;
         }
-        echo 
+        echo
          "\n<input type=\"hidden\" "
          ."name=\"$ppvarname\" "
          ."value=\"$val\">";
@@ -275,8 +270,4 @@ function showVariables() {
 
 <?php 
    } 
-*/
-
-
-
-?>
+*/;

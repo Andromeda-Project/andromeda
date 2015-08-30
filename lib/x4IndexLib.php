@@ -53,17 +53,19 @@
 //   -- KFD 3/15/07
 //
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-if(!isset($AG['tmpPathInsert'])) {
+if (!isset($AG['tmpPathInsert'])) {
     $ruri=$_SERVER['REQUEST_URI'];
     // If there is a "?", strip that off and everything past it
-    $ruriqm =strpos($ruri, '?'); 
-    if($ruriqm!==false) { $ruri=substr($ruri, 0, $ruriqm); 
+    $ruriqm =strpos($ruri, '?');
+    if ($ruriqm!==false) {
+        $ruri=substr($ruri, 0, $ruriqm);
     }
     // If there is an "index.php" then strip that off
     $ruri=preg_replace('/index.php/i', '', $ruri);
     $ruri=preg_replace('/x4index.php/i', '', $ruri);
     // Now remove the leading slash that is always there (unless it ain't)
-    if(substr($ruri, 0, 1)=='/') { $ruri = substr($ruri, 1); 
+    if (substr($ruri, 0, 1)=='/') {
+        $ruri = substr($ruri, 1);
     }
     $AG['tmpPathInsert']=$ruri;
 }
@@ -99,8 +101,8 @@ if (!isset($AG['application'])) {
 // through and reverse the effects.
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 $AG['gp']=array_merge($_POST, $_GET);
-if(get_magic_quotes_gpc()==1) {
-    foreach($AG['gp'] as $key=>$value) {
+if (get_magic_quotes_gpc()==1) {
+    foreach ($AG['gp'] as $key=>$value) {
         $AG['gp'][$key]=stripslashes($value);
     }
 }
@@ -112,17 +114,16 @@ if(get_magic_quotes_gpc()==1) {
 // even to other databases, but the db side of things is now
 // complete enough that we don't need that any more.
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-if(SessionGet('UID')=='') {
+if (SessionGet('UID')=='') {
     SessionSet('UID', $AG['application']);
     SessionSet('PWD', $AG['application']);
 }
 $xstr=" dbname=".$AG['application']
         ." user=".strtolower(SessionGet('UID'))
         ." password=".SessionGet('PWD');
-if(function_exists('pg_connect')) {
+if (function_exists('pg_connect')) {
     $AG['dbconn'] = @pg_connect($xstr, PGSQL_CONNECT_FORCE_NEW);
-}
-else {
+} else {
     $AG['dbconn'] = false;
 }
 
@@ -147,16 +148,16 @@ else {
 // raw database access, which is only possible because we 
 // implement security in the server. 
 // 
-if(($x4xAjax = gp('x4xAjax')) <> '') {
+if (($x4xAjax = gp('x4xAjax')) <> '') {
     x4index_ajax($x4xAjax);
 }
-if(($x4xPage = gp('x4xPage')) <> '') {
+if (($x4xPage = gp('x4xPage')) <> '') {
     x4index_page($x4xPage);
 }
-if(($x4xDropdown = gp('x4xDropdown')) <> '') {
+if (($x4xDropdown = gp('x4xDropdown')) <> '') {
     x4index_dropdown($x4xDropdown);
 }
-if(gpExists('x4xMenu')) {
+if (gpExists('x4xMenu')) {
     x4index_menu();
 }
 
@@ -167,7 +168,7 @@ echo returnJSON(returnItems());
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 // Close database connection 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-if($AG['dbconn']) {
+if ($AG['dbconn']) {
     @pg_close($AG['dbconn']);
 }
 return;
@@ -181,7 +182,7 @@ return;
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // DISPATCH HANDLING: Generate a menu
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-function x4index_menu() 
+function x4index_menu()
 {
     returnItem('menu', 'default', SessionGet('AGMENU'));
 }
@@ -191,27 +192,29 @@ function x4index_menu()
 // DISPATCH HANDLING: Generate a menu
 //   Return data to a dynamic select box
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-function x4index_dropdown($table_id_fk) 
+function x4index_dropdown($table_id_fk)
 {
   
     // Strip a leading slash from the value
     $gpletters=gp('gp_letters');
    
     // Pull the rows from handy library routine.
-    $rows=RowsForSelect($table_id_fk, $gpletters, array(), '', true);   
+    $rows=RowsForSelect($table_id_fk, $gpletters, array(), '', true);
 
     ob_start();
-    foreach($rows as $idx=>$row) {
+    foreach ($rows as $idx=>$row) {
         $prev = $idx==0                ? '' : $rows[$idx-1]['skey'];
         $next = $idx==(count($rows)-1) ? '' : $rows[$idx+1]['skey'];
         $s = $row['skey'];
         $tds='';
         $x=-1;
-        foreach($row as $colname=>$colvalue) {
+        foreach ($row as $colname=>$colvalue) {
             $x++;
-            if($colname=='skey') { continue; 
+            if ($colname=='skey') {
+                continue;
             }
-            if($x==1) { $value = $colvalue; 
+            if ($x==1) {
+                $value = $colvalue;
             }
             $tds.="<td>$colvalue";
         }
@@ -226,42 +229,39 @@ function x4index_dropdown($table_id_fk)
     ri('x4Select', 'rows', ob_get_clean());
 }
 
-function RowsForSelect($table_id,$firstletters='',$matches=array(),$distinct='',$allcols=false) 
+function RowsForSelect($table_id, $firstletters='', $matches=array(), $distinct='', $allcols=false)
 {
     $table=ddTable($table_id);
 
     // Determine which columns to pull and get them
     // KFD 10/8/07, a DISTINCT means we are pulling a single column of 
     //              a multiple column key, pull only that column
-    if($distinct<>'') {
+    if ($distinct<>'') {
         $proj = $distinct;
-    }
-    else {
-        if(ArraySafe($table['projections'], 'dropdown')<>'') {
+    } else {
+        if (ArraySafe($table['projections'], 'dropdown')<>'') {
             $proj=$table['projections']['dropdown'];
         }
-        if(ArraySafe($table['projections'], '_uisearch')<>'') {
+        if (ArraySafe($table['projections'], '_uisearch')<>'') {
             $proj=$table['projections']['_uisearch'];
-        }
-        else {
+        } else {
             $proj=$table['pks'];
         }
     }
     $aproj=explode(',', $proj);
     $acollist=array();
-    foreach($aproj as $aproj1) {
+    foreach ($aproj as $aproj1) {
         $acollist[]="COALESCE($aproj1,'')";
     }
     $collist=str_replace(',', " || ' - ' || ", $proj);
     //$collist = implode(" || ' - ' || ",$acollist);
     //syslog($collist);
-   
+
     // Get the primary key, and resolve which view we have perms for
     // KFD 10/8/07, do only one column if passed
-    if($distinct<>'') {
+    if ($distinct<>'') {
         $pk = $distinct;
-    }
-    else {
+    } else {
         $pk = $table['pks'];
     }
     $view_id=ddViewFromTab($table_id);
@@ -289,13 +289,13 @@ function RowsForSelect($table_id,$firstletters='',$matches=array(),$distinct='',
     //} 
 
     // Determine if this is a filtered table
-    if(isset($table['flat']['flag_noselect'])) {
+    if (isset($table['flat']['flag_noselect'])) {
         $aWhere[]= "COALESCE(flag_noselect,'N')<>'Y'";
     }
    
     // Add more matches on 
-    foreach($matches as $matchcol=>$matchval) {
-        $aWhere[] = $matchcol.' = '.SQLFC($matchval); 
+    foreach ($matches as $matchcol=>$matchval) {
+        $aWhere[] = $matchcol.' = '.SQLFC($matchval);
     }
    
    
@@ -306,24 +306,23 @@ function RowsForSelect($table_id,$firstletters='',$matches=array(),$distinct='',
     //             1st column only + second column only
     $SLimit='';
     $xWhere=array();
-    if($firstletters<>'') {
+    if ($firstletters<>'') {
         $SLimit="Limit 30 ";
-        if(strpos($firstletters, ',')===false) {
+        if (strpos($firstletters, ',')===false) {
             // original code, search all columns
             $implode=' OR ';
-            foreach($aproj as $aproj1) { 
+            foreach ($aproj as $aproj1) {
                 $sl=strlen($firstletters);
                 $xWhere[]
                 ="SUBSTRING(LOWER($aproj1) FROM 1 FOR $sl)"
                 ."=".strtolower(SQLFC($firstletters));
             }
-        }
-        else {
+        } else {
             // New code 8/8/07, search first column, 2nd, third only,
             // based on existence of commas
             $implode=' AND ';
             $afl = explode(',', $firstletters);
-            foreach($afl as $x=>$fl) {
+            foreach ($afl as $x=>$fl) {
                 $sl = strlen($fl);
                 $xWhere[]
                 ="SUBSTRING(LOWER({$aproj[$x+1]}) FROM 1 FOR $sl)"
@@ -331,35 +330,33 @@ function RowsForSelect($table_id,$firstletters='',$matches=array(),$distinct='',
             }
         }
     }
-    if(count($xWhere)>0) {
+    if (count($xWhere)>0) {
         $aWhere[] = "(".implode($implode, $xWhere).")";
     }
    
     // Finish off the where clause
     if (count($aWhere)>0) {
         $SWhere = "WHERE ".implode(' AND ', $aWhere);
-    }
-    else {
+    } else {
         $SWhere = '';
     }
 
     // Execute and return
     $sDistinct = $distinct<>'' ? ' DISTINCT ' : '';
     $SOB=$aproj[0];
-    if($allcols) {
+    if ($allcols) {
         $sq="SELECT skey,$proj 
               FROM $view_id 
            $SWhere 
              ORDER BY 3 $SLimit";
-    }
-    else {
+    } else {
         $sq="SELECT $sDistinct $pk as _value,$collist as _display 
               FROM $view_id 
            $SWhere 
              ORDER BY $SOB $SLimit ";
     }
     $rows=x4SQLAllrows($sq);
-    return $rows;    
+    return $rows;
 }
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -368,7 +365,7 @@ function RowsForSelect($table_id,$firstletters='',$matches=array(),$distinct='',
 // You may be saying: OH NO!! DIRECT DATABASE ACCESS!!!  
 // If so, read up on Andromeda Security.
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-function x4index_ajax($x4xAjax) 
+function x4index_ajax($x4xAjax)
 {
     // For all raw access, there will be an array
     // of column values, and a table to hit.
@@ -376,35 +373,36 @@ function x4index_ajax($x4xAjax)
     $whr=rowFromGP('x4w_');  // where clause values
     $table=gp('x4xTable');     // The table name
     $rr =gp('x4xRetRow', 0);  // row return command
-    
+
     // There are four different database functions, so there
     // are four library routines we might call.
     $ra=$r1=false;
-    switch(strtolower($x4xAjax)) {
-    case 'del'   : x4sqlDel($table, $whr);              
+    switch (strtolower($x4xAjax)) {
+    case 'del'   : x4sqlDel($table, $whr);
         break;
-    case 'sel'   : $ra=x4sqlSel($table, $whr);          
+    case 'sel'   : $ra=x4sqlSel($table, $whr);
         break;
-    case 'ins'   : $r1=x4sqlIns($table, $row, $rr);      
+    case 'ins'   : $r1=x4sqlIns($table, $row, $rr);
         break;
-    case 'insset': x4sqlInsSet($table);                
+    case 'insset': x4sqlInsSet($table);
         break;
-    case 'upd'   : $r1=x4sqlUpd($table, $row, $whr, $rr); 
+    case 'upd'   : $r1=x4sqlUpd($table, $row, $whr, $rr);
         break;
-    case 'bsrch' : searchBrowse($table, $whr);          
+    case 'bsrch' : searchBrowse($table, $whr);
         break;
-    case 'sql'   : x4sqlQuery(gp('x4xSQL'));           
+    case 'sql'   : x4sqlQuery(gp('x4xSQL'));
         break;
     }
-    if(is_array($r1)) {
-        foreach($r1 as $key=>$value) {
-            if(is_numeric($key)) { unset($r1[$key]); 
+    if (is_array($r1)) {
+        foreach ($r1 as $key=>$value) {
+            if (is_numeric($key)) {
+                unset($r1[$key]);
             }
         }
         ri('data', $table, $r1);
     }
-    if(is_array($ra)) {
-        foreach($ra as $ra1) {
+    if (is_array($ra)) {
+        foreach ($ra as $ra1) {
             ri('data', $table, $ra1);
         }
     }
@@ -415,20 +413,20 @@ function x4index_ajax($x4xAjax)
 // Here is where a user says, 'give me the customers page' or
 // 'give me the orders page'
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-function x4index_page($x4xPage) 
+function x4index_page($x4xPage)
 {
     // Begin by loading the data dictionary.  If there is
     // none, not to worry, it comes back blank.
     $ref = ddTable($x4xPage, true);
-    if(isset($ref['projections'])) {
-        foreach($ref['projections'] as $key=>$list) {
+    if (isset($ref['projections'])) {
+        foreach ($ref['projections'] as $key=>$list) {
             $ref['aProjections'][$key] = explode(',', $list);
         }
     }
 
     // Now check for a custom page and its various tricks.
     global $AGdir;
-    if(file_exists("$AGdir/application/$x4xPage.php")) {
+    if (file_exists("$AGdir/application/$x4xPage.php")) {
         include "$AGdir/application/$x4xPage.php";
         $oPage = new $x4xPage();
         
@@ -436,46 +434,44 @@ function x4index_page($x4xPage)
         //              call, branch out to that instead.  Second
         //              half of branch is all default stuff.
         //
-        if(gpExists('x4xMethod')) {
+        if (gpExists('x4xMethod')) {
             $method = gp('x4xMethod');
-            if(method_exists($oPage, $method)) {
+            if (method_exists($oPage, $method)) {
                 $ref['x'] = 0;  // prevents "Page not found" error,
                                 // even if nothing happens in code
                 $oPage->$method();
-            }
-            else {
+            } else {
                 ri(
                     'message', 'error', 'Page Method Not found: '.$x4xPage.'.'.$method
                 );
             }
-        }
-        else {
+        } else {
             // execute the build code if there
-            if(method_exists($oPage, 'build')) {
-                $oPage->build($ref);   
+            if (method_exists($oPage, 'build')) {
+                $oPage->build($ref);
             }
             
             // load literal html if it is there
-            if(method_exists($oPage, 'pageHTML')) {
+            if (method_exists($oPage, 'pageHTML')) {
                 ob_start();
                 $oPage->pageHTML();
                 $ref['HTML'] = ob_get_clean();
             }
             
             // Load a script if it is there
-            if(method_exists($oPage, 'pageScript')) {
+            if (method_exists($oPage, 'pageScript')) {
                 ob_start();
                 $oPage->pageScript();
                 $ref['Script'] = ob_get_clean();
-                $ref['Script'] = str_replace('<script>', '', $ref['Script']); 
-                $ref['Script'] = str_replace('</script>', '', $ref['Script']); 
+                $ref['Script'] = str_replace('<script>', '', $ref['Script']);
+                $ref['Script'] = str_replace('</script>', '', $ref['Script']);
             }
         }
     }
     
     // An empty array means nothing was loaded, we
     // have a bad page request
-    if(count($ref)==0) {
+    if (count($ref)==0) {
         ri('message', 'error', 'Page Not found');
     }
 
@@ -507,12 +503,13 @@ $value=SQLFC($value);
 $sq="Select option from member_profiles WHERE user_id=$value";
 </pre>
 */
-function gp($key,$vardefault='') 
+function gp($key, $vardefault='')
 {
     $post=$GLOBALS['AG']['gp'];
-    if (!isset($post[$key])) { return $vardefault; 
-    }
-    else { return $post[$key]; 
+    if (!isset($post[$key])) {
+        return $vardefault;
+    } else {
+        return $post[$key];
     }
 }
 
@@ -524,9 +521,9 @@ returns:bool
 Returns true if the named [[GET-POST Variable]] was sent by the browser
 in the current request.
 */
-function gpExists($key) 
+function gpExists($key)
 {
-    return isset($GLOBALS['AG']['gp'][$key]);   
+    return isset($GLOBALS['AG']['gp'][$key]);
 }
 
 /**
@@ -554,7 +551,7 @@ control1:control2;Foo:bar
 !<
 !<
 */
-function rowFromgp($prefix) 
+function rowFromgp($prefix)
 {
     $strlen = strlen($prefix);
     $row = array();
@@ -583,13 +580,13 @@ parm:any value
 
 Shortcut to [[returnItem]].
 */
-function ri($rettype,$retname,$retvalue) 
+function ri($rettype, $retname, $retvalue)
 {
     $r=arraySafe($GLOBALS['AG'], 'returnItems', array());
     $r[$rettype][$retname][] = $retvalue;
     $GLOBALS['AG']['returnItems'] = $r;
 }
-function riarray($rettype,$retname,$retarray) 
+function riarray($rettype, $retname, $retarray)
 {
     $GLOBALS['AG']['returnItems'][$rettype][$retname]=$retarray;
 }
@@ -632,7 +629,7 @@ If the first parameter is 'html', the second parameter should be
 the ID of the html element, and the third parameter is the 
 innerHTML of that element.
 */
-function returnItem($rettype,$retname,$retvalue) 
+function returnItem($rettype, $retname, $retvalue)
 {
     $GLOBALS['AG']['returnItems'][$rettype][$retname] = $retvalue;
 }
@@ -650,13 +647,12 @@ Returns the complete array of items that have been generated
 on a call that must go back to the browser.  See [[returnItem]]
 for more details.
 */
-function returnItems() 
+function returnItems()
 {
-    if(isset($GLOBALS['AG']['returnItems'])) {
+    if (isset($GLOBALS['AG']['returnItems'])) {
         $retval = &$GLOBALS['AG']['returnItems'];
         return $retval;
-    }
-    else {
+    } else {
         return array();
     }
 }
@@ -681,13 +677,13 @@ is user_id, and PWD, which is user password.  An application must be
 careful not to overwrite those values, as the framework will make no
 provision to prevent such an accident.
 */
-function SessionGet($key,$default="",$sfx='app') 
+function SessionGet($key, $default="", $sfx='app')
 {
     $xkey=$GLOBALS["AG"]["application"]."_".$sfx."_".$key;
     if (isset($_SESSION[$xkey])) {
         return $_SESSION[$xkey];
-    }
-    else { return $default; 
+    } else {
+        return $default;
     }
 }
 
@@ -705,7 +701,7 @@ is user_id, and PWD, which is user password.  An application must be
 careful not to overwrite those values, as the framework will make no
 provision to prevent such an accident.
 */
-function SessionSet($key,$value,$sfx='app') 
+function SessionSet($key, $value, $sfx='app')
 {
     $xkey=$GLOBALS["AG"]["application"]."_".$sfx."_".$key;
     $_SESSION[$xkey] = $value;
@@ -722,7 +718,7 @@ The framework tracks only 2 session variables.  These are UID, which
 is user_id, and PWD, which is user password.  An application should
 never call SessionUnSet on these variables. 
 */
-function SessionUnSet($key,$context='app',$sfx='app') 
+function SessionUnSet($key, $context='app', $sfx='app')
 {
     $x=$context;
     $xkey=$GLOBALS["AG"]["application"]."_".$sfx."_".$key;
@@ -742,10 +738,10 @@ Note that this function destroys both application and framework session
 variables, there is more information on what these are on the
 [[Session Variables]] page.
 */
-function SessionReset() 
+function SessionReset()
 {
     global $AG;
-    foreach($_SESSION as $key=>$value) {
+    foreach ($_SESSION as $key=>$value) {
         $app = $AG['application'].'_';
         if (substr($key, 0, strlen($app))==$app) {
             unset($_SESSION[$key]);
@@ -753,7 +749,7 @@ function SessionReset()
     }
 }
 
-function returnJSON(&$array) 
+function returnJSON(&$array)
 {
     // Make sure mixed object/arrays are converted
     // completely over to arrays
@@ -763,26 +759,24 @@ function returnJSON(&$array)
     //if(!isset($array['data'])) {
     //    $array = ObjectToArray($array);
     //}
-    
-    if(function_exists('json_encode')) {
+
+    if (function_exists('json_encode')) {
         x4Debug("json_encode exists");
         return json_encode($array);
-    }   
-    else {
+    } else {
         x4Debug("json_encode does not exist");
         return "JSON extension not available";
-    }      
+    }
 }
 
-function ObjectToArray($obj) 
+function ObjectToArray($obj)
 {
     $retval=array();
     
-    foreach($obj as $key=>$value) {
-        if(is_array($value) || is_object($value)) {
+    foreach ($obj as $key=>$value) {
+        if (is_array($value) || is_object($value)) {
             $retval[$key] = ObjectToArray($value);
-        }
-        else {
+        } else {
             $retval[$key] = $value;
         }
     }
@@ -793,23 +787,22 @@ function ObjectToArray($obj)
 // LIBRARY: Data Dictionary Access
 // Prefix/Suffix: dd
 // ==================================================================
-function ddTable($table,$suppressError=false) 
+function ddTable($table, $suppressError=false)
 {
     global $AGdir;
     @include_once "$AGdir/generated/ddtable_$table.php";
     if (!isset($GLOBALS['AG']['tables'][$table])) {
-        if(!$suppressError) {
+        if (!$suppressError) {
             x4Error('No data dictionary available for '.$table);
         }
         return array();
-    }
-    else {
+    } else {
         $retval=&$GLOBALS['AG']['tables'][$table];
         return $retval;
     }
 }
 
-function returnDD($table_id) 
+function returnDD($table_id)
 {
     $table_dd = ddTable($table_id);
     riArray('dd', $table_id, $table_dd);
@@ -832,24 +825,24 @@ such as:
 * If the user is a root user
 * If the user is the anonymous (login) user
 */
-function ddViewFromTab($table) 
+function ddViewFromTab($table)
 {
     // Super User gets original table
-    if(SessionGet("ROOT")) {
+    if (SessionGet("ROOT")) {
         return $table;
     }
    
     $tabdd=ddTable($table);
     // This is case of nonsense table, give them back original table
-    if(count($tabdd)==0) { return $table; 
+    if (count($tabdd)==0) {
+        return $table;
     }
    
     $views=ArraySafe($tabdd, 'tableresolve', array());
-    if(count($views)==0) { 
-        return $table; 
-    }
-    else {
-        return $views[SessionGet('GROUP_ID_EFF')]; 
+    if (count($views)==0) {
+        return $table;
+    } else {
+        return $views[SessionGet('GROUP_ID_EFF')];
     }
 }
 
@@ -862,7 +855,7 @@ allow direct writes by a user.  Used by the framework to build
 SQL statements that avoid writing to columns that cannot be written
 to, such as SEQUENCE columns, FETCH columns and calculated columns.
 */
-function ddNoWrites() 
+function ddNoWrites()
 {
     return array(
       'SEQUENCE'
@@ -892,28 +885,27 @@ results, such as having a projection and column by the same name,
 requesting non-existent columns, naming a non-existent projection,
 and so forth.
 */
-function ddColumnsFromProjection($table,$projection='') 
+function ddColumnsFromProjection($table, $projection='')
 {
     $tabdd = ddTable($table);
     // Pass 1 is security projection.  Drop columns completely
     // if they are not in the view
     //
     $view =ddViewFromTab($table);
-    if($table<>$view) {
+    if ($table<>$view) {
         $g2use = $table['tableresolve'][SessionGet('GROUP_ID_EFF')];
         $geff  = SessionGet('GROUP_ID_EFF');
         $g2use = substr($geff, 0, strlen($geff)-5).substr($g2use, -5);
-        if(substr($g2use, -5)<>'99999') {
+        if (substr($g2use, -5)<>'99999') {
             $cols2keep = &$tabdd['views'][$g2use];
-            foreach($tabdd['flat'] as $colname=>$colinfo) {
-                if(!isset($cols2keep[$colname])) {
+            foreach ($tabdd['flat'] as $colname=>$colinfo) {
+                if (!isset($cols2keep[$colname])) {
                     // Delete outright a disallowed column
                     unset($tabdd['flat'][$colname]);
-                }
-                else {
+                } else {
                     // If person cannot write to this column, set
                     // the UIRO flag.
-                    if($cols2keep[$colname]==0) {
+                    if ($cols2keep[$colname]==0) {
                         $table['flat'][$colname]['uiro']='Y';
                     }
                 }
@@ -924,15 +916,13 @@ function ddColumnsFromProjection($table,$projection='')
     // If projection does not exist (including case of not specificied),
     // use all columns.  If projection is an array, it must be a list of
     // columns
-    if(is_array($projection)) {
+    if (is_array($projection)) {
         $projcand = $projection;
-    }
-    else {
-        if(!isset($tabdd['projections'][$projection])) {
+    } else {
+        if (!isset($tabdd['projections'][$projection])) {
             // This case also catches where no projection was specified
             $projcand = array_keys($tabdd['flat']);
-        }
-        else {
+        } else {
             $projcand = explode(',', $tabdd['projections'][$projection]);
         }
     }
@@ -940,16 +930,19 @@ function ddColumnsFromProjection($table,$projection='')
     // Now loop through the projection candidates and figure out which
     // ones to include
     $acols = array();
-    foreach($projcand as $colname) {
-        if(!isset($tabdd['flat'][$colname])) { continue; 
+    foreach ($projcand as $colname) {
+        if (!isset($tabdd['flat'][$colname])) {
+            continue;
         }
-        if($colname=='skey') { continue; 
+        if ($colname=='skey') {
+            continue;
         }
         //if($colname=='_agg') continue;
         //if($colname=='_agg') continue;
-        if(ArraySafe($tabdd['flat'][$colname], 'uino')=='Y' ) { continue; 
+        if (ArraySafe($tabdd['flat'][$colname], 'uino')=='Y') {
+            continue;
         }
-        $acols[]=$colname; 
+        $acols[]=$colname;
     }
     return $acols;
 }
@@ -968,11 +961,13 @@ parm:any Default_value
 Allows you to safely retrieve the value of an array by index value,
 returning a [[Standard Default Value]] if the key does not exist.
 */
-function ArraySafe(&$arr,$key,$value="") 
+function ArraySafe(&$arr, $key, $value="")
 {
-    if(isset($arr[$key])) { return $arr[$key]; 
-    } else { return $value; 
-    } 
+    if (isset($arr[$key])) {
+        return $arr[$key];
+    } else {
+        return $value;
+    }
 }
 // ==================================================================
 // LIBRARY: Error Storing and Retrieving
@@ -980,26 +975,25 @@ function ArraySafe(&$arr,$key,$value="")
 //
 // These are shortcuts into the returnItems arrays
 // ==================================================================
-function x4Error($msg) 
+function x4Error($msg)
 {
     ri('message', 'error', $msg);
 }
 
-function x4Errors() 
+function x4Errors()
 {
     $ri=returnItems();
     $errs1=ArraySafe($ri, 'message', array());
     $errs2=ArraySafe($errs1, 'error', array());
-    if(count($errs2)==0) {
+    if (count($errs2)==0) {
         return false;
-    }
-    else {
+    } else {
         return $errs2;
     }
 }
-function x4Debug($msg) 
+function x4Debug($msg)
 {
-    if(is_array($msg) || is_object($msg)) {
+    if (is_array($msg) || is_object($msg)) {
         ob_start();
         print_r($msg);
         $msg = ob_get_clean();
@@ -1010,19 +1004,19 @@ function x4Debug($msg)
 // LIBRARY: Formatting and conversions
 // Format for output to HTML and for SQL
 // ==================================================================
-function sqlFormatRow($tabdd,$row) 
+function sqlFormatRow($tabdd, $row)
 {
     $flat  =$tabdd['flat'];
     $retval=array();
-    foreach($row as $column=>$value) {
-        if(isset($flat[$column])) {
+    foreach ($row as $column=>$value) {
+        if (isset($flat[$column])) {
             $retval[$column] = sqlFormat($flat[$column]['type_id'], $value);
         }
     }
     return $retval;
 }
 
-function sqlFC($v,$clip=0) 
+function sqlFC($v, $clip=0)
 {
     return sqlFormat('char', $v, $clip);
 }
@@ -1048,7 +1042,7 @@ you build SQL queries, then your code will be safe from SQL Injection
 attacks.  All framework commands that build queries use this command for
 all literals provided to them.
 */
-function sqlFormat($t,$v,$clip=0) 
+function sqlFormat($t, $v, $clip=0)
 {
     global $AG;
     switch ($t) {
@@ -1064,66 +1058,67 @@ function sqlFormat($t,$v,$clip=0)
     case 'ssn':
     case 'ph12':
     case "gender":
-        if($clip>0 && strlen($v) > $clip) { $v = substr($v, 0, $clip); 
+        if ($clip>0 && strlen($v) > $clip) {
+            $v = substr($v, 0, $clip);
         }
         return "'".sqlEscapeString($v)."'";
     case "mime-h":
-        if($clip>0 && strlen($v) > $clip) { $v = substr($v, 0, $clip); 
+        if ($clip>0 && strlen($v) > $clip) {
+            $v = substr($v, 0, $clip);
         }
         return "'".base64_encode($v)."'";
       break;
     case "dtime":
-        if ($v=="") { return "null"; 
-        } 
+        if ($v=="") {
+            return "null";
+        }
         //else return X_UNIX_TO_SQLTS($v);
-        else { return "'".date('r', tsFromAny($v))."'"; 
+        else {
+            return "'".date('r', tsFromAny($v))."'";
         }
         break;
     case "date":
     case "rdate":
            // A blank is sent as null to server
-        if($v=="") { return "null"; 
+        if ($v=="") {
+            return "null";
         }
-        if($v=='0') { return 'null'; 
+        if ($v=='0') {
+            return 'null';
         }
           
            // Try to detect case like 060507
-        if(strlen($v)==6 
+        if (strlen($v)==6
             && strpos($v, '/')===false
             && strpos($v, '-')===false
         ) {
-            
             $year=substr($v, 4);
             $year = $year < 20 ? '20'.$year : '19'.$year;
             $v = substr($v, 0, 2).'/'.substr($v, 2, 2).'/'.$year;
             $v=strtotime($v);
         }
             // Try to detect case like 06052007
-        elseif(strlen($v)==8 
+        elseif (strlen($v)==8
             && strpos($v, '/')===false
             && strpos($v, '-')===false
         ) {
-         
-            if(substr($v, 0, 2)=='19' || substr($v, 0, 2)=='20') {
+            if (substr($v, 0, 2)=='19' || substr($v, 0, 2)=='20') {
                 $v = substr($v, 0, 2).'/'.substr($v, 2, 2).'/'.substr($v, 4);
-            }
-            else {
+            } else {
                 $v = substr($v, 4, 2).'/'.substr($v, 6, 2).'/'.substr($v, 0, 4);
             }
             $v=strtotime($v);
-        }
-        elseif(!is_numeric($v)) {
+        } elseif (!is_numeric($v)) {
             // A USA prejudice, assume they will always enter m-d-y, and
             // convert dashes to slashes so they can use dashes if they want
             $v = str_replace('-', '/', $v);
             $parts=explode('/', $v);
-            if(count($parts)==2) {
+            if (count($parts)==2) {
                 $parts = array($parts[0],1,$parts[1]);
             }
-            if(strlen($parts[0])==4) {
+            if (strlen($parts[0])==4) {
                 $parts = array($parts[1],$parts[2],$parts[0]);
-            }
-            elseif(strlen($parts[2])==2) {
+            } elseif (strlen($parts[2])==2) {
                 $parts[2] = $parts[2] < 20 ? '20'.$parts[2] : '19'.$parts[2];
             }
             $v = implode('/', $parts);
@@ -1137,9 +1132,10 @@ function sqlFormat($t,$v,$clip=0)
     case "money":
     case "numb":
     case "int":
-        if ($v=="") { return "0"; 
-        }
-        else { return sqlEscapeString(trim($v)); 
+        if ($v=="") {
+            return "0";
+        } else {
+            return sqlEscapeString(trim($v));
         }
     case "rtime":
     case "time":
@@ -1148,7 +1144,8 @@ function sqlFormat($t,$v,$clip=0)
         // the display times while having values of numbers, so we don't need
         // this in some cases.
         //if (strpos($v,":")===false) {	return $v; }
-        if($v=='') { return 'null'; 
+        if ($v=='') {
+            return 'null';
         }
         return $v;
       //$arr = explode(":",$v);
@@ -1169,11 +1166,12 @@ it is converted via strtotime.
 Useful for writing resilient code when input values are not reliably
 one or the other.
 */
-function tsFromAny($datein) 
+function tsFromAny($datein)
 {
-    if(is_integer($datein)) { return $datein; 
-    }
-    else { return strtotime($datein); 
+    if (is_integer($datein)) {
+        return $datein;
+    } else {
+        return strtotime($datein);
     }
 }
 
@@ -1185,7 +1183,7 @@ returns:string
 Wrapper for pg_escape_string, to provide forward-compatibility with
 other back-ends.
 */
-function sqlEscapeString($val) 
+function sqlEscapeString($val)
 {
     // KFD 1/31/07 check for existence of pg_escape_string  
     return function_exists('pg_escape_string')
@@ -1194,7 +1192,7 @@ function sqlEscapeString($val)
     //return p*g_escape_string($val);
 }
 
-function hprint_r($var) 
+function hprint_r($var)
 {
     ob_start();
     print_r($var);
@@ -1205,10 +1203,10 @@ function hprint_r($var)
 // LIBRARY: SQL Aliasing
 // Prefix/Suffix: x4sql
 // ==================================================================
-function x4sqlIns($table,$row,$rowret=0) 
+function x4sqlIns($table, $row, $rowret=0)
 {
     $tabdd = ddTable($table);
-    if(count($tabdd)==0) {
+    if (count($tabdd)==0) {
         x4Error('Cannot insert to '.$table.', no data dictionary');
         return;
     }
@@ -1220,8 +1218,8 @@ function x4sqlIns($table,$row,$rowret=0)
     
     // Drop the columns we are not allowed to insert to
     $noWrites=ddNoWrites();
-    foreach($sfrow as $column=>$value) {
-        if(in_array($flat[$column]['automation_id'], $noWrites)) {
+    foreach ($sfrow as $column=>$value) {
+        if (in_array($flat[$column]['automation_id'], $noWrites)) {
             unset($sfrow[$column]);
         }
     }
@@ -1238,7 +1236,7 @@ function x4sqlIns($table,$row,$rowret=0)
     $notices = pg_last_notice($GLOBALS['AG']['dbconn']);
     $anotices=explode(' ', $notices);
     $retval = 0;
-    if(count($anotices)>1) {
+    if (count($anotices)>1) {
         $retval = array_pop($anotices);
     }
     //$matches = array();
@@ -1247,36 +1245,34 @@ function x4sqlIns($table,$row,$rowret=0)
     //if(isset($matches[2][0])) {
     //   $retval = $matches[2][0];
     //}
-    
+
     // if row return was true, and no errors, return
     // the row instead of the skey value
-    if($rowret==0) {
+    if ($rowret==0) {
         return $retval;
-    }
-    else {
-        if(x4Errors()) {
+    } else {
+        if (x4Errors()) {
             return array();
-        }
-        else {
+        } else {
             $sq="SELECT * FROM $view WHERE skey=$retval";
             return x4sqlOneRow($sq);
         }
     }
 }
 
-function x4sqlInsSet($table) 
+function x4sqlInsSet($table)
 {
     $raw = json_decode(gp('x4c_insset'));
     $colnames = array_shift($raw);
     
-    foreach($raw as $onerow) {
+    foreach ($raw as $onerow) {
         $row = array_combine($colnames, $onerow);
         x4sqlIns($table, $row);
     }
 }
 
 
-function x4sqlDel($table,$whr) 
+function x4sqlDel($table, $whr)
 {
     $tabdd= ddTable($table);
     $view = ddViewFromTab($table);
@@ -1284,7 +1280,7 @@ function x4sqlDel($table,$whr)
 
     // Turn where clause into statements
     $awhere=array();
-    foreach($sfwhr as $column=>$value) {
+    foreach ($sfwhr as $column=>$value) {
         $awhere[]=$column.'='.$value;
     }
    
@@ -1296,7 +1292,7 @@ function x4sqlDel($table,$whr)
 }
 
 
-function x4sqlSel($table,$whr) 
+function x4sqlSel($table, $whr)
 {
     $tabdd= ddTable($table);
     $view = ddViewFromTab($table);
@@ -1304,20 +1300,20 @@ function x4sqlSel($table,$whr)
     
     // Turn where clause into statements
     $awhere=array();
-    foreach($sfwhr as $column=>$value) {
+    foreach ($sfwhr as $column=>$value) {
         $awhere[]=$column.'='.$value;
     }
 
     // WHERE Clause
     $swhere = '';
-    if(count($awhere)>0) {
+    if (count($awhere)>0) {
         $swhere = ' WHERE '.implode(' AND ', $awhere);
     }
 
     $sortCol = gp('sortCol');
     $sortDir = gp('sortDir');
     $sSort   = '';
-    if($sortCol<>'') {
+    if ($sortCol<>'') {
         $sSort = ' ORDER BY '.$sortCol.' '.$sortDir;
     }
     
@@ -1327,7 +1323,7 @@ function x4sqlSel($table,$whr)
 }
 
 
-function x4sqlUpd($table,$row,$whr,$retrow=0) 
+function x4sqlUpd($table, $row, $whr, $retrow=0)
 {
     $tabdd= ddTable($table);
     $view = ddViewFromTab($table);
@@ -1336,12 +1332,12 @@ function x4sqlUpd($table,$row,$whr,$retrow=0)
 
     // Turn where clause into statements
     $awhere=array();
-    foreach($sfwhr as $column=>$value) {
+    foreach ($sfwhr as $column=>$value) {
         $awhere[]=$column.'='.$value;
     }
     // Turn the update columns into statements
     $aupdate=array();
-    foreach($sfrow as $column=>$value) {
+    foreach ($sfrow as $column=>$value) {
         $aupdate[]=$column.'='.$value;
     }
    
@@ -1353,10 +1349,9 @@ function x4sqlUpd($table,$row,$whr,$retrow=0)
     x4SQL($sq);
    
     // If retrow
-    if($retrow==0) {
-        return true; 
-    }
-    else {
+    if ($retrow==0) {
+        return true;
+    } else {
         $rr=x4SQLOneRow(
             "SELECT * FROM $view WHERE ".implode(' AND ', $awhere)
         );
@@ -1364,13 +1359,13 @@ function x4sqlUpd($table,$row,$whr,$retrow=0)
     }
 }
 
-function x4SQLQuery($query) 
+function x4SQLQuery($query)
 {
     ri('data', 'query', x4SQLAllRows($query));
 }
 
 
-function x4SQL($sql) 
+function x4SQL($sql)
 {
     $dbconn = $GLOBALS['AG']['dbconn'];
     pg_send_query($dbconn, $sql);
@@ -1385,45 +1380,47 @@ function x4SQL($sql)
                 "(ADMIN): You are logged in as an administrator, you will see "
                 ." more detail than a regular user."
             );
-            x4Error("(ADMIN): ".$sql);
+        x4Error("(ADMIN): ".$sql);
             
             // Save them separately so they can be dealt with on the
             // browser if need be
             ri('message', 'sql', $sql);
             //}
-        
+
             $ts = explode(";", $t);
-            foreach ($ts as $onerr) {
-                if(trim($onerr)=='') { continue; 
-                }
-                x4Error($onerr);
+        foreach ($ts as $onerr) {
+            if (trim($onerr)=='') {
+                continue;
             }
+            x4Error($onerr);
+        }
         
             // Now save the original unsplit errors for return to browser
             $t = trim(str_replace('ERROR: ', '', $t));
-            $t = str_replace("\n", '', $t);
-            ri('message', 'sqlerr', $t);
+        $t = str_replace("\n", '', $t);
+        ri('message', 'sqlerr', $t);
     }
-    return $results;   
+    return $results;
 }
 
-function x4SQLRowCount($dbres) 
+function x4SQLRowCount($dbres)
 {
     return pg_numrows($dbres);
 }
 
-function x4SQLOneRow($sql) 
+function x4SQLOneRow($sql)
 {
     $results = x4SQL($sql);
     $row = pg_fetch_array($results);
     return $row;
 }
 
-function x4SQLAllRows($sql,$colname='') 
+function x4SQLAllRows($sql, $colname='')
 {
     $results = x4SQL($sql);
     $rows = pg_fetch_all($results);
-    if ($rows===false) { return array(); 
+    if ($rows===false) {
+        return array();
     }
    
     // Simple default is just the rows
@@ -1433,7 +1430,7 @@ function x4SQLAllRows($sql,$colname='')
    
     // Maybe though they want each row referenced by some column value
     $retval = array();
-    foreach($rows as $row) {
+    foreach ($rows as $row) {
         $retval[trim($row[$colname])] = $row;
     }
     return $retval;
@@ -1446,7 +1443,7 @@ function x4SQLAllRows($sql,$colname='')
 // This is not in a general SELECT because the search function
 // is really fundamentally different, it's all about the LIKE stuff.
 // ==================================================================
-function searchBrowse($table,$whr) 
+function searchBrowse($table, $whr)
 {
     // Grab the parameters of interest to us
     $sortCol = gp('sortCol');
@@ -1463,7 +1460,7 @@ function searchBrowse($table,$whr)
         if (isset($whr[$colname])) {
             $tcv  = trim($whr[$colname]);
             $type = $colinfo['type_id'];
-            if($type=='dtime' || $type=='date') {
+            if ($type=='dtime' || $type=='date') {
                 $tcv=tsFromAny($tcv);
             }
             if ($tcv != "") {
@@ -1490,35 +1487,36 @@ function searchBrowse($table,$whr)
 // KFD 5/17/07, support lists, ranges, and greater/lesser
 // Was rff_OneCol in raxlib.php, converted to browseSearchOneCol()
 // by KFD 8/29/07
-function searchBrowseOneCol($type,$colname,$tcv) 
+function searchBrowseOneCol($type, $colname, $tcv)
 {
     $values=explode(',', $tcv);
     $sql_new=array();
-    foreach($values as $tcv) {
-        if(trim($tcv)=='') { continue; 
+    foreach ($values as $tcv) {
+        if (trim($tcv)=='') {
+            continue;
         }
-        if($tcv=='*') { $tcv='%'; 
+        if ($tcv=='*') {
+            $tcv='%';
         }
         $tcv = trim(strtoupper($tcv));
-        if(in_array($type, array('int','numb','date','time'))) {
+        if (in_array($type, array('int', 'numb', 'date', 'time'))) {
             $tcv=preg_replace('/[^0-9]/', '', $tcv);
         }
         
         // This is a greater than/less than situation,
         // we ignore anything else they may have done
-        if(substr($tcv, 0, 1)=='>' || substr($tcv, 0, 1)=='<') {
+        if (substr($tcv, 0, 1)=='>' || substr($tcv, 0, 1)=='<') {
             $new=$colname.substr($tcv, 0, 1).sqlFormat($type, substr($tcv, 1));
             $sql_new[]="($new)";
             continue;
         }
         
-        if(strpos($tcv, '-')!==false  && $type<>'ph12' && $type<>'ssn') {
-            list($beg,$end)=explode('-', $tcv);
+        if (strpos($tcv, '-')!==false  && $type<>'ph12' && $type<>'ssn') {
+            list($beg, $end)=explode('-', $tcv);
             x4Debug('-'.$end.'-');
-            if(trim($end)=='') {
-                $new=" UPPER($colname) like '".strtoupper($beg)."%'";                
-            }
-            else {
+            if (trim($end)=='') {
+                $new=" UPPER($colname) like '".strtoupper($beg)."%'";
+            } else {
                 $slbeg = strlen($beg);
                 $slend = strlen($end);
                 $new="SUBSTR($colname,1,$slbeg) >= ".sqlFormat($type, $beg)
@@ -1529,16 +1527,14 @@ function searchBrowseOneCol($type,$colname,$tcv)
             continue;
         }
 
-        if(! isset($aStrings[$type]) && strpos($tcv, '%')!==false) {
+        if (! isset($aStrings[$type]) && strpos($tcv, '%')!==false) {
             $new="cast($colname as varchar) like '$tcv'";
-        }
-        else {
+        } else {
             $tcsql = sqlFormat($type, $tcv);
-            if(substr($tcsql, 0, 1)!="'" || $type=='date' || $type=='dtime') {
+            if (substr($tcsql, 0, 1)!="'" || $type=='date' || $type=='dtime') {
                 $new=$colname."=".$tcsql;
-            }
-            else {
-                $tcsql = str_replace("'", "''", $tcv); 
+            } else {
+                $tcsql = str_replace("'", "''", $tcv);
                 $new=" UPPER($colname) like '".strtoupper($tcsql)."%'";
             }
         }
@@ -1547,4 +1543,3 @@ function searchBrowseOneCol($type,$colname,$tcv)
     $retval = implode(" OR ", $sql_new);
     return $retval;
 }
-?>

@@ -19,7 +19,7 @@
 
 //Configuration File
 // Andromeda MOD Feb 13, 2006, expects this file in application dir
-require_once 'paypal_config.inc.php'; 
+require_once 'paypal_config.inc.php';
 //include_once('includes/config.inc.php'); 
 
 //Global Configuration File
@@ -36,7 +36,7 @@ require_once 'paypal_global_config.inc.php';
 <?php 
 //show paypal hidden variables
 
-showVariables(); 
+showVariables();
 
 ?> 
 <center><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="333333">Processing Transaction . . . </font></center>

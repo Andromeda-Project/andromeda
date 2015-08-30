@@ -20,31 +20,31 @@ class YAMLNode
     * @access public
     * @var string
     */
-    var $parent;
-    var $id;
+    public $parent;
+    public $id;
     /**#@+*/
     /**
      * @access public
      * @var mixed
      */
-    var $data;
+    public $data;
     /**
      * @access public
      * @var int
      */
-    var $indent;
+    public $indent;
     /**
      * @access public
      * @var bool
      */
-    var $children = false;
+    public $children = false;
 
     /**
      * The constructor assigns the node a unique ID.
      * @access public
      * @return void
      */
-    function YAMLNode($nodeId) 
+    public function YAMLNode($nodeId)
     {
         $this->id = $nodeId;
     }
@@ -73,7 +73,7 @@ class Spyc
      * @access public
      * @var bool
      */
-    var $errors = array();
+    public $errors = array();
 
     /**
      * Load YAML into a PHP array statically
@@ -91,7 +91,7 @@ class Spyc
      * @return array
      * @param  string $input Path of YAML file or string containing YAML
      */
-    function YAMLLoad($input) 
+    public function YAMLLoad($input)
     {
         $spyc = new Spyc;
         return $spyc->load($input);
@@ -117,7 +117,7 @@ class Spyc
      * @param  int   $indent   Pass in false to use the default, which is 2
      * @param  int   $wordwrap Pass in 0 for no wordwrap, false for default (40)
      */
-    function YAMLDump($array,$indent = false,$wordwrap = false) 
+    public function YAMLDump($array, $indent = false, $wordwrap = false)
     {
         $spyc = new Spyc;
         return $spyc->dump($array, $indent, $wordwrap);
@@ -139,7 +139,7 @@ class Spyc
      * @return array
      * @param  string $input Path of YAML file or string containing YAML
      */
-    function load($input) 
+    public function load($input)
     {
         // See what type of input we're talking about
         // If it's not a file, assume it's a string
@@ -185,7 +185,7 @@ class Spyc
                 $node->indent = $this->_getIndent($line);
  
                 // KFD 1/28/09, disallow odd-numbered indentations
-                if($node->indent > 0 && ($node->indent % 2!=0)) {
+                if ($node->indent > 0 && ($node->indent % 2!=0)) {
                     $this->errors[]="Line $ln indented by odd number of spaces: "
                     .$node->indent;
                     continue;
@@ -220,7 +220,7 @@ class Spyc
                         if (is_array($parent->data)) {
                             $chk = '';
                             if (isset($parent->data[key($parent->data)])) {
-                                $chk = $parent->data[key($parent->data)]; 
+                                $chk = $parent->data[key($parent->data)];
                             }
                             if ($chk === '>') {
                                 $this->_inBlock  = true;
@@ -276,22 +276,22 @@ class Spyc
                     $this->_indentSort[$node->indent][] =& $this->_allNodes[$node->id];
                     // Add a reference to the node in a References array if this node
                     // has a YAML reference in it.
-                    if (( (is_array($node->data)) 
-                        && isset($node->data[key($node->data)]) 
-                        && (!is_array($node->data[key($node->data)])) )
-                        && ( (preg_match('/^&([^ ]+)/', $node->data[key($node->data)]))
-                        || (preg_match('/^\*([^ ]+)/', $node->data[key($node->data)])) )
+                    if (((is_array($node->data))
+                        && isset($node->data[key($node->data)])
+                        && (!is_array($node->data[key($node->data)])))
+                        && ((preg_match('/^&([^ ]+)/', $node->data[key($node->data)]))
+                        || (preg_match('/^\*([^ ]+)/', $node->data[key($node->data)])))
                     ) {
                         $this->_haveRefs[] =& $this->_allNodes[$node->id];
-                    } elseif (( (is_array($node->data)) 
-                        && isset($node->data[key($node->data)]) 
-                        && (is_array($node->data[key($node->data)])) )
+                    } elseif (((is_array($node->data))
+                        && isset($node->data[key($node->data)])
+                        && (is_array($node->data[key($node->data)])))
                     ) {
                         // Incomplete reference making code.  Ugly, needs cleaned up.
                         foreach ($node->data[key($node->data)] as $d) {
-                            if (!is_array($d) 
-                                && ( (preg_match('/^&([^ ]+)/', $d))
-                                || (preg_match('/^\*([^ ]+)/', $d)) )
+                            if (!is_array($d)
+                                && ((preg_match('/^&([^ ]+)/', $d))
+                                || (preg_match('/^\*([^ ]+)/', $d)))
                             ) {
                                 $this->_haveRefs[] =& $this->_allNodes[$node->id];
                             }
@@ -330,7 +330,7 @@ class Spyc
      * @param  int   $indent   Pass in false to use the default, which is 2
      * @param  int   $wordwrap Pass in 0 for no wordwrap, false for default (40)
      */
-    function dump($array,$indent = false,$wordwrap = false) 
+    public function dump($array, $indent = false, $wordwrap = false)
     {
         // Dumps to some very clean YAML.  We'll have to add some more features
         // and options soon.  And better support for folding.
@@ -364,15 +364,15 @@ class Spyc
     * @access private
     * @var mixed
     */
-    var $_haveRefs;
-    var $_allNodes;
-    var $_allParent;
-    var $_lastIndent;
-    var $_lastNode;
-    var $_inBlock;
-    var $_isInline;
-    var $_dumpIndent;
-    var $_dumpWordWrap;
+    public $_haveRefs;
+    public $_allNodes;
+    public $_allParent;
+    public $_lastIndent;
+    public $_lastNode;
+    public $_inBlock;
+    public $_isInline;
+    public $_dumpIndent;
+    public $_dumpWordWrap;
     /**#@+*/
 
     /**** Public Properties ****/
@@ -381,7 +381,7 @@ class Spyc
     * @access public
     * @var mixed
     */
-    var $_nodeId;
+    public $_nodeId;
     /**#@+*/
 
     /**** Private Methods ****/
@@ -394,7 +394,7 @@ class Spyc
      * @param $value The value of the item
      * @param $indent The indent of the current node
      */
-    function _yamlize($key,$value,$indent) 
+    public function _yamlize($key, $value, $indent)
     {
         if (is_array($value)) {
             // It has children.  What to do?
@@ -418,7 +418,7 @@ class Spyc
      * @param $array The array you want to convert
      * @param $indent The indent of the current level
      */
-    function _yamlizeArray($array,$indent) 
+    public function _yamlizeArray($array, $indent)
     {
         if (is_array($array)) {
             $string = '';
@@ -439,7 +439,7 @@ class Spyc
      * @param $value The value of the item
      * @param $indent The indent of the current node
      */
-    function _dumpNode($key,$value,$indent) 
+    public function _dumpNode($key, $value, $indent)
     {
         // do some folding here, for blocks
         if (strpos($value, "\n") !== false || strpos($value, ": ") !== false || strpos($value, "- ") !== false) {
@@ -471,7 +471,7 @@ class Spyc
      * @param $value
      * @param $indent int The value of the indent
      */
-    function _doLiteralBlock($value,$indent) 
+    public function _doLiteralBlock($value, $indent)
     {
         $exploded = explode("\n", $value);
         $newValue = '|';
@@ -489,7 +489,7 @@ class Spyc
      * @return string
      * @param $value The string you wish to fold
      */
-    function _doFolding($value,$indent) 
+    public function _doFolding($value, $indent)
     {
         // Don't do anything if wordwrap is set to 0
         if ($this->_dumpWordWrap === 0) {
@@ -513,7 +513,7 @@ class Spyc
      * @return int
      * @param string $line A line from the YAML file
      */
-    function _getIndent($line) 
+    public function _getIndent($line)
     {
         preg_match('/^\s{1,}/', $line, $match);
         if (!empty($match[0])) {
@@ -530,7 +530,7 @@ class Spyc
      * @return array
      * @param string $line A line from the YAML file
      */
-    function _parseLine($line) 
+    public function _parseLine($line)
     {
         $line = trim($line);
 
@@ -581,7 +581,7 @@ class Spyc
      * @param string $value
      * @return mixed
      */
-    function _toType($value) 
+    public function _toType($value)
     {
         if (preg_match('/^("(.*)"|\'(.*)\')/', $value, $matches)) {
             $value = (string)preg_replace('/(\'\'|\\\\\')/', "'", end($matches));
@@ -649,7 +649,7 @@ class Spyc
      * @access private
      * @return array
      */
-    function _inlineEscape($inline) 
+    public function _inlineEscape($inline)
     {
         // There's gotta be a cleaner way to do this...
         // While pure sequences seem to be nesting just fine,
@@ -723,7 +723,7 @@ class Spyc
      * @access private
      * @return array
      */
-    function _buildArray() 
+    public function _buildArray()
     {
         $trunk = array();
 
@@ -734,30 +734,31 @@ class Spyc
         // KFD 1/30/09, Moved Duplication check to top, before
         // attempting to build tree.
         // 
-        foreach($this->_allParent as $parId=>$childs) {
+        foreach ($this->_allParent as $parId=>$childs) {
             // Make a blank array of keys and line numbers
             $keyslines = array();
-            foreach($childs as $id) {
+            foreach ($childs as $id) {
                 $node = $this->_allNodes[$id];
                 // Data seems to always be an array of one entry
-                list($key,$notused) = each($node->data);
+                list($key, $notused) = each($node->data);
                 // This is necessary or downstream code is all messed up
                 reset($node->data);
                 // Numeric entries should not be de-duped
-                if(is_numeric($key)) { continue; 
+                if (is_numeric($key)) {
+                    continue;
                 }
                 $line = $node->lineNumber;
-                if(isset($keyslines[$key])) {
+                if (isset($keyslines[$key])) {
                     $this->errors[] =
                     "Definition '$key' at line $line "
                     ."duplicates line {$keyslines[$key]}";
-                }
-                else {
+                } else {
                     $keyslines[$key] = $line;
                 }
             }
         }
-        if(count($this->errors)>0) { return $trunk; 
+        if (count($this->errors)>0) {
+            return $trunk;
         }
         // 
         // KFD 1/30/09  (END)
@@ -780,7 +781,7 @@ class Spyc
      * @access private
      * @return bool
      */
-    function _linkReferences() 
+    public function _linkReferences()
     {
         if (is_array($this->_haveRefs)) {
             foreach ($this->_haveRefs as $node) {
@@ -800,7 +801,7 @@ class Spyc
         return true;
     }
 
-    function _linkRef(&$n,$key,$k = null,$v = null) 
+    public function _linkRef(&$n, $key, $k = null, $v = null)
     {
         if (empty($k) && empty($v)) {
             // Look for &refs
@@ -836,7 +837,7 @@ class Spyc
      * @param int $nid The id of the node whose children we're gathering
      * @return array
      */
-    function _gatherChildren($nid) 
+    public function _gatherChildren($nid)
     {
         $return = array();
         $node   =& $this->_allNodes[$nid];
@@ -862,7 +863,7 @@ class Spyc
      * @param  array $node The node which you want to arrayize
      * @return boolean
      */
-    function _nodeArrayizeData(&$node) 
+    public function _nodeArrayizeData(&$node)
     {
         if (is_array($node->data) && $node->children == true) {
             // This node has children, so we need to find them
@@ -899,7 +900,7 @@ class Spyc
      * @param object $z A node whose references we wish to make real
      * @return bool
      */
-    function _makeReferences(&$z) 
+    public function _makeReferences(&$z)
     {
         // It is a reference
         if (isset($z->ref)) {
@@ -931,24 +932,27 @@ class Spyc
      * @param  array $arr2
      * @return array
      */
-    function _array_kmerge($arr1,$arr2) 
+    public function _array_kmerge($arr1, $arr2)
     {
-        if(!is_array($arr1)) { $arr1 = array(); 
+        if (!is_array($arr1)) {
+            $arr1 = array();
         }
-        if(!is_array($arr2)) { $arr2 = array(); 
+        if (!is_array($arr2)) {
+            $arr2 = array();
         }
       
 
         $keys  = array_merge(array_keys($arr1), array_keys($arr2));
         $vals  = array_merge(array_values($arr1), array_values($arr2));
         $ret   = array();
-        foreach($keys as $key) {
-            list($unused,$val) = each($vals);
-            if (isset($ret[$key]) and is_int($key)) { $ret[] = $val; 
-            } else { $ret[$key] = $val; 
+        foreach ($keys as $key) {
+            list($unused, $val) = each($vals);
+            if (isset($ret[$key]) and is_int($key)) {
+                $ret[] = $val;
+            } else {
+                $ret[$key] = $val;
             }
         }
         return $ret;
     }
 }
-?>

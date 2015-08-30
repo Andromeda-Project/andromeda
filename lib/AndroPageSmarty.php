@@ -15,7 +15,7 @@ class AndroPageSmarty
      *  @var placeholder
      *  @access private
      */
-    var $placeholder = array();
+    public $placeholder = array();
 
     /**
      *  Constructor.  Not sure if we need a constructor
@@ -23,7 +23,7 @@ class AndroPageSmarty
      *  @access public
      *  @since  0.1
      */
-    function androPageSmarty() 
+    public function androPageSmarty()
     {
     }
 
@@ -34,7 +34,7 @@ class AndroPageSmarty
      *  @param string $yamlP2 The processed YAML page description
      *  @param string $page   The name of the page we are working on
      */
-    function main($yamlP2,$page) 
+    public function main($yamlP2, $page)
     {
         // The application directory.
         $appdir=$GLOBALS['AG']['dirs']['root']."/application/";
@@ -49,34 +49,33 @@ class AndroPageSmarty
             $smarty->cache_dir = $GLOBALS['AG']['dirs']['root'] .'lib/smarty/cache/';
 
             $smarty->caching = false;
-            if (ArraySafe($yamlP2['options'], 'noquery', 'N') == 'N' ) {
-                foreach( $yamlP2['section'] as $section=>$props ) {
+            if (ArraySafe($yamlP2['options'], 'noquery', 'N') == 'N') {
+                foreach ($yamlP2['section'] as $section=>$props) {
                     $smarty->assign($section .'-sql', $yamlP2['section'][$section]['sql']);
-                    if (count($props) > 0 ) {
-                        if(isset($yamlP2['section'][$section]['onerow']) ) {
+                    if (count($props) > 0) {
+                        if (isset($yamlP2['section'][$section]['onerow'])) {
                             $onerow = $yamlP2['section'][$section]['onerow'];
                         } else {
                             $onerow = 'N';
                         }
-                        if ($onerow == 'N' ) {
+                        if ($onerow == 'N') {
                             if (count($props['rows']) > 0) {
                                 $smarty->assign($section, $props['rows']);
                             }
-                        } elseif ($onerow == 'Y' ) {
-                            if ($props['rows'] ) {
+                        } elseif ($onerow == 'Y') {
+                            if ($props['rows']) {
                                 $smarty->assign($section, $props['rows']['0']);
                             }
                         }
                     }
                 }
             }
-            foreach( $yamlP2['options'] as $option=>$val ) {
+            foreach ($yamlP2['options'] as $option=>$val) {
                 $smarty->assign($option, $val);
             }
             $smarty->display($yamlP2['template']);
-        } catch ( Exception $e ) {
-            echo( 'Unable to create Smarty Object for the following reason: ' .$e->getMessage() );
+        } catch (Exception $e) {
+            echo('Unable to create Smarty Object for the following reason: ' .$e->getMessage());
         }
     }
 }
-?>

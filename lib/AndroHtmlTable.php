@@ -17,7 +17,6 @@
  */
 class AndroHtmlTable extends AndroHtml
 {
-
     /****v* AndroHtmlTable/cells
      *
      * NAME
