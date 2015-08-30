@@ -60,7 +60,10 @@ header("Cache-control: private");
 // >>>
 // ==================================================================
 
-include($AG['dirs']['generated'] .'appinfo.php');
+$appInfoFile = $AG['dirs']['generated'] .'appinfo.php'
+if (file_exists($appInfoFile)) {
+    include($appInfoFile);
+}
 if (!isset($AG['application'])) {
     $AG['application'] = 'andro';
     $AG['app_desc'] = 'Unknown';
