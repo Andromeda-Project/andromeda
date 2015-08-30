@@ -9,7 +9,7 @@ require_once 'fpdf153/fpdf.php';
  * @package androPage
  * @author  Kenneth Downs <ken@secdat.com>
 */
-class androPageReport extends fpdf
+class AndroPageReport extends fpdf
 {
     /**
      *  The last column that was written to

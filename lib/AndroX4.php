@@ -72,14 +72,14 @@
 * 
 ******
 */
-class androX4
+class AndroX4
 {
     // ===================================================================
-    // 
-    // Major Area 0: In the construction area, load up data dictionary 
-    // 
+    //
+    // Major Area 0: In the construction area, load up data dictionary
+    //
     // ===================================================================
-    function __construct($x4Page) 
+    public function __construct($x4Page)
     {
         $this->table_id = $x4Page;
         $this->dd       = &ddTable($this->table_id);
@@ -87,23 +87,22 @@ class androX4
         $this->view_id  = a($this->dd, 'viewname', $this->table_id);
         $this->tabindex=1000;
         
-        $this->custom_construct();
+        //$this->custom_construct();
     }
-    // Placeholders, to be overridden by subclasses
-    function custom_construct() 
+
+
+    public function extraScript()
     {
     }
-    function extraScript() 
-    {
-    }
-    function browseFetchModify(&$answer) 
+
+    public function browseFetchModify(&$answer)
     {
     }
     
     // ===================================================================
-    // 
+    //
     // Major Area 1: Describe and Return the Entire Layout
-    // 
+    //
     // ===================================================================
     /**
       * Generate a complete layout of all form elements and deliver
@@ -111,40 +110,43 @@ class androX4
       *
       * @author: Kenneth Downs
       */
-    function main() 
+    public function main()
     {
         // Write out the default help system
         $this->mainHelp();
 
-        // KFD 6/18/08, replaced, see below        
+        // KFD 6/18/08, replaced, see below
         // If we see a "gp_pk" variable, they are requesting a certain
         // detail row.  Find out the skey and pass instructions on.
         // Notice the assumption of only a single column.
         $apre = aFromGP('pre_');
-        if(count($apre)>0) {
+        if (count($apre)>0) {
             x4Data('init', $apre);
         }
         // And also add in the mode if it has been delivered, and focus
-        if(gp('x4Mode')<>'') { x4Data('x4Mode', gp('x4Mode')); 
+        if (gp('x4Mode')<>'') {
+            x4Data('x4Mode', gp('x4Mode'));
         }
-        if(gp('x4Focus')<>'') { x4Data('x4Focus', gp('x4Focus')); 
+        if (gp('x4Focus')<>'') {
+            x4Data('x4Focus', gp('x4Focus'));
         }
         
         // KFD 6/25/08, if there is extra script, run it
         ob_start();
         $this->extraScript();
         $extra = ob_get_clean();
-        if($extra<>'') { x4Script($extra); 
+        if ($extra<>'') {
+            x4Script($extra);
         }
         
         // KFD 8/7/08.  Grab any "hold" variables and
         // attach them to the current object.  This was
         // put in for the wholdist application to carry
         // context from screen to screen.
-        // 
+        //
         $this->hld = aFromGp('hld_');
         
-        // All top-level elements will go inside of this div 
+        // All top-level elements will go inside of this div
         $x4Top = html('div');
         $x4Top->hp['id']='x4Top';
         $this->mainLayout($x4Top);
@@ -152,26 +154,27 @@ class androX4
         
         // KFD 9/20/08, added a flag to go "please wait" while
         // saving, in case there are distribute's
-        if(isset($this->waitOnSave)) {
+        if (isset($this->waitOnSave)) {
             $this->dd['wait_on_save'] = $this->waitOnSave;
-        }
-        else {
+        } else {
             $this->dd['wait_on_save'] = false;
         }
         x4Data('dd.'.$this->table_id, $this->dd);
         x4Data('returnto', gp('x4Return'));
         
         // Now send all hold variables out on the container
-        foreach($this->hld as $key=>$value) {
+        foreach ($this->hld as $key => $value) {
             $x4Top->hidden($key, $value);
         }
         
         return;
     }
     
-    function mainHelp() 
+    public function mainHelp()
     {
-        if($this->table_id=='menu') { vgfSet('htmlHelp', false); return; 
+        if ($this->table_id=='menu') {
+            vgfSet('htmlHelp', false);
+            return;
         }
         ob_start();
         ?>
@@ -208,16 +211,16 @@ underlined letters that show this, so:
         vgfSet('htmlHelp', ob_get_clean());
     }
     
-    function mainLayout(&$div) 
+    public function mainLayout(&$div)
     {
-        // Add the top level item as an x4Pane so it will fade in        
+        // Add the top level item as an x4Pane so it will fade in
         $x4Window = html('div', $div);
         $x4Window->addClass('x4Window');
         $x4Window->addClass('x4Pane');
         $x4Window->hp['id']='x4Window';
         $x4Window->setAsParent();
         
-        // The first two are simple, a description 
+        // The first two are simple, a description
         // and the menu bar.  These are permanent and will
         // be displayed for the entire time.
         $h1  = html('h1', $x4Window, $this->dd['description']);
@@ -233,7 +236,7 @@ underlined letters that show this, so:
         
         
         // This is the top level display item
-        // 
+        //
         $x4Display = html('div', $x4Window);
         $x4Display->addClass('x4Pane');
         $x4Display->addClass('x4TableTop');
@@ -246,8 +249,8 @@ underlined letters that show this, so:
         $grid->addClass('x4VerticalScroll1');
         $x4Display->addChild($grid);
         
-        // Create a container and tab bar, 
-        // 
+        // Create a container and tab bar,
+        //
         $tabC = html('div', $x4Display);
         $tabC->addClass('x4Pane');
         $tabC->addClass('x4TabContainer');
@@ -261,9 +264,9 @@ underlined letters that show this, so:
         $tabBId = 'x4TabBar';
         $tabB->hp['id']=$tabBId;
         
-        // For now we create only one detail pane, 
+        // For now we create only one detail pane,
         // later on we want more
-        // 
+        //
         $tabid = 'tab_'.$this->dd['table_id'];
         $tabx = html('div', $tabC);
         $detail = $this->detailPane('');
@@ -277,22 +280,23 @@ underlined letters that show this, so:
         
         // Child table panes are added in a loop because there
         // may be more than one
-        // 
+        //
         $tabNumber = 2;
-        foreach($this->dd['fk_children'] as $table_id=>$info) {
+        foreach ($this->dd['fk_children'] as $table_id => $info) {
             // First break: uidisplay set to none
-            if(trim(strtolower(arr($info, 'uidisplay', ''))) == 'none') {
+            if (trim(strtolower(arr($info, 'uidisplay', ''))) == 'none') {
                 continue;
             }
             // Second break: user not allowed to see
             $perms = SessionGet('TABLEPERMSSEL');
-            if(!in_array($table_id, $perms)) {
+            if (!in_array($table_id, $perms)) {
                 continue;
             }
             
             // Second skip: user not allowed
             $ddChild = ddTable($table_id, true);
-            if($ddChild['perms']['sel']===0) { continue; 
+            if ($ddChild['perms']['sel']===0) {
+                continue;
             }
             
             $tabid = 'x4TableTop_'.$table_id;
@@ -313,10 +317,9 @@ underlined letters that show this, so:
             // alternate setup
             $table_id = $this->dd['table_id'];
             $uidisplay = $ddChild['fk_parents'][$table_id]['uidisplay'];
-            if(trim($uidisplay)=='mover') {
+            if (trim($uidisplay)=='mover') {
                 $tabx->addChild($this->mover($ddChild, $table_id));
-            }
-            else {
+            } else {
                 // Add into it the grid and the detail
                 $tabx->addChild($chdobj->grid($this->table_id));
                 $tabx->addChild($chdobj->detailPane($this->table_id));
@@ -329,14 +332,14 @@ underlined letters that show this, so:
             $tabNumber++;
             $span->hp['onclick'] = "\$a.byId('$tabCId').dispatch('$tabid')";
         }
-    }        
+    }
         
     // ===================================================================
-    // 
-    // Major Area 2: Generate the Universal Menu Bar 
-    // 
+    //
+    // Major Area 2: Generate the Universal Menu Bar
+    //
     // ===================================================================
-    function menuBar($dd) 
+    public function menuBar($dd)
     {
         $menuBar = html('div');
         $menuBar->addClass('x4MenuBar');
@@ -419,14 +422,14 @@ underlined letters that show this, so:
         $a->ap['xLabel'] = 'CtrlPageDown';
         $a->hp['xAction'] = 'CtrlPageDown';
         return $menuBar;
-    }        
+    }
             
     // ===================================================================
-    // 
-    // Major Area 3: Generate a grid for a table 
-    // 
+    //
+    // Major Area 3: Generate a grid for a table
+    //
     // ===================================================================
-    function grid($tableIdPar = '') 
+    public function grid($tableIdPar = '')
     {
         $dd = $this->dd;
         $table_id = $dd['table_id'];
@@ -447,7 +450,7 @@ underlined letters that show this, so:
         $tb1 = html('thead', $t);
         $th = html('tr', $tb1);
         $th->addClass('header');
-        if($inputs=='Y') {
+        if ($inputs=='Y') {
             $ti = html('tr', $tb1);
             $ti->addClass('inputs');
         }
@@ -459,12 +462,13 @@ underlined letters that show this, so:
         $cols = explode(',', $dd['projections']['_uisearch']);
         $tabLoop = array();
         $fakeCI = array('colprec'=>'10');
-        foreach($cols as $column) {
+        foreach ($cols as $column) {
             // KFD 6/12/08, respect columns removed for security
-            if(!isset($dd['flat'][$column])) { continue; 
+            if (!isset($dd['flat'][$column])) {
+                continue;
             }
             $colinfo = $dd['flat'][$column];
-            if($tableIdPar == $colinfo['table_id_fko'] && $tableIdPar<>'') {
+            if ($tableIdPar == $colinfo['table_id_fko'] && $tableIdPar<>'') {
                 continue;
             }
             
@@ -476,7 +480,7 @@ underlined letters that show this, so:
             $hx->hp['onclick'] =
                 "x4.parent(this).setOrderBy(\$a.byId('$inpid'))";
             
-            if($inputs=='Y') {
+            if ($inputs=='Y') {
                 $inp= input($fakeCI, $tabLoop);
                 $inp->hp['maxlength'] = 500;
                 $inp->hp['id'] = $inpid;
@@ -496,11 +500,11 @@ underlined letters that show this, so:
     
     
     // ===================================================================
-    // 
-    // Major Area 4: Detail Panes 
-    // 
+    //
+    // Major Area 4: Detail Panes
+    //
     // ===================================================================
-    function detailPane($parentTable=null) 
+    public function detailPane($parentTable = null)
     {
         $dd  = $this->dd;
         $div = html('div');
@@ -512,13 +516,14 @@ underlined letters that show this, so:
         // KFD 6/25/08, look for a method named after the table,
         // if find that invoke that instead
         $method = $dd['table_id'].'_detail';
-        if(method_exists($this, $method)) {
+        if (method_exists($this, $method)) {
             $retval=$this->$method($dd,$div,$parentTable);
-            if($retval!==false) { return $retval; 
+            if ($retval!==false) {
+                return $retval;
             }
         }
         
-        // create the table that will hold the inputs 
+        // create the table that will hold the inputs
         $table = html('table', $div);
         $table->hp['class'] = 'x4detail';
         $tid   = $dd['table_id'];
@@ -528,7 +533,10 @@ underlined letters that show this, so:
         
         $tabLoop = array();
         $inputs = projection(
-            $this->dd, '', $tabLoop, array('colbreak'=>a($dd, 'colbreak', 17)
+            $this->dd,
+            '',
+            $tabLoop,
+            array('colbreak'=>a($dd, 'colbreak', 17)
                 ,'breakafter'=>a($dd, 'breakafter', array())
             )
         );
@@ -538,11 +546,11 @@ underlined letters that show this, so:
         return $div;
     }
     // ===================================================================
-    // 
-    // Major Area 5: A mover box 
-    // 
+    //
+    // Major Area 5: A mover box
+    //
     // ===================================================================
-    function mover($dd,$parentTable) 
+    public function mover($dd, $parentTable)
     {
         $div = html('div');
         $div->addClass('x4Pane x4Mover');
@@ -551,7 +559,8 @@ underlined letters that show this, so:
         $div->setAsParent();
         $div->br();
         $div->h(
-            'p', 'There is no need to click [SAVE] on this page'
+            'p',
+            'There is no need to click [SAVE] on this page'
             .', all changes take effect immediately.'
         );
 
@@ -588,7 +597,7 @@ underlined letters that show this, so:
         
         // now the body
         $tbody = $table->h('tbody');
-        foreach($rows as $row) {
+        foreach ($rows as $row) {
             $tr = $tbody->h('tr');
             $td = $tr->td();
             $input = html('input');
@@ -610,7 +619,7 @@ underlined letters that show this, so:
     // ----------------------------------
     // Server-side companions
     // ----------------------------------
-    function moverFetch() 
+    public function moverFetch()
     {
         $table=$this->dd['table_id'];
         $view =ddview($table);
@@ -625,12 +634,12 @@ underlined letters that show this, so:
         $sq = "select $retcol as x from $view where $pkcol = '$pkval'";
         $rows = sql_allRows($sq);
         $moverFetch = array();
-        foreach($rows as $row) {
+        foreach ($rows as $row) {
             $moverFetch[] = $row['x'];
         }
         x4Data('moverFetch', $moverFetch);
     }
-    function moverSS() 
+    public function moverSS()
     {
         $checked = gp('checked')=='Y' ? true : false;
         $col1 = gp('col1');
@@ -641,50 +650,51 @@ underlined letters that show this, so:
         
         // Either a delete or an insert
         $row = array($col1=>$var1,$col2=>$var2);
-        if($checked) {
+        if ($checked) {
             SQLX_Insert($table, $row);
-        }
-        else {
+        } else {
             SQLX_Delete($table, $row);
         }
     }
     
     
     // ===================================================================
-    // 
-    // SERVER FUNCTION 1: Retrieve search results for a grid 
-    // 
+    //
+    // SERVER FUNCTION 1: Retrieve search results for a grid
+    //
     // ===================================================================
     /**
       * Generate search results for an x4browse/search
       *
       * @author: Kenneth Downs
       */
-    function browseFetch() 
+    public function browseFetch()
     {
-        // This is the list of columns to return 
+        // This is the list of columns to return
         $acols = explode(',', $this->dd['projections']['_uisearch']);
 
-        // By default the search criteria come from the 
+        // By default the search criteria come from the
         // variables, unless it is a child table search
         $vals = aFromGP('x4w_');
         $awhere = array();
         $tabPar = gp('tableIdPar');
-        if($tabPar<>'') {
+        if ($tabPar<>'') {
             $ddpar = ddTable(gp('tableIdPar'));
             $pks   = $ddpar['pks'];
             $stab  = ddView(gp('tableIdPar'));
             $skey  = SQLFN(gp('skeyPar'));
             $vals2 = SQL_OneRow("SELECT $pks FROM $stab WHERE skey = $skey");
-            if(!$vals2) { $vals2=array(); 
+            if (!$vals2) {
+                $vals2=array();
             }
             $vals  = array_merge($vals, $vals2);
         }
         
-        // Build the where clause        
-        // 
-        foreach($vals as $column_id=>$colvalue) {
-            if(!isset($this->flat[$column_id])) { continue; 
+        // Build the where clause
+        //
+        foreach ($vals as $column_id => $colvalue) {
+            if (!isset($this->flat[$column_id])) {
+                continue;
             }
             $colinfo = $this->flat[$column_id];
             $exact = isset($vals2[$column_id]);
@@ -695,62 +705,62 @@ underlined letters that show this, so:
             if ($tcv != "") {
                 // trap for a % sign in non-string
                 $xwhere = sqlFilter($this->flat[$column_id], $tcv);
-                if($xwhere<>'') { $awhere[] = "($xwhere)"; 
+                if ($xwhere<>'') {
+                    $awhere[] = "($xwhere)";
                 }
             }
         }
         
         // <----- RETURN
-        if(count($awhere) == 0) { x4Debug("returning"); return; 
+        if (count($awhere) == 0) {
+            x4Debug("returning");
+            return;
         }
         
         // Generate the limit
         // KFD 11/12/08, modified to respect sql_limit, with default of 100
         $SLimit = ' LIMIT '.configGet('sql_limit', 100);
-        if($tabPar <> '') {
-            if(a($this->dd['fk_parents'][$tabPar], 'uiallrows', 'N')=='Y') {
+        if ($tabPar <> '') {
+            if (a($this->dd['fk_parents'][$tabPar], 'uiallrows', 'N')=='Y') {
                 $SLimit = '';
             }
         }
         
 
         // Build the Order by
-        // 
+        //
         $ascDesc = gp('sortAD')=='ASC' ? ' ASC' : ' DESC';
         $aorder = array();
         $searchsort = trim(a($this->dd, 'uisearchsort', ''));
-        if(gpExists('sortAD')) {
+        if (gpExists('sortAD')) {
             $aorder[] = gp('sortCol').' '.gp('sortAD');
         }
-        if($searchsort <> '') {
+        if ($searchsort <> '') {
             $aocols = explode(",", $searchsort);
-            foreach($aocols as $pmcol) {
+            foreach ($aocols as $pmcol) {
                 $char1 = substr($pmcol, 0, 1);
                 $column_id = substr($pmcol, 1);
-                if($char1 == '+') {
+                if ($char1 == '+') {
                     $aorder[] = $column_id.' ASC';
-                }
-                else {
+                } else {
                     $aorder[] = $column_id.' DESC';
                 }
             }
             $SQLOrder = " ORDER BY ".implode(',', $aorder);
-        }
-        else {
-            // KFD 6/18/08, new routine that works out sort 
+        } else {
+            // KFD 6/18/08, new routine that works out sort
             $aorder = sqlOrderBy($vals);
-            if(count($aorder)==0) {
+            if (count($aorder)==0) {
                 $SQLOrder = '';
-            }
-            else {
+            } else {
                 $SQLOrder = " ORDER BY ".implode(',', $aorder);
             }
         }
         
         // just before building the query, drop out
         // any columns that have a table_id_fko to the parent
-        foreach($acols as $idx=>$column_id) {
-            if($this->flat[$column_id]['table_id_fko'] == $tabPar
+        foreach ($acols as $idx => $column_id) {
+            if ($this->flat[$column_id]['table_id_fko'] == $tabPar
                 && $tabPar <> ''
             ) {
                 unset($acols[$idx]);
@@ -776,14 +786,14 @@ underlined letters that show this, so:
     }
     
     // ===================================================================
-    // 
-    // SERVER FUNCTION 2: Return a single row when asked 
-    // 
+    //
+    // SERVER FUNCTION 2: Return a single row when asked
+    //
     // ===================================================================
     /**
       * Return a single row for a table
       */
-    function fetchRow() 
+    public function fetchRow()
     {
         SQL("set datestyle to US");
         SQL("set datestyle to SQL");
@@ -793,14 +803,14 @@ underlined letters that show this, so:
     }
 
     // ===================================================================
-    // 
-    // SERVER FUNCTION 3: Execute an skey-based update 
-    // 
+    //
+    // SERVER FUNCTION 3: Execute an skey-based update
+    //
     // ===================================================================
     /**
       * Execute an skey-based update
       */
-    function update() 
+    public function update()
     {
         $row = aFromGP('x4v_');
         $skey= 0;
@@ -809,9 +819,9 @@ underlined letters that show this, so:
         // KFD 6/12/08, allow functions to modify or prevent a write
         $tbefore = $table_id."_writeBefore";
         $tafter  = $table_id."_writeAfter";
-        if(function_exists($tbefore)) {
+        if (function_exists($tbefore)) {
             $message = $tbefore($row);
-            if($message<>'') {
+            if ($message<>'') {
                 x4Error($message);
                 return;
             }
@@ -819,8 +829,8 @@ underlined letters that show this, so:
         
         // KFD 6/28/08, a non-empty date must be valid
         $errors = false;
-        foreach($row as $col => $value) {
-            if(!isset($this->dd['flat'][$col])) {
+        foreach ($row as $col => $value) {
+            if (!isset($this->dd['flat'][$col])) {
                 unset($row[$col]);
                 continue;
             }
@@ -828,36 +838,37 @@ underlined letters that show this, so:
                 .$this->dd['flat'][$col]['description'];
             $ermsg2 = "Invalid date value for "
                 .$this->dd['flat'][$col]['description'];
-            if($this->dd['flat'][$col]['type_id'] == 'date') {
-                if(trim($value)=='') { continue; 
+            if ($this->dd['flat'][$col]['type_id'] == 'date') {
+                if (trim($value)=='') {
+                    continue;
                 }
                 
-                if(strpos($value, '/')===false && strpos($value, '-')===false) {
+                if (strpos($value, '/')===false && strpos($value, '-')===false) {
                     x4Error($ermsg);
                     $errors = true;
                     continue;
                 }
-                if(strpos($value, '/')!==false) {
+                if (strpos($value, '/')!==false) {
                     $parsed = explode('/', $value);
-                    if(count($parsed)<>3) {
+                    if (count($parsed)<>3) {
                         $errors = true;
                         x4Error($ermsg);
                         continue;
                     }
-                    if(!checkdate($parsed[0], $parsed[1], $parsed[2])) {
+                    if (!checkdate($parsed[0], $parsed[1], $parsed[2])) {
                         x4Error($ermsg2);
                         $errors = true;
                         continue;
                     }
                 }
-                if(strpos($value, '-')!==false) {
+                if (strpos($value, '-')!==false) {
                     $parsed = explode('-', $value);
-                    if(count($parsed)<>3) {
+                    if (count($parsed)<>3) {
                         $errors = true;
                         x4Error($ermsg);
                         continue;
                     }
-                    if(!checkdate($parsed[1], $parsed[2], $parsed[0])) {
+                    if (!checkdate($parsed[1], $parsed[2], $parsed[0])) {
                         x4Error($ermsg2);
                         $errors = true;
                         continue;
@@ -865,22 +876,22 @@ underlined letters that show this, so:
                 }
             }
         }
-        if($errors) { return; 
+        if ($errors) {
+            return;
         }
         
-        if($row['skey']==0 || !isset($row['skey'])) {
+        if ($row['skey']==0 || !isset($row['skey'])) {
             unset($row['skey']);
             $skey = SQLX_Insert($this->dd, $row);
-            if(!errors()) {
+            if (!errors()) {
                 $row=SQL_OneRow(
                     "Select * FROM {$this->view_id} WHERE skey = $skey"
                 );
             }
             x4Data('row', $row);
-        }
-        else {
+        } else {
             SQLX_Update($this->dd, $row);
-            if(!errors()) {
+            if (!errors()) {
                 $skey = $row['skey'];
                 $row=SQL_OneRow(
                     "Select * FROM {$this->view_id} WHERE skey = $skey"
@@ -890,11 +901,12 @@ underlined letters that show this, so:
         }
         
         // KFD 6/12/08, allow functions to modify or prevent a write
-        if(Errors()) { return; 
+        if (Errors()) {
+            return;
         }
-        if(function_exists($tafter)) {
+        if (function_exists($tafter)) {
             $message = $tafter($row);
-            if($message<>'') {
+            if ($message<>'') {
                 x4Error($message);
                 return;
             }
@@ -903,14 +915,14 @@ underlined letters that show this, so:
     }
     
     // ===================================================================
-    // 
-    // SERVER FUNCTION 4: Execute an skey-based delete 
-    // 
+    //
+    // SERVER FUNCTION 4: Execute an skey-based delete
+    //
     // ===================================================================
     /**
       * Execute an skey-based delete
       */
-    function delete() 
+    public function delete()
     {
         $skey = SQLFN(gp('skey'));
         $sq="Delete from ".$this->view_id." where skey = $skey";
@@ -918,14 +930,14 @@ underlined letters that show this, so:
     }
 
     // ===================================================================
-    // 
+    //
     // SERVER FUNCTION 5: Fetch values from other tables based on an FK
-    // 
+    //
     // ===================================================================
     /**
       * Go get FETCH values from other tables
       */
-    function fetch() 
+    public function fetch()
     {
         // Get the list of columns from the dd
         $column_id    = gp('column');
@@ -937,7 +949,7 @@ underlined letters that show this, so:
         // Build the SQL to fetch the row
         $colsc= array();
         $colsp= array();
-        foreach($collist as $idx=>$info) {
+        foreach ($collist as $idx => $info) {
             $colsp[] = $info['column_id_par'].' as '.$info['column_id'];
         }
         $type_id = $this->dd['flat'][$column_id]['type_id'];
@@ -947,6 +959,6 @@ underlined letters that show this, so:
             ." WHERE ".$this->dd['fk_parents'][$table_id_fko]['cols_par']."= $value";
         $answer = SQL_OneRow($sql);
         x4Data('fetch', $answer);
-    }    
+    }
 }
 ?>

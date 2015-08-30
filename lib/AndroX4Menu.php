@@ -1,5 +1,5 @@
 <?php
-class x4Menu extends androX4
+class X4Menu extends androX4
 {
     
     // ===================================================================
@@ -7,7 +7,7 @@ class x4Menu extends androX4
     // Major Area 0: Put out the menu
     // 
     // ===================================================================
-    function mainLayout(&$container) 
+    public function mainLayout($container) 
     {
         // load the javascript        
         jsInclude("clib/androX4Menu.js");

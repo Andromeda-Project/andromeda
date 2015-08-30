@@ -15,7 +15,7 @@
  * @author  Kenneth Downs <ken@secdat.com>
 */
 
-class androPage
+class AndroPage
 {
     /**
      *  Included for compatibility with index_hidden.php.
@@ -23,7 +23,7 @@ class androPage
      *  @var flag_buffer
      *  @access public
      */
-    var $flag_buffer = true;
+    public $flag_buffer = true;
 
     /**
      *  The larger framework wants to see this, it uses it
@@ -33,16 +33,16 @@ class androPage
      *  @var    PageSubtitle
      *  @access public
      */
-    var $PageSubtitle = '-Please Set PageSubtitle- or options:title';
+    public $PageSubtitle = '-Please Set PageSubtitle- or options:title';
 
     /**
      *  The page being processed.
      *  @var page
      *  @access public
      */
-    var $page = '';
+    public $page = '';
 
-    function x6main() 
+    public function x6main()
     {
         $this->main($this->x6page);
     }
@@ -55,7 +55,7 @@ class androPage
      *  @param  string $page Name of page.
      *  @access public
      */
-    function main($page) 
+    public function main($page)
     {
         // Store the name of the page
         $this->page = $page;
@@ -75,9 +75,9 @@ class androPage
         // so that downstream code can unconditionally work with sections
 
 
-        // DO 7/31/2008 uifilter is not set in section, so if section is 
+        // DO 7/31/2008 uifilter is not set in section, so if section is
         // set and uifilter is not set we need to create an empty one
-        if(!isset($this->yamlP2['section'])) {
+        if (!isset($this->yamlP2['section'])) {
             $this->yamlP2['section'] = array(
                 'default'=>array(
                     'table'=>a($this->yamlP2, 'table', array())
@@ -86,20 +86,20 @@ class androPage
                 )
             );
         } else {
-            if (!isset($this->yamlP2['uifilter']) ) {
+            if (!isset($this->yamlP2['uifilter'])) {
                 $this->yamlP2['uifilter'] = array();
-            } 
+            }
         }
 
-        if (!isset($this->yamlP2['template']) ) {
+        if (!isset($this->yamlP2['template'])) {
                 $this->yamlP2['template'] = '';
         }
 
         // Go through filters and make them all uniform
         $filters = ArraySafe($this->yamlP2, 'uifilter', array());
-        foreach($filters as $id=>$info) {
+        foreach ($filters as $id => $info) {
             // If a table is named, go for that
-            if(isset($info['table'])) {
+            if (isset($info['table'])) {
                 $table_dd = dd_TableRef($info['table']);
                 $column   = ArraySafe($info, 'column', $id);
                 $flat     = $table_dd['flat'][$column];
@@ -111,12 +111,12 @@ class androPage
                     ArraySafe($filters[$id], 'description', $flat['description']);
             }
         }
-        if (ArraySafe($this->yamlP2['options'], 'buffer', 'Y') == 'N' ) {
+        if (ArraySafe($this->yamlP2['options'], 'buffer', 'Y') == 'N') {
                 $this->flag_buffer = false;
         }
 
         // Check to see if nofilter option is set
-        if (ArraySafe($this->yamlP2['options'], 'nofilter') != '' ) {
+        if (ArraySafe($this->yamlP2['options'], 'nofilter') != '') {
                 $this->yamlP2['options']['nofilter'] = $this->yamlP2['options']['nofilter'];
         } else {
                 $this->yamlP2['options']['nofilter'] = 'N';
@@ -126,42 +126,48 @@ class androPage
         // KFD 4/21/08, determine when to display HTML and
         // when to run page
         $runHTML = true;
-        if($this->yamlP2['options']['nofilter'] == 'Y' ) {   $runHTML = false; 
+        if ($this->yamlP2['options']['nofilter'] == 'Y') {
+            $runHTML = false;
         }
-        if(gp('gp_post')<>'' && gp('gp_post')<>'onscreen') { $runHTML = false; 
+        if (gp('gp_post')<>'' && gp('gp_post')<>'onscreen') {
+            $runHTML = false;
         }
-        if(gp('gp_post')=='onscreen' && gpExists('x4Page')) { $runHTML = false; 
+        if (gp('gp_post')=='onscreen' && gpExists('x4Page')) {
+            $runHTML = false;
         }
-        if(gp('gp_post')=='onscreen' && gpExists('x6page')) { $runHTML = false; 
+        if (gp('gp_post')=='onscreen' && gpExists('x6page')) {
+            $runHTML = false;
         }
         // KFD 9/10/08, don't run HTML if they are requesting Show sql
-        if(gp('showsql')==1                               ) { $runHTML = false; 
+        if (gp('showsql')==1) {
+            $runHTML = false;
         }
         $runPage = true;
         x4Debug("gp post is ".gp('gp_post'));
-        if(gp('gp_post')=='') { $runPage = false; 
+        if (gp('gp_post')=='') {
+            $runPage = false;
         }
         
 
         // DO 7/31/2008  If smarty template set && nofilter set just display the page.
-        if ($this->yamlP2['template'] <> '' 
-            && $this->yamlP2['options']['nofilter'] == 'Y' 
+        if ($this->yamlP2['template'] <> ''
+            && $this->yamlP2['options']['nofilter'] == 'Y'
         ) {
-            $runPage = true; 
+            $runPage = true;
         }
         
         // DO 7/31/2008 do not need form again for Smarty AndroPage
-        if ($this->yamlP2['template'] == '' || gp('gp_post') == '' ) {
-            if($runHTML) {
-                $this->x3HTML();
+        if ($this->yamlP2['template'] == '' || gp('gp_post') == '') {
+            if ($runHTML) {
+                $this->x3Html();
             }
         }
-        if($runPage) {
-            $this->PassPage();
+        if ($runPage) {
+            $this->passPage();
         }
     }
     
-    function mainHelp() 
+    public function mainHelp()
     {
         ob_start();
         ?>
@@ -191,10 +197,10 @@ class androPage
      * This function determines whether it should make the page a report or a Smarty template
      * @access private
      */
-    private function PassPage() 
+    private function passPage()
     {
         $this->genSQL();
-        if ($this->yamlP2['template'] == '' ) {
+        if ($this->yamlP2['template'] == '') {
                 $this->pageReport();
         } else {
                 $this->pageSmarty();
@@ -212,18 +218,18 @@ class androPage
      *  @param  string $array The raw result of processing by Spyc.
      *  @access private
      */
-    private function YamlPass2($array) 
+    private function yamlPass2($array)
     {
-        if(!is_array($array)) { return $array; 
+        if (!is_array($array)) {
+            return $array;
         }
 
         $retval = array();
-        foreach($array as $index=>$subarr) {
+        foreach ($array as $index => $subarr) {
             $aIdx = explode(" ", $index);
-            if(count($aIdx)==1) {
+            if (count($aIdx)==1) {
                 $retval[$index] = $this->yamlPass2($subarr);
-            }
-            else {
+            } else {
                 $retval[$aIdx[0]][$aIdx[1]] = $this->yamlPass2($subarr);
             }
         }
@@ -236,12 +242,12 @@ class androPage
      *
      *  @access private
      */
-    private function x3HTML() 
+    private function x3Html()
     {
         $x6 = vgfGet('x6', false);
         
         $yamlP2 = $this->yamlP2;
-        if(isset($yamlP2['options']['title'])) {
+        if (isset($yamlP2['options']['title'])) {
             // This is for classic x2 displays
             $this->PageSubtitle = $yamlP2['options']['title'];
         }
@@ -254,7 +260,7 @@ class androPage
         $top = html('div');
         $top->hp['id'] = 'x4Top';
         $top->autoFormat(true);
-        if($x6) {
+        if ($x6) {
             $top->hp['id'] = 'x4Top';
             $top->addClass('fadein');
             $top->hp['x6plugin'] = 'androPage';
@@ -263,19 +269,18 @@ class androPage
         }
         
         // Hidden variables so posts will come back here
-        if($x4) {
+        if ($x4) {
             x4Data('return', 'menu');
             $h = $top->h('input');
             $h->hp['id'] = 'x4Page';
             $h->hp['type'] = 'hidden';
             $h->hp['value'] = $this->page;
-        }
-        else {
+        } else {
             hidden('gp_page', $this->page);
         }
 
         // List of ids for buttons below
-        if ($yamlP2['template'] == '' ) {
+        if ($yamlP2['template'] == '') {
             $ids=array('pdf'=>'printNow','onscreen'=>'showOnScreen'
                 ,'showSql'=>'showSql','csv'=>'csvExport'
             );
@@ -284,11 +289,12 @@ class androPage
         }
 
         $x4D = html('div', $top);
-        if($x4) { $x4D->addClass('x4Pane'); 
+        if ($x4) {
+            $x4D->addClass('x4Pane');
         }
         $x4D->addClass('x4AndroPage'); // Triggers all browser-side x4 stuff
         $x4D->hp['id'] = 'x4AndroPage';
-        $x4D->ap['defaultOutput'] = a($ids, a($yamlP2['options'], 'default')); 
+        $x4D->ap['defaultOutput'] = a($ids, a($yamlP2['options'], 'default'));
 
         // Put out the title and the help link
         $tabx  = html('table', $x4D);
@@ -315,32 +321,30 @@ class androPage
         $td2 = html('td', $tr);
         $td2->hp['style'] = 'vertical-align: top';
         
-        // Do right-hand side first actually, the on-screen display area 
+        // Do right-hand side first actually, the on-screen display area
         $div = html('div', $td2);
         $div->hp['id']='divOnScreen';
 
         // Put out the inputs
-        if(!$x6) {
+        if (!$x6) {
             $table = html('table', $td1);
-        }
-        else {
+        } else {
             $form = $td1->form();
             $table= $form->h('table');
             $table->addClass('x6Detail');
             $table->hp['style'] = 'float: left';
         }
         $filters = ArraySafe($this->yamlP2, 'uifilter', array());
-        foreach($filters as $id=>$options) {
-            if(isset($options['table'])) {
+        foreach ($filters as $id => $options) {
+            if (isset($options['table'])) {
                 $dd = ddTable($options['table']);
                 $opt2 = $dd['flat'][$options['column']];
                 $options = array_merge($opt2, $options);
-            }
-            else {
+            } else {
                 $options['inputId']='ap_'.$id;
             }
             
-            if (isset($options['value']) && gp('ap_'.$id) == '' ) {
+            if (isset($options['value']) && gp('ap_'.$id) == '') {
                 $options['value'] = $options['value'];
             } else {
                 $options['value'] = gp('ap_'.$id);
@@ -349,23 +353,21 @@ class androPage
 
             $tr = html('tr', $table);
             $td = html('td', $tr);
-            if($x6) {
+            if ($x6) {
                 $td->addClass('x6Caption');
-            }
-            else {
+            } else {
                 $td->hp['style']="text-align: right";
             }
             $td->setHTML($options['description']);
             $td = html('td', $tr);
-            if($x6) {
+            if ($x6) {
                 $td->addClass('x6Input');
-            }
-            else {
+            } else {
                 $td->hp['style']="text-align: left";
             }
             $input = input($options);
             $input->hp['autocomplete'] = 'off';
-            if($x6) {
+            if ($x6) {
                 $input->hp['xNoPassup'] ='Y';
             }
             $td->setHTML($input->bufferedRender());
@@ -374,7 +376,7 @@ class androPage
         $h->hp['type'] = 'hidden';
         $h->hp['id'] = 'gp_post';
         $h->hp['name'] = 'gp_post';
-        if (isset($yamlP2['template']) ) {
+        if (isset($yamlP2['template'])) {
             $h->hp['value'] = 'smarty';
         } else {
             $h->hp['value'] = 'pdf';
@@ -383,19 +385,17 @@ class androPage
         $td1->br();
         
         // DO 7/31/2008 Only need a button to run the report for Smarty AndroPage
-        if ($this->yamlP2['template'] == '' ) {
+        if ($this->yamlP2['template'] == '') {
             // First button: print
             $inp = html('a-void', $td1, '<u>P</u>rint Now');
             $inp->ap['xLabel'] = 'CtrlP';
             $inp->hp['id'] = $ids['pdf'];
             $inp->addClass('button');
-            if($x6) {
+            if ($x6) {
                 $inp->hp['onclick'] = "x6events.fireEvent('key_CtrlP')";
-            }
-            elseif(gpExists('x4Page')) {
+            } elseif (gpExists('x4Page')) {
                 $inp->hp['onclick'] = "\$a.byId('x4AndroPage').printNow()";
-            }
-            else {
+            } else {
                 $inp->hp['onclick'] = 'formSubmit();';
             }
             $td1->br(2);
@@ -405,13 +405,11 @@ class androPage
             $inp->hp['id'] = $ids['onscreen'];
             $inp->ap['xLabel'] = 'CtrlO';
             $inp->addClass('button');
-            if($x6) {
+            if ($x6) {
                 $inp->hp['onclick'] = "x6events.fireEvent('key_CtrlO')";
-            }
-            elseif(gpExists('x4Page')) {
+            } elseif (gpExists('x4Page')) {
                 $inp->hp['onclick'] = "\$a.byId('x4AndroPage').showOnScreen()";
-            }
-            else {
+            } else {
                 $inp->hp['onclick'] = "SetAndPost('gp_post','onscreen')";
             }
 
@@ -421,13 +419,11 @@ class androPage
             $inp->hp['id'] = $ids['csv'];
             $inp->ap['xLabel'] = 'CtrlE';
             $inp->addClass('button');
-            if($x6) {
+            if ($x6) {
                 $inp->hp['onclick'] = "x6events.fireEvent('key_CtrlE')";
-            }
-            else if(gpExists('x4Page')) {
+            } elseif (gpExists('x4Page')) {
                 $inp->hp['onclick'] = "\$a.byId('x4AndroPage').csvExport()";
-            }
-            else {
+            } else {
                 $inp->hp['onclick'] = "SetAndPost('gp_post','csvexport')";
             }
 
@@ -437,26 +433,24 @@ class androPage
             $inp->ap['xLabel'] = 'CtrlR';
             $inp->hp['id'] = $ids['smarty'];
             $inp->addClass('button');
-            if(gpExists('x4Page')) {
+            if (gpExists('x4Page')) {
                 $inp->hp['onclick'] = "\$a.byId('x4AndroPage').showOnScreen()";
-            }
-            else {
+            } else {
                 $inp->hp['onclick'] = 'formSubmit();';
             }
         }
         $td1->br(2);
         
-        if(SessionGet('ADMIN')==true && $x4) {
+        if (SessionGet('ADMIN')==true && $x4) {
             $x4D->nbsp(2);
             $inp = html('a-void', $td1, 'Show S<u>Q</u>L');
             $inp->ap['xLabel'] = 'CtrlQ';
             $inp->hp['id'] = $ids['showSql'];
             $inp->hp['name'] = 'showsql';  // For x2
             $inp->addClass('button');
-            if($x6) {
+            if ($x6) {
                 $inp->hp['onclick'] = "x6events.fireEvent('key_CtrlQ')";
-            }
-            else {
+            } else {
                 $inp->hp['onclick'] = "\$a.byId('x4AndroPage').showSql()";
             }
         }
@@ -475,23 +469,23 @@ class androPage
      *  @param  string $yamlP2 A processed YAML page description
      *  @access private
      */
-    private function pageReport() 
+    private function pageReport()
     {
         // Create the reporting object
         include_once 'androPageReport.php';
         $oReport = new androPageReport();
         
         // For each section, run the output
-        foreach($this->yamlP2['section'] as $secname=>$secinfo) {
+        foreach ($this->yamlP2['section'] as $secname => $secinfo) {
             $dbres = SQL($secinfo['sql']);
-            if(gp("showsql")==1) {
+            if (gp("showsql")==1) {
                 hprint_r($secinfo['sql']);
             }
-            if(Errors()) {
+            if (Errors()) {
                 hprint_r($secinfo['sql']);
                 echo hErrors();
             }
-            if(gp("showsql")==1) {
+            if (gp("showsql")==1) {
                 return;
             }
 
@@ -503,12 +497,12 @@ class androPage
     /**
      *  Run the report on-screen as a smarty template
      */
-    private function pageSmarty() 
+    private function pageSmarty()
     {
-        if (ArraySafe($this->yamlP2['options'], 'noquery', 'N') == 'N' ) {
+        if (ArraySafe($this->yamlP2['options'], 'noquery', 'N') == 'N') {
             // Execute SQL and return all rows for all sections
             $sections = $this->yamlP2['section'];
-            foreach($sections as $secname=>$secinfo) {
+            foreach ($sections as $secname => $secinfo) {
                     $this->yamlP2['section'][$secname]['rows']
                             =SQL_AllRows($secinfo['sql']);
             }
@@ -530,24 +524,23 @@ class androPage
      *
      *  @access private
      */
-    function genSQL() 
+    private function genSQL()
     {
-        if (ArraySafe($this->yamlP2['options'], 'noquery', 'N') == 'N' ) {
+        if (ArraySafe($this->yamlP2['options'], 'noquery', 'N') == 'N') {
             // Get the values from the UI Filter fields into a temp array,
             // for use below in the column list building
             $uifilter=ArraySafe($this->yamlP2, 'uifilter', array());
-            foreach($uifilter as $colname=>$info) {
-                if(gpExists('ap_'.$colname)) {
-                    $this->yamlP2['uifilter'][$colname]['value'] 
+            foreach ($uifilter as $colname => $info) {
+                if (gpExists('ap_'.$colname)) {
+                    $this->yamlP2['uifilter'][$colname]['value']
                         = gp('ap_'.$colname);
-                }
-                elseif(isset($info['table'])) {
+                } elseif (isset($info['table'])) {
                     $gp = 'x4inp_'.$info['table'].'_'.$info['column'];
-                    $this->yamlP2['uifilter'][$colname]['value'] = gp($gp); 
+                    $this->yamlP2['uifilter'][$colname]['value'] = gp($gp);
                 }
             }
 
-            foreach($this->yamlP2['section'] as $secname=>$info) {
+            foreach ($this->yamlP2['section'] as $secname => $info) {
                 $this->yamlP2['section'][$secname]['sql']
                     =$this->genSQLSection($secname);
             }
@@ -558,7 +551,7 @@ class androPage
      *  Generate the SQL expression for a particular named
      *  section by examining the table/column details in
      *  the processed yaml.  A section can contain:
-     *  
+     *
      *  a) A UNION block.  The list of tables inside of here
      *       will be unioned together.
      *  b) A list of tables.  These will all be joined together
@@ -569,15 +562,14 @@ class androPage
      *
      *  @access private
      */
-    function genSQLSection($secname) 
+    private function genSQLSection($secname)
     {
         $yamlP2 = &$this->yamlP2['section'][$secname];
-        if(count(ArraySafe($yamlP2, 'union', array()))>0) {
+        if (count(ArraySafe($yamlP2, 'union', array())) > 0) {
             list($table,$cols) = each($yamlP2['union']['table']);
             $this->yamlP2['table']=array($table=>$cols);
             return $this->genSQLSectionUnion($yamlP2['union']['table']);
-        }
-        else {
+        } else {
             return $this->genSQLSectionJoin($yamlP2);
         }
         
@@ -592,46 +584,46 @@ class androPage
      *
      *  Returns: A SQL SELECT statement
      */
-    function genSQLSectionUnion($yamlP2) 
+    private function genSQLSectionUnion($yamlP2)
     {
         $page = $this->page;
         $uifilter = $this->page['uifilter'];
         
         $sql=array();
         
-        foreach($yamlP2 as $table_id=>$tabinfo) {
+        foreach ($yamlP2 as $table_id => $tabinfo) {
             $SQL_COLSWHA = array();
             
             $collist = array("'$table_id' as _source");
             $collist[]='skey';
-            foreach($tabinfo['column'] as $column_id=>$colinfo) {
-                if(a($colinfo, 'constant', '')<>'') {
+            foreach ($tabinfo['column'] as $column_id => $colinfo) {
+                if (a($colinfo, 'constant', '') <> '') {
                     $collist[]=SQLFC($colinfo['constant'])." as $column_id";
-                }
-                else {
+                } else {
                     $collist[]="$table_id.$column_id";
                     // KFD 6/18/08, reroute to new SQLFilter
                     // $compare = sqlFilter($colinfo,
                     $compare=$this->SQLCompare($table_id, $column_id, $colinfo);
-                    if($compare<>'') {
+                    if ($compare <> '') {
                         $SQL_COLSWHA[] = $compare;
                     }
                 }
             }
             $sq = "SELECT ".implode("\n      ,", $collist)
                 ." FROM $table_id ";
-            if(count($SQL_COLSWHA)>0) {
+            if (count($SQL_COLSWHA) > 0) {
                 $sq.="\n WHERE ".implode("\n   AND ", $SQL_COLSWHA);
-            }  
+            }
             $sql[] = $sq;
         }
 
         // Build the sql
-        $sql = implode("\nUNION ALL\n", $sql);        
-        if(gp('gp_post')=='onscreen') { $sql.= " LIMIT ".configGet('sql_limit'); 
+        $sql = implode("\nUNION ALL\n", $sql);
+        if (gp('gp_post')=='onscreen') {
+            $sql.= " LIMIT ".configGet('sql_limit');
         }
         return $sql;
-    }   
+    }
    
     /**
      *  Takes a list of tables and JOINs them together
@@ -639,7 +631,7 @@ class androPage
      *
      *  Returns: A SQL SELECT statement
      */
-    function genSQLSectionJoin($yamlP2) 
+    private function genSQLSectionJoin($yamlP2)
     {
         $page = $this->page;
         $uifilter = a($this->yamlP2, 'uifilter', array());
@@ -653,18 +645,18 @@ class androPage
         // if so, all others must get group: Y
         $yamlP2['groupby']=array();
         $group=false;
-        foreach($yamlP2['table'] as $table_id=>$tabinfo) {
-            foreach($tabinfo['column'] as $colname=>$colinfo) {
-                if(ArraySafe($colinfo, 'group', '')<>'') {
+        foreach ($yamlP2['table'] as $table_id => $tabinfo) {
+            foreach ($tabinfo['column'] as $colname => $colinfo) {
+                if (ArraySafe($colinfo, 'group', '') <> '') {
                     $group=true;
                     break;
                 }
             }
         }
-        if($group) {
-            foreach($yamlP2['table'] as $table_id=>$tabinfo) {
-                foreach($tabinfo['column'] as $colname=>$colinfo) {
-                    if(ArraySafe($colinfo, 'group', '')=='') {
+        if ($group) {
+            foreach ($yamlP2['table'] as $table_id => $tabinfo) {
+                foreach ($tabinfo['column'] as $colname => $colinfo) {
+                    if (ArraySafe($colinfo, 'group', '') == '') {
                         //if(ArraySafe($colinfo,'uino','N')=='N') {
                             $yamlP2['groupby'][]="$table_id.$colname";
                         //}
@@ -676,49 +668,49 @@ class androPage
         // Build various lists of columns
         $SQL_COLSA=array();
         $SQL_COLSOBA=array();
-        foreach($yamlP2['table'] as $table=>$table_info) {
+        foreach ($yamlP2['table'] as $table => $table_info) {
             $table_dd = dd_TableRef($table);
-            foreach($table_info['column'] as $colname=>$colinfo) {
+            foreach ($table_info['column'] as $colname => $colinfo) {
                 // order by
-                if(ArraySafe($colinfo, 'order', 'N')=='Y') {
+                if (ArraySafe($colinfo, 'order', 'N') == 'Y') {
                     $SQL_COLSOBA[] = "$table.$colname";
                 }
                 
                 // comparison
-                if(isset($colinfo['compare'])) {
+                if (isset($colinfo['compare'])) {
                     $compare=$this->SQLCompare($table, $colname, $colinfo);
-                    if($compare<>'') {
+                    if ($compare <> '') {
                         $SQL_COLSWHA[] = $compare;
                     }
                 }
 
-                // group by 
-                if(a($colinfo, 'group', '')<>'') {
+                // group by
+                if (a($colinfo, 'group', '')<>'') {
                     //$coldef = str_replace("as $colname","",$coldef);
                     $coldef = $colinfo['group']."($table.$colname)";
-                }
-                else {
+                } else {
                     $coldef = "$table.$colname";
                 }
 
                 // If not in output, stop now
-                // KFD 5/31/08, no, keep going and filter out at 
+                // KFD 5/31/08, no, keep going and filter out at
                 //     output.  We need all columns in case they
                 //     are orderby columns
-                if(a($colinfo, 'uino', 'N')=='Y') { continue; 
+                if (a($colinfo, 'uino', 'N')=='Y') {
+                    continue;
                 }
                 
                 // if a constant, add the constant and skip the rest
                 $constant = a($colinfo, 'constant', '');
-                if(ArraySafe($table_info, 'left_join', 'N')=='Y') {
+                if (ArraySafe($table_info, 'left_join', 'N')=='Y') {
                     $z = SQL_Format(
-                        $table_dd['flat'][$colname]['type_id'], ''
+                        $table_dd['flat'][$colname]['type_id'],
+                        ''
                     );
                     $cval = $constant=='' ? $coldef : "'$constant'";
                     $coldef="COALESCE($cval,$z) as $colname";
-                }
-                else {
-                    $coldef = $constant=='' 
+                } else {
+                    $coldef = $constant==''
                         ? "$coldef as $colname"
                         : "'$constant' as $colname";
                 }
@@ -735,10 +727,10 @@ class androPage
             .$SQL_COLS;
         
         $SQL_COLSOB='';
-        if (isset($yamlP2['orderby']) ) {
+        if (isset($yamlP2['orderby'])) {
                 $SQL_COLSOB="\n ORDER BY " .$yamlP2['orderby'];
         } else {
-            if(count($SQL_COLSOBA)>0) {
+            if (count($SQL_COLSOBA)>0) {
                 ksort($SQL_COLSOBA);
                 $SQL_COLSOB="\n ORDER BY ".implode(',', $SQL_COLSOBA);
             }
@@ -746,13 +738,13 @@ class androPage
 
         // For the UI Filter values, add in the values provided by the user
         $SQL_WHERE='';
-        if(count($SQL_COLSWHA)>0) {
+        if (count($SQL_COLSWHA)>0) {
             $SQL_WHERE = "\n WHERE ".implode("\n   AND ", $SQL_COLSWHA);
         }
 
         // Collapse the group by
         $SQL_GROUPBY = '';
-        if(count($yamlP2['groupby'])>0) {
+        if (count($yamlP2['groupby'])>0) {
             $SQL_GROUPBY = "\n GROUP BY ".implode(',', $yamlP2['groupby']);
         }
 
@@ -763,7 +755,8 @@ class androPage
             .$SQL_WHERE
             .$SQL_GROUPBY
             .$SQL_COLSOB;
-        if(gp('gp_post')=='onscreen') { $SQ.= " LIMIT 300"; 
+        if (gp('gp_post')=='onscreen') {
+            $SQ.= " LIMIT 300";
         }
         return $SQ;
     }
@@ -777,7 +770,7 @@ class androPage
      *  @param  array $yamlP2 The processed page description
      *  @access private
      */
-    function genSQLFromJoins($yamlP2) 
+    private function genSQLFromJoins($yamlP2)
     {
         // Get the list of tables and pop off the first one
         $tables = array_keys($yamlP2['table']);
@@ -787,21 +780,22 @@ class androPage
 
         // Loop through children looking for which of the
         // parents they can join to
-        foreach($tables as $table) {
+        foreach ($tables as $table) {
             $dd1 = ddTable($table);
             $table_par = ArraySafe(
-                $yamlP2['table'][$table], 'table_par', ''
+                $yamlP2['table'][$table],
+                'table_par',
+                ''
             );
             $table_chd = $table;
             $table_join= $table_par;
-            if($table_par=='') {
-                foreach($tables_done as $table_done) {
-                    if(isset($dd1['fk_parents'][$table_done])) {
+            if ($table_par=='') {
+                foreach ($tables_done as $table_done) {
+                    if (isset($dd1['fk_parents'][$table_done])) {
                         $table_par = $table_done;
                         $table_chd = $table;
                         break;
-                    }
-                    elseif(isset($dd1['fk_children'][$table_done])) {
+                    } elseif (isset($dd1['fk_children'][$table_done])) {
                         // Cause the loop to tstop
                         $table_par = $table;
                         $table_chd = $table_done;
@@ -809,25 +803,25 @@ class androPage
                     }
                 }
             }
-            if($table_par=='') {
+            if ($table_par=='') {
                 $this->errorAdd(
                     "Table $table does not join to any "
                     ."previously listed table."
                 );
-            }
-            else {
+            } else {
                 $tables_done[] = $table;
                 $dd=ddTable($table_par);
                 $apks=explode(',', $dd['pks']);
                 $apks2=array();
-                foreach($apks as $apk) {
+                foreach ($apks as $apk) {
                     $apks2[]="$table_chd.$apk = $table_par.$apk";
                 }
                 $SQL_Joins[$table] =array(
                     "expression"=>implode(' AND ', $apks2)
                     ,'view'=>$dd['viewname']
                     ,'left_join'=>ArraySafe(
-                        $yamlP2['table'][$table]['left_join'], 'N'
+                        $yamlP2['table'][$table]['left_join'],
+                        'N'
                     )
                 );
             }
@@ -836,7 +830,7 @@ class androPage
         // Now join them all up and return
         $view_id = ddView($SQL_from);
         $retval = "\n  FROM $view_id $SQL_from ";
-        foreach($SQL_Joins as $table_id=>$SQL_Join) {
+        foreach ($SQL_Joins as $table_id => $SQL_Join) {
             $view_id = ddView($table_id);
             // $view_id = $SQL_Join['view'];
             $expr = $SQL_Join['expression'];
@@ -854,31 +848,37 @@ class androPage
      *  @param  string $colinfo  other column information
      *  @access private
      */
-    function SQLCompare($table,$colname,$colinfo) 
+    private function SQLCompare($table, $colname, $colinfo)
     {
         // Early return and alternate branch
-        if(a($colinfo, 'compare', '')=='') { return; 
+        if (a($colinfo, 'compare', '')=='') {
+            return;
         }
-        if(substr($colinfo['compare'], 0, 1)=='*') { return $this->SQLCompareStar(
-            $table, $colname, $colinfo
-        ); 
+        if (substr($colinfo['compare'], 0, 1)=='*') {
+            return $this->SQLCompareStar(
+                $table,
+                $colname,
+                $colinfo
+            );
         }
             
         $noempty = ArraySafe($colinfo, 'no_empty_compare', 'Y');
         $table_dd = ddTable($table);
-        $uifilter = $this->yamlP2['uifilter'];     
+        $uifilter = $this->yamlP2['uifilter'];
         $compare = "$table.$colname ".a($colinfo, 'compare', '');
-        foreach($uifilter as $filtername=>$info) {
-            if(strpos($compare, '@'.$filtername)!==false) {
+        foreach ($uifilter as $filtername => $info) {
+            if (strpos($compare, '@'.$filtername)!==false) {
                 $type_id = $table_dd['flat'][$colname]['type_id'];
-                if(a($info, 'value', '')<>'') {
+                if (a($info, 'value', '')<>'') {
                     $val = SQL_FORMAT($type_id, $info['value']);
-                    if($noempty=='Y' && trim($info['value'])=='') {
+                    if ($noempty=='Y' && trim($info['value'])=='') {
                         $compare='';
                         break;
                     }
                     $compare = str_replace(
-                        '@'.$filtername, $val, $compare
+                        '@'.$filtername,
+                        $val,
+                        $compare
                     );
                 }
             }
@@ -895,14 +895,15 @@ class androPage
      *  @param  string $colinfo  other column information
      *  @access private
      */
-    function SQLCompareStar($table,$colname,$colinfo) 
+    private function SQLCompareStar($table, $colname, $colinfo)
     {
         // Get the uifilter being used and its value
         // skip the asterisk and the @sign
         $uif_name = substr($colinfo['compare'], 2);
         // x4Debug($this->yamlP2['uifilter']);
         $uiv_val  = a($this->yamlP2['uifilter'][$uif_name], 'value');
-        if($uiv_val=='') { return ''; 
+        if ($uiv_val=='') {
+            return '';
         }
         
         // Get data dictionary
@@ -913,7 +914,8 @@ class androPage
         // x4Debug($colname);
         // x4Debug($uiv_val);
         // x4Debug($rv);
-        if($rv<>'') { return "(".$rv.")"; 
+        if ($rv<>'') {
+            return "(".$rv.")";
         }
         return '';
         // return "(".rff_OneCol($dd['flat'][$colname],$colname,$uiv_val).")";
@@ -926,7 +928,7 @@ class androPage
      *  @param  string $message The error message
      *  @access private
      */
-    function errorAdd($message) 
+    private function errorAdd($message)
     {
         ErrorAdd($message);
     }

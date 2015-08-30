@@ -8,7 +8,7 @@ require_once 'smarty/libs/Smarty.class.php';
  * @package androPage
  * @author  Donald Organ
 */
-class androPageSmarty
+class AndroPageSmarty
 {
     /**
      *  A placeholder property to demonstrate PHP Doc conventions
