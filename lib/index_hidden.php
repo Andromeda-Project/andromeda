@@ -219,15 +219,15 @@ if (gp('gp_uid')<>'') {
     gpSet('loginUID', gp('gp_uid'));
     gpSet('loginPWD', gp('gp_pwd'));
     gpSet('gp_posted', 1);
-    gpSet('gp_page', 'x_login');
+    gpSet('gp_page', 'XLogin');
 }
 
 $gp_page = gp('gp_page');
-// KFD 3/6/08 Changed login processing from page x_login to
+// KFD 3/6/08 Changed login processing from page XLogin to
 //            the st2login command
 
 if (gp('st2login')==1) {
-    $obj_login = dispatchObject('x_login');
+    $obj_login = dispatchObject('XLogin');
     $obj_login->directlogin = $directlogin;
     $obj_login->Login_Process();
     if (LoggedIn()) {
@@ -524,7 +524,7 @@ return;
 // DISPATCH DESTINATIONS
 // ==================================================================
 // ------------------------------------------------------------------
-// >> index_hidden_x6Dispatch
+// >> indeshidden_x6Dispatch
 // ------------------------------------------------------------------
 function index_hidden_x6Dispatch(
     $x6page,
@@ -595,21 +595,21 @@ function index_hidden_x6Dispatch(
     if (!is_array($MPPages)) {
         $MPPages = array();
     }
-    $MPPages['x_home']='Home Page';
-    $MPPages['x_login']='Login';
-    $MPPages['x_noauth']='Authorization Required';
-    $MPPages['x_password']="Password";
-    $MPPages['x_mpassword']="Member Password";
-    $MPPages['x_paypalipn']='Paypal IPN';
+    $MPPages['XHome']='Home Page';
+    $MPPages['XLogin']='Login';
+    $MPPages['XNoAuth']='Authorization Required';
+    $MPPages['XPassword']="Password";
+    $MPPages['XMPassword']="Member Password";
+    $MPPages['XPaypalIpn']='Paypal IPN';
 
     // Session timeouts.  Need to code for basic page access
     // and code for ajax timeouts.
     if (!LoggedIn() && !in_array($x6page, array_keys($MPPages))) {
         if (gpExists('json')) {
-            x4Script("window.location='index.php?gp_page=x_login'");
+            x4Script("window.location='index.php?gp_page=XLogin'");
             echo json_encode($GLOBALS['AG']['x4']);
         } else {
-            echo "<script>window.location='index.php?gp_page=x_login&x2=1'</script>";
+            echo "<script>window.location='index.php?gp_page=XLogin&x2=1'</script>";
         }
         return;
     }
@@ -840,10 +840,10 @@ function index_hidden_x4Dispatch()
     //
     if (!LoggedIn()) {
         if (gpExists('json')) {
-            x4Script("window.location='index.php?gp_page=x_login'");
+            x4Script("window.location='index.php?gp_page=XLogin'");
             echo json_encode_safe($GLOBALS['AG']['x4']);
         } else {
-            echo "<script>window.location='index.php?gp_page=x_login'</script>";
+            echo "<script>window.location='index.php?gp_page=XLogin'</script>";
         }
         return;
     }
@@ -1550,7 +1550,7 @@ function index_hidden_page()
     // KFD 3/6/08, moved here from the main stream of index_hidden
     //             because these are relevant only to page processing
     if (gpExists('x_module')) {
-        SessionSet('AGMENU_MODULE', gp('x_module'));
+        SessionSet('AGMENU_MODULE', gp('XModule'));
     } elseif (vgaGet('nomodule')<>'' && SessionGet('AGMENU_MODULE')=='') {
         SessionSet('AGMENU_MODULE', vgaGet('nomodule'));
     }
@@ -1575,12 +1575,12 @@ function index_hidden_page()
     if (!is_array($MPPages)) {
         $MPPages = array();
     }
-    $MPPages['x_home']='Home Page';
-    $MPPages['x_login']='Login';
-    $MPPages['x_noauth']='Authorization Required';
-    $MPPages['x_password']="Password";
-    $MPPages['x_mpassword']="Member Password";
-    $MPPages['x_paypalipn']='Paypal IPN';
+    $MPPages['XHome']='Home Page';
+    $MPPages['XLogin']='Login';
+    $MPPages['XNoAuth']='Authorization Required';
+    $MPPages['XPassword']="Password";
+    $MPPages['XMPassword']="Member Password";
+    $MPPages['XPaypalIpn']='Paypal IPN';
 
     // If the install page exists, it will be used, no getting
     // around it.
@@ -1603,7 +1603,7 @@ function index_hidden_page()
     if (gp('gp_flaglogin')=='1') {
         gpSet('gp_flaglogin', '');
         gpToSession();
-        gpSet('gp_page', 'x_login');
+        gpSet('gp_page', 'XLogin');
     }
 
     // Second pass redirection, pick default page if there
@@ -1620,13 +1620,13 @@ function index_hidden_page()
                 $gp_page=appNoPage();
             } else {
                 if (!LoggedIn()) {
-                    $gp_page = FILE_EXISTS_INCPATH('x_home.php') ? 'x_home' : 'x_login';
+                    $gp_page = FILE_EXISTS_INCPATH('XHome.php') ? 'XHome' : 'XLogin';
                 } else {
                     // KFD 3/2/07, pull vga stuff to figure defaults
                     if (vgaGet('nopage')<>'') {
                         $gp_page = vgaGet('nopage');
                     } else {
-                        $gp_page = 'x_welcome';
+                        $gp_page = 'XWelcome';
                     }
                 }
             }
@@ -1639,14 +1639,14 @@ function index_hidden_page()
             fwLogEntry('1014', 'Page access w/o login', $gp_page);
         }
         gpToSession();
-        $gp_page='x_login';
+        $gp_page='XLogin';
     }
     // If pos is activated and the current requested page does not
     // match what they are cleared for, redirect to login
     if (vgaGet('POS_SECURITY', false)==true && SessionGet('ADMIN')==false) {
         if (SessionGet('POS_PAGE', '', 'FW')<>$gp_page) {
             gpToSession();
-            $gp_page='x_login';
+            $gp_page='XLogin';
         }
     }
     gpSet('gp_page', $gp_page);
