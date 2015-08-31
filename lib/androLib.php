@@ -3484,7 +3484,7 @@ function return_command_add($command, $element, $value)
         */
 function returns_as_ajax()
 {
-    global $AG:
+    global $AG;
     $retvals = ArraySafe($AG, 'retvals', array());
     $rv2 = array();
     foreach ($retvals as $element => $value) {
