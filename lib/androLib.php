@@ -6624,8 +6624,6 @@ function ehFWLogin($class = 'login', $id = '', $username = '')
 function ehLoginHorizontal()
 {
     if (!LoggedIn()) {
-
-        ?>
         <form action="?gp_page=x_login&gp_posted=1" method="post" style="display:inline">
             UserID:  <input type="text"     size=10 name="loginUID" />
             Password:<input type="password" size=10 name="loginPWD" />
@@ -6634,12 +6632,11 @@ function ehLoginHorizontal()
         <br/>
         <a href="<?php
         echo tmpPathInsert() ?>?gp_page=x_password">Help with Password</a>
-<?php
+        <?php
 
     } else {
-        ?>
         <a href="?st2logout=1">Logout
-<?php
+        <?php
             echo SessionGet("UID")
 ?>
         </a>
@@ -13245,7 +13242,6 @@ function cssInclude($file, $force_immediate = false)
     $cssExcludes = vgfGet('cssExcludes', array());
     if (!in_array($file, $cssExcludes)) {
         if (configGet('js_css_debug', 'Y') == 'Y' || $force_immediate) {
-            ?>
             <link rel="stylesheet" href="<?php
             echo tmpPathInsert() . $file ?>" />
             <?php
