@@ -535,7 +535,7 @@ function index_hidden_x6Dispatch(
     $x6plugin,
     $x6action
 ) {
-    global $AG:
+    global $AG;
     // This is everything that *might* go back, make a place
     // for all of it
     $AG['x4'] = array(
