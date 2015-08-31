@@ -2,7 +2,6 @@
 /* DEPRECATED */
 function ValueSet($key, $value)
 {
-    global $GLOBALS;
     echo "Calling Valueset $key <br/>";
     vgfSet($key, $value);
     if (!isset($GLOBALS['AG']['values'])) {
@@ -13,7 +12,6 @@ function ValueSet($key, $value)
 /* DEPRECATED */
 function ValueGet($key)
 {
-    global $GLOBALS;
     if (!isset($GLOBALS['AG']['values'])) {
         $GLOBALS['AG']['values']=array();
     }
@@ -476,7 +474,6 @@ function ehTBodyFromRows(&$rows, $columns = array(), $options = array())
 /* DEPRECATED */
 function HTMLX_Errors()
 {
-    global $GLOBALS;
     $retval="";
     if (isset($GLOBALS['AG']['trx_errors'])) {
         if (is_array($GLOBALS['AG']['trx_errors'])) {
@@ -498,7 +495,6 @@ function HTMLX_Errors()
 /* this routine is not used by the framework */
 function HTMLX_Notices()
 {
-    global $GLOBALS;
     $retval="";
     foreach ($GLOBALS['AG']["messages"] as $err) {
         $retval.=ListDelim($retval, "<br><br>").$err."\n";
@@ -662,12 +658,10 @@ function ElementAdd($type, $msg)
 }
 function ElementInit($type)
 {
-    global $GLOBALS;
     $GLOBALS["AG"][$type]=array();
 }
 function ElementReturn($type, $default = array())
 {
-    global $GLOBALS;
     if (!isset($GLOBALS['AG'][$type])) {
         return $default;
     } else {
@@ -676,7 +670,6 @@ function ElementReturn($type, $default = array())
 }
 function Element($type)
 {
-    global $GLOBALS;
     if (!isset($GLOBALS['AG'][$type])) {
         return false;
     }
@@ -696,7 +689,6 @@ function ElementImplode($type, $implode = "\n")
 }
 function ElementOut($type, $dohtml = false)
 {
-    global $GLOBALS;
     // Hardcoded row we want in there
     if ($type=='script') {
         $ajaxTM=vgfGet('ajaxTM', 0)==1 ? '1' : '0';

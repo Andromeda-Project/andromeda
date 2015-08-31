@@ -1884,7 +1884,6 @@ function x6CSS()
 }
 function x6CSSDefine($key, $default = '')
 {
-    global $GLOBALS;
     if (!x6CSS()) {
         return $default;
     }
@@ -2005,7 +2004,6 @@ function x6cssHeightLessH1()
  ******/
 function SQL_FORMAT($t, $v, $clip = 0)
 {
-    global $GLOBALS;
     switch ($t) {
         case 'mime-x':
             return "'" . SQL_ESCAPE_BINARY($v) . "'";
@@ -3050,7 +3048,6 @@ function SessionUnSet($key, $context = 'app', $sfx = 'app')
  ******/
 function SessionReset()
 {
-    global $GLOBALS;
     foreach ($_SESSION as $key => $value) {
         $app = $GLOBALS['AG']['application'] . '_';
         if (substr($key, 0, strlen($app)) == $app) {
@@ -3381,7 +3378,6 @@ function scStackPop($stackname)
         */
 function return_value_add($element, $value)
 {
-    global $GLOBALS;
     $retvals = ArraySafe($GLOBALS['AG'], 'retvals', array());
     $retvals[$element] = $value;
     $GLOBALS['AG']['retvals'] = $retvals;
@@ -3444,7 +3440,6 @@ function retCmd($command, $element, $value)
         */
 function return_command_add($command, $element, $value)
 {
-    global $GLOBALS;
     $retcommands = ArraySafe($GLOBALS['AG'], 'retcommands', array());
     $retcommands[$command][$element] = $value;
     $GLOBALS['AG']['retcommands'] = $retcommands;
@@ -3468,7 +3463,6 @@ function return_command_add($command, $element, $value)
         */
 function returns_as_ajax()
 {
-    global $GLOBALS;
     $retvals = ArraySafe($GLOBALS['AG'], 'retvals', array());
     $rv2 = array();
     foreach ($retvals as $element => $value) {
@@ -5044,7 +5038,6 @@ function Errors($prefix = '')
  */
 function ErrorsExist($prefix = '')
 {
-    global $GLOBALS;
     if (!isset($GLOBALS['AG']["trx_errors"])) {
         return false;
     }
@@ -5144,7 +5137,6 @@ function hErrors($class = 'alert alert-error')
 {
     $retval = "";
 
-    global $GLOBALS;
     $errors = ErrorsGet();
 
     if (count($errors) > 0) {
@@ -5166,7 +5158,6 @@ function hErrors($class = 'alert alert-error')
  */
 function asErrors()
 {
-    global $GLOBALS;
     $retval = "";
     $errors = ErrorsGet();
     foreach ($errors as $error) {
@@ -5200,7 +5191,6 @@ function asErrors()
  */
 function hNotices($class = 'noticebox')
 {
-    global $GLOBALS;
     $retval = "";
     $notices = NoticesGet();
     if (count($notices) > 0) {
@@ -7270,7 +7260,6 @@ function fsFileFromArray($name, $array, $arrayname, $dir = '')
 $retval
 );
 ?>";
-    global $GLOBALS;
     $file = $GLOBALS['AG']['dirs']['app_root'] . ($dir == '' ? 'dynamic' : $dir) . DIRECTORY_SEPARATOR . "$name";
     file_put_contents($file, $retval);
 
@@ -10839,7 +10828,6 @@ function EmailSendHtml($to, $subject, $message)
 
 function XML_RPC($callcode, $arr_inputs)
 {
-    global $GLOBALS;
     $GLOBALS['AG']["xmlrpc"] = array("callcode" => $callcode, "inputs" => $arr_inputs);
     include"x_xmlrpc.php";
 }
@@ -13589,7 +13577,6 @@ function scDBConn_Pop()
 /* FRAMEWORK */
 function SQL_CONNSTRING($tuid, $tpwd, $app = "")
 {
-    global $GLOBALS;
     $host = '';
     unset($host);
 
@@ -13627,7 +13614,6 @@ function SQL_CONNCLOSE($tconn)
 /* Use SQL_ConnPush() */
 function SQL_CONNDEFAULT()
 {
-    global $GLOBALS;
     $uid = SessionGet('UID', '');
     $pwd = SessionGet('PWD', '');
     return SQL_CONN($uid, $pwd);
@@ -13650,7 +13636,6 @@ function SQL2($sql, $dbconn, &$error = false)
         //echo "<b>ERROR: CALL TO SQL2 WITH NO CONNECTION</b>";
         return;
     }
-    global $GLOBALS;
     // KFD 12/31/08, Control by cookie and group setting
     $debug = inGroup('debugging') && arr($_COOKIE, 'log_Server', 0) == 1;
     //$debug = trim(ConfigGet('js_css_debug','N'));
@@ -14000,7 +13985,6 @@ function SQLX_TrxBegin()
 /* FRAMEWORK */
 function SQLX_TrxCommit()
 {
-    global $GLOBALS;
     if (!isset($GLOBALS['AG']['trxlevel'])) {
         $GLOBLAS['AG']['trxlevel'] = 0;
     }
@@ -14015,7 +13999,6 @@ function SQLX_TrxCommit()
 /* FRAMEWORK */
 function SQLX_TrxRollback()
 {
-    global $GLOBALS;
     if (!isset($GLOBALS['AG']['trxlevel'])) {
         $GLOBALS['AG']['trxlevel'] = 0;
     }
@@ -14061,7 +14044,6 @@ function SQLX_TrxClose($name = '')
 /* FRAMEWORK */
 function SQLX_TrxLevel()
 {
-    global $GLOBALS;
     if (!isset($GLOBALS['AG']['trxlevel'])) {
         $GLOBALS['AG']['trxlevel'] = 0;
     }
