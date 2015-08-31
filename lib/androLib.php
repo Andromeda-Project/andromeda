@@ -7268,7 +7268,7 @@ function fsMakeDirNested($Base_Path, $New_Path)
  */
 function fsFileFromArray($name, $array, $arrayname, $dir = '')
 {
-    global $AG:
+    global $AG;
     $annoying = $arrayname;
     $retval = "";
     $level = 0;
@@ -11689,7 +11689,7 @@ function isValidName($value)
  */
 function eTimeBegin()
 {
-    global $AG:
+    global $AG;
     if (!isset($AG['etimes'])) {
         $AG['etimes'] = array();
     }
