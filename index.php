@@ -1,4 +1,5 @@
 <?php
+global $AG;
 /* ================================================================== *\
    (C) Copyright 2005 by Secure Data Software, Inc.
    This file is part of Andromeda
@@ -44,7 +45,7 @@
 //   -- KFD 3/15/07
 //
 // ==================================================================
-if (!isset($GLOBALS['AG']['tmpPathInsert'])) {
+if (!isset($AG['tmpPathInsert'])) {
     $ruri=$_SERVER['REQUEST_URI'];
     // If there is a "?", strip that off and everything past it
     $ruriqm =strpos($ruri, '?');
@@ -57,7 +58,7 @@ if (!isset($GLOBALS['AG']['tmpPathInsert'])) {
     if (substr($ruri, 0, 1)=='/') {
         $ruri = substr($ruri, 1);
     }
-    $GLOBALS['AG']['tmpPathInsert']=$ruri;
+    $AG['tmpPathInsert']=$ruri;
 }
 
 
@@ -68,11 +69,11 @@ if (!isset($GLOBALS['AG']['tmpPathInsert'])) {
 // >>> 
 // ==================================================================
 $dir = realpath(dirname(__FILE__)).'/';
-$GLOBALS['AG']['dirs']['root']        = $dir;
-$GLOBALS['AG']["dirs"]["dynamic"]     = $GLOBALS['AG']['dirs']['app_root'] ."dynamic" . DIRECTORY_SEPARATOR;
-$GLOBALS['AG']["dirs"]["application"] = $GLOBALS['AG']['dirs']['app_root'] ."application" . DIRECTORY_SEPARATOR;
-$GLOBALS['AG']["dirs"]["generated"]   = $GLOBALS['AG']['dirs']['app_root'] ."generated" . DIRECTORY_SEPARATOR ;
-$GLOBALS['AG']["dirs"]["lib"]         = $dir."lib" . DIRECTORY_SEPARATOR;
+$AG['dirs']['root']        = $dir;
+$AG["dirs"]["dynamic"]     = $AG['dirs']['app_root'] ."dynamic" . DIRECTORY_SEPARATOR;
+$AG["dirs"]["application"] = $AG['dirs']['app_root'] ."application" . DIRECTORY_SEPARATOR;
+$AG["dirs"]["generated"]   = $AG['dirs']['app_root'] ."generated" . DIRECTORY_SEPARATOR ;
+$AG["dirs"]["lib"]         = $dir."lib" . DIRECTORY_SEPARATOR;
 
 ini_set("include_path", $GLOBALS['AG']["dirs"]["dynamic"].PATH_SEPARATOR
     .$GLOBALS['AG']["dirs"]["application"].PATH_SEPARATOR
