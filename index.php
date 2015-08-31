@@ -44,16 +44,20 @@
 //   -- KFD 3/15/07
 //
 // ==================================================================
-if(!isset($AG['tmpPathInsert'])) {
+if (!isset($GLOBALS['AG']['tmpPathInsert'])) {
     $ruri=$_SERVER['REQUEST_URI'];
     // If there is a "?", strip that off and everything past it
-    $ruriqm =strpos($ruri,'?');
-    if($ruriqm!==false) $ruri=substr($ruri,0,$ruriqm);
+    $ruriqm =strpos($ruri, '?');
+    if ($ruriqm!==false) {
+        $ruri=substr($ruri, 0, $ruriqm);
+    }
     // If there is an "index.php" then strip that off
-    $ruri=preg_replace('/index.php/i','',$ruri);
+    $ruri=preg_replace('/index.php/i', '', $ruri);
     // Now remove the leading slash that is always there (unless it ain't)
-    if(substr($ruri,0,1)=='/') $ruri = substr($ruri,1);
-    $AG['tmpPathInsert']=$ruri;
+    if (substr($ruri, 0, 1)=='/') {
+        $ruri = substr($ruri, 1);
+    }
+    $GLOBALS['AG']['tmpPathInsert']=$ruri;
 }
 
 
@@ -64,19 +68,17 @@ if(!isset($AG['tmpPathInsert'])) {
 // >>> 
 // ==================================================================
 $dir = realpath(dirname(__FILE__)).'/';
-$AG['dirs']['root']        = $dir;
-$AG["dirs"]["dynamic"]     = $AG['dirs']['app_root'] ."dynamic/";
-$AG["dirs"]["application"] = $AG['dirs']['app_root'] ."application/";
-$AG["dirs"]["generated"]   = $AG['dirs']['app_root'] ."generated/" ;
-$AG["dirs"]["lib"]         = $dir."lib/";
+$GLOBALS['AG']['dirs']['root']        = $dir;
+$GLOBALS['AG']["dirs"]["dynamic"]     = $GLOBALS['AG']['dirs']['app_root'] ."dynamic" . DIRECTORY_SEPARATOR;
+$GLOBALS['AG']["dirs"]["application"] = $GLOBALS['AG']['dirs']['app_root'] ."application" . DIRECTORY_SEPARATOR;
+$GLOBALS['AG']["dirs"]["generated"]   = $GLOBALS['AG']['dirs']['app_root'] ."generated" . DIRECTORY_SEPARATOR ;
+$GLOBALS['AG']["dirs"]["lib"]         = $dir."lib" . DIRECTORY_SEPARATOR;
 
-ini_set("include_path"
-    ,$AG["dirs"]["dynamic"].PATH_SEPARATOR
-    .$AG["dirs"]["application"].PATH_SEPARATOR
-    .$AG["dirs"]["generated"].PATH_SEPARATOR
-    .$AG["dirs"]["lib"].PATH_SEPARATOR
-    .ini_get("include_path")
-);
+ini_set("include_path", $GLOBALS['AG']["dirs"]["dynamic"].PATH_SEPARATOR
+    .$GLOBALS['AG']["dirs"]["application"].PATH_SEPARATOR
+    .$GLOBALS['AG']["dirs"]["generated"].PATH_SEPARATOR
+    .$GLOBALS['AG']["dirs"]["lib"].PATH_SEPARATOR
+    .ini_get("include_path"));
 
 // ==================================================================
 // >>> 

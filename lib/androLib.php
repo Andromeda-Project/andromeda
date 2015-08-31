@@ -1884,11 +1884,11 @@ function x6CSS()
 }
 function x6CSSDefine($key, $default = '')
 {
+    global $GLOBALS;
     if (!x6CSS()) {
         return $default;
     }
-    global $AG;
-    $retval = arr($AG['x6skin']['defines'], $key, $default);
+    $retval = arr($GLOBALS['AG']['x6skin']['defines'], $key, $default);
     return str_replace('px', '', $retval);
 }
 
@@ -2005,7 +2005,7 @@ function x6cssHeightLessH1()
  ******/
 function SQL_FORMAT($t, $v, $clip = 0)
 {
-    global $AG;
+    global $GLOBALS;
     switch ($t) {
         case 'mime-x':
             return "'" . SQL_ESCAPE_BINARY($v) . "'";
@@ -3050,9 +3050,9 @@ function SessionUnSet($key, $context = 'app', $sfx = 'app')
  ******/
 function SessionReset()
 {
-    global $AG;
+    global $GLOBALS;
     foreach ($_SESSION as $key => $value) {
-        $app = $AG['application'] . '_';
+        $app = $GLOBALS['AG']['application'] . '_';
         if (substr($key, 0, strlen($app)) == $app) {
             unset($_SESSION[$key]);
         }
@@ -3381,8 +3381,8 @@ function scStackPop($stackname)
         */
 function return_value_add($element, $value)
 {
-    global $AG;
-    $retvals = ArraySafe($AG, 'retvals', array());
+    global $GLOBALS;
+    $retvals = ArraySafe($GLOBALS['AG'], 'retvals', array());
     $retvals[$element] = $value;
     $GLOBALS['AG']['retvals'] = $retvals;
 }
@@ -3444,8 +3444,8 @@ function retCmd($command, $element, $value)
         */
 function return_command_add($command, $element, $value)
 {
-    global $AG;
-    $retcommands = ArraySafe($AG, 'retcommands', array());
+    global $GLOBALS;
+    $retcommands = ArraySafe($GLOBALS['AG'], 'retcommands', array());
     $retcommands[$command][$element] = $value;
     $GLOBALS['AG']['retcommands'] = $retcommands;
 }
@@ -3468,13 +3468,13 @@ function return_command_add($command, $element, $value)
         */
 function returns_as_ajax()
 {
-    global $AG;
-    $retvals = ArraySafe($AG, 'retvals', array());
+    global $GLOBALS;
+    $retvals = ArraySafe($GLOBALS['AG'], 'retvals', array());
     $rv2 = array();
     foreach ($retvals as $element => $value) {
         $rv2[] = $element . '|' . $value;
     }
-    $retcommands = ArraySafe($AG, 'retcommands', array());
+    $retcommands = ArraySafe($GLOBALS['AG'], 'retcommands', array());
     foreach ($retcommands as $cmd => $info) {
         foreach ($info as $element => $value) {
             $rv2[] = $cmd . '|' . $element . '|' . $value;
@@ -5044,12 +5044,12 @@ function Errors($prefix = '')
  */
 function ErrorsExist($prefix = '')
 {
-    global $AG;
-    if (!isset($AG["trx_errors"])) {
+    global $GLOBALS;
+    if (!isset($GLOBALS['AG']["trx_errors"])) {
         return false;
     }
     // never set, no errors
-    if (count($AG["trx_errors"]) == 0) {
+    if (count($GLOBALS['AG']["trx_errors"]) == 0) {
         return false;
     }
     // empty list of errors
@@ -5060,7 +5060,7 @@ function ErrorsExist($prefix = '')
 
     // finally, look through each error for the prefix.  first found
     // returns true
-    foreach ($AG['trx_errors'] as $err) {
+    foreach ($GLOBALS['AG']['trx_errors'] as $err) {
         if (substr(trim($err), 0, strlen($prefix)) == $prefix) {
             return true;
         }
@@ -5144,7 +5144,7 @@ function hErrors($class = 'alert alert-error')
 {
     $retval = "";
 
-    global $AG;
+    global $GLOBALS;
     $errors = ErrorsGet();
 
     if (count($errors) > 0) {
@@ -5166,7 +5166,7 @@ function hErrors($class = 'alert alert-error')
  */
 function asErrors()
 {
-    global $AG;
+    global $GLOBALS;
     $retval = "";
     $errors = ErrorsGet();
     foreach ($errors as $error) {
@@ -5200,7 +5200,7 @@ function asErrors()
  */
 function hNotices($class = 'noticebox')
 {
-    global $AG;
+    global $GLOBALS;
     $retval = "";
     $notices = NoticesGet();
     if (count($notices) > 0) {
@@ -7270,8 +7270,8 @@ function fsFileFromArray($name, $array, $arrayname, $dir = '')
 $retval
 );
 ?>";
-    global $AG;
-    $file = $AG['dirs']['app_root'] .($dir == '' ? 'dynamic' : $dir) . "/$name";
+    global $GLOBALS;
+    $file = $GLOBALS['AG']['dirs']['app_root'] . ($dir == '' ? 'dynamic' : $dir) . DIRECTORY_SEPARATOR . "$name";
     file_put_contents($file, $retval);
 
     //  hprint_r($array);
@@ -10752,10 +10752,10 @@ function Email_Exp($from, $to, $subject, $body, $headers)
 // every round trip with loading them up.
 //
 // The strategy is to take the parameters passed in and assign them
-// to some property of $AG.  Then we branch to the relevant library.
+// to some property of $GLOBALS['AG'].  Then we branch to the relevant library.
 // The library should at very least read the inputs, do its thing,
-// and then put some return values into the $AG object.  Ideally,
-// the library will also detect when the $AG object does not exist
+// and then put some return values into the $GLOBALS['AG'] object.  Ideally,
+// the library will also detect when the $GLOBALS['AG'] object does not exist
 // and put up some HTML allowing the user to enter values manually,
 // which makes for a great interactive testing system.
 // ==================================================================
@@ -10839,8 +10839,8 @@ function EmailSendHtml($to, $subject, $message)
 
 function XML_RPC($callcode, $arr_inputs)
 {
-    global $AG;
-    $AG["xmlrpc"] = array("callcode" => $callcode, "inputs" => $arr_inputs);
+    global $GLOBALS;
+    $GLOBALS['AG']["xmlrpc"] = array("callcode" => $callcode, "inputs" => $arr_inputs);
     include"x_xmlrpc.php";
 }
 
@@ -13589,23 +13589,12 @@ function scDBConn_Pop()
 /* FRAMEWORK */
 function SQL_CONNSTRING($tuid, $tpwd, $app = "")
 {
-    global $AG;
-
-    /*
-                if (file_exists( $AG['dirs']['application'] .'pg_overrides.php' ) ) {
-                include( $AG['dirs']['application'] .'pg_overrides.php' );
-                if ( isset( $pg_overrides ) ) {
-                foreach( $pg_overrides as $key=>$value ) {
-                $$key = $value;
-                }
-                }
-                }
-                */
+    global $GLOBALS;
     $host = '';
     unset($host);
 
     if ($app == "") {
-        $app = $AG["application"];
+        $app = $GLOBALS['AG']["application"];
     }
     return (isset($host) ? " host=" . $host : "") . " dbname=" . $app . " user=" . strtolower($tuid) . " password=" . $tpwd;
 }
@@ -13613,10 +13602,9 @@ function SQL_CONNSTRING($tuid, $tpwd, $app = "")
 /* FRAMEWORK */
 function SQL_CONN($tuid, $tpwd, $app = "")
 {
-    global $AG;
+    global $GLOBALS;
 
-    //if ($app=="") { $app = $AG["application"]; }
-    $app = $AG["application"];
+    $app = $GLOBALS['AG']["application"];
 
     //echo "$tuid $tpwd $app";
     $tcs = SQL_CONNSTRING($tuid, $tpwd, $app);
@@ -13639,7 +13627,7 @@ function SQL_CONNCLOSE($tconn)
 /* Use SQL_ConnPush() */
 function SQL_CONNDEFAULT()
 {
-    global $AG;
+    global $GLOBALS;
     $uid = SessionGet('UID', '');
     $pwd = SessionGet('PWD', '');
     return SQL_CONN($uid, $pwd);
@@ -13662,7 +13650,7 @@ function SQL2($sql, $dbconn, &$error = false)
         //echo "<b>ERROR: CALL TO SQL2 WITH NO CONNECTION</b>";
         return;
     }
-    global $AG;
+    global $GLOBALS;
     // KFD 12/31/08, Control by cookie and group setting
     $debug = inGroup('debugging') && arr($_COOKIE, 'log_Server', 0) == 1;
     //$debug = trim(ConfigGet('js_css_debug','N'));
@@ -13997,14 +13985,14 @@ equivalent to "BEGIN TRANSACTION".
 */
 function SQLX_TrxBegin()
 {
-    global $dbconn, $AG;
-    if (!isset($AG['trxlevel'])) {
-        $AG['trxlevel'] = 0;
+    global $dbconn, $GLOBALS;
+    if (!isset($GLOBALS['AG']['trxlevel'])) {
+        $GLOBALS['AG']['trxlevel'] = 0;
     }
-    if ($AG["trxlevel"] <> 0) {
+    if ($GLOBALS['AG']["trxlevel"] <> 0) {
         ErrorsAdd("ERROR: Nested transactions are not allowed");
     } else {
-        $AG["trxlevel"]++;
+        $GLOBALS['AG']["trxlevel"]++;
         SQL("BEGIN TRANSACTION");
     }
 }
@@ -14012,14 +14000,14 @@ function SQLX_TrxBegin()
 /* FRAMEWORK */
 function SQLX_TrxCommit()
 {
-    global $AG;
-    if (!isset($AG['trxlevel'])) {
-        $AG['trxlevel'] = 0;
+    global $GLOBALS;
+    if (!isset($GLOBALS['AG']['trxlevel'])) {
+        $GLOBLAS['AG']['trxlevel'] = 0;
     }
-    if ($AG["trxlevel"] <> 1) {
-        ErrorsAdd("Error, can only commit a trx when level is 1, it is now: " . $AG["trxlevel"]);
+    if ($GLOBALS['AG']["trxlevel"] <> 1) {
+        ErrorsAdd("Error, can only commit a trx when level is 1, it is now: " . $GLOBLAS['AG']["trxlevel"]);
     } else {
-        $AG["trxlevel"]--;
+        $GLOBALS['AG']["trxlevel"]--;
         SQL("COMMIT TRANSACTION");
     }
 }
@@ -14027,14 +14015,14 @@ function SQLX_TrxCommit()
 /* FRAMEWORK */
 function SQLX_TrxRollback()
 {
-    global $AG;
-    if (!isset($AG['trxlevel'])) {
-        $AG['trxlevel'] = 0;
+    global $GLOBALS;
+    if (!isset($GLOBALS['AG']['trxlevel'])) {
+        $GLOBALS['AG']['trxlevel'] = 0;
     }
-    if ($AG["trxlevel"] <> 1) {
-        ErrorsAdd("Error, can only rollback a trx when level is 1, it is now: " . $AG["trxlevel"]);
+    if ($GLOBALS['AG']["trxlevel"] <> 1) {
+        ErrorsAdd("Error, can only rollback a trx when level is 1, it is now: " . $GLOBALS['AG']["trxlevel"]);
     } else {
-        $AG["trxlevel"]--;
+        $GLOBALS['AG']["trxlevel"]--;
         SQL("ROLLBACK TRANSACTION");
     }
 }
@@ -14073,11 +14061,11 @@ function SQLX_TrxClose($name = '')
 /* FRAMEWORK */
 function SQLX_TrxLevel()
 {
-    global $AG;
-    if (!isset($AG['trxlevel'])) {
-        $AG['trxlevel'] = 0;
+    global $GLOBALS;
+    if (!isset($GLOBALS['AG']['trxlevel'])) {
+        $GLOBALS['AG']['trxlevel'] = 0;
     }
-    return $AG["trxlevel"];
+    return $GLOBALS['AG']["trxlevel"];
 }
 
 /*

@@ -2,6 +2,7 @@
 /* DEPRECATED */
 function ValueSet($key, $value)
 {
+    global $GLOBALS;
     echo "Calling Valueset $key <br/>";
     vgfSet($key, $value);
     if (!isset($GLOBALS['AG']['values'])) {
@@ -12,6 +13,7 @@ function ValueSet($key, $value)
 /* DEPRECATED */
 function ValueGet($key)
 {
+    global $GLOBALS;
     if (!isset($GLOBALS['AG']['values'])) {
         $GLOBALS['AG']['values']=array();
     }
@@ -474,16 +476,16 @@ function ehTBodyFromRows(&$rows, $columns = array(), $options = array())
 /* DEPRECATED */
 function HTMLX_Errors()
 {
-    global $AG;
+    global $GLOBALS;
     $retval="";
-    if (isset($AG['trx_errors'])) {
-        if (is_array($AG['trx_errors'])) {
-            foreach ($AG["trx_errors"] as $err) {
+    if (isset($GLOBALS['AG']['trx_errors'])) {
+        if (is_array($GLOBALS['AG']['trx_errors'])) {
+            foreach ($GLOBALS['AG']["trx_errors"] as $err) {
                 $retval.=ListDelim($retval, "<br><br>").$err."\n";
             }
         }
     }
-    $AG["trx_errors"]=array();
+    $GLOBALS['AG']["trx_errors"]=array();
     if ($retval=="") {
         return "";
     } else {
@@ -496,12 +498,12 @@ function HTMLX_Errors()
 /* this routine is not used by the framework */
 function HTMLX_Notices()
 {
-    global $AG;
+    global $GLOBALS;
     $retval="";
-    foreach ($AG["messages"] as $err) {
+    foreach ($GLOBALS['AG']["messages"] as $err) {
         $retval.=ListDelim($retval, "<br><br>").$err."\n";
     }
-    $AG["messages"]=array();
+    $GLOBALS['AG']["messages"]=array();
     if ($retval=="") {
         return "";
     } else {
@@ -514,19 +516,6 @@ function ADMIN_LOG($code, $session = "", $text = "")
 {
     $code=$session=$text='';
     return;
-    /*
-    $hostip = $_SERVER["REMOTE_ADDR"];
-
-    global $AG,$admin_cn;
-    if (isset($_SESSION[$AG["application"]."_UID"])) {
-    $uid = $_SESSION[$AG["application"]."_UID"];
-    }
-    else { $uid = "--NONE--"; }
-
-    SQL(
-    "insert into sys_logs (sys_log_type,session,hostip,uid,sys_log_text) ".
-    " values (".$code.",'".$session."','$hostip','$uid','".$text."')");
-    */
 }
 
 
@@ -534,31 +523,14 @@ function ADMIN_LOG($code, $session = "", $text = "")
 function ADMIN_SESSIONCLOSE($session_id, $killcode)
 {
     $session_id=$killcode;
-    /*
-    $time = time();
-    SQL(
-    "update adm_sessions ".
-    "  set sess_status='".$killcode."',".
-    "  sess_end = ".X_UNIX_TO_SQLTS(time()).
-    " where session = '".$session_id."'");
-    foreach($_SESSION as $key=>$value) {
-    $app = $GLOBALS['AG']['application'].'_';
-    if (substr($key,0,strlen($app))==$app) {
-    unset($_SESSION[$key]);
-    }
-    }
-    */
 }
 
 /* DEPRECATED */
 function ADMIN_SESSIONID($ts)
 {
-    global $AG;
-    //  Removed REMOTE_ADDR 5/18/05 experimentally to see if
-    //  it was causing problems for a user
-    //
-    //return md5($AG["application"].$ts.$_SERVER["REMOTE_ADDR"]);
-    return md5($AG["application"].$ts);
+    global $GLOBALS;
+
+    return md5($GLOBALS['AG']["application"].$ts);
 }
 
 /* DEPRECATED */
@@ -690,24 +662,25 @@ function ElementAdd($type, $msg)
 }
 function ElementInit($type)
 {
+    global $GLOBALS;
     $GLOBALS["AG"][$type]=array();
 }
 function ElementReturn($type, $default = array())
 {
-    global $AG;
-    if (!isset($AG[$type])) {
+    global $GLOBALS;
+    if (!isset($GLOBALS['AG'][$type])) {
         return $default;
     } else {
-        return $AG[$type];
+        return $GLOBALS['AG'][$type];
     }
 }
 function Element($type)
 {
-    global $AG;
-    if (!isset($AG[$type])) {
+    global $GLOBALS;
+    if (!isset($GLOBALS['AG'][$type])) {
         return false;
     }
-    if (count($AG[$type])>0) {
+    if (count($GLOBALS['AG'][$type])>0) {
         return true;
     } else {
         return false;
@@ -723,21 +696,14 @@ function ElementImplode($type, $implode = "\n")
 }
 function ElementOut($type, $dohtml = false)
 {
-    global $AG;
-
+    global $GLOBALS;
     // Hardcoded row we want in there
     if ($type=='script') {
-        //$calcRow=vgaGet('calcRow');
-        //ElementAdd('script',"\nfunction calcRow() {\n$calcRow\n}");
-
         $ajaxTM=vgfGet('ajaxTM', 0)==1 ? '1' : '0';
         ElementAdd('script', "\nvar ajaxTM=$ajaxTM  /* Controls AJAX table maintenance */");
-
-        //$clearBoxes=implode("\n",ArraySafe($AG,'clearBoxes',array()));
-        //ElementAdd('script',"\nfunction clearBoxes() {\n$clearBoxes\n}");
     }
 
-    $array=ArraySafe($AG, $type, array());
+    $array=ArraySafe($GLOBALS['AG'], $type, array());
     $retval="";
     $extra="";
     if ($dohtml) {
@@ -746,7 +712,7 @@ function ElementOut($type, $dohtml = false)
     foreach ($array as $msg) {
         $retval.=$msg.$extra."\n";
     }
-    $AG[$type]=array();
+    $GLOBALS['AG'][$type]=array();
     if (!$dohtml) {
         return $retval;
     }

@@ -23,8 +23,8 @@
    APP_Post.php
     
     Library to process EMAIL.  Detects three states:
-    -> $AG["email"] exists, execute a send immediately
-    -> $AG["clean"]["emailto"] exists, a postback, read vars and send
+    -> $GLOBALS['AG']["email"] exists, execute a send immediately
+    -> $GLOBALS['AG']["clean"]["emailto"] exists, a postback, read vars and send
     -> otherwise, put up HTML form to user to send test email
     
     Revisions:
@@ -34,7 +34,7 @@
     Feb 16 2005  Created, outlined, drafted
    ================================================================== 
 */
-class Xtablexemail extends Xtable2
+class XEmail extends Xtable2
 {
     public function main()
     {
@@ -43,7 +43,7 @@ class Xtablexemail extends Xtable2
 
         Hidden("gp_page", "x_email");
         
-        $table = &$GLOBALS["AG"]["tables"]["adm_emails"];
+        $table = $GLOBALS["AG"]["tables"]["adm_emails"];
         $em = array(
         "email_to"=>CleanBox("email_to", "", false),
         "email_subject"=>CleanBox("email_subject", "", false),

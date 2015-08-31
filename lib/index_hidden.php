@@ -1,4 +1,5 @@
 <?php
+global $GLOBALS;
 
 /* ================================================================== *\
 
@@ -59,13 +60,13 @@ header("Cache-control: private");
 // >>>
 // ==================================================================
 
-$appInfoFile = $AG['dirs']['generated'] .'appinfo.php';
+$appInfoFile = $GLOBALS['AG']['dirs']['generated'] .'appinfo.php';
 if (file_exists($appInfoFile)) {
     include $appInfoFile;
 }
-if (!isset($AG['application'])) {
-    $AG['application'] = 'andro';
-    $AG['app_desc'] = 'Unknown';
+if (!isset($GLOBLAS['AG']['application'])) {
+    $GLOBALS['AG']['application'] = 'andro';
+    $GLOBALS['AG']['app_desc'] = 'Unknown';
 }
 
 // ==================================================================
@@ -83,20 +84,20 @@ $GLOBALS['AG']['dbg']['sql'] = array();
 // >>> Reverse the effects of magic quotes if found
 // >>>
 // ==================================================================
-$AG['clean']= array();
-$AG['clean']['gp_page'] = '';
-$AG['clean']['gp_action'] = '';
-$AG['clean'] = array_merge($AG['clean'], $_POST, $_GET);
+$GLOBALS['AG']['clean']= array();
+$GLOBALS['AG']['clean']['gp_page'] = '';
+$GLOBALS['AG']['clean']['gp_action'] = '';
+$GLOBALS['AG']['clean'] = array_merge($GLOBALS['AG']['clean'], $_POST, $_GET);
 if (ini_get('magic_quotes_gpc')) {
-    foreach ($AG['clean'] as $var => $value) {
+    foreach ($GLOBALS['AG']['clean'] as $var => $value) {
         if ($var=='gpContext') {
             continue;
         }
         if (!is_array($value)) {
-            $AG['clean'][$var]=stripslashes($value);
+            $GLOBALS['AG']['clean'][$var]=stripslashes($value);
         } else {
             foreach ($value as $key => $subval) {
-                $AG['clean'][$var][$key] = stripslashes($subval);
+                $GLOBALS['AG']['clean'][$var][$key] = stripslashes($subval);
             }
         }
     }
@@ -106,17 +107,17 @@ if (ini_get('magic_quotes_gpc')) {
 // >>> Restore the context (taken from g/p variables)
 // >>> Used only in "classic" Xtable2 page handling, not in x4
 // >>>
-if (!isset($AG['clean']['gpContext'])) {
-    $AG['clean']['gpContext']=array();
+if (!isset($GLOBALS['AG']['clean']['gpContext'])) {
+    $GLOBALS['AG']['clean']['gpContext']=array();
 } else {
-    if (!isset($AG['clean']['gpContext'])) {
+    if (!isset($GLOBALS['AG']['clean']['gpContext'])) {
         $t2=array();
     } else {
-        $t2 = base64_decode($AG['clean']['gpContext']);
+        $t2 = base64_decode($GLOBALS['AG']['clean']['gpContext']);
         $t2 = gzuncompress($t2);
         $t2 = unserialize($t2);
     }
-    $AG['clean']['gpContext'] = $t2;
+    $GLOBALS['AG']['clean']['gpContext'] = $t2;
 }
 
 
@@ -136,7 +137,7 @@ if (configGet('deprecated', 'Y')=='Y') {
 // >>>
 // ==================================================================
 
-$x=$AG['dirs']['application'] .'applib.php';
+$x=$GLOBALS['AG']['dirs']['application'] .'applib.php';
 if (file_exists($x)) {
     include_once $x;
 }
@@ -180,15 +181,15 @@ if (gp('st2logout')<>'') {
     if (gpExists('st2keep')) {
         if (gp('st2keep')==1) {
             // This just clears user leaves rest of session
-            SessionSet('UID', $AG['application']);
-            SessionSet('PWD', $AG['application']);
+            SessionSet('UID', $GLOBALS['AG']['application']);
+            SessionSet('PWD', $GLOBALS['AG']['application']);
         } else {
             SessionReset();
         }
     } elseif (configGet('logout_clear', 'Y')=='N') {
         // Another way to clear user and leave session
-        SessionSet('UID', $AG['application']);
-        SessionSet('PWD', $AG['application']);
+        SessionSet('UID', $GLOBALS['AG']['application']);
+        SessionSet('PWD', $GLOBALS['AG']['application']);
     } else {
         SessionReset();
     }
@@ -204,8 +205,8 @@ if (gp('st2logout')<>'') {
 $uid = SessionGet('UID', '');
 if ($uid=='') {
     SessionReset();
-    SessionSet('UID', $AG['application']);
-    SessionSet('PWD', $AG['application']);
+    SessionSet('UID', $GLOBALS['AG']['application']);
+    SessionSet('PWD', $GLOBALS['AG']['application']);
 }
 
 // A direct assignment of uid/pwd must still go through
@@ -215,7 +216,7 @@ if ($uid=='') {
 $directlogin=false;
 if (gp('gp_uid')<>'') {
     $directlogin=true;
-    $directclean = $AG['clean'];
+    $directclean = $GLOBALS['AG']['clean'];
     gpSet('loginUID', gp('gp_uid'));
     gpSet('loginPWD', gp('gp_pwd'));
     gpSet('gp_posted', 1);
@@ -237,7 +238,7 @@ if (gp('st2login')==1) {
             unset($directclean['gp_pwd']);
             unset($directclean['loginUID']);
             unset($directclean['loginPWD']);
-            $AG['clean']=$directclean;
+            $GLOBALS['AG']['clean']=$directclean;
         } elseif (count(SessionGet('clean', array()))<>0) {
             // These were a page attempt made w/o being logged in,
             // which is now being ok'd since the user is logged in.
@@ -263,7 +264,7 @@ if (gp('st2login')==1) {
 // is ok, that is the so-called "anonymous" account.
 //
 $uid=trim(SessionGet('UID'));
-$app=trim($AG['application']);
+$app=trim($GLOBALS['AG']['application']);
 $uidx=substr($uid, 0, strlen($app));
 if (!trim($uid)==trim($app)) {
     if ($uid=='postgres' || $uidx == $app) {
@@ -1528,7 +1529,7 @@ function index_hidden_page_mime()
     //$row = SQL_OneRow($sql);
 
     $filename= "$x_table-$x_mime-$x_skey.$x_mime";
-    $filepath=scAddSlash($AG['dirs']['app_root'].'files/'.$filename);
+    $filepath=scAddSlash($GLOBALS['AG']['dirs']['app_root'].'files/'.$filename);
 
     //header('Content-type: audio/mpeg');
     // Kind of nifty, gives suggested filename to save
@@ -1544,7 +1545,6 @@ function index_hidden_page_mime()
 // ------------------------------------------------------------------
 function index_hidden_page()
 {
-    global $AG;
     $sessok=!LoggedIn() ? false : true;
 
     // KFD 3/6/08, moved here from the main stream of index_hidden
@@ -1584,8 +1584,8 @@ function index_hidden_page()
 
     // If the install page exists, it will be used, no getting
     // around it.
-    $install=$AG['dirs']['application'] .'Install.php';
-    $install2=$AG['dirs']['application'] .'Install.done.php';
+    $install=$GLOBALS['AG']['dirs']['application'] .'Install.php';
+    $install2=$GLOBALS['AG']['dirs']['application'] .'Install.done.php';
     if (file_exists($install)) {
         include_once $install;
         if (gp('gp_install')=='finish') {
@@ -1748,7 +1748,7 @@ function index_hidden_page()
     // Load user preferences just before display
     UserPrefsLoad();
 
-    $dir=$AG['dirs']['application'];
+    $dir=$GLOBALS['AG']['dirs']['application'];
     if (file_exists($dir.$gp_page.".page.yaml")) {
         //include 'androPage.php';
         $obj_page = new androPage();
@@ -1814,7 +1814,7 @@ function index_hidden_page()
             $template_color          = $J['template_color'];
             $template_color = 'red';
             $file
-                =$AG['dirs']['app_root'].'templates/'
+                =$GLOBALS['AG']['dirs']['app_root'].'templates/'
                 .$mainframe->GetTemplate()."/index.php";
             include $file;
         } elseif ($obj_page->html_template!=='') {
@@ -1918,10 +1918,10 @@ function index_hidden_template($mode)
     define("_JOOMLA_ANDROMEDA", 1);
 
     // Activate the template by creating public $J and calling funcs
-    global $J,$AG;
+    global $J;
     $J['TEMPLATE']=vgfGet('template');
     JoomlaCompatibility($J['TEMPLATE']);
-    $aphp=$AG['dirs']['root'].'/templates/'.$J['TEMPLATE'].'/andromeda.php';
+    $aphp=$GLOBALS['AG']['dirs']['root'].'/templates/'.$J['TEMPLATE'].'/andromeda.php';
     if (file_exists($aphp)) {
         include $aphp;
     }
