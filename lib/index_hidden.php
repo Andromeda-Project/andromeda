@@ -1849,6 +1849,7 @@ function index_hidden_page()
 
 function index_hidden_template($mode)
 {
+    global $AG;
     // KFD 1/10/08.  If x6 is set, we follow a completely different
     // path, x6 settings win out.
     $flagx6    = configGet('flag_x6', 'N');
