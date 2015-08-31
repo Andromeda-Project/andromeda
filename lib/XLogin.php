@@ -12,6 +12,7 @@ class XLogin extends XTable2
 
     public function main()
     {
+        global $AG;
         $this->PageSubtitle = "Please Login";
         // KFD 3/6/08, changed login processing to st2login=1,
         //             its not a page anymore.
@@ -56,7 +57,7 @@ class XLogin extends XTable2
             <div class="span3"></div>
             <div class="span3">
                 <fieldset>
-                    <legend align="center"><?php echo configGet('loginbefore', $GLOBALS['AG']['app_desc'])?></legend>
+                    <legend align="center"><?php echo configGet('loginbefore', $AG['app_desc'])?></legend>
                     <div class="control-group">
                         <label class="control-label">Login Name:</label>
                         <div class="controls">
@@ -139,6 +140,7 @@ class XLogin extends XTable2
     // ------------------------------------------------------------------
     public function Login_Process()
     {
+        global $AG;
         $arg2=$this->directlogin==true ? 'direct'  : '';
 
         // only process if user hit "post"
@@ -153,7 +155,7 @@ class XLogin extends XTable2
         // If the user supplied a loginUID, this is a post and we
         // must process the request.
         $ale=vgaGet('login_errors', array());
-        $app=$GLOBALS['AG']['application'];
+        $app=$AG['application'];
         $em000=
             isset($ale['000']) ? $ale['000']
                 : "That username/password combination did not work.  Please try again.";
@@ -184,7 +186,7 @@ class XLogin extends XTable2
             }
             return;
         }
-        $app=$GLOBALS['AG']['application'];
+        $app=$AG['application'];
         if (substr($uid, 0, strlen($app))==$app) {
             ErrorAdd($em001);
             if (vgfGet('loglogins', false)) {
@@ -352,7 +354,7 @@ class XLogin extends XTable2
         //
         // GET AGMENU
         $AGMENU=array();  // avoid compiler warning, populated next line
-        include $GLOBALS['AG']['dirs']['generated'] ."ddmodules.php";
+        include $AG['dirs']['generated'] ."ddmodules.php";
 
         // Pull distinct modules person has any menu options in.
         $sq="SELECT DISTINCT module

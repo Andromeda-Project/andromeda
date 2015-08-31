@@ -2,21 +2,23 @@
 /* DEPRECATED */
 function ValueSet($key, $value)
 {
+    global $AG;
     echo "Calling Valueset $key <br/>";
     vgfSet($key, $value);
-    if (!isset($GLOBALS['AG']['values'])) {
-        $GLOBALS['AG']['values']=array();
+    if (!isset($AG['values'])) {
+        $AG['values']=array();
     }
     $GLOBALS["AG"]["values"][$key] = $value;
 }
 /* DEPRECATED */
 function ValueGet($key)
 {
-    if (!isset($GLOBALS['AG']['values'])) {
-        $GLOBALS['AG']['values']=array();
+    global $AG;
+    if (!isset($AG['values'])) {
+        $AG['values']=array();
     }
-    if (isset($GLOBALS["AG"]["values"][$key])) {
-        return $GLOBALS["AG"]["values"][$key];
+    if (isset($AG["values"][$key])) {
+        return $AG["values"][$key];
     } else {
         return "";
     }
@@ -197,8 +199,9 @@ function CleanGet($key, $tdefault = "", $reportmissing = true)
 /* DEPRECATED */
 function regHidden($varname, $val = '')
 {
-    arrDefault($GLOBALS['AG'], 'hidden', array());
-    $GLOBALS['AG']['hidden'][$varname]=$val;
+    global $AG;
+    arrDefault($AG, 'hidden', array());
+    $AG['hidden'][$varname]=$val;
 }
 /* DEPRECATED */
 function regHiddenRepeat($varname, $default = '')
@@ -209,8 +212,9 @@ function regHiddenRepeat($varname, $default = '')
 /* DEPRECATED */
 function regDataValue($varname, $varvalue)
 {
-    arrDefault($GLOBALS['AG'], 'data', array());
-    $GLOBALS['AG']['data'][$varname]=$varvalue;
+    global $AG;
+    arrDefault($AG, 'data', array());
+    $AG['data'][$varname]=$varvalue;
 }
 
 
@@ -224,12 +228,13 @@ function HTMLE_IMG($src)
 /* DEPRECATED */
 function HTMLE_IMG_INLINE($src)
 {
+    global $AG;
     if ($src=='') {
         $srcfile = file_get_contents('rax-blank.jpg', true);
         $src = base64_encode($srcfile);
     }
     $pic = 'xx'.rand(10000, 99999);
-    $F=FOPEN($GLOBALS['AG']['dirs']['root'].'/'.$pic, 'w');
+    $F=FOPEN($AG['dirs']['root'].'/'.$pic, 'w');
     fputs($F, base64_decode($src));
     fclose($F);
     return '<span><image src="'.$pic.'"></span>';
@@ -244,29 +249,15 @@ function HTMLE_IMG_INLINE($src)
 /* DEPRECATED */
 function hImgFromBytes($table_id, $column_id, $skey, $bytes, $decode = true)
 {
+    global $AG;
     $x=$bytes;  //annoying compile error
     $x=$decode;
     // First step is to save the image if it is not already
     // saved in the "dbobj" directory
     $fname=$table_id.'_'.$column_id.'_'.$skey;
-    $fdir =AddSlash($GLOBALS['AG']['dirs']['root'])."dbobj/";
-    //if(!file_exists($fdir.$fname)) {
-      /*
-      if ($decode) {
-         file_put_contents($fdir.$fname,base64_decode($bytes));
-      }
-      else {
-         file_put_contents($fdir.$fname,$bytes);
-      }
-      */
-    //}
-    // Now return some hypertext that refers to this image
-    //if (strlen($bytes)>0) {
-    //   return '<span><image src="dbobj/'.$fname.'"></span>';
-    //}
-    //else {
-      return '';
-    //}
+    $fdir =AddSlash($AG['dirs']['root'])."dbobj/";
+    
+    return ''; 
 }
 
 /* DEPRECATED */
@@ -474,15 +465,16 @@ function ehTBodyFromRows(&$rows, $columns = array(), $options = array())
 /* DEPRECATED */
 function HTMLX_Errors()
 {
+    global $AG;
     $retval="";
-    if (isset($GLOBALS['AG']['trx_errors'])) {
-        if (is_array($GLOBALS['AG']['trx_errors'])) {
-            foreach ($GLOBALS['AG']["trx_errors"] as $err) {
+    if (isset($AG['trx_errors'])) {
+        if (is_array($AG['trx_errors'])) {
+            foreach ($AG["trx_errors"] as $err) {
                 $retval.=ListDelim($retval, "<br><br>").$err."\n";
             }
         }
     }
-    $GLOBALS['AG']["trx_errors"]=array();
+    $AG["trx_errors"]=array();
     if ($retval=="") {
         return "";
     } else {
@@ -495,11 +487,12 @@ function HTMLX_Errors()
 /* this routine is not used by the framework */
 function HTMLX_Notices()
 {
+    global $AG;
     $retval="";
-    foreach ($GLOBALS['AG']["messages"] as $err) {
+    foreach ($AG["messages"] as $err) {
         $retval.=ListDelim($retval, "<br><br>").$err."\n";
     }
-    $GLOBALS['AG']["messages"]=array();
+    $AG["messages"]=array();
     if ($retval=="") {
         return "";
     } else {
@@ -524,9 +517,9 @@ function ADMIN_SESSIONCLOSE($session_id, $killcode)
 /* DEPRECATED */
 function ADMIN_SESSIONID($ts)
 {
-    global $GLOBALS;
+    global $AG;
 
-    return md5($GLOBALS['AG']["application"].$ts);
+    return md5($AG["application"].$ts);
 }
 
 /* DEPRECATED */
@@ -557,8 +550,9 @@ function G($branch = "", $varname = null, $val = null)
 /* DEPRECATED */
 function Hidden_make($varname)
 {
-    if (!isset($GLOBALS['AG']['hidden'][$varname])) {
-        $GLOBALS['AG']['hidden'][$varname] = '';
+    global $AG;
+    if (!isset($AG['hidden'][$varname])) {
+        $AG['hidden'][$varname] = '';
     }
 }
 
@@ -662,18 +656,20 @@ function ElementInit($type)
 }
 function ElementReturn($type, $default = array())
 {
-    if (!isset($GLOBALS['AG'][$type])) {
+    global $AG;
+    if (!isset($AG[$type])) {
         return $default;
     } else {
-        return $GLOBALS['AG'][$type];
+        return $AG[$type];
     }
 }
 function Element($type)
 {
-    if (!isset($GLOBALS['AG'][$type])) {
+    global $AG;
+    if (!isset($AG[$type])) {
         return false;
     }
-    if (count($GLOBALS['AG'][$type])>0) {
+    if (count($AG[$type])>0) {
         return true;
     } else {
         return false;
@@ -681,21 +677,23 @@ function Element($type)
 }
 function ElementImplode($type, $implode = "\n")
 {
-    if (!isset($GLOBALS['AG'][$type])) {
+    global $AG;
+    if (!isset($AG[$type])) {
         return '';
     } else {
-        return implode($implode, $GLOBALS['AG'][$type]);
+        return implode($implode, $AG[$type]);
     }
 }
 function ElementOut($type, $dohtml = false)
 {
+    global $AG;
     // Hardcoded row we want in there
     if ($type=='script') {
         $ajaxTM=vgfGet('ajaxTM', 0)==1 ? '1' : '0';
         ElementAdd('script', "\nvar ajaxTM=$ajaxTM  /* Controls AJAX table maintenance */");
     }
 
-    $array=ArraySafe($GLOBALS['AG'], $type, array());
+    $array=ArraySafe($AG, $type, array());
     $retval="";
     $extra="";
     if ($dohtml) {
@@ -704,7 +702,7 @@ function ElementOut($type, $dohtml = false)
     foreach ($array as $msg) {
         $retval.=$msg.$extra."\n";
     }
-    $GLOBALS['AG'][$type]=array();
+    $AG[$type]=array();
     if (!$dohtml) {
         return $retval;
     }

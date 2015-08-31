@@ -57,11 +57,12 @@ class AndroPage
      */
     public function main($page)
     {
+        global $AG;
         // Store the name of the page
         $this->page = $page;
 
         $filename
-            =$GLOBALS['AG']['dirs']['root']
+            =$AG['dirs']['root']
             ."application/$page.page.yaml";
 
         include_once "spyc.php";

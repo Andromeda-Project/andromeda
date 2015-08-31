@@ -1,5 +1,5 @@
 <?php
-global $GLOBALS;
+global $AG;
 
 /* ================================================================== *\
 
@@ -60,13 +60,13 @@ header("Cache-control: private");
 // >>>
 // ==================================================================
 
-$appInfoFile = $GLOBALS['AG']['dirs']['generated'] .'appinfo.php';
+$appInfoFile = $AG['dirs']['generated'] .'appinfo.php';
 if (file_exists($appInfoFile)) {
     include $appInfoFile;
 }
-if (!isset($GLOBLAS['AG']['application'])) {
-    $GLOBALS['AG']['application'] = 'andro';
-    $GLOBALS['AG']['app_desc'] = 'Unknown';
+if (!isset($AG['application'])) {
+    $AG['application'] = 'andro';
+    $AG['app_desc'] = 'Unknown';
 }
 
 // ==================================================================
@@ -75,7 +75,7 @@ if (!isset($GLOBLAS['AG']['application'])) {
 // >>> Create array to hold all queries issued
 // >>>
 // ==================================================================
-$GLOBALS['AG']['dbg']['sql'] = array();
+$AG['dbg']['sql'] = array();
 
 
 // ==================================================================
@@ -84,20 +84,20 @@ $GLOBALS['AG']['dbg']['sql'] = array();
 // >>> Reverse the effects of magic quotes if found
 // >>>
 // ==================================================================
-$GLOBALS['AG']['clean']= array();
-$GLOBALS['AG']['clean']['gp_page'] = '';
-$GLOBALS['AG']['clean']['gp_action'] = '';
-$GLOBALS['AG']['clean'] = array_merge($GLOBALS['AG']['clean'], $_POST, $_GET);
+$AG['clean']= array();
+$AG['clean']['gp_page'] = '';
+$AG['clean']['gp_action'] = '';
+$AG['clean'] = array_merge($AG['clean'], $_POST, $_GET);
 if (ini_get('magic_quotes_gpc')) {
-    foreach ($GLOBALS['AG']['clean'] as $var => $value) {
+    foreach ($AG['clean'] as $var => $value) {
         if ($var=='gpContext') {
             continue;
         }
         if (!is_array($value)) {
-            $GLOBALS['AG']['clean'][$var]=stripslashes($value);
+            $AG['clean'][$var]=stripslashes($value);
         } else {
             foreach ($value as $key => $subval) {
-                $GLOBALS['AG']['clean'][$var][$key] = stripslashes($subval);
+                $AG['clean'][$var][$key] = stripslashes($subval);
             }
         }
     }
@@ -107,17 +107,17 @@ if (ini_get('magic_quotes_gpc')) {
 // >>> Restore the context (taken from g/p variables)
 // >>> Used only in "classic" Xtable2 page handling, not in x4
 // >>>
-if (!isset($GLOBALS['AG']['clean']['gpContext'])) {
-    $GLOBALS['AG']['clean']['gpContext']=array();
+if (!isset($AG['clean']['gpContext'])) {
+    $AG['clean']['gpContext']=array();
 } else {
-    if (!isset($GLOBALS['AG']['clean']['gpContext'])) {
+    if (!isset($AG['clean']['gpContext'])) {
         $t2=array();
     } else {
-        $t2 = base64_decode($GLOBALS['AG']['clean']['gpContext']);
+        $t2 = base64_decode($AG['clean']['gpContext']);
         $t2 = gzuncompress($t2);
         $t2 = unserialize($t2);
     }
-    $GLOBALS['AG']['clean']['gpContext'] = $t2;
+    $AG['clean']['gpContext'] = $t2;
 }
 
 
@@ -137,7 +137,7 @@ if (configGet('deprecated', 'Y')=='Y') {
 // >>>
 // ==================================================================
 
-$x=$GLOBALS['AG']['dirs']['application'] .'applib.php';
+$x=$AG['dirs']['application'] .'applib.php';
 if (file_exists($x)) {
     include_once $x;
 }
@@ -155,7 +155,7 @@ if (file_exists($x)) {
   is accessible throughout the application
 */
 
-$GLOBALS['AG']['plugins'] = new AndroPluginManager();
+$AG['plugins'] = new AndroPluginManager();
 
 // ==================================================================
 // >>>
@@ -181,15 +181,15 @@ if (gp('st2logout')<>'') {
     if (gpExists('st2keep')) {
         if (gp('st2keep')==1) {
             // This just clears user leaves rest of session
-            SessionSet('UID', $GLOBALS['AG']['application']);
-            SessionSet('PWD', $GLOBALS['AG']['application']);
+            SessionSet('UID', $AG['application']);
+            SessionSet('PWD', $AG['application']);
         } else {
             SessionReset();
         }
     } elseif (configGet('logout_clear', 'Y')=='N') {
         // Another way to clear user and leave session
-        SessionSet('UID', $GLOBALS['AG']['application']);
-        SessionSet('PWD', $GLOBALS['AG']['application']);
+        SessionSet('UID', $AG['application']);
+        SessionSet('PWD', $AG['application']);
     } else {
         SessionReset();
     }
@@ -205,8 +205,8 @@ if (gp('st2logout')<>'') {
 $uid = SessionGet('UID', '');
 if ($uid=='') {
     SessionReset();
-    SessionSet('UID', $GLOBALS['AG']['application']);
-    SessionSet('PWD', $GLOBALS['AG']['application']);
+    SessionSet('UID', $AG['application']);
+    SessionSet('PWD', $AG['application']);
 }
 
 // A direct assignment of uid/pwd must still go through
@@ -216,7 +216,7 @@ if ($uid=='') {
 $directlogin=false;
 if (gp('gp_uid')<>'') {
     $directlogin=true;
-    $directclean = $GLOBALS['AG']['clean'];
+    $directclean = $AG['clean'];
     gpSet('loginUID', gp('gp_uid'));
     gpSet('loginPWD', gp('gp_pwd'));
     gpSet('gp_posted', 1);
@@ -238,13 +238,13 @@ if (gp('st2login')==1) {
             unset($directclean['gp_pwd']);
             unset($directclean['loginUID']);
             unset($directclean['loginPWD']);
-            $GLOBALS['AG']['clean']=$directclean;
+            $AG['clean']=$directclean;
         } elseif (count(SessionGet('clean', array()))<>0) {
             // These were a page attempt made w/o being logged in,
             // which is now being ok'd since the user is logged in.
-            $GLOBALS['AG']['clean'] = SessionGet('clean');
-            if (isset($GLOBALS['AG']['clean']['ajxBUFFER'])) {
-                unset($GLOBALS['AG']['clean']['ajxBUFFER']);
+            $AG['clean'] = SessionGet('clean');
+            if (isset($AG['clean']['ajxBUFFER'])) {
+                unset($AG['clean']['ajxBUFFER']);
             }
             SessionUnSet('clean');
             // In pos systems, save the page they are authenticated for
@@ -264,7 +264,7 @@ if (gp('st2login')==1) {
 // is ok, that is the so-called "anonymous" account.
 //
 $uid=trim(SessionGet('UID'));
-$app=trim($GLOBALS['AG']['application']);
+$app=trim($AG['application']);
 $uidx=substr($uid, 0, strlen($app));
 if (!trim($uid)==trim($app)) {
     if ($uid=='postgres' || $uidx == $app) {
@@ -278,7 +278,7 @@ if (!trim($uid)==trim($app)) {
 // After all login activity, if the person is not logged in,
 // set an effective group id
 if (!LoggedIn()) {
-    SessionSet('GROUP_ID_EFF', arr($GLOBALS['AG'], 'group_login', ''));
+    SessionSet('GROUP_ID_EFF', arr($AG, 'group_login', ''));
 }
 
 // ==================================================================
@@ -447,15 +447,15 @@ if (file_exists_incpath($x)) {
 // A profile for this page specified either in the dd.yaml
 // or overridden in applib.
 $fx6profiles = fsDirTop().'generated/ddx6profiles.php';
-$GLOBALS['AG']['x6profiles'] = array();
+$AG['x6profiles'] = array();
 if (file_exists($fx6profiles)) {
     include $fx6profiles;
 }
 if (function_exists('app_x6profiles')) {
     app_x6profiles();
 }
-if (isset($GLOBALS['AG']['x6profiles'][$x6page])) {
-    $x6profile = $GLOBALS['AG']['x6profiles'][$x6page];
+if (isset($AG['x6profiles'][$x6page])) {
+    $x6profile = $AG['x6profiles'][$x6page];
 }
 
 // the action is always taken directly from request variables,
@@ -535,9 +535,10 @@ function index_hidden_x6Dispatch(
     $x6plugin,
     $x6action
 ) {
+    global $AG:
     // This is everything that *might* go back, make a place
     // for all of it
-    $GLOBALS['AG']['x4'] = array(
+    $AG['x4'] = array(
         'error'=>array()
     ,'debug'=>array()
     ,'notice'=>array()
@@ -565,7 +566,7 @@ function index_hidden_x6Dispatch(
             }
         }
         x6Data('x6select', $rows);
-        echo json_encode_safe($GLOBALS['AG']['x4']);
+        echo json_encode_safe($AG['x4']);
         return;
     }
 
@@ -580,10 +581,10 @@ function index_hidden_x6Dispatch(
     $x6skin = arr($_COOKIE, 'x6skin', 'Default.Gray.1024');
     setCookie('x6skin', $x6skin);
     if ($x6skin!='') {
-        $filename  = fsDirTop()."templates/x6/skinsphp/x6skin.$x6skin.ser.txt";
+        $filename  = fsDirTop()."templates" . DIRECTORY_SEPARATOR . "x6" . DIRECTORY_SEPARATOR . "skinsphp" . DIRECTORY_SEPARATOR . "x6skin.$x6skin.ser.txt";
         if (file_exists($filename)) {
             $serialized=file_get_contents($filename);
-            $GLOBALS['AG']['x6skin'] = unserialize($serialized);
+            $AG['x6skin'] = unserialize($serialized);
         }
     }
 
@@ -608,7 +609,7 @@ function index_hidden_x6Dispatch(
     if (!LoggedIn() && !in_array($x6page, array_keys($MPPages))) {
         if (gpExists('json')) {
             x4Script("window.location='index.php?gp_page=XLogin'");
-            echo json_encode($GLOBALS['AG']['x4']);
+            echo json_encode($AG['x4']);
         } else {
             echo "<script>window.location='index.php?gp_page=XLogin&x2=1'</script>";
         }
@@ -773,16 +774,16 @@ function index_hidden_x6Dispatch(
     // otherwise we package it up with the normal template and
     // return it as main content
     if (gp('json')==1) {
-        echo json_encode_safe($GLOBALS['AG']['x4']);
+        echo json_encode_safe($AG['x4']);
     } else {
         // Don't need a form in x6 mode
         vgaSet('NOFORM', true);
 
         // Put things where the template expects to find them
-        vgfSet('HTML', $GLOBALS['AG']['x4']['html']['*MAIN*']);
+        vgfSet('HTML', $AG['x4']['html']['*MAIN*']);
 
         // If there was some script, add that in
-        foreach ($GLOBALS['AG']['x4']['script'] as $script) {
+        foreach ($AG['x4']['script'] as $script) {
             jqDocReady($script);
         }
 
@@ -804,8 +805,8 @@ function index_hidden_x6Dispatch(
         $template_color          = $J['template_color'];
         $template_color = 'red';
         $file
-            =$GLOBALS['AG']['dirs']['root'].'/templates/'
-            .$mainframe->GetTemplate()."/index.php";
+            =$AG['dirs']['root']. DIRECTORY_SEPARATOR . 'templates' . DIRECTORY_SEPARATOR
+            .$mainframe->GetTemplate() . DIRECTORY_SEPARATOR . "index.php";
         include $file;
     }
     return;
@@ -815,9 +816,10 @@ function index_hidden_x6Dispatch(
 // ------------------------------------------------------------------
 function index_hidden_x4Dispatch()
 {
+    global $AG;
     // This is everything that *might* go back, make a place
     // for all of it
-    $GLOBALS['AG']['x4'] = array(
+    $AG['x4'] = array(
         'error'=>array()
     ,'debug'=>array()
     ,'notice'=>array()
@@ -842,7 +844,7 @@ function index_hidden_x4Dispatch()
     if (!LoggedIn()) {
         if (gpExists('json')) {
             x4Script("window.location='index.php?gp_page=XLogin'");
-            echo json_encode_safe($GLOBALS['AG']['x4']);
+            echo json_encode_safe($AG['x4']);
         } else {
             echo "<script>window.location='index.php?gp_page=XLogin'</script>";
         }
@@ -892,7 +894,7 @@ function index_hidden_x4Dispatch()
     // otherwise we package it up with the normal template and
     // return it as main content
     if (gp('json')==1) {
-        echo json_encode_safe($GLOBALS['AG']['x4']);
+        echo json_encode_safe($AG['x4']);
     } else {
         // Tell the client-side library to initialize the
         // 'inert' HTML that it received from us.
@@ -903,8 +905,8 @@ function index_hidden_x4Dispatch()
         vgaSet('NOFORM', true);
 
         // Put things where the template expects to find them
-        vgfSet('HTML', $GLOBALS['AG']['x4']['html']['*MAIN*']);
-        foreach ($GLOBALS['AG']['x4']['script'] as $script) {
+        vgfSet('HTML', $AG['x4']['html']['*MAIN*']);
+        foreach ($AG['x4']['script'] as $script) {
             jqDocReady($script);
         }
 
@@ -919,7 +921,7 @@ function index_hidden_x4Dispatch()
         $template_color          = $J['template_color'];
         $template_color = 'red';
         $file
-            =$GLOBALS['AG']['dirs']['root'].'/templates/'
+            =$AG['dirs']['root'].'/templates/'
             .$mainframe->GetTemplate()."/index.php";
         include $file;
     }
@@ -1421,11 +1423,12 @@ function index_hidden_ajxFETCH()
 // autoselect columns.
 function index_hidden_x6FETCH()
 {
+    global $AG;
     $returns=array();
 
     // This is everything that *might* go back, make a place
     // for all of it
-    $GLOBALS['AG']['x4'] = array(
+    $AG['x4'] = array(
         'error'=>array()
     ,'debug'=>array()
     ,'notice'=>array()
@@ -1469,7 +1472,7 @@ function index_hidden_x6FETCH()
             x6html("x6inp_{$table_id}_$fcol", $row[$srccol]);
         }
     }
-    echo json_encode_safe($GLOBALS['AG']['x4']);
+    echo json_encode_safe($AG['x4']);
     exit;
 }
 
@@ -1521,6 +1524,7 @@ function index_hidden_ajaxsql()
 // ------------------------------------------------------------------
 function index_hidden_page_mime()
 {
+    global $AG;
     $x_mime  = CleanGet('x_mime');
     $x_table = CleanGet("gp_page");
     //$x_column= CleanGet("x_column");
@@ -1529,7 +1533,7 @@ function index_hidden_page_mime()
     //$row = SQL_OneRow($sql);
 
     $filename= "$x_table-$x_mime-$x_skey.$x_mime";
-    $filepath=scAddSlash($GLOBALS['AG']['dirs']['app_root'].'files/'.$filename);
+    $filepath=scAddSlash($AG['dirs']['app_root'].'files/'.$filename);
 
     //header('Content-type: audio/mpeg');
     // Kind of nifty, gives suggested filename to save
@@ -1545,6 +1549,7 @@ function index_hidden_page_mime()
 // ------------------------------------------------------------------
 function index_hidden_page()
 {
+    global $MPPages, $AG; // allows it to be in applib
     $sessok=!LoggedIn() ? false : true;
 
     // KFD 3/6/08, moved here from the main stream of index_hidden
@@ -1562,10 +1567,8 @@ function index_hidden_page()
         gpSet('gp_page', vgaGet('SEARCH_CLASS'));
     }
 
-
     // Load up a list of pages that public users are allowed to see,
     // with home and password always there.
-    global $MPPages; // allows it to be in applib
     $MP     = array();
     //$MPPages= array();
     // This is the old method, load $MPPages from its own file
@@ -1584,8 +1587,8 @@ function index_hidden_page()
 
     // If the install page exists, it will be used, no getting
     // around it.
-    $install=$GLOBALS['AG']['dirs']['application'] .'Install.php';
-    $install2=$GLOBALS['AG']['dirs']['application'] .'Install.done.php';
+    $install=$AG['dirs']['application'] .'Install.php';
+    $install2=$AG['dirs']['application'] .'Install.done.php';
     if (file_exists($install)) {
         include_once $install;
         if (gp('gp_install')=='finish') {
@@ -1748,7 +1751,7 @@ function index_hidden_page()
     // Load user preferences just before display
     UserPrefsLoad();
 
-    $dir=$GLOBALS['AG']['dirs']['application'];
+    $dir=$AG['dirs']['application'];
     if (file_exists($dir.$gp_page.".page.yaml")) {
         //include 'androPage.php';
         $obj_page = new androPage();
@@ -1777,7 +1780,7 @@ function index_hidden_page()
     // Save context onto the page.  Note that it is not really
     // protected by these methods, just compressed and obscured.
     //
-    $t2 = serialize($GLOBALS['AG']['clean']['gpContext']);
+    $t2 = serialize($AG['clean']['gpContext']);
     $t2 = gzcompress($t2);
     $t2 = base64_encode($t2);
     Hidden('gpContext', $t2);
@@ -1814,7 +1817,7 @@ function index_hidden_page()
             $template_color          = $J['template_color'];
             $template_color = 'red';
             $file
-                =$GLOBALS['AG']['dirs']['app_root'].'templates/'
+                =$AG['dirs']['app_root'].'templates/'
                 .$mainframe->GetTemplate()."/index.php";
             include $file;
         } elseif ($obj_page->html_template!=='') {
@@ -1921,7 +1924,7 @@ function index_hidden_template($mode)
     global $J;
     $J['TEMPLATE']=vgfGet('template');
     JoomlaCompatibility($J['TEMPLATE']);
-    $aphp=$GLOBALS['AG']['dirs']['root'].'/templates/'.$J['TEMPLATE'].'/andromeda.php';
+    $aphp=$AG['dirs']['root'].'/templates/'.$J['TEMPLATE'].'/andromeda.php';
     if (file_exists($aphp)) {
         include $aphp;
     }

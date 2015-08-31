@@ -3,13 +3,14 @@ class XImport extends XTable2
 {
     public function main()
     {
+        global $AG:
         $this->PageSubtitle="Imports";
         // Process uploaded files if there are any
         if (!gpExists('gp_xajax')) {
             foreach ($_FILES as $onefile) {
                 if (!$onefile['error']) {
                     // Generate a previously unused name, give up after 20 tries
-                    $dir=$GLOBALS['AG']['dirs']['root'].'tmp/';
+                    $dir=$AG['dirs']['root'].'tmp/';
                     $count=0;
                     while (true) {
                         $fn=$onefile['name'].'.'.(rand(1000, 9999));

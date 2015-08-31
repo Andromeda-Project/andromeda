@@ -1403,6 +1403,7 @@ class AndroHtml
      ******/
     public function render($parentId = '', $singleQuotes = false, $x6wrapperPane = '')
     {
+        global $AG;
         // Accept a parentId, maybe assign one to
         if ($parentId <> '') {
             $this->ap['xParentId'] = $parentId;
@@ -1423,11 +1424,11 @@ class AndroHtml
         if (in_array($this->htype, array('input', 'select', 'checkbox'))) {
             if (arr($this->hp, 'id', '') == '') {
                 $id = rand(1000, 9999);
-                while (isset($GLOBALS['AG']['id'][$id])) {
+                while (isset($AG['id'][$id])) {
                     $id = rand(1000, 9999);
                 }
                 $this->hp['id'] = 'id_' . $id;
-                $GLOBALS['AG']['id'][$id] = 1;
+                $AG['id'][$id] = 1;
             }
         }
         // Set the x6 parent tab if exists

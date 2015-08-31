@@ -316,7 +316,8 @@ function gpUnSet($key)
 */
 function gpUnsetPrefix($prefix)
 {
-    foreach ($GLOBALS['AG']['clean'] as $key => $value) {
+    global $AG;
+    foreach ($AG['clean'] as $key => $value) {
         $len = substr($key, 0, strlen($prefix));
         if ($len == $prefix) {
             gpUnset($key);
@@ -380,7 +381,8 @@ function rowFromgpInputs()
 */
 function gpToSession()
 {
-    SessionSet('clean', $GLOBALS['AG']['clean']);
+    global $AG;
+    SessionSet('clean', $AG['clean']);
 }
 
 /*---**/
@@ -425,7 +427,8 @@ function x6Error($parm1)
 }
 function x4Error($parm1)
 {
-    $GLOBALS['AG']['x4']['error'][] = $parm1;
+    global $AG;
+    $AG['x4']['error'][] = $parm1;
 }
 
 /******/
@@ -449,7 +452,8 @@ function x6Notice($parm1)
 }
 function x4Notice($parm1)
 {
-    $GLOBALS['AG']['x4']['notice'][] = $parm1;
+    global $AG;
+    $AG['x4']['notice'][] = $parm1;
 }
 
 /*---**/
@@ -502,7 +506,8 @@ function x6Debug($parm1)
 }
 function x4Debug($parm1)
 {
-    $GLOBALS['AG']['x4']['debug'][] = $parm1;
+    global $AG;
+    $AG['x4']['debug'][] = $parm1;
 }
 
 /******/
@@ -528,10 +533,11 @@ function x6DebugClean($parm1)
 }
 function x4DebugClean($parm1)
 {
+    global $AG;
     $parm1 = str_replace("\n", '', $parm1);
     $parm1 = str_replace("\t", ' ', $parm1);
     $parm1 = preg_replace('/\s{2,}/', ' ', $parm1);
-    $GLOBALS['AG']['x4']['debug'][] = $parm1;
+    $AG['x4']['debug'][] = $parm1;
 }
 
 /******/
@@ -565,10 +571,11 @@ function x6HTML($parm1, $parm2)
 }
 function x4HTML($parm1, $parm2)
 {
-    if (!isset($GLOBALS['AG']['x4']['html'][$parm1])) {
-        $GLOBALS['AG']['x4']['html'][$parm1] = '';
+    global $AG;
+    if (!isset($AG['x4']['html'][$parm1])) {
+        $AG['x4']['html'][$parm1] = '';
     }
-    $GLOBALS['AG']['x4']['html'][$parm1].= $parm2;
+    $AG['x4']['html'][$parm1].= $parm2;
 }
 
 /******/
@@ -635,19 +642,21 @@ function x6script($parm1)
 }
 function x4SCRIPT($parm1, $insert = false)
 {
+    global $AG;
     $parm1 = preg_replace("/<script>/i", '', $parm1);
     $parm1 = preg_replace("/<\/script>/i", '', $parm1);
     if ($insert) {
-        array_unshift($GLOBALS['AG']['x4']['script'], $parm1);
+        array_unshift($AG['x4']['script'], $parm1);
     } else {
-        $GLOBALS['AG']['x4']['script'][] = $parm1;
+        $AG['x4']['script'][] = $parm1;
     }
 }
 
 /******/
 function x6scriptKill()
 {
-    $GLOBALS['AG']['x4']['script'] = array();
+    global $AG;
+    $AG['x4']['script'] = array();
 }
 
 /**
@@ -690,9 +699,10 @@ function x4Data($name, $data)
 
 function jsonPrint_r($data)
 {
+    global $AG;
     ob_start();
     hprint_r();
-    $GLOBALS['AG']['x4']['html']['*MAIN*'].= ob_get_clean();
+    $AG['x4']['html']['*MAIN*'].= ob_get_clean();
 }
 
 /**
@@ -855,7 +865,8 @@ function DispatchObject($gp_page)
  */
 function hSizepx($x1024)
 {
-    $app = $GLOBALS['AG']['application'];
+    global $AG;
+    $app = $AG['application'];
     $size = a($_REQUEST, $app . "_size", '1024');
     $final = intval(($x1024 * $size) / 1024);
     return $final . 'px';
@@ -882,7 +893,8 @@ function hSizepx($x1024)
  */
 function hSize($x1024)
 {
-    $app = $GLOBALS['AG']['application'];
+    global $AG;
+    $app = $AG['application'];
     $size = a($_REQUEST, $app . "_size", '1024');
     $final = intval(($x1024 * $size) / 1024);
     return $final . 'px';
@@ -975,11 +987,12 @@ function htmlMacroTop($page, $center = false)
 
 function addModal($modal)
 {
+    global $AG;
     $modal->hp['x6modal'] = 'Y';
-    if (!isset($GLOBALS['AG']['modals'])) {
-        $GLOBALS['AG']['modals'] = array();
+    if (!isset($AG['modals'])) {
+        $AG['modals'] = array();
     }
-    $GLOBALS['AG']['modals'][] = $modal;
+    $AG['modals'][] = $modal;
 }
 
 /**
@@ -1880,24 +1893,27 @@ function configLayoutX4($container, $type)
 // ==============================================================
 function x6CSS()
 {
-    return isset($GLOBALS['AG']['x6skin']);
+    global $AG;
+    return isset($AG['x6skin']);
 }
 function x6CSSDefine($key, $default = '')
 {
+    global $AG;
     if (!x6CSS()) {
         return $default;
     }
-    $retval = arr($GLOBALS['AG']['x6skin']['defines'], $key, $default);
+    $retval = arr($AG['x6skin']['defines'], $key, $default);
     return str_replace('px', '', $retval);
 }
 
 function x6CSSRule($selector, $rule, $default = '')
 {
+    global $AG;
     if (!x6CSS()) {
         return $default;
     }
 
-    $skin = $GLOBALS['AG']['x6skin']['css'];
+    $skin = $AG['x6skin']['css'];
     if (!isset($skin[$selector])) {
         return $default;
     }
@@ -1907,11 +1923,12 @@ function x6CSSRule($selector, $rule, $default = '')
 
 function x6cssRuleSize($selector, $rule, $default = 0)
 {
+    global $AG;
     if (!x6CSS()) {
         return $default;
     }
 
-    $skin = $GLOBALS['AG']['x6skin']['css'];
+    $skin = $AG['x6skin']['css'];
     if (!isset($skin[$selector])) {
         return $default;
     }
@@ -2517,7 +2534,7 @@ function sqlOrderBy($vals)
         */
 function JoomlaCompatibility($template_name, $template_color = '')
 {
-
+    global $AG;
     // Templates won't run unless this is defined.
     define('_VALID_MOS', true);
 
@@ -2540,7 +2557,7 @@ function JoomlaCompatibility($template_name, $template_color = '')
     $GLOBALS['J']['mainframe']->template_name = $template_name;
 
     // Joomla directory locations
-    $GLOBALS['J']['mC_absolute_path'] = $GLOBALS['AG']['dirs']['root'];
+    $GLOBALS['J']['mC_absolute_path'] = $AG['dirs']['root'];
     if (tmppathInsert() == '') {
         $GLOBALS['J']['mC_live_site'] = '';
     } else {
@@ -3048,8 +3065,9 @@ function SessionUnSet($key, $context = 'app', $sfx = 'app')
  ******/
 function SessionReset()
 {
+    global $AG;
     foreach ($_SESSION as $key => $value) {
-        $app = $GLOBALS['AG']['application'] . '_';
+        $app = $AG['application'] . '_';
         if (substr($key, 0, strlen($app)) == $app) {
             unset($_SESSION[$key]);
         }
@@ -3066,7 +3084,8 @@ function SessionReset()
  ******/
 function SessionUnSet_Prefix($prefix)
 {
-    $prefix = $GLOBALS["AG"]["application"] . "_" . $prefix;
+    global $AG;
+    $prefix = $AG["application"] . "_" . $prefix;
     foreach ($_SESSION as $key => $value) {
         if (substr($key, 0, strlen($prefix)) == $prefix) {
             unset($_SESSION[$key]);
@@ -3172,7 +3191,7 @@ function vgaSet($key, $value = '')
  */
 function vgfGet($key, $default = '')
 {
-
+    global $AG;
     // hardcopy routines.  Some framework variables are actually
     // constructed from other things
     $hc = array('PageTitle');
@@ -3182,8 +3201,8 @@ function vgfGet($key, $default = '')
 
     if (isset($GLOBALS['fwdata'][$key])) {
         return $GLOBALS['fwdata'][$key];
-    } elseif (isset($GLOBALS['AG'][$key])) {
-        return $GLOBALS['AG'][$key];
+    } elseif (isset($AG[$key])) {
+        return $AG[$key];
     } else {
         return $default;
     }
@@ -3378,9 +3397,10 @@ function scStackPop($stackname)
         */
 function return_value_add($element, $value)
 {
-    $retvals = ArraySafe($GLOBALS['AG'], 'retvals', array());
+    global $AG;
+    $retvals = ArraySafe($AG, 'retvals', array());
     $retvals[$element] = $value;
-    $GLOBALS['AG']['retvals'] = $retvals;
+    $AG['retvals'] = $retvals;
 }
 
 /*---**/
@@ -3440,9 +3460,10 @@ function retCmd($command, $element, $value)
         */
 function return_command_add($command, $element, $value)
 {
-    $retcommands = ArraySafe($GLOBALS['AG'], 'retcommands', array());
+    global $AG;
+    $retcommands = ArraySafe($AG, 'retcommands', array());
     $retcommands[$command][$element] = $value;
-    $GLOBALS['AG']['retcommands'] = $retcommands;
+    $AG['retcommands'] = $retcommands;
 }
 
 /*---**/
@@ -3463,12 +3484,13 @@ function return_command_add($command, $element, $value)
         */
 function returns_as_ajax()
 {
-    $retvals = ArraySafe($GLOBALS['AG'], 'retvals', array());
+    global $AG:
+    $retvals = ArraySafe($AG, 'retvals', array());
     $rv2 = array();
     foreach ($retvals as $element => $value) {
         $rv2[] = $element . '|' . $value;
     }
-    $retcommands = ArraySafe($GLOBALS['AG'], 'retcommands', array());
+    $retcommands = ArraySafe($AG, 'retcommands', array());
     foreach ($retcommands as $cmd => $info) {
         foreach ($info as $element => $value) {
             $rv2[] = $cmd . '|' . $element . '|' . $value;
@@ -3560,22 +3582,23 @@ function ddNoWrites()
  */
 function ddTable($table_id)
 {
+    global $AG;
     // Don't repeat all of this work. If this has already
     // been run don't run't it again
     if (is_array($table_id)) {
         $table_id = $table_id['table_id'];
     }
-    if (isset($GLOBALS['AG']['tables'][$table_id])) {
-        return $GLOBALS['AG']['tables'][$table_id];
+    if (isset($AG['tables'][$table_id])) {
+        return $AG['tables'][$table_id];
     }
 
     // First run the include and get a reference
-    if (!file_exists($GLOBALS['AG']['dirs']['generated'] . 'ddtable_' .$table_id .'.php')) {
-        $GLOBALS['AG']['tables'][$table_id] = array('flat' => array(), 'description' => $table_id, 'viewname' => '');
+    if (!file_exists($AG['dirs']['generated'] . 'ddtable_' .$table_id .'.php')) {
+        $AG['tables'][$table_id] = array('flat' => array(), 'description' => $table_id, 'viewname' => '');
     } else {
         include_once"ddtable_" . $table_id . ".php";
     }
-    $tabdd = & $GLOBALS['AG']['tables'][$table_id];
+    $tabdd = & $AG['tables'][$table_id];
     //echo "Here is first load:";
     //hprint_r($tabdd);
 
@@ -3628,10 +3651,10 @@ function ddTable($table_id)
     //     If a root user, or there is no group, no point
     //     in continuing
     if (SessionGet('ROOT')) {
-        return $GLOBALS['AG']['tables'][$table_id];
+        return $AG['tables'][$table_id];
     }
     if (SessionGet('GROUP_ID_EFF', '') == '') {
-        return $GLOBALS['AG']['tables'][$table_id];
+        return $AG['tables'][$table_id];
     }
     // Capture the effective group and keep going
     $group = SessionGet('GROUP_ID_EFF');
@@ -3669,7 +3692,7 @@ function ddTable($table_id)
             $tabdd['projections'][$idx] = implode(',', $alist2);
         }
     }
-    //return &$GLOBALS['AG']['tables'][$table_id];
+
     return $tabdd;
 }
 
@@ -3717,6 +3740,7 @@ function ddTable($table_id)
  */
 function ddView($tabx)
 {
+    global $AG;
     // If not given an array, assume we were given the name of
     // the table and go get the array
     if (!is_array($tabx)) {
@@ -3724,7 +3748,7 @@ function ddView($tabx)
     }
     // KFD 10/26/08.  If no view, reload with new loader routine.
     if (!isset($tabx['viewname'])) {
-        unset($GLOBALS['AG']['tables'][$tabx['table_id']]);
+        unset($AG['tables'][$tabx['table_id']]);
         $tabx = ddTable($tabx);
     }
     return $tabx['viewname'];
@@ -4045,10 +4069,12 @@ function DDColumnWritable(&$colinfo, $gpmode, $value)
         */
 function DD_TableRef($table_id)
 {
+    global $AG;
     $retval = ddTable($table_id);
     return $retval;
-    if (!isset($GLOBALS["AG"]["tables"][$table_id])) {
-        $file = $GLOBALS['AG']['dirs']['generated'] . "ddtable_" . $table_id . ".php";
+    /*
+    if (!isset($AG["tables"][$table_id])) {
+        $file = $AG['dirs']['generated'] . "ddtable_" . $table_id . ".php";
         var_dump($file);
         if (!file_exists($file)) {
             return array();
@@ -4056,8 +4082,8 @@ function DD_TableRef($table_id)
             include$file;
         }
     }
-    $retval = & $GLOBALS["AG"]["tables"][$table_id];
-    return $retval;
+    $retval = & $AG["tables"][$table_id];
+    return $retval;*/
 }
 
 // ------------------------------------------------------------------
@@ -4079,7 +4105,8 @@ function DD_TableRef($table_id)
  */
 function fsDirTop()
 {
-    return $GLOBALS['AG']['dirs']['root'];
+    global $AG;
+    return $AG['dirs']['root'];
 }
 
 // ------------------------------------------------------------------
@@ -4255,15 +4282,11 @@ function appLogEntry($code, $desc, $arg1 = '', $arg2 = '', $arg3 = '')
  */
 function xLogEntry($fw, $code, $desc, $arg1 = '', $arg2 = '', $arg3 = '')
 {
-
+    global $AG;
     // create our own connection as the anonymous user, but only
     // if not already logged in as anonymous user!  Otherwise the
     // stack program don't work.
-    scDBConn_Push($GLOBALS['AG']['application']);
-
-    //$needed_connect=false;
-    //$uid = $GLOBALS['AG']['application'];
-    //$dbc=SQL_Conn($uid,$uid);
+    scDBConn_Push($AG['application']);
 
     // get the ip address
     $ip = SQLFC($_SERVER['REMOTE_ADDR']);
@@ -4346,10 +4369,11 @@ function xLogEntry($fw, $code, $desc, $arg1 = '', $arg2 = '', $arg3 = '')
  */
 function SysLogOpen($name)
 {
-    if (!isset($GLOBALS['AG']['logs'])) {
-        $GLOBALS['AG']['logs'] = array();
+    global $AG;
+    if (!isset($AG['logs'])) {
+        $AG['logs'] = array();
     }
-    $app = $GLOBALS['AG']['application'];
+    $app = $AG['application'];
     $conn = SQL_CONN($app, $app);
     $sq = "insert into syslogs (syslog_name,syslog_type,syslog_subtype) " . "values ('" . $name . "','PHP-FW','APP LOG')";
     SQL2($sq, $conn);
@@ -4365,7 +4389,7 @@ function SysLogOpen($name)
     $syslog = $row['syslog'];
 
     // record the connection with the log number
-    $GLOBALS['AG']['logs'][$syslog] = $conn;
+    $AG['logs'][$syslog] = $conn;
 
     SysLogEntry($syslog, 'Log Open Command Received');
 
@@ -4390,8 +4414,9 @@ function SysLogOpen($name)
  */
 function SysLogEntry($syslog, $text)
 {
+    global $AG;
     if (!is_null($syslog)) {
-        $conn = $GLOBALS['AG']['logs'][$syslog];
+        $conn = $AG['logs'][$syslog];
         SQL2("insert into syslogs_e (syslog,syslog_etext)" . ' values ' . "(" . $syslog . "," . SQL_Format('char', $text) . ")", $conn);
     }
 }
@@ -4412,9 +4437,10 @@ function SysLogEntry($syslog, $text)
  */
 function SysLogClose($skey)
 {
+    global $AG;
     SysLogEntry($skey, 'Log Close Command Received');
-    SQL_ConnClose($GLOBALS['AG']['logs'][$skey]);
-    unset($GLOBALS['AG']['logs'][$skey]);
+    SQL_ConnClose($AG['logs'][$skey]);
+    unset($AG['logs'][$skey]);
 }
 
 // ==================================================================
@@ -4487,8 +4513,9 @@ function SysLogClose($skey)
         */
 function Hidden($varname = null, $val = null)
 {
-    arrDefault($GLOBALS['AG'], 'hidden', array());
-    $GLOBALS['AG']['hidden'][$varname] = $val;
+    global $AG;
+    arrDefault($AG, 'hidden', array());
+    $AG['hidden'][$varname] = $val;
 }
 
 /******/
@@ -4691,7 +4718,8 @@ function conget($category, $name, $key, $default = '')
         */
 function ContextGet($name, $default = '')
 {
-    $sc = & $GLOBALS['AG']['clean']['gpContext'];
+    global $AG;
+    $sc = $AG['clean']['gpContext'];
     return isset($sc[$name]) ? $sc[$name] : $default;
 }
 
@@ -4772,7 +4800,8 @@ function conSet($category, $name, $key, $value = '')
         */
 function ContextSet($name, $value = '')
 {
-    $sc = & $GLOBALS['AG']['clean']['gpContext'];
+    global $AG;
+    $sc = $AG['clean']['gpContext'];
     $sc[$name] = $value;
 }
 
@@ -4979,7 +5008,8 @@ function Notices()
 /* this routine is not used by the framework */
 function NoticesGet()
 {
-    $retval = isset($GLOBALS['AG']['messages']) ? $GLOBALS['AG']['messages'] : array();
+    global $AG;
+    $retval = isset($AG['messages']) ? $AG['messages'] : array();
     return $retval;
 }
 
@@ -4991,8 +5021,9 @@ function NoticesGet()
  */
 function ErrorAdd($error)
 {
+    global $AG;
     $error = preg_replace('/^[Ee][Rr][Rr][Oo][Rr]:\w*(.*)/', '$1', $error);
-    $GLOBALS["AG"]["trx_errors"][] = $error;
+    $AG["trx_errors"][] = $error;
 }
 
 /**
@@ -5016,7 +5047,8 @@ function ErrorsAdd($semilist)
  */
 function ErrorsClear()
 {
-    $GLOBALS['AG']['trx_errors'] = array();
+    global $AG;
+    $AG['trx_errors'] = array();
 }
 
 /**
@@ -5038,11 +5070,12 @@ function Errors($prefix = '')
  */
 function ErrorsExist($prefix = '')
 {
-    if (!isset($GLOBALS['AG']["trx_errors"])) {
+    global $AG;
+    if (!isset($AG["trx_errors"])) {
         return false;
     }
     // never set, no errors
-    if (count($GLOBALS['AG']["trx_errors"]) == 0) {
+    if (count($AG["trx_errors"]) == 0) {
         return false;
     }
     // empty list of errors
@@ -5053,7 +5086,7 @@ function ErrorsExist($prefix = '')
 
     // finally, look through each error for the prefix.  first found
     // returns true
-    foreach ($GLOBALS['AG']['trx_errors'] as $err) {
+    foreach ($AG['trx_errors'] as $err) {
         if (substr(trim($err), 0, strlen($prefix)) == $prefix) {
             return true;
         }
@@ -5071,7 +5104,8 @@ function ErrorsExist($prefix = '')
  */
 function ErrorsGet($errorsclear = false)
 {
-    $retval = isset($GLOBALS['AG']['trx_errors']) ? $GLOBALS['AG']['trx_errors'] : array();
+    global $AG;
+    $retval = isset($AG['trx_errors']) ? $AG['trx_errors'] : array();
     if ($errorsclear) {
         ErrorsClear();
     }
@@ -5085,10 +5119,11 @@ function ErrorsGet($errorsclear = false)
  */
 function aErrorsClean()
 {
-    if (!isset($GLOBALS['AG']['trx_errors'])) {
+    global $AG;
+    if (!isset($AG['trx_errors'])) {
         $retval = array();
     } else {
-        $retval = $GLOBALS['AG']['trx_errors'];
+        $retval = $AG['trx_errors'];
         ErrorsClear();
     }
     return $retval;
@@ -5101,11 +5136,12 @@ function aErrorsClean()
  */
 function aNoticesClean()
 {
-    if (!isset($GLOBALS['AG']['messages'])) {
+    global $AG;
+    if (!isset($AG['messages'])) {
         $retval = array();
     } else {
-        $retval = $GLOBALS['AG']['messages'];
-        unset($GLOBALS['AG']['messages']);
+        $retval = $AG['messages'];
+        unset($AG['messages']);
     }
     return $retval;
 }
@@ -6164,8 +6200,9 @@ function hLInkSetAndPost($caption, $gp_var, $gp_val)
  */
 function hImageFromBytes($table_id, $colname, $pkval, $bytes)
 {
+    global $AG;
     $filename = 'dbobj/' . $table_id . '-' . $colname . '-' . $pkval;
-    $dirname = $GLOBALS['AG']['dirs']['root'] . '/';
+    $dirname = $AG['dirs']['root'] . '/';
 
     file_put_contents($dirname . $filename, base64_decode($bytes));
     return "<img src=\"$filename\">";
@@ -6314,27 +6351,6 @@ function ehStandardContent($dotitle = false)
 
     if (vgaGet('NOFORM') <> true) {
         echo "</form>";
-
-        /*
-                $scr1=implode("",ArraySafe($GLOBALS['AG'],'fset',array()));
-                $scr2=implode("",ArraySafe($GLOBALS['AG'],'freset',array()));
-                ?>
-                </form>
-                <script type="text/javascript">
-                function fieldsSet() {
-                alert('Ran fieldsset');
-                <?php echo $scr1?>
-                alert("end of fieldsSet");
-                }
-                
-                function fieldsReset() {
-                alert('Ran FieldsReset');
-                <?php echo $scr2?>
-                alert("end of fieldsReset");
-                }
-                </script>
-                <?php
-                */
     }
 }
 
@@ -6439,7 +6455,7 @@ function ehErrors($return = false)
  */
 function ehHiddenAndData()
 {
-
+    global $AG;
     // Some parts of the framework create data that should
     // be sent out as hidden variables
     $x = vgfGet('gpControls', '');
@@ -6456,11 +6472,11 @@ function ehHiddenAndData()
     }
 
     echo "\n<!-- Hidden and Data value assignments-->\n";
-    $x = ArraySafe($GLOBALS['AG'], 'hidden', array());
+    $x = ArraySafe($AG, 'hidden', array());
     foreach ($x as $key => $value) {
         echo '<input type="hidden" ' . ' name="' . $key . '" id="' . $key . '" ' . ' value="' . $value . "\"/>\n";
     }
-    $x = ArraySafe($GLOBALS['AG'], 'data', array());
+    $x = ArraySafe($AG, 'data', array());
     echo "<script language=\"javascript\" type=\"text/javascript\">\n";
     foreach ($x as $key => $value) {
         echo "ob('" . $key . "').value='" . $value . "';\n";
@@ -6930,6 +6946,7 @@ function httpHeadersForDownload($filespec, $attachment = false)
  */
 function UserAdd($UID, $PWD = '', $email = '', $user_active = 'Y')
 {
+    global $AG;
     $NEVERUSED = $user_active;
     $UID = MakeUserID($UID);
     scDBConn_Push('usermaint');
@@ -6938,7 +6955,7 @@ function UserAdd($UID, $PWD = '', $email = '', $user_active = 'Y')
         scDBConn_Pop();
         return false;
     }
-    $app = $GLOBALS['AG']['application'];
+    $app = $AG['application'];
     SQL("INSERT INTO usersxgroups (user_id,group_id)" . " values ('$UID','$app')");
 
     //SQL("ALTER USER $UID password '$PWD'");
@@ -6978,7 +6995,7 @@ function MakeUserID($UID)
  */
 function LoggedIn()
 {
-
+    global $AG;
     // Technically this should never happen.  An empty UID should
     // be turned into the anonymous user.  But if we are wrong, better
     // a blank come back as false than as true.
@@ -6986,7 +7003,7 @@ function LoggedIn()
     if (SessionGet('UID') == '') {
         return false;
     }
-    if (SessionGet('UID') == $GLOBALS['AG']['application']) {
+    if (SessionGet('UID') == $AG['application']) {
         return false;
     }
     return true;
@@ -7005,10 +7022,11 @@ function LoggedIn()
  */
 function inGroup($group)
 {
+    global $AG;
     $agroups = SessionGet('agroups', array());
     $agroups = array();
     if (count($agroups) == 0) {
-        $app = $GLOBALS['AG']['application'];
+        $app = $AG['application'];
         $appl = strlen($app);
 
         $groups = explode(',', SessionGet('groups'));
@@ -7250,6 +7268,7 @@ function fsMakeDirNested($Base_Path, $New_Path)
  */
 function fsFileFromArray($name, $array, $arrayname, $dir = '')
 {
+    global $AG:
     $annoying = $arrayname;
     $retval = "";
     $level = 0;
@@ -7260,7 +7279,7 @@ function fsFileFromArray($name, $array, $arrayname, $dir = '')
 $retval
 );
 ?>";
-    $file = $GLOBALS['AG']['dirs']['app_root'] . ($dir == '' ? 'dynamic' : $dir) . DIRECTORY_SEPARATOR . "$name";
+    $file = $AG['dirs']['app_root'] . ($dir == '' ? 'dynamic' : $dir) . DIRECTORY_SEPARATOR . "$name";
     file_put_contents($file, $retval);
 
     //  hprint_r($array);
@@ -9167,13 +9186,14 @@ function X_UNIX_TO_SQLDATE($dt, $skipquotes = false)
 
 function variables_writeAfter($row)
 {
+    global $AG;
     $rows = SQL_AllRows("select * from variables");
     $cache = array();
     foreach ($rows as $row) {
         $line = preg_replace_callback("/%%(.+?)%%/", "getRegexOptionVal", $row['variable_value']);
         $cache[$row['variable']] = $line;
     }
-    fsFileFromArray('table_variables.php', $cache, "GLOBALS['AG']['table_variables']");
+    fsFileFromArray('table_variables.php', $cache, "$AG['table_variables']");
 }
 
 function OptionGet($varname, $default = '')
@@ -9196,11 +9216,12 @@ function getRegexOptionVal($matches)
 
 function Option_Get($varname, $default = '')
 {
+    global $AG;
     // KFD 6/12/08, eliminate caching on disk, it is problematic
     //              in x4 and we want to replace it with memcached
     if ($varname == 'X') {
-        unlink($GLOBALS['AG']['dirs']['dynamic'] . 'table_variables.php');
-        unset($GLOBALS['AG']['table_variables']);
+        unlink($AG['dirs']['dynamic'] . 'table_variables.php');
+        unset($AG['table_variables']);
     }
     if (!file_exists_incpath('table_variables.php')) {
         // if not connected, connect now
@@ -9212,26 +9233,9 @@ function Option_Get($varname, $default = '')
         if (!$dbconnected) {
             SQL_ConnPop();
         }
-
-        /*
-                    // Retrieve the file
-                    $rows=SQL_AllRows("select * from variables");
-                    $cache=array();
-                    foreach($rows as $row) {
-                    $line = preg_replace_callback( "/%%(.+?)%%/"
-                    ,"getRegexOptionVal"
-                    ,$row['variable_value'] );
-                    $cache[$row['variable']]=$line;
-                    }
-                    fsFileFromArray(
-                    'table_variables.php'
-                    ,$cache
-                    ,"GLOBALS['AG']['table_variables']"
-                    );
-                    */
     }
     include'table_variables.php';
-    return ArraySafe($GLOBALS['AG']['table_variables'], trim($varname), $default);
+    return ArraySafe($AG['table_variables'], trim($varname), $default);
 }
 
 /**
@@ -10828,7 +10832,8 @@ function EmailSendHtml($to, $subject, $message)
 
 function XML_RPC($callcode, $arr_inputs)
 {
-    $GLOBALS['AG']["xmlrpc"] = array("callcode" => $callcode, "inputs" => $arr_inputs);
+    global $AG;
+    $AG["xmlrpc"] = array("callcode" => $callcode, "inputs" => $arr_inputs);
     include"x_xmlrpc.php";
 }
 
@@ -11229,12 +11234,13 @@ function hSelectMulti($name, $value, $inner, $extra = '')
 
 function rHE_IMG_Inline($src)
 {
+    global $AG;
     if ($src == '') {
         $srcfile = file_get_contents('rax-blank.jpg', true);
         $src = base64_encode($srcfile);
     }
     $pic = 'xx' . rand(100, 999);
-    $F = FOPEN($GLOBALS['AG']['dirs']['root'] . '/' . $pic, 'w');
+    $F = FOPEN($AG['dirs']['root'] . '/' . $pic, 'w');
     fputs($F, base64_decode($src));
     fclose($F);
     return '<span><image style="float:left;" ' . 'src="' . $pic . '"></span>';
@@ -11683,10 +11689,11 @@ function isValidName($value)
  */
 function eTimeBegin()
 {
-    if (!isset($GLOBALS['AG']['etimes'])) {
-        $GLOBALS['AG']['etimes'] = array();
+    global $AG:
+    if (!isset($AG['etimes'])) {
+        $AG['etimes'] = array();
     }
-    $GLOBALS['AG']['etimes'][] = time();
+    $AG['etimes'][] = time();
 }
 
 /**
@@ -11697,13 +11704,14 @@ function eTimeBegin()
  */
 function eTimeEnd()
 {
-    if (!isset($GLOBALS['AG']['etimes'])) {
+    global $AG;
+    if (!isset($AG['etimes'])) {
         return -1;
     }
-    if (count($GLOBALS['AG']['etimes']) == 0) {
+    if (count($AG['etimes']) == 0) {
         return -2;
     }
-    return time() - array_pop($GLOBALS['AG']['etimes']);
+    return time() - array_pop($AG['etimes']);
 }
 
 /**
@@ -13255,7 +13263,8 @@ function cssInclude($file, $force_immediate = false)
  */
 function cssOutput()
 {
-    $cssDir = $GLOBALS['AG']['dirs']['app_root'] .'clib/';
+    global $AG;
+    $cssDir = $AG['dirs']['app_root'] .'clib' . DIRECTORY_SEPARATOR;
     // Get the array of files to output and combine
     $css = vgfGet('cssIncludes', array());
     if (count($css) == 0) {
@@ -13267,7 +13276,7 @@ function cssOutput()
     //
     $list = implode('|', $css);
     $md5 = substr(md5($list), 0, 15);
-    $file = $cssDir . "/clib/css-min-$md5.css";
+    $file = $cssDir . "clib" . DIRECTORY_SEPARATOR . "css-min-$md5.css";
 
     if (!file_exists($file)) {
         $string = '';
@@ -13327,7 +13336,7 @@ function jsInclude($file, $comments = '', $immediate = false)
  */
 function jsOutput()
 {
-
+    global $AG;
     // Get the array and see if there is anything to do
     $ajs = vgfGet('jsIncludes', array());
     $jqp = vgfGet('jqPlugins', array());
@@ -13371,42 +13380,20 @@ function jsOutput()
         }
     }
 
-    // If they needed minification, we have to work out now
-    // what that file will be, maybe generate it, and create
-    // a link to it
-    //
-    // KFD 8/20/08, Now minifying files during the build, so we
-    //              grab that file if we can find it.  See below
-    /*
-                if(count($aj)==0) return;
-                $list = implode('|',$aj);
-                $md5  = substr(md5($list),0,15);
-                $file = fsDirTop()."/clib/js-min-$md5.js";
-                
-                if(!file_exists($file)) {
-                require 'jsmin-1.1.0.php';
-                $string = '';
-                foreach($aj as $ajone) {
-                $f = fsDirTop().$ajone;
-                $string.=JSMin::minify(file_get_contents($f));
-                }
-                file_put_contents($file,$string);
-                }
-                */
     if (count($aj) == 0) {
         return;
     }
     $list = implode('|', $aj);
     $md5 = substr(md5($list), 0, 15);
-    $file = $GLOBALS['AG']['dirs']['app_root'] . "/clib/js-min-$md5.js";
+    $file = $AG['dirs']['app_root'] . "/clib/js-min-$md5.js";
 
     if (!file_exists($file)) {
         $string = '';
         foreach ($aj as $ajone) {
             if (file_exists($ajone . '.mjs')) {
-                $string.= file_get_contents($GLOBALS['AG']['dirs']['app_root'] . $ajone . '.mjs');
+                $string.= file_get_contents($AG['dirs']['app_root'] . $ajone . '.mjs');
             } else {
-                $string.= file_get_contents($GLOBALS['AG']['dirs']['app_root'] . $ajone);
+                $string.= file_get_contents($AG['dirs']['app_root'] . $ajone);
             }
         }
         file_put_contents($file, $string);
@@ -13488,24 +13475,24 @@ function SQLConnected()
 /* DEPRECATED */
 function scDBConn_Push($role = '', $db = '')
 {
+    global $AG;
     $dbc = isset($GLOBALS['dbconn']) ? $GLOBALS['dbconn'] : null;
     scStackPush('dbconns', $dbc);
 
     // UID is either admin or logged in user
-    if ($role == $GLOBALS['AG']['application']) {
+    if ($role == $AG['application']) {
         //echo "Going for role!";
         $uid = $role;
         $pwd = $role;
-    } elseif ($role <> '' && $role <> $GLOBALS['AG']['application']) {
-        $uid = $GLOBALS['AG']['application'] . "_" . $role;
-        $pwd = $GLOBALS['AG']['application'] . "_" . $role;
+    } elseif ($role <> '' && $role <> $AG['application']) {
+        $uid = $AG['application'] . "_" . $role;
+        $pwd = $AG['application'] . "_" . $role;
     } else {
         $uid = SessionGet('UID');
         $pwd = SessionGet('PWD');
     }
 
-    //$db = $db=='' ? $GLOBALS['AG']['application'] : $db;
-    $db = $GLOBALS['AG']['application'];
+    $db = $AG['application'];
 
     // Now make a connection
     $GLOBALS['dbconn'] = SQL_Conn($uid, $pwd, $db);
@@ -13577,11 +13564,12 @@ function scDBConn_Pop()
 /* FRAMEWORK */
 function SQL_CONNSTRING($tuid, $tpwd, $app = "")
 {
+    global $AG;
     $host = '';
     unset($host);
 
     if ($app == "") {
-        $app = $GLOBALS['AG']["application"];
+        $app = $AG["application"];
     }
     return (isset($host) ? " host=" . $host : "") . " dbname=" . $app . " user=" . strtolower($tuid) . " password=" . $tpwd;
 }
@@ -13589,9 +13577,9 @@ function SQL_CONNSTRING($tuid, $tpwd, $app = "")
 /* FRAMEWORK */
 function SQL_CONN($tuid, $tpwd, $app = "")
 {
-    global $GLOBALS;
+    global $AG;
 
-    $app = $GLOBALS['AG']["application"];
+    $app = $AG["application"];
 
     //echo "$tuid $tpwd $app";
     $tcs = SQL_CONNSTRING($tuid, $tpwd, $app);
@@ -13628,6 +13616,7 @@ function SQL3($sql)
 /* FRAMEWORK */
 function SQL2($sql, $dbconn, &$error = false)
 {
+    global $AG;
     if ($dbconn == null) {
         // 4/4/07.  Rem'd out because if this is a problem we've usually
         // got pleny of other problems.  The only time this can happen
@@ -13666,7 +13655,7 @@ function SQL2($sql, $dbconn, &$error = false)
         } else {
             $dbgsql['stack'] = 'xdebug not installed, no function ' . 'stack available.';
         }
-        array_push($GLOBALS['AG']['dbg']['sql'], $dbgsql);
+        array_push($AG['dbg']['sql'], $dbgsql);
     }
     $results = pg_get_result($dbconn);
     $t = pg_result_error($results);
@@ -13970,14 +13959,14 @@ equivalent to "BEGIN TRANSACTION".
 */
 function SQLX_TrxBegin()
 {
-    global $dbconn, $GLOBALS;
-    if (!isset($GLOBALS['AG']['trxlevel'])) {
-        $GLOBALS['AG']['trxlevel'] = 0;
+    global $dbconn, $AG;
+    if (!isset($AG['trxlevel'])) {
+        $AG['trxlevel'] = 0;
     }
-    if ($GLOBALS['AG']["trxlevel"] <> 0) {
+    if ($AG["trxlevel"] <> 0) {
         ErrorsAdd("ERROR: Nested transactions are not allowed");
     } else {
-        $GLOBALS['AG']["trxlevel"]++;
+        $AG["trxlevel"]++;
         SQL("BEGIN TRANSACTION");
     }
 }
@@ -13985,13 +13974,14 @@ function SQLX_TrxBegin()
 /* FRAMEWORK */
 function SQLX_TrxCommit()
 {
-    if (!isset($GLOBALS['AG']['trxlevel'])) {
-        $GLOBLAS['AG']['trxlevel'] = 0;
+    global $AG;
+    if (!isset($AG['trxlevel'])) {
+        $AG['trxlevel'] = 0;
     }
-    if ($GLOBALS['AG']["trxlevel"] <> 1) {
-        ErrorsAdd("Error, can only commit a trx when level is 1, it is now: " . $GLOBLAS['AG']["trxlevel"]);
+    if ($AG["trxlevel"] <> 1) {
+        ErrorsAdd("Error, can only commit a trx when level is 1, it is now: " . $AG["trxlevel"]);
     } else {
-        $GLOBALS['AG']["trxlevel"]--;
+        $AG["trxlevel"]--;
         SQL("COMMIT TRANSACTION");
     }
 }
@@ -13999,13 +13989,14 @@ function SQLX_TrxCommit()
 /* FRAMEWORK */
 function SQLX_TrxRollback()
 {
-    if (!isset($GLOBALS['AG']['trxlevel'])) {
-        $GLOBALS['AG']['trxlevel'] = 0;
+    global $AG;
+    if (!isset($AG['trxlevel'])) {
+        $AG['trxlevel'] = 0;
     }
-    if ($GLOBALS['AG']["trxlevel"] <> 1) {
-        ErrorsAdd("Error, can only rollback a trx when level is 1, it is now: " . $GLOBALS['AG']["trxlevel"]);
+    if ($AG["trxlevel"] <> 1) {
+        ErrorsAdd("Error, can only rollback a trx when level is 1, it is now: " . $AG["trxlevel"]);
     } else {
-        $GLOBALS['AG']["trxlevel"]--;
+        $AG["trxlevel"]--;
         SQL("ROLLBACK TRANSACTION");
     }
 }
@@ -14021,6 +14012,7 @@ value will go to the "syslogs_name" column of the [[syslogs]] table.
 */
 function SQLX_TrxClose($name = '')
 {
+    global $AG;
     if (!Errors()) {
         SQLX_TrxCommit();
     } else {
@@ -14034,7 +14026,7 @@ function SQLX_TrxClose($name = '')
         $row = array('syslog_type' => 'ERROR', 'syslog_subtype' => 'TRX', 'syslog_name' => $name, 'syslog_text' => 'See table syslogs_e');
         $skey = SQLX_Insert($table1, $row);
         $log = SQL_OneValue('syslog', 'select syslog from syslogs where skey=' . $skey);
-        foreach ($GLOBALS['AG']['trx_errors'] as $err) {
+        foreach ($AG['trx_errors'] as $err) {
             $row = array('syslog' => $log, 'syslog_etext' => $err);
             SQLX_Insert($table2, $row);
         }
@@ -14044,10 +14036,11 @@ function SQLX_TrxClose($name = '')
 /* FRAMEWORK */
 function SQLX_TrxLevel()
 {
-    if (!isset($GLOBALS['AG']['trxlevel'])) {
-        $GLOBALS['AG']['trxlevel'] = 0;
+    global $AG;
+    if (!isset($AG['trxlevel'])) {
+        $AG['trxlevel'] = 0;
     }
-    return $GLOBALS['AG']["trxlevel"];
+    return $AG["trxlevel"];
 }
 
 /*

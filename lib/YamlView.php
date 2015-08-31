@@ -3,7 +3,8 @@ class YamlView extends XTable2
 {
     public function main()
     {
-        $file=$GLOBALS['AG']['dirs']['root'].'application/'.gp('file');
+        global $AG:
+        $file=$AG['dirs']['root'].'application/'.gp('file');
         include_once "spyc.php";
         echo "\n<h2>Examine YAML file $file</h2>";
         echo "\n<h3>HERE IS THE SOURCE FILE:</h3>";

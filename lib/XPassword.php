@@ -23,11 +23,12 @@ class XPassword extends XTable2
 {
     public function main()
     {
+        global $AG;
         echo "<h1>Password Processing</h1>";
         
         Hidden("gp_page", "x_password");
         
-        if ($GLOBALS['AG']['flag_pwmd5']=='Y') {
+        if ($AG['flag_pwmd5']=='Y') {
             return $this->MainMD5();
         }
         

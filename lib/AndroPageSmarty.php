@@ -36,17 +36,18 @@ class AndroPageSmarty
      */
     public function main($yamlP2, $page)
     {
+        global $AG;
         // The application directory.
-        $appdir=$GLOBALS['AG']['dirs']['root']."/application/";
+        $appdir = $AG['dirs']['root']."/application/";
 
 
         try {
             // Create new instance of smarty
             $smarty = new Smarty();
-            $smarty->template_dir = $GLOBALS['AG']['dirs']['root'] .'application/templates/';
-            $smarty->compile_dir = $GLOBALS['AG']['dirs']['root'] .'lib/smarty/compile/';
-            $smarty->config_dir = $GLOBALS['AG']['dirs']['root'] .'lib/smarty/config/';
-            $smarty->cache_dir = $GLOBALS['AG']['dirs']['root'] .'lib/smarty/cache/';
+            $smarty->template_dir = $AG['dirs']['root'] .'application/templates/';
+            $smarty->compile_dir = $AG['dirs']['root'] .'lib/smarty/compile/';
+            $smarty->config_dir = $AG['dirs']['root'] .'lib/smarty/config/';
+            $smarty->cache_dir = $AG['dirs']['root'] .'lib/smarty/cache/';
 
             $smarty->caching = false;
             if (ArraySafe($yamlP2['options'], 'noquery', 'N') == 'N') {

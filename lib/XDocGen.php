@@ -170,8 +170,9 @@ class XDocGen extends XTable2
     // ================================================================= \\
     public function ehProcessCode($PageAPI, $PageApp)
     {
+        global $AG;
         // Grab the base directory, and the list of dirs
-        $p=$GLOBALS['AG']['dirs']['root'];
+        $p=$AG['dirs']['root'];
       
         // This information is stored in the node manager, but we cannot
         // get to it, so it is duplicated here.
@@ -1129,8 +1130,9 @@ select arg.*,test.funcoper,test.compoper
    
     public function processGroup($group_id)
     {
-        $app=$GLOBALS['AG']['application'];
-        $appe =$GLOBALS['AG']['application']."_eff_";
+        global $AG;
+        $app=$AG['application'];
+        $appe =$AG['application']."_eff_";
         $appex=strlen($appe);
         return substr($group_id, 0, $appex)==$appe ? false : true;
     }

@@ -38,12 +38,13 @@ class XEmail extends Xtable2
 {
     public function main()
     {
+        global $AG;
         $this->PageSubtitle="Send a Test Email";
         include_once "ddtable_adm_emails.php";
 
         Hidden("gp_page", "x_email");
         
-        $table = $GLOBALS["AG"]["tables"]["adm_emails"];
+        $table = $AG["tables"]["adm_emails"];
         $em = array(
         "email_to"=>CleanBox("email_to", "", false),
         "email_subject"=>CleanBox("email_subject", "", false),
