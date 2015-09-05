@@ -793,12 +793,14 @@ function DispatchObject($gp_page)
     // look for the named class
     $obj_page = null;
     $class_page = "XTable_$gp_page";
+    var_dump($class_page);
     if (class_exists($class_page)) {
         // case 1, extension of XTable (original)
         $obj_page = new $class_page();
         $obj_page->table_id = $gp_page;
         $obj_page->x_table_DDLoad();
     } elseif (class_exists($gp_page)) {
+        var_dump($gp_page);
         // case 2, extension of Xtable2 (new way to do it)
         $obj_page = new $gp_page();
     }
@@ -9679,7 +9681,7 @@ function processPost_Textboxes($row)
 // Closely related routine, depends
 // entirely upon the context
 // - - - - - - - - - - - - - - - - -  -
-function rowsFromUserSearch(&$table, $lcols = null, $matches = array(), $child = false)
+function rowsFromUserSearch($table, $lcols = null, $matches = array(), $child = false)
 {
     $table_id = $table['table_id'];
     $view_id = DDTable_IDResolve($table_id);
@@ -9736,6 +9738,7 @@ function rowsFromUserSearch(&$table, $lcols = null, $matches = array(), $child =
     $colslist = 'skey,' . $lcols;
 
     $sob = ConGet('table', $table_id, 'complex_orderby');
+    var_dump($sob)
     $sq = "SELECT $colslist FROM $view_id " . " WHERE skey in ($skeysl) ORDER BY $sob";
 
     //." $gp_ob";

@@ -159,18 +159,6 @@ class XTable2
         if (gpexists('html_focus')) {
             vgfset('HTML_focus', 'x2t_' . hx(gp('html_focus')));
         }
-        
-        // ((((((((((((((((((((((((((((*))))))))))))))))))))))))))))))))
-        // ((((((((((((((((( Run Custom-level Construct ))))))))))))))))
-        if (method_exists($this, 'construct_custom')) {
-            $this->construct_custom();
-        }
-        if (method_exists($this, 'custom_construct')) {
-            $this->custom_construct();
-        }
-        
-        // ((((((((((((((((( Run Custom-level Construct ))))))))))))))))
-        // ((((((((((((((((((((((((((((*))))))))))))))))))))))))))))))))
 
         // Now pass through child tables again, removing any setting
         // that is not allowed by security privs.  Notice we do this
