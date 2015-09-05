@@ -9738,8 +9738,7 @@ function rowsFromUserSearch($table, $lcols = null, $matches = array(), $child = 
     $colslist = 'skey,' . $lcols;
 
     $sob = ConGet('table', $table_id, 'complex_orderby');
-    var_dump($sob)
-    $sq = "SELECT $colslist FROM $view_id " . " WHERE skey in ($skeysl) ORDER BY $sob";
+    $sq = "SELECT $colslist FROM $view_id WHERE skey in ($skeysl) ORDER BY $sob";
 
     //." $gp_ob";
     return SQL_AllRows($sq);
