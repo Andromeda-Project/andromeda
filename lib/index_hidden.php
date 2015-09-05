@@ -1575,8 +1575,8 @@ function index_hidden_page()
         if (gp('gp_install')=='finish') {
             rename($install, $install2);
         } else {
-            $MPPages['install']='install';
-            gpSet('gp_page', 'install');
+            $MPPages['Install']='Install';
+            gpSet('gp_page', 'Install');
         }
     }
 
