@@ -224,6 +224,9 @@ if (gp('gp_uid')<>'') {
 }
 
 $gp_page = gp('gp_page');
+if (stripos($gp_page, '_') !== false) {
+    $gp_page = snakeCaseToCamelCase($gp_page);
+}
 // KFD 3/6/08 Changed login processing from page XLogin to
 //            the st2login command
 
@@ -249,7 +252,7 @@ if (gp('st2login')==1) {
             SessionUnSet('clean');
             // In pos systems, save the page they are authenticated for
             if (vgaGET('POS_SECURITY', false)==true) {
-                SessionSet('POS_PAGE', gp('gp_page'), 'FW');
+                SessionSet('POS_PAGE', $gp_page, 'FW');
             }
         }
     }
@@ -365,8 +368,8 @@ if (SessionGet('ROOT')==1) {
 $x4Required = array(
     'configfw','configapp','configinst','configuser','configconfirm'
 );
-if (in_array(gp('gp_page'), $x4Required)) {
-    gpSet('x4Page', gp('gp_page'));
+if (in_array($gp_page, $x4Required)) {
+    gpSet('x4Page', $gp_page);
 }
 
 
@@ -377,7 +380,7 @@ if (in_array(gp('gp_page'), $x4Required)) {
 // may have come in, such as gp_dropdown, which causes
 // this to be ignored.
 // 
-if (gp('x4Page')=='' && gp('gp_page')=='' &&gp('x6page')=='') {
+if (gp('x4Page')=='' && $gp_page=='' &&gp('x6page')=='') {
     if (function_exists('app_nopage')) {
         app_nopage();
     } else {
@@ -409,34 +412,12 @@ $x6group   = configGet('x6_group', '');
 // DO 5/17/2013 Lets just totally disable x6
 $flagx6 = 'N';
 
-// KFD 1/13/09.  If there is a "gp_page" and x2=1, turn off
-// x6 processing
-// 
-// if(gp('gp_page',false) || gp('x2')==1) {
-// $flagx6 = 'N';
-// }
-
-
 $x6page    = '';
 $x6file    = '';
 $x6yaml    = '';
 $x6profile = '';
 $x6plugin  = '';
 $x6action  = '';
-
-// KFD 1/10/09.  Completely reworked to run off of 'flag_x6'
-// instead of template.
-/*
-$x6page = gp('x6page');
-if($flagx6=='Y' && $x6page=='') {
-    if(function_exists('app_nopage')) {
-        $x6page = app_noPage();
-    }
-    else {
-        $x6page = 'menu';
-    }
-}
-*/
 
 // A custom file for this page
 $x = "x6$x6page.php";
@@ -1526,7 +1507,7 @@ function index_hidden_page_mime()
 {
     global $AG;
     $x_mime  = CleanGet('x_mime');
-    $x_table = CleanGet("gp_page");
+    $x_table = snakeCaseToCamelCase(CleanGet("gp_page"));
     //$x_column= CleanGet("x_column");
     $x_skey  = CleanGet("x_skey");
     //$sql ="Select skey,$x_column FROM $x_table WHERE skey = $x_skey";
@@ -1612,7 +1593,7 @@ function index_hidden_page()
     // Second pass redirection, pick default page if there
     // is none, and verify public pages.
     //
-    $gp_page = gp('gp_page');
+    $gp_page = snakeCaseToCamelCase(gp('gp_page'));
     if ($gp_page=='') {
         if (vgfGet('LoginAttemptOK')===true && vgfGet('x4')===true) {
             $gp_page='x4init';

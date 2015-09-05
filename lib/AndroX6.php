@@ -25,9 +25,9 @@ class androX6
 {
     public $appTabs = array();
     // ===================================================================
-    // 
-    // Major Area Pre-1: Constructor 
-    // 
+    //
+    // Major Area Pre-1: Constructor
+    //
     // ===================================================================
     public function androX6()
     {
@@ -36,8 +36,8 @@ class androX6
         // attach them to the current object.  This was
         // put in for the wholdist application to carry
         // context from screen to screen.
-        // 
-        // KFD 3/20/09 Sourceforge 2697962 
+        //
+        // KFD 3/20/09 Sourceforge 2697962
         // Moved this to index_hidden so it works with
         // androPage w/o modifying androPage
         // $this->hld = aFromGp('hld_');
@@ -47,9 +47,9 @@ class androX6
     }
     
     // ===================================================================
-    // 
-    // Major Area 0: User overridable functions 
-    // 
+    //
+    // Major Area 0: User overridable functions
+    //
     // ===================================================================
     /****m* androX6/x6main
     *
@@ -73,9 +73,9 @@ class androX6
         return false;
     }
     // ===================================================================
-    // 
-    // SERVER FUNCTION 2: Return a single row when asked 
-    // 
+    //
+    // SERVER FUNCTION 2: Return a single row when asked
+    //
     // ===================================================================
     /**
       * Return a single row for a table
@@ -94,9 +94,9 @@ class androX6
     }
 
     // ===================================================================
-    // 
-    // SERVER FUNCTION 3: Execute an skey-based update or insert 
-    // 
+    //
+    // SERVER FUNCTION 3: Execute an skey-based update or insert
+    //
     // ===================================================================
     public function save()
     {
@@ -134,9 +134,9 @@ class androX6
 
         // KFD 12/8/08, More generalized code to allow for
         // inserts before or after a row.
-        // 
+        //
         // an skeyAfter value means we must find the queuepos
-        // column in this table, and save a value of that 
+        // column in this table, and save a value of that
         // column equal to +1 of the value in row skeyAfter
         if (gp('queuepos', '')<>'') {
             $queuepos = gp('queuepos');
@@ -275,9 +275,9 @@ class androX6
     }
     
     // ===================================================================
-    // 
-    // SERVER FUNCTION 4: Execute an skey-based delete 
-    // 
+    //
+    // SERVER FUNCTION 4: Execute an skey-based delete
+    //
     // ===================================================================
     /**
       * Execute an skey-based delete
@@ -315,9 +315,9 @@ class androX6
     }
 
     // ===================================================================
-    // 
+    //
     // SERVER FUNCTION 5: Fetch values from other tables based on an FK
-    // 
+    //
     // ===================================================================
     /**
       * Go get FETCH values from other tables
@@ -334,7 +334,7 @@ class androX6
         // Build the SQL to fetch the row
         $colsc= array();
         $colsp= array();
-        foreach ($collist as $idx=>$info) {
+        foreach ($collist as $idx => $info) {
             $colsp[] = $info['column_id_par'].' as '.$info['column_id'];
         }
         $type_id = $this->dd['flat'][$column_id]['type_id'];
@@ -347,9 +347,9 @@ class androX6
     }
 
     // ===================================================================
-    // 
+    //
     // SERVER FUNCTION 6: fetch browse/grid values
-    // 
+    //
     // ===================================================================
     public function browseFetch()
     {
@@ -366,7 +366,7 @@ class androX6
             }
         }
 
-        // By default the search criteria come from the 
+        // By default the search criteria come from the
         // variables, unless it is a child table search
         $vals = aFromGP('x6w_');
         $awhere = array();
@@ -384,7 +384,7 @@ class androX6
             $proj = 'child_'.$tabPar;
             $aprojSort = array();
             if (isset($this->dd['projdetails'][$proj])) {
-                foreach ($this->dd['projdetails'][$proj] as $column=>$sortasc) {
+                foreach ($this->dd['projdetails'][$proj] as $column => $sortasc) {
                     if ($sortasc=='Y') {
                         $aprojSort[] = "+$column";
                     }
@@ -396,11 +396,11 @@ class androX6
             $projSort = implode(",", $aprojSort);
         }
         
-        // Build the where clause        
-        // 
+        // Build the where clause
+        //
         $this->flat = $this->dd['flat'];
         $allowNoFilters=false;
-        foreach ($vals as $column_id=>$colvalue) {
+        foreach ($vals as $column_id => $colvalue) {
             if (!isset($this->flat[$column_id])) {
                 continue;
             }
@@ -459,7 +459,7 @@ class androX6
         
 
         // Build the Order by
-        // 
+        //
         $ascDesc = gp('sortAD')=='ASC' ? ' ASC' : ' DESC';
         $aorder = array();
         $searchsort = '';
@@ -468,7 +468,7 @@ class androX6
             $ascDesc = gp('sortAsc')=='true' ? ' ASC' : ' DESC';
             $aorder[] = gp('sortCol').' '.gp('sortAD');
         } else {
-            // KFD 12/27/08, Use the search sort that was 
+            // KFD 12/27/08, Use the search sort that was
             // set aside above if it is there
             $searchsort = $projSort==''
               ? trim(arr($this->dd, 'uisearchsort', ''))
@@ -487,7 +487,7 @@ class androX6
             }
             $SQLOrder = " ORDER BY ".implode(',', $aorder);
         } else {
-            // KFD 6/18/08, new routine that works out sort 
+            // KFD 6/18/08, new routine that works out sort
             $aorder = sqlOrderBy($vals);
             if (count($aorder)==0) {
                 $SQLOrder = '';
@@ -498,7 +498,7 @@ class androX6
         
         // just before building the query, drop out
         // any columns that have a table_id_fko to the parent
-        foreach ($acols as $idx=>$column_id) {
+        foreach ($acols as $idx => $column_id) {
             if ($this->flat[$column_id]['table_id_fko'] == $tabPar
                 && $tabPar <> ''
             ) {
@@ -533,7 +533,8 @@ class androX6
         $lookups   = gp('xLookups', 'N')=='Y';
         $edit      = 0;
         $childedit = in_array(
-            $this->dd['x6childwrites'], array('Y', 'grid')
+            $this->dd['x6childwrites'],
+            array('Y', 'grid')
         );
         if (($tabPar != '') && $childedit) {
             $edit = 1;
@@ -548,7 +549,12 @@ class androX6
 
         // Now grab us a grid
         $grid = new androHTMLGrid(
-            $gridHeight, $table_id, $lookups, $sortable, $bb, $edit
+            $gridHeight,
+            $table_id,
+            $lookups,
+            $sortable,
+            $bb,
+            $edit
         );
         $this->gridGeneric($grid, $this->dd, $tabPar, $vals2);
         $grid->addData($answer);
@@ -586,9 +592,9 @@ class androX6
         FB::Send(number_format(microtime(true)-$mtime, 4), $str);
     }
     // ===================================================================
-    // 
+    //
     // SERVER FUNCTION 7: compose list of checkboxes for child x-ref
-    // 
+    //
     // ===================================================================
     public function child_checkbox()
     {
@@ -619,14 +625,15 @@ class androX6
         $view_par= $dd_par['viewname'];
         
         // Now pull the list of descriptions from the other parent,
-        // and the list of values from the x-ref.  Use this to 
+        // and the list of values from the x-ref.  Use this to
         // build a set of checkboxes that are either checked or
         // not.
         $rows_par = SQL_AllRows(
             "Select $pk_par,description from $view_par order by description"
         );
         $rows     = SQL_AllRows(
-            "Select $pk_par from $view_chd where $pk = ".SQLFC($pkval), $pk_par
+            "Select $pk_par from $view_chd where $pk = ".SQLFC($pkval),
+            $pk_par
         );
         
         // Finally we are ready to build the list of checkboxes
@@ -636,7 +643,7 @@ class androX6
         echo "<p style='padding: {$pad1}px'
           >When you check a box the change is saved immediately,
           you do not have to click on the [SAVE] button.</p>";
-        foreach ($rows_par as $idx=>$row_par) {
+        foreach ($rows_par as $idx => $row_par) {
             $div = html('div');
             $div->hp['style'] = 'height: '.x6cssDefine('barheight').'px;'
                 ."padding-left: {$pad0}px";
@@ -658,7 +665,7 @@ class androX6
         }
         
         
-        // NOTICE THE EXIT COMMAND.  This is because we are 
+        // NOTICE THE EXIT COMMAND.  This is because we are
         // streaming back literal html that will dropped directly
         // into place.
         exit;
@@ -677,9 +684,9 @@ class androX6
     }
     
     // ===================================================================
-    // 
+    //
     // SERVER FUNCTION 8: Retrieve and display a CLOB field
-    // 
+    //
     // ===================================================================
     public function viewClob()
     {
@@ -698,9 +705,9 @@ class androX6
     
     // ===================================================================
     // *******************************************************************
-    // 
+    //
     // Profile 0: "grid"  editable!
-    // 
+    //
     // *******************************************************************
     // ===================================================================
     public function profile_grid()
@@ -715,7 +722,7 @@ class androX6
         // is hidden and sorting is forced on that column.  It is
         // also assigned automatically as the user creates rows.
         $queuepos = '';
-        foreach ($dd['flat'] as $colname=>$colinfo) {
+        foreach ($dd['flat'] as $colname => $colinfo) {
             if (strtolower($colinfo['automation_id'])=='queuepos') {
                 $queuepos = $colname;
                 jqDocReady("x6bb.fwSet('queuepos_$table_id','$colname')");
@@ -746,11 +753,16 @@ class androX6
         }
         $gridHeight = $hremain - x6cssHeight('h1');
         $grid       = $top->addGrid(
-            $gridHeight, $table_id, false, $sortable, $bb, true
+            $gridHeight,
+            $table_id,
+            false,
+            $sortable,
+            $bb,
+            true
         );
         $grid->hp['x6profile'] = 'grid';
         
-        // More features specific to this profile, these will 
+        // More features specific to this profile, these will
         // allow browseFetch not to have to figure this all out
         // all over again.
         $grid->ap['xGridHeight'] = $gridHeight;
@@ -758,7 +770,7 @@ class androX6
         $grid->ap['xReturnAll']  = "Y";
         
 
-        // If queuepos set, set this flag        
+        // If queuepos set, set this flag
         if ($queuepos) {
             $grid->ap['xInsertAfter'] = 'Y';
         }
@@ -766,7 +778,7 @@ class androX6
         // Now obtain the _uisearch columns and make one column each
         $uisearch = $dd['projections']['_uisearch'];
         $aColumns = explode(',', $uisearch);
-        foreach ($aColumns as $idx=>$column) {
+        foreach ($aColumns as $idx => $column) {
             if ($column==$queuepos) {
                 unset($aColumns[$idx]);
             }
@@ -811,7 +823,7 @@ class androX6
         }
         
         // always at the end, render it
-        // KFD 3/20/09 Sourceforge 2697962 
+        // KFD 3/20/09 Sourceforge 2697962
         // index_hidden calls this now
         // $this->hldOut($top);
         $top->render();
@@ -822,9 +834,9 @@ class androX6
     }
     // ===================================================================
     // *******************************************************************
-    // 
+    //
     // Profile 1: "twosides"
-    // 
+    //
     // *******************************************************************
     // ===================================================================
     public function profile_twosides()
@@ -862,7 +874,7 @@ class androX6
         $pre = aFromGp('pre_');
         $awhere = array();
         $where = '';
-        foreach ($pre as $colname=>$value) {
+        foreach ($pre as $colname => $value) {
             $awhere[] = sqlfilter($this->dd['flat'][$colname], $value);
         }
         if (count($awhere)>0) {
@@ -913,15 +925,15 @@ class androX6
             $xrefParent->addChild($xrefs);
         }
 
-        // tell the screen to start out by 
-        // focusing on the browse 
+        // tell the screen to start out by
+        // focusing on the browse
         jqDocReady("x6events.fireEvent('objectFocus','{$x6grid->hp['id']}')");
         // KFD 3/7/09 Sourceforge 2669466
         // Turn on new buttons by default
         jqDocReady('x6events.fireEvent("buttonsNew_'.$table_id.'",true)');
         
         // Render it!  That's it!
-        // KFD 3/20/09 Sourceforge 2697962 
+        // KFD 3/20/09 Sourceforge 2697962
         // index_hidden calls this now
         // $this->hldOut($top);
         $div->render();
@@ -929,9 +941,9 @@ class androX6
     
     // ===================================================================
     // *******************************************************************
-    // 
+    //
     // Profile 2: "conventional"
-    // 
+    //
     // *******************************************************************
     // ===================================================================
     public function profile_conventional()
@@ -941,7 +953,6 @@ class androX6
         // where we have to work out if there is a bad
         // page request.
         if (!isset($this->dd['table_id'])) {
-            ?>
             <h1>No Page By That Name</h1>
             
             <p>There is no page <b><?php echo hx(gp('x6page'))?></b>.
@@ -953,7 +964,7 @@ class androX6
         // KFD 2/9/09, new feature for Jeff/wholdist.  If "table_id_par"
         // was passed in, load a certain row from the parent
         // table into the bulletin board.  Specifically this
-        // is so the table can act like a child table 
+        // is so the table can act like a child table
         // w/respect to loading FETCH and FETCHDEF values.
         // Maybe we'll do more with it later.
         $tid_par = gp('table_id_par', '');
@@ -981,7 +992,7 @@ class androX6
         // KFD 4/15/09 Sourceforge 2765788, handle no kids gracefully,
         // work out how many kids there are to display
         $kidCount = 0;
-        foreach ($dd['fk_children'] as $child=>$info) {
+        foreach ($dd['fk_children'] as $child => $info) {
             if (trim(arr($info, 'x6display', ''))<>'none') {
                 $kidCount++;
             }
@@ -1009,14 +1020,14 @@ class androX6
         $hpane1  = $hinside - $hh1 - $htabs - ($pad0 * 2);
         
         // $hchild is the height of the empty nested tab
-        // pane, hardcoded at pad0.  This is where the child 
+        // pane, hardcoded at pad0.  This is where the child
         // tables are initially displayed -- at the bottom of the
         // detail pane.  They are initially slid all of the way down,
         // that is why their height is only pad0.
         $hempty  = $pad0;
         
-        // $hdetail is the height of the detail pane inside of the 
-        // detail tab.  It is the $hpane1 less another tab (the 
+        // $hdetail is the height of the detail pane inside of the
+        // detail tab.  It is the $hpane1 less another tab (the
         // nested one), and $hempty, and a double padding
         $hdetail = $hpane1 - $htabs - $hempty - ($pad0 * 2);
         
@@ -1030,8 +1041,8 @@ class androX6
         $lookup = $tabs->addTab('Lookup');
         $detail = $tabs->addTab('Detail', true);
 
-        // Make a generic grid, which will show all uisearch 
-        // columns, and add a row of lookup inputs to it.  
+        // Make a generic grid, which will show all uisearch
+        // columns, and add a row of lookup inputs to it.
         // Enclose it in a div that gives some padding on top
         // and bottom.  Divide up the left-right free space to
         // put 1/3 on the left and the remaining on the right.
@@ -1060,7 +1071,7 @@ class androX6
         // the assumption that there will *always* be child tables
         // because otherwise the programmer would have selected
         // a different profile.
-        // 
+        //
         $divDetail = $detail->addDetail($dd['table_id'], true, $hdetail, $tid_par);
         $divDetail->addCustomButtons($this->customButtons());
         $divDetail->ap['xTabSelector'] = $tabs->ul->hp['id'];
@@ -1089,7 +1100,7 @@ class androX6
             $tabKids->ul->hp['xOffset'] = 2;
             $tab = $tabKids->addTab("Hide");
             $idx = 0;
-            foreach ($dd['fk_children'] as $child=>$info) {
+            foreach ($dd['fk_children'] as $child => $info) {
                 // KFD 1/2/09.  If x6display is 'none', skip it
                 if (trim(arr($info, 'x6display', ''))=='none') {
                     continue;
@@ -1126,7 +1137,7 @@ class androX6
             }
             
             // And then loop through extra tabs
-            foreach ($this->appTabs as $child=>$caption) {
+            foreach ($this->appTabs as $child => $caption) {
                 $top->addTableController($child);
                 $tab = $tabKids->addTab($caption);
                 $tab->hp['x6tablePar'] = $table_id;
@@ -1138,7 +1149,7 @@ class androX6
         // the browse
         jqDocReady("x6events.fireEvent('objectFocus','{$grid->hp['id']}')");
 
-        // KFD 3/20/09 Sourceforge 2697962 
+        // KFD 3/20/09 Sourceforge 2697962
         // index_hidden calls this now
         // $this->hldOut($top);
         $top->render();
@@ -1146,9 +1157,9 @@ class androX6
 
     // ===================================================================
     // *******************************************************************
-    // 
+    //
     // Profile 3: "onerow"
-    // 
+    //
     // *******************************************************************
     // ===================================================================
     public function profile_onerow()
@@ -1168,7 +1179,7 @@ class androX6
         // Get a list of projections, we will make a tab
         // for each one of them
         $projections = array_keys($this->dd['projections']);
-        foreach ($projections as $idx=>$projection) {
+        foreach ($projections as $idx => $projection) {
             if (substr($projection, 0, 1)=='_') {
                 unset($projections[$idx]);
             }
@@ -1199,7 +1210,7 @@ class androX6
             $table = $insidetab->h('table');
             $table->addClass('x6Detail');
             $columns = explode(',', $this->dd['projections'][$projection]);
-            foreach ($columns as $idx=>$column) {
+            foreach ($columns as $idx => $column) {
                 $tabLoop=array();
                 
                 $tr = $table->h('tr');
@@ -1245,9 +1256,9 @@ class androX6
     
     // ===================================================================
     // -------------------------------------------------------------------
-    // 
+    //
     // Simple Library routines
-    // 
+    //
     // -------------------------------------------------------------------
     // ===================================================================
     public function uiPerm($table, $perm)
@@ -1274,9 +1285,9 @@ class androX6
     }
     */
     
-    // KFD 3/20/09 Sourceforge 2697962 
+    // KFD 3/20/09 Sourceforge 2697962
     // Various improvements to hold variables
-    public function clearHold($name='')
+    public function clearHold($name = '')
     {
         if ($name=='') {
             $this->hld=array();
@@ -1302,7 +1313,7 @@ class androX6
     
     // Makes a generic grid.  First created 11/3/08 so we can add
     // cells to it for a browseFetch and then pluck out the tbody html
-    public function gridGeneric(&$grid, $dd, $tabPar='', $vals2=array())
+    public function gridGeneric(&$grid, $dd, $tabPar = '', $vals2 = array())
     {
         $table_id = $dd['table_id'];
         
@@ -1311,7 +1322,7 @@ class androX6
         // it will respect when building the inputs
         if ($tabPar!='') {
             $options = array();
-            foreach ($vals2 as $colname=>$colvalue) {
+            foreach ($vals2 as $colname => $colvalue) {
                 $options[$colname] = array(
                     'parentTable'=>$tabPar
                     ,'attributes'=>array(
@@ -1329,8 +1340,8 @@ class androX6
             $grid->hp['x6childwrites'] = 'grid';
         }
         
-        // KFD 11/15/08 
-        // Nifty trick to allow different columns when viewed as 
+        // KFD 11/15/08
+        // Nifty trick to allow different columns when viewed as
         // child table.  If tabPar is passed in, we will pick
         // the projection named "child_{tabPar}" if it exists.
         // The first line will pull an empty result if this feature

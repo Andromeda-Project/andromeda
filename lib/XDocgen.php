@@ -52,7 +52,7 @@ for several functions or doc blocks.
 Each time you create a "name:_default_" block the previous defaults are
 discarded.
 */
-class XDocGen extends XTable2
+class XDocgen extends XTable2
 {
     public function __construct()
     {

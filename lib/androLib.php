@@ -784,7 +784,6 @@ function x4Object($x4Page)
  */
 function DispatchObject($gp_page)
 {
-
     // Get the One True Class loaded.  All table
     // processing uses it directly or uses a subclass of it
     //
@@ -2984,7 +2983,8 @@ function removeYamlLineNumbers(&$yaml)
  */
 function SessionGet($key, $default = "", $sfx = 'app')
 {
-    $xkey = $GLOBALS["AG"]["application"] . "_" . $sfx . "_" . $key;
+    global $AG;
+    $xkey = $AG["application"] . "_" . $sfx . "_" . $key;
     if (isset($_SESSION[$xkey])) {
         return $_SESSION[$xkey];
     } else {
@@ -3016,7 +3016,8 @@ function SessionGet($key, $default = "", $sfx = 'app')
  */
 function SessionSet($key, $value, $sfx = 'app')
 {
-    $xkey = $GLOBALS["AG"]["application"] . "_" . $sfx . "_" . $key;
+    global $AG;
+    $xkey = $AG["application"] . "_" . $sfx . "_" . $key;
     $_SESSION[$xkey] = $value;
 }
 
@@ -3041,8 +3042,9 @@ function SessionSet($key, $value, $sfx = 'app')
  */
 function SessionUnSet($key, $context = 'app', $sfx = 'app')
 {
+    global $AG;
     $x = $context;
-    $xkey = $GLOBALS["AG"]["application"] . "_" . $sfx . "_" . $key;
+    $xkey = $AG["application"] . "_" . $sfx . "_" . $key;
     unset($_SESSION[$xkey]);
 }
 
@@ -4072,18 +4074,6 @@ function DD_TableRef($table_id)
     global $AG;
     $retval = ddTable($table_id);
     return $retval;
-    /*
-    if (!isset($AG["tables"][$table_id])) {
-        $file = $AG['dirs']['generated'] . "ddtable_" . $table_id . ".php";
-        var_dump($file);
-        if (!file_exists($file)) {
-            return array();
-        } else {
-            include$file;
-        }
-    }
-    $retval = & $AG["tables"][$table_id];
-    return $retval;*/
 }
 
 // ------------------------------------------------------------------

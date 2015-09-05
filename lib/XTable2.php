@@ -406,7 +406,7 @@ class XTable2
             if (!empty($commands)) {
                 $commands = '
                             <div class="container" style="padding-bottom:15px;">
-                                <div class="span' . ($left === false ? '12' : '9') . '">' . $commands . '
+                                <div class="span' . (isset($left) && $left === false ? '12' : '9') . '">' . $commands . '
                                 </div>
                             </div>';
             } else {
