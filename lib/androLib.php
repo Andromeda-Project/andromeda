@@ -793,14 +793,12 @@ function DispatchObject($gp_page)
     // look for the named class
     $obj_page = null;
     $class_page = "XTable_$gp_page";
-    var_dump($class_page);
     if (class_exists($class_page)) {
         // case 1, extension of XTable (original)
         $obj_page = new $class_page();
         $obj_page->table_id = $gp_page;
         $obj_page->x_table_DDLoad();
     } elseif (class_exists($gp_page)) {
-        var_dump($gp_page);
         // case 2, extension of Xtable2 (new way to do it)
         $obj_page = new $gp_page();
     }
@@ -810,7 +808,7 @@ function DispatchObject($gp_page)
         $default = vgaGet('XTable', 'XTable2');
         if ($default == 'XTable') {
             $obj_page = new XTable();
-            $obj_page->table_id = $gp_page;
+            $obj_page->table_id = strtolower($gp_page);
             $obj_page->x_table_DDLoad();
         } else {
             $obj_page = new XTable2($gp_page);
@@ -3597,12 +3595,16 @@ function ddTable($table_id)
     }
 
     // First run the include and get a reference
-    if (!file_exists($AG['dirs']['generated'] . 'ddtable_' .$table_id .'.php')) {
+    $file = $AG['dirs']['generated'] . 'ddtable_' .$table_id .'.php';
+
+    if (!file_exists($file)) {
         $AG['tables'][$table_id] = array('flat' => array(), 'description' => $table_id, 'viewname' => '');
     } else {
         include_once"ddtable_" . $table_id . ".php";
     }
-    $tabdd = & $AG['tables'][$table_id];
+
+    $tabdd = &$AG['tables'][$table_id];
+
     //echo "Here is first load:";
     //hprint_r($tabdd);
 
@@ -3668,6 +3670,7 @@ function ddTable($table_id)
         $tabdd['viewname'] = $tabdd['tableresolve'][$group];
         $view = $tabdd['tableresolve'][$group];
     }
+
     // If there is a view for my group, I have to knock out the columns
     // I will not be allowed to deal with on the server
     if (isset($tabdd['views'][$view])) {
@@ -3742,7 +3745,7 @@ function ddTable($table_id)
  *
  ******
  */
-function ddView($tabx)
+function ddView(&$tabx)
 {
     global $AG;
     // If not given an array, assume we were given the name of
@@ -3750,11 +3753,13 @@ function ddView($tabx)
     if (!is_array($tabx)) {
         $tabx = ddTable($tabx);
     }
+
     // KFD 10/26/08.  If no view, reload with new loader routine.
     if (!isset($tabx['viewname'])) {
         unset($AG['tables'][$tabx['table_id']]);
         $tabx = ddTable($tabx);
     }
+
     return $tabx['viewname'];
 }
 
@@ -4670,7 +4675,7 @@ function appconget($category, $name, $key, $default = '')
          *
          *---**
         */
-function conget($category, $name, $key, $default = '')
+function ConGet($category, $name, $key, $default = '')
 {
     return ContextGet('fw_' . $category . '_' . $name . '_' . $key, $default);
 }
@@ -4793,8 +4798,7 @@ function conSet($category, $name, $key, $value = '')
 function ContextSet($name, $value = '')
 {
     global $AG;
-    $sc = $AG['clean']['gpContext'];
-    $sc[$name] = $value;
+    $AG['clean']['gpContext'][$name] = $value;
 }
 
 /*---**/
@@ -7258,16 +7262,15 @@ function fsMakeDirNested($Base_Path, $New_Path)
 function fsFileFromArray($name, $array, $arrayname, $dir = '')
 {
     global $AG;
-    $annoying = $arrayname;
     $retval = "";
     $level = 0;
     $retval = fsFileFromArrayWalk($array, 0);
-
     $retval = "<?php
 \$$arrayname = array(
 $retval
 );
 ?>";
+
     $file = $AG['dirs']['app_root'] . ($dir == '' ? 'dynamic' : $dir) . DIRECTORY_SEPARATOR . "$name";
     file_put_contents($file, $retval);
 
@@ -9182,7 +9185,12 @@ function variables_writeAfter($row)
         $line = preg_replace_callback("/%%(.+?)%%/", "getRegexOptionVal", $row['variable_value']);
         $cache[$row['variable']] = $line;
     }
-    fsFileFromArray("table_variables.php", $cache, $AG['table_variables']);
+
+    fsFileFromArray(
+        "table_variables.php",
+        $cache,
+        "GLOBALS['AG']['table_variables']"
+    );
 }
 
 function OptionGet($varname, $default = '')
@@ -9685,7 +9693,6 @@ function rowsFromUserSearch($table, $lcols = null, $matches = array(), $child = 
 {
     $table_id = $table['table_id'];
     $view_id = DDTable_IDResolve($table_id);
-
     // If search has not been performed, do it now
     $skeys = ConGet('table', $table_id, 'skeys', '');
     if (!is_array($skeys)) {
@@ -9695,10 +9702,10 @@ function rowsFromUserSearch($table, $lcols = null, $matches = array(), $child = 
     // Now go in and retrieve the rows for the skey values
     // that we want
     $gp_spage = ConGet('table', $table_id, 'spage', 1);
-
-    /* DJO 8-15-2008 Added to allow config override of rows
-                 * returned for a child table displayed with parent
-                */
+    /*
+     * DJO 8-15-2008 Added to allow config override of rows
+     * returned for a child table displayed with parent
+     */
     if ($child) {
         $gp_rpp = configGet('sql_limit', ConGet('table', $table_id, 'rppage', 25));
     } else {
@@ -9738,6 +9745,7 @@ function rowsFromUserSearch($table, $lcols = null, $matches = array(), $child = 
     $colslist = 'skey,' . $lcols;
 
     $sob = ConGet('table', $table_id, 'complex_orderby');
+    global $AG;
     $sq = "SELECT $colslist FROM $view_id WHERE skey in ($skeysl) ORDER BY $sob";
 
     //." $gp_ob";
@@ -9823,6 +9831,7 @@ function rowsFromFilters(&$table, $filters, $cols, $matches = array())
     //       the selected one.  But order by the selected one
     //       first.
     $ob = ConGet("table", $table_id, "orderby");
+
     $lob = explode(',', $table['projections']['_uisearch']);
     if ($ob == '') {
         foreach ($lob as $onecol) {
@@ -9845,10 +9854,6 @@ function rowsFromFilters(&$table, $filters, $cols, $matches = array())
         }
     }
     ConSet('table', $table_id, 'complex_orderby', $sob);
-
-    // Retrieve the limit as a vgaget, defaulting to 300
-    // DJO 4-8-2008 Allow for system variable override, 0 would be all records
-
 
     /**
      * DJO 8-15-2008 No longer needed because of the Config System
@@ -13639,7 +13644,7 @@ function SQL2($sql, $dbconn, &$error = false)
         // KFD 10/18/08, add stack dump if xdebug installed
         if (function_exists('xdebug_get_function_stack')) {
             ob_start();
-            var_dump(xdebug_get_function_stack());
+            print_r(xdebug_get_function_stack());
             $dbgsql['stack'] = ob_get_clean();
         } else {
             $dbgsql['stack'] = 'xdebug not installed, no function ' . 'stack available.';

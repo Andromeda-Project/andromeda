@@ -1,7 +1,7 @@
 <?php
 class Variables extends XTable2
 {
-    public function aLinks_extra($mode)
+    public function aLinksExtra($mode)
     {
         if ($mode<>'upd') {
             return array();

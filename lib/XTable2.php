@@ -86,7 +86,7 @@ class XTable2
     // -----------------------------------------------------------
     public function __construct($table_id = '')
     {
-        
+        global $AG;   
         // Grab table ID if given, otherwise try to figure
         // one out, but only if we don't have one
         if ($table_id <> '') {
@@ -96,14 +96,14 @@ class XTable2
                 $this->table_id = get_class($this);
             }
         }
-        
+
+        $this->table_id = strtolower($this->table_id);
         // Load data dictionary.  This is not a tragedy if
         // the page has no table, just forget about it.
         $this->table = DD_TableRef($this->table_id);
         $this->view_id = '';
         if (is_array($this->table)) {
             if (isset($this->table['projections']['_uisearch'])) {
-                
                 // capure this directly so it can be overridden
                 $this->projections['_uisearch'] = $this->table['projections']['_uisearch'];
             }
@@ -187,7 +187,7 @@ class XTable2
     'txt_/primary_key/' value.  Depending upon which one, returns
     the value of the primary key.  If neither, returns empty string.
     */
-    public function PKFromSKEYorPK()
+    private function PKFromSKEYorPK()
     {
         $pkcol = $this->table['pks'];
         $pkcand = gp('txt_' . $pkcol);
@@ -228,7 +228,7 @@ class XTable2
         //             there is no data dictionary, the user has
         //             called a bad page.
         if (!isset($this->table['projections'])) {
-            ?>
+?>
           <h1>Bad Page Request</h1>
           <p>There is no page <?php
             echo hx(gp('gp_page')) ?>
@@ -252,7 +252,6 @@ class XTable2
         
         // If we were invoked by a child table, don't do this
         if (is_null($this->table_obj_child)) {
-            
             // KFD 10/26/06, keep as $table_id
             Hidden('gp_page', $this->table_id);
             
@@ -276,7 +275,7 @@ class XTable2
             }
         }
         $this->mode = $mode;
-        
+
         // KFD 8/13/07, Experimental COPY ability
         if (gp('gp_action') == 'copy') {
             $mode = 'ins';
@@ -284,13 +283,13 @@ class XTable2
         }
         
         switch ($mode) {
-        case 'search':
-            $this->PageSubtitle.= " (Lookup Mode)";
-            break;
+            case 'search':
+                $this->PageSubtitle.= " (Lookup Mode)";
+                break;
 
-        case 'ins':
-            $this->PageSubtitle.= " (New Entry)";
-            break;
+            case 'ins':
+                $this->PageSubtitle.= " (New Entry)";
+                break;
         }
         
         // ----------------------------------------------
@@ -321,7 +320,6 @@ class XTable2
         
         // Put this out at end, after all HTML has been output
         if ($mode == "search") {
-            
             //$controls=vgfGet('gpControls');
             $controls = ContextGet('OldRow');
             $hScript = '';
@@ -473,7 +471,6 @@ class XTable2
         
         // Two different bits of HTML based on which path
         if ($this->button_images) {
-            
             // UTTERLY DEPRECATED SINCE LIKE, 2005 OR SO.
             // DESTINED TO BE REMOVED.
             $this->h['ButtonBar'] = "\n" . hTable(100) . "<tr>\n" . implode("\n", $buts) . "\n</tr></table>";
@@ -488,13 +485,13 @@ class XTable2
     }
     
     /**
-     name:hButton
-     parm:flag Enabled
-     parm:string Caption
-     parm:string Action
-     parm:string image_name (defunct)
-     Creates a hyperlink to the specified form action.  By its nature
-     this routine is loaded with exception code.
+     * name:hButton
+     * parm:flag Enabled
+     * parm:string Caption
+     * parm:string Action
+     * parm:string image_name (defunct)
+     * Creates a hyperlink to the specified form action.  By its nature
+     * this routine is loaded with exception code.
      */
     public function hButton($switch, $caption, $action, $img)
     {
@@ -510,7 +507,6 @@ class XTable2
             if ($this->button_images) {
                 return "<th><img src=\"images/$img-gray.png\"></th>";
             } else {
-                
                 // the "import" button should not be there at all if disabled
                 if ($caption == 'Import') {
                     return '';
@@ -523,58 +519,47 @@ class XTable2
         // If we are still continuing, then this is a "lit" active
         // button.  First work out the link
         switch ($action) {
-        case 'import':
-            $hlink = "?gp_page=x_import&gp_table_id=" . $this->table_id;
-            $onclick = "javascript:window.location='$hlink'";
-            break;
-
-        case 'save':
-            $hlink = "javascript:SetAndPost('gp_action','save')";
-            $onclick = $hlink;
-            break;
-
-        case 'saveupd':
-            $hlink = "javascript:SetAction('gp_skey','" . $this->row['skey'] . "'" . ",'gp_action','save')";
-            $onclick = $hlink;
-            break;
-
-        case 'reset':
-                
-            //$hlink="javascript:ob('Form1').reset()";
-            $hlink = "javascript:fieldsReset()";
-            $onclick = $hlink;
-            break;
-
-        case 'clear':
-            $hlink = "javascript:clearBoxes()";
-            $onclick = $hlink;
-            break;
-
-        case 'delete':
-                
-            //$skey=gp('gp_skey');
-            //$name = 'gp_delskey_'.$this->table_id;
-            //$hlink="SetAndPost('".$name."',".$skey.')';
-            $hlink = "javascript:SetAndPost('gp_action','del')";
-            $onclick = $hlink;
-            break;
-
-        default:
-                
-            //$qstring = "gp_mode=".urlencode($action);
-            $hlink = "javascript:SetAndPost('gp_mode','$action')";
-            $onclick = $hlink;
+            case 'import':
+                $hlink = "?gp_page=x_import&gp_table_id=" . $this->table_id;
+                $onclick = "javascript:window.location='$hlink'";
+                break;
+            case 'save':
+                $hlink = "javascript:SetAndPost('gp_action','save')";
+                $onclick = $hlink;
+                break;
+            case 'saveupd':
+                $hlink = "javascript:SetAction('gp_skey','" . $this->row['skey'] . "'" . ",'gp_action','save')";
+                $onclick = $hlink;
+                break;
+            case 'reset':
+                //$hlink="javascript:ob('Form1').reset()";
+                $hlink = "javascript:fieldsReset()";
+                $onclick = $hlink;
+                break;
+            case 'clear':
+                $hlink = "javascript:clearBoxes()";
+                $onclick = $hlink;
+                break;
+            case 'delete':
+                //$skey=gp('gp_skey');
+                //$name = 'gp_delskey_'.$this->table_id;
+                //$hlink="SetAndPost('".$name."',".$skey.')';
+                $hlink = "javascript:SetAndPost('gp_action','del')";
+                $onclick = $hlink;
+                break;
+            default:
+                //$qstring = "gp_mode=".urlencode($action);
+                $hlink = "javascript:SetAndPost('gp_mode','$action')";
+                $onclick = $hlink;
         }
         
         // If a text-button, we will now just make a link.  But if its
         // an image we'll slip in the image instead of a text caption
         $ho = $hc = "";
         if (!$this->button_images) {
-            
             // make accesskey from caption
             //list($caption,$akey)=FindAccessKey($caption);
         } else {
-            
             // Make image
             $ho = "<th>";
             $hc = "</th>";
@@ -616,7 +601,7 @@ class XTable2
             $imatch = SQLFC($value);
             $pmatch.= $key . "='" . $value . "'";
         }
-        
+
         // Do an insert if coming through as ajax
         $sqins = '';
         if (gpExists('moveradd')) {
@@ -756,13 +741,13 @@ class XTable2
             $filters = ConSet('table', $this->table_id, 'search', $filters);
         }
         $rows = rowsFromUserSearch($this->table, $this->projections['_uisearch']);
-        
+
         // Pull the nav bar.  Do this after pulling rows so we
         // know how many rows there are, what page we're on, etc.
-        $this->h['NavBar'] = $this->hBrowse_NavBar();
+        $this->h['NavBar'] = $this->hBrowseNavBar();
         
         ob_start();
-        $this->ehBrowse_Data($rows);
+        $this->ehBrowseData($rows);
         
         // KFD 8/9/07 DUPECHECK.  If they did a dupe check before entering
         //            a new row, give them a button to say they want to do
@@ -797,7 +782,7 @@ class XTable2
     }
     
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    public function ehBrowse_Data(&$rows)
+    private function ehBrowseData(&$rows)
     {
         
         // Generate the table header as sortable columns
@@ -817,26 +802,23 @@ class XTable2
                 foreach ($cols as $colname => $coldesc) {
                     if ($i <> 0) {
                         switch ($this->table['flat'][$colname]['type_id']) {
-                        case 'time':
-                            $newrow[] = hTime($row[$colname]);
-                            break;
-
-                        case 'dtime':
-                            $newrow[] = date('m/d/Y - h:i A', dEnsureTS($row[$colname]));
-                            break;
-
-                        case 'date':
-                            if (is_null($row[$colname])) {
-                                $newrow[] = '';
-                            } else {
-                                $newrow[] = hDate(strtotime($row[$colname]));
-                            }
-                                
-                            //$newrow[]=$row[$colname];
-                            break;
-
-                        default:
-                            $newrow[] = $row[$colname];
+                            case 'time':
+                                $newrow[] = hTime($row[$colname]);
+                                break;
+                            case 'dtime':
+                                $newrow[] = date('m/d/Y - h:i A', dEnsureTS($row[$colname]));
+                                break;
+                            case 'date':
+                                if (is_null($row[$colname])) {
+                                    $newrow[] = '';
+                                } else {
+                                    $newrow[] = hDate(strtotime($row[$colname]));
+                                }
+                                    
+                                //$newrow[]=$row[$colname];
+                                break;
+                            default:
+                                $newrow[] = $row[$colname];
                         }
                     } else {
                         $hName = $j == 1 ? ' id="browse_row0" ' : '';
@@ -859,7 +841,7 @@ class XTable2
     }
     
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    public function hBrowse_NavBar()
+    private function hBrowseNavBar()
     {
         
         // Get vital stats, work out what the max page is
@@ -929,7 +911,7 @@ class XTable2
         
         // Pull the nav bar.  Do this after pulling rows so we
         // know how many rows there are, what page we're on, etc.
-        $hNavBar = $this->hBrowse_NavBar();
+        $hNavBar = $this->hBrowseNavBar();
         
         // Generate the table header
         $cols1 = array('Edit');
@@ -939,11 +921,9 @@ class XTable2
         if (count($rows) == 0) {
             $hContent = "<tr><td colspan=99 class=\"dlite\">" . "<b>There are no records to display</b>" . "</td></tr>\n";
         } else {
-            
             // Convert first column to hyperlink to that page/row
             $hContent = '';
             foreach ($rows as $index => $row) {
-                
                 // The edit button
                 $slipin = hLinkPostFromArray('', 'Edit', array('gp_dd_page' => $this->table_id, 'gp_skey' => $row['skey'], 'gp_mode' => 'upd'));
                 $slipin = array('_edit' => $slipin);
@@ -987,7 +967,7 @@ class XTable2
         return '';
     }
     
-    public function hDisplayOnscreen($filters = array(), &$parent_row)
+    public function hDisplayOnscreen($filters = array(), &$parent_row = false)
     {
         $parent_pks = $filters;
         
@@ -996,7 +976,6 @@ class XTable2
         //hprint_r($filters);
         // Pull the rows so we know how many we have
         if (count($filters) <> 0) {
-            
             //$filters=ConSet('table',$this->table_id,'search',$filters);
             processPost_TableSearchResultsClear($this->table_id);
         }
@@ -1009,7 +988,7 @@ class XTable2
         
         // Pull the nav bar.  Do this after pulling rows so we
         // know how many rows there are, what page we're on, etc.
-        $hNavBar = $this->hBrowse_NavBar();
+        $hNavBar = $this->hBrowseNavBar();
         
         // Generate the table header
         $cols1 = asliceValsFromKeys($this->table['flat'], 'description', $this->projections['_uisearch']);
@@ -1158,61 +1137,58 @@ class XTable2
             $row['skey'] = gp('gpx_skey');
         } else {
             switch ($mode) {
-            case 'search':
-                    
-                // if a previous search, use that, else fall through
-                // to using current row
-                $row = ConGet('table', $this->table_id, 'search', array());
-                if (count($row) <> 0) {
-                    break;
-                }
-
-            case 'ins':
-                $row = DrillDownMatches();
-                if (count($row) == 0) {
-                    $row = aFromGP('pre_');
-                }
-                    
-                // KFD 8/13/07, part of COPY ability
-                if (gp('gp_action') == 'copy') {
-                    $row2 = SQL_OneRow("SELECT * FROM " . $this->table_id . " where skey=" . SQLFN(gp('gp_skey')));
-                    foreach ($row2 as $column_id => $colvalue) {
-                        if (is_numeric($column_id)) {
-                            continue;
-                        }
-                        if (!isset($this->table['flat'][$column_id])) {
-                            continue;
-                        }
-                        $aid = $this->table['flat'][$column_id]['automation_id'];
-                        if ($aid == 'SEQUENCE' || $column_id == gp('gp_exclude')) {
-                            unset($row2[$column_id]);
-                        }
+                case 'search':
+                    // if a previous search, use that, else fall through
+                    // to using current row
+                    $row = ConGet('table', $this->table_id, 'search', array());
+                    if (count($row) <> 0) {
+                        break;
                     }
-                    $row = array_merge($row, $row2);
-                }
-                break;
-
-            case 'upd': {
+                    //keep going
+                case 'ins':
+                    $row = DrillDownMatches();
+                    if (count($row) == 0) {
+                        $row = aFromGP('pre_');
+                    }
+                        
+                    // KFD 8/13/07, part of COPY ability
+                    if (gp('gp_action') == 'copy') {
+                        $row2 = SQL_OneRow("SELECT * FROM " . $this->table_id . " where skey=" . SQLFN(gp('gp_skey')));
+                        foreach ($row2 as $column_id => $colvalue) {
+                            if (is_numeric($column_id)) {
+                                continue;
+                            }
+                            if (!isset($this->table['flat'][$column_id])) {
+                                continue;
+                            }
+                            $aid = $this->table['flat'][$column_id]['automation_id'];
+                            if ($aid == 'SEQUENCE' || $column_id == gp('gp_exclude')) {
+                                unset($row2[$column_id]);
+                            }
+                        }
+                        $row = array_merge($row, $row2);
+                    }
+                    break;
+                case 'upd':
                     $skey = gp('gp_skey');
                     hidden('gp_skey', '');
-                if (trim($skey) == '') {
-                    $row = array();
-                } else {
-                    $skey = " WHERE skey=" . $skey;
-                    $sq = "Select * FROM " . $this->view_id . $skey;
-                    $row = SQL_OneRow($sq);
-                }
-                }
+                    if (trim($skey) == '') {
+                        $row = array();
+                    } else {
+                        $skey = " WHERE skey=" . $skey;
+                        $sq = "Select * FROM " . $this->view_id . $skey;
+                        $row = SQL_OneRow($sq);
+                    }
             }
         }
             
-            // Save the row for other routines
-            $this->row = $row;
-            
-            // Find out what skey we are on, give a next/prev
-            // kind of button for stuff like that.
-            // Set the next/prev stuff based on rows
-            $HTML_PagePrev = $HTML_PageNext = $HTML_ViewingPage = "";
+        // Save the row for other routines
+        $this->row = $row;
+        
+        // Find out what skey we are on, give a next/prev
+        // kind of button for stuff like that.
+        // Set the next/prev stuff based on rows
+        $HTML_PagePrev = $HTML_PageNext = $HTML_ViewingPage = "";
         if ($mode == "upd") {
             $lprev = $lnext = false;
             $skey = $this->row['skey'];
@@ -1435,9 +1411,9 @@ class XTable2
             return '';
         }
         
-        $aDD = $this->aLinks_DrillDown($mode);
-        $aDB = $this->aLinks_DrillBack($mode);
-        $aEX = $this->aLinks_Extra($mode);
+        $aDD = $this->aLinksDrillDown($mode);
+        $aDB = $this->aLinksDrillBack($mode);
+        $aEX = $this->aLinksExtra($mode);
         
         if (count($aDD) + count($aDB) + count($aEX) == 0) {
             return '';
@@ -1508,7 +1484,7 @@ class XTable2
     }
     
     // Generate drilldown links for any child table
-    public function aLinks_DrillDown($mode)
+    private function aLinksDrillDown($mode)
     {
         if ($mode <> 'upd') {
             return array();
@@ -1540,33 +1516,13 @@ class XTable2
         return $retval;
     }
     
-    public function aLinks_DrillBack($mode)
+    private function aLinksDrillBack($mode)
     {
         if ($this->table_id_parent <> '') {
             return array();
         }
         $x = $mode;
         $retval = array();
-        
-        // First kind of "goback" is drillbacks
-        //  THESE ARE X_TABLE drillbacks, from deprecated x_table
-        /*
-        $gp_dlev = DrilldownLevel();
-        for ($x=1;$x<=$gp_dlev;$x++) {
-         $lev=$gp_dlev-$x+1;
-        $drill = DrilldownGet($x);
-         $table_id=$drill['gp']['page'];
-         $tabdesc=DD_TableProperty($table_id,'description');
-        //$msg = array_values($drill["values"]);
-        //$msg = implode("&nbsp;&nbsp;",$msg);
-        //$msg = $drill["gp"]["pagedesc"].": $msg<br>";
-         $retval[]
-            ="<a href=\"javascript:drillBack($lev)\">"
-            .$tabdesc."</a>";
-        //$HTML=HTMLE_A_JS("drillBack('".($gp_dlev-$x+1)."')",$msg);
-        //$retval.='<img src="images/lessdetails.jpg">'.$HTML."<br />\n";
-        }
-        */
         
         // First kind of "goback" is drillbacks
         // These are x_table2 drillbacks, a little simpler
@@ -1581,15 +1537,15 @@ class XTable2
     }
     
     /**
-     name:aLinks_Extra
-     return:array
-     parm:$mode
-     seealso:Methods To Override
-     This method returns an array of links that should appear in
-     the [[link bar]] of an editing page.  It takes the parameter $mode
-     which can be used to decide when a link should appear.
+     * name:aLinksExtra
+     * return:array
+     * parm:$mode
+     * seealso:Methods To Override
+     * This method returns an array of links that should appear in
+     * the [[link bar]] of an editing page.  It takes the parameter $mode
+     * which can be used to decide when a link should appear.
      */
-    public function aLinks_Extra($mode)
+    private function aLinksExtra($mode)
     {
         return array();
         $mode = 'Fill in your own override code that returns an array';
@@ -1604,7 +1560,7 @@ class XTable2
     // -----------------------------------------------------------
     // -----------------------------------------------------------
     // -----------------------------------------------------------
-    public function hExtra($mode)
+    private function hExtra($mode)
     {
         if ($mode <> 'upd') {
             return '';
@@ -1681,7 +1637,7 @@ class XTable2
     code that should be unrem'd.  Should also examine the call to that
     routine in raxlib.php, it has been changed since this code was written.
     */
-    public function ehRowsOfBoxes($filters, $lcols = null)
+    private function ehRowsOfBoxes($filters, $lcols = null)
     {
         $x = $filters;
         if (is_null($lcols)) {
@@ -1759,16 +1715,16 @@ class XTable2
     //   These are functions that handle events that occur on the
     //   client which are then sent back via ajax calls
     // ==============================================================
-    public function fwAjax()
+    private function fwAjax()
     {
         if (gp('fwajax') == 'field_changed') {
-            $this->field_changed();
+            $this->fieldChanged();
         }
         
         returns_as_ajax();
     }
     
-    public function field_changed()
+    private function fieldChanged()
     {
         $field = gp('ajx_field');
         $value = gp('ajx_value');

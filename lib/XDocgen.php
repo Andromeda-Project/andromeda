@@ -742,7 +742,7 @@ class XDocgen extends XTable2
             }
             echo "<br><br>Specification file: ".
             $this->pagelink('Spec file', $spec['srcfile']);
-            $this->processData_OneSPecFile($spec['srcfile']);
+            $this->processDataOneSpecFile($spec['srcfile']);
         }
         $page_text=ob_get_clean();
         $this->pageUpdate('Spec Files', $page_text, 'Data Dictionary');
@@ -844,7 +844,7 @@ class XDocgen extends XTable2
             ,$row['description']
             );
             echo hTRFromArray('', $display);
-            $this->processData_OneTable($row);
+            $this->processDataOneTable($row);
         }
         echo '</tbody>';
         echo "</table>";

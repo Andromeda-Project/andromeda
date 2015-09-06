@@ -582,17 +582,16 @@ function HiddenRepeat($var, $default = '')
 // ==================================================================
 // ==================================================================
 /**
-name:_default_
-parent:Debugging Functions
-*/
+ * name:_default_
+ * parent:Debugging Functions
+ */
 
 /**
-name:Debugging Functions
-parent:Framework API Reference
-
-These two functions provide wrappers to the two similar PHP
-functions, so that the output is readable.
-*/
+ * name:Debugging Functions
+ * parent:Framework API Reference
+ * These two functions provide wrappers to the two similar PHP
+ * functions, so that the output is readable.
+ */
 
 // ==================================================================
 // ==================================================================
@@ -604,7 +603,6 @@ functions, so that the output is readable.
 function HTML_vardump($array)
 {
     echo "<pre>\n";
-    //var_dump(($array));
     print_r($array);
     echo "</pre>";
 }

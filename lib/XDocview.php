@@ -1,5 +1,5 @@
 <?php
-class Xdocview extends Xtable2
+class XDocview extends XTable2
 {
     /*
     function custom_construct() {
